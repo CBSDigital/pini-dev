@@ -1,0 +1,37 @@
+templates:
+  asset_entity_path: '{job_path}/assets/{asset_type}/{asset}'
+  blast: '{entity_path}/blast/{task}/{entity}_{tag}_v{ver}/{entity}_{tag}_v{ver}.%04d.{extn}'
+  blast_mov: '{entity_path}/blast/{task}/{entity}_{tag}_v{ver}.mp4'
+  cache: '{entity_path}/outputs/{task}_{tag}/{output_name}/{entity}_{output_name}_v{ver}.{extn}'
+  publish: '{work_dir}/publish/[{output_type}]/{entity}_{tag}[_v{ver}].{extn}'
+  mov: '{entity_path}/mov/{task}/{entity}_{tag}_{output_name}_v{ver}.{extn}'
+  render: '{entity_path}/images/{task}/{tag}_v{ver}/{output_name}/{entity}_{tag}_v{ver}.%04d.{extn}'
+  shot_entity_path: '{job_path}/seqs/{sequence}/{shot}'
+  work_dir: '{entity_path}/{dcc}/{task}'
+  work: '{work_dir}/{entity}_{tag}_v{ver}.{extn}'
+tokens:
+  output_name:
+    filter: '-.'
+  ver:
+    len: 3
+    isdigit: true
+  shot:
+    filter: '-.'
+  tag:
+    filter: '-_'
+    default: main
+  task:
+    filter: '-sourceimages -textures -_ -cache'
+defaults:
+  maya_extn: ma
+use_shotgrid: False
+tasks:
+  assets:
+    - rig
+    - model
+    - lookdev
+  shots:
+    - anim
+    - lighting
+    - previs
+name: Quirinus

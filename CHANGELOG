@@ -1,0 +1,511 @@
+## [0.30.1] - Tue 2023-12-12 12:59
+### Summary
+ - Shotgrid:
+    - request head in data on build shots,
+### Updated
+ - pini.pipe.shotgrid.to_entity_data added sg_head_in to fields,
+ - pini.pipe.shotgrid.to_entity_data allow entity as None,
+
+
+## [0.30.0] - Mon 2023-12-11 15:35
+### Summary
+ - Pini Helper:
+    - increased cache substeps accuracy to 3 DP (cstewart),
+### Updated
+ - pini.utils.CacheSeq added,
+ - pini.utils.Seq.copy_to added frames override arg,
+ - pini.utils.Seq.copy_to added option to replace existing frames,
+ - pini.pipe.CPJob.find_shot added match by sequence name,
+
+
+## [0.29.0] - Fri 2023-12-08 13:39
+### Summary
+ - Pini Tools:
+    - bugfix errors due to mixed mounts (nle),
+ - Sanity Check:
+    - bugfix bad reset of pini helper on launch (cstewart),
+### Updated
+ - pini.utils.find use abs_path to fix mixed mounts issues,
+ - pini.tools.sanity_check bugfix reset pini helper on launch,
+
+
+## [0.28.0] - Fri 2023-12-08 09:12
+### Summary
+ - Pini Helper:
+    - use shared version numbers if user in work path,
+    - apply lookdev attempt to match tag,
+    - bugfix invalid lookdev reference,
+### Updated
+ - pini.pipe.CPEntity.find_work_dirs added step filter,
+ - pini.pipe.CPEntity._read_work_dirs_sg bugfix not reformatting sg users,
+ - pini.pipe CPWorkDir/CCPWorkDir to_work bugfix not applying user override,
+ - pini.pipe.CPWorkDir.to_work bugfix not applying user,
+ - pini.pipe.CPWork.find_next used shared versions for multiple users in task,
+ - pini.pipe.CPWork.to_wor added user override,
+ - pini.pipe.CPOutput.find_lookdev try to match tag,
+ - pini.pipe.CCPEntity.obj_work_dir better error on fail,
+ - pini.tools.helper updated to accomodate shared versioning,
+ - pini.tools.helper bugfix jump to work with non-current user,
+ - maya_pini.ref.create_ref pass type arg to bugfix invalid ref,
+
+
+## [0.27.0] - Thu 2023-12-07 12:08
+### Summary
+ - Pini Helper:
+    - allow user selection,
+    - double-click tag to open latest work,
+### Updated
+ - pini.pipe.cur_user added to replace $PINI_PIPE_USER,
+ - pini.pipe.shotgrid.find_tasks include assigned users,
+ - pini.pipe.shotgrid.to_user_data cache all users request,
+ - pini.pipe.shotgrid.to_user_data allow user as id,
+ - pini.pipe.shotgrid.to_user_data catch returns empty dict on fail,
+ - pini.tools.helper work tab added user selection,
+ - pini.tools.helper double-click tag to open latest work,
+
+
+## [0.26.0] - Wed 2023-12-06 10:31
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click work with seq outputs (nle),
+### Updated
+ - maya_pini.open_maya.find_nodes added filter_ arg,
+ - pini.dcc.CMayaBasicPublish.LABEL better explanation,
+ - pini.pipe.CCPOutputSeq cache frames to disk on sg pipe,
+ - pini.pipe.CPWork.to_output pass user data,
+ - pini.utils.Seq pass args/kwargs,
+ - pini.utils.find_exe search thinkbox for deadline exe,
+
+
+## [0.25.0] - Tue 2023-12-05 13:01
+### Summary
+ - Pini Helper:
+    - optimised outputs caching,
+### Updated
+ - pini.pipe.CPJob._read_output_sg bugfix reading seq frames,
+ - pini.pipe.CPOutput pass job object for efficiency,
+ - pini.testing.reset_enable_filesystem working,
+
+
+## [0.24.0] - Mon 2023-12-04 18:12
+### Summary
+ - Sanity Check:
+    - check shaders warn on referenced shaders (cstewart),
+ - Pini Helper:
+    - maya cache hide image planes for speed,
+### Updated
+ - maya_pini.m_pipe.cache hide image planes on cache,
+ - maya_pini.m_pipe.cache bugfix update outputs,
+ - maya_pini.m_pipe.read_shader_assignments added allow_referenced flag,
+ - maya_pini.utils.hide_img_planes added decorator,
+ - pini.dcc.CMayaLookdevPublish better error on referenced shanders,
+ - pini.install.CIInstaller._gather_dcc_items removed items arg,
+ - pini.install.CIInstaller._gather_site_items added,
+ - pini.install.CIMayaCombinedInstaller added menu_installer/shelf_installer args,
+ - pini.pipe.shotgrid.to_job_data added sg_frame_rate to fields,
+ - pini.pipe.shotgrid.to_job_data allow job as None,
+ - pini.qt.file_browser added title arg,
+ - pini.qt.file_browser added mode ExistingSeq,
+ - pini.tools.sanity_check.CheckShaders warn on referenced shaders,
+ - pini.utils.Seq to_start/to_end/to_dur added,
+ - pini.utils.abs_path apply norm_path at start to fix // mounts,
+
+
+## [0.23.0] - Mon 2023-12-04 10:55
+### Summary
+ - Pini Helper:
+    - bugfix not identifying surf publish as lookdev (cstewart),
+### Updated
+ - maya_pini.utils.del_namespace fixed multiple confirmations,
+ - pini.icons.CLEAN added,
+ - pini.tools.helper bugfix not matching surf as lookdev publish,
+ - pini.utils.find_exe bugfix not finding Shotgrid/RV,
+
+
+## [0.22.0] - Fri 2023-12-01 19:05
+### Summary
+ - Pini Helper:
+    - bugfix populate scene tab,
+### Updated
+ - pini.pipe.CPJob.find_publishes implemented extns filter,
+ - pini.pipe.shotgrid.find_pub_files added timer to logging,
+
+
+## [0.21.0] - Fri 2023-12-01 18:20
+### Summary
+ - Pini Install:
+    - bugfix error on install,
+    - bugfix error catch unable to send email,
+### Updated
+ - maya_pini.utils.save_abc hide img planes on cache,
+ - maya_pini.utils.save_abc bugfix error on no range passed,
+ - pini.pipe.CPCache.find_outputs bugfix uncached entity attr,
+ - pini.pipe.CPJob.find_entity allow match as entity,
+ - pini.pipe.CPJob.find_publishes bugfix not passing args to shotgrid,
+ - pini.tools.error bugfix bad imports in dialog submodule,
+
+
+## [0.20.0] - Fri 2023-12-01 14:09
+### Summary
+ - Sanity Check:
+    - check shaders strip _Mtl suffix,
+ - Pini Helper:
+    - apply colour to default tag,
+### Updated
+ - pini.dcc.to_version return py ver,
+ - pini.tools.helper shade default tag blue,
+ - pini.tools.sanity_check check shaders strip _Mat suffix,
+ - pini.utils.email added as accessible submodule,
+ - pini.utils.email send_email/SUPPORT_EMAIL/FROM_EMAIL removed,
+ - pini.utils.email.set_from_email added,
+
+
+## [0.19.0] - Fri 2023-12-01 10:06
+### Summary
+ - Sanity Check:
+    - check shaders include face assignments,
+ - Pini Helper:
+    - bugfix error on launch with non-current user work file open,
+### Updated
+ - maya_pini.m_pipe.lookdev.read_shader_assignments added allow_face_assign arg,
+ - pini.pipe.CPCache catch invalid work dir (ie. non-current user on sg pipe),
+ - pini.tools.sanity_check check shaders checks face-assigned shds,
+
+
+## [0.18.0] - Thu 2023-11-30 14:29
+### Summary
+ - Pini Helper:
+    - bugfix not registering basic maya publish in shotgrid,
+### Updated
+ - maya_pini.ui find_windows/reset_window added,
+ - pini.pipe.shotgrid.CSGHandler.limit_requests added,
+ - pini.pipe.shotgrid.CSGHandler.find_one include requests in counter,
+ - pini.pipe.shotgrid.to_pub_file_data added caching,
+ - pini.utils.File added find_bkps/flush_bkps,
+
+
+## [0.17.0] - Wed 2023-11-29 16:15
+### Summary
+ - Pini Helper:
+    - include Bidding/Test jobs,
+### Updated
+ - pini.pipe.find_jobs added filter_ arg,
+ - pini.pipe.shotgrid.find_jobs include Bidding/Test jobs,
+ - pini.pipe.shotgrid.find_jobs bugfix filter_ not applied to sg jobs,
+ - pini.testing added PROFILE_FILE/PROFILE_TXT,
+
+
+## [0.16.0] - Wed 2023-11-29 12:00
+### Summary
+ - Sanity Check:
+    - disable arnold checks,
+    - check top node ignore display points,
+### Updated
+ - pini.dcc.CMayaModelPublish disable pref,
+ - pini.tools.sanity_check only run arnold check if arnold active,
+ - pini.tools.sanity_check.CheckTopNode ignore display points nodes,
+ - pini.tools.sanity_check.CheckShaders track suggestions for single file,
+
+
+## [0.15.1] - Wed 2023-11-29 11:16
+### Summary
+ - Shotgrid Integration:
+    - match users by login/email,
+### Updated
+ - pini.pipe.shotgrid.to_user_data added login/email match + better logging,
+
+
+## [0.15.0] - Wed 2023-11-29 10:31
+### Summary
+ - Pini Helper:
+    - improved caching of shotgrid data,
+### Updated
+ - pini.pipe.CPCache.find_job match add by job object,
+ - pini.pipe.CPCache store shot/assets at job level,
+ - pini.pipe.CPJob sort by lower name,
+ - pini.pipe.shotgrid.CSGHandler.n_requests added,
+ - pini.pipe.shotgrid improved result caching,
+ - pini.pipe.shotgrid validate results using templates,
+ - pini.utils.File.bkp added,
+
+
+## [0.14.0] - Tue 2023-11-28 12:25
+### Summary
+ - OpenMaya Wrapper:
+    - added animCurve handling,
+    - extended node maths handling,
+### Updated
+ - maya_pini.open_maya.IDENTITY added,
+ - maya_pini.open_maya.CBaseNode.apply_shd added,
+ - maya_pini.open_maya.cast_node added animCurve handling,
+ - maya_pini.open_maya find_cam/find_cams added filter_ arg,
+ - maya_pini.open_maya.CMesh.to_create added,
+ - maya_pini.open_maya.CPlug.multiply added const handling,
+ - maya_pini.open_maya.CReference.to_node added fmt arg,
+ - maya_pini.ref.FileRef.find_nodes implemented animCurve type filter,
+ - maya_pini.tex.to_shd added shader handling,
+ - pini.dcc.MayaDCC.set_fps added float fps handling,
+ - pini.install maya added redraw viewports ctx opt,
+ - pini.pipe.cache.CCPJob._read_outputs_sg added video/seq handling,
+ - pini.pipe.to_entity allow path as Seq,
+ - pini.pipe.CPOutput better error on fail to apply templates,
+ - pini.pipe CPOutput.to_output/CPWork.to_output bugfix apply ver padding,
+ - pini.pipe.CPOutput.to_work added dcc_ arg,
+ - pini.pipe.CPTemplate catch bad dcc/profile token in name,
+ - pini.pipe.CPTemplate.is_resolved added,
+ - pini.pipe.task_sort added trk + use mapped task,
+ - pini.pipe.CPWorkDir.user added attr,
+ - pini.pipe.shotgrid.find_pub_files added entity/filter_ args,
+ - pini.pipe.shotgrid.create_pub_file added render handling,
+ - pini.qt.CUiDialog added shortcuts + key press handling,
+ - pini.qt.CSettings added QWidget handling,
+ - pini.qt.CColor added PlumRed/BottleGreen custom cols,
+ - pini.qt.CColor.col_names added,
+ - pini.qt.CSlider.set_fr added,
+ - pini.qt.CTileWidgetItem added mouse_tracking arg,
+ - pini.utils.Seq better error on bad frame expr,
+ - pini.utils.to_str added Seq handling,
+ - pini.utils.six_execfile allow file_ as File,
+ - pini.utils.to_pascal added new line as separator,
+
+
+## [0.13.0] - Thu 2023-11-16 15:10
+### Summary
+ - Pini Helper:
+    - working build lighting scene,
+### Updated
+ - pini.dcc.CMayaLookdevPublish removed redundant shd_mb attr,
+ - pini.dcc.CMayaLookdevPublish bugfix bad extn on publish,
+ - pini.dcc.find_pipe_refs apply task map to lookdev refs,
+ - pini.pipe.CPEntity.find_publishes apply task map to task filter,
+ - pini.pipe.CPOutput.find_lookdev removed output_type filter,
+ - pini.pipe.map_task apply animation/lgt mapping,
+ - pini.tools.helper export bugfix select publish tab for assets,
+ - pini.tools.helper scene apply task map to default tab,
+ - pini.tools.helper scene bugfix error on no output_type,
+ - pini.utils.Dir.browser added $PINI_PATH_WIN_BROWSER_MAP mapping,
+
+
+## [0.12.0] - Thu 2023-11-16 14:00
+### Summary
+ - Pini Helper:
+    - implemented caching on shotgrid jobs,
+    - bugfix rebuild cache on publish,
+    - register all outputs in shotgrid on publish,
+### Updated
+ - maya_pini.m_pipe.cache fix register caches in shotgrid,
+ - pini.dcc.CBaseExportHandler.post_publish updated arg publish -> outs + register all outs in shotgrid,
+ - pini.pipe.cache.CCJob.find_publishes bugfix find pubs on shotgrid,
+ - pini.pipe.cache.CCJob.find_outputs added force arg,
+ - pini.pipe.cache.CCWork.find_outputs bugfix find outs on shotgrid,
+ - pini.pipe.CPJob.find_outputs added tag/ver_n/task filters,
+ - pini.pipe.shotgrid.create_pub_file added abc handling,
+
+
+## [0.11.0] - Thu 2023-11-16 10:04
+### Summary
+ - Pini Helper:
+    - better warning on cache if no cache template set up,
+ - Sanity Check:
+    - check frame range use head_in/tail_out,
+### Updated
+ - maya_pini.m_pipe.cache warn on no cache template,
+ - pini.pipe.shotgrid.to_entity_range use head_in/tail_out,
+
+
+## [0.10.0] - Wed 2023-11-15 19:00
+### Summary
+ - Pini Helper:
+    - adding publish handling,
+### Updated
+ - pini.dcc.export_handler added export notes,
+ - pini.dcc.CExportHandler.add_lineedit_elem added val arg,
+ - pini.dcc.CBasicPublish no versionless if missing template,
+ - pini.dcc.CBasicMayaPublish no abc/fbx export if missing template,
+ - pini.pipe added output handling for shotgrid,
+ - pini.pipe.CPJob.find_publishes added entity filter,
+ - pini.pipe.shotgrid.find_pub_files added,
+ - pini.tools.handler use mapped task for default export tab,
+
+
+## [0.9.0] - Tue 2023-11-14 12:16
+### Summary
+ - Pini Install:
+    - added default maya/nuke startup files,
+    - implemented nuke installer,
+### Updated
+ - README.md added maya/nuke install,
+ - maya_pini.open_maya.CMesh added to_edge/to_edges/to_face/to_uv,
+ - maya_pini.tex.create_surface_shader added,
+ - maya_pini.ui.add_shelf_separator bugfix not replacing existing after restart,
+ - maya_pini.ui.find_shelf_buttons added command filter,
+ - pini.dcc.CMayaModelPublish bugfix false negative on check for publish template,
+ - pini.icons.MOONS added,
+ - pini.install.CINukeMenuInstaller added,
+ - pini.install CITool/CIDivider moved to submodule,
+ - pini.install.CIInstaller.run default parent is Pini,
+ - pini.install retired non-installer code,
+ - pini.pipe.CPJob.cfg applied default keys to clean code,
+ - pini.pipe.CPJob.find_publishes added asset_type filter,
+ - pini.pipe.CPWorkDir.step added attr,
+ - pini.qt.CTileWidget.set_items added update_labels flag,
+ - pini.qt.CTileWidgetItem added thumb/filmstrip handling,
+ - pini.tools.job_manager bugfix title as ShotManager,
+ - pini.utils.File.read_yml added encoding flag,
+ - startup added userSetup/menu.py,
+
+
+## [0.8.1] - Thu 2023-11-09 10:14
+### Summary
+ - Pini Helper:
+    - bugfix error on save in entity with duplicate tasks,
+    - bugfix update work task on save,
+### Updated
+ - pini.pipe.shotgrid.find_tasks ignore tasks without step,
+ - pini.pipe.shotgrid.update_work_task bugfix error due to duplicate task,
+
+
+## [0.8.0] - Thu 2023-11-09 08:38
+### Summary
+ - Pini Helper:
+    - show only active jobs,
+### Updated
+ - pini.pipe.find_jobs filter by active jobs,
+ - pini.tools.helper updated asset type label Category -> Type,
+ - pini.tools.helper updated shot label Shots -> Shot,
+ - pini.tools.helper allow sequence label override via $PINI_PIPE_SEQUENCE_LABEL,
+ - pini.tools.helper added usage tracking on launch,
+
+
+## [0.7.0] - Thu 2023-11-09 07:46
+### Summary
+ - Pini Install:
+    - added launch helper as option,
+### Updated
+ - pini.install.CIInstaller.run added launch_helper arg,
+
+
+## [0.6.0] - Wed 2023-11-08 19:14
+### Summary
+ - Pini Install:
+    - bugfix maya install,
+ - Pini Helper:
+    - no error on publish/render/blast fail,
+    - bugfix update shotgrid task on save work,
+ - Sanity Check:
+    - working with non-pini task naming,
+### Updated
+ - maya_pini.ui bugfix cyclical import error,
+ - pini.dcc.clear_terminal added,
+ - pini.dcc.export_handler publish/blast/render catch no template set up,
+ - pini.dcc.CMayaModelPublish removed pref opt,
+ - pini.install.CIMayaCombinedInstaller launch helper + removed eval deferred,
+ - pini.pipe.map_task added,
+ - pini.pipe deprecated find_tokens/DEFAULT_TAG/NULL/SPLITTER,
+ - pini.pipe.NAME updated default Pini -> pini,
+ - pini.pipe.CPJob.cfg added default values to dict for cleaner code,
+ - pini.pipe.CPTemplate.find_tokens deprecated,
+ - pini.pipe.task_sort added tasks,
+ - pini.pipe.validate_token added whitelist,
+ - pini.pipe.cur_task added fmt arg for pini format task names,
+ - pini.pipe.shotgrid.to_entity_data bugfix error on sg master asset,
+ - pini.pipe.shotgrid.find_tasks allow task key override via $PINI_SG_TASK_NAME_TOKEN,
+ - pini.tools.sanity_check working with non-pini task naming,
+ - pini.tools.usage.ROOT added,
+
+
+## [0.5.2] - Tue 2023-11-07 15:34
+### Summary
+ - Pini Install:
+    - bugfix maya install,
+### Updated
+ - pini.install bugfix cyclical import in maya,
+
+
+## [0.5.1] - Tue 2023-11-07 15:27
+### Summary
+ - Pini Install:
+    - bugfix maya install,
+### Updated
+ - pini.install bugfix cyclical import in maya,
+
+
+## [0.5.0] - Tue 2023-11-07 15:17
+### Summary
+ - Pini Install:
+    - maya run in deferred + launch helper,
+### Updated
+ - pini.install.CITool.add_divider added,
+ - pini.install.CIInstaller._gather_refresh_tools returns btn + items,
+ - pini.install.CIMayaShelfInstaller._gather_refresh_tools ctx added reset windows,
+ - pini.install.CIMayaCombinedInstaller run in deferred + launch helper,
+ - pini.pipe.CPCache.find_job added catch,
+ - pini.qt.CPainter.draw_text apply size to passed font,
+ - pini.utils.Dir.to_seq added,
+ - pini.utils.File.read added encoding flag,
+ - pini.utils.Path.nice_age bugfix bad reference of age property,
+
+
+## [0.4.0] - Fri 2023-11-03 18:12
+### Summary
+ - Shotgrid Wrapper:
+    - added feature to allow formatting of requests,
+### Updated
+ - pini.pipe.shotgrid.find added fmt arg,
+ - pini.testing.append_sys_path added,
+
+
+## [0.3.0] - Thu 2023-11-02 15:08
+### Summary
+ - Sanity Check:
+    - bugfix error on check references with off-pipeline references,
+### Updated
+ - pini.install CIMayaShelfInstaller/CIMayaMenuInstaller made public,
+ - pini.install removed legacy maya install commands,
+ - pini.pipe.CCPWorkDir.to_work simplified to use args/kwargs,
+ - pini.testing.TEST_TAG deprecated,
+ - pini.tools.sanity_check.CheckReferences ignore off-pipe refs,
+
+
+## [0.2.0] - Thu 2023-11-02 09:53
+### Summary
+ - Install:
+    - added maya shelf/menu installer,
+### Updated
+ - README.md updated default,
+ - maya_pini.ui.add_shelf_separator added,
+ - maya_pini.ui.add_shelf_button added unique_annotation flag,
+ - maya_pini.ui.add_menu_item disabled tear off,
+ - pini.install added maya shelf/menu installer,
+ - pini.install.CIInstaller.prefix added to allow unique names for multiple installers within dcc,
+ - pini.install.CIInstaller.style added to distinguish between shelf/menu styles,
+ - pini.install.CIInstaller added refresh ctx items,
+ - pini.install removed build_maya_shelf,
+ - pini.pipe.DEFAULT_TAG added,
+ - pini.pipe.CPEntity.to_output applied default tag,
+ - pini.utils added HOME/TMP,
+ - pini.utils renamed DATA_DIR -> DATA_PATH,
+
+
+## [0.1.0] - Wed 2023-11-01 12:23
+### Summary
+ - Pini Helper:
+    - working with assets with shotgrid as master,
+### Updated
+ - pini.pipe.CPJob.to_prefix added,
+ - pini.pipe.CPJob find_asset_types/read_type_assets added sg handling,
+ - pini.pipe.CPJob.to_asset better error on no template,
+ - pini.pipe.CPEntity._read_work_dirs_sg bugfix not apply class casting,
+ - pini.pipe.CPEntity.to_work_dir added step/user args,
+ - pini.pipe.CPTemplate.format allow kwargs data,
+ - pini.pipe.CPWork.to_work added ver padding from cfg,
+ - pini.pipe.CPWorkDir added $PINI_PIPE_DEFAULT_TAG application,
+ - pini.pipe.CPWorkDir.to_work added user/job_prefix handling,
+ - pini.pipe.shotgrid.find_tasks ignore tasks w/o name,
+
+
+## [0.0.0] - Tue 2023-03-19 12:13
+### Summary
+- Initial release
+### Updated
+- pini: created all files

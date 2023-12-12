@@ -1,0 +1,986 @@
+"""Tools for managing sequences of files."""
+
+import logging
+import os
+import re
+
+from . import uc_clip
+
+from ..u_error import DebuggingError
+from ..u_text import plural
+from ..u_misc import single, strftime, to_str
+from ..u_six import six_cmp
+from ..u_exe import find_exe
+
+from ..cache import cache_method_to_file
+from ..path import Path, norm_path, Dir, File, TMP_PATH, abs_path
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
+    """Represents a sequence of files.
+
+    The list of frames is only read once and then cached.
+
+    When _frames is None, it means no read has happened. Otherwise, _frame
+    should be a set of frame indices.
+    """
+
+    def __init__(self, path, frames=None, safe=True):
+        """Constructor.
+
+        Args:
+            path (str): path to seq (eg. C:/path/to/files/file.%04d.jpg)
+            frames (int list): force frames cache
+            safe (bool): only allow sequences with <base>.%04d.<extn> format
+        """
+        _path = path
+        _frames = frames
+        if isinstance(_path, Seq):
+            _path = path.path
+            _frames = path.frames
+        self.path = norm_path(_path)
+
+        # Determine path vars
+        _path = Path(self.path)
+        self.dir = _path.dir
+        self.filename = _path.filename
+
+        # Split base to extract frame str
+        if safe:
+            if self.filename.count('.') < 2:
+                raise ValueError(self.path)
+            self.base, self.frame_expr, self.extn = self.filename.rsplit('.', 2)
+        else:
+            for _expr in [
+                    '%04d', '%d',
+                    '%03d', '%02d',
+                    '%05d', '%07d', '%09d']:
+
+                if self.filename.count(_expr) != 1:
+                    continue
+                self.frame_expr = _expr
+                self.base, _ = self.filename.rsplit(_expr)
+                self.base = self.base.strip('.')
+                self.extn = _path.extn
+                break
+            else:
+                raise ValueError(self.path)
+
+        self._frames = None
+        if _frames:
+            self._frames = set(_frames)
+
+        if (
+                not len(self.frame_expr) == 4 or
+                not self.frame_expr.startswith('%0') or
+                not self.frame_expr.endswith('d')):
+            raise ValueError('Bad frame expr {} - {}'.format(
+                self.frame_expr, path))
+
+    @property
+    def frames(self):
+        """Obtain list of frames.
+
+        Returns:
+            (int list): frame indices
+        """
+        return self.to_frames()
+
+    @property
+    def files(self):
+        """Obtain list of file paths.
+
+        Returns:
+            (str list): path for each frame
+        """
+        return [self[_frame] for _frame in self.frames]
+
+    def add_frame(self, frame):
+        """Add a frame to the frames cache.
+
+        Args:
+            frame (int): frame to add
+        """
+        assert isinstance(frame, int)
+        if self._frames is None:
+            self._frames = set()
+        self._frames.add(frame)
+
+    def browser(self):
+        """Open a browser in this seq's parent directory."""
+        Dir(self.dir).browser()
+
+    def contains(self, file_):
+        """Test whether this sequence contains the given file.
+
+        eg. Seq('blah.%04d.jpg').contains('blah.0001.jpg') -> True
+
+        Args:
+            file_ (str): file to test
+
+        Returns:
+            (bool): whether file follows sequence pattern
+        """
+        _file = File(file_)
+        if _file.dir != self.dir:
+            return False
+        _head, _tail = self.filename.split(self.frame_expr)
+        _LOGGER.debug('HEAD/TAIL %s %s', _head, _tail)
+        _LOGGER.debug('FILENAME %s', _file.filename)
+        if (
+                not _file.filename.startswith(_head) or
+                not _file.filename.endswith(_tail)):
+            return False
+        _f_str = _file.filename[len(_head):-len(_tail)]
+        _LOGGER.debug('FSTR %s', _f_str)
+        if not _f_str.isdigit():
+            return False
+        _f_idx = int(_f_str)
+        return self.frame_expr % _f_idx == _f_str
+
+    def copy_to(self, target, frames=None):
+        """Copy this file sequence to another location.
+
+        Args:
+            target (Seq): target location
+            frames (int list): override frames to copy
+        """
+        from pini import qt
+        assert isinstance(target, Seq)
+        _frames = frames or self.frames
+        if target.exists():
+            qt.ok_cancel(
+                'Replace existing frames {:d}-{:d}?\n\n{}'.format(
+                    min(_frames), max(_frames), target.path))
+            target.delete(frames=_frames, force=True)
+        for _frame in qt.progress_bar(
+                _frames, 'Copying {:d} frame{}'):
+            File(self[_frame]).copy_to(target[_frame])
+            target.add_frame(_frame)
+
+    def delete(self, wording='delete', icon=None, frames=None, force=False):
+        """Delete this image sequence.
+
+        Args:
+            wording (str): override wording on warning dialog
+            icon (str): override icon on warning dialog
+            frames (int list): limit list of frames to delete
+            force (bool): delete without confirmation
+        """
+        from pini import qt, icons
+
+        _frames = frames or self.to_frames(force=True)
+        if _frames and not force:
+            if len(_frames) == 1:
+                _fr_str = str(single(_frames))
+            else:
+                _fr_str = '{:d}-{:d}'.format(_frames[0], _frames[-1])
+            qt.ok_cancel(
+                'Are you sure you want to {} frame{} {} of this '
+                'image sequence?\n\n{}'.format(
+                    wording.lower(), plural(_frames), _fr_str, self.path),
+                title='Confirm {}'.format(wording.capitalize()),
+                icon=icon or icons.DELETE)
+        for _frame in qt.progress_bar(
+                _frames, 'Deleting {:d} file{}', show_delay=1):
+            _file = File(self[_frame])
+            _file.delete(force=True)
+        self._frames = set()
+
+    def exists(self, frames=None, force=False):
+        """Test whether this sequence exists.
+
+        Args:
+            frames (int list): list of frames to check exist - if any
+                of these frames are missing then the result is False
+            force (bool): force reread from disk
+
+        Returns:
+            (bool): whether sequence exists
+        """
+        _frames = self.to_frames(force=force)
+        if frames:
+            _missing = sorted(set(frames) - set(_frames))
+            _LOGGER.debug('MISSING FRAMES %s', _missing)
+            return not _missing
+        return bool(_frames)
+
+    def _read_frames(self):
+        """Read frames of this sequence from disk.
+
+        Returns:
+            (int str): frames
+        """
+        _frames = set()
+        _LOGGER.debug('SEARCHING FOR FRAMES')
+        _LOGGER.debug(' - TOKENS %s %s %s', self.base, self.frame_expr,
+                      self.extn)
+        _head, _tail = self.filename.split(self.frame_expr)
+        _LOGGER.debug(' - HEAD/TAIL %s/%s', _head, _tail)
+        _dir = Dir(abs_path(self.dir))
+        for _file in _dir.find(
+                depth=1, extn=self.extn, type_='f', full_path=False,
+                catch_missing=True):
+            _LOGGER.debug(' - CHECKING %s', _file)
+            if not _file.startswith(_head):
+                _LOGGER.debug('   - BAD HEAD')
+                continue
+            if not _file.endswith(_tail):
+                _LOGGER.debug('   - BAD TAIL')
+                continue
+            _fr_str = _file[len(_head):-len(_tail)]
+            if not _fr_str.isdigit():
+                _LOGGER.debug('   - BAD FRSTR')
+                continue
+            _idx = int(_fr_str)
+            if self.frame_expr % _idx != _fr_str:
+                _LOGGER.debug('   - BAD REMAP')
+                continue
+            _frames.add(_idx)
+
+        return _frames
+
+    def find_range(self, force=False):
+        """Find start/end frames of this sequence.
+
+        Args:
+            force (bool): force reread from disk
+
+        Returns:
+            (tuple): start/end frames
+        """
+        _frames = self.to_frames(force=force)
+        return _frames[0], _frames[-1]
+
+    def is_missing_frames(self, frames=None):
+        """Test whether this sequence's frame range is incomplete.
+
+        Args:
+            frames (int list): expected frames
+
+        Returns:
+            (bool): whether frames are missing
+        """
+        _frames = self.to_frames()
+        if frames:
+            _missing = sorted(set(frames) - set(_frames))
+            return bool(_missing)
+        if not _frames:
+            return True
+        for _idx, _this in enumerate(_frames[:-1]):
+            _next = _frames[_idx+1]
+            if _this + 1 != _next:
+                return True
+        return False
+
+    def move_to(self, target, progress=False):
+        """Move this sequence.
+
+        Args:
+            target (Seq): target sequence
+            progress (bool): show progress bar
+        """
+        _frames = self.to_frames(force=True)
+        assert not target.exists(frames=_frames)
+        assert isinstance(target, Seq)
+        if progress:
+            from pini import qt
+            _frames = qt.progress_bar(
+                _frames, 'Moving {:d} frame{}')
+        for _frame in _frames:
+            File(self[_frame]).move_to(target[_frame])
+
+    def mtime(self):
+        """Obtain mtime of this sequence using the middle frame.
+
+        Returns:
+            (float): mtime
+        """
+        return self._to_center_path().mtime()
+
+    def nice_size(self):
+        """Get size of this file in a readable for (eg. 10GB).
+
+        Returns:
+            (str): readable file size
+        """
+        from pini.utils import nice_size
+        return nice_size(self.size())
+
+    def owner(self):
+        """Obtain owner of this sequence using the middle frame.
+
+        Returns:
+            (str): owner
+        """
+        return self._to_center_path().owner()
+
+    def size(self):
+        """Obtain total size of this file sequence.
+
+        Returns:
+            (int): size in bytes
+        """
+        return sum(File(_file).size() for _file in self.files)
+
+    def strftime(self, fmt=None):
+        """Get formatted time string using this sequence's mtime.
+
+        Args:
+            fmt (str): time format string
+
+        Returns:
+            (str): formatted time string
+        """
+        return strftime(time_=self.mtime(), fmt=fmt)
+
+    def test_dir(self):
+        """Test this sequence's parent directory exists."""
+        self.to_dir().mkdir()
+
+    def _to_center_path(self):
+        """Get central frame file path.
+
+        Returns:
+            (File): central frame file
+        """
+        _ctr_frame = self.frames[int(len(self.frames)/2)]
+        _ctr_file = self[_ctr_frame]
+        return File(_ctr_file)
+
+    def to_dir(self, *args, **kwargs):
+        """Get this sequence's parent directory.
+
+        Returns:
+            (Dir): parent dir
+        """
+        return File(self.path).to_dir(*args, **kwargs)
+
+    def to_dur(self):
+        """Obtain duration (in frames) of this image sequence.
+
+        Returns:
+            (int): duration
+        """
+        return self.to_end() + 1 - self.to_start()
+
+    def to_end(self):
+        """Obtain last/end frame of this sequence.
+
+        Returns:
+            (int): last frame
+        """
+        return self.to_range()[1]
+
+    def to_file(self, **kwargs):
+        """Map this sequence to a file object.
+
+        Returns:
+            (File): file using this seq's attributes
+        """
+        _path = '{}/{}.{}'.format(self.dir, self.base, self.extn)
+        return File(_path).to_file(**kwargs)
+
+    def to_frames(self, force=False):
+        """Find frames of this sequence.
+
+        This is read from disk the first time, and then subsequently
+        the cached value is used. This can be overridden using the
+        force flag.
+
+        Args:
+            force (bool): force read from disk
+
+        Returns:
+            (int list): list of frame numbers
+        """
+        if force or self._frames is None:
+            self._frames = self._read_frames()
+        return sorted(self._frames)
+
+    def to_range(self, force=False):
+        """Find start/end frames of this sequence.
+
+        Args:
+            force (bool): force reread from disk
+
+        Returns:
+            (tuple): start/end frames
+        """
+        _frames = self.to_frames(force=force)
+        return _frames[0], _frames[-1]
+
+    def to_res(self):
+        """Obtain resolution for this image sequence.
+
+        Resolution is read from the middle frame.
+
+        Returns:
+            (tuple): width/height
+        """
+        from pini.utils import Image
+        _start, _end = self.to_range()
+        assert self.frames
+        _frame = self.frames[int(len(self.frames)/2)]
+        _img = Image(self[_frame])
+        _LOGGER.debug('TO RES %s', _img.path)
+        return _img.to_res()
+
+    def to_start(self):
+        """Obtain start/first frame of this sequence.
+
+        Returns:
+            (int): first frame
+        """
+        return self.to_range()[0]
+
+    def to_video(
+            self, video, fps=None, audio=None, audio_offset=0.0,
+            use_scene_audio=False, crf=15, bitrate=None, denoise=None,
+            tune=None, speed=None, force=False, burnins=False, verbose=0):
+        """Convert this image sequence to a video.
+
+        Args:
+            video (File): file to create
+            fps (float): frame rate
+            audio (File): apply audio
+            audio_offset (float): audio offset in secs
+            use_scene_audio (bool): apply audio from current scene
+                (overrides all other audio flags)
+            crf (int): constant rate factor (default is 25,
+                visually lossless is 15, highest is 1)
+            bitrate (str): apply bitrate to conversion (eg. 1M)
+            denoise (float): apply nlmeans denoise (20.0 is recommended)
+            tune (str): apply tuning preset (eg. animation, film)
+            speed (str): apply speed preset (eg. slow, medium, slowest)
+            force (bool): overwrite existing without confirmation
+            burnins (bool): add burnins
+            verbose (int): print process data
+
+        Returns:
+            (Video): video file
+        """
+        from pini import dcc
+        from .. import clip
+
+        # Prepare output path
+        _video = clip.Video(video)
+        _video.delete(force=force, wording='Replace')
+        assert not _video.exists()
+        if _video.extn.lower() not in ['mp4']:
+            raise RuntimeError('Bad extn '+_video.path)
+        _video.test_dir()
+
+        # Build video
+        if dcc.NAME == 'nuke':
+            # Catch nuke hanging bug
+            return self._to_video_nuke(video=_video, burnins=burnins)
+        return self._to_video_ffmpeg(
+            video=_video, fps=fps, audio=audio, audio_offset=audio_offset,
+            crf=crf, bitrate=bitrate, denoise=denoise, tune=tune, speed=speed,
+            use_scene_audio=use_scene_audio, burnins=burnins, verbose=verbose)
+
+    def _to_video_ffmpeg(
+            self, video, fps, audio, audio_offset, use_scene_audio, crf,
+            bitrate, denoise, tune, speed, burnins, verbose=0):
+        """Build video file using ffmpeg.
+
+        Args:
+            video (File): file to create
+            fps (float): frame rate
+            audio (File): apply audio
+            audio_offset (float): audio offset in secs
+            use_scene_audio (bool): apply audio from current scene
+                (overrides all other audio flags)
+            crf (int): constant rate factor (default is 25,
+                visually lossless is 15, highest is 1)
+            bitrate (str): apply bitrate to conversion (eg. 1M)
+            denoise (float): apply nlmeans denoise (20.0 is recommended)
+            tune (str): apply tuning preset (eg. animation, film)
+            speed (str): apply speed preset (eg. slow, medium, slowest)
+            burnins (bool): add burnins
+            verbose (int): print process data
+
+        Returns:
+            (Video): video file
+        """
+        from pini import dcc
+        from pini.utils import system
+
+        _ffmpeg = find_exe('ffmpeg')
+        _fps = fps or dcc.get_fps()
+        _start, _ = self.to_range(force=True)
+        assert _ffmpeg
+        assert _fps
+
+        # Build args list
+        _args = [_ffmpeg, '-r', _fps]
+        _args += ['-f', 'image2']
+        if _start != 1:
+            _args += ['-start_number', _start]
+        _args += ['-i', self.path]
+        if burnins:
+            _args += _build_ffmpeg_burnin_flags(self, video=video)
+        _args += _build_ffmpeg_audio_flags(
+            use_scene_audio=use_scene_audio, audio=audio,
+            audio_offset=audio_offset)
+        _args += ['-vcodec', 'libx264']
+        _args += ['-pix_fmt', 'yuv420p']
+        if bitrate:
+            _args += ['-b:v', bitrate]
+        else:
+            _args += ['-crf', crf]
+        if speed:
+            _args += ['-preset', speed]
+        if tune:
+            _args += ['-tune', tune]
+        if denoise:
+            _args += ['-vf', "nlmeans='{:.01f}:7:5:3:3'".format(denoise)]
+        _args += [video]
+
+        # Execute ffmpeg
+        _LOGGER.debug(' - FFMPEG %s', _args)
+        _LOGGER.debug(
+            ' - FFMPEG %s',
+            ' '.join(to_str(_arg) for _arg in _args))
+        _, _err = system(_args, result='out/err', verbose=verbose)
+        if not video.exists() or not video.size():
+            self._handle_conversion_fail(err=_err, video=video)
+
+        return video
+
+    def _handle_conversion_fail(self, video, err):
+        """Handle conversion fail, flaggin common issues.
+
+        Args:
+            video (Video): conversion target
+            err (str): ffmpeg error message
+        """
+        _LOGGER.info('CONVERSION FAILED:\n%s', err)
+
+        if not video.size():
+            video.delete(force=True)
+
+        # Compression fail
+        if 'Compression 8 is not implemented' in err:
+            raise RuntimeError('Unsupported compression '+self.path)
+
+        # Res fail
+        if (
+                'height not divisible by 2' in err or
+                'width not divisible by 2' in err):
+            _res = self.to_res()
+            raise RuntimeError(
+                'Unsupported resolution {:d}x{:d} (H264 requires width and '
+                'height be divisible by two) - {}'.format(
+                    _res[0], _res[1], self.path))
+
+        raise RuntimeError('Conversion failed '+self.path)
+
+    def _to_video_nuke(self, video, clean_up=True, burnins=False, force=False):
+        """Compile video using nuke.
+
+        In nuke (on linux only maybe?) making an ffmpeg system call seems to
+        cause a hang, so video conversion is done by simply creating a read
+        and a write node, and writing out the video that way.
+
+        NOTE:
+         - read colspace: linear (exr), otherwise rec709
+         - write colspace: rec709
+
+        Args:
+            video (Video): video file to write
+            clean_up (bool): delete tmp nodes
+            burnins (bool): apply burnins
+            force (bool): overwrite existing without confirmation
+                (for debugging)
+        """
+        _LOGGER.debug('TO VIDEO NUKE %s', self.path)
+        import nuke
+        from pini.utils import Video
+
+        if burnins:
+            raise NotImplementedError('Burnins in nuke')
+
+        _video = Video(video)
+        _start, _end = self.to_range()
+
+        # Clean up
+        for _name in ["TMP_READ", "TMP_WRITE", "TMP_REFORMAT"]:
+            _node = nuke.toNode(_name)
+            if _node:
+                nuke.delete(_node)
+        if _video.exists():
+            _video.delete(force=force)
+
+        # Build read
+        _to_clean = []
+        nuke.Root()['colorManagement'].setValue('OCIO')
+        _colspace = "scene_linear" if self.extn == 'exr' else "color_picking"
+        _read = nuke.createNode(
+            'Read',
+            "name TMP_READ file {path} first {first:d} last {last:d} "
+            "colorspace {colspace}".format(
+                path=self.path, first=_start, last=_end, colspace=_colspace))
+        _to_clean.append(_read)
+
+        # Reformat if width larger than 4096
+        _width = _read.width()
+        _LOGGER.debug(' - WIDTH %d', _width)
+        if _width > 4096:
+            _scale = 4096 / _width
+            _LOGGER.debug(' - SCALE %f', _scale)
+            _reformat = nuke.createNode(
+                'Reformat',
+                'name TMP_REFORMAT type scale')
+            _reformat['scale'].setValue(_scale)
+            _to_clean.append(_reformat)
+
+        # Build write
+        _write = nuke.createNode(
+            'Write',
+            "name TMP_WRITE file {path} file_type mov mov64_codec h264 "
+            "colorspace color_picking".format(path=_video.path))
+        _to_clean.append(_write)
+
+        nuke.render(_write, start=_start, end=_end)
+
+        if clean_up:
+            for _node in _to_clean:
+                nuke.delete(_node)
+
+        return _video
+
+    def __cmp__(self, other):
+        if isinstance(other, Seq):
+            return six_cmp(self.path, other.path)
+        return six_cmp(self.path, other)
+
+    def __eq__(self, other):
+        if not isinstance(other, Seq):
+            return False
+        return self.path == other.path
+
+    def __getitem__(self, idx):
+        assert isinstance(idx, int)
+        return self.path % idx
+
+    def __hash__(self):
+        return hash(self.path)
+
+    def __lt__(self, other):
+        if not isinstance(other, (Path, Seq)):
+            return self.path < other
+        return self.path < other.path
+
+    def __repr__(self):
+        return '<{}|{}>'.format(type(self).__name__.strip('_'), self.path)
+
+
+class CacheSeq(Seq):
+    """Sequence object which caches frame range to disk."""
+
+    @property
+    def cache_fmt(self):
+        """Obtain cache format (caches to .pini subdir).
+
+        Returns:
+            (str): cache format
+        """
+        _path = '{dir}/.pini/{base}_{extn}_{{func}}.pkl'.format(
+            dir=self.dir, base=self.base, extn=self.extn)
+        return _path
+
+    @cache_method_to_file
+    def to_frames(self, force=False):
+        """Obtain list of frames.
+
+        Args:
+            force (bool): force reread frames from disk
+
+        Returns:
+            (int list): frames
+        """
+        return super(CacheSeq, self).to_frames(force=force)
+
+
+def find_seqs(
+        dir_=None, files=None, depth=1, include_files=False, split_chrs='.',
+        filter_=None):
+    """Find sequences in the given directory.
+
+    Args:
+        dir_ (str): path to search
+        files (File list): override files to check (to avoid disk read)
+        depth (int): search depth
+        include_files (bool): include files which are not
+            part of any sequence
+        split_chrs (str): override frame split character
+            eg. use "._" to match "blah_%04d.jpg" seqs
+        filter_ (str): apply filename filter
+
+    Returns:
+        (Seq list): sequences found
+    """
+    if os.environ.get('PINI_DISABLE_FIND_SEQS'):
+        raise DebuggingError(
+            "Find sequences disabled using PINI_DISABLE_FIND_SEQS")
+
+    # Obtain list of files
+    if files is not None:
+        _LOGGER.debug('FIND SEQS')
+        _files = files
+    else:
+        assert dir_
+        _dir = Dir(dir_)
+        _LOGGER.debug('FIND SEQS %s', _dir.path)
+        _files = _dir.find(type_='f', class_=True, depth=depth, filter_=filter_)
+
+    # Check which files fall into sequences
+    _seqs = {}
+    _non_seqs = []
+    for _file in _files:
+
+        _LOGGER.debug(' - TESTING FILE %s', _file)
+        if not _count_split_chrs(_file.base, split_chrs=split_chrs):
+            _non_seqs.append(_file)
+            continue
+
+        # Extract frame str
+        _LOGGER.debug('   - BASE %s', _file.base)
+        # _tokens = _file.base.split('.')
+        _tokens = _tokenise_base(_file.base, split_chrs=split_chrs)
+        _frame_str = _tokens[-1]
+        if not _frame_str.isdigit():
+            _non_seqs.append(_file)
+            continue
+        _LOGGER.debug('   - FRAME STR %s', _frame_str)
+
+        # Convert to frame expression + seq
+        _frame = int(_frame_str)
+        _frame_expr = '%0{:d}d'.format(len(_frame_str))
+        _LOGGER.debug('   - FRAME EXPR %s', _frame_expr)
+        _seq_base = _file.base[:-len(_frame_str)]+_frame_expr
+        _seq_path = _file.to_file(base=_seq_base).path
+
+        # Ignore
+        if _seq_path not in _seqs:
+            _LOGGER.debug('   - CREATING SEQ %s', _seq_path)
+            _LOGGER.debug('   - FILE frame_str=%s %s', _frame_str, _file.path)
+            _safe = split_chrs == '.'
+            try:
+                _seq = Seq(_seq_path, safe=_safe)
+            except ValueError:
+                continue
+            else:
+                _seqs[_seq_path] = _seq
+
+        _seqs[_seq_path].add_frame(_frame)
+
+    _result = list(_seqs.values())
+    if include_files:
+        _result += _non_seqs
+
+    return sorted(_result)
+
+
+def _count_split_chrs(base, split_chrs):
+    """Count split characters in the given base.
+
+    Args:
+        base (str): sequence base (eg. "blah.0001")
+        split_chrs (str): character to split by (eg. ".")
+
+    Returns:
+        (int): number of instances of split characters
+    """
+    if len(split_chrs) == 1:
+        return base.count('.')
+
+    return sum(base.count(_chr) for _chr in split_chrs)
+
+
+def _tokenise_base(base, split_chrs):
+    """Tokenise the given base by split characters.
+
+    Args:
+        base (str): sequence base (eg. "blah.0001")
+        split_chrs (str): character to split by (eg. ".")
+
+    Returns:
+        (str list): tokenised base (eg. ["blah", "0001"]
+    """
+    if len(split_chrs) == 1:
+        return base.split(split_chrs)
+    return re.split('['+split_chrs+']', base)
+
+
+def _build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
+    """Add audio flags for ffmpeg.
+
+    Args:
+        use_scene_audio (bool): read audio from current scene
+        audio (str): path to audio file
+        audio_offset (float): audio offset in seconds
+
+    Returns:
+        (str list): audio flags
+    """
+    from pini import dcc
+
+    # Determine audio + offset
+    if use_scene_audio:
+        _audio, _audio_offs = dcc.get_audio()
+        _LOGGER.info('AUDIO %s %s', _audio, _audio_offs)
+    else:
+        _audio = audio
+        _audio_offs = audio_offset
+
+    # Build flags
+    _args = []
+    if _audio:
+        _audio = File(_audio)
+        assert _audio.exists()
+        if _audio_offs:
+            _args += ['-itsoffset', str(_audio_offs)]
+        _args += ['-i', _audio, '-shortest']
+
+    return _args
+
+
+def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
+    """Add ffmpeg burnin flags and build tmp burnin files.
+
+    Args:
+        seq (Seq): sequence being converted
+        video (Video): output video
+        height (int): burnin height on top/bottom
+        inset (int): burnin inset from sides
+
+    Returns:
+        (str list): burnin flags
+    """
+    from pini import qt, pipe
+    from pini.qt import QtGui
+
+    _job = pipe.to_job(video.path, catch=True)
+    _start, _end = seq.to_range(force=True)
+    _res = seq.to_res()
+    _seq_w, _seq_h = _res
+    _fade = qt.to_col(1, 1, 1, 0.5)
+    _transparent = qt.to_col('Transparent')
+    _LOGGER.info(' - RES %s', _res)
+
+    # Find font
+    _names = ["Arial", "Helvetica"]
+    for _name in _names:
+        _font = qt.to_font(_name)
+        if _font:
+            break
+    else:
+        _LOGGER.error(' - FAILED TO FIND FONT %s', _names)
+        _font = QtGui.QFont()
+    _LOGGER.info(' - FONT %s %s', _name, _font)
+    _font.setPointSize(height*0.4)
+    _metrics = QtGui.QFontMetrics(_font)
+
+    # Draw header
+    _header = Dir(TMP_PATH).to_file('pini/overlay_header.png')
+    _pix = qt.CPixmap(_res[0], height)
+    _pix.fill(_fade)
+    _pix.draw_text(
+        pipe.NAME.upper(), (inset, height/2), anchor='L', font=_font)
+    _pix.draw_text(
+        strftime('%Y-%m-%d'), (_seq_w-inset-2, height/2),
+        anchor='R', font=_font)
+    if _job:
+        _pix.draw_text(_job.name, (_seq_w/2, height/2), anchor='C', font=_font)
+    _pix.save_as(_header, force=True, verbose=0)
+
+    # Draw footer
+    _footer = Dir(TMP_PATH).to_file('pini/overlay_footer.png')
+    _pix = qt.CPixmap(_seq_w, height)
+    _pix.fill(_fade)
+    _pix.draw_text(
+        video.base, (inset, height/2), anchor='L', font=_font)
+    _pix.save_as(_footer, force=True, verbose=0)
+
+    # Write frame number overlays
+    _path = Dir(TMP_PATH).to_file('pini/overlay_frames/frame.%04d.png')
+    _frame_ns = Seq(_path)
+    _frame_ns.delete(force=True)
+    _frames_overlay_w = height*6
+    for _frame in seq.to_frames():
+        _pix = qt.CPixmap(_frames_overlay_w, height)
+        _pix.fill(_transparent)
+        for _num, _x_pos in [
+                (_start, height),
+                (_frame, height*3),
+                (_end, height*5),
+        ]:
+            _pos = qt.to_p(_x_pos, height/2)
+            _pix.draw_text(
+                '{:04d}'.format(_num), pos=_pos, anchor='C', font=_font)
+        for _x_pos in [height*2, height*4]:
+            _pos = qt.to_p(_x_pos, height/2)
+            _pix.draw_text('-', pos=_pos, anchor='C', font=_font)
+        _pix.save_as(_frame_ns[_frame], force=True, verbose=0)
+
+    # Build flags
+    _filters = [
+        'overlay=0:0[header]',
+        '[header]overlay=0:{:d}[footer]'.format(_res[1]-height),
+        '[footer]overlay={:d}:{:d}'.format(
+            _seq_w - _frames_overlay_w - inset + 10,
+            _seq_h - height + 1),
+    ]
+    _filter_complex = ';'.join(_filters)
+    _flags = [
+        '-i', _header,
+        '-i', _footer,
+        '-f', 'image2',
+        '-start_number', _start,
+        '-i', _frame_ns.path,
+        '-filter_complex', _filter_complex,
+    ]
+
+    return _flags
+
+
+def file_to_seq(file_, safe=True, catch=False):
+    """Build a sequence object from the given file path.
+
+    eg. /blah/test.0123.jpg -> Seq("/blah/test.%04d.jpg")
+
+    Args:
+        file_ (str): file to convert
+        safe (bool): only allow 4-zero frame padding (ie. %04d)
+        catch (bool): no error if file fails to map to sequence
+
+    Returns:
+        (Seq): sequence (if any)
+
+    Raises:
+        (ValueError): if the file is not a valid frame
+    """
+    _file = File(file_)
+    if _file.filename.count('.') < 2:
+        if catch:
+            return None
+        raise ValueError(_file.path)
+
+    _base, _f_str, _extn = _file.filename.rsplit('.', 2)
+    if not _f_str.isdigit():
+        if catch:
+            return None
+        raise ValueError(_f_str)
+    if safe and len(_f_str) != 4:
+        if catch:
+            return None
+        raise ValueError(_f_str)
+    _f_expr = '%0{:d}d'.format(len(_f_str))
+
+    _path = '{}/{}.{}.{}'.format(_file.dir, _base, _f_expr, _extn)
+    return Seq(_path)

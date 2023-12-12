@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mainMenu>
+  <menuBar>
+    <subMenu id="my_submenu">
+      <label>Pini Tools</label>
+
+
+
+
+
+      <scriptItem id="CP_PiniHelper">
+        <label>Pini Loader</label>
+          <scriptCode><![CDATA[
+import pini.tools.loader.cl_launch as _tmp
+_tmp.launch()
+]]>
+         </scriptCode>
+      </scriptItem>
+      <separatorItem/>
+      <scriptItem id="CP_VersionUp">
+        <label>Version Up</label>
+          <scriptCode><![CDATA[
+import pini.pipe.cp_work as _tmp
+_tmp.version_up()
+]]>
+         </scriptCode>
+      </scriptItem>
+      <scriptItem id="CP_ShotManager">
+        <label>Shot Manager</label>
+          <scriptCode><![CDATA[
+import pini.tools.shot_manager.sm_dialog as _tmp
+_tmp.launch()
+]]>
+         </scriptCode>
+      </scriptItem>
+      <scriptItem id="CP_SanityCheck">
+        <label>Sanity Check</label>
+          <scriptCode><![CDATA[
+import pini.tools.sanity_check.ui.scui_dialog as _tmp
+_tmp.launch_ui()
+]]>
+         </scriptCode>
+      </scriptItem>
+      <separatorItem/>
+      <scriptItem id="CP_Refresh">
+        <label>Reload tools</label>
+          <scriptCode><![CDATA[
+import pini.install as _tmp
+_tmp._reload_tools()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+
+
+
+
+    </subMenu>
+  </menuBar>
+</mainMenu>
