@@ -30,24 +30,24 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
     shd_yml = None
 
-    def build_ui(self, parent=None, layout=None, add_notes=True):
+    def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.
 
         Args:
             parent (QWidget): parent widget
             layout (QLayout): layout to add widgets to
-            add_notes (bool): add notes element
+            add_footer (bool): add footer elements
         """
         super(CMayaLookdevPublish, self).build_ui(
-            parent=parent, layout=layout, add_notes=False)
+            parent=parent, layout=layout, add_footer=False)
 
         self.add_separator_elem()
         self.ui.ExportAss = self.add_checkbox_elem(
             val=True, name='ExportAss',
             label="Export geo as ass.gz file")
         self.add_separator_elem()
-        if add_notes:
-            self.add_notes_elem()
+        if add_footer:
+            self.add_footer_elems()
 
     def obtain_metadata(self, work=None, sanity_check_=True, force=False):
         """Obtain publish metadata.

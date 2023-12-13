@@ -92,11 +92,12 @@ class CCPEntity(CPEntity):
         """
         return tuple(self.find_work_dirs())
 
-    def obt_work_dir(self, match):
+    def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.
 
         Args:
             match (CPWorkDir): work dir to find
+            catch (bool): no error if fail to find work dir
 
         Returns:
             (CCPWorkDir): matching work dir
@@ -106,6 +107,7 @@ class CCPEntity(CPEntity):
             return single([
                 _work_dir for _work_dir in self.work_dirs
                 if _work_dir == match],
+                catch=catch,
                 error='Failed to find work dir '+match.path)
         raise NotImplementedError
 

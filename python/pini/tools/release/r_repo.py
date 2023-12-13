@@ -90,19 +90,19 @@ class PRRepo(Dir):
         """
         _cl_notes = notes.to_changelog(ver=ver, mtime=mtime)
         _cl_body = self.changelog.read().rstrip()
-        _LOGGER.info(' - CHANGELOG NOTES\n%s', _cl_notes)
+        _LOGGER.debug(' - CHANGELOG NOTES\n%s', _cl_notes)
         if update_ver:
             if _cl_notes not in _cl_body:
                 _cl_body = '{}\n\n\n{}'.format(_cl_notes, _cl_body)
                 self.changelog.write(_cl_body, wording='Update', force=True)
                 self.changelog.edit()
             else:
-                _LOGGER.info('CHANGELOG ALREADY UPDATED %s', self.changelog)
+                _LOGGER.debug('CHANGELOG ALREADY UPDATED %s', self.changelog)
         else:
-            _LOGGER.info('NOT UPDATING CHANGELOG')
+            _LOGGER.debug('NOT UPDATING CHANGELOG')
 
     def _print_release_cmds(
-            self, notes, ver, pull_mode, target, tmp_yml, email):
+            self, notes, ver, pull_mode, target, tmp_yml, email, dev_label):
         """Print shell commands to execute this release.
 
         Args:
@@ -112,9 +112,9 @@ class PRRepo(Dir):
             target (Dir): release target
             tmp_yml (File): release yaml data
             email (bool): print send email command
+            dev_label (str): how to label dev push in comment
         """
-        print('')
-        print('# Release dev code')
+        print('# Release {} code'.format(dev_label))
         print('cd '+self.path)
         print('git add -A')
         print('git commit -m "{}" -a'.format(
@@ -122,9 +122,9 @@ class PRRepo(Dir):
         print('git push')
         print('git tag '+ver.string)
         print('git push --tags')
-        print('')
 
         if target:
+            print('')
             print('# Update release code')
             if pull_mode == 'pull':
                 print('cd '+target.path)
@@ -144,7 +144,7 @@ class PRRepo(Dir):
 
     def release(
             self, target, type_, notes, update_ver=True, pull_mode='pull',
-            email=True):
+            email=True, dev_label='dev'):
         """Release this repo.
 
         Args:
@@ -154,12 +154,13 @@ class PRRepo(Dir):
             update_ver (bool): whether to update version on release
             pull_mode (str): how to update release target (pull/clone)
             email (bool): print send email command
+            dev_label (str): how to label dev push in comment
         """
-        _LOGGER.info('RELEASE')
+        _LOGGER.debug('RELEASE')
 
         _mtime = time.time()
         _cur = self.read_version()
-        _LOGGER.info(' - CUR VER %s', _cur)
+        _LOGGER.debug(' - CUR VER %s', _cur)
 
         # Check release target
         _trg = PRRepo(target) if target else None
@@ -168,7 +169,7 @@ class PRRepo(Dir):
             assert (_trg.name == self.name or
                     _trg.name.split('-')[0] == self.name.split('-')[0])
             _rel = _trg.read_version()
-            _LOGGER.info(' - REL VER %s', _rel)
+            _LOGGER.debug(' - REL VER %s', _rel)
         else:
             _rel = None
 
@@ -178,7 +179,7 @@ class PRRepo(Dir):
                 _next = PRVersion('0.0.0')
             else:
                 _next = _cur.to_next(type_)
-            _LOGGER.info(' - NEXT VER %s', _next)
+            _LOGGER.debug(' - NEXT VER %s', _next)
         else:
             if _rel:
                 assert _cur != _rel
@@ -188,14 +189,15 @@ class PRRepo(Dir):
         # Save release data to tmp yml
         _data = {'notes': notes, 'version': _next, 'mtime': _mtime,
                  'repo': self}
-        _tmp_yml = Dir(TMP_PATH).to_file(self.name+'.yml')
+        _tmp_yml = Dir(TMP_PATH).to_file(
+            '{}_{}.yml'.format(self.name, _next.to_str()))
         _tmp_yml.write_yml(_data, force=True)
 
         self._update_changelog(
             notes=notes, update_ver=update_ver, ver=_next, mtime=_mtime)
         self._print_release_cmds(
             notes=notes, ver=_next, pull_mode=pull_mode, target=target,
-            tmp_yml=_tmp_yml, email=email)
+            tmp_yml=_tmp_yml, email=email, dev_label=dev_label)
 
     def search_code(self, filter_=None, edit=False, text=None,
                     file_filter=None, extn='py', verbose=0):

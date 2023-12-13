@@ -330,10 +330,11 @@ class CPEntity(cp_settings.CPSettingsLevel):
 
         # Build work dir
         _data = {'task': task, 'dcc': _dcc, 'step': _step, 'user': _user}
-        _path = _tmpl.format(_data)
-        _LOGGER.debug('TO WORK DIR task=%s path=%s', task, _path)
+        _LOGGER.debug('TO WORK DIR %s', self)
+        _LOGGER.debug(' - DATA %s', _data)
         _LOGGER.debug(' - TMPL %s', _tmpl)
-        _LOGGER.debug(' - DCC %s', _dcc)
+        _path = _tmpl.format(_data)
+        _LOGGER.debug(' - PATH %s', _path)
         try:
             return _class(_path, entity=self, template=_tmpl)
         except ValueError as _exc:

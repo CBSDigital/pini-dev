@@ -224,7 +224,7 @@ class Dir(up_path.Path):
         _new_path = self.to_dir().to_subdir(name)
         shutil.move(self.path, _new_path.path)
 
-    def sync_to(self, target):
+    def sync_to(self, target, filter_=None, force=False):
         """Sync this directory to a different location.
 
         This will check for files which need to be added, removed or
@@ -232,6 +232,8 @@ class Dir(up_path.Path):
 
         Args:
             target (Dir): where to sync to
+            filter_ (str): apply path filter
+            force (bool): force sync without confirmation
         """
         from pini import qt
 
@@ -240,8 +242,10 @@ class Dir(up_path.Path):
             self.copy_to(_trg_dir)
             return
 
-        _src_paths = self.find(full_path=False, type_='f', class_=True)
-        _trg_paths = _trg_dir.find(full_path=False, type_='f', class_=True)
+        _src_paths = self.find(
+            full_path=False, type_='f', class_=True, filter_=filter_)
+        _trg_paths = _trg_dir.find(
+            full_path=False, type_='f', class_=True, filter_=filter_)
         _rel_paths = sorted(set(_src_paths+_trg_paths))
 
         _to_remove = []
@@ -255,7 +259,7 @@ class Dir(up_path.Path):
             _LOGGER.debug(' - TRG %s', _trg)
 
             if _file not in _src_paths:
-                _LOGGER.debug(' - TO REMOVE')
+                _LOGGER.info(' - TO REMOVE %s', _trg.path)
                 _to_remove.append(_file)
                 continue
             if _file not in _trg_paths:
@@ -269,7 +273,7 @@ class Dir(up_path.Path):
                 _LOGGER.debug(' - IGNORE MATCHING FILE')
                 continue
 
-            _LOGGER.debug(' - TO SYNC')
+            _LOGGER.info(' - TO SYNC %s', _trg.path)
             _to_sync.append((_src, _trg))
 
         if not (_to_remove or _to_sync):
@@ -277,12 +281,13 @@ class Dir(up_path.Path):
             return
 
         # Confirm
-        _msg = 'Confirm execute sync?\n\n'
-        if _to_sync:
-            _msg += ' - {:d} files to sync'.format(len(_to_sync))
-        if _to_remove:
-            _msg += ' - {:d} files to remove'.format(len(_to_remove))
-        qt.ok_cancel(_msg, title='Execute Sync')
+        if not force:
+            _msg = 'Confirm execute sync?\n\n'
+            if _to_sync:
+                _msg += ' - {:d} files to sync'.format(len(_to_sync))
+            if _to_remove:
+                _msg += ' - {:d} files to remove'.format(len(_to_remove))
+            qt.ok_cancel(_msg, title='Execute Sync')
 
         # Execute sync
         for _src, _trg in qt.progress_bar(_to_sync, 'Syncing {:d} file{}'):

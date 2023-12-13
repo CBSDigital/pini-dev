@@ -56,13 +56,12 @@ class TestPublish(unittest.TestCase):
         # Test create work object
         _work_dir_c = _ety_c.to_work_dir(task='rig')
         assert not _work_dir_c.exists()
-        _LOGGER.info('CREATED WORK DIR %s', _work_dir_c)
+        _LOGGER.info('SET UP WORK DIR %s', _work_dir_c)
         assert isinstance(_work_dir_c, cache.CCPWorkDir)
         assert _work_dir_c.entity is _ety_c
         _work_1 = _ety_c.to_work(task='rig', tag='PublishTest')
         assert isinstance(_work_1, cache.CCPWork)
         assert isinstance(_work_1.work_dir, cache.CCPWorkDir)
-        # assert _work_1.work_dir is _work_dir_c
         assert _work_1.entity is _ety_c
         assert not pipe.CACHE.cur_work
         assert _work_1 not in _work_dir_c.works

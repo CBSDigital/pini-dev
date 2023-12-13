@@ -21,16 +21,16 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         'is only one top node named MDL and that it has a cache set named '
         'cache_SET')
 
-    def build_ui(self, parent=None, layout=None, add_notes=True):
+    def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.
 
         Args:
             parent (QWidget): parent widget
             layout (QLayout): layout to add widgets to
-            add_notes (bool): add notes element
+            add_footer (bool): add footer elements
         """
         super(CMayaModelPublish, self).build_ui(
-            parent=parent, layout=layout, add_notes=False)
+            parent=parent, layout=layout, add_footer=False)
 
         self.ui.FreezeTfms = self.add_checkbox_elem(
             val=True, name='FreezeTfms',
@@ -38,8 +38,8 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         self.ui.DeleteHistory = self.add_checkbox_elem(
             val=True, name='DeleteHistory')
         self.add_separator_elem()
-        if add_notes:
-            self.add_notes_elem()
+        if add_footer:
+            self.add_footer_elems()
 
     def publish(
             self, work=None, force=False, revert=True, metadata=None,

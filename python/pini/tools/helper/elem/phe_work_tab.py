@@ -121,14 +121,21 @@ class CLWorkTab(object):
 
         # Get list of items
         _work_dirs = self.ui.WTasks.selected_data() or []
-        _users = sorted({_work_dir.user for _work_dir in _work_dirs})
+        _users = sorted({
+            _work_dir.user for _work_dir in _work_dirs
+            if _work_dir.works or
+            _work_dir.user == pipe.cur_user()})
 
-        # Select user with works
-        _select = None
-        _with_work = [
-            _work_dir for _work_dir in _work_dirs if _work_dir.has_works()]
-        if _with_work:
-            _select = _with_work[0].user
+        # Select user
+        _select = pipe.cur_user()
+        _cur_work = pipe.cur_work()
+        if _cur_work:
+            _select = _cur_work.user
+        else:
+            _with_work = [
+                _work_dir for _work_dir in _work_dirs if _work_dir.works]
+            if _with_work:
+                _select = _with_work[0].user
 
         # Hide user elements if single user
         _show_users = len(_users) > 1
@@ -142,39 +149,10 @@ class CLWorkTab(object):
 
     def _redraw__WTags(self):
 
-        _cur_work = pipe.cur_work()
-        _cur_tag = _cur_work.tag if _cur_work else EMPTY
-        _ui_tag = self.ui.WTagText.text()
         _default_tag = self.job.cfg['tokens']['tag']['default']
         _LOGGER.debug('REDRAW TAGS')
 
-        # Get list of tags
-        _select = EMPTY
-        if not self.work_dir:
-            _tags = []
-
-        else:
-
-            # Build tag list
-            _tags = {_work.tag for _work in self.work_dir.works}
-            _LOGGER.debug(' - EXISTING TAGS %s', sorted(
-                _tags, key=pipe.tag_sort))
-            _allow_no_tag = self.job.find_template(
-                'work', has_key={'tag': False}, catch=True)
-            if _allow_no_tag:
-                _tags |= {None}
-            _tags = sorted(_tags, key=pipe.tag_sort)
-
-            # Detemine selected tag
-            if _cur_tag in _tags:
-                _select = _cur_tag
-            elif _ui_tag in _tags:
-                _select = _ui_tag
-            elif None in _tags:
-                _select = None
-            elif _tags:
-                _select = sorted(_tags)[0]
-
+        _tags, _select = self._build_tags_list()
         _LOGGER.debug(' - TAGS %s select=%s', _tags, _select)
 
         # Build items
@@ -197,6 +175,52 @@ class CLWorkTab(object):
             _LOGGER.debug(' - select=%s', _select)
             self.ui.WTags.select_data(_select, emit=False)
         self.ui.WTags.itemSelectionChanged.emit()
+
+    def _build_tags_list(self):
+        """Build list of tags to display.
+
+        Returns:
+            (tuple): tags, selected tag
+        """
+        _user = self.ui.WUser.selected_text()
+        _cur_work = pipe.cur_work()
+        _cur_tag = _cur_work.tag if _cur_work else EMPTY
+        _ui_tag = self.ui.WTagText.text()
+        _default_tag = self.job.cfg['tokens']['tag']['default']
+
+        _select = EMPTY
+        if not self.work_dir:
+            _tags = []
+
+        else:
+
+            # Build tag list - show all tags avaiable if current user,
+            # otherwise just show existing tags
+            if _user in (None, pipe.cur_user()):
+                _work_dirs = self.ui.WTasks.selected_data()
+                _works = sum([
+                    list(_work_dir.works) for _work_dir in _work_dirs], [])
+            else:
+                _works = self.work_dir.works
+            _tags = {_work.tag for _work in _works}
+            _tags |= {_default_tag}
+            _allow_no_tag = self.job.find_template(
+                'work', has_key={'tag': False}, catch=True)
+            if _allow_no_tag:
+                _tags |= {None}
+            _tags = sorted(_tags, key=pipe.tag_sort)
+
+            # Determine selected tag
+            if _cur_tag in _tags:
+                _select = _cur_tag
+            elif _ui_tag in _tags:
+                _select = _ui_tag
+            elif None in _tags:
+                _select = None
+            elif _tags:
+                _select = sorted(_tags)[0]
+
+        return _tags, _select
 
     def _redraw__WTagError(self):
 
@@ -224,7 +248,7 @@ class CLWorkTab(object):
             _sel = _items[_works.index(_select_work)]
         elif not _items:
             _sel = None
-        elif len(_items) == 1:
+        elif len(_items) == 1 or not self.next_work:
             _sel = _items[0]
         else:
             _sel = _items[1]
@@ -285,7 +309,7 @@ class CLWorkTab(object):
             _works = []
 
         # Create dummy next work item
-        if self.work_dir and _user in [None, pipe.cur_user()]:
+        if self.work_dir and _user in ['', pipe.cur_user()]:
             if not _works:
                 _work = self.work_dir.to_work(tag=self.tag)
             else:
@@ -461,7 +485,7 @@ class CLWorkTab(object):
     def _callback__WUser(self):
         self._redraw__WTags()
         _user = self.ui.WUser.selected_text()
-        _show_tag_text = not _user or _user == pipe.cur_user()
+        _show_tag_text = _user in ('', pipe.cur_user())
         for _elem in [self.ui.WTagText, self.ui.WTagTextClear]:
             _elem.setVisible(_show_tag_text)
 
@@ -506,7 +530,7 @@ class CLWorkTab(object):
 
         _loadable = bool(_work and _work is not self.next_work)
         self.ui.WLoad.setEnabled(_loadable)
-        _saveable = bool(_work and _user == pipe.cur_user())
+        _saveable = bool(_work and _user in ('', pipe.cur_user()))
         self.ui.WSave.setEnabled(_saveable)
 
         if _work:
