@@ -44,7 +44,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
     def publish(
             self, work=None, force=False, revert=True, metadata=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None):
+            references=None, version_up=None):
         """Execute this publish.
 
         Args:
@@ -56,6 +56,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             export_abc (bool): whether to export rest cache abc
             export_fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
+            version_up (bool): whether to version up on publish
 
         Returns:
             (CPOutput): publish file
@@ -83,10 +84,15 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _outs = super(CMayaModelPublish, self).publish(
             work=work, force=force, revert=False, metadata=_data,
             export_abc=export_abc, export_fbx=export_fbx,
-            references=references)
+            references=references, version_up=False)
 
         if revert:
             _work.load(force=True)
+            _version_up = (
+                version_up if version_up is not None
+                else self.ui.VersionUp.isChecked())
+            if _version_up:
+                pipe.version_up()
 
         return _outs
 

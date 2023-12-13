@@ -9,3 +9,5 @@ try:
     from .ce_dialog import UI_FILE, launch_ui
 except ImportError:
     pass
+
+TRIGGERED = False

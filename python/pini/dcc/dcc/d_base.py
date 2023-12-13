@@ -3,6 +3,7 @@
 # pylint: disable=too-many-public-methods
 
 import logging
+import os
 import sys
 
 from pini import icons
@@ -15,6 +16,7 @@ class BaseDCC(object):
     """Base class managing interaction with any dcc."""
 
     DEFAULT_EXTN = None
+    DEFAULT_ALLOWED_RENDERERS = ''
     HELPER_AVAILABLE = True
     NAME = None
     REF_EXTNS = ()
@@ -55,6 +57,16 @@ class BaseDCC(object):
         self._init_export_handlers()
         self._export_handlers.insert(0, handler)
         _LOGGER.debug(' - RENDER HANDLERS %s', self._export_handlers)
+
+    def allowed_renderers(self):
+        """List allowed renderers for the current dcc pipeline.
+
+        Returns:
+            (str list): allowed renderers
+        """
+        _val = os.environ.get(
+            'PINI_ALLOWED_RENDERERS', self.DEFAULT_ALLOWED_RENDERERS)
+        return _val.split(',')
 
     def batch_mode(self):
         """Test whether we are in a dcc running in batch mode.

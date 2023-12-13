@@ -73,7 +73,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     def publish(
             self, work=None, force=False, revert=True, metadata=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None):
+            references=None, version_up=None):
         """Execute this publish.
 
         Args:
@@ -85,6 +85,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
             export_abc (bool): whether to export rest cache abc
             export_fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
+            version_up (bool): whether to version up on publish
 
         Returns:
             (CPOutput): publish file
@@ -139,7 +140,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if revert:
             _work.load(force=True)
 
-        self.post_publish(work=_work, outs=_outs)
+        self.post_publish(work=_work, outs=_outs, version_up=version_up)
 
         return _outs
 
@@ -269,6 +270,7 @@ def _exec_export_fbx(work, metadata, constraints=True, force=False):
     assert not _fbx.exists()
     cmds.loadPlugin("fbxmaya", quiet=True)
     mel.eval('FBXExportConstraints -v {:d}'.format(constraints))
+    cmds.FBXProperty('Export|AdvOptGrp|UI|ShowWarningsManager', '-v', 0)
     cmds.file(
         _fbx.path, options="v=0;", type="FBX export", preserveReferences=True,
         exportSelected=True, force=True)

@@ -82,6 +82,9 @@ class CleanBadSceneNodes(SCMayaCheck):
     def run(self):
         """Run this check."""
         _types = cmds.allNodeTypes()
+        _whitelist = []
+        if 'redshift' in dcc.allowed_renderers():
+            _whitelist += ['defaultRedshiftPostEffects', 'redshiftOptions']
         for _type in [
                 # 'RedshiftOptions',
                 # 'RedshiftPostEffects',
@@ -95,6 +98,13 @@ class CleanBadSceneNodes(SCMayaCheck):
             self.write_log('Found %d %s nodes - %s', len(_nodes), _type, _nodes)
             for _node in _nodes:
                 self.write_log('Checking node %s', _node)
+
+                # Ignore whitelisted
+                if _node in _whitelist:
+                    self.write_log(' - whitelisted')
+                    continue
+
+                # Add fail
                 if cmds.referenceQuery(_node, isNodeReferenced=True):
                     _ref_node = cmds.referenceQuery(_node, referenceNode=True)
                     _ref = ref.FileRef(_ref_node)
@@ -147,6 +157,10 @@ class RemoveBadPlugins(SCMayaCheck):
     def run(self):
         """Run this check."""
 
+        _whitelist = []
+        if 'redshift' in dcc.allowed_renderers():
+            _whitelist.append('redshift4maya')
+
         # Remove unwanted plugins
         _plugins = cmds.pluginInfo(query=True, listPlugins=True)
         for _plugin in [
@@ -164,6 +178,9 @@ class RemoveBadPlugins(SCMayaCheck):
         self.write_log(' - checking unknown plugins')
         _unknown = cmds.unknownPlugin(query=True, list=True) or []
         for _plugin in _unknown:
+
+            if _plugin in _whitelist:
+                continue
 
             if _plugin in _find_available_plugins():
                 self.write_log(

@@ -50,13 +50,6 @@ class CBasicPublish(eh_base.CExportHandler):
         if add_footer:
             self.add_footer_elems()
 
-    def add_footer_elems(self):
-        """Add footer publish ui elements.
-
-        These appear at the bottom of the publish interface.
-        """
-        self.add_notes_elem()
-
     def publish(self, work=None, force=False):
         """Publish this file.
 
@@ -111,7 +104,7 @@ class CBasicPublish(eh_base.CExportHandler):
 
         return _versionless
 
-    def post_publish(self, work, outs):
+    def post_publish(self, work, outs, version_up=None):
         """Execute post publish code.
 
         This manages updating the shot publish cache and cache and can
@@ -120,6 +113,7 @@ class CBasicPublish(eh_base.CExportHandler):
         Args:
             work (CPWork): source work file
             outs (CPOutput list): outputs that were generated
+            version_up (bool): whether to version up on publish
         """
         _LOGGER.info('POST PUBLISH %s', work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
@@ -148,3 +142,9 @@ class CBasicPublish(eh_base.CExportHandler):
         # Update work outputs cache
         _work = pipe.CACHE.obt_work(work)  # Has been rebuilt
         _work.find_outputs(force=True)
+
+        _version_up = (
+            version_up if version_up is not None
+            else self.ui.VersionUp.isChecked())
+        if _version_up:
+            pipe.version_up()

@@ -41,14 +41,15 @@ class CPWork(File):
     user = None
     ver = None
 
-    def __init__(self, file_, work_dir=None):
+    def __init__(self, file_, work_dir=None, template=None):
         """Constructor.
 
         Args:
             file_ (str): path to work file
             work_dir (CPWorkDIr): force parent work dir
+            template (CPTemplate): force template
         """
-        _LOGGER.log(9, 'INIT CPWork %s', file_)
+        _LOGGER.debug('INIT %s %s', type(self).__name__, file_)
         super(CPWork, self).__init__(file_)
 
         if self.extn not in EXTN_TO_DCC:
@@ -71,21 +72,34 @@ class CPWork(File):
         self.user = self.work_dir.user
 
         # Find templates
-        _tmpls = [
-            _tmpl.apply_data(
-                work_dir=self.work_dir.path, entity=self.entity.name,
-                task=self.work_dir.task, extn=self.extn,
-                step=self.work_dir.step, shot=self.entity.name)
-            for _tmpl in self.job.find_templates(
-                type_='work', profile=self.entity.profile,
-                dcc_=EXTN_TO_DCC[self.extn])]
+        if template:
+            _tmpls = [template]
+        else:
+            _tmpls = [
+                _tmpl.apply_data(
+                    work_dir=self.work_dir.path, entity=self.entity.name,
+                    task=self.work_dir.task, extn=self.extn,
+                    step=self.work_dir.step, shot=self.entity.name)
+                for _tmpl in self.job.find_templates(
+                    type_='work', profile=self.entity.profile,
+                    dcc_=EXTN_TO_DCC[self.extn])]
         _LOGGER.log(9, ' - TMPLS %s', _tmpls)
 
-        # Extract data
-        try:
-            self.data, self.template = lucidity.parse(self.path, _tmpls)
-        except lucidity.ParseError:
-            raise ValueError('Lucidity rejected '+self.path)
+        # Extract data - use single template if possible for better error
+        if len(_tmpls) == 1:
+            self.template = single(_tmpls)
+            try:
+                self.data = self.template.parse(self.path)
+            except lucidity.ParseError as _exc:
+                _LOGGER.debug(' - TMPL %s', self.template)
+                _LOGGER.debug(' - EXC %s', _exc)
+                raise ValueError('Lucidity rejected '+self.path)
+        else:
+            try:
+                self.data, self.template = lucidity.parse(self.path, _tmpls)
+            except lucidity.ParseError as _exc:
+                _LOGGER.debug(' - EXC %s', _exc)
+                raise ValueError('Lucidity rejected '+self.path)
         self.data['task'] = self.work_dir.task
         _LOGGER.log(9, ' - WORK DATA %s', self.data)
         _LOGGER.log(9, ' - WORK TMPL %s', self.template)

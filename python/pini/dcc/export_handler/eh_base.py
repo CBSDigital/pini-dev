@@ -206,6 +206,17 @@ class CExportHandler(object):
 
         return _spinbox
 
+    def add_footer_elems(self):
+        """Add footer publish ui elements.
+
+        These appear at the bottom of the publish interface.
+        """
+
+        self.ui.VersionUp = self.add_checkbox_elem(
+            'VersionUp', label='Version up on '+self.ACTION)
+
+        self.add_notes_elem()
+
     def add_notes_elem(self):
         """Add notes element to the ui."""
         _work = pipe.cur_work()

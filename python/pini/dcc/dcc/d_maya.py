@@ -29,6 +29,7 @@ class MayaDCC(BaseDCC):
 
     NAME = 'maya'
     DEFAULT_EXTN = 'ma'
+    DEFAULT_ALLOWED_RENDERERS = 'arnold'
     VALID_EXTNS = ('ma', 'mb', 'abc', 'fbx')
     REF_EXTNS = ('ma', 'mb', 'abc', 'fbx', 'vdb', 'ass', 'usd', 'gz')
 
