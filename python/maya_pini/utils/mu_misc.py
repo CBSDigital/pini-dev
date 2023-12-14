@@ -200,6 +200,19 @@ def set_enum(chan, value):
     cmds.setAttr(chan, _idx)
 
 
+def set_workspace(dir_):
+    """Set current workspace to the given dir.
+
+    Args:
+        dir_ (Dir): path to apply
+    """
+    _LOGGER.info('UPDATING WORKSPACE %s', dir_.path)
+    cmds.workspace(create=dir_.path)
+    cmds.workspace(dir_.path, openWorkspace=True)
+    cmds.workspace(projectPath=dir_.path)
+    cmds.workspace(directory=dir_.dir)
+
+
 def to_audio(start=None, mode='wav/offset'):
     """Read scene audio.
 

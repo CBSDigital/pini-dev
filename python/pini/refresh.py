@@ -302,10 +302,7 @@ def reload_libs(
     # Run setup
     if run_setup:
         from pini import install
-        _install_mod = getattr(sys, 'PINI_INSTALL_MOD', install)
-        _LOGGER.debug(' - INSTALL MOD %s', _install_mod)
-        _LOGGER.debug(' - RUNNING INSTALL')
-        _install_mod.setup(build_ui=False)
+        install.setup(build_ui=False)
 
 
 def _count_root_match_fails(root, mods):

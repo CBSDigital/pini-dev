@@ -22,6 +22,7 @@ from .cp_work_dir import CPWorkDir
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path
 
 _LOGGER = logging.getLogger(__name__)
+_SET_WORK_CALLBACKS = {}
 _RECENT_WORK_YAML = HOME.to_file(
     '.pini/{}_recent_work.yml'.format(dcc.NAME))
 _BKP_TFMT = '%y%m%d_%H%M%S'
@@ -556,9 +557,8 @@ class CPWork(File):
             import hou
             hou.putenv('JOB', self.job.path)
 
-        _set_work_callback = getattr(sys, 'PINI_SET_WORK_CALLBACK', None)
-        if _set_work_callback:
-            _set_work_callback()
+        for _, _callback in sorted(_SET_WORK_CALLBACKS.items()):
+            _callback(self)
 
     def load(self, parent=None, force=False, lazy=False, load_func=None):
         """Load this work file in the current dcc.
@@ -740,34 +740,6 @@ class _CPWorkBkp(File):
         return self.to_file(extn='yml')
 
 
-def cur_work(work_dir=None):
-    """Get a work file object for the current scene.
-
-    Args:
-        work_dir (CPWorkDIr): force parent work dir (to faciliate caching)
-
-    Returns:
-        (CPWork|None): current work (if any)
-    """
-    _file = dcc.cur_file()
-    if not _file:
-        return None
-    _file = abs_path(_file)
-    try:
-        return CPWork(_file, work_dir=work_dir)
-    except (ValueError, TypeError):
-        return None
-
-
-def apply_set_work_callback(callback):
-    """Apply callback to apply on set current workfile.
-
-    Args:
-        callback (fn): callback to apply
-    """
-    sys.PINI_SET_WORK_CALLBACK = callback
-
-
 def add_recent_work(work):
     """Add work file to list of recent work.
 
@@ -787,6 +759,34 @@ def add_recent_work(work):
     _paths = _paths[:20]
 
     _RECENT_WORK_YAML.write_yml(_paths, force=True)
+
+
+def cur_work(work_dir=None):
+    """Get a work file object for the current scene.
+
+    Args:
+        work_dir (CPWorkDIr): force parent work dir (to faciliate caching)
+
+    Returns:
+        (CPWork|None): current work (if any)
+    """
+    _file = dcc.cur_file()
+    if not _file:
+        return None
+    _file = abs_path(_file)
+    try:
+        return CPWork(_file, work_dir=work_dir)
+    except (ValueError, TypeError):
+        return None
+
+
+def install_set_work_callback(callback):
+    """Install callback to be applied on set work.
+
+    Args:
+        callback (fn): callback to execute on set work
+    """
+    _SET_WORK_CALLBACKS[callback.__name__] = callback
 
 
 def load_recent():

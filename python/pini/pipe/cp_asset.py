@@ -3,7 +3,6 @@
 # pylint: disable=too-many-instance-attributes
 
 import logging
-import sys
 
 import lucidity
 
@@ -109,11 +108,6 @@ class CPAsset(CPEntity):
                 icon=icons.find('Plus'), title='Create Asset',
                 parent=parent)
 
-        # Execute callback
-        _create_asset_callback = getattr(
-            sys, 'PINI_CREATE_ASSET_CALLBACK', None)
-        if _create_asset_callback:
-            _create_asset_callback(asset=self)
         self.mkdir()
 
         super(CPAsset, self).create(
@@ -135,14 +129,3 @@ def cur_asset(catch=True):
         if catch:
             return None
         raise ValueError('No current asset')
-
-
-def apply_create_asset_callback(func):
-    """Apply create asset callback.
-
-    This is executed on asset creation.
-
-    Args:
-        func (fn): function to execute
-    """
-    sys.PINI_CREATE_ASSET_CALLBACK = func

@@ -6,7 +6,6 @@ A sequence is a folder on disk containing a number of shots.
 import copy
 import logging
 import operator
-import sys
 
 import lucidity
 
@@ -82,12 +81,6 @@ class CPSequence(cp_settings.CPSettingsLevel):
                     self.name, self.job.name, self.path),
                 icon=icons.find('Plus'), title='Create Sequence',
                 parent=parent)
-
-        # Execute callback
-        _create_seq_callback = getattr(
-            sys, 'PINI_CREATE_SEQUENCE_CALLBACK', None)
-        if _create_seq_callback:
-            _create_seq_callback(self)
 
         self.mkdir()
 
@@ -169,17 +162,6 @@ class CPSequence(cp_settings.CPSettingsLevel):
         _data['job_path'] = self.job.path
         _path = _tmpl.format(_data)
         return pipe.CPShot(_path, job=self.job)
-
-
-def apply_create_sequence_callback(func):
-    """Apply a create sequence callback.
-
-    This is executed when a new sequence is created.
-
-    Args:
-        func (fn): function to execute on create sequence
-    """
-    sys.PINI_CREATE_SEQUENCE_CALLBACK = func
 
 
 def cur_sequence():

@@ -347,8 +347,14 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         # Convert to cacheable objects
         _c_outs = []
         for _out in _outs:
+
             _LOGGER.debug(' - ADD OUT %s', _out)
-            _ety = self.obt_entity(_out.entity)
+
+            try:
+                _ety = self.obt_entity(_out.entity)
+            except ValueError:
+                continue
+
             if isinstance(_out, pipe.CPOutput):
                 _c_out = cache.CCPOutput(_out, entity=_ety)
             elif isinstance(_out, pipe.CPOutputVideo):
@@ -357,6 +363,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
                 _c_out = cache.CCPOutputSeq(_out.path, entity=_ety)
             else:
                 raise ValueError(_out)
+
             _LOGGER.debug('   - C OUT %s', _c_out)
             _c_outs.append(_c_out)
 

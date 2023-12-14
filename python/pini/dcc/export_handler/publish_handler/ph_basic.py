@@ -143,8 +143,11 @@ class CBasicPublish(eh_base.CExportHandler):
         _work = pipe.CACHE.obt_work(work)  # Has been rebuilt
         _work.find_outputs(force=True)
 
-        _version_up = (
-            version_up if version_up is not None
-            else self.ui.VersionUp.isChecked())
+        if version_up is not None:
+            _version_up = version_up
+        elif self.ui:
+            _version_up = self.ui.VersionUp.isChecked()
+        else:
+            raise RuntimeError
         if _version_up:
             pipe.version_up()

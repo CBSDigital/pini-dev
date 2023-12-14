@@ -1,3 +1,20 @@
+## [0.34.0] - Thu 2023-12-14 15:50
+### Summary
+ - Pini Install:
+    - removed pipe apply callbacks features,
+    - added pipe install callback feature,
+ - Pini Helper:
+    - bugfix error on launch if bad output path in job,
+### Updated
+ - pini.dcc.CBasePublishHandler bugfix error on version up on pub w/o ui,
+ - pini.pipe removed apply callback funcs: apply_create_asset_type_callback/apply_create_sequence_callback/apply_create_asset_callback/apply_create_shot_callback/apply_set_work_callback,
+ - pini.pipe.install_set_work_callback added,
+ - pini.pipe.CCPJob._read_outputs_sg bugfix error on invalid output ety,
+ - pini.install.setup remove callback + install_mod args/functionality,
+ - maya_pini.utils.set_workspace added,
+ - maya_pini.utils load/save apply workspace by default,
+
+
 ## [0.33.0] - Wed 2023-12-13 16:23
 ### Summary
  - Pini Helper:

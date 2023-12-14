@@ -2,7 +2,6 @@
 
 # pylint: disable=too-many-instance-attributes
 
-import sys
 import logging
 
 import lucidity
@@ -116,11 +115,6 @@ class CPShot(CPEntity):
                 icon=icons.find('Plus'), title='Create Shot',
                 parent=parent)
 
-        # Execute callback
-        _create_shot_callback = getattr(sys, 'PINI_CREATE_SHOT_CALLBACK', None)
-        if _create_shot_callback:
-            _create_shot_callback(shot=self)
-
         super(CPShot, self).create(
             force=True, parent=parent, shotgrid_=shotgrid_)
 
@@ -153,17 +147,6 @@ def _parse_shot_name(shot):
     if not _idx_str:
         return _seq, None
     return _seq, int(_idx_str)
-
-
-def apply_create_shot_callback(func):
-    """Apply create shot callback.
-
-    This is executed on shot creation.
-
-    Args:
-        func (fn): function to execute
-    """
-    sys.PINI_CREATE_SHOT_CALLBACK = func
 
 
 def cur_shot(catch=True):

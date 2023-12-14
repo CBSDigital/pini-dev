@@ -8,12 +8,12 @@ from maya import cmds
 from pini import icons
 from pini.utils import File, wrap_fn
 
-from . import mu_dec
+from . import mu_dec, mu_misc
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def _apply_workspace(file_, update_workspace=None):
+def _apply_auto_workspace_update(file_, update_workspace=None):
     """Update maya workspace for the given file.
 
     This is only enabled if $PINI_MAYA_MANAGE_WORKSPACE is set. If it is
@@ -29,16 +29,16 @@ def _apply_workspace(file_, update_workspace=None):
     """
     _update_ws = update_workspace
     if _update_ws is None:
-        _update_ws = os.environ.get('PINI_MAYA_MANAGE_WORKSPACE')
+        _env = os.environ.get('PINI_MAYA_MANAGE_WORKSPACE')
+        if _env in ('0', 'False'):
+            _update_ws = False
+        else:
+            _update_ws = True  # Default is True
     if not _update_ws:
         return
 
     _ws = file_.to_dir().to_subdir('workspace')
-    _LOGGER.info('UPDATING WORKSPACE %s', _ws.path)
-    cmds.workspace(create=_ws.path)
-    cmds.workspace(_ws.path, openWorkspace=True)
-    cmds.workspace(projectPath=_ws.path)
-    cmds.workspace(directory=_ws.dir)
+    mu_misc.set_workspace(_ws)
 
 
 def _set_env(key, val):
@@ -120,7 +120,7 @@ def load_scene(
 
     if _revert:
         _revert()
-    _apply_workspace(_file)
+    _apply_auto_workspace_update(_file)
 
 
 def _run_scanner():
@@ -161,7 +161,7 @@ def save_scene(file_=None, force=False):
     _file = File(_path)
     _file.test_dir()
 
-    _apply_workspace(_file)
+    _apply_auto_workspace_update(_file)
 
     # Apply save
     _type = {'ma': 'mayaAscii', 'mb': 'mayaBinary'}[_file.extn]

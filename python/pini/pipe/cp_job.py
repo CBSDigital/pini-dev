@@ -5,7 +5,6 @@
 import logging
 import operator
 import os
-import sys
 import time
 
 import six
@@ -14,25 +13,16 @@ from pini import dcc, icons
 from pini.utils import (
     Dir, abs_path, single, cache_property, norm_path, merge_dicts, to_str,
     apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result,
-    passes_filter)
+    passes_filter, HOME_PATH)
 
 from . import cp_settings, cp_template
 from .cp_utils import map_path
 
-
 _LOGGER = logging.getLogger(__name__)
-
-# Determine home dir
-_HOME = os.environ.get('USERPROFILE')
-if not _HOME:
-    _HOME = os.environ.get('HOME')
-if not _HOME:
-    _HOME = os.path.expanduser('~')
-_HOME = abs_path(_HOME)
 
 JOBS_ROOT = Dir(os.environ.get(
     'PINI_JOBS_ROOT',
-    _HOME+'/Documents/Projects'))
+    HOME_PATH+'/Documents/Projects'))
 
 _JOB_MATCHES = {}
 _DEFAULT_CFG_NAME = "Quirinus"
@@ -315,12 +305,6 @@ class CPJob(cp_settings.CPSettingsLevel):
                 icon=icons.find('Plus'), title='Create Asset Type',
                 parent=parent)
 
-        # Execute callback
-        _create_type_callback = getattr(
-            sys, 'PINI_CREATE_ASSET_TYPE_CALLBACK', None)
-        if _create_type_callback:
-            _create_type_callback(job=self, asset_type=asset_type)
-
         _type_dir.mkdir()
 
     def find_asset_types(self):
@@ -591,6 +575,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         _match = norm_path(match)
         _LOGGER.debug('FIND SHOT %s %s', match, _match)
         _shots = self.find_shots(sequence=sequence)
+        _LOGGER.debug(' - FOUND %d SHOTS', len(_shots))
 
         # Test name match
         _name_shot = single([
@@ -1074,17 +1059,6 @@ class CPJob(cp_settings.CPSettingsLevel):
 
     def __lt__(self, other):
         return self.name.lower() < other.name.lower()
-
-
-def apply_create_asset_type_callback(func):
-    """Apply a create asset type callback.
-
-    This is executed when a new asset type is created.
-
-    Args:
-        func (fn): function to execute on create asset type
-    """
-    sys.PINI_CREATE_ASSET_TYPE_CALLBACK = func
 
 
 def cur_job(class_=None, jobs_root=None):

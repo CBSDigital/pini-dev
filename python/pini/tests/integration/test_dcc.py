@@ -101,7 +101,7 @@ class TestPublish(unittest.TestCase):
         if not _basic_pub:
             assert dcc.NAME in ['hou', 'nuke']
         else:
-            _basic_pub.publish(work=_work_1, force=True)
+            _basic_pub.publish(work=_work_1, force=True, version_up=False)
 
     def test_version_up_publish(self):
 
@@ -133,7 +133,7 @@ class TestPublish(unittest.TestCase):
         assert not pipe.cur_work().find_outputs()
         assert not _work_c.find_outputs()
         assert not _work_c.outputs
-        _out = single(_handler.publish(force=True))
+        _out = single(_handler.publish(force=True, version_up=False))
         _work_c = pipe.CACHE.obt_work(_work_c)
         assert pipe.cur_work().find_outputs()
         assert _work_c.find_outputs()
@@ -157,26 +157,28 @@ class TestPublish(unittest.TestCase):
         _work_c = pipe.CACHE.obt_work(_next)
 
         # Test publish with CarbLoader
-        _dlg = helper.DIALOG
-        if not _dlg:
-            _dlg = helper.launch()
+        _helper = helper.DIALOG
+        if not _helper:
+            _helper = helper.launch()
         else:
-            _dlg._callback__Refresh()
-            _dlg.jump_to(_work_c)
-        assert _dlg.work.exists()
-        assert _dlg.work == pipe.cur_work()
-        assert _dlg.entity is pipe.CACHE.cur_entity
-        assert _dlg.work_dir is pipe.CACHE.cur_work_dir
-        assert _dlg.work is pipe.CACHE.cur_work
+            _helper._callback__Refresh()
+            _helper.jump_to(_work_c)
+        assert _helper.work.exists()
+        assert _helper.work == pipe.cur_work()
+        assert _helper.entity is pipe.CACHE.cur_entity
+        assert _helper.work_dir is pipe.CACHE.cur_work_dir
+        assert _helper.work is pipe.CACHE.cur_work
 
         # Publish
-        _dlg.ui.MainPane.select_tab('Export')
-        _dlg.ui.EExportPane.select_tab('Publish')
-        _out = single(_dlg._callback__EPublish(force=True))
+        _pub = _helper.ui.EPublishHandler.selected_data()
+        _pub.ui.VersionUp.setChecked(False)
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Publish')
+        _out = single(_helper._callback__EPublish(force=True))
         _LOGGER.info('CUR ETY %s', pipe.CACHE.cur_entity)
-        assert _dlg.entity is pipe.CACHE.cur_entity
-        assert _dlg.work_dir is pipe.CACHE.cur_work_dir
-        assert _dlg.work is pipe.CACHE.cur_work
+        assert _helper.entity is pipe.CACHE.cur_entity
+        assert _helper.work_dir is pipe.CACHE.cur_work_dir
+        assert _helper.work is pipe.CACHE.cur_work
         _work_c = pipe.CACHE.obt_work(_work_c)
         assert pipe.cur_work().find_outputs()
         assert _work_c.find_outputs()
@@ -191,6 +193,6 @@ class TestPublish(unittest.TestCase):
         assert _out in _work_c.outputs
 
         # Version up
-        _dlg.ui.WWorks.select_data(_dlg.next_work)
-        _dlg._callback__WSave()
+        _helper.ui.WWorks.select_data(_helper.next_work)
+        _helper._callback__WSave()
         assert pipe.CACHE.cur_work.ver_n == 3
