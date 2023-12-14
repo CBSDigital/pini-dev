@@ -70,6 +70,8 @@ class PyFile(File, PyElem):
         # Find module name
         if '/python/' in self.path:
             _, _rel_path = self.path.rsplit('/python/', 1)
+        elif '/startup/' in self.path:
+            _, _rel_path = self.path.rsplit('/startup/', 1)
         elif _find_sys_path(self.path):
             _sys_path = _find_sys_path(self.path)
             _rel_path = _sys_path.rel_path(self.path)

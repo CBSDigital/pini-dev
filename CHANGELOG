@@ -1,3 +1,27 @@
+## [0.33.0] - Wed 2023-12-13 16:23
+### Summary
+ - Pini Helper:
+    - added functionality to append to existing workfile metadata,
+### Updated
+ - pini.utils.PyFile.to_module added handling for startup mods,
+ - pini.pipe.CPWork.add_metadata added,
+
+
+## [0.32.0] - Wed 2023-12-13 14:31
+### Summary
+ - Sanity Check:
+    - check bad scene nodes + unused plugins disabled redshift warnings if allowed renderer,
+ - Pini Helper:
+    - added version up on publish option (farnold),
+### Updated
+ - pini.dcc.allowed_renderers added,
+ - pini.dcc.CBaseExportHandler added version up option,
+ - pini.dcc.CMayaModelPublish supress fbx warning window,
+ - pini.pipe.CPWork added template arg,
+ - pini.pipe.CPWorkDir.to_work bugfix not passing step,
+ - pini.tools.error.TRIGGERED added,
+
+
 ## [0.31.0] - Wed 2023-12-13 09:36
 ### Summary
  - Pini Helper:

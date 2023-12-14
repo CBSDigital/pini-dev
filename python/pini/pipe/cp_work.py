@@ -512,6 +512,12 @@ class CPWork(File):
 
         self.set_metadata(_data)
 
+    def add_metadata(self, **kwargs):
+        """Add to existing metadata."""
+        _data = copy.copy(self.metadata)
+        _data.update(kwargs)
+        self.set_metadata(_data)
+
     def set_metadata(self, data):
         """Set metadata for this work file.
 
