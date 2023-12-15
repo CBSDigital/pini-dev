@@ -46,6 +46,7 @@ class CEError(object):
         """Send email to support for this error."""
         from pini import qt
         from .ce_dialog import EMOJI
+
         _lines = [
             '<b>DCC</b> {}{}'.format(
                     dcc.NAME,
@@ -71,7 +72,8 @@ class CEError(object):
         _subject = _icon + ' [ERROR] {}'.format(self.value)
 
         email.send_email(
-            email.SUPPORT_EMAIL, subject=_subject, body=_body, html=True)
+            email.SUPPORT_EMAIL, subject=_subject, body=_body, html=True,
+            cc_=email.FROM_EMAIL)
         qt.notify('Sent error email to {}'.format(email.SUPPORT_EMAIL),
                   icon=icons.find('Lemon'), title='Email Sent')
 

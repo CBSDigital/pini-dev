@@ -2,11 +2,15 @@
 
 # pylint: disable=invalid-name
 
+import logging
+
 from maya import cmds
 
 from pini.utils import single
 
 from . import pom_base_node
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-public-methods
@@ -215,6 +219,15 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         self.set_pivot()
         self.freeze_tfms()
         self.delete_history()
+
+    def fix_shp_name(self):
+        """Make sure shape name matches transform name."""
+        _LOGGER.debug('FIX SHP %s', self.shp)
+        _name = str(self)+'Shape'
+        _LOGGER.debug(' - NAME %s', _name)
+        if _name != self.shp:
+            _LOGGER.debug(' - APPLYING FIX')
+            self.shp.rename(_name)
 
     def freeze_tfms(self, translate=True, rotate=True, scale=True):
         """Freeze transforms on this node.

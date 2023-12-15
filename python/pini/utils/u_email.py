@@ -96,4 +96,5 @@ def set_from_email(email_):
     """
     global FROM_EMAIL
     _LOGGER.info('SET FROM EMAIL %s', email_)
+    os.environ['PINI_FROM_EMAIL'] = email_
     FROM_EMAIL = email_

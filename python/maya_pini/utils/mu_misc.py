@@ -270,6 +270,7 @@ def to_long(node):
     Returns:
         ():
     """
+    _node = to_node(node)
     _ls = cmds.ls(node, long=True)
     try:
         return str(single(_ls))

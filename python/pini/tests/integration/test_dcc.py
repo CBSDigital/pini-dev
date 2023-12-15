@@ -170,6 +170,7 @@ class TestPublish(unittest.TestCase):
         assert _helper.work is pipe.CACHE.cur_work
 
         # Publish
+        _helper.ui.MainPane.select_tab('Export')
         _pub = _helper.ui.EPublishHandler.selected_data()
         _pub.ui.VersionUp.setChecked(False)
         _helper.ui.MainPane.select_tab('Export')

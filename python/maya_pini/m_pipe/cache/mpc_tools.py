@@ -227,7 +227,18 @@ def find_cacheable(filter_=None, type_=None, output_name=None, catch=False):
     """
     _cbls = find_cacheables(
         filter_=filter_, output_name=output_name, type_=type_)
-    return single(_cbls, catch=catch)
+    _cbl = single(_cbls, catch=True)
+    if _cbl:
+        return _cbl
+
+    _name_match = single(
+        [_cbl for _cbl in _cbls if _cbl.output_name == filter_], catch=True)
+    if _name_match:
+        return _name_match
+
+    if catch:
+        return None
+    raise ValueError(filter_)
 
 
 def find_cacheables(filter_=None, task=None, type_=None, output_name=None):

@@ -11,7 +11,7 @@ from pini.utils import single
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
     DEFAULT_NODES, set_namespace, del_namespace, to_parent, set_col,
-    to_clean, to_namespace, create_attr)
+    to_clean, to_namespace)
 
 from . import mpc_cacheable
 
@@ -61,24 +61,29 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         _data['img_plane'] = self._img_plane_data
         return _data
 
-    def _build_tmp_cam(self):
+    def _build_tmp_cam(self, scale=1.0):
         """Rename camera to tmp node name.
 
         This applies the name CAM in a tmp namespace to allow the top
         node of the abc to have a uniform name.
 
         eg. renderCam +=> tmp_renderCam:CAM
+
+        Args:
+            scale (float): override scale (for debugging - arnold can
+                bug out if camera scale is not 1)
         """
+        _LOGGER.info('BUILD TMP CAM %s', self)
         set_namespace(self._tmp_ns, clean=True)
         _dup = cmds.duplicate(self.cam, name='CAM')[0]
         if to_clean(_dup) != 'CAM':
             _dup = cmds.rename(_dup, 'CAM')
-        _dup_s = single(cmds.listRelatives(_dup, shapes=True))
-        cmds.setAttr(_dup_s+'.overscan', lock=False)
+        _dup = pom.CCamera(_dup)
+        _dup.fix_shp_name()
+        _dup.shp.plug['overscan'].set_locked(False)
 
         # Tag shape as tmp cam
-        create_attr(_dup_s+'.piniTmpCam', True)
-        cmds.rename(_dup_s, 'CAMShape')
+        _dup.shp.add_attr('piniTmpCam', True)
 
         # More to world + parent constrain to cam to keep anim
         for _attr in 'trs':
@@ -87,14 +92,21 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                 cmds.setAttr(_plug, lock=False)
         if to_parent(_dup):
             cmds.parent(_dup, world=True)
-        cmds.parentConstraint(self.cam, _dup)
-        cmds.setAttr(_dup+'.scale', 1, 1, 1)
+        _cons = pom.CMDS.parentConstraint(self.cam, _dup)
+        _LOGGER.info(' - CONS %s', _cons)
         set_col(_dup, 'green')
+        _dup.u_scale(scale)
+
+        # Move rotate axis off export cam
+        _rot_axis = single(_dup.plug['rotateAxis'].get_val())
+        _LOGGER.info(' - ROT AXIS %s', _rot_axis)
+        _dup.plug['rotateAxis'].set_val([0, 0, 0])
+        _cons.plug['target[0].targetOffsetRotate'].set_val(_rot_axis)
 
         # Connect shape attrs
         for _attr in self.cam_attrs:
             _src = pom.CCamera(self.cam).shp.to_plug(_attr)
-            _trg = pom.CCamera(_dup).shp.to_plug(_attr)
+            _trg = _dup.shp.to_plug(_attr)
             _trg.set_locked(False)
             _src.connect(_trg)
 

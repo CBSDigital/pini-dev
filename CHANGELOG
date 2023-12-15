@@ -1,3 +1,16 @@
+## [0.35.0] - Fri 2023-12-15 14:40
+### Summary
+ - Pini Helper:
+    - maya cache abc fix rotate axis offset (nle/nhoyt),
+### Updated
+ - pini.utils.email.set_from_email also update $PINI_FROM_EMAIL to survive reload,
+ - pini.tools.error send email cc user,
+ - maya_pini.utils.to_long added attr handling,
+ - maya_pini.m_pipe.CPCacheableCam move rotate axis offset from tfm to constraint,
+ - maya_pini.m_pipe.find_cacheable try exact name match,
+ - maya_pini.open_maya.CBaseTransform.fix_shp_name added,
+
+
 ## [0.34.0] - Thu 2023-12-14 15:50
 ### Summary
  - Pini Install:
