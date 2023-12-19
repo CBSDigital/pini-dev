@@ -205,35 +205,23 @@ def raise_dialog(
     return _box.get_result()
 
 
-def yes_no_cancel(msg, title='Confirm', icon=None):
+def yes_no_cancel(msg, title='Confirm', icon=None, parent=None):
     """Raise yes/no/cancel dialog.
 
     Args:
         msg (str): interface message
         title (str): interface title
         icon (str): override icon to apply
+        parent (QDialog): parent dialog
 
     Returns:
         (bool): whether yes was selected
     """
     _result = raise_dialog(
-        msg, buttons=['Yes', 'No', 'Cancel'], title=title,
+        msg, buttons=['Yes', 'No', 'Cancel'], title=title, parent=parent,
         icon=icon or icons.find('Tiger'))
     if _result == 'Yes':
         return True
     if _result == 'No':
         return False
     raise ValueError(_result)
-
-
-# @cache_result
-# def _get_default_icons():
-#     """Get list of default icons.
-
-#     Returns:
-#         (str list): icon paths
-#     """
-#     _names = [
-#         'Thinking', 'Bear', 'Hot Face', 'Robot', 'Tiger', 'Unicorn',
-#         'Panda', 'Wolf']
-#     return [icons.find(_name) for _name in _names]

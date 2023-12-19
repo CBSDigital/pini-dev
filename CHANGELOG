@@ -1,3 +1,11 @@
+## [0.35.1] - Mon 2023-12-18 16:13
+### Summary
+ - Pini Qt Wrapper:
+    - bugfix missing parenting argument on confirmation dialog,
+### Updated
+ - pini.qt.yes_no_cancel added missing parent arg,
+
+
 ## [0.35.0] - Fri 2023-12-15 14:40
 ### Summary
  - Pini Helper:
