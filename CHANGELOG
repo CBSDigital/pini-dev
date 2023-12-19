@@ -1,3 +1,11 @@
+## [0.36.0] - Tue 2023-12-19 10:50
+### Summary
+ - Pini Pipe:
+    - allow cfg file override via $PINI_PIPE_CFG_PATH,
+### Updated
+ - pini.pipe.CPJob.cfg_file allow path override via $PINI_PIPE_CFG_PATH,
+
+
 ## [0.35.1] - Mon 2023-12-18 16:13
 ### Summary
  - Pini Qt Wrapper:

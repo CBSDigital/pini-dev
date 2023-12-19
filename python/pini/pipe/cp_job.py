@@ -67,7 +67,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (File): config
         """
-        _filename = '.pini/config.yml'
+        _filename = os.environ.get('PINI_PIPE_CFG_PATH', '.pini/config.yml')
         _file = self.to_file(_filename)
         _file = File(map_path(_file.path))
         return _file
