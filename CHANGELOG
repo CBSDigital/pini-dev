@@ -1,3 +1,15 @@
+## [0.38.0] - Wed 2023-12-20 13:57
+### Summary
+ - Pipeline:
+    - bugfix error on build output path (nle),
+    - bugfix assign task to current user in shotgrid on save,
+### Updated
+ - pini.pipe.CPWork.to_output apply work_dir to tmpl,
+ - pini.pipe.shotgrid added assignees/status to task fields,
+ - pini.pipe.shotgrid.update_work_task bugfix bad args call,
+ - pini.tools.helper bugfix error on no work,
+
+
 ## [0.37.0] - Wed 2023-12-20 09:26
 ### Summary
  - Pini Helper:

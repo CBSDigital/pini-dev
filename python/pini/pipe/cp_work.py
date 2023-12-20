@@ -643,9 +643,13 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             _class = pipe.CPOutputSeq
         else:
             raise ValueError(_tmpl.name)
+        _LOGGER.debug(' - CLASS %s', _class)
 
         _path = _tmpl.format(_data)
+        _LOGGER.debug(' - PATH %s', _path)
         _work_dir = self.work_dir if self.work_dir.contains(_path) else None
+        if _work_dir:
+            _tmpl = _tmpl.apply_data(work_dir=_work_dir.path)
 
         return _class(_path, templates=[_tmpl], entity=self.entity,
                       work_dir=_work_dir)

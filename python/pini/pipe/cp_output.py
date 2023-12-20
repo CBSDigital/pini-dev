@@ -222,7 +222,7 @@ class CPOutputBase(object):
             template (CPTemplate): force template to use
             task (str): apply task (if known)
         """
-        _LOGGER.log(9, 'EXTRACT DATA FROM TEMPLATES')
+        _LOGGER.debug(' - EXTRACT DATA FROM TEMPLATES %s', self.path)
 
         # Set up entity/job
         self.entity = entity or to_entity(self.path, job=job)
@@ -236,11 +236,13 @@ class CPOutputBase(object):
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
+            _LOGGER.debug(' - TMPL %s', self.template)
+            _LOGGER.debug(' - PATH %s', self.path)
             try:
                 self.data = self.template.parse(self.path)
             except lucidity.ParseError as _exc:
-                _LOGGER.log(9, ' - ERROR %s', _exc)
-                raise ValueError(self.path)
+                _LOGGER.debug(' - ERROR %s', _exc)
+                raise ValueError(_exc)
         else:
             try:
                 self.data, self.template = lucidity.parse(self.path, _tmpls)
@@ -803,9 +805,11 @@ class CPOutputSeq(Seq, CPOutputBase):
             frames (int list): force frame cache
             dir_ (Dir): parent directory (to facilitate caching)
         """
+        _LOGGER.debug('INIT CPOutputSeq %s', path)
         super(CPOutputSeq, self).__init__(path, frames=frames)
         self._dir = dir_
         self._work_dir = work_dir
+        _LOGGER.debug(' - PATH %s', self.path)
         self._extract_data_from_templates(
             entity=entity, types=OUTPUT_SEQ_TEMPLATE_TYPES, job=job,
             templates=templates, template=template)

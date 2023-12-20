@@ -361,8 +361,7 @@ def update_work_task(work=None):
     _update_data = {}
 
     # Read task
-    _task_data = shotgrid.to_task_data(
-        _work, fields=['task_assignees', 'sg_status_list'])
+    _task_data = shotgrid.to_task_data(_work)
     _LOGGER.debug(' - TASK DATA %s', _task_data)
     _task_id = _task_data['id']
     _LOGGER.debug(' - TASK ID %s', _task_id)

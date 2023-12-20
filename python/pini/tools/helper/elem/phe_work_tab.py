@@ -470,7 +470,7 @@ class CLWorkTab(object):
 
         _loadable = bool(_work and _work is not self.next_work)
         self.ui.WLoad.setEnabled(_loadable)
-        _saveable = _work.user in (None, get_user(), pipe.cur_user())
+        _saveable = _work and _work.user in (None, get_user(), pipe.cur_user())
         self.ui.WSave.setEnabled(_saveable)
 
         if _work:

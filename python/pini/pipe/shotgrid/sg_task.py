@@ -12,7 +12,9 @@ from . import sg_step, sg_handler, sg_entity, sg_job, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 _TASK_KEY = os.environ.get('PINI_SG_TASK_NAME_TOKEN', 'content')
-_TASK_FIELDS = [_TASK_KEY, 'step', 'sg_short_name']
+_TASK_FIELDS = sorted({
+    _TASK_KEY, 'step', 'sg_short_name', 'task_assignees',
+    'sg_status_list'})
 
 
 def _create_task(work_dir, force=False):

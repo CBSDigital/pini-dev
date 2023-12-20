@@ -370,12 +370,13 @@ class CPTemplate(lucidity.Template):
         Returns:
             (dict): token/value data
         """
+        _LOGGER.debug('PARSE %s', path)
         _path = path
         if self._separate_dir:
+            _LOGGER.debug(' - SEPARATE DIR')
             return self._parse_dir_then_filename(_path)
 
-        _LOGGER.log(9, 'PARSE %s', _path)
-        _LOGGER.log(9, ' - PATTERN %s', self.pattern)
+        _LOGGER.debug(' - PATTERN %s', self.pattern)
         try:
             _data = super(CPTemplate, self).parse(_path)
         except lucidity.ParseError as _exc:
