@@ -299,19 +299,31 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPEntity): matching entity
         """
+        from pini import pipe
         _LOGGER.debug('FIND ENTITY %s', match)
-        if isinstance(match, six.string_types):
+
+        _match = match
+        if isinstance(_match, six.string_types):
+            _ety = pipe.to_entity(_match)
+            if _ety:
+                _match = _ety
+                _LOGGER.debug(' - MAPPED TO ENTITY %s', _match)
+
+        if isinstance(_match, six.string_types):
+            _LOGGER.debug(' - STR MATCH %s', _match)
             _matches = [_ety for _ety in self.entities
-                        if _ety.name == match]
+                        if _ety.name == _match]
             _LOGGER.debug(' - STR MATCHES %s', _matches)
             return single(_matches)
-        if isinstance(match, CPEntity):
+
+        if isinstance(_match, CPEntity):
             _etys = self.entities
             _LOGGER.debug(' - ETYS %s', _etys)
-            _matches = [_ety for _ety in _etys if _ety == match]
+            _matches = [_ety for _ety in _etys if _ety == _match]
             _LOGGER.debug(' - ETY MATCHES %s', _matches)
-            return single(_matches)
-        return super(CCPJob, self).find_entity(match)
+            return single(_matches, catch=True)
+
+        return super(CCPJob, self).find_entity(_match)
 
     def find_outputs(self, *args, **kwargs):
         """Find outputs in this job.

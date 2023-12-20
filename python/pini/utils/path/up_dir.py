@@ -297,20 +297,31 @@ class Dir(up_path.Path):
             assert not self.contains(_file)
             _file.remove(force=True)
 
-    def to_file(self, rel_path, class_=None):
+    def to_file(self, rel_path=None, base=None, extn=None, class_=None):
         """Build a child of this directory as a file object.
 
         Args:
             rel_path (str): relative path to file from this dir
+            base (str): construct path using filename base
+            extn (str): construct path using extension
             class_ (class): override file class
 
         Returns:
             (File): child file
         """
-        from pini.utils import File
+        from pini.utils import File, to_str
+
         _class = class_ or File
-        _rel_path = up_path.Path(rel_path)
-        return _class(self.path+'/'+_rel_path.path)
+        if rel_path:
+            _rel_path = to_str(rel_path)
+        elif base:
+            _rel_path = base
+            if extn:
+                _rel_path += '.'+extn
+        else:
+            raise TypeError
+
+        return _class(self.path+'/'+_rel_path)
 
     def to_seq(self, rel_path):
         """Build a child sequence object for this directory.

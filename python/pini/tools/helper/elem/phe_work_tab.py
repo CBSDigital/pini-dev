@@ -2,7 +2,6 @@
 
 # pylint: disable=no-member
 
-import getpass
 import logging
 import operator
 import pprint
@@ -12,7 +11,7 @@ from pini import qt, pipe, icons, dcc
 from pini.tools import usage
 from pini.utils import (
     strftime, copy_text, str_to_seed, plural, ints_to_str, EMPTY,
-    wrap_fn, add_indent)
+    wrap_fn, add_indent, get_user)
 
 from ..ph_utils import output_to_icon, work_to_icon
 
@@ -59,7 +58,7 @@ class CLWorkTab(object):
             return None
 
         # Existing task
-        _work_dir = self.ui.WUser.selected_data()
+        _work_dir = self.ui.WTasks.selected_data()
         if _work_dir:
             return _work_dir
 
@@ -88,64 +87,19 @@ class CLWorkTab(object):
         _select = pipe.cur_task()
         if self.entity:
 
-            # Read tasks
-            _work_dirs = self.entity.find_work_dirs(dcc_=dcc.NAME)
-            _tasks = sorted(
-                {_work_dir.task for _work_dir in _work_dirs} |
-                set(self.entity.to_default_tasks(dcc_=dcc.NAME)),
-                key=pipe.task_sort)
-            _LOGGER.debug(' - TASKS %s', _tasks)
-
             # Build task items
-            for _task in _tasks:
-                _task_work_dirs = [
-                    _work_dir for _work_dir in _work_dirs
-                    if _work_dir.task == _task]
-                _task_has_works = [
-                    _work_dir for _work_dir in _task_work_dirs
-                    if _work_dir.has_works()]
+            _work_dirs = self.entity.find_work_dirs(dcc_=dcc.NAME)
+            for _work_dir in _work_dirs:
                 _col = 'Grey'
-                if _task_has_works:
+                if _work_dir.works:
                     _col = None
                     if not _select:
-                        _select = _task
-                _LOGGER.debug(
-                    '   - ADD TASK %s %s', _task, _task_work_dirs)
+                        _select = _work_dir.task
                 _item = qt.CListWidgetItem(
-                    _task, col=_col, data=_task_work_dirs)
+                    _work_dir.task, col=_col, data=_work_dir)
                 _items.append(_item)
 
         self.ui.WTasks.set_items(_items, select=_select)
-
-    def _redraw__WUser(self):
-
-        # Get list of items
-        _work_dirs = self.ui.WTasks.selected_data() or []
-        _users = sorted({
-            _work_dir.user for _work_dir in _work_dirs
-            if _work_dir.works or
-            _work_dir.user == pipe.cur_user()})
-
-        # Select user
-        _select = pipe.cur_user()
-        _cur_work = pipe.cur_work()
-        if _cur_work:
-            _select = _cur_work.user
-        else:
-            _with_work = [
-                _work_dir for _work_dir in _work_dirs if _work_dir.works]
-            if _with_work:
-                _select = _with_work[0].user
-
-        # Hide user elements if single user
-        _show_users = len(_users) > 1
-        for _elem in [
-                self.ui.WUserLabel, self.ui.WUser,
-                self.ui.WUserLine,
-        ]:
-            _elem.setVisible(_show_users)
-
-        self.ui.WUser.set_items(_users, select=_select, data=_work_dirs)
 
     def _redraw__WTags(self):
 
@@ -182,7 +136,6 @@ class CLWorkTab(object):
         Returns:
             (tuple): tags, selected tag
         """
-        _user = self.ui.WUser.selected_text()
         _cur_work = pipe.cur_work()
         _cur_tag = _cur_work.tag if _cur_work else EMPTY
         _ui_tag = self.ui.WTagText.text()
@@ -194,15 +147,8 @@ class CLWorkTab(object):
 
         else:
 
-            # Build tag list - show all tags avaiable if current user,
-            # otherwise just show existing tags
-            if _user in (None, pipe.cur_user()):
-                _work_dirs = self.ui.WTasks.selected_data()
-                _works = sum([
-                    list(_work_dir.works) for _work_dir in _work_dirs], [])
-            else:
-                _works = self.work_dir.works
-            _tags = {_work.tag for _work in _works}
+            # Build tag list
+            _tags = {_work.tag for _work in self.work_dir.works}
             _tags |= {_default_tag}
             _allow_no_tag = self.job.find_template(
                 'work', has_key={'tag': False}, catch=True)
@@ -293,7 +239,6 @@ class CLWorkTab(object):
         """
         _LOGGER.debug('BUILD WORK ITEMS tag=%s', self.tag)
         _show_all = self.ui.WWorksShowAll.isChecked()
-        _user = self.ui.WUser.selected_text()
 
         # Get list of works
         _limit_view = False
@@ -309,9 +254,10 @@ class CLWorkTab(object):
             _works = []
 
         # Create dummy next work item
-        if self.work_dir and _user in ['', pipe.cur_user()]:
+        if self.work_dir:
             if not _works:
-                _work = self.work_dir.to_work(tag=self.tag)
+                _work = self.work_dir.to_work(
+                    tag=self.tag, user=pipe.cur_user())
             else:
                 _work = _works[0]
             self.next_work = _work.find_next()
@@ -357,17 +303,18 @@ class CLWorkTab(object):
             (str): work text label
         """
         _t_fmt = '%a %b %d %H:%M'
+        _ver_pad = self.job.cfg['tokens']['ver']['len']
 
         if work is self.next_work:
             _suffix = ''
             _notes = 'this version will be created if you load/save'
             _mtime = time.time()
-            _owner = getpass.getuser()
+            _owner = get_user()
         else:
             _suffix = '\n - Size: {}'.format(work.nice_size(catch=True))
             _mtime = work.mtime()
             _notes = work.notes or '-'
-            _owner = work.user or work.metadata.get('owner')
+            _owner = work.metadata.get('owner') or work.user
 
         # Update notes
         if work in self._notes_stack:
@@ -378,7 +325,8 @@ class CLWorkTab(object):
             _notes = '\n'+add_indent(_notes, indent=' '*6)
 
         _text = '\n'.join([
-            'V{:03d} - {}'.format(work.ver_n, strftime(_t_fmt, _mtime)),
+            'V{} - {}'.format(
+                str(work.ver_n).zfill(_ver_pad), strftime(_t_fmt, _mtime)),
             ' - Notes: '+_notes,
             ' - Owner: {}{}'.format(_owner, _suffix)])
 
@@ -480,14 +428,7 @@ class CLWorkTab(object):
             self.ui.WTasks.clearSelection()
         self.ui.WTasks.blockSignals(False)
 
-        self._redraw__WUser()
-
-    def _callback__WUser(self):
         self._redraw__WTags()
-        _user = self.ui.WUser.selected_text()
-        _show_tag_text = _user in ('', pipe.cur_user())
-        for _elem in [self.ui.WTagText, self.ui.WTagTextClear]:
-            _elem.setVisible(_show_tag_text)
 
     def _callback__WTags(self):
 
@@ -522,7 +463,6 @@ class CLWorkTab(object):
 
         self._flush_notes_stack()
         _work = self.ui.WWorks.selected_data()
-        _user = self.ui.WUser.selected_text()
 
         # Update work elements
         self.ui.WWorkPathCopy.setEnabled(bool(_work))
@@ -530,7 +470,7 @@ class CLWorkTab(object):
 
         _loadable = bool(_work and _work is not self.next_work)
         self.ui.WLoad.setEnabled(_loadable)
-        _saveable = bool(_work and _user in ('', pipe.cur_user()))
+        _saveable = _work.user in (None, get_user(), pipe.cur_user())
         self.ui.WSave.setEnabled(_saveable)
 
         if _work:

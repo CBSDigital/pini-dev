@@ -216,9 +216,6 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.MainPane.select_tab('Work')
         if self.ui.WTasks.selected_text() != work.task:
             self.ui.WTasks.select_text(work.task)
-        if self.ui.WUser.selected_text() != work.user:
-            _LOGGER.debug(' - SELECTING USER')
-            self.ui.WUser.select_text(work.user)
         _LOGGER.debug(
             ' - TAG %s %s', work.tag, self.ui.WTags.selected_data())
         if self.ui.WTagText.text() != work.tag:

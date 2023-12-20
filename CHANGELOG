@@ -1,3 +1,22 @@
+## [0.37.0] - Wed 2023-12-20 09:26
+### Summary
+ - Pini Helper:
+    - display users in shared version lists for clarity,
+### Updated
+ - pini.utils.Dir.to_file added base/extn args,
+ - pini.pipe sg work dirs contain user dirs,
+ - pini.pipe.CPEntity.to_work added user arg,
+ - pini.pipe CPWork/CPWorkDir added __lt__/cmp_key for ver/task sorting,
+ - pini.pipe.CPWorkDir.find_works allow work subdirs,
+ - pini.pipe.CPWork.find_next moved shared versioning onto CPWorkDir,
+ - pini.pipe.cache.CCPJob.obt_entity allow init with ety path,
+ - pini.pipe.shotgrid switch task functions entity/task -> work_dir,
+ - pini.pipe.shotgrid added task data caching + shared fields,
+ - pini.qt.CUiDialog supress QSpacerItem errors,
+ - pini.tools.helper removed user selection elements,
+ - pini.tools.helper applied job version padding,
+
+
 ## [0.36.0] - Tue 2023-12-19 10:50
 ### Summary
  - Pini Pipe:

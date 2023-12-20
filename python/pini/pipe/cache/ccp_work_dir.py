@@ -195,7 +195,6 @@ class CCPWorkDir(CPWorkDir):
             task=_work.task, user=_work.user, step=_work.step)
         assert _work_dir_c.task == _work.task
         assert _work_dir_c.step == _work.step
-        assert _work_dir_c.user == _work.user
         _LOGGER.debug(' - WORK DIR C %s', _work_dir_c)
         _work_c = cache.CCPWork(_work.path, work_dir=_work_dir_c)
         _work_c.set_exists(False)

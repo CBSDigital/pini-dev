@@ -420,7 +420,9 @@ def widget_to_signal(widget):  # pylint: disable=too-many-branches
     elif isinstance(widget, QtWidgets.QListView):
         # Needs to be after QListWidget as QListWidget is
         # instance of QListView
-        _signal = widget.selectionModel().selectionChanged
+        _model = widget.selectionModel()
+        if _model:
+            _signal = _model.selectionChanged
     elif isinstance(widget, (QtWidgets.QLabel,
                              QtWidgets.QFrame,
                              QtWidgets.QSpacerItem)):

@@ -12,6 +12,7 @@ from pini import dcc
 from pini.utils import (
     Dir, abs_path, single, EMPTY, passes_filter)
 
+from . import cp_utils
 from .cp_entity import to_entity
 from .cp_utils import extract_template_dir_data, EXTN_TO_DCC
 from .cp_output import OUTPUT_TEMPLATE_TYPES
@@ -84,6 +85,17 @@ class CPWorkDir(Dir):
         self.task = self.data['task']
         self.step = self.data.get('step')
         self.user = self.data.get('user')
+
+    @property
+    def cmp_key(self):
+        """Get sort key for this work dir.
+
+        This allows work dirs to be sorted via task sorting
+
+        Returns:
+            (tuple): sort key
+        """
+        return cp_utils.task_sort(self.task), self.path
 
     def create(self, force=False):
         """Create this work dir.
@@ -165,33 +177,75 @@ class CPWorkDir(Dir):
         _LOGGER.debug('READ WORKS %s', self.dcc)
 
         _class = class_ or pipe.CPWork
-        _works = []
+        _work_subdirs = self._read_work_subdirs()
         _badly_named_files = 0
-        for _file in self.find(
-                depth=1, type_='f', catch_missing=True, class_=True):
-            _LOGGER.debug(' - TESTING FILE %s', _file.path)
 
-            # Filter results
-            if (
-                    _file.extn not in EXTN_TO_DCC or
-                    (self.dcc and not EXTN_TO_DCC[_file.extn] == self.dcc)):
-                _LOGGER.debug('   - REJECTED')
-                continue
+        _works = []
+        for _subdir in _work_subdirs:
+            for _file in _subdir.find(
+                    depth=1, type_='f', catch_missing=True, class_=True):
+                _LOGGER.debug(' - TESTING FILE %s', _file.path)
 
-            # Build work object
-            try:
-                _work = _class(_file, work_dir=self)
-            except ValueError:
-                _badly_named_files += 1
-                _LOGGER.debug('   - FAILED TO BUILD CLASS')
-                continue
+                # Filter results
+                if (
+                        _file.extn not in EXTN_TO_DCC or
+                        (self.dcc and not EXTN_TO_DCC[_file.extn] == self.dcc)):
+                    _LOGGER.debug('   - REJECTED')
+                    continue
 
-            _LOGGER.debug('   - ACCEPTED')
-            _works.append(_work)
+                # Build work object
+                try:
+                    _work = _class(_file, work_dir=self)
+                except ValueError:
+                    _badly_named_files += 1
+                    _LOGGER.debug('   - FAILED TO BUILD CLASS')
+                    continue
+
+                _LOGGER.debug('   - ACCEPTED')
+                _works.append(_work)
 
         _LOGGER.debug(' - BADLY NAMED FILES %d', _badly_named_files)
+        _works.sort()
 
         return _works, _badly_named_files
+
+    def _read_work_subdirs(self):
+        """Read work subdirectories.
+
+        In a simple pipeline, the work dir is the parent of a work file,
+        so the subdirs will be a single empty string. In a pipeline with
+        wip subdirs for each user though, this will search for user folders
+        within this work dir.
+
+        Returns:
+            (str list): work file subdirs
+        """
+        from pini import pipe
+
+        # import pprint
+        _tmpls = self.entity.find_templates('work')
+        _tmpls = [
+            _tmpl.apply_data(work_dir=self.path) for _tmpl in _tmpls]
+        _tmpls = [
+            pipe.CPTemplate(
+                name='work_subdir', pattern=_tmpl.pattern.rsplit('/', 1)[0])
+            for _tmpl in _tmpls]
+        _LOGGER.debug(' - TMPLS %d %s', len(_tmpls), _tmpls)
+
+        _subdirs = []
+        for _tmpl in copy.copy(_tmpls):
+            if _tmpl.is_resolved():
+                _tmpls.remove(_tmpl)
+                _subdirs.append(Dir(_tmpl.pattern))
+
+        if _tmpls:
+            _LOGGER.debug(' - GLOBBING %d %s', len(_tmpls), _tmpls)
+            _globs = pipe.glob_templates(templates=_tmpls, job=self.job)
+            _subdirs += [_path for _, _path in _globs]
+
+        _LOGGER.debug(' - FOUND %d SUBDIRS %s', len(_subdirs), _subdirs)
+
+        return _subdirs
 
     def to_work_dir(self, user=EMPTY, **kwargs):
         """Map to a new work dir object updating the given parameters.
@@ -213,8 +267,8 @@ class CPWorkDir(Dir):
         return CPWorkDir(_path)
 
     def to_work(
-            self, tag=None, ver_n=1, user=EMPTY, extn=None, class_=None,
-            catch=False):
+            self, tag=None, ver_n=1, user=None, dcc_=None, extn=None,
+            class_=None, catch=False):
         """Build a work file object with this work dir's tokens.
 
         Args:
@@ -222,6 +276,7 @@ class CPWorkDir(Dir):
             ver_n (int): apply version number
             user (str): apply user
                 (use -1 for no user, None applies current user)
+            dcc_ (str): override dcc
             extn (str): force file extension
             class_ (class): override work object class
             catch (bool): no error if tokens do not create valid tag
@@ -230,15 +285,17 @@ class CPWorkDir(Dir):
             (CPWork): work file object
         """
         from pini import pipe
+
         _LOGGER.debug('TO WORK %s', self.path)
         _class = class_ or pipe.CPWork
-        _user = self.user if user is EMPTY else user
+        _user = pipe.cur_user() if not user else user
         _LOGGER.debug(' - USER %s %s', _user, user)
         _tag = tag or self.job.cfg['tokens']['tag']['default']
+        _dcc = dcc_ or self.dcc or dcc.NAME
 
         # Obtain template (favour template w/o user token)
         _tmpl = self.entity.find_template(
-            'work', dcc_=self.dcc, catch=True,
+            'work', dcc_=_dcc, catch=True,
             want_key={'tag': bool(tag), 'user': bool(user)})
 
         # Obtain ver
@@ -262,7 +319,7 @@ class CPWorkDir(Dir):
         # Build data
         _data = dict(  # pylint: disable=use-dict-literal
             entity=self.entity.name, user=_user,
-            shot=self.entity.name,
+            shot=self.entity.name, dcc=_dcc,
             asset=self.entity.name,
             extn=_extn, ver=_ver, step=self.step,
             work_dir=_work_dir.path, task=self.task, tag=_tag)
@@ -402,6 +459,9 @@ class CPWorkDir(Dir):
             _outs.append(_out)
 
         return sorted(_outs)
+
+    def __lt__(self, other):
+        return self.cmp_key < other.cmp_key
 
 
 def cur_task(fmt='local'):

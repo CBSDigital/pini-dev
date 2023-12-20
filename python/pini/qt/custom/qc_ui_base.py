@@ -199,7 +199,7 @@ class CUiBase(object):
             setattr(self._ui, _name, _widget)
         self._connect_callbacks(disconnect=True)
 
-        _LOGGER.debug(' - REBUILD UI COMPELTE')
+        _LOGGER.debug(' - REBUILD UI COMPLETE')
 
         return self._ui
 
@@ -274,7 +274,8 @@ class CUiBase(object):
             _widget.callback = _callback
 
         _LOGGER.debug(
-            ' - CONNECT CALLBACK %s %s %s', _widget.objectName(),
+            ' - CONNECT CALLBACK %s %s %s',
+            _widget.objectName() if hasattr(_widget, 'objectName') else '-',
             _widget, _callback)
 
         # Make connections
@@ -665,7 +666,7 @@ class _UiHandler(object):
                 continue
 
             _widget = getattr(self.ui, _name)
-            if not isinstance(_widget, (QtCore.QObject, QtWidgets.QSpacerItem)):
+            if not isinstance(_widget, QtCore.QObject):
                 continue
             if class_ and not isinstance(_widget, class_):
                 continue

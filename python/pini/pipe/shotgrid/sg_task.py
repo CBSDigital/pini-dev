@@ -5,55 +5,54 @@ import os
 import pprint
 
 from pini import pipe, qt
-from pini.utils import single, assert_eq, cache_result
+from pini.utils import (
+    single, assert_eq, cache_result, get_result_cacher, check_heart)
 
-from . import sg_step, sg_handler, sg_entity, sg_user
+from . import sg_step, sg_handler, sg_entity, sg_job, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 _TASK_KEY = os.environ.get('PINI_SG_TASK_NAME_TOKEN', 'content')
+_TASK_FIELDS = [_TASK_KEY, 'step', 'sg_short_name']
 
 
-def _create_task(entity, task, force=False):
+def _create_task(work_dir, force=False):
     """Create a shotgrid task.
 
     Args:
-        entity (CPEntity): task entity
-        task (str): task name
+        work_dir (CPWorkDir): work dir to create task for
         force (bool): create task without confirmation
 
     Returns:
         (dict): task data
     """
-    from pini.pipe import shotgrid
-
-    _sg = shotgrid.to_handler()
 
     # Get step data
-    _step = task_to_step_name(entity=entity, task=task)
+    _step = task_to_step_name(entity=work_dir.entity, task=work_dir.task)
     _step_data = sg_step.to_step_data(
-        step=_step, entity_type=entity.profile.capitalize())
+        step=_step, entity_type=work_dir.entity.profile.capitalize())
     assert _step_data
 
     # Create task
     _data = {
-        "project": shotgrid.to_job_data(entity.job),
-        "entity": shotgrid.to_entity_data(entity),
-        _TASK_KEY: task,
+        "project": sg_job.to_job_data(work_dir.entity.job),
+        "entity": sg_entity.to_entity_data(work_dir.entity),
+        _TASK_KEY: work_dir.task,
         "step": _step_data,
     }
     if not force:
         qt.ok_cancel(
             'Register task {} on shotgrid?\n\nStep: {}\nEntity: {}/{}'.format(
-                task, _step_data['code'], entity.job.name, entity.name),
-            icon=shotgrid.ICON, title='Shotgrid')
-    _sg.create('Task', _data)
+                work_dir.task, _step_data['code'], work_dir.entity.job.name,
+                work_dir.entity.name),
+            icon=sg_utils.ICON, title='Shotgrid')
+    sg_handler.create('Task', _data)
 
     # Find new data
     _filters = [
-        shotgrid.to_entity_filter(entity),
-        (_TASK_KEY, 'is', task)]
+        sg_entity.to_entity_filter(work_dir.entity),
+        (_TASK_KEY, 'is', work_dir.task)]
     _task_data = single(
-        _sg.find('Task', filters=_filters, fields=[_TASK_KEY, 'step']),
+        sg_handler.find('Task', filters=_filters, fields=_TASK_FIELDS),
         catch=True)
 
     return _task_data
@@ -71,19 +70,6 @@ def _read_step_names():
     return _result
 
 
-def _task_sort(data):
-    """Apply task sort to task data.
-
-    Args:
-        data (tuple): task data (name, label, step)
-
-    Returns:
-        (str): sort key
-    """
-    _, _label, _, _ = data
-    return pipe.task_sort(_label)
-
-
 def find_tasks(entity):
     """Find shotgrid tasks data.
 
@@ -93,11 +79,18 @@ def find_tasks(entity):
     Returns:
         (tuple list): task data (task, label, step)
     """
+    check_heart()
+
     _LOGGER.info('FIND TASKS %s', entity)
+
     _data = sg_handler.find(
         'Task', filters=[sg_entity.to_entity_filter(entity)],
-        fields=['sg_short_name', _TASK_KEY, 'step', 'task_assignees'])
-    _results = []
+        fields=_TASK_FIELDS)
+
+    _tmpl = entity.find_template('work_dir')
+    _LOGGER.debug(' - TMPL %s', _tmpl)
+
+    _work_dirs = []
     for _item in _data:
         _LOGGER.debug(' - ADDING %s', _item)
 
@@ -105,32 +98,35 @@ def find_tasks(entity):
         _name = _item['sg_short_name']
         if not _name:
             continue
-        _label = _item[_TASK_KEY]
+        _task = _item[_TASK_KEY]
         if not _item['step']:
             continue
         _step = _read_step_names()[_item['step']['id']]
+        _path = _tmpl.format(task=_task, step=_step, entity_path=entity.path)
+        _LOGGER.debug('   - PATH %s', _path)
 
-        # Read users/logins
-        _assignees = _item['task_assignees']
-        _LOGGER.debug('   - ASSIGNEES %s', _assignees)
-        _ids = [_user['id'] for _user in _assignees]
-        _LOGGER.debug('   - IDS %s', _ids)
-        _logins = filter(bool, [
-            sg_user.to_user_data(_id).get('login') for _id in _ids])
-        _LOGGER.debug('   - LOGINS %s', _logins)
+        try:
+            _work_dir = pipe.CPWorkDir(_path, entity=entity)
+        except ValueError:
+            _LOGGER.debug('   - REJECTED')
+            continue
+        _LOGGER.debug('   - WORK DIR %s', _work_dir)
 
-        _results.append((_name, _label, _step, _logins))
+        _work_dir_to_task_data(
+            _work_dir, data=[_item], force=True)  # Update cache
 
-    return sorted(_results, key=_task_sort)
+        _work_dirs.append(_work_dir)
+
+    return sorted(_work_dirs)
 
 
-def _find_task_data(task, entity, fields=(), force=False):
+@get_result_cacher(use_args=['work_dir'])
+def _work_dir_to_task_data(work_dir, data=None, force=False):
     """Request task data from shotgrid.
 
     Args:
-        task (str): task name
-        entity (CPEntity): parent entity
-        fields (tuple): fields to request
+        work_dir (CPWorkDir): work dir to read
+        data (dict): force data into cache
         force (bool): create task without confirmation if missing
 
     Returns:
@@ -138,23 +134,21 @@ def _find_task_data(task, entity, fields=(), force=False):
     """
     from pini.pipe import shotgrid
 
+    assert isinstance(work_dir, pipe.CPWorkDir)
+
     _LOGGER.debug('FIND TASK DATA')
 
     # Set fields + filters
-    _fields = {_TASK_KEY, 'step'}
-    for _field in fields:
-        _fields.add(_field)
-    _fields = sorted(_fields)
-    _LOGGER.debug(' - FIELDS %s', _fields)
     _filters = [
-        shotgrid.to_entity_filter(entity),
-        (_TASK_KEY, 'is', task),
+        shotgrid.to_entity_filter(work_dir.entity),
+        (_TASK_KEY, 'is', work_dir.task),
         ('step', 'is_not', None),
     ]
     _LOGGER.debug(' - FILTERS %s', _filters)
 
     # Read data
-    _task_datas = sg_handler.find('Task', filters=_filters, fields=_fields)
+    _task_datas = data or sg_handler.find(
+        'Task', filters=_filters, fields=_TASK_FIELDS)
     if len(_task_datas) not in (0, 1):
         pprint.pprint(_task_datas)
         raise RuntimeError('Duplicate tasks')
@@ -162,16 +156,16 @@ def _find_task_data(task, entity, fields=(), force=False):
     _LOGGER.debug(' - TASK %s', _task_data)
     if pipe.MASTER == 'disk' and not _task_data:
         _task_data = _create_task(
-            entity=entity, task=task, force=force)  # pylint: disable=assignment-from-no-return
+            work_dir=work_dir, force=force)
     assert _task_data
 
     # Check step
     if pipe.MASTER == 'disk':
-        if _task_data[_TASK_KEY] != task:
-            raise RuntimeError(_task_data[_TASK_KEY], task)
-        _step = task_to_step_name(entity=entity, task=task)
+        if _task_data[_TASK_KEY] != work_dir.task:
+            raise RuntimeError(_task_data[_TASK_KEY], work_dir.task)
+        _step = task_to_step_name(work_dir.task)
         _step_data = shotgrid.to_step_data(
-            step=_step, entity_type=entity.profile.capitalize())
+            step=_step, entity_type=work_dir.entity.profile.capitalize())
         _LOGGER.debug('STEP DATA %s', _step_data)
         assert _step_data
         assert_eq(_task_data['step']['id'], _step_data['id'])
@@ -180,12 +174,11 @@ def _find_task_data(task, entity, fields=(), force=False):
     return _task_data
 
 
-def _output_to_task_data(output, fields=()):
+def _output_to_task_data(output):
     """Obtain task data for the given out.
 
     Args:
         output (CPOutput): mov to obtain task data for
-        fields (tuple): fields to request
 
     Returns:
         (dict): shotgrid task data
@@ -197,8 +190,8 @@ def _output_to_task_data(output, fields=()):
         _task = output.task
     else:
         raise ValueError(output.type_)
-    return _find_task_data(
-        task=_task, entity=output.entity, fields=fields)
+    _work_dir = output.entity.to_work_dir(task=_task)
+    return _work_dir_to_task_data(_work_dir)
 
 
 def task_to_step_name(task, entity=None):
@@ -227,24 +220,22 @@ def task_to_step_name(task, entity=None):
     }.get(task, task.capitalize())
 
 
-def to_task_data(obj, fields=(), force=False):
+def to_task_data(obj, force=False):
     """Obtain task data for the given pipe object.
 
     Args:
         obj (any): pipeline object to get task data from
-        fields (tuple): fields to request
         force (bool): create task without confirmation if missing
 
     Returns:
         (dict): shotgrid task data
     """
     if isinstance(obj, pipe.CPWork):
-        return _work_to_task_data(obj, fields=fields)
+        return _work_to_task_data(obj)
     if isinstance(obj, pipe.CPOutputBase):
-        return _output_to_task_data(obj, fields=fields)
+        return _output_to_task_data(obj)
     if isinstance(obj, pipe.CPWorkDir):
-        return _find_task_data(
-            task=obj.task, entity=obj.entity, fields=fields, force=force)
+        return _work_dir_to_task_data(obj, force=force)
     raise ValueError(object)
 
 
@@ -260,15 +251,13 @@ def to_task_id(obj):
     return to_task_data(obj)['id']
 
 
-def _work_to_task_data(work, fields=()):
+def _work_to_task_data(work):
     """Obtain task data from the given work file.
 
     Args:
         work (CPWork): work file to read
-        fields (tuple): fields to request
 
     Returns:
         (dict): shotgrid task data
     """
-    return _find_task_data(
-        task=work.task, entity=work.entity, fields=fields)
+    return _work_dir_to_task_data(work.work_dir)

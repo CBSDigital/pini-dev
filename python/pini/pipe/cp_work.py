@@ -4,7 +4,6 @@
 
 import copy
 import logging
-import operator
 import os
 import platform
 import sys
@@ -25,10 +24,10 @@ _LOGGER = logging.getLogger(__name__)
 _SET_WORK_CALLBACKS = {}
 _RECENT_WORK_YAML = HOME.to_file(
     '.pini/{}_recent_work.yml'.format(dcc.NAME))
-_BKP_TFMT = '%y%m%d_%H%M%S'
+_BKP_TSTAMP_FMT = '%y%m%d_%H%M%S'
 
 
-class CPWork(File):
+class CPWork(File):  # pylint: disable=too-many-public-methods
     """Represents a work file on disk."""
 
     entity_type = None
@@ -119,6 +118,18 @@ class CPWork(File):
             '.pini/metadata/{}.yml'.format(self.base))
 
     @property
+    def cmp_key(self):
+        """Obtain sort key for this work file.
+
+        This allows work files to be sorted by version, even if there is
+        a username token embedded in the path.
+
+        Returns:
+            (tuple): sort key
+        """
+        return self.work_dir.path, self.filename
+
+    @property
     def metadata(self):
         """Object work metadata.
 
@@ -189,12 +200,13 @@ class CPWork(File):
             return None
         raise ValueError('No versions found '+self.path)
 
-    def find_next(self, class_=None):
+    def find_next(self, user=None, class_=None):
         """Find next version, ie. one after the latest one.
 
         This version should not exist on disk.
 
         Args:
+            user (str): override user
             class_ (class): override work file class
 
         Returns:
@@ -202,30 +214,14 @@ class CPWork(File):
         """
         _LOGGER.debug('FIND NEXT %s', self)
 
-        # If user in work path then versions shared with other users,
-        # otherwise simply find the latest version
-        _latest = None
-        _shared_vers = 'user' in self.work_dir.template.keys()
-        _LOGGER.debug(' - SHARED VERS %d', _shared_vers)
-        if _shared_vers:
-            _work_dirs = self.entity.find_work_dirs(
-                task=self.task, step=self.step)
-            _works = []
-            for _work_dir in _work_dirs:
-                _works += _work_dir.find_works(tag=self.tag)
-            _works.sort(key=operator.attrgetter('ver_n'))
-            _LOGGER.debug(' - FOUND %d WORKS %s', len(_works), _works)
-            if _works:
-                _latest = _works[-1]
-        else:
-            _latest = self.find_latest(catch=True)
+        _latest = self.find_latest(catch=True)
 
         # Determine next version
         if not _latest:
             _ver_n = 1
         else:
             _ver_n = _latest.ver_n+1
-        _next = self.to_work(ver_n=_ver_n, class_=class_)
+        _next = self.to_work(ver_n=_ver_n, class_=class_, user=user)
         assert _next.work_dir is self.work_dir
         return _next
 
@@ -264,7 +260,7 @@ class CPWork(File):
         _mtime = mtime or time.time()
         _extn = extn or self.extn
         return self.to_dir().to_file('.pini/bkp/{}/{}.{}'.format(
-            self.base, strftime(_BKP_TFMT, _mtime), _extn))
+            self.base, strftime(_BKP_TSTAMP_FMT, _mtime), _extn))
 
     def find_bkps(self):
         """Find backup files belonging to this work.
@@ -680,6 +676,8 @@ class CPWork(File):
 
         # Build data dict
         _data = copy.copy(self.data)
+        if user:
+            _data['user'] = user
         _data['work_dir'] = _work_dir.path
         if task is not None:
             _data['task'] = task
@@ -700,6 +698,9 @@ class CPWork(File):
 
         return _class(_tmpl.format(_data), work_dir=_work_dir)
 
+    def __lt__(self, other):
+        return self.cmp_key < other.cmp_key
+
 
 class _CPWorkBkp(File):
     """Represents a work backup file."""
@@ -710,7 +711,7 @@ class _CPWorkBkp(File):
         Returns:
             (float): mtime
         """
-        return to_time_f(time.strptime(self.base, _BKP_TFMT))
+        return to_time_f(time.strptime(self.base, _BKP_TSTAMP_FMT))
 
     @cache_property
     def metadata(self):

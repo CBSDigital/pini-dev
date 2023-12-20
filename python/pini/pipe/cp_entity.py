@@ -12,7 +12,7 @@ from pini import dcc
 from pini.utils import (
     Dir, single, cache_result, File, EMPTY, passes_filter, to_str)
 
-from . import cp_template, cp_settings, cp_utils
+from . import cp_template, cp_settings
 from .cp_utils import task_sort, map_path
 
 _LOGGER = logging.getLogger(__name__)
@@ -277,20 +277,10 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _LOGGER.debug(' - TMPL %s', _tmpl)
 
         _work_dirs = []
-        for _task, _label, _step, _users in shotgrid.find_tasks(self):
-            _users = {'-'.join(re.split('[@.]', _user)) for _user in _users}
-            _users = sorted(_users | {cp_utils.cur_user()})
-            _LOGGER.debug(
-                ' - ADD TASK task=%s label=%s step=%s users=%s',
-                _task, _label, _step, _users)
-            for _user in _users:
-                _LOGGER.debug('   - USER %s', _user)
-                _path = _tmpl.format(
-                    task=_task, step=_step, user=_user, dcc=dcc.NAME)
-                _LOGGER.debug('     - PATH %s ', _path)
-                _work_dir = class_(_path, template=_tmpl, entity=self)
-                _LOGGER.debug('     - WORK DIR %s ', _work_dir)
-                _work_dirs.append(_work_dir)
+        for _work_dir in shotgrid.find_tasks(self):
+            _work_dir = class_(_work_dir.path, template=_tmpl, entity=self)
+            _LOGGER.debug('     - WORK DIR %s ', _work_dir)
+            _work_dirs.append(_work_dir)
 
         return _work_dirs
 
@@ -871,8 +861,9 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _path = _tmpl.format(_data)
         return pipe.to_output(_path, template=_tmpl)
 
-    def to_work(self, task, tag=None, ver_n=1, dcc_=None, extn=None,
-                class_=None, catch=False):
+    def to_work(
+            self, task, tag=None, ver_n=1, dcc_=None, user=None, extn=None,
+            class_=None, catch=False):
         """Build a work file object for this entity.
 
         Args:
@@ -880,6 +871,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
             tag (str|None): work file tag
             ver_n (int): work file version number
             dcc_ (str): force dcc token
+            user (str): override user (if applicable)
             extn (str): override extension
             class_ (CPWork): override work class
             catch (bool): no error if args are invalid (just
@@ -890,7 +882,8 @@ class CPEntity(cp_settings.CPSettingsLevel):
         """
         _work_dir = self.to_work_dir(task=task, dcc_=dcc_)
         return _work_dir.to_work(
-            tag=tag, ver_n=ver_n, extn=extn, catch=catch, class_=class_)
+            tag=tag, ver_n=ver_n, extn=extn, catch=catch, class_=class_,
+            user=user)
 
 
 def _tmpl_in_seq_dir(tmpl, seq_dir_tmpls):
