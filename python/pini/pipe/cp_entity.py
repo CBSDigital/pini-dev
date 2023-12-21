@@ -235,7 +235,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         else:
             raise ValueError(pipe.MASTER)
 
-        return _work_dirs
+        return sorted(_work_dirs)
 
     def _read_work_dirs_disk(self, class_):
         """Read work dirs from disk.

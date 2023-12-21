@@ -8,13 +8,14 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_ns_cleaner(namespace):
+def get_ns_cleaner(namespace, delete=False):
     """Build a decorator which runs a function in a namespace.
 
     The namespace is flushed before execution.
 
     Args:
         namespace (str): namespace to apply
+        delete (bool): remove namespace after use
 
     Returns:
         (fn): namespace cleaner
@@ -24,10 +25,12 @@ def get_ns_cleaner(namespace):
 
         @functools.wraps(func)
         def _ns_clean_fn(*args, **kwargs):
-            from .mu_namespace import set_namespace
+            from .mu_namespace import set_namespace, del_namespace
             set_namespace(namespace, clean=True)
             _result = func(*args, **kwargs)
             set_namespace(":")
+            if delete:
+                del_namespace(namespace, force=True)
             return _result
 
         return _ns_clean_fn

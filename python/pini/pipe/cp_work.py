@@ -116,6 +116,10 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         self.metadata_yml = self.to_dir().to_file(
             '.pini/metadata/{}.yml'.format(self.base))
+        self.thumb = self.to_dir().to_file(
+            '.pini/thumb/{}.jpg'.format(self.base))
+        self.image = self.to_dir().to_file(
+            '.pini/image/{}.jpg'.format(self.base))
 
     @property
     def cmp_key(self):

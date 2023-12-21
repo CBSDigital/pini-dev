@@ -9,7 +9,7 @@ import six
 from maya import cmds
 from maya.app.general import createImageFormats
 
-from pini.utils import Seq, TMP_PATH, str_to_ints
+from pini.utils import Seq, str_to_ints, File, TMP, single
 
 from . import mu_dec
 
@@ -153,6 +153,7 @@ def _exec_blast(
 
     _filename = '{}/{}'.format(seq.dir, seq.base)
     _LOGGER.info(' - BLAST FILENAME %s', _filename)
+    _LOGGER.info(' - START/END %d/%d', _start, _end)
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True,
@@ -205,8 +206,12 @@ def _to_range(range_):
         return dcc.t_range(int)
 
     if isinstance(range_, (tuple, list)):
-        assert len(range_) == 2
-        return tuple(range_)
+        if len(range_) == 2:  # start/end frames
+            return tuple(range_)
+        if len(range_) == 1:  # single frame
+            _frame = single(range_)
+            return _frame, _frame
+        raise ValueError(range_)
 
     # Interpret as string (eg. 1001-1100)
     if isinstance(range_, six.string_types):
@@ -246,7 +251,7 @@ def _to_res(res, is_video):
     return _res
 
 
-@mu_dec.get_ns_cleaner(':'+_BLAST_TMP_NS)
+@mu_dec.get_ns_cleaner(':'+_BLAST_TMP_NS, delete=True)
 def blast(
         clip, camera=None, range_=None, settings='As is', res='Full',
         use_scene_audio=True, view=False, cleanup=True, burnins=False,
@@ -280,7 +285,7 @@ def blast(
 
     # Prepare output paths
     if _is_video:
-        _tmp_seq = tmp_seq or Seq(TMP_PATH+'/pini/MayaBlast/blast.%04d.jpg')
+        _tmp_seq = tmp_seq or TMP.to_seq('pini/MayaBlast/blast.%04d.jpg')
         _tmp_seq.delete(force=True)
     else:
         _tmp_seq = None
@@ -308,3 +313,23 @@ def blast(
     if view:
         clip.view()
     _LOGGER.info(' - BLAST COMPLETE IN %.02fs', time.time() - _start)
+
+
+def blast_frame(file_, force=False):
+    """Blast a single frame.
+
+    Args:
+        file_ (File): file to write to
+        force (bool): overwrite without confirmation
+    """
+    _file = File(file_)
+    _file.delete(force=force, wording='replace')
+    _frame = int(cmds.currentTime(query=True))
+    _rng = [_frame]
+    _tmp_seq = TMP.to_seq('tmp.%04d.'+file_.extn)
+    _tmp_seq.delete(force=True)
+    assert not _tmp_seq.exists()
+    blast(clip=_tmp_seq, range_=_rng)
+    assert _tmp_seq.exists()
+    _tmp_file = File(_tmp_seq[_frame])
+    _tmp_file.move_to(_file)

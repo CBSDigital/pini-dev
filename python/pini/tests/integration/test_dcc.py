@@ -173,6 +173,7 @@ class TestPublish(unittest.TestCase):
         _helper.ui.MainPane.select_tab('Export')
         _pub = _helper.ui.EPublishHandler.selected_data()
         _pub.ui.VersionUp.setChecked(False)
+        _pub.ui.ExportFbx.setChecked(False)
         _helper.ui.MainPane.select_tab('Export')
         _helper.ui.EExportPane.select_tab('Publish')
         _out = single(_helper._callback__EPublish(force=True))

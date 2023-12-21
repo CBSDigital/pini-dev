@@ -8,15 +8,15 @@ from pini import dcc
 
 from .eh_base import CExportHandler
 from .eh_utils import obtain_metadata
-from .render_handler import CRenderHandler
-from .publish_handler import CBasicPublish
+from .render import CRenderHandler
+from .publish import CBasicPublish
 
 if dcc.NAME == 'maya':
-    from .publish_handler import (
+    from .publish import (
         CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish)
-    from .render_handler import (
+    from .render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
-    from .blast_handler import CMayaPlayblast
+    from .blast import CMayaPlayblast
 
 elif dcc.NAME == 'hou':
-    from .blast_handler import CHouFlipbook
+    from .blast import CHouFlipbook

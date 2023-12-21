@@ -1,4 +1,4 @@
-"""Tools for managing maya publish handlers."""
+"""Tools for managing the basic maya publish handler."""
 
 import copy
 import logging
@@ -12,12 +12,12 @@ from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
     restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean)
 
-from .. import ph_basic
+from . import phm_base
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMayaBasicPublish(ph_basic.CBasicPublish):
+class CMayaBasicPublish(phm_base.CMayaBasePublish):
     """Manages a basic maya publish."""
 
     NAME = 'Maya Basic Publish'

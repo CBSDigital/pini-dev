@@ -212,8 +212,10 @@ class CExportHandler(object):
         These appear at the bottom of the publish interface.
         """
 
+        self.ui.Snapshot = self.add_checkbox_elem(
+            'Snapshot', label='Take snapshot')
         self.ui.VersionUp = self.add_checkbox_elem(
-            'VersionUp', label='Version up on '+self.ACTION)
+            'VersionUp', label='Version up')
 
         self.add_notes_elem()
 

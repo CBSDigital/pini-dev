@@ -88,11 +88,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
 
         if revert:
             _work.load(force=True)
-            _version_up = (
-                version_up if version_up is not None
-                else self.ui.VersionUp.isChecked())
-            if _version_up:
-                pipe.version_up()
+            self._apply_version_up(version_up=version_up)
 
         return _outs
 

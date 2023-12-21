@@ -13,19 +13,20 @@ from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace)
 
-from .. import ph_basic
+from . import phm_base
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMayaLookdevPublish(ph_basic.CBasicPublish):
+class CMayaLookdevPublish(phm_base.CMayaBasePublish):
     """Manages a maya lookdev publish."""
 
     NAME = 'Maya Lookdev Publish'
     LABEL = '\n'.join([
-        ' - Builds lookdev files for abc attach'
-        ' - Nodes in JUNK group are ignored'
-        ' - Any sets in overrides_SET are saved and restored on abc attach'
+        ' - Builds lookdev files for abc attach',
+        ' - Shaders are stored in maya file and attached using yml',
+        ' - Nodes in JUNK group are ignored',
+        ' - Any sets in overrides_SET are saved and restored on abc attach',
     ])
 
     shd_yml = None

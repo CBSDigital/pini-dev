@@ -248,7 +248,7 @@ class Dir(up_path.Path):
             full_path=False, type_='f', class_=True, filter_=filter_)
         _rel_paths = sorted(set(_src_paths+_trg_paths))
 
-        _to_remove = []
+        _to_delete = []
         _to_sync = []
 
         for _file in _rel_paths:
@@ -260,7 +260,7 @@ class Dir(up_path.Path):
 
             if _file not in _src_paths:
                 _LOGGER.info(' - TO REMOVE %s', _trg.path)
-                _to_remove.append(_file)
+                _to_delete.append(_trg)
                 continue
             if _file not in _trg_paths:
                 _LOGGER.debug(' - TO ADD')
@@ -276,26 +276,27 @@ class Dir(up_path.Path):
             _LOGGER.info(' - TO SYNC %s', _trg.path)
             _to_sync.append((_src, _trg))
 
-        if not (_to_remove or _to_sync):
+        if not (_to_delete or _to_sync):
             _LOGGER.debug('NOTHING TO SYNC')
             return
 
         # Confirm
         if not force:
-            _msg = 'Confirm execute sync?\n\n'
+            _msg = 'Confirm execute sync?\n'
             if _to_sync:
-                _msg += ' - {:d} files to sync'.format(len(_to_sync))
-            if _to_remove:
-                _msg += ' - {:d} files to remove'.format(len(_to_remove))
+                _msg += '\n - {:d} files to sync'.format(len(_to_sync))
+            if _to_delete:
+                _msg += '\n - {:d} files to remove'.format(len(_to_delete))
             qt.ok_cancel(_msg, title='Execute Sync')
 
         # Execute sync
         for _src, _trg in qt.progress_bar(_to_sync, 'Syncing {:d} file{}'):
             _src.copy_to(_trg, force=True)
-        for _file in qt.progress_bar(_to_remove, 'Removing {:d} file'):
-            assert _trg_dir.contains(_file)
-            assert not self.contains(_file)
-            _file.remove(force=True)
+        for _trg in qt.progress_bar(_to_delete, 'Removing {:d} file'):
+            _LOGGER.debug('REMOVE %s', _trg)
+            assert _trg_dir.contains(_trg)
+            assert not self.contains(_trg)
+            _trg.delete(force=True)
 
     def to_file(self, rel_path=None, base=None, extn=None, class_=None):
         """Build a child of this directory as a file object.

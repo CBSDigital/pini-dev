@@ -1,3 +1,21 @@
+## [0.39.0] - Wed 2023-12-20 16:27
+### Summary
+ - Pini Helper:
+    - added option to take snapshot on publish,
+    - apply thumbnails to shotgrid on publish (eehemann),
+### Updated
+ - pini.utils.Dir.sync_to bugfix error on remove file,
+ - pini.dcc.export_handler removed handler suffix from submodules,
+ - pini.dcc.export_handler publish added snapshot checkbox,
+ - pini.pipe.CPEntity.find_work_dirs bugfix not sorted,
+ - pini.pipe.CPWork added image/thumb attrs,
+ - pini.pipe.shotgrid.create_pub_file added thumb arg,
+ - pini.tools.helper bugfix error on set Save btn enabled if no work,
+ - maya_pini.utils.blast_frame added,
+ - maya_pini.utils.get_ns_cleaner added delete arg,
+ - maya_pini.open_maya.CCamera allow init from CBaseNode,
+
+
 ## [0.38.0] - Wed 2023-12-20 13:57
 ### Summary
  - Pipeline:

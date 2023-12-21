@@ -13,11 +13,12 @@ _PUB_FILE_FIELDS = [
     'path', 'published_file_type', 'name', 'path_cache', 'id']
 
 
-def create_pub_file(output):
+def create_pub_file(output, thumb=None):
     """Create PublishedFile entry in shotgrid.
 
     Args:
         output (CPOutput): output to register
+        thumb (File): apply thumbnail image
 
     Returns:
         (dict): registered data
@@ -57,6 +58,11 @@ def create_pub_file(output):
     _result = sg_handler.create('PublishedFile', _data)
     _LOGGER.info(' - RESULT %s', _result)
     to_pub_file_data(output, data=_result, force=True)  # Update cache
+
+    if thumb:
+        assert thumb.exists()
+        sg_handler.to_handler().upload_thumbnail(
+            'PublishedFile', _result['id'], thumb.path)
 
     return _data
 

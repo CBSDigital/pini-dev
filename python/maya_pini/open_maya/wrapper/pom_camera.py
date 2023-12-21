@@ -25,8 +25,12 @@ class CCamera(base.CBaseTransform, om.MFnCamera):
             node (str): camera transform (eg. persp)
             shp (str): camera shape node if known
         """
-        super(CCamera, self).__init__(node)
-        _shp = shp or to_shp(node, type_='camera')
+        _node = node
+        if isinstance(_node, base.CBaseNode):
+            _node = str(node)
+        super(CCamera, self).__init__(_node)
+
+        _shp = shp or to_shp(_node, type_='camera')
         _m_obj = to_mobject(_shp)
         om.MFnCamera.__init__(self, _m_obj)
 

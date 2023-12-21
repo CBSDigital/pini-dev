@@ -125,14 +125,17 @@ class CBasicPublish(eh_base.CExportHandler):
         _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
         _ety_c.find_publishes(force=True)
 
+        self._apply_snapshot(work=work)
+
         # Register in shotgrid
         if pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
+            _thumb = work.image if work.image.exists() else None
             for _out in outs:
                 if _out.asset_type == 'test':
                     continue
                 try:
-                    shotgrid.create_pub_file(_out)
+                    shotgrid.create_pub_file(_out, thumb=_thumb)
                 except shotgrid.MissingPipelineStep:
                     qt.notify(
                         'Failed to find pipeline step for output:\n\n{}'.format(
@@ -143,6 +146,22 @@ class CBasicPublish(eh_base.CExportHandler):
         _work = pipe.CACHE.obt_work(work)  # Has been rebuilt
         _work.find_outputs(force=True)
 
+        self._apply_version_up(version_up=version_up)
+
+    def _apply_snapshot(self, work):
+        """Apply take snapshot setting.
+
+        Args:
+            work (CPWork): work file
+        """
+        raise NotImplementedError
+
+    def _apply_version_up(self, version_up):
+        """Apply version up setting.
+
+        Args:
+            version_up (bool): force version up setting
+        """
         if version_up is not None:
             _version_up = version_up
         elif self.ui:
