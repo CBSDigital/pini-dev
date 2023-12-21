@@ -203,9 +203,10 @@ def cache(
             _cbl.post_cache()
     if pipe.SHOTGRID_AVAILABLE:
         from pini.pipe import shotgrid
+        _thumb = _work.image if _work.image.exists() else None
         for _abc in qt.progress_bar(
                 _abcs, 'Registering {:d} abc{} in shotgrid'):
-            shotgrid.create_pub_file(_abc)
+            shotgrid.create_pub_file(_abc, thumb=_thumb)
     _work.update_outputs()
     if save and not dcc.batch_mode():
         cmds.file(modified=False)  # Ignore cleanup changes

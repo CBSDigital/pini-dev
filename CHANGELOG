@@ -1,3 +1,14 @@
+## [0.40.0] - Thu 2023-12-21 12:43
+### Summary
+ - Pini Helper:
+    - apply thumbnails on shotgrid publish if available,
+### Updated
+ - pini.utils.clip ffmpeg tools moved to submodule,
+ - pini.utils.Seq.to_frame_file added,
+ - pini.pipe.shotgrid.create_pub_file use seq image for sequences,
+ - maya_pini.m_pipe.cache use work.image as shotgrid thumb if available,
+
+
 ## [0.39.0] - Wed 2023-12-20 16:27
 ### Summary
  - Pini Helper:

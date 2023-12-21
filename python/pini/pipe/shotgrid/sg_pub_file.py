@@ -4,7 +4,7 @@ import logging
 import time
 
 from pini import pipe
-from pini.utils import abs_path, passes_filter, get_result_cacher
+from pini.utils import abs_path, passes_filter, get_result_cacher, Seq
 
 from . import sg_handler, sg_job, sg_task, sg_user, sg_entity
 
@@ -23,6 +23,7 @@ def create_pub_file(output, thumb=None):
     Returns:
         (dict): registered data
     """
+    _LOGGER.info('CREATE PUB FILE %s', output)
 
     # Catch already exists
     if to_pub_file_id(output):
@@ -59,10 +60,15 @@ def create_pub_file(output, thumb=None):
     _LOGGER.info(' - RESULT %s', _result)
     to_pub_file_data(output, data=_result, force=True)  # Update cache
 
-    if thumb:
-        assert thumb.exists()
+    # Apply thumb
+    _thumb = thumb
+    if not _thumb and isinstance(output, Seq):
+        _thumb = output.to_frame_file()
+    if _thumb:
+        _LOGGER.info(' - APPLY THUMB %s', _thumb)
+        assert _thumb.exists()
         sg_handler.to_handler().upload_thumbnail(
-            'PublishedFile', _result['id'], thumb.path)
+            'PublishedFile', _result['id'], _thumb.path)
 
     return _data
 

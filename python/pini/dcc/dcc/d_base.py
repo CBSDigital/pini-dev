@@ -333,7 +333,7 @@ class BaseDCC(object):
         # Offer to save unsaved changes
         _msg = 'Lose unsaved changes in the current scene?\n\n{}'.format(
             _file)
-        _icon = icons.find('Thinking')
+        _icon = icons.find('Tiger Face')
         _result = qt.raise_dialog(
             msg=_msg, buttons=('Save', "Don't Save", 'Cancel'),
             title='Save Changes', icon=_icon, parent=parent)
