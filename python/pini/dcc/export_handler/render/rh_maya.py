@@ -143,6 +143,7 @@ class CMayaLocalRender(CMayaRenderHandler):
         # Execute render
         _work.save(reason='render')
         render(seq=_out_seq, frames=frames, camera=_cam)
+        _out_seq.to_frame_file().copy_to(_work.image)
         if _mov:
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
             if _cleanup:

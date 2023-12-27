@@ -291,14 +291,7 @@
             </layout>
            </item>
            <item>
-            <widget class="CListWidget" name="WWorks">
-             <property name="iconSize">
-              <size>
-               <width>40</width>
-               <height>40</height>
-              </size>
-             </property>
-            </widget>
+            <widget class="CListView" name="WWorks"/>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -3218,7 +3211,6 @@ Range: 1-10</string>
   <tabstop>WTasks</tabstop>
   <tabstop>WTags</tabstop>
   <tabstop>WWorkRefresh</tabstop>
-  <tabstop>WWorks</tabstop>
   <tabstop>WWorkNotes</tabstop>
   <tabstop>WWorkPath</tabstop>
   <tabstop>WWorkPathBrowser</tabstop>

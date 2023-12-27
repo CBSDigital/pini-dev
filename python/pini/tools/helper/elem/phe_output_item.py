@@ -11,8 +11,8 @@ from ..ph_utils import output_to_icon, output_to_type_icon
 _FONT = QtGui.QFont()
 
 
-class OutputItem(qt.CListViewPixmapItem):
-    """Represents a scene reference in the scene reference list."""
+class PHOutputItem(qt.CListViewPixmapItem):
+    """Represents an output in the outputs list."""
 
     info = False
 
@@ -20,8 +20,8 @@ class OutputItem(qt.CListViewPixmapItem):
         """Constructor.
 
         Args:
-            list_view (CListView): scene refs list
-            output (CPOutput): output to disaply
+            list_view (CListView): outputs list
+            output (CPOutput): output to display
             helper (PiniHelper): pini helper
             highlight (bool): highlight this item
         """
@@ -35,10 +35,13 @@ class OutputItem(qt.CListViewPixmapItem):
         self.text_col = 'White' if highlight else 'Grey'
         self.text_y = 12
 
+        self.bg_col = qt.CColor(self.text_col)
+        self.bg_col.setAlphaF(0.2)
+
         self.icon = output_to_icon(self.output)
         self.icon_w = 16
 
-        super(OutputItem, self).__init__(
+        super(PHOutputItem, self).__init__(
             list_view, col='Transparent', data=self.output)
 
     @property
@@ -80,18 +83,16 @@ class OutputItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        super(OutputItem, self).draw_pixmap(pix)
+        super(PHOutputItem, self).draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
         self.set_height(28 if not self.info else 36)
 
         # Draw backdrop
-        _col = qt.CColor(self.text_col)
-        _col.setAlphaF(0.2)
         pix.draw_rounded_rect(
             pos=(self.margin, self.margin/2),
             size=(pix.width()-self.margin*2, pix.height()-self.margin),
-            outline=None, col=_col)
+            outline=None, col=self.bg_col)
 
         # Add text/icon overlays
         _over = qt.CPixmap(pix.size())

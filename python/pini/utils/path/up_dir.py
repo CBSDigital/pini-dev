@@ -5,7 +5,7 @@ import os
 import platform
 import shutil
 
-from . import up_path, up_utils
+from . import up_path, up_utils, up_find
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class Dir(up_path.Path):
         Returns:
             (str list): list of children
         """
-        return up_utils.find(self.path, class_=class_, **kwargs)
+        return up_find.find(self.path, class_=class_, **kwargs)
 
     def find_seqs(self, depth=1, include_files=False):
         """Find file sequences within this dir.

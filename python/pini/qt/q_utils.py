@@ -191,7 +191,7 @@ def to_col(*args):
     if _arg:
         if isinstance(_arg, (qt.CColor, QtGui.QLinearGradient)):
             return _arg
-        if isinstance(_arg, six.string_types):
+        if isinstance(_arg, (six.string_types, QtGui.QColor)):
             return qt.CColor(_arg)
     if len(_args) in (3, 4):
         if (
@@ -251,7 +251,7 @@ def to_p(*args, **kwargs):
         _result = _arg
     elif isinstance(_arg, (QtCore.QSize, QtCore.QSizeF)):
         _result = QtCore.QPoint(_arg.width(), _arg.height())
-    elif isinstance(_arg, tuple):
+    elif isinstance(_arg, (tuple, list)):
         _result = QtCore.QPoint(*_arg)
     elif isinstance(_arg, int):
         _result = QtCore.QPoint(_arg, _arg)

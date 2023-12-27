@@ -1,3 +1,26 @@
+## [0.41.0] - Wed 2023-12-27 14:59
+### Summary
+ - Pini Helper:
+    - added work file thumbnails (eehemann),
+### Updated
+ - pini.utils.strftime added %P for am/pm,
+ - pini.utils.find moved to submodule +  added filename filter,
+ - pini.dcc.CMayaRenderHandler update work.image on render,
+ - pini.pipe.cache.CCPWork.find_next added user arg to match parent signature,
+ - pini.pipe.cache.CCPWork.find_outputs enable args to match parent signature,
+ - pini.qt.CListViewWidgetItem.data added,
+ - pini.qt.CListView.select_data added,
+ - pini.qt.CPixmap.aspect added,
+ - pini.qt.to_col implemented QColor arg,
+ - pini.qt.to_p implemented list arg,
+ - pini.install.CIInstaller added dividers arg,
+ - pini.tools.helper added work file list thumbs,
+ - pini.tools.helper added PH prefix to list view item classes,
+ - pini.tools.helper PHOutputItem/PHSceneRefItem build col on init,
+ - maya_pini.utils.blast added copy_frame arg,
+ - maya_pini.m_pipe.blast update work.image on blast,
+
+
 ## [0.40.0] - Thu 2023-12-21 12:43
 ### Summary
  - Pini Helper:

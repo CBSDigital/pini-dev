@@ -26,8 +26,13 @@ class CIInstaller(object):
     _items = None
     allows_context = False
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, dividers=True):
+        """Constructor.
+
+        Args:
+            dividers (bool): whether to build dividers
+        """
+        self.dividers = dividers
         self.helper_cmd = '\n'.join([
             'from pini.tools import helper',
             'helper.launch()'])
@@ -226,7 +231,10 @@ class CIInstaller(object):
         if self.style == 'menu':
             _items += [_div, _refresh]
         elif self.style == 'shelf':
-            _items = [_refresh, _div] + _items
+            _to_add = [_refresh]
+            if self.dividers:
+                _to_add += [_div]
+            _items = _to_add + _items
 
         return _refresh, _items
 

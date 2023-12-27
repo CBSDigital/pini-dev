@@ -526,6 +526,9 @@ def strftime(fmt=None, time_=None):
         _day = int(time.strftime('%d', to_time_t(_time)))
         _nice_day = '{:d}{}'.format(_day, to_ord(_day))
         _fmt = _fmt.replace('%D', _nice_day)
+    if '%P' in _fmt:
+        _token = strftime('%p', time_).lower()
+        _fmt = _fmt.replace('%P', _token)
     return time.strftime(_fmt, to_time_t(_time))
 
 

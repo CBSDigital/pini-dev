@@ -255,7 +255,7 @@ def _to_res(res, is_video):
 def blast(
         clip, camera=None, range_=None, settings='As is', res='Full',
         use_scene_audio=True, view=False, cleanup=True, burnins=False,
-        tmp_seq=None, force=False):
+        tmp_seq=None, copy_frame=None, force=False):
     """Execute playblast.
 
     Args:
@@ -269,6 +269,7 @@ def blast(
         cleanup (bool): clean up tmp nodes/files
         burnins (bool): write burnins (on video compile only)
         tmp_seq (Seq): override tmp sequence path for mp4 blast
+        copy_frame (File): copy a frame of the blast to this path
         force (bool): overwrite existing without confirmation
     """
     from maya_pini import open_maya as pom
@@ -301,6 +302,8 @@ def blast(
     _exec_blast(
         seq=_seq, range_=_range, camera=_cam, res=_res, cleanup=cleanup,
         settings=settings)
+    if copy_frame:
+        _seq.to_frame_file().copy_to(copy_frame, force=force)
     if _tmp_seq:
         _tmp_seq.to_video(
             clip, use_scene_audio=use_scene_audio, burnins=burnins, verbose=1)

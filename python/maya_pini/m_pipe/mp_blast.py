@@ -59,7 +59,7 @@ def blast(
     u_blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
-        view=view, cleanup=cleanup, tmp_seq=_tmp_seq)
+        view=view, cleanup=cleanup, tmp_seq=_tmp_seq, copy_frame=_work.image)
     _work.update_outputs()
 
     if pipe.SHOTGRID_AVAILABLE:

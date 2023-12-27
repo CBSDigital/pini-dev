@@ -68,7 +68,8 @@ class CListView(QtWidgets.QListView):
 
         # Apply selection
         if select is EMPTY or (not select and isinstance(select, list)):
-            pass
+            if items:
+                self.select(items[0])
         elif select:
             self.select(select)
         elif select is None:
@@ -144,6 +145,20 @@ class CListView(QtWidgets.QListView):
         else:
             _sel_model = QtCore.QItemSelectionModel.Select
         _sel.setCurrentIndex(item.index(), _sel_model)
+
+    def select_data(self, data, catch=True):
+        """Select item by its embedded data.
+
+        Args:
+            data (any): data to select
+            catch (bool): no error on fail to select
+        """
+        _datas, _items = self.all_data(), self.all_items()
+        if data not in _datas:
+            if not catch:
+                raise ValueError
+            return
+        self.select_item(_items[_datas.index(data)])
 
     def selected_data(self, catch=True):
         """Obtain data from currently selected item.

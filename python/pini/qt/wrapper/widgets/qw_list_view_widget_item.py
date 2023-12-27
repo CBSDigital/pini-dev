@@ -47,6 +47,17 @@ class CListViewWidgetItem(QtGui.QStandardItem):
     def build_ui(self):
         """Build ui elements - to be implemented in subclass."""
 
+    def data(self, role=Qt.UserRole):  # pylint: disable=useless-parent-delegation
+        """Obtain data embedded in this element.
+
+        Args:
+            role (int): override role
+
+        Returns:
+            (any): embedded data
+        """
+        return super(CListViewWidgetItem, self).data(role)
+
     def get_data(self):
         """Obtain any data stored with this item.
 

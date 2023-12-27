@@ -12,8 +12,8 @@ from pini.utils import (
     wrap_fn, plural, chain_fns, strftime, clip, passes_filter,
     apply_filter, single, split_base_index)
 
-from .phe_output_item import OutputItem
-from .phe_scene_ref_item import SceneRefItem
+from .phe_output_item import PHOutputItem
+from .phe_scene_ref_item import PHSceneRefItem
 from ..ph_utils import UPDATE_ICON, CURRENT_ICON, output_to_namespace
 
 _LOGGER = logging.getLogger(__name__)
@@ -237,7 +237,7 @@ class CLSceneTab(object):
         # Build items
         _items = []
         for _out in sorted(_outs, key=_sort_outputs):
-            _item = OutputItem(
+            _item = PHOutputItem(
                 helper=self, output=_out, list_view=self.ui.SOutputs,
                 highlight=_out in _scene_outs)
             _items.append(_item)
@@ -329,7 +329,7 @@ class CLSceneTab(object):
             else:
                 _status = None
             _LOGGER.debug(' - ADDING REF %s status=%s', _ref, _status)
-            _item = SceneRefItem(
+            _item = PHSceneRefItem(
                 self.ui.SSceneRefs, ref=_ref, status=_status, output=_output,
                 helper=self, namespace=_namespace)
             _items.append(_item)

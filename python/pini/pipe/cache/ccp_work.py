@@ -64,21 +64,23 @@ class CCPWork(CPWork):
         """
         self._exists = exists
 
-    def find_next(self, class_=None):
+    def find_next(self, user=None, class_=None):
         """Find next version of this work file.
 
         Args:
+            user (str): override user
             class_ (class): override work file class
 
         Returns:
             (CCPWork): next version
         """
-        _next = super(CCPWork, self).find_next(class_=class_ or CCPWork)
+        _next = super(CCPWork, self).find_next(
+            class_=class_ or CCPWork, user=user)
         _next.set_exists(False)
         assert not _next.exists()
         return _next
 
-    def find_outputs(self, force=False, **kwargs):
+    def find_outputs(self, *args, **kwargs):
         """Find outputs generated from this work file.
 
         Args:
@@ -87,11 +89,13 @@ class CCPWork(CPWork):
         Returns:
             (CPOutput list): outputs
         """
-        _LOGGER.log(9, 'FIND OUTPUTS force=%d %s', force, self)
-        if force:
+        _force = kwargs.pop('force', None)
+        _LOGGER.log(9, 'FIND OUTPUTS force=%d %s', _force, self)
+        if _force:
+            assert isinstance(_force, bool)
             self._read_outputs(force=True)
             _LOGGER.debug(' - UPDATED CACHE %s', self)
-        return super(CCPWork, self).find_outputs(**kwargs)
+        return super(CCPWork, self).find_outputs(*args, **kwargs)
 
     @pipe_cache_to_file
     def _read_outputs(self, force=False):

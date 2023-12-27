@@ -5,15 +5,15 @@
 import logging
 import operator
 import pprint
-import time
 
 from pini import qt, pipe, icons, dcc
 from pini.tools import usage
 from pini.utils import (
     strftime, copy_text, str_to_seed, plural, ints_to_str, EMPTY,
-    wrap_fn, add_indent, get_user)
+    wrap_fn, get_user)
 
-from ..ph_utils import output_to_icon, work_to_icon
+from .. import ph_utils
+from . import phe_work_item
 
 _STAR = icons.find('Star')
 _LOGGER = logging.getLogger(__name__)
@@ -106,7 +106,7 @@ class CLWorkTab(object):
         _default_tag = self.job.cfg['tokens']['tag']['default']
         _LOGGER.debug('REDRAW TAGS')
 
-        _tags, _select = self._build_tags_list()
+        _tags, _select, _default_exists = self._build_tags_list()
         _LOGGER.debug(' - TAGS %s select=%s', _tags, _select)
 
         # Build items
@@ -115,7 +115,10 @@ class CLWorkTab(object):
             if not _tag:
                 _col = 'Yellow'
             elif _tag == _default_tag:
-                _col = 'DeepSkyBlue'
+                if _default_exists:
+                    _col = 'DeepSkyBlue'
+                else:
+                    _col = 'LightSkyBlue'
             else:
                 _col = None
             _item = qt.CListWidgetItem(
@@ -142,14 +145,19 @@ class CLWorkTab(object):
         _default_tag = self.job.cfg['tokens']['tag']['default']
 
         _select = EMPTY
+        _default_exists = None
         if not self.work_dir:
             _tags = []
 
         else:
 
             # Build tag list
-            _tags = {_work.tag for _work in self.work_dir.works}
-            _tags |= {_default_tag}
+            _tags = set()
+            _existing_tags = {_work.tag for _work in self.work_dir.works}
+            _tags |= _existing_tags
+            if _default_tag:
+                _default_exists = _default_tag in _existing_tags
+                _tags |= {_default_tag}
             _allow_no_tag = self.job.find_template(
                 'work', has_key={'tag': False}, catch=True)
             if _allow_no_tag:
@@ -159,14 +167,16 @@ class CLWorkTab(object):
             # Determine selected tag
             if _cur_tag in _tags:
                 _select = _cur_tag
-            elif _ui_tag in _tags:
+            elif _ui_tag in _tags and _ui_tag in _existing_tags:
                 _select = _ui_tag
             elif None in _tags:
                 _select = None
+            elif _existing_tags:
+                _select = sorted(_existing_tags)[0]
             elif _tags:
                 _select = sorted(_tags)[0]
 
-        return _tags, _select
+        return _tags, _select, _default_exists
 
     def _redraw__WTagError(self):
 
@@ -180,28 +190,6 @@ class CLWorkTab(object):
                 _invalid = True
         self.ui.WTagError.setVisible(_invalid)
         self.ui.WTagError.setToolTip(_tooltip)
-
-    def _redraw__WWorks(self, force=False, emit=True, select=None):
-
-        _LOGGER.debug('REDRAW WORKS')
-
-        _items, _works = self._build_work_items(force=force)
-
-        # Choose selected work item
-        _select_work = select or pipe.cur_work()
-        _LOGGER.debug(' - SEL WORK %s', _select_work)
-        if _select_work and _select_work in _works:
-            _sel = _items[_works.index(_select_work)]
-        elif not _items:
-            _sel = None
-        elif len(_items) == 1 or not self.next_work:
-            _sel = _items[0]
-        else:
-            _sel = _items[1]
-        _LOGGER.debug(' - SEL %s', _sel)
-
-        self.ui.WWorks.set_items(_items, select=_sel, emit=emit)
-        self._update_badly_named_files_elements()
 
     def _update_badly_named_files_elements(self):
         """Update elements which warning if badly named files found."""
@@ -227,8 +215,8 @@ class CLWorkTab(object):
         self.ui.WWorkBadFilesLabel.setText(_text)
         self.ui.WWorkBadFilesLabel.set_col('Red')
 
-    def _build_work_items(self, force, view_limit=20):
-        """Build items for works list.
+    def _get_works(self, force, view_limit=20):
+        """Get list of work files to display.
 
         Args:
             force (bool): force reread from disk
@@ -237,7 +225,6 @@ class CLWorkTab(object):
         Returns:
             (tuple): list wdiget items, work list
         """
-        _LOGGER.debug('BUILD WORK ITEMS tag=%s', self.tag)
         _show_all = self.ui.WWorksShowAll.isChecked()
 
         # Get list of works
@@ -269,115 +256,28 @@ class CLWorkTab(object):
             _works.append(self.next_work)
         _works.reverse()
 
-        # Build items
+        _LOGGER.debug(' - GET WORKS %d', len(_works))
+        return _works, _limit_view
+
+    def _redraw__WWorks(self, select=EMPTY, force=False):
+
+        _LOGGER.debug('REDRAW WORKS WWorks')
         _items = []
-        _LOGGER.debug(" - WORKS %d %s", len(_works), _works)
+        _cur_work = pipe.CACHE.cur_work
+        _works, _limit_view = self._get_works(force=force)
+        _LOGGER.debug(' - FOUND %d WORKS', len(_works))
+        _select = select
         for _work in _works:
-            _LOGGER.debug(' - BUILD WORK ITEM %s', _work)
-            if _work is self.next_work:
-                _icon = icons.find('Hatching')
-                _col = 'Chartreuse'
-            else:
-                _icon = work_to_icon(_work)
-                _col = 'White' if _work.find_outputs() else None
-            _text = self._get_work_text(_work)
-            _item = qt.CListWidgetItem(_text, data=_work, icon=_icon, col=_col)
+            _item = phe_work_item.PHWorkItem(
+                list_view=self.ui.WWorks, work=_work, helper=self)
             _items.append(_item)
+            if not _select and _work == _cur_work:
+                _select = _item
+        if not _select and len(_works) > 1:
+            _select = _works[1]
+        self.ui.WWorks.set_items(_items, select=_select)
 
-        # Add show all
-        if _limit_view:
-            _star = qt.CPixmap(_STAR).resize(24, 24)
-            self.show_all_works_item = qt.CListWidgetItem(
-                'double-click to show all work items', icon=_star)
-            _items.append(self.show_all_works_item)
-
-        return _items, _works
-
-    def _get_work_text(self, work):
-        """Build work text label.
-
-        Args:
-            work (CPWork): work file to read
-
-        Returns:
-            (str): work text label
-        """
-        _t_fmt = '%a %b %d %H:%M'
-        _ver_pad = self.job.cfg['tokens']['ver']['len']
-
-        if work is self.next_work:
-            _suffix = ''
-            _notes = 'this version will be created if you load/save'
-            _mtime = time.time()
-            _owner = get_user()
-        else:
-            _suffix = '\n - Size: {}'.format(work.nice_size(catch=True))
-            _mtime = work.mtime()
-            _notes = work.notes or '-'
-            _owner = work.metadata.get('owner') or work.user
-
-        # Update notes
-        if work in self._notes_stack:
-            _notes = self._notes_stack[work]
-        _notes = _notes.replace(u'\\n', u'\n')  # Allow newlines hack
-        _notes = _notes.strip()
-        if u'\n' in _notes:
-            _notes = '\n'+add_indent(_notes, indent=' '*6)
-
-        _text = '\n'.join([
-            'V{} - {}'.format(
-                str(work.ver_n).zfill(_ver_pad), strftime(_t_fmt, _mtime)),
-            ' - Notes: '+_notes,
-            ' - Owner: {}{}'.format(_owner, _suffix)])
-
-        # Mark outputs
-        _o_tags = self._get_work_output_tags(work)
-        if _o_tags:
-            _text += '\n - '+'/'.join(_o_tags)
-
-        return _text
-
-    def _get_work_output_tags(self, work):
-        """Find output tags for the given work file.
-
-        eg. ['Blasted', 'Rendered']
-
-        Args:
-            work (CCPWork): work file to read outputs from
-
-        Returns:
-            (str list): output tags
-        """
-        _outs = [] if work is self.next_work else work.find_outputs()
-
-        _o_tags = set()
-        for _out in _outs:
-            _LOGGER.debug(' - CHECKING OUT %s', _out)
-            if (
-                    'blast' in _out.type_ or
-                    (_out.output_name and 'blast' in _out.output_name)):
-                _o_tag = 'Blasted'
-            elif _out.type_ == 'publish':
-                _o_tag = 'Published'
-            elif (
-                    _out.extn == 'abc' or
-                    _out.type_ in ('cache', 'cache_seq', 'ass_gz')):
-                _o_tag = 'Cached'
-            elif (
-                    _out.type_ in ('render', 'render_mov', 'mov') or
-                    _out.output_name == 'render'):
-                _o_tag = 'Rendered'
-            else:
-                _LOGGER.debug('   - FAILED TO CLASSIFY %s', _out.type_)
-                _o_tag = 'Outputs'
-            _o_tags.add(_o_tag)
-        if _outs and not _o_tags:
-            _o_tags.add('Outputs')
-
-        if work is not self.next_work and work.metadata.get('submitted'):
-            _o_tags.add('Submitted')
-
-        return sorted(_o_tags)
+        self._update_badly_named_files_elements()
 
     def _redraw__WWorkPath(self):
 
@@ -461,7 +361,7 @@ class CLWorkTab(object):
 
     def _callback__WWorks(self):
 
-        self._flush_notes_stack()
+        self.flush_notes_stack()
         _work = self.ui.WWorks.selected_data()
 
         # Update work elements
@@ -500,13 +400,14 @@ class CLWorkTab(object):
         self.ui.WWorks.redraw()
 
     def _callback__WWorkNotes(self):
+
         _work = self.ui.WWorks.selected_data()
         _notes = self.ui.WWorkNotes.text()
-        _item = self.ui.WWorks.selected_item()
         if _work:
             self._notes_stack[_work] = _notes
+        _item = self.ui.WWorks.selected_item()
         if _item:
-            _item.setText(self._get_work_text(_work))
+            _item.set_notes(_notes)
 
     def _callback__WWorkPath(self):
         _work = self.ui.WWorkPath.selected_data()
@@ -607,7 +508,7 @@ class CLWorkTab(object):
             msg=_msg, title='Change Stream', parent=self,
             icon=icons.find('Bug'))
 
-    def _flush_notes_stack(self):
+    def flush_notes_stack(self):
         """Write notes changes to disk.
 
         This is triggered by the timer function (every 5s) so that
@@ -703,7 +604,7 @@ class CLWorkTab(object):
             _label += ' '+ints_to_str(out.frames)
 
         # Set icon
-        _icon = output_to_icon(out)
+        _icon = ph_utils.output_to_icon(out)
         if submenu:
             _out_menu = parent.add_menu(_label, icon=_icon)
         else:

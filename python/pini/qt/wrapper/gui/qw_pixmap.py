@@ -23,6 +23,14 @@ class CPixmap(QtGui.QPixmap):
 
         super(CPixmap, self).__init__(*_args)
 
+    def aspect(self):
+        """Obtain aspect ratio for this pixmap.
+
+        Returns:
+            (float): width/height ratio
+        """
+        return float(self.width())/self.height()
+
     def center(self):
         """Obtain centre point of this pixmap.
 
@@ -375,6 +383,19 @@ class CPixmap(QtGui.QPixmap):
 
         return CPixmap(_pix)
 
+    def rotate(self, degrees):
+        """Apply rotation to this pixmap.
+
+        Args:
+            degrees (str): rotation in degrees
+
+        Returns:
+            (CPixmap): updated pixmap
+        """
+        _tfm = QtGui.QTransform()
+        _tfm.rotate(degrees)
+        return CPixmap(self.transformed(_tfm))
+
     def save_as(self, file_, force=False, quality=100, verbose=1):
         """Save this image to disk.
 
@@ -407,19 +428,6 @@ class CPixmap(QtGui.QPixmap):
         assert _file.exists()
 
         return _file
-
-    def rotate(self, degrees):
-        """Apply rotation to this pixmap.
-
-        Args:
-            degrees (str): rotation in degrees
-
-        Returns:
-            (CPixmap): updated pixmap
-        """
-        _tfm = QtGui.QTransform()
-        _tfm.rotate(degrees)
-        return CPixmap(self.transformed(_tfm))
 
     def save_test(self, file_=None, extn='jpg'):
         """Save image to test file.

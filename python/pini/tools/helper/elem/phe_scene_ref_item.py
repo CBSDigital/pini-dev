@@ -18,7 +18,7 @@ _UNLOADED_REF_ICON = icons.find('Hollow Red Circle')
 _FONT = QtGui.QFont()
 
 
-class SceneRefItem(qt.CListViewPixmapItem):
+class PHSceneRefItem(qt.CListViewPixmapItem):
     """Represents a scene reference in the scene reference list."""
 
     info = False
@@ -77,11 +77,14 @@ class SceneRefItem(qt.CListViewPixmapItem):
                 _overlay = _OUTDATED_REF_ICON
         else:
             raise ValueError(status)
+
+        self.bg_col = qt.CColor(self.text_col)
+        self.bg_col.setAlphaF(0.2)
         if _overlay:
             _overlay = File(_overlay)
         self.icon = output_to_icon(self.output, overlay=_overlay)
 
-        super(SceneRefItem, self).__init__(
+        super(PHSceneRefItem, self).__init__(
             list_view, col='Transparent', data=self.ref)
 
     def draw_pixmap(self, pix):
@@ -90,18 +93,16 @@ class SceneRefItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        super(SceneRefItem, self).draw_pixmap(pix)
+        super(PHSceneRefItem, self).draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
         self.set_height(40 if self.info else 32)
 
         # Draw backdrop
-        _col = qt.CColor(self.text_col)
-        _col.setAlphaF(0.2)
         pix.draw_rounded_rect(
             pos=(self.margin, self.margin/2),
             size=(pix.width()-self.margin*2, pix.height()-self.margin),
-            outline=None, col=_col)
+            outline=None, col=self.bg_col)
 
         # Add text/icon overlays
         _over = qt.CPixmap(pix.size())

@@ -12,7 +12,7 @@ from pini import pipe, icons, dcc, qt
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, assert_eq, wrap_fn, chain_fns, copied_path,
+    File, assert_eq, wrap_fn, chain_fns, copied_path, clip, Video, Seq,
     get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
@@ -270,6 +270,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 output, delete_callback=_delete_callback, delete=delete)
         else:
             raise ValueError(output)
+        if isinstance(output, clip.Clip) and self.work:
+            menu.add_action(
+                'Set as thumbnail', icon=icons.find('Picture'),
+                func=wrap_fn(self._set_work_thumb, output))
         if output.submittable:
             from pini.pipe import shotgrid
             assert parent
@@ -296,8 +300,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             _src = pipe.map_path(output.metadata.get('src'))
             menu.add_action(
                 'Find work file', wrap_fn(self.jump_to, _src),
-                icon=icons.FIND,
-                enabled=bool(_src))
+                icon=icons.FIND, enabled=bool(_src))
 
         # Add apply range option
         _rng = output.metadata.get('range')
@@ -314,6 +317,20 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                  output.metadata.get('publish_type') == 'CMayaLookdevPublish'):
             self._add_output_lookdev_opts(
                 menu, lookdev=output, ref=ref, ignore_ui=ignore_ui)
+
+    def _set_work_thumb(self, clip_):
+        """Update current work thumbnail to match the given clip.
+
+        Args:
+            clip_ (Clip): video or image sequence to apply
+        """
+        if isinstance(clip_, Video):
+            clip_.to_frame(self.work.image, force=True)
+        elif isinstance(clip_, Seq):
+            clip_.to_frame_file().copy_to(self.work.image, force=True)
+        else:
+            raise NotImplementedError(clip_)
+        self.ui.WWorks.redraw()
 
     def _add_output_lookdev_opts(
             self, menu, lookdev, ignore_ui=False, ref=False):
@@ -462,7 +479,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def _callback__MainPane(self, index=None, save=True, switch_tabs=True):
         self.setMinimumWidth(400)
-        self._flush_notes_stack()
+        self.flush_notes_stack()
         _LOGGER.debug(
             'CALLBACK MAIN PANE index=%s blocked=%d save=%d',
             index, self.ui.WWorkPath.signalsBlocked(), save)
@@ -702,7 +719,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             event (QEvent): close event
         """
         _LOGGER.debug('CLOSE EVENT %s %s', event, self.pos())
-        self._flush_notes_stack()
+        self.flush_notes_stack()
         _LOGGER.debug(' - CLOSE COMPLETE %s', self.pos())
 
     def timerEvent(self, event):
@@ -714,4 +731,4 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if not self.isVisible():
             self.killTimer(self.timer)
             _LOGGER.debug('KILLED TIMER %s', event)
-        self._flush_notes_stack()
+        self.flush_notes_stack()
