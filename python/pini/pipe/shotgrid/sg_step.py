@@ -32,7 +32,7 @@ def to_step_data(step, entity_type='Shot'):
         ('code', 'is', step),
         ('entity_type', 'is', entity_type),
     ]
-    _fields = ['entity_type', 'code']
+    _fields = ['entity_type', 'code', 'short_name']
     _LOGGER.debug(' - FILTERS %s', _filters)
     _data = _sg.find_one('Step', filters=_filters, fields=_fields)
     if not _data:

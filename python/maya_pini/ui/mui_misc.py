@@ -139,9 +139,15 @@ def get_active_model_editor():
         if not cmds.modelPanel(_panel, query=True, exists=True):
             continue
         _editor = cmds.modelPanel(_panel, query=True, modelEditor=True)
-        if cmds.modelEditor(_editor, query=True, activeView=True):
-            _editors.append(_editor)
-    return single(_editors)
+        _editors.append(_editor)
+    if len(_editors) == 1:
+        return single(_editors)
+    _editors = [_editor for _editor in _editors
+                if cmds.modelEditor(_editor, query=True, activeView=True)]
+    if len(_editors) == 1:
+        return single(_editors)
+    raise ValueError(
+        'No active view found - try middle-mouse clicking the viewport')
 
 
 def get_main_window():

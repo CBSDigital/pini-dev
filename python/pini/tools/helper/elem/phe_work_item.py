@@ -33,6 +33,7 @@ _OUTPUT_ICONS = {
     'Blasted': icons.find('Collision'),
     'Published': icons.find('Beer Mug'),
     'Rendered': icons.find('Film Frames'),
+    'Empty': icons.find('White Circle'),
 }
 
 
@@ -166,13 +167,18 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             col=self.text_col)
 
         # Draw output tags
-        for _idx, _tag in enumerate(sorted(_OUTPUT_ICONS.keys())):
+        _keys = set(_OUTPUT_ICONS.keys())
+        _keys.remove('Empty')
+        for _idx, _tag in enumerate(sorted(_keys)):
             if _tag not in self.output_tags:
-                continue
-            _icon = _to_output_icon(_tag, size=15)
-            _indent = 5
-            _pos = (_indent + 190 + 20*_idx, _indent)
-            pix.draw_overlay(_icon, pos=_pos)
+                _tag = 'Empty'
+                _size = 3
+            else:
+                _size = 13
+            _icon = _to_output_icon(_tag, size=_size)
+            _indent = 11
+            _pos = (_indent + 188 + 13*_idx, _indent)
+            pix.draw_overlay(_icon, pos=_pos, anchor='C')
 
         # Add thumb if available
         if self._has_thumb:

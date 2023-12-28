@@ -1,3 +1,15 @@
+## [0.42.0] - Thu 2023-12-28 12:26
+### Summary
+ - Pini Helper:
+    - bugfix unable to version up (mkim),
+### Updated
+ - pini.pipe.CPWork.find_next bugfix not applying cur user,
+ - pini.pipe.shotgrid.to_step_data added short_name to fields,
+ - pini.tools.helper work item added white dot for unused output tags,
+ - pini.tools.helper work tab better readability on badly named files,
+ - maya_pini.ui.get_active_model_editor bugfix error on viewport not active,
+
+
 ## [0.41.0] - Wed 2023-12-27 14:59
 ### Summary
  - Pini Helper:

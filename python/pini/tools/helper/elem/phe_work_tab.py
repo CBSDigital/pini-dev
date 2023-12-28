@@ -15,8 +15,10 @@ from pini.utils import (
 from .. import ph_utils
 from . import phe_work_item
 
-_STAR = icons.find('Star')
 _LOGGER = logging.getLogger(__name__)
+
+_STAR = icons.find('Star')
+_WARNING_RED = qt.CColor('Red').whiten(0.45)
 
 
 class CLWorkTab(object):
@@ -213,7 +215,7 @@ class CLWorkTab(object):
                 plural(_n_bad_files),
                 plural(_n_bad_files, singular='is', plural_='are')))
         self.ui.WWorkBadFilesLabel.setText(_text)
-        self.ui.WWorkBadFilesLabel.set_col('Red')
+        self.ui.WWorkBadFilesLabel.set_col(_WARNING_RED)
 
     def _get_works(self, force, view_limit=20):
         """Get list of work files to display.

@@ -18,7 +18,7 @@ from pini.utils import (
     passes_filter, single, EMPTY, abs_path)
 
 from .cp_work_dir import CPWorkDir
-from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path
+from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
 
 _LOGGER = logging.getLogger(__name__)
 _SET_WORK_CALLBACKS = {}
@@ -225,7 +225,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             _ver_n = 1
         else:
             _ver_n = _latest.ver_n+1
-        _next = self.to_work(ver_n=_ver_n, class_=class_, user=user)
+        _user = user or cur_user()
+        _next = self.to_work(ver_n=_ver_n, class_=class_, user=_user)
         assert _next.work_dir is self.work_dir
         return _next
 
