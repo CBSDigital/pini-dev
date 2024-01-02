@@ -1,6 +1,6 @@
 """Tools for managing outputs."""
 
-# pylint: disable=too-many-public-methods,too-many-instance-attributes
+# pylint: disable=too-many-public-methods,too-many-instance-attributes,too-many-lines
 
 import copy
 import logging
@@ -203,10 +203,16 @@ class CPOutputBase(object):
                 extn=self.extn)
             for _tmpl in _tmpls]
 
+        # Apply work dir if needed
+        _keys = set(sum([list(_tmpl.keys()) for _tmpl in _tmpls], []))
+        if 'work_dir' in _keys and self.work_dir:
+            _tmpls = [_tmpl.apply_data(work_dir=self.work_dir.path)
+                      for _tmpl in _tmpls]
+
         # Log data
-        _LOGGER.log(9, ' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
+        _LOGGER.debug(' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
         for _idx, _tmpl in enumerate(_tmpls):
-            _LOGGER.log(9, ' - TEMPLATES[%d] %s', _idx, _tmpl)
+            _LOGGER.debug(' - TEMPLATES[%d] %s', _idx, _tmpl)
 
         return _tmpls
 
@@ -685,6 +691,7 @@ class CPOutputVideo(CPOutput, clip.Video):
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
         """
+        _LOGGER.debug('INIT CPOutputVideo %s', file_)
         super(CPOutputVideo, self).__init__(
             file_, job=job, entity=entity, work_dir=work_dir,
             templates=templates, template=template,

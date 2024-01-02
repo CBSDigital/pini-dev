@@ -255,3 +255,18 @@ def update(entity_type, entity_id, data):
     """
     to_handler().update(
         entity_type=entity_type, entity_id=entity_id, data=data)
+
+
+def upload_filmstrip_thumbnail(entity_type, entity_id, path):
+    """Upload filmstrip thumbnail for the given entry.
+
+    Filmstrip thumb should be an image containing any number of 240
+    pixel wide images, side to side.
+
+    Args:
+        entity_type (str): entity type (eg. Shot/Asset)
+        entity_id (int): entity id
+        path (str): path to filmstrip
+    """
+    to_handler().upload_filmstrip_thumbnail(
+        entity_type=entity_type, entity_id=entity_id, path=path)

@@ -303,7 +303,7 @@ def blast(
         seq=_seq, range_=_range, camera=_cam, res=_res, cleanup=cleanup,
         settings=settings)
     if copy_frame:
-        _seq.to_frame_file().copy_to(copy_frame, force=force)
+        _seq.to_frame_file().copy_to(copy_frame, force=True)
     if _tmp_seq:
         _tmp_seq.to_video(
             clip, use_scene_audio=use_scene_audio, burnins=burnins, verbose=1)

@@ -2,14 +2,12 @@
 
 import logging
 import re
-import time
-
-from . import uc_clip
 
 from .. import path
 from .. import cache
-from ..u_exe import find_exe
-from ..u_misc import single, system, nice_age
+from ..u_misc import single
+
+from . import uc_clip, uc_ffmpeg
 
 _LOGGER = logging.getLogger(__name__)
 _VIDEO_FMTS = ['mov', 'mp4', 'avi', 'cine']
@@ -83,15 +81,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
         Returns:
             (str): ffprobe reading
         """
-        _ffprobe_exe = find_exe('ffprobe')
-        assert _ffprobe_exe
-        _path = self.path
-        _cmds = [_ffprobe_exe.path, _path]
-        _LOGGER.debug(' - CMD %s', ' '.join(_cmds))
-        _result = system(_cmds, result='err', decode='latin-1')
-        _lines = [_line.strip() for _line in _result.split('\n')]
-
-        return _lines
+        return uc_ffmpeg.read_ffprobe(self)
 
     def _read_fps(self, ffprobe=None):
         """Read fps for this video.
@@ -150,71 +140,21 @@ class Video(path.MetadataFile, uc_clip.Clip):
         Returns:
             (File): output image
         """
-        _LOGGER.info('TO FRAMES %s', self.path)
-        _img = path.File(file_)
-        _img.delete(force=force)
-        _img.test_dir()
+        return uc_ffmpeg.video_to_frame(video=self, file_=file_, force=force)
 
-        _time = self.to_dur()/2
-        _LOGGER.info(' - TIME %f', _time)
-
-        # Build ffmpeg commands
-        _ffmpeg = find_exe('ffmpeg')
-        _cmds = [
-            _ffmpeg,
-            '-ss', _time,
-            '-i', self,
-            '-frames:v', 1,
-            _img]
-        assert not _img.exists()
-        _out, _err = system(_cmds, result='out/err', verbose=1)
-        if not _img.exists():
-            _LOGGER.info('OUT %s', _out)
-            _LOGGER.info('ERR %s', _err)
-            raise RuntimeError('Failed to export image '+_img.path)
-
-        return _img
-
-    def to_frames(self, seq, fps=None, force=False):
+    def to_seq(self, seq, fps=None, res=None, force=False, verbose=0):  # pylint: disable=unused-argument
         """Extract frames from this video.
 
         Args:
             seq (Seq): output sequence
             fps (float): override output frame rate
+            res (tuple): override output res
             force (bool): overwrite existing frames without confirmation
+            verbose (int): print process data
         """
-        from pini.utils import clip
-        _LOGGER.info('TO FRAMES %s', self.path)
-        _LOGGER.info(' - TARGET %s', seq.path)
-
-        _fps = fps or self.to_fps()
-        _LOGGER.info(' - FPS %s', _fps)
-
-        # Check output seq
-        assert isinstance(seq, clip.Seq)
-        seq.delete(force=force)
-        seq.test_dir()
-
-        # Build ffmpeg commands
-        _ffmpeg = find_exe('ffmpeg')
-        _cmds = [
-            _ffmpeg,
-            '-i', self,
-            '-r', _fps,
-            seq]
-        _start = time.time()
-        _out, _err = system(_cmds, result='out/err', verbose=1)
-        seq.to_frames(force=True)
-        if not seq.exists():
-            _LOGGER.info('OUT %s', _out)
-            _LOGGER.info('ERR %s', _err)
-            raise RuntimeError('Failed to compile seq '+seq.path)
-
-        _f_start, _f_end = seq.to_range()
-        _LOGGER.info(' - WROTE FRAMES %d-%d IN %s', _f_start, _f_end,
-                     nice_age(time.time() - _start))
-
-        return seq
+        _kwargs = locals()
+        _kwargs.pop('self')
+        return uc_ffmpeg.video_to_seq(video=self, **_kwargs)
 
     def to_res(self, force=False):
         """Obtain resolution of this video.

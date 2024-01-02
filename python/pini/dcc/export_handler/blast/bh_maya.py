@@ -25,10 +25,11 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             layout (QLayout): parent layout
         """
         super(CMayaPlayblast, self).build_ui(parent=parent, layout=layout)
+        _cams = [str(_cam) for _cam in pom.find_cams()]
+        _cur_cam = str(pom.active_cam())
+        _LOGGER.info('BUILD UI %s %s', _cur_cam, _cams)
         self.ui.Camera = self.add_combobox_elem(
-            name='Camera',
-            items=[str(_cam) for _cam in pom.find_cams()],
-            val=str(pom.active_cam()))
+            name='Camera', items=_cams, val=_cur_cam)
         self.ui.Settings = self.add_combobox_elem(
             name='Settings', items=['As is', 'Nice'])
         self.ui.Resolution = self.add_combobox_elem(

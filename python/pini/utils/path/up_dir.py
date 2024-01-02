@@ -333,8 +333,8 @@ class Dir(up_path.Path):
         Returns:
             (Seq): child sequence
         """
-        from pini.utils import Seq
-        return self.to_file(rel_path, class_=Seq)
+        from pini.utils import clip
+        return self.to_file(rel_path, class_=clip.Seq)
 
     def to_subdir(self, rel_path):
         """Get subdirectory of this dir.

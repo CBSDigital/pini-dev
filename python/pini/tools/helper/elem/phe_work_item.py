@@ -5,9 +5,9 @@ This is used to represent a work file in PiniHelper.
 
 import logging
 
-from pini import qt, icons, pipe
+from pini import qt, icons
 from pini.qt import QtGui
-from pini.utils import strftime, cache_result
+from pini.utils import strftime, cache_result, get_user
 
 from .. import ph_utils
 
@@ -93,7 +93,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             (str): text
         """
         if self.work is self.helper.next_work:
-            _owner = pipe.cur_user()
+            _owner = get_user()
             _size_str = []
         else:
             _owner = self.work.owner()

@@ -13,12 +13,13 @@ _PUB_FILE_FIELDS = [
     'path', 'published_file_type', 'name', 'path_cache', 'id']
 
 
-def create_pub_file(output, thumb=None):
+def create_pub_file(output, thumb=None, force=False):
     """Create PublishedFile entry in shotgrid.
 
     Args:
         output (CPOutput): output to register
         thumb (File): apply thumbnail image
+        force (bool): if an entry exists, update data
 
     Returns:
         (dict): registered data
@@ -26,9 +27,12 @@ def create_pub_file(output, thumb=None):
     _LOGGER.info('CREATE PUB FILE %s', output)
 
     # Catch already exists
-    if to_pub_file_id(output):
-        _LOGGER.info('ALREADY REGISTERED IN SHOTGRID %s', output.path)
-        return to_pub_file_data(output)
+    _existing_id = to_pub_file_id(output)
+    if _existing_id:
+        _LOGGER.info(' - ALREADY REGISTERED IN SHOTGRID %d %s',
+                     _existing_id, output.path)
+        if not force:
+            return to_pub_file_data(output)
 
     _LOGGER.info('CREATE PUBLISHED FILE %s', output.path)
     _notes = output.metadata.get('notes')
@@ -37,6 +41,7 @@ def create_pub_file(output, thumb=None):
     _code = {
         'ma': 'Maya Scene',
         'abc': 'Abc File',
+        'mp4': 'Movie',
     }.get(output.extn, output.extn)
     _type = sg_handler.find_one(
         'PublishedFileType', filters=[('code', 'is', _code)])
@@ -56,9 +61,16 @@ def create_pub_file(output, thumb=None):
         'updated_by': sg_user.to_user_data(),
         'version_number': output.ver_n,
     }
-    _result = sg_handler.create('PublishedFile', _data)
-    _LOGGER.info(' - RESULT %s', _result)
-    to_pub_file_data(output, data=_result, force=True)  # Update cache
+    if not _existing_id:
+        _result = sg_handler.create('PublishedFile', _data)
+        _LOGGER.info(' - RESULT %s', _result)
+        _id = _result['id']
+        to_pub_file_data(output, data=_result, force=True)  # Update cache
+    else:
+        for _field in ['created_by', 'updated_by']:
+            _data.pop(_field)
+        sg_handler.update('PublishedFile', _existing_id, _data)
+        _id = _existing_id
 
     # Apply thumb
     _thumb = thumb
@@ -68,17 +80,18 @@ def create_pub_file(output, thumb=None):
         _LOGGER.info(' - APPLY THUMB %s', _thumb)
         assert _thumb.exists()
         sg_handler.to_handler().upload_thumbnail(
-            'PublishedFile', _result['id'], _thumb.path)
+            'PublishedFile', _id, _thumb.path)
 
     return _data
 
 
-def find_pub_files(job=None, entity=None, filter_=None):
+def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
     """Find PublishedFile entries.
 
     Args:
         job (CPJob): job to search
         entity (CPEntity): apply entity filter
+        work_dir (CPWorkDir): filter by work dir
         filter_ (str): apply path filter
 
     Returns:
@@ -94,6 +107,8 @@ def find_pub_files(job=None, entity=None, filter_=None):
         ('sg_status_list', 'not_in', ('omt', ))]
     if entity:
         _filters += [sg_entity.to_entity_filter(entity)]
+    if work_dir:
+        _filters += [sg_task.to_task_filter(work_dir)]
     _LOGGER.debug(' - FILTERS %s', _filters)
     _results = sg_handler.find(
         'PublishedFile', fields=_PUB_FILE_FIELDS,
@@ -107,9 +122,11 @@ def find_pub_files(job=None, entity=None, filter_=None):
         if not _path:
             continue
         _path = abs_path(_path, root=pipe.JOBS_ROOT)
+        _LOGGER.debug('PATH %s', _path)
         if not passes_filter(_path, filter_):
             continue
         _out = pipe.to_output(_path, job=_job, catch=True)
+        _LOGGER.debug(' - OUT %s', _out)
         if not _out:
             _LOGGER.debug(' - REJECTED %s', _path)
             continue
@@ -135,7 +152,7 @@ def to_pub_file_data(output, data=None, force=False):
     Returns:
         (dict): data
     """
-    _LOGGER.debug('TO PUB FILE DATA %s', output)
+    _LOGGER.debug(' - TO PUB FILE DATA %s', output)
     assert isinstance(output, pipe.CPOutputBase)
     _data = data
     _LOGGER.debug(' - DATA (A) %s', _data)

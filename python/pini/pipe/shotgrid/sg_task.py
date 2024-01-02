@@ -187,11 +187,8 @@ def _output_to_task_data(output):
     """
     if output.type_ == 'plate_mov':
         _task = 'plate'
-    elif output.type_ in [
-            'render_mov', 'blast_mov', 'mov', 'cache', 'publish', 'render']:
-        _task = output.task
     else:
-        raise ValueError(output.type_)
+        _task = output.task
     _work_dir = output.entity.to_work_dir(task=_task)
     return _work_dir_to_task_data(_work_dir)
 
@@ -239,6 +236,19 @@ def to_task_data(obj, force=False):
     if isinstance(obj, pipe.CPWorkDir):
         return _work_dir_to_task_data(obj, force=force)
     raise ValueError(object)
+
+
+def to_task_filter(obj):
+    """Obtain task filter for the given object.
+
+    Args:
+        obj (any): pipeline object to get task data from
+
+    Returns:
+        (tuple): task filter
+    """
+    _id = to_task_id(obj)
+    return ('task', 'is', {'id': _id, 'type': 'Task'})
 
 
 def to_task_id(obj):

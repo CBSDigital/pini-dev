@@ -1,14 +1,17 @@
 """Tools for managing ffmpeg conversions."""
 
 import logging
+import time
 
 from ..u_misc import strftime
+from ..u_exe import find_exe
 from ..path import Dir, File, TMP_PATH
+from ..u_misc import system, nice_age, to_str
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
+def _build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
     """Add audio flags for ffmpeg.
 
     Args:
@@ -41,7 +44,7 @@ def build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
     return _args
 
 
-def build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
+def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     """Add ffmpeg burnin flags and build tmp burnin files.
 
     Args:
@@ -139,3 +142,217 @@ def build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     ]
 
     return _flags
+
+
+def read_ffprobe(video):
+    """Read ffprobe result for the given video file.
+
+    Args:
+        video (Video): video file to read
+
+    Returns:
+        (str): ffprobe result
+    """
+    _ffprobe_exe = find_exe('ffprobe')
+
+    _cmds = [_ffprobe_exe.path, video.path]
+    _LOGGER.debug(' - CMD %s', ' '.join(_cmds))
+    _result = system(_cmds, result='err', decode='latin-1')
+    _lines = [_line.strip() for _line in _result.split('\n')]
+
+    return _lines
+
+
+def seq_to_video(
+        seq, video, fps=None, audio=None, audio_offset=0.0,
+        use_scene_audio=False, crf=15, bitrate=None, denoise=None,
+        tune=None, speed=None, burnins=False, res=None,
+        verbose=0):
+    """Build video file using ffmpeg.
+
+    Args:
+        seq (Seq): source sequence
+        video (File): file to create
+        fps (float): frame rate
+        audio (File): apply audio
+        audio_offset (float): audio offset in secs
+        use_scene_audio (bool): apply audio from current scene
+            (overrides all other audio flags)
+        crf (int): constant rate factor (default is 25,
+            visually lossless is 15, highest is 1)
+        bitrate (str): apply bitrate to conversion (eg. 1M)
+        denoise (float): apply nlmeans denoise (20.0 is recommended)
+        tune (str): apply tuning preset (eg. animation, film)
+        speed (str): apply speed preset (eg. slow, medium, slowest)
+        burnins (bool): add burnins
+        res (tuple): override resolution
+        verbose (int): print process data
+
+    Returns:
+        (Video): video file
+    """
+    from pini import dcc
+
+    _ffmpeg = find_exe('ffmpeg')
+    _fps = fps or dcc.get_fps()
+    _start, _ = seq.to_range(force=True)
+    assert _ffmpeg
+    assert _fps
+
+    # Build args list
+    _args = [_ffmpeg, '-r', _fps]
+    _args += ['-f', 'image2']
+    if _start != 1:
+        _args += ['-start_number', _start]
+    _args += ['-i', seq.path]
+    if burnins:
+        _args += _build_ffmpeg_burnin_flags(seq, video=video)
+    _args += _build_ffmpeg_audio_flags(
+        use_scene_audio=use_scene_audio, audio=audio,
+        audio_offset=audio_offset)
+    _args += ['-vcodec', 'libx264']
+    _args += ['-pix_fmt', 'yuv420p']
+    if bitrate:
+        _args += ['-b:v', bitrate]
+    else:
+        _args += ['-crf', crf]
+    if speed:
+        _args += ['-preset', speed]
+    if tune:
+        _args += ['-tune', tune]
+    if denoise:
+        _args += ['-vf', "nlmeans='{:.01f}:7:5:3:3'".format(denoise)]
+    if res:
+        _args += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+    _args += [video]
+
+    # Execute ffmpeg
+    _LOGGER.debug(' - FFMPEG %s', _args)
+    _LOGGER.debug(
+        ' - FFMPEG %s',
+        ' '.join(to_str(_arg) for _arg in _args))
+    _, _err = system(_args, result='out/err', verbose=verbose)
+    if not video.exists() or not video.size():
+        _handle_conversion_fail(seq=seq, err=_err, video=video)
+
+    return video
+
+
+def _handle_conversion_fail(seq, video, err):
+    """Handle conversion fail, flaggin common issues.
+
+    Args:
+        seq (Seq): source image sequence
+        video (Video): conversion target
+        err (str): ffmpeg error message
+    """
+    _LOGGER.info('CONVERSION FAILED:\n%s', err)
+
+    if not video.size():
+        video.delete(force=True)
+
+    # Compression fail
+    if 'Compression 8 is not implemented' in err:
+        raise RuntimeError('Unsupported compression '+seq.path)
+
+    # Res fail
+    if (
+            'height not divisible by 2' in err or
+            'width not divisible by 2' in err):
+        _res = seq.to_res()
+        raise RuntimeError(
+            'Unsupported resolution {:d}x{:d} (H264 requires width and '
+            'height be divisible by two) - {}'.format(
+                _res[0], _res[1], seq.path))
+
+    raise RuntimeError('Conversion failed '+seq.path)
+
+
+def video_to_frame(video, file_, force=False):
+    """Extract a frame from a video.
+
+    Args:
+        video (Video): source video
+        file_ (File): output file path
+        force (bool): overwrite existing without confirmation
+
+    Returns:
+        (File): output image
+    """
+    _LOGGER.info('TO FRAMES %s', video.path)
+    _img = File(file_)
+    _img.delete(force=force)
+    _img.test_dir()
+
+    _time = video.to_dur()/2
+    _LOGGER.info(' - TIME %f', _time)
+
+    # Build ffmpeg commands
+    _ffmpeg = find_exe('ffmpeg')
+    _cmds = [
+        _ffmpeg,
+        '-ss', _time,
+        '-i', video,
+        '-frames:v', 1,
+        _img]
+    assert not _img.exists()
+    _out, _err = system(_cmds, result='out/err', verbose=1)
+    if not _img.exists():
+        _LOGGER.info('OUT %s', _out)
+        _LOGGER.info('ERR %s', _err)
+        raise RuntimeError('Failed to export image '+_img.path)
+
+    return _img
+
+
+def video_to_seq(video, seq, fps=None, res=None, force=False, verbose=1):
+    """Convert a video to an image sequence.
+
+    Args:
+        video (Video): source video
+        seq (Seq): output image sequence
+        fps (float): override frame rate
+        res (tuple): override resolution
+        force (bool): overwrite existing without confirmation
+        verbose (int): print process data
+
+    Returns:
+        (Seq): output sequence
+    """
+    from .. import clip
+
+    _LOGGER.info('VIDEO TO SEQ %s', video.path)
+    _LOGGER.info(' - TARGET %s', seq.path)
+
+    _fps = fps or video.to_fps()
+    _LOGGER.info(' - FPS %s', _fps)
+
+    # Check output seq
+    assert isinstance(seq, clip.Seq)
+    seq.delete(force=force)
+    seq.test_dir()
+
+    # Build ffmpeg commands
+    _ffmpeg = find_exe('ffmpeg')
+    _cmds = [
+        _ffmpeg,
+        '-i', video,
+        '-r', _fps]
+    if res:
+        _cmds += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+    _cmds += [seq]
+
+    # Execute ffmpeg
+    _start = time.time()
+    _out, _err = system(_cmds, result='out/err', verbose=verbose)
+    seq.to_frames(force=True)
+    if not seq.exists():
+        _LOGGER.info('OUT %s', _out)
+        _LOGGER.info('ERR %s', _err)
+        raise RuntimeError('Failed to compile seq '+seq.path)
+
+    _f_start, _f_end = seq.to_range()
+    _LOGGER.info(' - WROTE FRAMES %d-%d IN %s', _f_start, _f_end,
+                 nice_age(time.time() - _start))
+
+    return seq

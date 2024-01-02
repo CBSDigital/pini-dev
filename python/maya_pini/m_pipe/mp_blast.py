@@ -60,11 +60,18 @@ def blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq, copy_frame=_work.image)
-    _work.update_outputs()
 
     if pipe.SHOTGRID_AVAILABLE:
-        _rng = range_ or dcc.t_range(int)
-        _update_shotgrid_range(entity=_work.entity, range_=_rng)
+        if pipe.MASTER == 'disk':
+            _rng = range_ or dcc.t_range(int)
+            _update_shotgrid_range(entity=_work.entity, range_=_rng)
+        elif pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file(_out, thumb=_work.image, force=True)
+        else:
+            raise ValueError(pipe.MASTER)
+
+    _work.update_outputs()
 
     return _out
 

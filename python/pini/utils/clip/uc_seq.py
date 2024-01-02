@@ -8,12 +8,12 @@ from . import uc_clip
 
 from ..u_error import DebuggingError
 from ..u_text import plural
-from ..u_misc import single, strftime, to_str
+from ..u_misc import single, strftime
 from ..u_six import six_cmp
-from ..u_exe import find_exe
 
 from ..cache import cache_method_to_file
 from ..path import Path, norm_path, Dir, File, abs_path
+
 from . import uc_ffmpeg
 
 _LOGGER = logging.getLogger(__name__)
@@ -183,7 +183,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 'image sequence?\n\n{}'.format(
                     wording.lower(), plural(_frames), _fr_str, self.path),
                 title='Confirm {}'.format(wording.capitalize()),
-                icon=icon or icons.DELETE)
+                icon=icon or icons.find('Sponge'))
         for _frame in qt.progress_bar(
                 _frames, 'Deleting {:d} file{}', show_delay=1):
             _file = File(self[_frame])
@@ -453,10 +453,11 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         return self.to_range()[0]
 
-    def to_video(
+    def to_video(  # pylint: disable=unused-argument
             self, video, fps=None, audio=None, audio_offset=0.0,
             use_scene_audio=False, crf=15, bitrate=None, denoise=None,
-            tune=None, speed=None, force=False, burnins=False, verbose=0):
+            tune=None, speed=None, force=False, burnins=False, res=None,
+            verbose=0):
         """Convert this image sequence to a video.
 
         Args:
@@ -474,11 +475,16 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             speed (str): apply speed preset (eg. slow, medium, slowest)
             force (bool): overwrite existing without confirmation
             burnins (bool): add burnins
+            res (tuple): override output res
             verbose (int): print process data
 
         Returns:
             (Video): video file
         """
+        _kwargs = locals()
+        _kwargs.pop('self')
+        _kwargs.pop('force')
+
         from pini import dcc
         from .. import clip
 
@@ -494,107 +500,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         if dcc.NAME == 'nuke':
             # Catch nuke hanging bug
             return self._to_video_nuke(video=_video, burnins=burnins)
-        return self._to_video_ffmpeg(
-            video=_video, fps=fps, audio=audio, audio_offset=audio_offset,
-            crf=crf, bitrate=bitrate, denoise=denoise, tune=tune, speed=speed,
-            use_scene_audio=use_scene_audio, burnins=burnins, verbose=verbose)
-
-    def _to_video_ffmpeg(
-            self, video, fps, audio, audio_offset, use_scene_audio, crf,
-            bitrate, denoise, tune, speed, burnins, verbose=0):
-        """Build video file using ffmpeg.
-
-        Args:
-            video (File): file to create
-            fps (float): frame rate
-            audio (File): apply audio
-            audio_offset (float): audio offset in secs
-            use_scene_audio (bool): apply audio from current scene
-                (overrides all other audio flags)
-            crf (int): constant rate factor (default is 25,
-                visually lossless is 15, highest is 1)
-            bitrate (str): apply bitrate to conversion (eg. 1M)
-            denoise (float): apply nlmeans denoise (20.0 is recommended)
-            tune (str): apply tuning preset (eg. animation, film)
-            speed (str): apply speed preset (eg. slow, medium, slowest)
-            burnins (bool): add burnins
-            verbose (int): print process data
-
-        Returns:
-            (Video): video file
-        """
-        from pini import dcc
-        from pini.utils import system
-
-        _ffmpeg = find_exe('ffmpeg')
-        _fps = fps or dcc.get_fps()
-        _start, _ = self.to_range(force=True)
-        assert _ffmpeg
-        assert _fps
-
-        # Build args list
-        _args = [_ffmpeg, '-r', _fps]
-        _args += ['-f', 'image2']
-        if _start != 1:
-            _args += ['-start_number', _start]
-        _args += ['-i', self.path]
-        if burnins:
-            _args += uc_ffmpeg.build_ffmpeg_burnin_flags(self, video=video)
-        _args += uc_ffmpeg.build_ffmpeg_audio_flags(
-            use_scene_audio=use_scene_audio, audio=audio,
-            audio_offset=audio_offset)
-        _args += ['-vcodec', 'libx264']
-        _args += ['-pix_fmt', 'yuv420p']
-        if bitrate:
-            _args += ['-b:v', bitrate]
-        else:
-            _args += ['-crf', crf]
-        if speed:
-            _args += ['-preset', speed]
-        if tune:
-            _args += ['-tune', tune]
-        if denoise:
-            _args += ['-vf', "nlmeans='{:.01f}:7:5:3:3'".format(denoise)]
-        _args += [video]
-
-        # Execute ffmpeg
-        _LOGGER.debug(' - FFMPEG %s', _args)
-        _LOGGER.debug(
-            ' - FFMPEG %s',
-            ' '.join(to_str(_arg) for _arg in _args))
-        _, _err = system(_args, result='out/err', verbose=verbose)
-        if not video.exists() or not video.size():
-            self._handle_conversion_fail(err=_err, video=video)
-
-        return video
-
-    def _handle_conversion_fail(self, video, err):
-        """Handle conversion fail, flaggin common issues.
-
-        Args:
-            video (Video): conversion target
-            err (str): ffmpeg error message
-        """
-        _LOGGER.info('CONVERSION FAILED:\n%s', err)
-
-        if not video.size():
-            video.delete(force=True)
-
-        # Compression fail
-        if 'Compression 8 is not implemented' in err:
-            raise RuntimeError('Unsupported compression '+self.path)
-
-        # Res fail
-        if (
-                'height not divisible by 2' in err or
-                'width not divisible by 2' in err):
-            _res = self.to_res()
-            raise RuntimeError(
-                'Unsupported resolution {:d}x{:d} (H264 requires width and '
-                'height be divisible by two) - {}'.format(
-                    _res[0], _res[1], self.path))
-
-        raise RuntimeError('Conversion failed '+self.path)
+        return uc_ffmpeg.seq_to_video(seq=self, **_kwargs)
 
     def _to_video_nuke(self, video, clean_up=True, burnins=False, force=False):
         """Compile video using nuke.

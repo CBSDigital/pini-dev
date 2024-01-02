@@ -1,3 +1,24 @@
+## [0.43.0] - Tue 2024-01-02 10:45
+### Summary
+ - Pini Helper:
+    - maya enabled blast tool (eehemann),
+### Updated
+ - pini.utils.clip moved ffmpeg processing to submodule,
+ - pini.utils.video_to_frame added,
+ - pini.utils.Video renamed to_frames -> to_seq,
+ - pini.utils.Video.to_seq added res flag,
+ - pini.dcc.CBaseExportHandler.add_combobox_elem bugfix apply val,
+ - pini.pipe.CPOutput apply work dir to templates if required,
+ - pini.pipe sg jobs added CPVideoOuput handling,
+ - pini.pipe.shotgrid.upload_filmstrip_thumbnail added,
+ - pini.pipe.shotgrid.create_pub_file added force flag,
+ - pini.pipe.shotgrid.create_pub_file added mp4 handling,
+ - pini.pipe.shotgrid.find_pub_files added work_dir arg,
+ - pini.tools.helper use raw user not pipe user for next_ver owner,
+ - maya_pini.utils.blast force overwrite copy frame,
+ - maya_pini.m_pipe.blast update sg on blast,
+
+
 ## [0.42.0] - Thu 2023-12-28 12:26
 ### Summary
  - Pini Helper:

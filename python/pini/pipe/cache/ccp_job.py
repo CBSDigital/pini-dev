@@ -367,10 +367,10 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             except ValueError:
                 continue
 
-            if isinstance(_out, pipe.CPOutput):
-                _c_out = cache.CCPOutput(_out, entity=_ety)
-            elif isinstance(_out, pipe.CPOutputVideo):
+            if isinstance(_out, pipe.CPOutputVideo):
                 _c_out = cache.CCPOutputVideo(_out, entity=_ety)
+            elif isinstance(_out, pipe.CPOutput):
+                _c_out = cache.CCPOutput(_out, entity=_ety)
             elif isinstance(_out, pipe.CPOutputSeq):
                 _c_out = cache.CCPOutputSeq(_out.path, entity=_ety)
             else:

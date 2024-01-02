@@ -5,7 +5,8 @@ import shotgun_api3
 from .sg_utils import ICON, output_to_work
 
 from .sg_handler import (
-    to_handler, find, find_fields, find_one, update, create, find_all_data)
+    to_handler, find, find_fields, find_one, update, create, find_all_data,
+    upload_filmstrip_thumbnail)
 
 from .sg_job import (
     to_job_data, to_job_filter, create_job, to_job_id, find_jobs)

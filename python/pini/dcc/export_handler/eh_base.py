@@ -107,12 +107,12 @@ class CExportHandler(object):
         if width:
             _combo_box.setFixedWidth(width)
         _combo_box.set_items(items)
-        if val:
-            _combo_box.select_text(val)
 
         self._add_elem(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
             label_width=label_width)
+        if val:
+            _combo_box.select_text(val)
         return _combo_box
 
     def add_checkbox_elem(
