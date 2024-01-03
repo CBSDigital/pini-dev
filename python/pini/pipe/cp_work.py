@@ -49,14 +49,15 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             work_dir (CPWorkDIr): force parent work dir
             template (CPTemplate): force template
         """
+        _file = abs_path(file_)
         _LOGGER.debug('INIT %s %s', type(self).__name__, file_)
-        super(CPWork, self).__init__(file_)
+        super(CPWork, self).__init__(_file)
 
         if self.extn not in EXTN_TO_DCC:
             raise ValueError(self.extn)
 
         # Set up entity/job
-        self.work_dir = work_dir or CPWorkDir(file_)
+        self.work_dir = work_dir or CPWorkDir(_file)
         self.entity = self.work_dir.entity
         self.job = self.entity.job
 

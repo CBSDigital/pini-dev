@@ -238,6 +238,17 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         return super(CCPJob, self).find_sequences(
             class_=class_ or CCPSequence, filter_=filter_, head=head)
 
+    def find_shot(self, *args, **kwargs):
+        """Find a shot in this job.
+
+        Returns:
+            (CCPShot): matching shot
+        """
+        _force = kwargs.pop('force', False)
+        if _force:
+            self.find_shots(force=True)
+        return super(CCPJob, self).find_shot(*args, **kwargs)
+
     def find_shots(self, sequence=None, class_=None, filter_=None, force=False):
         """Find shots in this job.
 
@@ -362,17 +373,27 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
             _LOGGER.debug(' - ADD OUT %s', _out)
 
-            try:
-                _ety = self.obt_entity(_out.entity)
-            except ValueError:
+            # Find entity
+            _ety = self.obt_entity(_out.entity)
+            if not _ety:
                 continue
 
+            # Find work dir
+            _work_dir = None
+            if _out.work_dir:
+                _work_dir = _ety.obt_work_dir(_out.work_dir)
+
+            # Build output object
+            _kwargs = {
+                'entity': _ety,
+                'work_dir': _work_dir,
+            }
             if isinstance(_out, pipe.CPOutputVideo):
-                _c_out = cache.CCPOutputVideo(_out, entity=_ety)
+                _c_out = cache.CCPOutputVideo(_out, **_kwargs)
             elif isinstance(_out, pipe.CPOutput):
-                _c_out = cache.CCPOutput(_out, entity=_ety)
+                _c_out = cache.CCPOutput(_out, **_kwargs)
             elif isinstance(_out, pipe.CPOutputSeq):
-                _c_out = cache.CCPOutputSeq(_out.path, entity=_ety)
+                _c_out = cache.CCPOutputSeq(_out.path, **_kwargs)
             else:
                 raise ValueError(_out)
 

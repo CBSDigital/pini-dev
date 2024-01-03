@@ -88,7 +88,7 @@ class CExportHandler(object):
 
     def add_combobox_elem(
             self, name, items, val=None, width=None, label=None,
-            label_width=None, tooltip=None):
+            label_width=None, tooltip=None, disable_save_settings=False):
         """Add a combobox element.
 
         Args:
@@ -99,6 +99,7 @@ class CExportHandler(object):
             label (str): element label
             label_width (int): override default label width
             tooltip (str): add tooltip to element
+            disable_save_settings (bool): apply disable save settings to element
 
         Returns:
             (CComboBox): combo box element
@@ -110,7 +111,8 @@ class CExportHandler(object):
 
         self._add_elem(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
-            label_width=label_width)
+            label_width=label_width,
+            disable_save_settings=disable_save_settings)
         if val:
             _combo_box.select_text(val)
         return _combo_box

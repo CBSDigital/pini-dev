@@ -216,3 +216,12 @@ class CCPWorkDir(CPWorkDir):
         _LOGGER.debug('READ OUTPUTS force=%d %s', force, self)
         return super(CCPWorkDir, self)._read_outputs(
             class_=class_ or cache.CCPOutput)
+
+    def _read_outputs_sg(self):
+        """Read outputs from shotgrid.
+
+        Returns:
+            (CPOutput list):
+        """
+        return [_out for _out in self.job.find_outputs()
+                if _out.work_dir == self]

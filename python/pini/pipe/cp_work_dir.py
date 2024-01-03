@@ -439,7 +439,7 @@ class CPWorkDir(Dir):
         """Read this work dir's outputs from disk.
 
         Args:
-            class_ (class): override work dir class
+            class_ (class): override output class
 
         Returns:
             (CPOutput list): outputs
@@ -448,17 +448,47 @@ class CPWorkDir(Dir):
 
         _LOGGER.debug('READ OUTPUTS %s', self)
         _class = class_ or pipe.CPOutput
+
+        if pipe.MASTER == 'disk':
+            _outs = self._read_outputs_disk(class_=_class)
+        elif pipe.MASTER == 'shotgrid':
+            _outs = self._read_outputs_sg()
+        else:
+            raise ValueError(pipe.MASTER)
+
+        return sorted(_outs)
+
+    def _read_outputs_disk(self, class_):
+        """Read outputs from disk.
+
+        Args:
+            class_ (class): override output class
+
+        Returns:
+            (CPOutput list): outputs
+        """
+        from pini import pipe
+
         _tmpls = self._find_output_templates()
         _LOGGER.debug(' - FOUND %d TMPLS', len(_tmpls))
 
         _globs = pipe.glob_templates(_tmpls, job=self.job)
         _outs = []
         for _tmpl, _path in _globs:
-            _out = _class(
+            _out = class_(
                 _path, template=_tmpl, work_dir=self, entity=self.entity)
             _outs.append(_out)
 
-        return sorted(_outs)
+        return _outs
+
+    def _read_outputs_sg(self):
+        """Read outputs from shotgrid.
+
+        Returns:
+            (CPOutput list): outputs
+        """
+        from pini.pipe import shotgrid
+        return shotgrid.find_pub_files(work_dir=self)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key

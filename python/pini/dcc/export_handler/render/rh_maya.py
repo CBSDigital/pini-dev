@@ -53,8 +53,11 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
                 _cam = _r_cams[0]
         if not _cam:
             _cam = _cams[0]
+        _LOGGER.debug(' - CAM %s %s', _cam, _cam)
         self.ui.Camera = self.add_combobox_elem(
-            name='Camera', items=_cams, val=_cam)
+            name='Camera', items=_cams, val=_cam,
+            disable_save_settings=True)
+        _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.
@@ -148,6 +151,10 @@ class CMayaLocalRender(CMayaRenderHandler):
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
             if _cleanup:
                 _out_seq.delete(force=True)
+
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file(_out)
 
         # Save metadata
         if _mov:

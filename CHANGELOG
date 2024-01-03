@@ -1,3 +1,19 @@
+## [0.44.0] - Wed 2024-01-03 15:35
+### Summary
+ - Pini Helper:
+    - bugfix not recognising publish refs as outputs,
+    - maya local render bugfix render cam not selected by default,
+    - maya local render register in shotgrid,
+### Updated
+ - pini.dcc.CBaseExportHandler.add_combobox_elem added disable_save_settings opt,
+ - pini.pipe.CPJob.to_shot better error on missing sequence key,
+ - pini.pipe.CPWorkDir._read_outputs added shotgrid handling,
+ - pini.pipe.CPWork use abs_path for mount mapping,
+ - pini.pipe.cache.CCPJob.find_shot added force flag,
+ - pini.pipe.cache.CCPJob._read_outputs_sg bugfix not sharing work_dir,
+ - pini.pipe.shotgrid.find_pub_files parse paths then outputs,
+
+
 ## [0.43.0] - Tue 2024-01-02 10:45
 ### Summary
  - Pini Helper:

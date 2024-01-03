@@ -1,6 +1,7 @@
 """Tools for managing PublishedFile entries in shotgrid."""
 
 import logging
+import operator
 import time
 
 from pini import pipe
@@ -115,16 +116,23 @@ def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
         filters=_filters)
     _LOGGER.debug(' - FOUND %d RESULTS', len(_results))
 
-    # Convert into output objects
-    _outs = []
+    # Find paths
+    _paths = []
     for _result in _results:
         _path = _result['path_cache']
         if not _path:
             continue
         _path = abs_path(_path, root=pipe.JOBS_ROOT)
-        _LOGGER.debug('PATH %s', _path)
         if not passes_filter(_path, filter_):
             continue
+        _paths.append((_path, _result))
+    _paths.sort(key=operator.itemgetter(0))
+    _LOGGER.debug(' - FOUND %d PATHS', len(_paths))
+
+    # Convert into output objects
+    _outs = []
+    for _path, _result in _paths:
+        _LOGGER.debug('PATH %s', _path)
         _out = pipe.to_output(_path, job=_job, catch=True)
         _LOGGER.debug(' - OUT %s', _out)
         if not _out:

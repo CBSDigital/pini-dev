@@ -1013,18 +1013,26 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPShot): shot object
         """
+        _LOGGER.debug('TO SHOT %s %s', self, shot)
         from pini import pipe
 
         _tmpl = self.find_template('entity_path', profile='shot')
+
+        # Set up sequence
         _seq = sequence
         if isinstance(sequence, pipe.CPSequence):
             _seq = _seq.name
-        _path = _tmpl.format(dict(  # pylint: disable=use-dict-literal
-            job_path=self.path, sequence=_seq, shot=shot))
+        if not _seq and 'sequence' in _tmpl.keys():
+            raise ValueError('Missing sequence key')
+
+        # Apply data to template
+        _path = _tmpl.format(
+            job_path=self.path, sequence=_seq, shot=shot)
         _class = class_ or pipe.CPShot
         try:
             return _class(_path, job=self)
-        except ValueError:
+        except ValueError as _exc:
+            _LOGGER.debug(' - EXC %s', _exc)
             return None
 
     def to_empty_file(self, dcc_=None):

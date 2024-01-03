@@ -507,20 +507,28 @@ def _read_reference_pipe_refs(selected=False):
     Returns:
         (CMayaReference list): referenced pipe refs
     """
+    _LOGGER.debug('READ REFERENCE PIPEREFS')
+
     _all_refs = pom.find_refs(selected=selected)
 
     _refs = []
     for _ref in _all_refs:
 
+        _LOGGER.debug('TESTING %s', _ref)
+        _out = pipe.to_output(_ref.path, catch=True)
+        if not _out:
+            _LOGGER.debug(' - NOT VALID OUTPUT %s', _ref.path)
+            continue
+        _LOGGER.debug(' - OUT %s', _ref)
         try:
-            _out = pipe.CACHE.obt_output(_ref.path)
+            _out_c = pipe.CACHE.obt_output(_out)
         except ValueError:
-            _LOGGER.debug(' - REJECTED %s', _ref.path)
+            _LOGGER.debug(' - MISSING FROM CACHE')
             continue
 
         if (
-                _out.type_ == 'publish' and
-                pipe.map_task(_out.task) == 'lookdev'):
+                _out_c.type_ == 'publish' and
+                pipe.map_task(_out_c.task) == 'lookdev'):
             _class = CMayaLookdevRef
         else:
             _class = CMayaReference
