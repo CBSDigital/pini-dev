@@ -94,6 +94,8 @@ def find_shots(job=None):
         'Shot', filters=[
             sg_job.to_job_filter(_job),
             ('sg_sequence', 'is_not', None),
+            ('sg_status_list', 'not_in', ('omt', )),
+            ('sg_has_3d', 'is', True),
         ],
         fields=_SHOT_FIELDS)
 

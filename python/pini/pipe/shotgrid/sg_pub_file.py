@@ -101,8 +101,16 @@ def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
     _start = time.time()
     _LOGGER.debug('FIND PUB FILES')
 
+    # Determine job
+    _job = job
+    if not _job and work_dir:
+        _job = work_dir.job
+    if not _job and entity:
+        _job = entity.job
+    if not _job:
+        _job = pipe.cur_job()
+
     # Request data
-    _job = job or pipe.cur_job()
     _filters = [
         sg_job.to_job_filter(_job),
         ('sg_status_list', 'not_in', ('omt', ))]

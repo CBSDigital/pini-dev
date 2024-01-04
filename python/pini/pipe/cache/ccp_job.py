@@ -83,6 +83,28 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         """
         return tuple(self.find_assets() + self.find_shots())
 
+    @property
+    def work_dirs(self):
+        """Obtain list of work dirs in this job.
+
+        NOTE: this is only applicable to shotgrid jobs.
+
+        Returns:
+            (CCPWorkDir tuple): work dirs
+        """
+        return tuple(self._read_work_dirs_sg())
+
+    @property
+    def outputs(self):
+        """Obtain list of outputs in this job.
+
+        NOTE: this is only applicable to shotgrid jobs.
+
+        Returns:
+            (CCPWorkDir tuple): outputs
+        """
+        return tuple(self._read_outputs_sg())
+
     @pipe_cache_result
     def find_asset_types(self, force=False):
         """Search for asset types in this job.
@@ -388,7 +410,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
         # Build entity map
         _etys = self.entities
-        _LOGGER.info(' - FOUND %d ETYS', len(_etys))
+        _LOGGER.debug(' - FOUND %d ETYS', len(_etys))
         _start = time.time()
         _ety_map = {}
         for _ety in reversed(_etys):
@@ -405,28 +427,37 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
         # Map tasks to work dirs
         _work_dirs = []
-        for _result in _results:
+        for _idx, _result in enumerate(_results):
+
+            _task = _result['sg_short_name']
+            if not _result['step'] or not _task:
+                continue
 
             # Find entity
-            _LOGGER.debug('TESTING %s %s', _result['entity']['name'],
-                          _result['sg_short_name'])
+            _LOGGER.debug(
+                '[%d/%d] TESTING %s %s', _idx, len(_results),
+                _result['entity']['name'], _result['sg_short_name'])
             _ety_data = _result['entity']
             _ety_type = _ety_data['type']
-            if not _result['step']:
-                continue
             if _ety_type in ['Sequence']:
                 _LOGGER.debug(' - REJECTING TYPE %s', _ety_type)
                 continue
             _ety_key = _ety_data['type'].lower(), _ety_data['id']
             _LOGGER.debug(' - ETY KEY %s', _ety_key)
+            if _ety_key not in _ety_map:
+                continue
             _ety = _ety_map[_ety_key]
             _LOGGER.debug(' - ETY %s', _ety)
 
-            # Build path
+            # Obtain step data
             _step_data = shotgrid.to_step_data(_result['step']['id'])
+            _LOGGER.debug(' - STEP DATA %s', _step_data)
+            _step = _step_data['short_name']
+            _LOGGER.debug(' - STEP/TASK %s %s', _step, _task)
+
+            # Build path
             _path = _tmpl.format(
-                entity_path=_ety.path, step=_step_data['short_name'],
-                task=_result['sg_short_name'])
+                entity_path=_ety.path, step=_step, task=_task)
             _LOGGER.debug(' - PATH %s', _path)
 
             _work_dir = cache.CCPWorkDir(_path, entity=_ety)

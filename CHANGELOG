@@ -1,3 +1,15 @@
+## [0.46.0] - Thu 2024-01-04 13:31
+### Summary
+ - Pini Helper:
+    - bugfix error on build work dir list if task data missing,
+    - hide omitted shots + shots without 3D,
+### Updated
+ - pini.pipe.cache.CCPJob added work_dir/outputs properties,
+ - pini.pipe.cache.CCPJob.work_dirs catch missing task + invalid shot,
+ - pini.pipe.shotgrid.find_shots ignore shots w/o 3D + omitted,
+ - pini.pipe.shotgrid.find_pub_files bugfix no shot arg passed,
+
+
 ## [0.45.0] - Thu 2024-01-04 10:16
 ### Summary
  - Pini Helper:
