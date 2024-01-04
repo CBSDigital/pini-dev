@@ -5,9 +5,9 @@ import operator
 import time
 
 from pini import pipe
-from pini.utils import abs_path, passes_filter, get_result_cacher, Seq
+from pini.utils import abs_path, passes_filter, Seq
 
-from . import sg_handler, sg_job, sg_task, sg_user, sg_entity
+from . import sg_handler, sg_job, sg_task, sg_user, sg_entity, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 _PUB_FILE_FIELDS = [
@@ -148,7 +148,7 @@ def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
     return _outs
 
 
-@get_result_cacher(use_args=['output'])
+@sg_utils.get_sg_result_cacher(use_args=['output'])
 def to_pub_file_data(output, data=None, force=False):
     """Obtain shotgrid PublishedFile data for the given output.
 

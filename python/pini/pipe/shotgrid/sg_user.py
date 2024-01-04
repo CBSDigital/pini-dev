@@ -4,14 +4,14 @@ import logging
 
 import six
 
-from pini.utils import single, get_user, cache_result
+from pini.utils import single, get_user
 
-from . import sg_handler
+from . import sg_handler, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@cache_result
+@sg_utils.sg_cache_result
 def _read_users_data():
     """Read shotgrid data for all users.
 
@@ -25,7 +25,7 @@ def _read_users_data():
     return sg_handler.find('HumanUser', _filters, _fields)
 
 
-@cache_result
+@sg_utils.sg_cache_result
 def to_user_data(user=None, catch=True, force=False):
     """Obtain shotgrid data for the given user.
 

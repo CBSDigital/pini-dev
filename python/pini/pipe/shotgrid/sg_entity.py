@@ -4,7 +4,7 @@ import logging
 import os
 
 from pini import qt, pipe
-from pini.utils import single, get_result_cacher
+from pini.utils import single
 
 from . import sg_handler, sg_utils, sg_sequence, sg_job
 
@@ -147,7 +147,7 @@ def set_entity_range(entity, range_, force=False):
         data={'sg_work_in': range_[0], 'sg_work_out': range_[1]})
 
 
-@get_result_cacher(use_args=['entity'])
+@sg_utils.get_sg_result_cacher(use_args=['entity'])
 def _ety_to_data(entity, data=None, force=False):
     """Obtain shotgrid data for the given entity.
 
@@ -176,7 +176,8 @@ def to_entity_data(entity=None, force=False):
     Returns:
         (dict): entity data
     """
-    _ety = pipe.to_entity(entity) if entity else pipe.cur_entity()
+    _ety = entity or pipe.cur_entity()
+    _ety = pipe.to_entity(entity)
     return _ety_to_data(_ety)
 
 
@@ -201,21 +202,7 @@ def to_entity_id(entity):
     Returns:
         (int): entity id
     """
-    from pini.pipe import shotgrid
-
-    _ety = pipe.to_entity(entity)
-    for _ in range(2):
-        _data = shotgrid.find_one(
-            entity_type=_ety.profile.capitalize(),
-            filters=[
-                shotgrid.to_job_filter(_ety),
-                ('code', 'is', _ety.name)],
-            fields=['id'])
-        if _data:
-            break
-        create_entity(entity)
-    assert _data
-    return _data['id']
+    return to_entity_data(entity)['id']
 
 
 def to_entity_range(entity=None):

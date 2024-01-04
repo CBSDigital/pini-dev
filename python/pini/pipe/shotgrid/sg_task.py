@@ -5,14 +5,13 @@ import os
 import pprint
 
 from pini import pipe, qt
-from pini.utils import (
-    single, assert_eq, cache_result, get_result_cacher, check_heart)
+from pini.utils import single, assert_eq, check_heart
 
 from . import sg_step, sg_handler, sg_entity, sg_job, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 _TASK_KEY = os.environ.get('PINI_SG_TASK_NAME_TOKEN', 'content')
-_TASK_FIELDS = sorted({
+TASK_FIELDS = sorted({
     _TASK_KEY, 'step', 'sg_short_name', 'task_assignees',
     'sg_status_list'})
 
@@ -31,7 +30,7 @@ def _create_task(work_dir, force=False):
     # Get step data
     _step = task_to_step_name(entity=work_dir.entity, task=work_dir.task)
     _step_data = sg_step.to_step_data(
-        step=_step, entity_type=work_dir.entity.profile.capitalize())
+        _step, entity_type=work_dir.entity.profile.capitalize())
     assert _step_data
 
     # Create task
@@ -54,13 +53,13 @@ def _create_task(work_dir, force=False):
         sg_entity.to_entity_filter(work_dir.entity),
         (_TASK_KEY, 'is', work_dir.task)]
     _task_data = single(
-        sg_handler.find('Task', filters=_filters, fields=_TASK_FIELDS),
+        sg_handler.find('Task', filters=_filters, fields=TASK_FIELDS),
         catch=True)
 
     return _task_data
 
 
-@cache_result
+@sg_utils.sg_cache_result
 def _read_step_names():
     """Read pipeline step name mappings.
 
@@ -87,7 +86,7 @@ def find_tasks(entity):
 
     _data = sg_handler.find(
         'Task', filters=[sg_entity.to_entity_filter(entity)],
-        fields=_TASK_FIELDS)
+        fields=TASK_FIELDS)
 
     _tmpl = entity.find_template('work_dir')
     _LOGGER.debug(' - TMPL %s', _tmpl)
@@ -122,7 +121,7 @@ def find_tasks(entity):
     return sorted(_work_dirs)
 
 
-@get_result_cacher(use_args=['work_dir'])
+@sg_utils.get_sg_result_cacher(use_args=['work_dir'])
 def _work_dir_to_task_data(work_dir, data=None, force=False):
     """Request task data from shotgrid.
 
@@ -150,7 +149,7 @@ def _work_dir_to_task_data(work_dir, data=None, force=False):
 
     # Read data
     _task_datas = data or sg_handler.find(
-        'Task', filters=_filters, fields=_TASK_FIELDS)
+        'Task', filters=_filters, fields=TASK_FIELDS)
     if len(_task_datas) not in (0, 1):
         pprint.pprint(_task_datas)
         raise RuntimeError('Duplicate tasks')
@@ -167,7 +166,7 @@ def _work_dir_to_task_data(work_dir, data=None, force=False):
             raise RuntimeError(_task_data[_TASK_KEY], work_dir.task)
         _step = task_to_step_name(work_dir.task)
         _step_data = shotgrid.to_step_data(
-            step=_step, entity_type=work_dir.entity.profile.capitalize())
+            _step, entity_type=work_dir.entity.profile.capitalize())
         _LOGGER.debug('STEP DATA %s', _step_data)
         assert _step_data
         assert_eq(_task_data['step']['id'], _step_data['id'])

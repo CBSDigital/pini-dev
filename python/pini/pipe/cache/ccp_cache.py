@@ -377,11 +377,18 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
 
         # Obtain work dir
         if isinstance(_match, CPWorkDir):
-            _ety = self.obt_entity(_match.entity)
-            assert isinstance(_ety, CCPEntity)
-            return single([
-                _work_dir for _work_dir in _ety.work_dirs
-                if _work_dir == _match], catch=True)
+            if pipe.MASTER == 'disk':
+                _ety = self.obt_entity(_match.entity)
+                assert isinstance(_ety, CCPEntity)
+                _result = single([
+                    _work_dir for _work_dir in _ety.work_dirs
+                    if _work_dir == _match], catch=True)
+            elif pipe.MASTER == 'shotgrid':
+                _job = self.obt_job(_match.job)
+                _result = _job.obt_work_dir(_match)
+            else:
+                raise NotImplementedError(pipe.MASTER)
+            return _result
 
         _LOGGER.debug(' - FAILED TO CONVERT MATCH %s', _match)
         raise NotImplementedError(match)
@@ -517,6 +524,7 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         _LOGGER.info('RESETTING CACHE age=%s',
                      nice_age(time.time() - self.ctime, depth=2))
         flush_caches(namespace='pipe')
+        flush_caches(namespace='shotgrid')
         self.ctime = time.time()
 
     def __repr__(self):

@@ -951,6 +951,9 @@ def to_entity(path, job=None, catch=False):
     from pini import pipe
     _LOGGER.debug('TO ENTITY %s', path)
 
+    if isinstance(path, (pipe.CPAsset, pipe.CPShot)):
+        return path
+
     # Treat as job/shot label
     if isinstance(path, six.string_types) and path.count('/') == 1:
         _job_s, _ety_s = path.split('/')

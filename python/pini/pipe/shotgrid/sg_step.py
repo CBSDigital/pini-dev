@@ -2,41 +2,52 @@
 
 import logging
 
-from pini.utils import cache_result
+import six
 
+from pini.utils import single
+
+from . import sg_handler, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
+_STEP_FIELDS = ['entity_type', 'code', 'short_name']
 
 
 class MissingPipelineStep(RuntimeError):
     """Raised when a step doesn't match the available shotgrid steps."""
 
 
-@cache_result
-def to_step_data(step, entity_type='Shot'):
+@sg_utils.sg_cache_result
+def _read_steps_data():
+    """Read all pipeline steps data.
+
+    Returns:
+        (dict): steps data
+    """
+    return sg_handler.find('Step', fields=_STEP_FIELDS)
+
+
+@sg_utils.sg_cache_result
+def to_step_data(match, entity_type=None):
     """Obtain step data for the given task and entity.
 
     Args:
-        step (str): step name
+        match (int/str): step id/name
         entity_type (str): Asset/Shot
 
     Returns:
         (dict): shotgrid step data
     """
-    from pini.pipe import shotgrid
+    _LOGGER.debug('TO STEP DATA %s %s', match, entity_type)
 
-    _LOGGER.debug('TO STEP DATA %s %s', step, entity_type)
-    _sg = shotgrid.to_handler()
+    _data = _read_steps_data()
+    if entity_type:
+        _data = [_item for _item in _data
+                 if _item['entity_type'] == entity_type]
 
-    _filters = [
-        ('code', 'is', step),
-        ('entity_type', 'is', entity_type),
-    ]
-    _fields = ['entity_type', 'code', 'short_name']
-    _LOGGER.debug(' - FILTERS %s', _filters)
-    _data = _sg.find_one('Step', filters=_filters, fields=_fields)
-    if not _data:
-        raise MissingPipelineStep(
-            'No {}/{} pipeline step found'.format(entity_type, step))
+    if isinstance(match, int):
+        return single(_item for _item in _data if _item['id'] == match)
 
-    return _data
+    if isinstance(match, six.string_types):
+        return single(_item for _item in _data if _item['code'] == match)
+
+    raise ValueError(match)

@@ -3,6 +3,7 @@
 import functools
 import logging
 import operator
+import time
 
 import six
 
@@ -121,25 +122,37 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPAsset list): matching assets
         """
+        from pini import pipe
         _LOGGER.debug('FIND ASSETS force=%d', force)
-        _types = [asset_type] if asset_type else self.asset_types
-        _LOGGER.debug(' - TYPES %s', _types)
-        _assets = []
-        for _type in _types:
-            _type_assets = self.read_type_assets(
-                asset_type=_type, force=force)
-            _LOGGER.debug(' - FOUND type=%s %s', _type, _type_assets)
-            _assets += _type_assets
+
+        if pipe.MASTER == 'disk':
+            _types = [asset_type] if asset_type else self.asset_types
+            _LOGGER.debug(' - TYPES %s', _types)
+            _assets = []
+            for _type in _types:
+                _type_assets = self.read_type_assets(
+                    asset_type=_type, force=force)
+                _LOGGER.debug(' - FOUND type=%s %s', _type, _type_assets)
+                _assets += _type_assets
+        elif pipe.MASTER == 'shotgrid':
+            if force:
+                self._read_assets_sg(force=True)
+            _assets = super(CCPJob, self).find_assets(
+                asset_type=asset_type)
+        else:
+            raise ValueError(pipe.MASTER)
+
         if filter_:
             _assets = apply_filter(
                 _assets, filter_, key=operator.attrgetter('path'))
+
         return _assets
 
     @pipe_cache_result
-    def _read_assets_disk(self, class_=None, force=False):
-        """Read assets from disk.
+    def _read_assets_disk_natd(self, class_=None, force=False):
+        """Read assets from disk (no asset type dirs).
 
-        (Only applicable to jobs where asset type dirs are not used)
+        NOTE: only applicable to jobs where asset type dirs are not used.
 
         Args:
             class_ (class): override asset class
@@ -147,7 +160,8 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         """
         from .ccp_entity import CCPAsset
         _LOGGER.debug('READ ASSETS')
-        return super(CCPJob, self)._read_assets_disk(class_=class_ or CCPAsset)
+        return super(CCPJob, self)._read_assets_disk_natd(
+            class_=class_ or CCPAsset)
 
     @pipe_cache_result
     def _read_assets_sg(self, class_=None, force=False):
@@ -177,7 +191,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('READ TYPE ASSETS %s force=%d',
                       asset_type, force)
         if not self.uses_sequence_dirs and force:
-            self._read_assets_disk(force=True)
+            self._read_assets_disk_natd(force=True)
         _assets = super(CCPJob, self).read_type_assets(
             asset_type=asset_type, class_=class_ or CCPAsset)
         _LOGGER.debug(' - FOUND %d ASSETS %s', len(_assets), _assets)
@@ -335,6 +349,91 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             return single(_matches, catch=True)
 
         return super(CCPJob, self).find_entity(_match)
+
+    def obt_work_dir(self, match):
+        """Obtain a work dir object within this job.
+
+        Args:
+            match (CPWorkDir): work dir to match
+
+        Returns:
+            (CCPWorkDir): cached work dir
+        """
+        from pini import pipe
+        if isinstance(match, pipe.CPWorkDir):
+            if pipe.MASTER == 'shotgrid':
+                _work_dirs = self._read_work_dirs_sg()
+                _result = single([
+                    _work_dir for _work_dir in _work_dirs
+                    if _work_dir == match])
+            else:
+                raise NotImplementedError(pipe.MASTER)
+            return _result
+
+        raise NotImplementedError(match)
+
+    @pipe_cache_result
+    def _read_work_dirs_sg(self):
+        """Read work dirs in this job from shotgrid.
+
+        Returns:
+            (CCPWorkDir list): work dirs
+        """
+        _LOGGER.info('READ WORK DIRS SG %s', self)
+        from pini.pipe import shotgrid, cache
+
+        _sg = shotgrid.to_handler()
+        _tmpl = self.find_template('work_dir')
+        _LOGGER.info(' - TMPL %s', _tmpl)
+
+        # Build entity map
+        _etys = self.entities
+        _LOGGER.info(' - FOUND %d ETYS', len(_etys))
+        _start = time.time()
+        _ety_map = {}
+        for _ety in reversed(_etys):
+            _key = _ety.profile, shotgrid.to_entity_id(_ety)
+            _ety_map[_key] = _ety
+        _LOGGER.info(' - MAPPED %d ETYS IN %.01fs', len(_ety_map),
+                     time.time() - _start)
+
+        # Read tasks from shotgrid
+        _results = _sg.find(
+            'Task', filters=[shotgrid.to_job_filter(self)],
+            fields=shotgrid.TASK_FIELDS+['entity'])
+        _LOGGER.info(' - FOUND %d RESULTS', len(_results))
+
+        # Map tasks to work dirs
+        _work_dirs = []
+        for _result in _results:
+
+            # Find entity
+            _LOGGER.debug('TESTING %s %s', _result['entity']['name'],
+                          _result['sg_short_name'])
+            _ety_data = _result['entity']
+            _ety_type = _ety_data['type']
+            if not _result['step']:
+                continue
+            if _ety_type in ['Sequence']:
+                _LOGGER.debug(' - REJECTING TYPE %s', _ety_type)
+                continue
+            _ety_key = _ety_data['type'].lower(), _ety_data['id']
+            _LOGGER.debug(' - ETY KEY %s', _ety_key)
+            _ety = _ety_map[_ety_key]
+            _LOGGER.debug(' - ETY %s', _ety)
+
+            # Build path
+            _step_data = shotgrid.to_step_data(_result['step']['id'])
+            _path = _tmpl.format(
+                entity_path=_ety.path, step=_step_data['short_name'],
+                task=_result['sg_short_name'])
+            _LOGGER.debug(' - PATH %s', _path)
+
+            _work_dir = cache.CCPWorkDir(_path, entity=_ety)
+            _work_dirs.append(_work_dir)
+
+        _LOGGER.info('FOUND %d WORK DIRS', len(_work_dirs))
+        return _work_dirs
 
     def find_outputs(self, *args, **kwargs):
         """Find outputs in this job.

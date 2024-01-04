@@ -6,9 +6,9 @@ import os
 import six
 
 from pini import qt, pipe
-from pini.utils import single, get_result_cacher, norm_path
+from pini.utils import single, norm_path
 
-from . import sg_handler
+from . import sg_handler, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ def find_jobs():
     return sorted(_jobs)
 
 
-@get_result_cacher(use_args=['job'])
+@sg_utils.get_sg_result_cacher(use_args=['job'])
 def _job_to_data(job, data=None, create=True, force=False):
     """Obtain shotgrid data for the given job.
 
@@ -104,6 +104,7 @@ def _job_to_data(job, data=None, create=True, force=False):
     Returns:
         (dict): shotgrid data
     """
+    assert isinstance(job, pipe.CPJob)
     _results = data or sg_handler.find(
         'Project',
         filters=[(_JOB_NAME_TOKEN, 'is', job.name)],

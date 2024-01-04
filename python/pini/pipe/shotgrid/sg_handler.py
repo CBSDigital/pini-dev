@@ -9,7 +9,9 @@ import os
 import shotgun_api3
 
 from pini import pipe
-from pini.utils import cache_result, cache_property, plural, basic_repr
+from pini.utils import plural, basic_repr
+
+from . import sg_utils
 
 _SG_KEY = os.environ.get('PINI_SG_KEY')
 _SG_SCRIPT_NAME = os.environ.get('PINI_SG_SCRIPT', 'PiniAccess')
@@ -26,14 +28,13 @@ class _CSGHandler(shotgun_api3.Shotgun):
     """
 
     n_requests = 0  # Counter for number of requests
-    requests_limit = 0  # Error if number of requests gets higher
 
-    @cache_property
-    def entity_types(self):
-        """Obtain list of entity types.
+    # Error if number of requests gets higher (for debugging)
+    requests_limit = 0
 
-        An entity is a type of entry which can be queried, eg. Project,
-        Sequence, Version.
+    @sg_utils.sg_cache_result
+    def _read_entity_types(self):
+        """Read list of entity types.
 
         Returns:
             (str list): entity types
@@ -52,7 +53,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
             (dict): creation metadata
         """
         if safe:
-            assert entity_type in self.entity_types  # pylint: disable=unsupported-membership-test
+            assert entity_type in self._read_entity_types()
         return super(_CSGHandler, self).create(entity_type, data)
 
     def find(
@@ -78,8 +79,9 @@ class _CSGHandler(shotgun_api3.Shotgun):
         Returns:
             (dict list): matching entries
         """
-        _LOGGER.debug('SG FIND %s %s %s', entity_type, filters, fields)
         self.n_requests += 1
+        _LOGGER.debug('SG FIND [%d] %s %s %s', self.n_requests,
+                      entity_type, filters, fields)
         if self.requests_limit and self.n_requests > self.requests_limit:
             raise RuntimeError('Went over requests limit')
 
@@ -103,7 +105,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
             include_archived_projects=include_archived_projects,
             additional_filter_presets=additional_filter_presets)
 
-    @cache_result
+    @sg_utils.sg_cache_result
     def find_fields(self, entity_type):
         """Read fields stored for the given entity type.
 
@@ -229,7 +231,7 @@ def find_one(entity_type, filters=(), fields=(), id_=None):
         entity_type, filters=_filters, fields=fields)
 
 
-@cache_result
+@sg_utils.sg_cache_result
 def to_handler():
     """Obtain a shotgrid handler object.
 

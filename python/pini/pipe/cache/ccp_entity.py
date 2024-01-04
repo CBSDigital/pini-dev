@@ -104,11 +104,17 @@ class CCPEntity(CPEntity):
         """
         from pini import pipe
         if isinstance(match, pipe.CPWorkDir):
-            return single([
-                _work_dir for _work_dir in self.work_dirs
-                if _work_dir == match],
-                catch=catch,
-                error='Failed to find work dir '+match.path)
+            if pipe.MASTER == 'disk':
+                _result = single([
+                    _work_dir for _work_dir in self.work_dirs
+                    if _work_dir == match],
+                    catch=catch,
+                    error='Failed to find work dir '+match.path)
+            elif pipe.MASTER == 'shotgrid':
+                _result = self.job.obt_work_dir(match)
+            else:
+                raise NotImplementedError(pipe.MASTER)
+            return _result
         raise NotImplementedError
 
     def find_work_dirs(self, force=False, **kwargs):

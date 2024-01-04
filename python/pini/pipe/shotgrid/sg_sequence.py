@@ -3,7 +3,7 @@
 import logging
 
 from pini import pipe, qt
-from pini.utils import single, get_result_cacher
+from pini.utils import single
 
 from . import sg_job, sg_utils, sg_handler
 
@@ -74,7 +74,7 @@ def find_sequences(job, template):
     return sorted(_seqs)
 
 
-@get_result_cacher(use_args=['sequence'])
+@sg_utils.get_sg_result_cacher(use_args=['sequence'])
 def _seq_to_data(sequence, data=None, force=False):
     """Obtain shotgrid data for the given sequence.
 

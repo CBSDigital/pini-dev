@@ -1,3 +1,18 @@
+## [0.45.0] - Thu 2024-01-04 10:16
+### Summary
+ - Pini Helper:
+    - improved caching of shotgrid data for better speed,
+### Updated
+ - pini.pipe.CPJob renamed _read_assets_disk -> _read_assets_disk_natd,
+ - pini.pipe.to_entity use existing if obj already entity,
+ - pini.pipe.CPOutput.work_dir pass entity on construct to fix caching issues,
+ - pini.pipe.cache.CCPJob added work dir caching,
+ - pini.pipe.cache.CCPJob.obt_work_dir added,
+ - pini.pipe.shotgrid use separate cache namespace,
+ - pini.pipe.shotgrid.to_entity_id bugfix not using cache,
+ - pini.pipe.shotgrid cache step data,
+
+
 ## [0.44.0] - Wed 2024-01-03 15:35
 ### Summary
  - Pini Helper:

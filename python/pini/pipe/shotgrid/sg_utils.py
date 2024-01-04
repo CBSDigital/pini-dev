@@ -3,10 +3,35 @@
 import logging
 
 from pini import icons, pipe
-from pini.utils import single
+from pini.utils import single, get_result_cacher
 
 _LOGGER = logging.getLogger(__name__)
 ICON = icons.find("Spiral Notepad")
+
+
+def get_sg_result_cacher(use_args=()):
+    """Get result cacher for the shotgrid cache namespace.
+
+    Args:
+        use_args (list): args to use as cache key
+
+    Returns:
+        (fn): result cacher generation function
+    """
+    return get_result_cacher(use_args=use_args, namespace='shotgrid')
+
+
+def sg_cache_result(func):
+    """Decorate to cache a function result to the shotgrid cache namespace.
+
+    Args:
+        func (fn): function to cache
+
+    Returns:
+        (fn): decorated function
+    """
+    _cacher = get_sg_result_cacher()
+    return _cacher(func)
 
 
 def output_to_work(output):

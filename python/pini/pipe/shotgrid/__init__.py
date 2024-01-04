@@ -19,7 +19,8 @@ from .sg_entity import (
     find_shots, find_assets)
 from .sg_user import to_user_data
 from .sg_step import to_step_data, MissingPipelineStep
-from .sg_task import to_task_data, to_task_id, task_to_step_name, find_tasks
+from .sg_task import (
+    to_task_data, to_task_id, task_to_step_name, find_tasks, TASK_FIELDS)
 from .sg_version import create_version, to_version_id, to_version_data
 from .sg_pub_file import (
     create_pub_file, to_pub_file_id, to_pub_file_data, find_pub_files)

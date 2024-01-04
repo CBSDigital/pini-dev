@@ -163,7 +163,7 @@ class CPOutputBase(object):
         from pini import pipe
         if not self._work_dir and not self._tested_for_work_dir:
             try:
-                self._work_dir = pipe.CPWorkDir(self.path)
+                self._work_dir = pipe.CPWorkDir(self.path, entity=self.entity)
             except ValueError:
                 self._work_dir = None
             self._tested_for_work_dir = True

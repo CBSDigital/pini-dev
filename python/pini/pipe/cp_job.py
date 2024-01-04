@@ -385,44 +385,56 @@ class CPJob(cp_settings.CPSettingsLevel):
         from pini import pipe
 
         _LOGGER.debug('FIND ASSETS')
-        _assets = []
 
-        if not self.uses_asset_type_dirs:  # Assets in shared dir
+        if pipe.MASTER == 'disk':
 
-            # Crop template to get assets dir
-            _LOGGER.debug(' - FINDING ASSET TEMPLATE')
-            _tmpl = self.find_template('entity_path', profile='asset')
-            _tmpl = _tmpl.apply_data(job_path=self.path)
-            _tmpl = _tmpl.crop_to_token('asset', include_token_dir=False)
+            _assets = []
 
-            # Search for assets
-            _LOGGER.debug(' - SEARCHING FOR ASSETS')
-            for _path in Dir(_tmpl.pattern).find(
-                    depth=1, type_='d', catch_missing=True):
-                try:
-                    _asset = pipe.CPAsset(_path, job=self)
-                except ValueError:
-                    continue
-                if asset_type and _asset.type_ != asset_type:
-                    continue
-                _assets.append(_asset)
+            if not self.uses_asset_type_dirs:  # Assets in shared dir
+
+                # Crop template to get assets dir
+                _LOGGER.debug(' - FINDING ASSET TEMPLATE')
+                _tmpl = self.find_template('entity_path', profile='asset')
+                _tmpl = _tmpl.apply_data(job_path=self.path)
+                _tmpl = _tmpl.crop_to_token('asset', include_token_dir=False)
+
+                # Search for assets
+                _LOGGER.debug(' - SEARCHING FOR ASSETS')
+                for _path in Dir(_tmpl.pattern).find(
+                        depth=1, type_='d', catch_missing=True):
+                    try:
+                        _asset = pipe.CPAsset(_path, job=self)
+                    except ValueError:
+                        continue
+                    if asset_type and _asset.type_ != asset_type:
+                        continue
+                    _assets.append(_asset)
+
+            else:
+
+                # Search type dirs individually
+                _types = [asset_type] if asset_type else self.find_asset_types()
+                _LOGGER.debug(' - TYPES %s', _types)
+                for _type in _types:
+                    _assets += self.read_type_assets(asset_type=_type)
+
+        elif pipe.MASTER == 'shotgrid':
+            _assets = self._read_assets_sg()
+            if asset_type:
+                _assets = [_asset for _asset in _assets
+                           if _asset.type_ == asset_type]
 
         else:
-
-            # Search type dirs individually
-            _types = [asset_type] if asset_type else self.find_asset_types()
-            _LOGGER.debug(' - TYPES %s', _types)
-            for _type in _types:
-                _assets += self.read_type_assets(asset_type=_type)
+            raise ValueError
 
         _LOGGER.debug(' - FOUND %d ASSETS', len(_assets))
 
         return _assets
 
-    def _read_assets_disk(self, class_=None):
-        """Read assets from disk.
+    def _read_assets_disk_natd(self, class_=None):
+        """Read assets from disk (no asset type dirs).
 
-        (Only applicable to jobs with don't use asset type dirs)
+        NOTE: only applicable to jobs with don't use asset type dirs.
 
         Args:
             class_ (class): override asset class
@@ -715,7 +727,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         _class = class_ or pipe.CPAsset
         if not self.uses_asset_type_dirs:
             _LOGGER.debug(' - NO ASSET TYPE DIRS')
-            return [_asset for _asset in self._read_assets_disk()
+            return [_asset for _asset in self._read_assets_disk_natd()
                     if _asset.type_ == asset_type]
 
         # Setup up template
