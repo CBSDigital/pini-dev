@@ -1,3 +1,14 @@
+## [0.47.1] - Tue 2024-01-09 12:33
+### Summary
+ - Pini Helper:
+    - bugfix works not created by helper missing size/owner,
+### Updated
+ - pini.utils.Path.owner applied error on file system disabled,
+ - pini.tools.helper bugfix error on EntityLabel ctx,
+ - pini.pipe.cache.CCPWork.owner use metadata,
+ - pini.pipe.cache.CPWork._read_metadata build default metadata if none exists,
+
+
 ## [0.47.0] - Tue 2024-01-09 10:51
 ### Summary
  - Pini Helper:

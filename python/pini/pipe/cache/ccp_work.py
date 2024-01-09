@@ -184,6 +184,14 @@ class CCPWork(CPWork):
             return self.image
         return None
 
+    def owner(self):
+        """Obtain owner of this file.
+
+        Returns:
+            (str): owner
+        """
+        return self.metadata.get('owner')
+
     @functools.wraps(CPWork.save)
     def save(self, *args, **kwargs):
         """Save this work."""

@@ -187,7 +187,20 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         Returns:
             (dict): metadata
         """
-        return self.metadata_yml.read_yml(catch=True)
+        if self.metadata_yml.exists():
+            _data = self.metadata_yml.read_yml()
+        elif not self.exists():
+            _data = {}
+        else:
+            _owner = self.user or self.owner()
+            _mtime = int(File(self).mtime())
+            _data = {
+                'size': self.size(),
+                'owner': _owner,
+                'mtime': _mtime,
+            }
+            self.metadata_yml.write_yml(_data)
+        return _data
 
     def find_latest(self, catch=False):
         """Find latest version of this work file.

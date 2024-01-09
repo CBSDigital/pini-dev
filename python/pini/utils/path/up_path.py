@@ -145,6 +145,7 @@ class Path(object):
         Returns:
             (str): owner
         """
+        up_utils.error_on_file_system_disabled()
         if os.name == 'nt':
             return _get_owner_nt(self.path)
         from os import stat

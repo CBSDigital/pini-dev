@@ -620,7 +620,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add recent entities
         _r_etys = []
-        for _r_work in pipe.CACHE.recent_work():
+        for _r_work in pipe.recent_work():
             _LOGGER.debug('CHECKING WORK %s', _r_work)
             if _r_work.entity == self.entity:
                 continue
