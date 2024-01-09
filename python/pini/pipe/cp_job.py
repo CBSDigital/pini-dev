@@ -1110,6 +1110,7 @@ def obtain_job(match):
     Returns:
         (CPJob): job object
     """
+    _LOGGER.debug('OBT JOB %s', match)
     _job = _JOB_MATCHES.get(match)
     if not _job:
         _job = find_job(match)
@@ -1187,6 +1188,8 @@ def find_jobs(filter_=None, class_=None, cfg_name=None, jobs_root=None):
     for _dir in _dirs:
         _LOGGER.debug(' - TESTING DIR %s', _dir)
         _job = _class(_dir, jobs_root=_root)
+        if _job.name not in _JOB_MATCHES:
+            _JOB_MATCHES[_job.name] = _job
         if not passes_filter(_job.name, filter_):
             continue
         if cfg_name and (

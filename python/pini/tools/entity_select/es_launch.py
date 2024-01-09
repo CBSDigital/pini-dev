@@ -25,7 +25,7 @@ def launch(execute='Execute', title='Select Entity', target=None):
     if not _trg and helper.DIALOG and helper.DIALOG.entity:
         _trg = helper.DIALOG.entity
     if not _trg:
-        _recent = pipe.CACHE.recent_entities()
+        _recent = pipe.recent_entities()
         if _recent:
             _trg = _recent[0]
 

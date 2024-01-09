@@ -624,6 +624,7 @@ PRINT = EMOJI.find('Downwards Button')
 REFRESH = EMOJI.find('Counterclockwise Arrows Button')
 RESET = EMOJI.find('Broom')
 SAVE = EMOJI.find('Floppy Disk')
+TEST = EMOJI.find('Alembic')
 
 FRUIT = EMOJI.find_grp('fruit')
 

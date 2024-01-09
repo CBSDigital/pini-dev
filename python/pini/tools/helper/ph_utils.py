@@ -222,6 +222,22 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
 
 
 @cache_result
+def obt_icon_pixmap(path, size):
+    """Obtain pixmap for the given icon/size, resuing existing icons.
+
+    Args:
+        path (str): path to pixmap
+        size (int): icon size
+
+    Returns:
+        (QPixmap): icon
+    """
+    _pix = qt.CPixmap(path)
+    _pix = _pix.resize(size)
+    return _pix
+
+
+@cache_result
 def output_to_icon(output, overlay=None):
     """Obtain an icon for the given output.
 

@@ -698,7 +698,7 @@ class _UiHandler(object):
             return _result
 
         # Rebuild ui object
-        _LOGGER.info('UI ERRORED - REBUILDING')
+        _LOGGER.info('UI GARGAGE COLLECTED (%s) - REBUILDING', attr)
         self.rebuild_ui()
         return getattr(self.ui, attr)
 

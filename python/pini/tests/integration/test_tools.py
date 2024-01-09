@@ -2,7 +2,7 @@ import logging
 import unittest
 
 from pini import pipe, dcc, testing
-from pini.tools import helper, job_manager
+from pini.tools import helper, job_manager, error
 from pini.utils import strftime
 
 _LOGGER = logging.getLogger(__name__)
@@ -11,6 +11,8 @@ _LOGGER = logging.getLogger(__name__)
 class TestPiniHelper(unittest.TestCase):
 
     def test(self):
+
+        assert not error.TRIGGERED
 
         _helper = helper.launch()
         dcc.new_scene(force=True)
@@ -88,6 +90,8 @@ class TestPiniHelper(unittest.TestCase):
         _seq.delete(force=True)
         pipe.CACHE.reset()
         dcc.new_scene(force=True)
+
+        assert not error.TRIGGERED
 
 
 class TestJobManager(unittest.TestCase):

@@ -12,7 +12,7 @@ from pini import pipe, icons, dcc, qt
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, assert_eq, wrap_fn, chain_fns, copied_path, clip, Video, Seq,
+    File, wrap_fn, chain_fns, copied_path, clip, Video, Seq,
     get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
@@ -37,10 +37,12 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     ui = None
     timer = None
+    target = None
+
     _cur_tab = None
 
     def __init__(self, jump_to=None, admin=None, load_settings=True,
-                 show=True):
+                 show=True, reset_cache=True):
         """Constructor.
 
         Args:
@@ -48,11 +50,15 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             admin (bool): launch in admin mode with create entity/task options
             load_settings (bool): load settings on launch
             show (bool): show on launch
+            reset_cache (bool): reset pipeline cache on launch
         """
         _LOGGER.debug('INIT')
         from pini.tools import helper
         helper.DIALOG = self
-        pipe.CACHE.reset()
+        if reset_cache:
+            pipe.CACHE.reset()
+
+        self._set_target(jump_to)
 
         for _tab in [CLWorkTab, CLExportTab, CLSceneTab]:
             _tab.__init__(self)
@@ -82,16 +88,33 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.WWorks.doubleClicked.connect(wrap_fn(self._callback__WLoad))
 
         if load_settings:
+            _LOGGER.debug('LOADING SETTINGS')
             self.load_settings()
         self.ui.MainPane.select_tab('Work')
-        self._select_default_project(jump_to)
         if show:
             self.show()
 
         self._start_timer()
 
+        self.target = None
+
     def init_ui(self):
         """Build ui elements."""
+
+        # Disable save settings on pipe elements
+        for _elem in [
+                self.ui.Job,
+                self.ui.Profile,
+                self.ui.EntityType,
+                self.ui.Entity,
+                self.ui.WTasks,
+                self.ui.WTaskText,
+                self.ui.WTags,
+                self.ui.WTagText,
+                self.ui.WWorks,
+                self.ui.WWorkPath,
+        ]:
+            _elem.disable_save_settings = True
 
     @property
     def job(self):
@@ -117,32 +140,30 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _LOGGER.debug('START TIMER')
         self.timer = self.startTimer(5000)
 
-    def _select_default_project(self, trg):
-        """Select default project in the ui.
+    def _set_target(self, target):
+        """Set target project in the ui.
 
         If a path has been passed on init, this is used. If the dcc has a
         scene currently open, then this is used. If there are recently
         used work files in the list, then the most recent one is used.
 
         Args:
-            trg (str): target passed on init ui
+            target (str): target passed on init ui
         """
-        _trg = trg
-        if not _trg:
+        self.target = target
+        if not self.target:
             _cur_work = pipe.cur_work()
             if _cur_work:
-                _trg = _cur_work
-        if not _trg:
+                self.target = _cur_work
+        if not self.target:
             _cur_out = pipe.cur_output()
             if _cur_out:
-                _trg = _cur_out.metadata.get('src')
-        if not _trg:
+                self.target = _cur_out.metadata.get('src')
+        if not self.target:
             _recent = pipe.recent_work()
             if _recent:
-                _trg = _recent[0].path
-        _LOGGER.debug(' - SELECT DEFAULT PROJECT %s', _trg)
-        if _trg:
-            self.jump_to(_trg)
+                self.target = _recent[0].path
+        _LOGGER.info(' - TARGET %s', self.target)
 
     def jump_to(self, path):
         """Jump interface to the given path.
@@ -152,78 +173,11 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         """
         _LOGGER.debug('JUMP TO %s', path)
 
-        # Select job
-        try:
-            _job = pipe.CPJob(path)
-        except ValueError:
-            _LOGGER.debug(' - FAILED TO BUILD JOB')
-            return
-
-        if self.ui.Job.selected_data() != _job:
-            try:
-                self.ui.Job.select_data(_job)
-            except ValueError:
-                return
-
-        # Select entity
-        try:
-            _entity = pipe.to_entity(path)
-        except ValueError:
-            return
-        self._jump_to_entity(_entity)
-
-        # Select work
-        try:
-            _work_dir = pipe.CPWorkDir(path, entity=_entity)
-        except ValueError:
-            return
-        try:
-            _work = pipe.CPWork(path, work_dir=_work_dir)
-        except ValueError:
-            return
-        self._jump_to_work(_work)
-
-    def _jump_to_entity(self, entity):
-        """Jump interface to the given entity.
-
-        Args:
-            entity (CPEntity): entity to jump to
-        """
-        _LOGGER.debug('JUMP TO ENTITY %s', entity)
-        if isinstance(entity, pipe.CPAsset):
-            _profile = 'assets'
-            _type = entity.asset_type
-        else:
-            _profile = 'shots'
-            _type = entity.sequence
-        if self.ui.Profile.currentText() != _profile:
-            self.ui.Profile.select_text(_profile)
-        assert_eq(self.ui.Profile.selected_text(), _profile)
-        if self.ui.EntityType.currentText() != _type:
-            self.ui.EntityType.select_text(_type)
-        if not self.ui.EntityType.selected_text() == _type:
-            return
-        if self.ui.Entity.selected_data() != entity:
-            self.ui.Entity.select_data(entity, catch=True)
-
-    def _jump_to_work(self, work):
-        """Jump interface to the given work file.
-
-        Args:
-            work (CPWork): work to jump to
-        """
-        _LOGGER.debug('JUMP TO WORK %s', work)
-        self.ui.MainPane.select_tab('Work')
-        if self.ui.WTasks.selected_text() != work.task:
-            self.ui.WTasks.select_text(work.task)
-        _LOGGER.debug(
-            ' - TAG %s %s', work.tag, self.ui.WTags.selected_data())
-        if self.ui.WTagText.text() != work.tag:
-            _LOGGER.debug(' - SELECTING TAG')
-            self.ui.WTagText.setText(work.tag)
-        if self.ui.WWorks.selected_data() != work:
-            _LOGGER.debug(' - SELECTING WORK %s', work)
-            self.ui.WWorks.select_data(work, catch=True)
+        self.target = path
+        _work = pipe.to_work(path)
+        if _work:
+            self.ui.MainPane.select_tab('Work')
+        self.ui.Job.redraw()
 
     def reset(self):
         """Reset pini helper."""
@@ -394,13 +348,15 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
     def _redraw__Job(self):
         _LOGGER.debug('REDRAW JOB')
         _names = [_job.name for _job in pipe.CACHE.jobs]
-        self.ui.Job.set_items(_names, data=pipe.CACHE.jobs)
+        _select = pipe.to_job(self.target) if self.target else None
+        self.ui.Job.set_items(_names, data=pipe.CACHE.jobs, select=_select)
 
     def _redraw__EntityType(self):
 
         _job = self.ui.Job.selected_data()
         _profile = self.ui.Profile.selected_text()
 
+        # Read entity types
         _data = None
         if not _job:
             _types = []
@@ -414,9 +370,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         else:
             raise ValueError(_profile)
 
+        # Determine default selection
+        _select = None
+        if self.target:
+            _ety = pipe.to_entity(self.target)
+            if _ety:
+                _select = _ety.entity_type
+                _LOGGER.debug('APPLY TARGET ETY TYPE %s', _select)
+
         _LOGGER.debug('REDRAW ENTITY TYPE %s %s', _job.name, _types)
         self.ui.EntityType.setEditable(self._admin_mode)
-        self.ui.EntityType.set_items(_types, data=_data)
+        self.ui.EntityType.set_items(_types, data=_data, select=_select)
 
     def _redraw__EntityTypeCreate(self):
         _LOGGER.debug('REDRAW EntityTypeCreate')
@@ -441,6 +405,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _type = self.ui.EntityType.selected_text()
         _LOGGER.debug('REDRAW ENTITY job=%s type=%s', self.job, _type)
 
+        # Build entity list
         if not self.job:
             _etys = []
         elif _profile == 'assets':
@@ -453,17 +418,25 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _labels = [_ety.name for _ety in _etys]
         _LOGGER.debug(' - ENTITIES %s', _etys)
 
+        # Determine default selection
+        _select = None
+        _trg_ety = pipe.to_entity(self.target, catch=True)
+        if _trg_ety:
+            _select = _trg_ety
+        elif pipe.cur_entity():
+            _select = pipe.cur_entity()
+
         self.ui.Entity.setEditable(self._admin_mode)
-        self.ui.Entity.set_items(_labels, data=_etys)
+        self.ui.Entity.set_items(_labels, data=_etys, select=_select)
 
     def _redraw__EntityCreate(self):
+        _LOGGER.debug('REDRAW ENTITY CREATE')
         _ety = self.ui.Entity.selected_data()
         _job = self.ui.Job.selected_data()
-        _LOGGER.debug('REDRAW ENTITY CREATE')
-        if _ety or not _job:
+        _ety_type = self.ui.EntityType.currentText()
+        if _ety or not _job or not _ety_type:
             _en = False
         else:
-            _ety_type = self.ui.EntityType.currentText()
             _ety_text = self.ui.Entity.currentText()
             _profile = self.ui.Profile.selected_text()
             if _profile == 'assets':
@@ -503,6 +476,15 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def _callback__Job(self):
         _LOGGER.debug('CALLBACK JOB')
+
+        # Apply target profile
+        if self.target:
+            _ety = pipe.to_entity(self.target)
+            if _ety:
+                _profile = _ety.profile+'s'
+                _LOGGER.debug('APPLY TARGET PROFILE %s', _profile)
+                self.ui.Profile.select_text(_profile)
+
         self._redraw__EntityType()
 
     def _callback__ProfileLabel(self):

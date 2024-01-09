@@ -49,7 +49,6 @@ class Path(object):
         """
         return time.time() - self.mtime()
 
-    @up_utils.block_on_file_system_disabled
     def exists(self, catch=False, root=None):
         """Test whether this path exists.
 
@@ -60,6 +59,7 @@ class Path(object):
         Returns:
             (bool): whether exists
         """
+        up_utils.error_on_file_system_disabled()
         if root:
             return self.to_abs(root=root).exists()
 
@@ -78,39 +78,39 @@ class Path(object):
         """
         return up_utils.is_abs(self.path)
 
-    @up_utils.block_on_file_system_disabled
     def is_dir(self):
         """Test whether is path is a directory.
 
         Returns:
             (bool): whether directory
         """
+        up_utils.error_on_file_system_disabled()
         return self._pathlib.is_dir()
 
-    @up_utils.block_on_file_system_disabled
     def is_file(self):
         """Test whether is path is a file.
 
         Returns:
             (bool): whether file
         """
+        up_utils.error_on_file_system_disabled()
         return self._pathlib.is_file()
 
-    @up_utils.block_on_file_system_disabled
     def mkdir(self):
         """Create this path as a directory, with all parent dirs."""
+        up_utils.error_on_file_system_disabled()
         if self.exists():
             assert self.is_dir()
             return
         os.makedirs(self.path)
 
-    @up_utils.block_on_file_system_disabled
     def mtime(self):
         """Get last modified time for this path.
 
         Returns:
             (float): mtime in secs
         """
+        up_utils.error_on_file_system_disabled()
         return os.path.getmtime(self.path)
 
     def nice_age(self):
@@ -165,7 +165,6 @@ class Path(object):
         """
         return type(self)(self.path.replace(find, replace))
 
-    @up_utils.block_on_file_system_disabled
     def size(self, catch=False):
         """Obtain size of this path and its contents.
 
@@ -175,6 +174,7 @@ class Path(object):
         Returns:
             (int): size in bytes
         """
+        up_utils.error_on_file_system_disabled()
         try:
             return self._read_size()
         except OSError as _exc:

@@ -1,11 +1,14 @@
 import unittest
 
 from pini import testing, pipe, dcc
+from pini.tools import error
 
 
 class TestCache(unittest.TestCase):
 
     def test_cache_update_on_save(self):
+
+        assert not error.TRIGGERED
 
         _shot = testing.TEST_SHOT
         _work_a1 = _shot.to_work(task='anim')
@@ -33,3 +36,5 @@ class TestCache(unittest.TestCase):
         assert _work_dir_c is pipe.CACHE.cur_work_dir
         assert _work_b1_c == pipe.CACHE.cur_work
         assert _work_b1_c is pipe.CACHE.cur_work
+
+        assert not error.TRIGGERED

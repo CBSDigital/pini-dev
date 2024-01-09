@@ -394,9 +394,34 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
         raise NotImplementedError(match)
 
+    def find_work_dirs(self, entity=None, force=False):
+        """Find work dirs within this job.
+
+        NOTE: this is only applicable to shotgrid jobs, where work dirs
+        are cached at job level.
+
+        Args:
+            entity (CPEntity): entity filter
+            force (bool): rebuild cache
+
+        Returns:
+            (CCPWorkDir list): work dirs
+        """
+        from pini import pipe
+        assert pipe.MASTER == 'shotgrid'
+        _work_dirs = []
+        for _work_dir in self._read_work_dirs_sg(force=force):
+            if entity and _work_dir.entity != entity:
+                continue
+            _work_dirs.append(_work_dir)
+        return _work_dirs
+
     @pipe_cache_result
-    def _read_work_dirs_sg(self):
+    def _read_work_dirs_sg(self, force=False):
         """Read work dirs in this job from shotgrid.
+
+        Args:
+            force (bool): rebuild cache
 
         Returns:
             (CCPWorkDir list): work dirs

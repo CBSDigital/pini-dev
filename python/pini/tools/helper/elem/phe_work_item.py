@@ -4,8 +4,9 @@ This is used to represent a work file in PiniHelper.
 """
 
 import logging
+import time
 
-from pini import qt, icons
+from pini import qt, icons, dcc
 from pini.qt import QtGui
 from pini.utils import strftime, cache_result, get_user
 
@@ -14,6 +15,10 @@ from .. import ph_utils
 _LOGGER = logging.getLogger(__name__)
 
 _FONT = QtGui.QFont()
+_OUTPUT_ICONS_OFFS = 188
+if dcc.NAME == 'hou':
+    _FONT.setPointSize(9)
+    _OUTPUT_ICONS_OFFS += 10
 _METRICS = QtGui.QFontMetrics(_FONT)
 _THUMB_H = 53
 
@@ -48,6 +53,9 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             helper (PiniHelper): parent dialog
             work (CPWork): work file to display
         """
+        _LOGGER.debug('INIT PHWorkItem')
+        _LOGGER.debug(' - WORK %s', work)
+
         self.work = work
         self.margin = 4
         self.helper = helper
@@ -61,14 +69,16 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             self.icon = _NEXT_WORK_ICON
             self.text_col = _NEXT_TEXT_COL
             self.output_tags = []
+            self._mtime = time.time()
             self._has_thumb = False
         else:
             self.icon = ph_utils.work_to_icon(work)
             self.output_tags = _get_output_tags(self.work)
             self.text_col = (
                 _DEF_TEXT_COL if self.output_tags else _NO_OUTPUT_TEXT_COL)
+            self._mtime = self.work.mtime()
+            self._has_thumb = bool(self.work.obt_image())
             self.set_notes(self.work.notes, redraw=False)
-            self._has_thumb = self.work.image.exists()
 
         _text_h = 9 + self._line_h * self._to_n_lines()
 
@@ -105,7 +115,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         ]).format(
             work=self.work,
             owner=_owner,
-            date=strftime('%a %b %d %H:%M%P', self.work.mtime()))
+            date=strftime('%a %b %d %H:%M%P', self._mtime))
 
         if _size_str:
             _text += '\n - Size: '+_size_str
@@ -177,13 +187,13 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
                 _size = 13
             _icon = _to_output_icon(_tag, size=_size)
             _indent = 11
-            _pos = (_indent + 188 + 13*_idx, _indent)
+            _pos = (_indent + _OUTPUT_ICONS_OFFS + 13*_idx, _indent)
             pix.draw_overlay(_icon, pos=_pos, anchor='C')
 
         # Add thumb if available
         if self._has_thumb:
             _margin = 10
-            _pix = qt.CPixmap(self.work.image)
+            _pix = qt.CPixmap(self.work.obt_image())
             _size = _pix.size() * _THUMB_H/_pix.height()
             self._draw_right_fade(pix, offset=_size.width()+_margin*2)
             pix.draw_overlay(

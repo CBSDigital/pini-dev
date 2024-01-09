@@ -2,8 +2,8 @@ import unittest
 import logging
 
 from pini import testing, dcc, pipe
-from pini.tools import helper
-from pini.utils import File
+from pini.tools import helper, error
+from pini.utils import File, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -11,10 +11,16 @@ _LOGGER = logging.getLogger(__name__)
 class TestHelper(unittest.TestCase):
 
     def setUp(self):
+        assert not error.TRIGGERED
         if not helper.DIALOG:
             helper.launch()
+        assert not error.TRIGGERED
 
     def test_helper_caching(self):
+
+        assert not error.TRIGGERED
+
+        dcc.new_scene(force=True)
 
         # Check outputs exists
         _work = testing.TEST_SHOT.to_work(task='anim', tag='test')
@@ -49,10 +55,17 @@ class TestHelper(unittest.TestCase):
         testing.enable_file_system(True)
         _helper.ui.MainPane.select_tab('Scene')
 
+        assert not error.TRIGGERED
+
     def test_save_new_tag(self):
+
+        _LOGGER.info('TEST SAVE NEW TAG')
+
+        assert not error.TRIGGERED
 
         _shot = testing.TEST_SHOT
         _work = _shot.to_work(task='anim')
+        _LOGGER.info(' - WORK %s', _work.path)
 
         # Reset
         for _o_work in _work.work_dir.find_works():
@@ -63,28 +76,35 @@ class TestHelper(unittest.TestCase):
         _work.save(force=True)
         pipe.CACHE.reset()
 
-        _cl = helper.DIALOG
-        if not _cl:
-            _cl = helper.launch()
+        _helper = helper.DIALOG
+        if not _helper:
+            _helper = helper.launch()
         else:
-            _cl.ui.Refresh.click()
-        _cl.jump_to(_work.path)
-        _cl.ui.WWorksRefresh.click()
+            _helper.ui.Refresh.click()
+        _helper.jump_to(_work)
+        assert_eq(_helper.work, _work)
+        _helper.ui.WWorksRefresh.click()
+        assert_eq(_helper.work, pipe.CACHE.cur_work)
 
-        _work_dir_c = _cl.work_dir
-        assert _cl.job is pipe.CACHE.cur_job
-        assert _cl.work_dir is pipe.CACHE.cur_work_dir
-        assert _cl.work is pipe.CACHE.cur_work
+        _work_dir_c = _helper.work_dir
+        assert _helper.job is pipe.CACHE.cur_job
+        assert _helper.work_dir is pipe.CACHE.cur_work_dir
+        assert _helper.work is pipe.CACHE.cur_work
 
-        _cl.ui.WTagText.setText('tmp1')
-        assert _cl.work_dir is pipe.CACHE.cur_work_dir
-        assert _cl.work_dir is _work_dir_c
+        _helper.ui.WTagText.setText('tmp1')
+        assert _helper.work_dir is pipe.CACHE.cur_work_dir
+        assert _helper.work_dir is _work_dir_c
 
-        _cl._callback__WSave(force=True)
-        assert _cl.work_dir is pipe.CACHE.cur_work_dir
-        assert _cl.work is pipe.CACHE.cur_work
+        assert _helper.work
+        _helper._callback__WSave(force=True)
+        assert _helper.work_dir is pipe.CACHE.cur_work_dir
+        assert _helper.work is pipe.CACHE.cur_work
+
+        assert not error.TRIGGERED
 
     def scene_refs_filter_test(self):
+
+        assert not error.TRIGGERED
 
         _filters = [helper.DIALOG.ui.SSceneRefsShowLookdevs,
                     helper.DIALOG.ui.SSceneRefsShowRigs,
@@ -96,3 +116,5 @@ class TestHelper(unittest.TestCase):
         helper.DIALOG.ui.SSceneRefsTypeFilterReset.click()
         for _filter in _filters:
             assert not _filter.isChecked()
+
+        assert not error.TRIGGERED

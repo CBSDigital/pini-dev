@@ -134,7 +134,6 @@ class Dir(up_path.Path):
         if not self.exists():
             self.mkdir()
 
-    @up_utils.block_on_file_system_disabled
     def move_to(self, target, force=False):
         """Move this dir to a different location.
 
@@ -142,6 +141,7 @@ class Dir(up_path.Path):
             target (str): target location
             force (bool): move without confirmation
         """
+        up_utils.error_on_file_system_disabled()
         if not force:
             raise NotImplementedError
         _trg = Dir(target)

@@ -5,6 +5,7 @@ This managing iteraction with the shotgrid via the shotgun_api3 api.
 
 import logging
 import os
+import time
 
 import shotgun_api3
 
@@ -28,6 +29,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
     """
 
     n_requests = 0  # Counter for number of requests
+    request_t = 0.0  # Time spent on requests
 
     # Error if number of requests gets higher (for debugging)
     requests_limit = 0
@@ -98,12 +100,15 @@ class _CSGHandler(shotgun_api3.Shotgun):
                         'Bad field{} {}'.format(
                             plural(_bad_fields), '/'.join(_bad_fields)))
 
-        return super(_CSGHandler, self).find(
+        _start = time.time()
+        _result = super(_CSGHandler, self).find(
             entity_type, filters, fields, order=order,
             filter_operator=filter_operator, limit=limit,
             retired_only=retired_only, page=page,
             include_archived_projects=include_archived_projects,
             additional_filter_presets=additional_filter_presets)
+        self.request_t += time.time() - _start
+        return _result
 
     @sg_utils.sg_cache_result
     def find_fields(self, entity_type):
@@ -130,7 +135,11 @@ class _CSGHandler(shotgun_api3.Shotgun):
         """
         _LOGGER.debug('SG FIND ONE %s %s %s', entity_type, filters, fields)
         self.n_requests += 1
-        return super(_CSGHandler, self).find_one(entity_type, filters, fields)
+        _start = time.time()
+        _result = super(_CSGHandler, self).find_one(
+            entity_type, filters, fields)
+        self.request_t += time.time() - _start
+        return _result
 
     def __repr__(self):
         return basic_repr(self, None)
@@ -232,8 +241,11 @@ def find_one(entity_type, filters=(), fields=(), id_=None):
 
 
 @sg_utils.sg_cache_result
-def to_handler():
+def to_handler(force=False):
     """Obtain a shotgrid handler object.
+
+    Args:
+        force (bool): rebuild handler
 
     Returns:
         (CSGHandler): pini shotgrid handler

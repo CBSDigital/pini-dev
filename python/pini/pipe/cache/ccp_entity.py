@@ -130,8 +130,31 @@ class CCPEntity(CPEntity):
             self._read_work_dirs(force=True)
         return super(CCPEntity, self).find_work_dirs(**kwargs)
 
-    @pipe_cache_on_obj
     def _read_work_dirs(self, class_=None, force=False):
+        """Read all work dirs for this entity.
+
+        Args:
+            class_ (class): override work dir class
+            force (bool): rebuild cache
+
+        Returns:
+            (CCPWorkDir): work dirs
+        """
+        from pini import pipe
+        _LOGGER.debug('READ WORK DIRS %s %s', nice_id(self), self)
+        if class_:
+            raise NotImplementedError
+        if pipe.MASTER == 'disk':
+            _work_dirs = self._read_work_dirs_disk(force=force)
+        elif pipe.MASTER == 'shotgrid':
+            _work_dirs = self.job.find_work_dirs(entity=self, force=force)
+        else:
+            raise NotImplementedError
+        _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
+        return _work_dirs
+
+    @pipe_cache_on_obj
+    def _read_work_dirs_disk(self, class_=None, force=False):
         """Find tasks in this entity.
 
         Args:
@@ -142,11 +165,10 @@ class CCPEntity(CPEntity):
             (CCPWorkDir list): work dirs
         """
         from pini.pipe import cache
-        _LOGGER.debug('READ WORK DIRS %s %s', nice_id(self), self)
-        _work_dirs = super(CCPEntity, self)._read_work_dirs(
-            class_=class_ or cache.CCPWorkDir)
-        _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
-        return _work_dirs
+        if class_:
+            raise NotImplementedError
+        return super(CCPEntity, self)._read_work_dirs_disk(
+            class_=cache.CCPWorkDir)
 
     def to_work_dir(self, *args, **kwargs):
         """Obtain a work dir object within this entity.
@@ -358,10 +380,12 @@ class CCPEntity(CPEntity):
         from pini import pipe
         if force:
             if pipe.MASTER == 'disk':
-                self._read_work_dirs(force=True)
+                self._read_work_dirs_disk(force=True)
                 self._read_publishes_disk(force=True)
             elif pipe.MASTER == 'shotgrid':
                 self.job.find_publishes(force=True)
+            else:
+                raise NotImplementedError(pipe.MASTER)
         return super(CCPEntity, self).find_publishes(**kwargs)
 
     @pipe_cache_to_file

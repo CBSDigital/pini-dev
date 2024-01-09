@@ -10,7 +10,7 @@ from .cp_sequence import CPSequence, cur_sequence
 
 from .cp_asset import CPAsset, cur_asset
 from .cp_shot import CPShot, cur_shot, to_shot
-from .cp_entity import to_entity, cur_entity, find_entity
+from .cp_entity import to_entity, cur_entity, find_entity, recent_entities
 
 from .cp_work_dir import (
     CPWorkDir, cur_work_dir, to_work_dir, cur_task, map_task)

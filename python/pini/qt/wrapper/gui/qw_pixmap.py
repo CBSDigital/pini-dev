@@ -3,7 +3,10 @@
 import logging
 import os
 
-from pini.utils import File, TMP_PATH, abs_path, basic_repr
+import six
+
+from pini.utils import (
+    File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled)
 
 from .qw_painter import CPainter
 from ...q_mgr import QtGui, Qt, QtCore
@@ -20,6 +23,8 @@ class CPixmap(QtGui.QPixmap):
         _args = list(args)
         if len(_args) == 1 and isinstance(_args[0], File):
             _args[0] = _args[0].path
+        if len(_args) == 1 and isinstance(_args[0], six.string_types):
+            error_on_file_system_disabled()
 
         super(CPixmap, self).__init__(*_args)
 
@@ -407,6 +412,7 @@ class CPixmap(QtGui.QPixmap):
                 -1 - use system default quality
             verbose (int): print process data
         """
+        error_on_file_system_disabled()
         assert self.width() and self.height()
 
         _file = File(file_)

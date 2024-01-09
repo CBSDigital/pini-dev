@@ -7,7 +7,7 @@ from pini.qt import QtGui
 from pini.utils import basic_repr, File
 
 from ..ph_utils import (
-    output_to_icon, UPDATE_ICON, output_to_type_icon)
+    output_to_icon, UPDATE_ICON, output_to_type_icon, obt_icon_pixmap)
 
 _NEW_REF_ICON = icons.find('Star')
 _DELETE_REF_ICON = icons.find('Cross Mark')
@@ -136,8 +136,8 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _out = self.ref.to_output(cache=False)
 
         # Draw icon
-        pix.draw_overlay(
-            self.icon, (self.margin, self.margin+12), size=25, anchor='L')
+        _over = obt_icon_pixmap(self.icon, size=25)
+        pix.draw_overlay(_over, (self.margin, self.margin+12), anchor='L')
 
         # Draw namespace
         _FONT.setPointSize(7.5)
@@ -178,8 +178,8 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         # Draw type icon
         _icon = output_to_type_icon(_out)
         if _icon:
-            pix.draw_overlay(
-                _icon, (_right_m+6, 16), anchor='R', size=16)
+            _over = obt_icon_pixmap(_icon, size=16)
+            pix.draw_overlay(_over, (_right_m+6, 16), anchor='R')
 
         # Draw version text
         _text_x = _right_m - 13

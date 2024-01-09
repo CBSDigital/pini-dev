@@ -83,7 +83,6 @@ def find_tasks(entity):
     check_heart()
 
     _LOGGER.info('FIND TASKS %s', entity)
-
     _data = sg_handler.find(
         'Task', filters=[sg_entity.to_entity_filter(entity)],
         fields=TASK_FIELDS)

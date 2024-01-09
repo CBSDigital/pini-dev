@@ -220,6 +220,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('FIND NEXT %s', self)
 
         _latest = self.find_latest(catch=True)
+        _LOGGER.debug(' - LATEST %s', _latest)
 
         # Determine next version
         if not _latest:
@@ -842,6 +843,14 @@ def to_work(file_, catch=True):
         (CPWork): work file
     """
     _LOGGER.debug('TO WORK %s', file_)
+
+    if isinstance(file_, CPWork):
+        return file_
+    if file_ is None:
+        if catch:
+            return None
+        raise ValueError
+
     _file = map_path(file_)
     _LOGGER.debug(' - FILE %s', _file)
     try:

@@ -1,5 +1,7 @@
 """Tools for managing launching pini helper."""
 
+# pylint: disable=unused-argument
+
 import copy
 import logging
 
@@ -13,8 +15,8 @@ _LOGGER = logging.getLogger(__name__)
 
 @usage.get_tracker('LaunchPiniHelper')
 @error.catch
-def launch(jump_to=None, admin=None, parent=None, load_settings=True, show=True,  # pylint: disable=unused-argument
-           use_basic=False):
+def launch(jump_to=None, admin=None, parent=None, load_settings=True, show=True,
+           use_basic=False, reset_cache=True):
     """Launch PiniHelper interface.
 
     Args:
@@ -24,6 +26,7 @@ def launch(jump_to=None, admin=None, parent=None, load_settings=True, show=True,
         load_settings (bool): load settings on launch
         show (bool): show on launch
         use_basic (bool): ignore any dcc overrides
+        reset_cache (bool): reset pipeline cache on launch
 
     Returns:
         (PiniHelper): PiniHelper instance

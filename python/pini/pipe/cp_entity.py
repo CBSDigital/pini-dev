@@ -937,6 +937,21 @@ def find_entity(name):
     return _job.find_entity(_label)
 
 
+def recent_entities():
+    """Obtain list of recentnly used entities.
+
+    Returns:
+        (CPEntity list): entities
+    """
+    from pini import pipe
+    _etys = []
+    for _work in pipe.recent_work():
+        if _work.entity in _etys:
+            continue
+        _etys.append(_work.entity)
+    return _etys
+
+
 def to_entity(path, job=None, catch=False):
     """Map the given path to an entity.
 

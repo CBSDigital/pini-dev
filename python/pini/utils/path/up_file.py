@@ -68,7 +68,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """Open a browser in this file's parent directory."""
         self.to_dir().browser()
 
-    @up_utils.block_on_file_system_disabled
     def copy_to(self, trg, force=False, diff=False, verbose=1):
         """Copy this file.
 
@@ -78,6 +77,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             diff (bool): show diffs
             verbose (int): print process data (required)
         """
+        up_utils.error_on_file_system_disabled()
         _LOGGER.debug('COPY TO %s', self)
         _LOGGER.debug(' - TARGET %s', trg)
         _trg = File(trg)
@@ -104,7 +104,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _trg.test_dir()
         shutil.copyfile(self.path, _trg.path)
 
-    @up_utils.block_on_file_system_disabled
     def delete(self, wording='Delete', execute=True, icon=None, force=False):
         """Delete this file.
 
@@ -115,6 +114,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             icon (str): path to icon for confirmation dialog
             force (bool): delete without warning dialog
         """
+        up_utils.error_on_file_system_disabled()
         if not self.exists():
             return
         if not force:
@@ -229,7 +229,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         for _bkp in _to_flush:
             _bkp.delete(force=True)
 
-    @up_utils.block_on_file_system_disabled
     def matches(self, other):
         """Test if this file matches another one.
 
@@ -239,10 +238,10 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         Returns:
             (bool): whether files match
         """
+        up_utils.error_on_file_system_disabled()
         _other = File(other)
         return filecmp.cmp(self.path, _other.path)
 
-    @up_utils.block_on_file_system_disabled
     def move_to(self, target, force=False):
         """Move this file to another location.
 
@@ -250,12 +249,12 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             target (str): target location
             force (bool): overwrite existing target without confirmation
         """
+        up_utils.error_on_file_system_disabled()
         _trg = File(target)
         _trg.delete(force=force, wording='Replace')
         _trg.test_dir()
         shutil.move(self.path, _trg.path)
 
-    @up_utils.block_on_file_system_disabled
     def read(self, encoding=None, catch=False):
         """Read contents of this file as text.
 
@@ -266,6 +265,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         Returns:
             (str): file contents
         """
+        up_utils.error_on_file_system_disabled()
 
         if not self.exists():
             if catch:
@@ -398,17 +398,16 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _LOGGER.debug(' - PATH %s', _path)
         return File(_path)
 
-    @up_utils.block_on_file_system_disabled
     def touch(self):
         """Touch this file.
 
         Create an empty file if it doesn't exist, otherwise just update
         the mtime.
         """
+        up_utils.error_on_file_system_disabled()
         self.test_dir()
         self._pathlib.touch()
 
-    @up_utils.block_on_file_system_disabled
     def write(self, text, force=False, wording='Overwrite', encoding=None):
         """Write text to this file.
 
@@ -418,6 +417,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             wording (str): override warning dialog wording
             encoding (str): apply encoding (eg. utf-8)
         """
+        up_utils.error_on_file_system_disabled()
 
         # Handle replace
         if self.exists():
@@ -444,7 +444,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         assert self.extn == 'json'
         self.write(json.dumps(data))
 
-    @up_utils.block_on_file_system_disabled
     def write_pkl(self, data, force=False):
         """Write data to pickle file.
 
@@ -452,6 +451,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             data (any): data to pickle
             force (bool): replace existing file without confirmation
         """
+        up_utils.error_on_file_system_disabled()
         self.test_dir()
         assert self.extn == 'pkl'
         self.delete(force=force)
@@ -459,7 +459,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         pickle.dump(data, _handle, protocol=0)
         _handle.close()
 
-    @up_utils.block_on_file_system_disabled
     def write_yml(
             self, data, force=False, mode='w', fix_unicode=False,
             wording='Replace'):
@@ -473,6 +472,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 safe mode which prevents arbitrary objects from being saved
             wording (str): override warning dialog wording
         """
+        up_utils.error_on_file_system_disabled()
         assert self.extn == 'yml'
         if mode != 'a':
             self.delete(force=force, wording=wording)

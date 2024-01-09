@@ -177,26 +177,15 @@ def abs_path(path, win=False, root=None):
     return _path
 
 
-def block_on_file_system_disabled(func):
-    """Block the given function from executing if file system disabled.
+def error_on_file_system_disabled():
+    """Thown an error if file system disabled.
 
-    Args:
-        func (fn): function to block
-
-    Returns:
-        (fn): function with block installed
+    File system is disabled using  $PINI_DISABLE_FILE_SYSTEM. This is
+    used for debugging.
     """
-
-    @functools.wraps(func)
-    def _env_blocked_func(*args, **kwargs):
-
-        if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
-            raise DebuggingError(
-                "Access file system disabled using PINI_DISABLE_FILE_SYSTEM")
-
-        return func(*args, **kwargs)
-
-    return _env_blocked_func
+    if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
+        raise DebuggingError(
+            "Access file system disabled using PINI_DISABLE_FILE_SYSTEM")
 
 
 def copied_path():

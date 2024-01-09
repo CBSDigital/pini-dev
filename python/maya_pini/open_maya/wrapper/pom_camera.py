@@ -73,9 +73,9 @@ def active_cam():
     """
     _name = ui.get_active_cam()
     _clean_name = to_node(_name)
-    _LOGGER.info('ACTIVE CAM %s clean=%s', _name, _clean_name)
+    _LOGGER.debug('ACTIVE CAM %s clean=%s', _name, _clean_name)
     if _name != _clean_name and single(cmds.ls(_clean_name), catch=True):
-        _LOGGER.info(' - CLEAN NAME IS SAFE')
+        _LOGGER.debug(' - CLEAN NAME IS SAFE')
         _name = _clean_name
     return CCamera(_name)
 
@@ -134,7 +134,13 @@ def find_render_cam():
     Returns:
         (CCamera): renderable camera (if any)
     """
-    return single(find_cams(default=None, renderable=True))
+    _cams = find_cams(default=None, renderable=True)
+    if len(_cams) == 1:
+        return single(_cams)
+    _cams = find_cams(default=False, renderable=True)
+    if len(_cams) == 1:
+        return single(_cams)
+    raise ValueError('Failed to find render camera')
 
 
 def set_render_cam(camera):

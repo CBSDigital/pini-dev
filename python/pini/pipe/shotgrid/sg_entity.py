@@ -74,11 +74,12 @@ def find_assets(job=None):
     return _assets
 
 
-def find_shots(job=None):
+def find_shots(job=None, only_3d=False):
     """Find shots in the given job.
 
     Args:
         job (CPJob): job to read
+        only_3d (bool): filter out non-3d shots
 
     Returns:
         (CPShot list): shots
@@ -90,14 +91,14 @@ def find_shots(job=None):
     _LOGGER.debug(' - TMPL %s', _tmpl)
 
     # Read results
-    _results = sg_handler.find(
-        'Shot', filters=[
-            sg_job.to_job_filter(_job),
-            ('sg_sequence', 'is_not', None),
-            ('sg_status_list', 'not_in', ('omt', )),
-            ('sg_has_3d', 'is', True),
-        ],
-        fields=_SHOT_FIELDS)
+    _filters = [
+        sg_job.to_job_filter(_job),
+        ('sg_sequence', 'is_not', None),
+        ('sg_status_list', 'not_in', ('omt', )),
+    ]
+    if only_3d:
+        _filters += [('sg_has_3d', 'is', True)]
+    _results = sg_handler.find('Shot', filters=_filters, fields=_SHOT_FIELDS)
 
     # Build assets
     _shots = []

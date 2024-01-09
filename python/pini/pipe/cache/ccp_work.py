@@ -4,7 +4,7 @@ import functools
 import logging
 import sys
 
-from pini.utils import nice_id, File
+from pini.utils import nice_id, File, nice_size
 
 from .ccp_utils import pipe_cache_result, pipe_cache_to_file
 from ..cp_work import CPWork
@@ -161,6 +161,28 @@ class CCPWork(CPWork):
             (int): save time
         """
         return self.metadata.get('mtime')
+
+    def nice_size(self, catch=False):
+        """Obtain readable size for this work file.
+
+        Args:
+            catch (bool): no error on missing file
+
+        Returns:
+            (str): readable size
+        """
+        return nice_size(self.metadata.get('size', 0))
+
+    @pipe_cache_result
+    def obt_image(self):
+        """Obtain image for this work file.
+
+        Returns:
+            (File|None): image (if any)
+        """
+        if self.image.exists():
+            return self.image
+        return None
 
     @functools.wraps(CPWork.save)
     def save(self, *args, **kwargs):

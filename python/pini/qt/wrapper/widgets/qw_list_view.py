@@ -71,7 +71,7 @@ class CListView(QtWidgets.QListView):
             if items:
                 self.select(items[0])
         elif select:
-            self.select(select)
+            self.select(select, catch=True)
         elif select is None:
             _sel_model.clearSelection()
         else:
@@ -101,12 +101,13 @@ class CListView(QtWidgets.QListView):
             _items.append(_item)
         return _items
 
-    def select(self, obj, replace=True):
+    def select(self, obj, replace=True, catch=False):
         """Select the given object or objects.
 
         Args:
             obj (QStandardItem|any/list): what to select
             replace (bool): replace existing selection
+            catch (bool): no error if fail to select
         """
         _LOGGER.debug('SELECT %s %s', obj, self)
 
@@ -121,14 +122,17 @@ class CListView(QtWidgets.QListView):
             self.select_item(obj, replace=replace)
             return
 
-        _data = self.all_data()
-        if obj in _data:
-            _LOGGER.debug(' - DATA')
-            _idx = _data.index(obj)
+        _all_data = self.all_data()
+        _LOGGER.debug(' - ALL DATA %s', _all_data)
+        if obj in _all_data:
+            _LOGGER.debug(' - USING DATA')
+            _idx = _all_data.index(obj)
             _item = self.all_items()[_idx]
             self.select_item(_item, replace=replace)
             return
 
+        if catch:
+            return
         raise ValueError(obj)
 
     def select_item(self, item, replace=True):

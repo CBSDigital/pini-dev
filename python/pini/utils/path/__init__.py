@@ -2,7 +2,7 @@
 
 from .up_utils import (
     norm_path, HOME_PATH, TMP_PATH, abs_path, search_files_for_text,
-    restore_cwd, is_abs, copied_path)
+    restore_cwd, is_abs, copied_path, error_on_file_system_disabled)
 
 from .up_find import find
 from .up_file import File, MetadataFile

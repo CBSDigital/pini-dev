@@ -45,7 +45,6 @@ class CPTemplate(lucidity.Template):
             path_type (str): specify path type (d for dir, f for file)
             job (CPJob): template job (used to validate tokens)
         """
-        _LOGGER.debug('INIT CPTemplate')
         self._separate_dir = separate_dir
 
         _pattern = pattern

@@ -22,7 +22,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
     init_ui = ph_base.BasePiniHelper.init_ui
 
     def __init__(self, admin=None, load_settings=True, jump_to=None,
-                 parent=None, show=True):
+                 parent=None, show=True, reset_cache=True):
         """Constructor.
 
         Args:
@@ -31,6 +31,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             jump_to (str): path to point helper to on launch
             parent (QDialog): override parent dialog
             show (bool): show on launch
+            reset_cache (bool): reset pipeline cache on launch
         """
         from pini.tools import helper
         helper.MIXIN = self
@@ -48,7 +49,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
 
         ph_base.BasePiniHelper.__init__(
             self, admin=admin, load_settings=load_settings, show=False,
-            jump_to=jump_to)
+            jump_to=jump_to, reset_cache=reset_cache)
 
         self.show(dockable=True)
         self.apply_docking()

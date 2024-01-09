@@ -82,11 +82,11 @@ class CLWorkTab(object):
         return self.ui.WWorks.selected_data()
 
     def _redraw__WTasks(self):
-
-        # Read entity
         _LOGGER.debug('REDRAW TASKS %s (%s)', self.entity, dcc.NAME)
+
         _items = []
-        _select = pipe.cur_task()
+        _select = None
+
         if self.entity:
 
             # Build task items
@@ -101,6 +101,15 @@ class CLWorkTab(object):
                     _work_dir.task, col=_col, data=_work_dir)
                 _items.append(_item)
 
+            # Determine initial selection
+            if self.target:
+                _work = pipe.to_work(self.target)
+                if _work:
+                    _select = _work.task
+            if not _select:
+                _select = pipe.cur_task()
+
+        _LOGGER.debug('APPLY TASK %s %s', _items, _select)
         self.ui.WTasks.set_items(_items, select=_select)
 
     def _redraw__WTags(self):
@@ -129,11 +138,7 @@ class CLWorkTab(object):
 
         # Update widget
         _LOGGER.debug(' - items=%s', _items)
-        self.ui.WTags.set_items(_items, emit=False)
-        if _select is not EMPTY:
-            _LOGGER.debug(' - select=%s', _select)
-            self.ui.WTags.select_data(_select, emit=False)
-        self.ui.WTags.itemSelectionChanged.emit()
+        self.ui.WTags.set_items(_items, select=_select, emit=True)
 
     def _build_tags_list(self):
         """Build list of tags to display.
@@ -141,12 +146,9 @@ class CLWorkTab(object):
         Returns:
             (tuple): tags, selected tag
         """
-        _cur_work = pipe.cur_work()
-        _cur_tag = _cur_work.tag if _cur_work else EMPTY
         _ui_tag = self.ui.WTagText.text()
         _default_tag = self.job.cfg['tokens']['tag']['default']
 
-        _select = EMPTY
         _default_exists = None
         if not self.work_dir:
             _tags = []
@@ -166,17 +168,21 @@ class CLWorkTab(object):
                 _tags |= {None}
             _tags = sorted(_tags, key=pipe.tag_sort)
 
-            # Determine selected tag
-            if _cur_tag in _tags:
-                _select = _cur_tag
-            elif _ui_tag in _tags and _ui_tag in _existing_tags:
-                _select = _ui_tag
-            elif None in _tags:
-                _select = None
-            elif _existing_tags:
-                _select = sorted(_existing_tags)[0]
-            elif _tags:
-                _select = sorted(_tags)[0]
+        # Apply default selection
+        _select = None
+        _trg_work = pipe.to_work(self.target)
+        if _trg_work:
+            _select = _trg_work.tag
+        elif pipe.cur_work():
+            _select = pipe.cur_work()
+        elif _ui_tag in _tags and _ui_tag in _existing_tags:
+            _select = _ui_tag
+        elif None in _tags:
+            _select = None
+        elif _existing_tags:
+            _select = sorted(_existing_tags)[0]
+        elif _tags:
+            _select = sorted(_tags)[0]
 
         return _tags, _select, _default_exists
 
@@ -243,12 +249,14 @@ class CLWorkTab(object):
             _works = []
 
         # Create dummy next work item
+        _LOGGER.debug(' - WORK DIR %s', self.work_dir)
         if self.work_dir:
             if not _works:
                 _work = self.work_dir.to_work(
                     tag=self.tag, user=pipe.cur_user())
             else:
                 _work = _works[0]
+            _LOGGER.debug(' - WORK %s', _work)
             self.next_work = _work.find_next()
         else:
             self.next_work = None
@@ -268,17 +276,31 @@ class CLWorkTab(object):
         _cur_work = pipe.CACHE.cur_work
         _works, _limit_view = self._get_works(force=force)
         _LOGGER.debug(' - FOUND %d WORKS', len(_works))
-        _select = select
+
+        # Build items
         for _work in _works:
             _item = phe_work_item.PHWorkItem(
                 list_view=self.ui.WWorks, work=_work, helper=self)
             _items.append(_item)
-            if not _select and _work == _cur_work:
-                _select = _item
-        if not _select and len(_works) > 1:
-            _select = _works[1]
-        self.ui.WWorks.set_items(_items, select=_select)
 
+        # Determine selection
+        _trg_work = pipe.to_work(self.target)
+        _cur_work = pipe.cur_work()
+        if select:
+            _select = select
+        elif _trg_work and _trg_work in _works:
+            _select = _trg_work
+        elif _cur_work and _cur_work in _works:
+            _select = _cur_work
+        elif len(_works) > 1:
+            _select = _works[1]
+        elif _works:
+            _select = _works[0]
+        else:
+            _select = None
+
+        _LOGGER.debug(' - SELECT WORK %s', _select)
+        self.ui.WWorks.set_items(_items, select=_select)
         self._update_badly_named_files_elements()
 
     def _redraw__WWorkPath(self):
@@ -289,7 +311,7 @@ class CLWorkTab(object):
         # Build list of recent works
         _data = []
         _items = []
-        for _work in pipe.CACHE.recent_work():
+        for _work in pipe.recent_work():
             _ety = _work.shot or (_work.asset_type+'/'+_work.asset)
             _uid = '{}/{}/{}'.format(_work.job.name, _ety, _work.task)
             if _work.tag:
@@ -346,6 +368,8 @@ class CLWorkTab(object):
         self.ui.WTagText.textChanged.emit(_text)
 
     def _callback__WTagText(self):
+
+        _LOGGER.debug('CALLBACK TAG TEXT tag=%s', self.tag)
 
         # Update tags list (tags test is master)
         self.ui.WTags.blockSignals(True)

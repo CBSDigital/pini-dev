@@ -22,14 +22,13 @@ from ..cp_entity import CPEntity, cur_entity, to_entity
 from ..cp_asset import cur_asset
 from ..cp_shot import cur_shot
 from ..cp_work_dir import CPWorkDir
-from ..cp_work import CPWork, cur_work, recent_work, to_work
+from ..cp_work import CPWork, cur_work, to_work
 from ..cp_output import to_output, CPOutputBase
 
 from . import ccp_job
 from .ccp_utils import pipe_cache_on_obj, pipe_cache_result
 from .ccp_entity import CCPEntity
 from .ccp_work_dir import CCPWorkDir
-from .ccp_work import CCPWork
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -295,6 +294,20 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         _path = Dir(self.jobs_root).to_subdir(name)
         return ccp_job.CCPJob(path=_path, cache=self, jobs_root=self.jobs_root)
 
+    def obt(self, obj):
+        """Obtain the cache representation of the given object.
+
+        Args:
+            obj (any): pipeline object to retrieve from cache
+
+        Returns:
+            (any): cache representation
+        """
+        from pini import pipe
+        if isinstance(obj, pipe.CPWork):
+            return self.obt_work(obj)
+        raise NotImplementedError(obj)
+
     def obt_sequence(self, match):
         """Find a sequence object.
 
@@ -494,30 +507,6 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         """
         _ety_c = self.obt_entity(dir_)
         return _ety_c.obt_output_seq_dir(dir_, force=force)
-
-    def recent_entities(self):
-        """Obtain list of recent entities (most recent first).
-
-        Returns:
-            (CPEntity list): recent entities
-        """
-        _recent = []
-        for _work in self.recent_work():
-            if _work.entity not in _recent:
-                _recent.append(_work.entity)
-        return _recent
-
-    @pipe_cache_result
-    def recent_work(self, force=False):
-        """Obtain recent work list (most recent first).
-
-        Args:
-            force (bool): reread from disk
-
-        Returns:
-            (CPWork list): recent works
-        """
-        return [CCPWork(_work.path) for _work in recent_work()]
 
     def reset(self):
         """Reset this cache and reread all contents."""

@@ -2,7 +2,7 @@ import logging
 import unittest
 
 from pini import dcc, pipe, testing
-from pini.tools import helper
+from pini.tools import helper, error
 from pini.pipe import cache
 from pini.utils import TMP_PATH, Dir, single
 
@@ -105,6 +105,7 @@ class TestPublish(unittest.TestCase):
 
     def test_version_up_publish(self):
 
+        assert not error.TRIGGERED
         testing.TMP_ASSET.flush(force=True)
 
         _handler = dcc.find_export_handler(
@@ -129,11 +130,16 @@ class TestPublish(unittest.TestCase):
         assert not _work.find_outputs()
         _work_c = pipe.CACHE.obt_work(_work)
 
-        # Test publish without CarbLoader
+        # Test publish without PiniHelper
+        _LOGGER.info(' - CUR WORK OUTS %s', pipe.cur_work().find_outputs())
         assert not pipe.cur_work().find_outputs()
+        _LOGGER.info(' - WORK C OUTS %s', _work_c.find_outputs())
         assert not _work_c.find_outputs()
         assert not _work_c.outputs
-        _out = single(_handler.publish(force=True, version_up=False))
+        _outs = _handler.publish(force=True, version_up=False)
+        _LOGGER.info(' - OUTS %s', _outs)
+        _out = single([_out for _out in _outs if _out.extn == 'ma'])
+        _LOGGER.info(' - OUT %s', _outs)
         _work_c = pipe.CACHE.obt_work(_work_c)
         assert pipe.cur_work().find_outputs()
         assert _work_c.find_outputs()
@@ -156,13 +162,13 @@ class TestPublish(unittest.TestCase):
         assert pipe.CACHE.cur_work.ver_n == 2
         _work_c = pipe.CACHE.obt_work(_next)
 
-        # Test publish with CarbLoader
+        # Test publish with PiniHelper
         _helper = helper.DIALOG
         if not _helper:
             _helper = helper.launch()
         else:
             _helper._callback__Refresh()
-            _helper.jump_to(_work_c)
+        _helper.jump_to(_work_c)
         assert _helper.work.exists()
         assert _helper.work == pipe.cur_work()
         assert _helper.entity is pipe.CACHE.cur_entity
@@ -198,3 +204,4 @@ class TestPublish(unittest.TestCase):
         _helper.ui.WWorks.select_data(_helper.next_work)
         _helper._callback__WSave()
         assert pipe.CACHE.cur_work.ver_n == 3
+        assert not error.TRIGGERED
