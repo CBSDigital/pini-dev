@@ -23,8 +23,10 @@ _DIR = File(__file__).to_dir()
 _LOGGER = logging.getLogger(__name__)
 
 TITLE = os.environ.get('PINI_HELPER_TITLE', 'Pini Helper')
-EMOJI = icons.find_emoji("Front-Facing Baby Chick")
+_EMOJI_NAME = os.environ.get('PINI_HELPER_EMOJI', "Front-Facing Baby Chick")
+EMOJI = icons.find_emoji(_EMOJI_NAME)
 ICON = EMOJI.path
+
 UI_FILE = _DIR.to_file('pini_helper.ui').path
 
 _ARCHIVE_ICON = icons.find('Skull')
@@ -80,6 +82,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.set_window_icon(ICON)
 
         self.ui.Job.redraw()
+        _LOGGER.debug('REDREW JOB %s', self.job)
         self._callback__ToggleAdmin(admin=False)
         self._callback__Profile()
         self._callback__MainPane(save=False)

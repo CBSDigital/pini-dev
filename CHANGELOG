@@ -1,3 +1,15 @@
+## [0.48.0] - Tue 2024-01-09 14:22
+### Summary
+ - Pini Helper:
+    - bugfix error on fin cam if no active model view,
+### Updated
+ - pini.tools.helper allow icon override,
+ - maya_pini.ui.add_menu_divider added,
+ - maya_pini.ui.add_menu_item added insert_after arg,
+ - maya_pini.ui.get_active_cam added handling for no active model editor,
+ - maya_pini.uy.get_active_model_editor added catch arg,
+
+
 ## [0.47.1] - Tue 2024-01-09 12:33
 ### Summary
  - Pini Helper:

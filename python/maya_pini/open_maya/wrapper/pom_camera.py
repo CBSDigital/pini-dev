@@ -72,6 +72,8 @@ def active_cam():
         (CCamera): active camera
     """
     _name = ui.get_active_cam()
+    if not _name:
+        return None
     _clean_name = to_node(_name)
     _LOGGER.debug('ACTIVE CAM %s clean=%s', _name, _clean_name)
     if _name != _clean_name and single(cmds.ls(_clean_name), catch=True):

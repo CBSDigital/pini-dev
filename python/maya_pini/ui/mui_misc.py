@@ -8,13 +8,29 @@ import shiboken2
 
 from maya import cmds, mel
 
-from pini.utils import wrap_fn, single, apply_filter
+from pini.utils import wrap_fn, single, apply_filter, EMPTY
 from maya_pini.utils import to_parent
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def add_menu_item(command, label, image=None, parent=None, name=None):
+def add_menu_divider(parent, name=None, insert_after=None):
+    """Add a menu divider item.
+
+    Args:
+        parent (str): parent menu (if not current)
+        name (str): ui element name - replaces any existing
+        insert_after (str): insert after the given existing element
+
+    Returns:
+        (str): ui element id
+    """
+    return _build_menu_item(
+        parent=parent, insert_after=insert_after, name=name, divider=True)
+
+
+def add_menu_item(
+        command, label, image=None, parent=None, name=None, insert_after=EMPTY):  # pylint: disable=unused-argument
     """Add a menu item.
 
     Args:
@@ -23,27 +39,61 @@ def add_menu_item(command, label, image=None, parent=None, name=None):
         image (str): path to menu item icon
         parent (str): parent menu (if not current)
         name (str): ui element name - replaces any existing
+        insert_after (str): insert after the given existing element
+
+    Returns:
+        (str): ui element id
     """
+    _kwargs = locals()
+    return _build_menu_item(**_kwargs)
+
+
+def _build_menu_item(
+        command=None, label=None, image=None, parent=None, name=None,
+        insert_after=EMPTY, divider=False):
+    """Add a menu item.
+
+    Args:
+        command (fn): menu item command
+        label (str): menu item label
+        image (str): path to menu item icon
+        parent (str): parent menu (if not current)
+        name (str): ui element name - replaces any existing
+        insert_after (str): insert after the given existing element
+        divider (bool): create element as divider
+
+    Returns:
+        (str): ui element id
+    """
+    _LOGGER.info('BUILD MENU ITEM %s', name)
     from maya_pini import ui
 
+    # Build args (name)
     _args = []
     if name:
         if cmds.menuItem(name, exists=True):
             cmds.deleteUI(name)
         _args.append(name)
 
+    # Build kwargs (items which can't be None)
     _kwargs = {}
     if parent:
         _parent = ui.obtain_menu(parent)
         _kwargs['parent'] = _parent
+    if insert_after is not EMPTY:
+        _kwargs['insertAfter'] = insert_after or ''
+    if command:
+        _cmd = command
+        if inspect.isfunction(_cmd):  # Force ignore args inserted by maya
+            _cmd = wrap_fn(_cmd)
+        _kwargs['command'] = _cmd
 
-    _cmd = command
-    if inspect.isfunction(_cmd):  # Force ignore args inserted by maya
-        _cmd = wrap_fn(_cmd)
-
-    cmds.menuItem(
-        *_args, command=_cmd, label=label, image=image, tearOff=False,
-        **_kwargs)
+    _LOGGER.info(' - KWARGS %s', _kwargs)
+    _result = cmds.menuItem(
+        *_args, divider=divider, label=label, image=image,
+        tearOff=False, **_kwargs)
+    _LOGGER.info(' - RESULT %s', _result)
+    return _result
 
 
 def clear_script_editor():
@@ -121,15 +171,21 @@ def get_active_cam():
     Returns:
         (str): camera transform
     """
+    _editor = get_active_model_editor()
+    if not _editor:
+        return None
     _cam = cmds.modelEditor(
-        get_active_model_editor(), query=True, camera=True)
+        _editor, query=True, camera=True)
     if cmds.objectType(_cam) == 'camera':
         _cam = to_parent(_cam)
     return _cam
 
 
-def get_active_model_editor():
+def get_active_model_editor(catch=True):
     """Get model editor for the active viewport.
+
+    Args:
+        catch (bool): no error if no active editor found
 
     Returns:
         (str): active model editor
@@ -144,8 +200,11 @@ def get_active_model_editor():
         return single(_editors)
     _editors = [_editor for _editor in _editors
                 if cmds.modelEditor(_editor, query=True, activeView=True)]
+    _LOGGER.debug(' - EDITORS %s', _editors)
     if len(_editors) == 1:
         return single(_editors)
+    if catch:
+        return None
     raise ValueError(
         'No active view found - try middle-mouse clicking the viewport')
 
