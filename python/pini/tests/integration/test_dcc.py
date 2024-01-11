@@ -41,17 +41,22 @@ class TestPublish(unittest.TestCase):
         assert _job_c.exists()
         assert _job_c in pipe.CACHE.jobs
         assert _job_c is pipe.CACHE.obt_job(_job_c)
-        _ety_c = _job_c.to_asset(asset='test', asset_type='test')
+        _ety_c = _job_c.to_asset(
+            asset='tmp', asset_type=testing.TEST_ASSET.asset_type)
         if not _ety_c.exists():
             _ety_c.create(force=True)
         _ety_c.flush(force=True)
+        _LOGGER.info('ETY C (A) %s', _ety_c)
         pipe.CACHE.reset()
+        assert not _ety_c.find_outputs()
 
         # Rebuild job/shot after reset
         _job_c = pipe.CACHE.obt_job(testing.TEST_JOB)
+        _LOGGER.info('ETY C (B) %s', _ety_c)
+        assert isinstance(_ety_c, pipe.CPAsset)
         _ety_c = pipe.CACHE.obt_entity(_ety_c)
+        _LOGGER.info('ETY C (C) %s', _ety_c)
         assert isinstance(_ety_c, cache.CCPEntity)
-        _LOGGER.info('ETY %s', _ety_c)
 
         # Test create work object
         _work_dir_c = _ety_c.to_work_dir(task='rig')
@@ -60,6 +65,7 @@ class TestPublish(unittest.TestCase):
         assert isinstance(_work_dir_c, cache.CCPWorkDir)
         assert _work_dir_c.entity is _ety_c
         _work_1 = _ety_c.to_work(task='rig', tag='PublishTest')
+        _LOGGER.info('WORK 1 %s', _work_1)
         assert isinstance(_work_1, cache.CCPWork)
         assert isinstance(_work_1.work_dir, cache.CCPWorkDir)
         assert _work_1.entity is _ety_c
@@ -107,6 +113,7 @@ class TestPublish(unittest.TestCase):
 
         assert not error.TRIGGERED
         testing.TMP_ASSET.flush(force=True)
+        pipe.CACHE.reset()
 
         _handler = dcc.find_export_handler(
             'publish', filter_='basic', catch=True)
@@ -124,7 +131,7 @@ class TestPublish(unittest.TestCase):
             nuke.createNode('Constant')
         else:
             raise ValueError
-        _work = testing.TMP_ASSET.to_work(task='model')
+        _work = testing.TMP_ASSET.to_work(task='mod')
         _LOGGER.info('WORK %s', _work.path)
         _work.save(force=True)
         assert not _work.find_outputs()

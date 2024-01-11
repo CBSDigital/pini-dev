@@ -9,7 +9,7 @@ from pini.utils import (
     File, single, abs_path, cache_property, Seq, passes_filter,
     file_to_seq)
 
-from maya_pini import open_maya as pom
+from maya_pini import open_maya as pom, tex
 from maya_pini.utils import restore_sel, del_namespace, to_node, to_shps
 
 from . import pr_base
@@ -366,6 +366,26 @@ class CMayaLookdevRef(CMayaReference):
                     _LOGGER.debug('   - APPLY VALUE %s %s', _plug, _val)
                     _plug.set_val(_val)
 
+    def find_targets(self):
+        """Find references using this lookdev (eg. abcs).
+
+        Returns:
+            (CReference list): references
+        """
+        _refs = set()
+        for _se in self.ref.find_nodes(type_='shadingEngine'):
+            _shd = tex.to_shd(_se)
+            # _ref = pom.CReference(_shd)
+            _LOGGER.info(' - SHD %s %s', _se, _shd)
+            for _geo in _shd.to_geo():
+                if not _geo.is_referenced():
+                    continue
+                _ref = pom.CReference(_geo)
+                _LOGGER.info('   - GEO %s %s', _geo, _ref)
+                _refs.add(_ref)
+
+        return sorted(_refs)
+
     def swap_rep(self, output):
         """Swap this reference for a different representation.
 
@@ -373,6 +393,17 @@ class CMayaLookdevRef(CMayaReference):
             output (CPOutput): representation to swap to
         """
         raise NotImplementedError
+
+    def update(self, out):
+        """Apply a new path to this reference.
+
+        Args:
+            out (str): output to apply
+        """
+        _result = super(CMayaLookdevRef, self).update(out)
+        for _trg in self.find_targets():
+            self.attach_to(_trg)
+        return _result
 
 
 class CMayaVdb(_CMayaPipeRef):

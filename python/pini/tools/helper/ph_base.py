@@ -181,6 +181,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if _work:
             self.ui.MainPane.select_tab('Work')
         self.ui.Job.redraw()
+        self.target = None
 
     def reset(self):
         """Reset pini helper."""

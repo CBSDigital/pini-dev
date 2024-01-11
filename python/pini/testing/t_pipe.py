@@ -66,22 +66,29 @@ def check_test_asset(force=False):
     from maya_pini import open_maya as pom, tex
     _LOGGER.info('CHECK TEST ASSET %s', TEST_ASSET)
 
+    _asset_c = pipe.CACHE.obt(TEST_ASSET)
+    _tag = _asset_c.job.cfg['tokens']['tag']['default']
+    _mod_task = os.environ.get('PINI_MODEL_TASK', 'model')
+    _ld_task = os.environ.get('PINI_LOOKDEV_TASK', 'lookdev')
+
     # Check model
-    _mdl_work = TEST_ASSET.to_work(task='model')
+    _mdl_work = _asset_c.to_work(task=_mod_task)
     if not _mdl_work.exists():
         dcc.new_scene(force=force)
         _cube = pom.CMDS.polyCube(name='cube_GEO')
         _grp = _cube.add_to_grp('MDL')
         _grp.add_to_set('cache_SET')
         _mdl_work.save(force=True)
-    if not TEST_ASSET.find_publishes(task='model'):
+    if not _asset_c.find_publishes(task=_mod_task):
         _mdl_work.load(lazy=True)
         _pub = dcc.find_export_handler(action='publish', filter_='model')
         _pub.publish(force=True)
-    _mdl_pub = TEST_ASSET.find_publish(task='model', versionless=True)
+    _mdl_pub = _asset_c.find_publish(
+        task=_mod_task, ver_n='latest', tag=_tag, versionless=False)
+    assert _mdl_pub
 
     # Check rig
-    _rig_work = TEST_ASSET.to_work(task='rig')
+    _rig_work = _asset_c.to_work(task='rig')
     if not _rig_work.exists():
         dcc.new_scene(force=force)
         _mdl_work.load()
@@ -90,20 +97,29 @@ def check_test_asset(force=False):
         _geo.parent(_ctrl)
         _ctrl.add_to_grp('RIG')
         _rig_work.save(force=True)
-    if not TEST_ASSET.find_publishes(task='rig'):
+    if not _asset_c.find_publishes(task='rig'):
         _rig_work.load(lazy=True)
         _pub = dcc.find_export_handler(action='publish', filter_='basic')
         _pub.publish(force=True)
+    assert _asset_c.find_publish(
+        task='rig', ver_n='latest', tag=_tag, versionless=False)
 
     # Check lookdev
-    _ld_work = TEST_ASSET.to_work(task='lookdev')
+    _ld_work = _asset_c.to_work(task=_ld_task)
+    _LOGGER.info(' - LD WORK %s', _ld_work)
     if not _ld_work.exists():
         dcc.new_scene(force=force)
         _ref = dcc.create_ref(_mdl_pub, namespace='model', group='MODEL')
         _shd = tex.create_lambert(col='CornflowerBlue', name='blue_MTL')
         _shd.apply_to(_ref.ref.to_node('cube_GEO'))
         _ld_work.save(force=True)
-    if not TEST_ASSET.find_output(task='lookdev', extn='gz', catch=True):
+    _ld_pub = _asset_c.find_publish(
+        task=_ld_task, ver_n='latest', tag=_tag, versionless=False)
+    if not _ld_pub:
         _ld_work.load(lazy=True)
         _pub = dcc.find_export_handler(action='publish', filter_='lookdev')
-        _pub.publish(force=True)
+        _pub.publish(force=True, version_up=False)
+        _ld_pub = _asset_c.find_publishes(
+            task=_ld_task, ver_n='latest', tag=_tag, versionless=False)
+        dcc.new_scene(force=True)
+    assert _ld_pub

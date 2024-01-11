@@ -135,7 +135,7 @@ class CBasicPublish(eh_base.CExportHandler):
                 if _out.asset_type == 'test':
                     continue
                 try:
-                    shotgrid.create_pub_file(_out, thumb=_thumb)
+                    shotgrid.create_pub_file(_out, thumb=_thumb, force=True)
                 except shotgrid.MissingPipelineStep:
                     qt.notify(
                         'Failed to find pipeline step for output:\n\n{}'.format(

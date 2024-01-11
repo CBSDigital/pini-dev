@@ -11,7 +11,10 @@ class TestCache(unittest.TestCase):
         assert not error.TRIGGERED
 
         _shot = testing.TEST_SHOT
-        _work_a1 = _shot.to_work(task='anim')
+        _shot_c = pipe.CACHE.obt(_shot)
+        _work_dir_c = _shot_c.find_work_dir(task='anim', dcc_=dcc.NAME)
+
+        _work_a1 = _work_dir_c.to_work()
 
         # Reset
         for _o_work in _work_a1.work_dir.find_works():

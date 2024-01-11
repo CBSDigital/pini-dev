@@ -1,6 +1,6 @@
 """Tools for managing entities, the base class for shots and assets."""
 
-# pylint: disable=no-member
+# pylint: disable=no-member,disable=too-many-lines
 
 import copy
 import logging
@@ -795,17 +795,38 @@ class CPEntity(cp_settings.CPSettingsLevel):
 
         return _pubs
 
+    def flush(self, force=False):
+        """Flush the contents of this entity.
+
+        Args:
+            force (bool): remove contents without confirmation
+        """
+        from pini import pipe, qt
+        super(CPEntity, self).flush(force=force)
+
+        # Omit pub files in shotgrid
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            _outs = shotgrid.find_pub_files(entity=self)
+            for _out in qt.progress_bar(_outs, 'Updating {:d} output{}'):
+                _id = shotgrid.to_pub_file_id(_out)
+                _data = {'sg_status_list': 'omt'}
+                shotgrid.update('PublishedFile', _id, _data)
+
     def to_output(
-            self, template, task=None, tag=None, output_type=None,
-            output_name=None, ver_n=1, extn=None):
+            self, template, task=None, step=None, tag=None, output_type=None,
+            output_name=None, dcc_=None, user=None, ver_n=1, extn=None):
         """Build an output object for this entity.
 
         Args:
             template (CPTemplate): output template to use
             task (str): output task
+            step (str): output step (if applicable)
             tag (str): output tag
             output_type (str): apply output name
             output_name (str): output name
+            dcc_ (str): output dcc (if applicable)
+            user (str): output user (if applicable)
             ver_n (int): output version
             extn (str): output extension
 
@@ -831,6 +852,8 @@ class CPEntity(cp_settings.CPSettingsLevel):
                 template, has_key=_has_key, want_key=_want_key)
         else:
             raise ValueError(template)
+        _LOGGER.debug(' - TMPL %s', _tmpl)
+        _LOGGER.debug(' - TAG %s', _tag)
 
         # Apply defaults
         _tag = tag
@@ -843,44 +866,61 @@ class CPEntity(cp_settings.CPSettingsLevel):
                      'publish': dcc.DEFAULT_EXTN,
                      'cache': 'abc'}.get(_tmpl.type_)
 
+        _ver_pad = self.job.cfg['tokens']['ver']['len']
+        _ver = str(ver_n).zfill(_ver_pad)
+
         # Build data dict
         _data = copy.copy(self.data)
+        _data['user'] = user
+        _data['ver'] = _ver
         _data['entity'] = self.name
         _data['entity_path'] = self.path
         _data['task'] = task
+        _data['step'] = step or task
+        _data['dcc'] = dcc_ or dcc.NAME
         _data['tag'] = _tag
-        _data['ver'] = '{:03d}'.format(ver_n)
         _data['output_name'] = output_name
         _data['output_type'] = output_type
         _data['extn'] = _extn
         if 'work_dir' in _tmpl.keys():
             _work_dir = self.to_work_dir(task=task)
             _data['work_dir'] = _work_dir.path
+        if 'job_prefix' in _tmpl.keys():
+            _data['job_prefix'] = self.job.to_prefix()
+
+        # Check for missing keys
+        _missing = []
+        for _key in _tmpl.keys():
+            if _key not in _data or not _data[_key]:
+                _missing.append(_key)
+        if _missing:
+            raise RuntimeError('Missing keys {}'.format('/'.join(_missing)))
 
         # Construct output
         _path = _tmpl.format(_data)
+        _LOGGER.debug(' - PATH %s', _path)
         return pipe.to_output(_path, template=_tmpl)
 
     def to_work(
-            self, task, tag=None, ver_n=1, dcc_=None, user=None, extn=None,
-            class_=None, catch=False):
+            self, task, step=None, tag=None, ver_n=1, dcc_=None, user=None,
+            extn=None, class_=None, catch=False):
         """Build a work file object for this entity.
 
         Args:
             task (str): work file task
+            step (str): work file step (if applicable)
             tag (str|None): work file tag
             ver_n (int): work file version number
             dcc_ (str): force dcc token
             user (str): override user (if applicable)
             extn (str): override extension
             class_ (CPWork): override work class
-            catch (bool): no error if args are invalid (just
-                return None)
+            catch (bool): no error if args are invalid (just return None)
 
         Returns:
             (CPWork): work file
         """
-        _work_dir = self.to_work_dir(task=task, dcc_=dcc_)
+        _work_dir = self.to_work_dir(task=task, dcc_=dcc_, step=step)
         return _work_dir.to_work(
             tag=tag, ver_n=ver_n, extn=extn, catch=catch, class_=class_,
             user=user)

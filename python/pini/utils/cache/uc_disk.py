@@ -41,7 +41,8 @@ def get_file_cacher(file_):
 
 
 def get_method_to_file_cacher(
-        mtime_outdates=True, min_mtime=None, namespace='default'):
+        mtime_outdates=True, min_mtime=None, max_age=None,
+        namespace='default'):
     """Build a caching decorator which saves a result to disk.
 
     If the result is calculated or read from disk, it's then stored in memory
@@ -59,6 +60,8 @@ def get_method_to_file_cacher(
             result to be recalculated
         min_mtime (float): if the cache file's mtime is before then then
             it's ignored
+        max_age (float): apply maximum cache age in seconds - if the cache
+            file is older then the data will be regenerated
         namespace (str): namespace to cache to
 
     Returns:
@@ -91,7 +94,7 @@ def get_method_to_file_cacher(
             _action = _determine_cache_action(
                 force=_force, results=_results, key=_key, obj=self,
                 file_=_file, mtime_outdates=mtime_outdates,
-                min_mtime=min_mtime)
+                min_mtime=min_mtime, max_age=max_age)
             _LOGGER.debug(' - CACHE ACTION %s', _action)
 
             # Obtain result
@@ -138,7 +141,8 @@ def get_method_to_file_cacher(
 
 
 def _determine_cache_action(
-        force, results, key, file_, obj, mtime_outdates, min_mtime):
+        force, results, key, file_, obj, mtime_outdates, min_mtime,
+        max_age):
     """Determine action to take on results request.
 
     Args:
@@ -149,6 +153,7 @@ def _determine_cache_action(
         obj (object): method's parent object
         mtime_outdates (bool): whether mtime outdates cache
         min_mtime (bool): min cache mtime to outdate cache
+        max_age (float): apply maximum cache age (in seconds)
 
     Returns:
         (str): cache action
@@ -157,6 +162,8 @@ def _determine_cache_action(
 
     if force:
         _action = 'recache'
+    elif max_age and file_.exists() and file_.age() > max_age:
+        _action = 'recache'
     elif key in results:
         _action = 'use memory'
     elif not file_.exists():
@@ -164,9 +171,9 @@ def _determine_cache_action(
     elif (  # Apply mtime outdates to files
             isinstance(obj, File) and
             mtime_outdates and
-            (file_.mtime() < obj.mtime())):
+            file_.mtime() < obj.mtime()):
         _action = 'recache'
-    elif min_mtime and (file_.mtime() < min_mtime):
+    elif min_mtime and file_.mtime() < min_mtime:
         _action = 'recache'
     else:
         _action = 'use disk'

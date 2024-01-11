@@ -18,11 +18,11 @@ from pini.utils import (
     single, passes_filter, Dir, nice_age, norm_path, Path, flush_caches)
 
 from ..cp_job import find_jobs, CPJob, cur_job
-from ..cp_entity import CPEntity, cur_entity, to_entity
+from ..cp_entity import cur_entity, to_entity
 from ..cp_asset import cur_asset
 from ..cp_shot import cur_shot
 from ..cp_work_dir import CPWorkDir
-from ..cp_work import CPWork, cur_work, to_work
+from ..cp_work import CPWork, to_work
 from ..cp_output import to_output, CPOutputBase
 
 from . import ccp_job
@@ -119,8 +119,9 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPWork): current work
         """
+        from pini import pipe
         _LOGGER.debug('CUR WORK %s', self.cur_work_dir)
-        _work = cur_work(work_dir=self.cur_work_dir)
+        _work = pipe.cur_work()
         if not _work:
             _LOGGER.debug(' - NO CUR WORK')
             return None
@@ -304,6 +305,10 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
             (any): cache representation
         """
         from pini import pipe
+        if isinstance(obj, pipe.CPJob):
+            return self.obt_job(obj)
+        if isinstance(obj, (pipe.CPAsset, pipe.CPShot)):
+            return self.obt_entity(obj)
         if isinstance(obj, pipe.CPWork):
             return self.obt_work(obj)
         raise NotImplementedError(obj)
@@ -337,10 +342,13 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('FIND ENTITY %s', match)
 
         _match = match
-        if isinstance(_match, CPEntity):
+        if isinstance(_match, (pipe.CPShot, pipe.CPAsset)):
+            _LOGGER.debug(' - MATCH IS ENTITY')
             _job = self.obt_job(_match.job)
             _LOGGER.debug(' - USING JOB %s', _job)
-            return _job.obt_entity(_match)
+            _ety = _job.obt_entity(_match)
+            _LOGGER.debug(' - ETY %s', _ety)
+            return _ety
         if isinstance(_match, (pipe.CPWork, pipe.CPOutputBase)):
             return self.obt_entity(_match.entity)
 
@@ -416,14 +424,18 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
             (CCPWork): matching work file
         """
         _match = match
+        _LOGGER.debug('OBJ WORK %s', _match)
         if isinstance(_match, six.string_types):
             _match = to_work(_match)
         if isinstance(_match, CPWork):
+            _LOGGER.debug(' - WORK %s', _match)
             _work_dir = self.obt_work_dir(_match.work_dir)
+            _LOGGER.debug(' - WORK DIR %s', _work_dir)
             if not _work_dir:
                 return None
-            return single(_work_dir.find_works(
-                ver_n=_match.ver_n, tag=_match.tag), catch=True)
+            _works = [_work for _work in _work_dir.works
+                      if _work == _match]
+            return single(_works, catch=True)
 
         raise NotImplementedError(match)
 

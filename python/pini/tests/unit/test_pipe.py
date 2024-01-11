@@ -1,10 +1,11 @@
 import logging
+import os
 import time
 import unittest
 
 from pini import pipe, testing, dcc
 from pini.pipe import cache
-from pini.utils import File, single, flush_caches
+from pini.utils import File, single, flush_caches, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,25 +28,118 @@ class TestPipe(unittest.TestCase):
         # Test tag as vertical - this was causing bad template to be selected
         # as it was being matched as a version
         if testing.TEST_JOB.find_templates('publish'):
-            _tmpls = [
-                testing.TEST_JOB.find_template(
-                    'publish', profile='asset',
-                    has_key={'tag': True, 'ver': True, 'output_type': False}),
-                testing.TEST_JOB.find_template(
-                    'publish', profile='asset', catch=True,
-                    has_key={'tag': True, 'ver': False, 'output_type': False}),
-            ]
-            _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl]
-            assert _tmpls
-            for _tmpl in _tmpls:
-                _LOGGER.info('TMPL %s', _tmpl)
-                _out = testing.TEST_SHOT.to_output(
-                    _tmpl, task='anim', tag='vertical', output_name='test')
-                _LOGGER.info('OUT %s', _out)
-                _out = pipe.CPOutput(_out.path)
-                _LOGGER.info('OUT %s', _out)
+            for _ety in [testing.TEST_ASSET, testing.TEST_SHOT]:
+                _tmpls = [
+                    testing.TEST_JOB.find_template(
+                        'publish', profile=_ety.profile,
+                        has_key={'tag': True, 'ver': True, 'output_type': False}),
+                    testing.TEST_JOB.find_template(
+                        'publish', profile=_ety.profile, catch=True,
+                        has_key={'tag': True, 'ver': False, 'output_type': False}),
+                ]
+                _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl]
+                assert _tmpls
+                for _tmpl in _tmpls:
+                    _LOGGER.info('TMPL %s', _tmpl)
+                    _out = _ety.to_output(
+                        _tmpl, task='anim', tag='vertical', output_name='test',
+                        dcc_='maya')
+                    _LOGGER.info('OUT %s', _out)
+                    _out = pipe.CPOutput(_out.path)
+                    _LOGGER.info('OUT %s', _out)
         else:
             _LOGGER.info('NO PUBLISH TEMPLATES FOUND')
+
+    def test_settings(self):
+
+        testing.enable_file_system(True)
+        assert testing.TEST_ASSET
+        assert testing.TEST_SHOT
+        pipe.CACHE.reset()
+
+        # Check cache + settings parenting
+        _job = pipe.CACHE.obt_job(testing.TEST_JOB)
+        _seq = pipe.CACHE.obt_sequence(testing.TEST_SEQUENCE)
+        assert _seq.job is _job
+        assert _seq._settings_parent is _job
+        _shot = pipe.CACHE.obt_entity(testing.TEST_SHOT)
+        assert _shot.job is _job
+        assert _shot.to_sequence() is _seq
+        assert _seq._settings_parent is _job
+        assert _shot._settings_parent is _seq
+        _asset = pipe.CACHE.obt_entity(testing.TEST_ASSET)
+        assert _asset.job is _job
+        assert _asset._settings_parent is _job
+
+        # Reset
+        for _lvl in [_job, _seq, _shot]:
+            _lvl.del_setting('blah')
+            _lvl.flush_settings_bkps(force=True)
+
+        assert 'blah' not in _job.settings
+        assert 'blah' not in _shot.settings
+        _job.set_setting(blah='hello')
+        assert _job.settings['blah'] == 'hello'
+        assert _shot.settings['blah'] == 'hello'
+
+        _job.set_setting(blah='blee')
+        assert _job.settings['blah'] == 'blee'
+        assert _shot.settings['blah'] == 'blee'
+        _seq.set_setting(blah='wow')
+        assert _job.settings['blah'] == 'blee'
+        assert _seq.settings['blah'] == 'wow'
+        assert _shot.settings['blah'] == 'wow'
+        _shot.set_setting(blah='waaar')
+        assert _job.settings['blah'] == 'blee'
+        assert _seq.settings['blah'] == 'wow'
+        assert _shot.settings['blah'] == 'waaar'
+
+        testing.enable_file_system(False)
+        assert _job.settings
+        assert _seq.settings
+        assert _shot.settings
+        testing.enable_file_system(True)
+
+
+class TestDiskPipe(unittest.TestCase):
+
+    pipe_master_filter = 'disk'
+
+    def test_output_seqs(self):
+
+        if not testing.TEST_JOB.find_templates('render'):
+            _LOGGER.info('NO RENDER TEMPLATES SET UP')
+            return
+
+        # Reset test shot
+        testing.enable_file_system(True)
+        _shot = testing.TMP_SHOT
+        _shot.flush(force=True)
+        pipe.CACHE.reset()
+        flush_caches()
+
+        # Setup output
+        _out = _shot.to_output(
+            'render', task='anim', output_name='masterLayer', user=pipe.cur_user())
+        File(_out[1]).touch()
+        assert _out.exists()
+        _out.set_metadata({'blah': 1})
+
+        # Make sure caches are set up
+        _ety_c = pipe.CACHE.obt_entity(_out.path)
+        _seq_dir_c = single(_ety_c.find_output_seq_dirs())
+        _out_c = _ety_c.find_output(_out)
+        assert _out_c is single(_seq_dir_c.find_outputs())
+        assert _out_c.metadata
+
+        # Make sure data is cached
+        testing.enable_file_system(False)
+        assert _seq_dir_c is single(_ety_c.find_output_seq_dirs(task=_out.task, ver_n=_out.ver_n))
+        assert _ety_c.find_output(_out) is _out_c
+        assert _out_c.metadata
+
+        testing.enable_file_system(True)
+        _shot.flush(force=True)
 
     def test_output_seq_dirs(self):
 
@@ -58,10 +152,18 @@ class TestPipe(unittest.TestCase):
         _shot = testing.TMP_SHOT
         _shot.flush(force=True)
 
-        _work = _shot.to_work(tag='SeqCacheTest', task='lighting')
+        # Find test work
+        _step = os.environ.get('PINI_TEST_STEP', 'lighting')
+        _task = os.environ.get('PINI_TEST_TASK', 'lighting')
+        _work = _shot.to_work(tag='SeqCacheTest', task=_task, step=_step)
+        _LOGGER.info('WORK %s', _work)
         _work.touch()
+
+        # Build test seq
         _seq = _work.to_output('render', output_name='masterLayer', extn='exr')
-        assert not _seq.work_dir
+        _LOGGER.info('SEQ %s', _seq)
+        _tmpl = _shot.find_template('render')
+        assert_eq(bool(_seq.work_dir), 'work_dir' in _tmpl.keys())
         _seq.delete(force=True)
         assert not _seq.exists()
         _frame_1 = File(_seq[1])
@@ -168,6 +270,22 @@ class TestPipe(unittest.TestCase):
 
         _shot.delete(force=True)
 
+    def test_restore_output_cache_from_yml(self):
+
+        if not testing.TEST_JOB.find_templates('publish'):
+            _LOGGER.info('NO PUBLISH TEMPLATES SET UP')
+            return
+
+        _pub = testing.TMP_SHOT.to_output(
+            'publish', output_type=None, task='rig')
+        _pub.touch()
+        pipe.CACHE.reset()
+        _pub_c = pipe.CACHE.obt_output(_pub)
+        assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
+        testing.TEST_YML.write_yml(_pub_c, force=True)
+        _pub_c = testing.TEST_YML.read_yml()
+        assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
+
     def test_update_publish_cache(self):
 
         if not testing.TEST_JOB.find_templates('publish'):
@@ -217,108 +335,6 @@ class TestPipe(unittest.TestCase):
 
         _shot.delete(force=True)
 
-    def test_restore_output_cache_from_yml(self):
-
-        if not testing.TEST_JOB.find_templates('publish'):
-            _LOGGER.info('NO PUBLISH TEMPLATES SET UP')
-            return
-
-        _pub = testing.TMP_SHOT.to_output(
-            'publish', output_type=None, task='rig')
-        _pub.touch()
-        pipe.CACHE.reset()
-        _pub_c = pipe.CACHE.obt_output(_pub)
-        assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
-        testing.TEST_YML.write_yml(_pub_c, force=True)
-        _pub_c = testing.TEST_YML.read_yml()
-        assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
-
-    def test_output_seqs(self):
-
-        if not testing.TEST_JOB.find_templates('render'):
-            _LOGGER.info('NO RENDER TEMPLATES SET UP')
-            return
-
-        # Reset test shot
-        testing.enable_file_system(True)
-        _shot = testing.TMP_SHOT
-        _shot.flush(force=True)
-        pipe.CACHE.reset()
-        flush_caches()
-
-        # Setup output
-        _out = _shot.to_output(
-            'render', task='anim', output_name='masterLayer')
-        File(_out[1]).touch()
-        assert _out.exists()
-        _out.set_metadata({'blah': 1})
-
-        # Make sure caches are set up
-        _ety_c = pipe.CACHE.obt_entity(_out.path)
-        _seq_dir_c = single(_ety_c.find_output_seq_dirs())
-        _out_c = _ety_c.find_output(_out)
-        assert _out_c is single(_seq_dir_c.find_outputs())
-        assert _out_c.metadata
-
-        # Make sure data is cached
-        testing.enable_file_system(False)
-        assert _seq_dir_c is single(_ety_c.find_output_seq_dirs(task=_out.task, ver_n=_out.ver_n))
-        assert _ety_c.find_output(_out) is _out_c
-        assert _out_c.metadata
-
-        testing.enable_file_system(True)
-        _shot.flush(force=True)
-
-    def test_settings(self):
-
-        testing.enable_file_system(True)
-        assert testing.TEST_ASSET
-        assert testing.TEST_SHOT
-        pipe.CACHE.reset()
-
-        # Check cache + settings parenting
-        _job = pipe.CACHE.obt_job(testing.TEST_JOB)
-        _seq = pipe.CACHE.obt_sequence(testing.TEST_SEQUENCE)
-        assert _seq.job is _job
-        assert _seq._settings_parent is _job
-        _shot = pipe.CACHE.obt_entity(testing.TEST_SHOT)
-        assert _shot.job is _job
-        assert _shot.to_sequence() is _seq
-        assert _seq._settings_parent is _job
-        assert _shot._settings_parent is _seq
-        _asset = pipe.CACHE.obt_entity(testing.TEST_ASSET)
-        assert _asset.job is _job
-        assert _asset._settings_parent is _job
-
-        # Reset
-        for _lvl in [_job, _seq, _shot]:
-            _lvl.del_setting('blah')
-            _lvl.flush_settings_bkps(force=True)
-
-        assert 'blah' not in _job.settings
-        assert 'blah' not in _shot.settings
-        _job.set_setting(blah='hello')
-        assert _job.settings['blah'] == 'hello'
-        assert _shot.settings['blah'] == 'hello'
-
-        _job.set_setting(blah='blee')
-        assert _job.settings['blah'] == 'blee'
-        assert _shot.settings['blah'] == 'blee'
-        _seq.set_setting(blah='wow')
-        assert _job.settings['blah'] == 'blee'
-        assert _seq.settings['blah'] == 'wow'
-        assert _shot.settings['blah'] == 'wow'
-        _shot.set_setting(blah='waaar')
-        assert _job.settings['blah'] == 'blee'
-        assert _seq.settings['blah'] == 'wow'
-        assert _shot.settings['blah'] == 'waaar'
-
-        testing.enable_file_system(False)
-        assert _job.settings
-        assert _seq.settings
-        assert _shot.settings
-        testing.enable_file_system(True)
-
 
 class TestCache(unittest.TestCase):
 
@@ -352,6 +368,8 @@ class TestCache(unittest.TestCase):
 
 class CTPTestPipe(testing.CTmpPipeTestCase):
 
+    pipe_master_filter = 'disk'
+
     def test_validate_token(self):
 
         _LOGGER.info('JOBS ROOT %s', pipe.JOBS_ROOT)
@@ -370,14 +388,16 @@ class CTPTestPipe(testing.CTmpPipeTestCase):
     #     # Setup test job
     #     _file = self._tmp_jobs_root.to_file(
     #         'Testing/assets/char.cubes/maya/rig/publish/cubes_main_v001.mb')
+    #     _LOGGER.info(' - FILE %s', _file)
     #     _job = pipe.CPJob(_file)
+    #     _LOGGER.info(' - JOB %s', _job)
     #     _job.flush(force=True)
     #     _job.setup_cfg('Pluto')
     #     _job.set_setting(disable_shotgrid=True)
-    #     _LOGGER.info('JOB SETTINGS %s', _job.settings)
+    #     _LOGGER.info(' - JOB SETTINGS %s', _job.settings)
     #     _file.touch()
     #     assert _job.exists()
-    #     _LOGGER.info('CFG FILE %s', _job.cfg_file.path)
+    #     _LOGGER.info(' - CFG FILE %s', _job.cfg_file.path)
     #     assert _job.cfg_file.exists()
     #     assert _job.cfg_file.read_yml()['templates']
     #     assert _job.cfg['templates']
@@ -388,6 +408,7 @@ class CTPTestPipe(testing.CTmpPipeTestCase):
     #     assert not pipe.is_valid_token('cache', token='task', job=_job)
 
     #     # Test generic
+    #     _LOGGER.info(' - CREATE ASSET')
     #     _ety = pipe.CPAsset(_file)
     #     _LOGGER.info('JOB %s', _job)
     #     _LOGGER.info('ETY %s', _ety)

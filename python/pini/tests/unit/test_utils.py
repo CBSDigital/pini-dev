@@ -22,49 +22,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestUtils(unittest.TestCase):
 
-    def test_cache_result(self):
-
-        @cache_result
-        def _test(aaa, bbb, ccc=1, ddd=True, force=True):
-            return random.random()
-
-        _result = _test(1, 2)
-        print(_result)
-        print(_test(1, 2))
-        assert _test(1, 2) == _result
-        assert _test(1, 2, ddd=False) != _result
-        assert _test(1, 2) == _test(1, 2)
-        assert _test(1, 2) != _test(1, 2, force=True)
-
-        class _Test(object):
-
-            @cache_result
-            def func(self):
-                return random.random()
-
-            @cache_result
-            def func_2(self, aaa=1):
-                return random.random()
-
-            def func_3(self):
-                return random.random()
-
-        _test = _Test()
-        assert _test.func() == _test.func()
-        assert _test.func_2() == _test.func_2()
-        assert _test.func_2(20) == _test.func_2(20)
-        assert _test.func_2() != _test.func_2(20)
-
-        class _Test2(_Test):
-
-            @cache_result
-            def func_3(self):
-                return super(_Test2, self).func_3()
-
-        _test_2 = _Test2()
-        print(_test_2.func_3())
-        print(_test_2.func_3())
-
     def test_filter(self):
 
         assert passes_filter('C:/tmp/test2.txt', '')
@@ -191,6 +148,52 @@ class TestUtils(unittest.TestCase):
         assert_eq(to_snake('a test'), 'a_test')
         assert_eq(to_snake('MyTest'), 'my_test')
         assert_eq(to_snake('My  Test'), 'my_test')
+
+
+class TestCache(unittest.TestCase):
+
+    def test_cache_result(self):
+
+        @cache_result
+        def _test(aaa, bbb, ccc=1, ddd=True, force=True):
+            return random.random()
+
+        _result = _test(1, 2)
+        print(_result)
+        print(_test(1, 2))
+        assert _test(1, 2) == _result
+        assert _test(1, 2, ddd=False) != _result
+        assert _test(1, 2) == _test(1, 2)
+        assert _test(1, 2) != _test(1, 2, force=True)
+
+        class _Test(object):
+
+            @cache_result
+            def func(self):
+                return random.random()
+
+            @cache_result
+            def func_2(self, aaa=1):
+                return random.random()
+
+            def func_3(self):
+                return random.random()
+
+        _test = _Test()
+        assert _test.func() == _test.func()
+        assert _test.func_2() == _test.func_2()
+        assert _test.func_2(20) == _test.func_2(20)
+        assert _test.func_2() != _test.func_2(20)
+
+        class _Test2(_Test):
+
+            @cache_result
+            def func_3(self):
+                return super(_Test2, self).func_3()
+
+        _test_2 = _Test2()
+        print(_test_2.func_3())
+        print(_test_2.func_3())
 
 
 class TestPath(unittest.TestCase):

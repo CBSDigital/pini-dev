@@ -436,9 +436,11 @@ class CPOutputBase(object):
         Returns:
             (CPOutput list): representations
         """
+        from pini import pipe
         _LOGGER.debug('FIND REPS %s', self)
         _LOGGER.debug(' - TASK %s', self.task)
         _LOGGER.debug(' - EXTN %s', self.extn)
+
         _reps = []
 
         # Add model/rig publishes
@@ -448,14 +450,14 @@ class CPOutputBase(object):
                 if _task == self.task:
                     continue
                 _pub = self.entity.find_publish(
-                    ver_n='latest', tag=self.tag, versionless=True,
+                    ver_n='latest', tag=self.tag, versionless=False,
                     task=_task, catch=True)
                 _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub)
                 if _pub:
                     _reps.append(_pub)
 
         # Add ass.gz for model refs
-        if self.task in ('model', 'rig'):
+        if pipe.map_task(self.task) in ('model', 'rig'):
             _ass = self.entity.find_output(
                 type_='ass_gz', ver_n='latest', tag=self.tag, catch=True)
             if _ass:

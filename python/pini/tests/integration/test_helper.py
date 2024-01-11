@@ -64,7 +64,9 @@ class TestHelper(unittest.TestCase):
         assert not error.TRIGGERED
 
         _shot = testing.TEST_SHOT
-        _work = _shot.to_work(task='anim')
+        _shot_c = pipe.CACHE.obt(testing.TEST_SHOT)
+        _work_dir_c = _shot_c.find_work_dir(task='anim', dcc_=dcc.NAME)
+        _work = _work_dir_c.to_work()
         _LOGGER.info(' - WORK %s', _work.path)
 
         # Reset
@@ -74,7 +76,12 @@ class TestHelper(unittest.TestCase):
             _o_work.delete(force=True)
         dcc.new_scene(force=True)
         _work.save(force=True)
+
         pipe.CACHE.reset()
+        assert pipe.CACHE.cur_entity
+        assert pipe.CACHE.cur_work_dir
+        assert pipe.cur_work()
+        assert pipe.CACHE.cur_work
 
         _helper = helper.DIALOG
         if not _helper:

@@ -243,7 +243,7 @@ class CPJob(cp_settings.CPSettingsLevel):
                     _LOGGER.debug('   - ALLOWED %s FILTER', _key)
             _LOGGER.debug(' - APPLIED WANT KEYS %d %s', len(_tmpls), _tmpls)
 
-        _tmpls = sorted(_tmpls)
+        _tmpls = sorted(_tmpls, key=operator.attrgetter('name'))
         return _tmpls
 
     @cache_property

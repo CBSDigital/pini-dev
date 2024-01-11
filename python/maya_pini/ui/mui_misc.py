@@ -65,7 +65,7 @@ def _build_menu_item(
     Returns:
         (str): ui element id
     """
-    _LOGGER.info('BUILD MENU ITEM %s', name)
+    _LOGGER.debug('BUILD MENU ITEM %s', name)
     from maya_pini import ui
 
     # Build args (name)
@@ -88,11 +88,11 @@ def _build_menu_item(
             _cmd = wrap_fn(_cmd)
         _kwargs['command'] = _cmd
 
-    _LOGGER.info(' - KWARGS %s', _kwargs)
+    _LOGGER.debug(' - KWARGS %s', _kwargs)
     _result = cmds.menuItem(
         *_args, divider=divider, label=label, image=image,
         tearOff=False, **_kwargs)
-    _LOGGER.info(' - RESULT %s', _result)
+    _LOGGER.debug(' - RESULT %s', _result)
     return _result
 
 

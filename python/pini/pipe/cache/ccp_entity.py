@@ -147,7 +147,8 @@ class CCPEntity(CPEntity):
         if pipe.MASTER == 'disk':
             _work_dirs = self._read_work_dirs_disk(force=force)
         elif pipe.MASTER == 'shotgrid':
-            _work_dirs = self.job.find_work_dirs(entity=self, force=force)
+            _work_dirs = sorted(
+                self.job.find_work_dirs(entity=self, force=force))
         else:
             raise NotImplementedError
         _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)

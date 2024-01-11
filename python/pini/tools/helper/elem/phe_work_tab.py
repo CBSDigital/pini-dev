@@ -85,7 +85,7 @@ class CLWorkTab(object):
         _LOGGER.debug('REDRAW TASKS %s (%s)', self.entity, dcc.NAME)
 
         _items = []
-        _select = None
+        _select = _task_in_use = None
 
         if self.entity:
 
@@ -95,8 +95,8 @@ class CLWorkTab(object):
                 _col = 'Grey'
                 if _work_dir.works:
                     _col = None
-                    if not _select:
-                        _select = _work_dir.task
+                    if not _task_in_use:
+                        _task_in_use = _work_dir.task
                 _item = qt.CListWidgetItem(
                     _work_dir.task, col=_col, data=_work_dir)
                 _items.append(_item)
@@ -106,10 +106,14 @@ class CLWorkTab(object):
                 _work = pipe.to_work(self.target)
                 if _work:
                     _select = _work.task
+                    _LOGGER.debug(' - USING TARGET TASK')
             if not _select:
                 _select = pipe.cur_task()
+                _LOGGER.debug(' - USING CURRENT TASK')
+            if not _task_in_use:
+                _select = _task_in_use
 
-        _LOGGER.debug('APPLY TASK %s %s', _items, _select)
+        _LOGGER.debug(' - SELECT TASK %s', _select)
         self.ui.WTasks.set_items(_items, select=_select)
 
     def _redraw__WTags(self):
@@ -146,16 +150,16 @@ class CLWorkTab(object):
         Returns:
             (tuple): tags, selected tag
         """
+        _cur_work = pipe.cur_work()
         _ui_tag = self.ui.WTagText.text()
         _default_tag = self.job.cfg['tokens']['tag']['default']
+        _existing_tags = set()
 
+        # Build tag list
         _default_exists = None
         if not self.work_dir:
             _tags = []
-
         else:
-
-            # Build tag list
             _tags = set()
             _existing_tags = {_work.tag for _work in self.work_dir.works}
             _tags |= _existing_tags
@@ -173,8 +177,8 @@ class CLWorkTab(object):
         _trg_work = pipe.to_work(self.target)
         if _trg_work:
             _select = _trg_work.tag
-        elif pipe.cur_work():
-            _select = pipe.cur_work()
+        elif _cur_work:
+            _select = _cur_work.tag
         elif _ui_tag in _tags and _ui_tag in _existing_tags:
             _select = _ui_tag
         elif None in _tags:

@@ -94,7 +94,7 @@ class Dir(up_path.Path):
             qt.ok_cancel(
                 msg='{} directory and contents?\n\n{}'.format(
                     wording, self.path),
-                icon=_icon)
+                icon=_icon, title=wording)
         shutil.rmtree(self.path)
 
     def find(self, class_=False, **kwargs):
@@ -130,7 +130,13 @@ class Dir(up_path.Path):
         Args:
             force (bool): remove contents without confirmation
         """
-        self.delete(force=force)
+        from pini import qt, icons
+        if not force and self.exists() and self.find(depth=1):
+            _icon = icons.find('Sponge')
+            qt.ok_cancel(
+                'Flush contents of directory?\n\n'+self.path,
+                icon=_icon, title='Flush')
+        self.delete(force=True)
         if not self.exists():
             self.mkdir()
 

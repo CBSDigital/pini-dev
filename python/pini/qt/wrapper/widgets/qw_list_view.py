@@ -142,6 +142,8 @@ class CListView(QtWidgets.QListView):
             item (QStandardItem): item to select
             replace (bool): replace existing selection
         """
+
+        # Update selection
         assert isinstance(item, QtGui.QStandardItem)
         _sel = self.selectionModel()
         if replace:
@@ -149,6 +151,9 @@ class CListView(QtWidgets.QListView):
         else:
             _sel_model = QtCore.QItemSelectionModel.Select
         _sel.setCurrentIndex(item.index(), _sel_model)
+
+        # Make item visible
+        self.scrollTo(item.index())
 
     def select_data(self, data, catch=True):
         """Select item by its embedded data.

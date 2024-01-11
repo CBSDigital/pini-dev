@@ -8,9 +8,11 @@ from pini.utils import strftime
 _LOGGER = logging.getLogger(__name__)
 
 
-class TestPiniHelper(unittest.TestCase):
+class TestDiskPiniHelper(unittest.TestCase):
 
-    def test(self):
+    pipe_master_filter = 'disk'
+
+    def test_pini_helper_create(self):
 
         assert not error.TRIGGERED
 
@@ -96,7 +98,9 @@ class TestPiniHelper(unittest.TestCase):
 
 class TestJobManager(unittest.TestCase):
 
-    def test(self):
+    pipe_master_filter = 'disk'
+
+    def test_job_manager(self):
 
         _seq_name = strftime('Tmp_%y%m%d_%H%M%S')
         _job = testing.TEST_JOB

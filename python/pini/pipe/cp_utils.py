@@ -311,7 +311,7 @@ def task_sort(task):
         _idx = _tasks.index(_task.lower())
     else:
         _idx = len(_tasks)
-    return '{:02d}{}'.format(_idx, _task)
+    return _idx, _task
 
 
 def validate_token(value, token, job):

@@ -69,12 +69,13 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         return _data
 
     @restore_sel
-    def publish(self, work=None, force=False):
+    def publish(self, work=None, force=False, version_up=None):
         """Execute lookdev publish.
 
         Args:
             work (CPWork): override publish work file
             force (bool): force overwrite without confirmation
+            version_up (bool): version up on publish
 
         Returns:
             (CPOutput): publish file
@@ -84,6 +85,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _work = work or pipe.cur_work()
         _pub = _work.to_output('publish', output_type='lookdev')
         _data_dir = _pub.to_dir().to_subdir('data')
+        _outs = []
         self.shd_yml = _pub.to_file(
             dir_=_data_dir,  base=_pub.base+'_shaders', extn='yml')
 
@@ -106,7 +108,9 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         # Export ass
         _tgl_export_ass = self.ui.ExportAss.isChecked() if self.ui else True
         if _tgl_export_ass:
-            _export_ass(metadata=_metadata, force=force)
+            _ass = _export_ass(metadata=_metadata, force=force)
+            if _ass:
+                _outs.append(_ass)
 
         # Read shaders + save to yml
         _shd_data = lookdev.read_publish_metadata()
@@ -125,10 +129,11 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         cmds.file(_pub.path, exportSelected=True, type=_type, force=True)
         _pub.set_metadata(_metadata)
         _work.load(force=True)
+        _outs.append(_pub)
 
-        self.post_publish(work=_work, outs=[_pub])
+        self.post_publish(work=_work, outs=_outs, version_up=version_up)
 
-        return _pub
+        return _outs
 
 
 def _clean_junk():
@@ -160,7 +165,7 @@ def _export_ass(metadata, force):
         if _set.endswith('cache_SET')], catch=True)
     if not _cache_set:
         _LOGGER.info(' - EXPORT ASS FAILED: MISSING CACHE SET')
-        return
+        return None
     cmds.select(_cache_set)
 
     # Get ass path
@@ -169,7 +174,7 @@ def _export_ass(metadata, force):
             'ass_gz', output_type='geo', output_name='shdCache')
     except ValueError:
         _LOGGER.info(' - NO ass_gz TEMPLATE FOUND IN %s', _work.job.name)
-        return
+        return None
 
     # Export ass
     _ass.delete(wording='Replace', force=force)
@@ -193,6 +198,8 @@ def _export_ass(metadata, force):
     _ass.set_metadata(_data)
 
     _LOGGER.info(' - EXPORTED ASS %s', _ass.path)
+
+    return _ass
 
 
 def _find_export_nodes():

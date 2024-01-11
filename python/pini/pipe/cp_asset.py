@@ -7,7 +7,7 @@ import logging
 import lucidity
 
 from pini import icons, dcc
-from pini.utils import abs_path
+from pini.utils import abs_path, assert_eq
 
 from .cp_job import CPJob, obtain_job
 from .cp_entity import CPEntity
@@ -40,7 +40,7 @@ class CPAsset(CPEntity):
         else:
             _job = CPJob(_path)
             self.job = obtain_job(_job.name)
-            assert self.job == _job
+            assert_eq(self.job, _job)
             assert _path.startswith(_job.path)
 
         # Crop path to asset depth

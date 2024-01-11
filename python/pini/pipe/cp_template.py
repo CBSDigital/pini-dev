@@ -489,8 +489,6 @@ def build_job_templates(job, catch=True):
     Returns:
         ({name: Template list} dict): template name/object data
     """
-    from pini import pipe
-
     _LOGGER.debug('BUILD TEMPLATES %s', job.name)
     _start = time.time()
 
@@ -533,31 +531,74 @@ def build_job_templates(job, catch=True):
                 job=job, path_type=_path_type)
             _tmpls[_name].append(_tmpl)
 
-    # Add seq dir templates
+    _build_seq_dir_tmpls(_tmpls, job=job)
+    _build_sequence_tmpl(_tmpls, job=job)
+    _build_ass_gz_tmpls(_tmpls, job=job)
+    _LOGGER.debug(' - BUILT %s TEMPLATES IN %.02fs', job.name,
+                  time.time() - _start)
+
+    return dict(_tmpls)
+
+
+def _build_seq_dir_tmpls(tmpls, job):
+    """Add seq dir templates.
+
+    These are used for caching on disk pipelines.
+
+    Args:
+        tmpls (dict): templates dict
+        job (CPJob): parent job
+    """
+    from pini import pipe
     _seq_dirs = set()
     for _type in pipe.OUTPUT_SEQ_TEMPLATE_TYPES:
-        for _tmpl in _tmpls[_type]:
+        for _tmpl in tmpls[_type]:
             _seq_dir = File(_tmpl.pattern).to_dir().path
             if _seq_dir in _seq_dirs:
                 continue
             _seq_dirs.add(_seq_dir)
             _tmpl = CPTemplate(
                 name='seq_dir', pattern=_seq_dir, path_type='d', job=job)
-            _tmpls['seq_dir'].append(_tmpl)
+            tmpls['seq_dir'].append(_tmpl)
 
-    # Add sequence path
-    _shot_tmpl = single(_tmpls['shot_entity_path'], catch=True)
+
+def _build_sequence_tmpl(tmpls, job):
+    """Add sequence path template based on shot path.
+
+    Args:
+        tmpls (dict): templates dict
+        job (CPJob): parent job
+    """
+    _shot_tmpl = single(tmpls['shot_entity_path'], catch=True)
     if _shot_tmpl and '{sequence}' in _shot_tmpl.pattern:
         _root, _ = _shot_tmpl.pattern.split('{sequence}')
         _seq_pattern = _root + '{sequence}'
-        _tmpls['sequence_path'] = [CPTemplate(
+        tmpls['sequence_path'] = [CPTemplate(
             'sequence_path', _seq_pattern, job=job, path_type='d',
             anchor=lucidity.Template.ANCHOR_END)]
 
-    _LOGGER.debug(' - BUILT %s TEMPLATES IN %.02fs', job.name,
-                  time.time() - _start)
 
-    return dict(_tmpls)
+def _build_ass_gz_tmpls(tmpls, job):
+    """Add ass.gz templates based on cache template.
+
+    These need to be added as a special case because ass.gz causes issues
+    in lucidity parsing.
+
+    Args:
+        tmpls (dict): templates dict
+        job (CPJob): parent job
+    """
+    _cache_names = [_name for _name in tmpls.keys() if 'cache' in _name]
+    for _cache_name in _cache_names:
+        _ass_gz_name = _cache_name.replace('cache', 'ass_gz')
+        _LOGGER.debug('BUILD ASS GZ %s -> %s', _cache_name, _ass_gz_name)
+        for _cache_tmpl in tmpls[_cache_name]:
+            _LOGGER.debug(' - CACHE TMPL %s', _cache_tmpl)
+            _ass_gz_tmpl = CPTemplate(
+                name=_ass_gz_name, job=job, path_type='f',
+                pattern=_cache_tmpl.pattern.replace('{extn}', 'ass.gz'))
+            _LOGGER.debug(' - CACHE TMPL %s', _ass_gz_tmpl)
+            tmpls[_ass_gz_name].append(_ass_gz_tmpl)
 
 
 def _tmpl_name_to_path_type(name):

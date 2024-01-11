@@ -253,7 +253,12 @@ class CExportHandler(object):
         Returns:
             (dict): metadata
         """
-        _notes = self.notes_elem.text() if self.notes_elem else None
+
+        if self.ui and self.notes_elem:
+            _notes = self.notes_elem.text()
+        else:
+            _notes = None
+
         _LOGGER.info('NOTES %s', _notes)
         _data = eh_utils.obtain_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,

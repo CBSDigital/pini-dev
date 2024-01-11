@@ -191,8 +191,11 @@ class TestOpenMaya(unittest.TestCase):
     def test_transform(self):
 
         # Test solidify
+        if cmds.objExists('BLAH'):
+            cmds.delete('BLAH')
         _sphere = pom.CMDS.polySphere()
         _grp = _sphere.add_to_grp('BLAH')
+        _LOGGER.info('GRP %s %s %d', _grp, _grp.tx, _grp.tx.is_locked())
         assert not _grp.tx.is_locked()
         _grp.solidify()
         assert _grp.tx.is_locked()

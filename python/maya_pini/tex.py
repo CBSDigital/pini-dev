@@ -89,6 +89,24 @@ class _Shader(pom.CNode):
         assert _file
         return File(_file.plug['fileTextureName'].get_val())
 
+    def to_geo(self):
+        """Find geometry using this shader.
+
+        Returns:
+            (CNode list): nodes
+        """
+        _geos = []
+
+        for _geo in (cmds.sets(self.to_se(), query=True) or []):
+            try:
+                _geo = pom.to_node(_geo)
+            except RuntimeError:
+                _LOGGER.warning(
+                    ' - FAILED TO BUILD NODE %s (POSSIBLE DUPLICATE)', _geo)
+                continue
+            _geos.append(_geo)
+        return _geos
+
     def to_se(self, create=False):
         """To shading engine.
 
@@ -202,35 +220,42 @@ def to_ftn_root():
     return Dir(abs_path(_tex_dir))
 
 
-def to_shd(geo):
-    """Read shader from the given mesh.
+def to_shd(obj):
+    """Obtain shader from the given object.
+
+    If a mesh object is passed, the attached shader is used.
 
     Args:
-        geo (CMesh): mesh to read shader from
+        obj (any): object to read
 
     Returns:
         (Shader): shader
     """
-    _node = pom.to_node(geo)
+    _node = pom.to_node(obj)
     _type = _node.object_type()
-    _LOGGER.debug('TO SHD %s %s', geo, _type)
+    _LOGGER.debug('TO SHD %s type=%s', obj, _type)
 
-    # Handle as shaded object
+    # Determine shader based on type
+    _se = None
     if _node.shp:
         _LOGGER.debug(' - SHADED OBJECT')
         _ses = _node.shp.find_outgoing(
             type_='shadingEngine', connections=False, plugs=False)
         _se = single(_ses, catch=True)
-        _LOGGER.debug(' - SE %s', _se)
-        if _se:
-            _shd = _se.plug['surfaceShader'].find_incoming(plugs=False)
-            _type = _shd.object_type()
-            _LOGGER.debug(' - SHD %s', _shd)
-            _class = {'lambert': _Lambert}[_type]
-            _shd = _class(_shd)
     elif _type == 'lambert':
         _shd = _Lambert(_node)
+    elif _type == 'shadingEngine':
+        _se = _node
     else:
         _shd = None
+
+    # Build shader from shading engine
+    if _se:
+        _LOGGER.debug(' - SE %s', _se)
+        _shd = _se.plug['surfaceShader'].find_incoming(plugs=False)
+        _type = _shd.object_type()
+        _LOGGER.debug(' - SHD %s', _shd)
+        _class = {'lambert': _Lambert}[_type]
+        _shd = _class(_shd)
 
     return _shd

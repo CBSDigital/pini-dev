@@ -429,6 +429,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _LOGGER.info('READ WORK DIRS SG %s', self)
         from pini.pipe import shotgrid, cache
 
+        _start = time.time()
         _sg = shotgrid.to_handler()
         _tmpl = self.find_template('work_dir')
         _LOGGER.info(' - TMPL %s', _tmpl)
@@ -436,13 +437,13 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         # Build entity map
         _etys = self.entities
         _LOGGER.debug(' - FOUND %d ETYS', len(_etys))
-        _start = time.time()
+        _e_start = time.time()
         _ety_map = {}
         for _ety in reversed(_etys):
             _key = _ety.profile, shotgrid.to_entity_id(_ety)
             _ety_map[_key] = _ety
         _LOGGER.info(' - MAPPED %d ETYS IN %.01fs', len(_ety_map),
-                     time.time() - _start)
+                     time.time() - _e_start)
 
         # Read tasks from shotgrid
         _results = _sg.find(
@@ -488,7 +489,9 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _work_dir = cache.CCPWorkDir(_path, entity=_ety)
             _work_dirs.append(_work_dir)
 
-        _LOGGER.info('FOUND %d WORK DIRS', len(_work_dirs))
+        _LOGGER.info(
+            'FOUND %d WORK DIRS (%.01fs)', len(_work_dirs),
+            time.time() - _start)
         return _work_dirs
 
     def find_outputs(self, *args, **kwargs):

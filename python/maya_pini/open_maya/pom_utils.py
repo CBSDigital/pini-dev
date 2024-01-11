@@ -338,6 +338,7 @@ def to_mobject(node):
         (MObject): open maya object
     """
     from maya_pini import open_maya as pom
+    _LOGGER.debug('TO MOBJECT %s', node)
 
     # Obtain node as str
     _node = node
@@ -351,6 +352,7 @@ def to_mobject(node):
     try:
         _tmp.add(_node)
     except RuntimeError as _exc:
+        _LOGGER.debug(' - EXC %s', _exc)
         if str(_exc).endswith('Object does not exist'):
             raise RuntimeError('Missing node {}'.format(node))
         raise _exc

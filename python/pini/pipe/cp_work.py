@@ -192,7 +192,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         elif not self.exists():
             _data = {}
         else:
-            _owner = self.user or self.owner()
+            _owner = self.user or super(CPWork, self).owner()
             _mtime = int(File(self).mtime())
             _data = {
                 'size': self.size(),
