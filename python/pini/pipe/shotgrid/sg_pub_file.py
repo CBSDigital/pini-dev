@@ -86,12 +86,14 @@ def create_pub_file(output, thumb=None, force=False):
     return _data
 
 
-def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
+def find_pub_files(
+        job=None, entity=None, entities=None, work_dir=None, filter_=None):
     """Find PublishedFile entries.
 
     Args:
         job (CPJob): job to search
         entity (CPEntity): apply entity filter
+        entities (CPEntity list): filter by the given list of entities
         work_dir (CPWorkDir): filter by work dir
         filter_ (str): apply path filter
 
@@ -116,6 +118,8 @@ def find_pub_files(job=None, entity=None, work_dir=None, filter_=None):
         ('sg_status_list', 'not_in', ('omt', ))]
     if entity:
         _filters += [sg_entity.to_entity_filter(entity)]
+    if entities:
+        _filters += [sg_entity.to_entities_filter(entities)]
     if work_dir:
         _filters += [sg_task.to_task_filter(work_dir)]
     _LOGGER.debug(' - FILTERS %s', _filters)

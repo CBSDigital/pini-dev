@@ -9,9 +9,14 @@ import os
 
 import six
 
-from pini.utils import cache_on_obj, Dir, single, File, cache_result
+from pini.utils import (
+    cache_on_obj, Dir, single, File, cache_result, merge_dicts)
 
 _LOGGER = logging.getLogger(__name__)
+_DEFAULT_SETTINGS = {
+    'shotgrid': {
+        'disable': False,
+        'only_3d': False}}
 
 
 @cache_result
@@ -24,7 +29,8 @@ def _obt_default_settings():
     Returns:
         (dict): default settings
     """
-    _settings = {'disable_shotgrid': False}
+    _settings = {}
+    _settings.update(_DEFAULT_SETTINGS)
 
     # Add $PINI_PIPE_DEFAULT_SETTINGS yml
     _file = os.environ.get('PINI_PIPE_DEFAULT_SETTINGS')
@@ -72,12 +78,12 @@ class CPSettingsLevel(Dir):
             _parent_settings = self._settings_parent.settings
         else:
             _parent_settings = _obt_default_settings()
-        _settings.update(_parent_settings)
+        _settings = merge_dicts(_settings, _parent_settings)
         _LOGGER.debug(' - ADDED PARENT %s', _parent_settings)
 
         # Add settings from this level
         _this_settings = self._read_this_settings()
-        _settings.update(_this_settings)
+        _settings = merge_dicts(_settings, _this_settings)
         _LOGGER.debug(' - ADDED THIS %s', _settings)
 
         return _settings
@@ -139,7 +145,13 @@ class CPSettingsLevel(Dir):
 
         # Update dict
         _this = self.settings_file.read_yml(catch=True)
-        _this[_key] = _val
+        if (
+                isinstance(_val, dict) and
+                _key in _this and
+                isinstance(_this[_key], dict)):
+            _this[_key] = merge_dicts(_this[_key], _val)
+        else:
+            _this[_key] = _val
 
         self._update_settings(_this)
 

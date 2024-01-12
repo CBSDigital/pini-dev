@@ -59,7 +59,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         self._create_tasks()
 
         # Setup shotgrid
-        _enable = shotgrid_ and not self.settings.get('disable_shotgrid', False)
+        _enable = shotgrid_ and not self.settings['shotgrid']['disable']
         if _enable and pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
             shotgrid.create_entity(self, force=force)
@@ -257,7 +257,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
             _work_dir = class_(_dir, template=_tmpl, entity=self)
             _work_dirs.append(_work_dir)
 
-        return _work_dirs
+        return sorted(_work_dirs)
 
     def _read_work_dirs_sg(self, class_):
         """Read work dirs using shotgrid.

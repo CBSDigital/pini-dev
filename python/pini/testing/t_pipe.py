@@ -50,7 +50,7 @@ class CTmpPipeTestCase(unittest.TestCase):
         self._tmp_job = pipe.CPJob(self._tmp_job_dir)
         self._tmp_job.flush(force=True)
         self._tmp_job.setup_cfg('Pluto')
-        self._tmp_job.set_setting(disable_shotgrid=True)
+        self._tmp_job.set_setting(shotgrid={'disable': True})
 
     def tearDown(self):
         """Executed on complete test."""

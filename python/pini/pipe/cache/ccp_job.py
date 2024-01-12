@@ -7,7 +7,7 @@ import time
 
 import six
 
-from pini.utils import single, apply_filter
+from pini.utils import single, apply_filter, get_method_to_file_cacher
 
 from .ccp_utils import pipe_cache_result
 from ..cp_job import CPJob
@@ -46,6 +46,15 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             (CCPAsset tuple): assets
         """
         return tuple(self.find_assets())
+
+    @property
+    def cache_fmt(self):
+        """Obtain cache path format for this job.
+
+        Returns:
+            (str): cache format
+        """
+        return self.to_file('.pini/cache/{func}.pkl').path
 
     @property
     def publishes(self):
@@ -446,10 +455,14 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
                      time.time() - _e_start)
 
         # Read tasks from shotgrid
+        _filters = [
+            shotgrid.to_job_filter(self),
+            shotgrid.to_entities_filter(self.entities)]
+        _s_start = time.time()
         _results = _sg.find(
-            'Task', filters=[shotgrid.to_job_filter(self)],
-            fields=shotgrid.TASK_FIELDS+['entity'])
-        _LOGGER.info(' - FOUND %d RESULTS', len(_results))
+            'Task', filters=_filters, fields=shotgrid.TASK_FIELDS+['entity'])
+        _LOGGER.info(' - FOUND %d RESULTS IN %.01fs', len(_results),
+                     time.time() - _s_start)
 
         # Map tasks to work dirs
         _work_dirs = []
@@ -523,7 +536,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         from pini.pipe import cache
 
         assert pipe.MASTER == 'shotgrid'
-        _outs = super(CCPJob, self)._read_outputs_sg()
+        _outs = self._read_sg_pub_files(force=force)
 
         # Convert to cacheable objects
         _c_outs = []
@@ -559,6 +572,20 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _c_outs.append(_c_out)
 
         return _c_outs
+
+    @get_method_to_file_cacher(max_age=60*60*24)
+    def _read_sg_pub_files(self, force=False):
+        """Read shotgrid published files for this job.
+
+        Args:
+            force (bool): force re-read cache
+
+        Returns:
+            (CPOutput list): outputs
+        """
+        from pini.pipe import shotgrid
+        _outs = shotgrid.find_pub_files(job=self, entities=self.entities)
+        return _outs
 
     @pipe_cache_result
     def to_prefix(self):

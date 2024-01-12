@@ -39,8 +39,8 @@ class TestDiskPiniHelper(unittest.TestCase):
         assert _seq
         assert _seq.name == _seq_name
         assert _helper.entity.exists()
-        _helper.entity.set_setting(disable_shotgrid=True)
-        assert _helper.entity.settings.get('disable_shotgrid')
+        _helper.entity.set_setting(shotgrid={'disable': True})
+        assert _helper.entity.settings['shotgrid']['disable']
 
         # Test save/load
         _work = _helper.ui.WWorks.selected_data()

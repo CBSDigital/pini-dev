@@ -24,8 +24,8 @@ class TestTools(unittest.TestCase):
                 _shot = _job.to_shot(sequence=_seq, shot=_name)
                 if not _shot.exists():
                     _shot.create(force=True, shotgrid_=False)
-                _shot.set_setting(disable_shotgrid=True)
-                assert _shot.settings['disable_shotgrid']
+                _shot.set_setting(shotgrid={'disable': True})
+                assert not _shot.settings['shotgrid']['disable']
         _job.find_shot('testa020').to_work_dir('plastic').mkdir()
         _job.find_shot('testa010').to_work(task='comp', tag='mytag').touch()
 

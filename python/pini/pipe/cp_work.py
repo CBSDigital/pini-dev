@@ -462,7 +462,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         # Update shotgrid tasks (add user + set to in progress)
         if (
                 pipe.SHOTGRID_AVAILABLE and
-                not self.entity.settings.get('disable_shotgrid')):
+                not self.entity.settings['shotgrid']['disable']):
             from pini.pipe import shotgrid
             try:
                 shotgrid.update_work_task(self)

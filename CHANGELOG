@@ -1,3 +1,23 @@
+## [0.50.0] - Fri 2024-01-12 13:31
+### Summary
+ - Pini Helper:
+    - added disk cache + 3D only setting to improve speed,
+### Updated
+ - pini.pipe moved setting disable_shotgrid -> shotgrid.disable,
+ - pini.pipe.CPSettingsLevel added default settings,
+ - pini.pipe.CPSettingsLevel use merge_dict to combine levels to preserve dicts,
+ - pini.pipe.CPJob.read_shots_sg use shotgrid.only_3d setting,
+ - pini.pipe.CPEntity.find_work_dirs bugfix not sorted,
+ - pini.pipe.cache.CCPEntity.find_outputs bugfix force on shotgrid pipe,
+ - pini.pipe.cache.CCPEntity.flush rebuild cache on flush,
+ - pini.pipe.cache.CCPJob.cache_fmt added,
+ - pini.pipe.cache.CCPJob._read_outputs_sg added 24h disk cache,
+ - pini.pipe.shotgrid.to_entities_filter added,
+ - pini.pipe.shotgrid.to_entity_filter include only type/id data for brevity,
+ - pini.pipe.shotgrid.find_pub_filter added entities arg,
+ - pini.tools.helper.BaseHelper bugfix missing reset_cache arg,
+
+
 ## [0.49.0] - Thu 2024-01-11 15:15
 ### Summary
  - Pini Helper:

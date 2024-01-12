@@ -10,7 +10,7 @@ import time
 import shotgun_api3
 
 from pini import pipe
-from pini.utils import plural, basic_repr
+from pini.utils import plural, basic_repr, error_on_file_system_disabled
 
 from . import sg_utils
 
@@ -81,6 +81,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
         Returns:
             (dict list): matching entries
         """
+        error_on_file_system_disabled()
         self.n_requests += 1
         _LOGGER.debug('SG FIND [%d] %s %s %s', self.n_requests,
                       entity_type, filters, fields)
@@ -133,6 +134,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
         Returns:
             (dict): matching result
         """
+        error_on_file_system_disabled()
         _LOGGER.debug('SG FIND ONE %s %s %s', entity_type, filters, fields)
         self.n_requests += 1
         _start = time.time()

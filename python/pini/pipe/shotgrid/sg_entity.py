@@ -193,7 +193,9 @@ def to_entity_filter(entity=None):
     Returns:
         (tuple): entity filter
     """
-    return 'entity', 'is', [to_entity_data(entity)]
+    _data = to_entity_data(entity)
+    _key = {'id': _data['id'], 'type': _data['type']}
+    return 'entity', 'is', _key
 
 
 def to_entity_id(entity):
@@ -228,6 +230,22 @@ def to_entity_range(entity=None):
     if _start is None or _end is None:
         return None
     return _start, _end
+
+
+def to_entities_filter(entities):
+    """Build a filter to match the given entities.
+
+    Args:
+        entities (CPEntity list): entities to match
+
+    Returns:
+        (tuple): entities filter
+    """
+    _ety_datas = []
+    for _ety in entities:
+        _, _, _ety_data = to_entity_filter(_ety)
+        _ety_datas.append(_ety_data)
+    return 'entity', 'in', _ety_datas
 
 
 def _create_asset(asset, force=False):

@@ -705,7 +705,8 @@ class CPJob(cp_settings.CPSettingsLevel):
         """
         _LOGGER.debug('READ SHOTS SG')
         from pini.pipe import shotgrid
-        _shots = shotgrid.find_shots(job=self)
+        _only_3d = self.settings['shotgrid']['only_3d']
+        _shots = shotgrid.find_shots(job=self, only_3d=_only_3d)
         if class_:
             _LOGGER.debug(' - CLASS %s', class_)
             _shots = [class_(_shot, job=self) for _shot in _shots]

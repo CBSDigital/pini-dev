@@ -84,6 +84,15 @@ class CCPEntity(CPEntity):
         return '{}/.pini/cache/{{func}}.pkl'.format(self.path)
 
     @property
+    def outputs(self):
+        """Obtain list of outputs in this entity.
+
+        Returns:
+            (CPOutput tuple): all entity-level outputs
+        """
+        return tuple(self.find_outputs())
+
+    @property
     def work_dirs(self):
         """Access the list of tasks in this entity.
 
@@ -211,15 +220,6 @@ class CCPEntity(CPEntity):
         _kwargs['class_'] = _kwargs.get('class_', cache.CCPWork)
         return super(CCPEntity, self).to_work(**_kwargs)
 
-    @property
-    def outputs(self):
-        """Obtain list of outputs in this entity.
-
-        Returns:
-            (CPOutput tuple): all entity-level outputs
-        """
-        return tuple(self.find_outputs())
-
     def obt_output(self, match, catch=False, force=False):
         """Obtain output output withing this entity.
 
@@ -253,16 +253,22 @@ class CCPEntity(CPEntity):
         Returns:
             (CCPOutput list): entity level outputs
         """
+        from pini import pipe
         _LOGGER.debug('FIND OUTPUTS force=%d %s', force, self)
         if force:
-            self._update_outputs_cache()
-        if force > 1:
-            _LOGGER.info('REREADING ALL SEQ DIRS %s', self)
-            from pini import qt
-            for _seq_dir in qt.progress_bar(
-                    self.find_output_seq_dirs(),
-                    'Checking {:d} seq{}', stack_key='RereadSeqDirs'):
-                _seq_dir.find_outputs(force=True)
+            if pipe.MASTER == 'disk':
+                self._update_outputs_cache()
+                if force > 1:
+                    _LOGGER.info('REREADING ALL SEQ DIRS %s', self)
+                    from pini import qt
+                    for _seq_dir in qt.progress_bar(
+                            self.find_output_seq_dirs(),
+                            'Checking {:d} seq{}', stack_key='RereadSeqDirs'):
+                        _seq_dir.find_outputs(force=True)
+            elif pipe.MASTER == 'shotgrid':
+                self.job.find_outputs(force=True)
+            else:
+                raise NotImplementedError(pipe.MASTER)
         return super(CCPEntity, self).find_outputs(type_=type_, **kwargs)
 
     def obt_output_seq_dir(self, dir_, force=False):
@@ -400,6 +406,15 @@ class CCPEntity(CPEntity):
             (CCPOutput list): publishes
         """
         return super(CCPEntity, self)._read_publishes_disk()
+
+    def flush(self, force=False):
+        """Flush contents of this entity.
+
+        Args:
+            force (bool): remove elements without confirmation
+        """
+        super(CCPEntity, self).flush(force=force)
+        self.find_outputs(force=True)
 
 
 class CCPAsset(CCPEntity, CPAsset):

@@ -41,8 +41,7 @@ class TestPublish(unittest.TestCase):
         assert _job_c.exists()
         assert _job_c in pipe.CACHE.jobs
         assert _job_c is pipe.CACHE.obt_job(_job_c)
-        _ety_c = _job_c.to_asset(
-            asset='tmp', asset_type=testing.TEST_ASSET.asset_type)
+        _ety_c = pipe.CACHE.obt(testing.TMP_ASSET)
         if not _ety_c.exists():
             _ety_c.create(force=True)
         _ety_c.flush(force=True)

@@ -17,7 +17,7 @@ class PiniHelper(qt.CUiDialog, ph_base.BasePiniHelper):
     timerEvent = ph_base.BasePiniHelper.timerEvent
 
     def __init__(self, jump_to=None, admin=None, parent=None,
-                 load_settings=True, show=True):
+                 load_settings=True, show=True, reset_cache=True):
         """Constructor.
 
         Args:
@@ -26,13 +26,14 @@ class PiniHelper(qt.CUiDialog, ph_base.BasePiniHelper):
             parent (QDialog): parent dialog
             load_settings (bool): load settings on launch
             show (bool): show on launch
+            reset_cache (bool): reset pipeline cache on launch
         """
         super(PiniHelper, self).__init__(
             ui_file=ph_base.UI_FILE, load_settings=False, show=False,
             parent=parent)
         ph_base.BasePiniHelper.__init__(
             self, jump_to=jump_to, admin=admin, load_settings=load_settings,
-            show=show)
+            show=show, reset_cache=reset_cache)
 
     def closeEvent(self, event=None):
         """Triggered by close.
