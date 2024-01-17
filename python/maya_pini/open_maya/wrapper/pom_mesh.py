@@ -23,14 +23,24 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Args:
             node (str): mesh transform node (eg. pSphere1)
         """
-        super(CMesh, self).__init__(node)
-        _m_dag = to_mdagpath(node)
+        _node = node
+        if isinstance(_node, base.CBaseNode):
+            _node = str(_node)
+        super(CMesh, self).__init__(_node)
+        _m_dag = to_mdagpath(_node)
         try:
             om.MFnMesh.__init__(self, _m_dag)
         except ValueError as _exc:
             _LOGGER.error(_exc)
             raise ValueError(
-                'Failed to construct MFnMesh object {}'.format(node))
+                'Failed to construct MFnMesh object {}'.format(_node))
+
+        # Check shape
+        _shp = self.shp
+        if not _shp:
+            raise ValueError('No shape {}'.format(_node))
+        if _shp.object_type() != 'mesh':
+            raise ValueError('Bad shape {}'.format(_shp))
 
     def closest_p(self, point):
         """Get the closest point on this mesh to the given point.

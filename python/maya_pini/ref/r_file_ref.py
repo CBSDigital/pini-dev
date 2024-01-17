@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import six_cmp, File, single, passes_filter, safe_zip
+from pini.utils import six_cmp, File, single, passes_filter, safe_zip, EMPTY
 from maya_pini.utils import (
     to_namespace, set_namespace, del_namespace, to_clean)
 
@@ -237,9 +237,22 @@ class FileRef(r_path_ref.PathRef):
 
         return _top_nodes
 
-    def import_(self):
-        """Import this reference."""
+    def import_(self, namespace=EMPTY):
+        """Import this reference.
+
+        Args:
+            namespace (str): override node namespace
+        """
+        _ns = self.namespace
         cmds.file(self.path_uid, importReference=True)
+
+        # Update namespace
+        if namespace is EMPTY:
+            pass
+        elif not namespace:
+            cmds.namespace(moveNamespace=(_ns, ':'), force=True)
+        else:
+            raise NotImplementedError(namespace)
 
     def load(self):
         """Load this reference."""

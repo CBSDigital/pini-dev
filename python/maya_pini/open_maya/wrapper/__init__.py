@@ -18,6 +18,6 @@ from .pom_plug import (
     CPlug, plus_plug, minus_plug, selected_plugs, to_plug, selected_plug)
 from .pom_transform import CTransform
 from .pom_reference import (
-    CReference, find_ref, find_refs, create_ref, obtain_ref)
+    CReference, find_ref, find_refs, create_ref, obtain_ref, selected_ref)
 
 WORLD_SPACE = om.MSpace.kWorld

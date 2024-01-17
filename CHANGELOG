@@ -1,3 +1,43 @@
+## [0.51.0] - Wed 2024-01-17 14:19
+### Summary
+ - Pini Helper:
+    - allow lights to be included in abc caches (cstewart),
+    - disabled arnold checks on non-arnold pipelines,
+### Updated
+ - pini.utils.Seq.to_seq added,
+ - pini.dcc.MayaDCC.create_ref use LOOKDEV grp for lookdev assets,
+ - pini.dcc.CMayaReference.to_node added catch arg,
+ - pini.dcc.CMayaLookdev.attach_to attach lights,
+ - pini.dcc.CMayaLookdev find_target/find_targets added,
+ - pini.dcc.CMayaLookdevPublish disabled ass export if arnold not in allowed renderers,
+ - pini.dcc.CMayaLookdevPublish include lights in cache set + metadata,
+ - pini.pipe.cache.CCPWork.obt_icon added force,
+ - pini.pipe.cache.CCPWork.update_outputs bugfix not redrawing helper works list,
+ - pini.tools.helper fix lookdev icons,
+ - pini.tools.helper better scene/output icon positioning,
+ - pini.tools.helper work list applied output tag sorting,
+ - pini.tools.helper lookdev ctx added reapply to target option,
+ - pini.tools.sanity_check check shaders disable arnold check if arnold not in allowed renderers,
+ - pini.tools.sanity_check.launch added filter_ arg,
+ - maya_pini.utils.blast_frame use nice settings by default,
+ - maya_pini.utils.restore_ns use try/finally to avoid stuck in ns,
+ - maya_pini.ref.FileRef.import_ added namespace arg,
+ - maya_pini.tex.find_shds added,
+ - maya_pini.tex.to_shd added VRayMtl handling,
+ - maya_pini.tex.Shader.duplicate added,
+ - maya_pini.tex.Shader.apply_to added face assignment handling,
+ - maya_pini.tex.Shader.to_geo use cast node,
+ - maya_pini.m_pipe find_cache_set/read_cache_set added,
+ - maya_pini.open_maya selected_ref/selected_node added,
+ - maya_pini.open_maya.cast_node added maintain shapes arg + added mesh handling,
+ - maya_pini.open_maya.find_nodes added clean_name filter,
+ - maya_pini.open_maya.CBaseNode.parent allow parent to world if already in world,
+ - maya_pini.open_maya.CBaseNode.set_outliner_col added,
+ - maya_pini.open_maya.CBaseTransform.parent_constraint added name arg,
+ - maya_pini.open_maya.CMesh allow CNode init + error on no shape,
+ - maya_pini.open_maya.CMDS.listRelatives use cast node,
+
+
 ## [0.50.0] - Fri 2024-01-12 13:31
 ### Summary
  - Pini Helper:

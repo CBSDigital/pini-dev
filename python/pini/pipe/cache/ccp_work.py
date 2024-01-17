@@ -174,8 +174,11 @@ class CCPWork(CPWork):
         return nice_size(self.metadata.get('size', 0))
 
     @pipe_cache_result
-    def obt_image(self):
+    def obt_image(self, force=False):
         """Obtain image for this work file.
+
+        Args:
+            force (bool): recache image
 
         Returns:
             (File|None): image (if any)
@@ -259,5 +262,6 @@ class CCPWork(CPWork):
         if helper.is_active():
             helper.DIALOG.jump_to(self)
             helper.DIALOG.ui.WWorkRefresh.click()
+            helper.DIALOG.ui.WWorksRefresh.click()
         else:
             self._read_outputs(force=True)

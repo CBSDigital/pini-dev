@@ -313,6 +313,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _func = wrap_fn(pprint.pprint, _ld_data)
         menu.add_action(
             'Print shaders data', _func, icon=icons.PRINT)
+        menu.add_separator()
+
+        # Add reapply to target option
+        _trg = ref.find_target()
+        if _trg:
+            _text = 'Reapply to "{}"'.format(_trg.namespace)
+        else:
+            _text = 'Reapply to target'
+        _func = wrap_fn(ref.attach_to, _trg)
+        menu.add_action(
+            _text, _func, enabled=bool(_trg), icon=LOOKDEV_BG_ICON)
 
         # Find apply options to add
         _vp_refs = dcc.find_pipe_refs(selected=True)

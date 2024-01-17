@@ -283,3 +283,12 @@ def obtain_ref(file_, namespace):
     """
     _ref = ref.obtain_ref(file_, namespace=namespace)
     return CReference(_ref.ref_node)
+
+
+def selected_ref():
+    """Obtain currently selected reference.
+
+    Returns:
+        (CReference): reference node
+    """
+    return find_ref(selected=True)

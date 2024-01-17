@@ -22,7 +22,7 @@ class SanityCheckUi(qt.CUiDialog):
 
     def __init__(
             self, mode='standalone', checks=None, run=True,
-            close_on_success=None, force=False):
+            close_on_success=None, force=False, filter_=None):
         """Constructor.
 
         Args:
@@ -31,6 +31,7 @@ class SanityCheckUi(qt.CUiDialog):
             run (bool): automatically run checks on launch
             close_on_success (bool): close dialog on all checks passed
             force (bool): in export mode force export ignoring any issues
+            filter_ (str): apply filter based on check name
         """
         from pini.tools import sanity_check
 
@@ -38,7 +39,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
-        self.checks = checks or sanity_check.find_checks()
+        self.checks = checks or sanity_check.find_checks(filter_=filter_)
 
         super(SanityCheckUi, self).__init__(
             ui_file=UI_FILE, show=False)

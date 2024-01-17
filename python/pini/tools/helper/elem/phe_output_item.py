@@ -166,12 +166,12 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         _icon = output_to_type_icon(self.output)
         if _icon:
-            _over = obt_icon_pixmap(_icon, size=self.icon_w)
+            _over = obt_icon_pixmap(_icon, size=self.icon_w-2)
             _pix = pix.draw_overlay(
-                _over, pos=(_right_m+6, self.text_y+2), anchor='R')
+                _over, pos=(_right_m+3, self.text_y+2), anchor='R')
 
         # Draw version text
-        _text_x = _right_m - 13
+        _text_x = _right_m - 16
         _FONT.setPointSize(7.5)
         _FONT.setBold(True)
         if self.output.ver_n:

@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestOpenMaya(unittest.TestCase):
 
-    def test(self):
+    def test_basic_node_relationships(self):
 
         _persp_s = pom.CNode('perspShape')
         _persp = pom.CTransform('persp')
@@ -29,7 +29,9 @@ class TestOpenMaya(unittest.TestCase):
         # Test to parent
         assert _persp_s.to_parent()
         assert _persp_s.to_parent() == _persp
-        assert isinstance(_persp_s.to_parent(), pom.CTransform)
+        _LOGGER.info(' - PERSP S %s %s %s', _persp_s, _persp_s.to_parent(),
+                     type(_persp_s.to_parent()))
+        assert isinstance(_persp_s.to_parent(), pom.CCamera)
         assert not _persp.to_parent()
 
         # Test to shape
@@ -63,7 +65,7 @@ class TestOpenMaya(unittest.TestCase):
         assert _cam.renderable
 
     @use_tmp_ns
-    def test_cmds(self):
+    def test_cmds_wrapper(self):
 
         _persp_s = pom.CNode('perspShape')
         _persp = pom.CTransform('persp')
@@ -75,13 +77,14 @@ class TestOpenMaya(unittest.TestCase):
         assert _children
         _child = single(_children)
         assert _child
+        _LOGGER.info(' - CHILD %s %s', _child, type(_child))
         assert isinstance(_child, pom.CNode)
         _children = _persp_s.cmds.listRelatives(children=True)
         assert not _children
         assert isinstance(_children, list)
         _parent = _persp_s.cmds.listRelatives(parent=True)
         assert isinstance(_parent, list)
-        assert isinstance(single(_parent), pom.CTransform)
+        assert isinstance(single(_parent), pom.CCamera)
 
         # Check list connections
         assert _sphere.namespace == 'tmp'

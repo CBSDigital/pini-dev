@@ -36,18 +36,21 @@ def add_anim_offs(tfm, anim):
         _anim_t.connect(_crv.input, force=True, break_connections=True)
 
 
-def cast_node(node, type_=None, class_=None):
+def cast_node(node, type_=None, class_=None, maintain_shapes=False):
     """Cast a node to an appropriate pom type.
 
     Args:
         node (str): node to cast
         type_ (str): node type (if known)
         class_ (class): force result class
+        maintain_shapes (bool): don't update a shape node to its parent
+            node type (eg. return camera as CNode not CCamera)
 
     Returns:
         (CNode|CTransform|CCamera): node object
     """
     from maya_pini import open_maya as pom
+
     _LOGGER.debug('CAST NODE %s type=%s', node, type_)
     _node = node
 
@@ -60,36 +63,57 @@ def cast_node(node, type_=None, class_=None):
     _kwargs = {}
     if class_:
         _class = class_
-    elif _type == 'camera':
+    elif not maintain_shapes and _type == 'camera':
         _class = pom.CCamera
         _shp = _node
         _node = to_parent(_shp)
         _kwargs['shp'] = _shp
     elif _type == 'joint':
         _class = pom.CJoint
+    elif _type == 'mesh':
+        _class = pom.CMesh
+        _shp = _node
+        _node = to_parent(_shp)
     elif _type == 'transform':
-        _shp = to_shp(_node, catch=True)
-        _LOGGER.debug(' - SHP %s', _shp)
-        if not _shp:
-            _class = pom.CTransform
-        else:
-            _shp_type = cmds.objectType(_shp)
-            _LOGGER.debug(' - SHP TYPE %s', _shp_type)
-            if _shp_type == 'mesh':
-                _class = pom.CMesh
-            elif _shp_type == 'camera':
-                _class = pom.CCamera
-            elif _shp_type == 'nurbsCurve':
-                _class = pom.CNurbsCurve
-            else:
-                _class = pom.CTransform
+        _class = _cast_tfm(_node)
     elif _type.startswith('animCurve'):
         _class = pom.CAnimCurve
     else:
         _class = pom.CNode
 
     _LOGGER.debug(' - CLASS %s', _class)
-    return _class(_node, **_kwargs)
+    _result = _class(_node, **_kwargs)
+    _LOGGER.debug(' - RESULT %s type=%s', _result, type(_result))
+    return _result
+
+
+def _cast_tfm(node):
+    """Cast a transform node based on its shape.
+
+    Args:
+        node (str): transform node to cast
+
+    Returns:
+        (class): target node class
+    """
+    from maya_pini import open_maya as pom
+
+    _shp = to_shp(node, catch=True)
+    _LOGGER.debug(' - SHP %s', _shp)
+    if not _shp:
+        return pom.CTransform
+
+    _shp_type = cmds.objectType(_shp)
+    _LOGGER.debug(' - SHP TYPE %s', _shp_type)
+    if _shp_type == 'mesh':
+        _class = pom.CMesh
+    elif _shp_type == 'camera':
+        _class = pom.CCamera
+    elif _shp_type == 'nurbsCurve':
+        _class = pom.CNurbsCurve
+    else:
+        _class = pom.CTransform
+    return _class
 
 
 def find_connections(
@@ -163,7 +187,9 @@ def find_connections(
     return _results
 
 
-def find_nodes(type_=None, namespace=EMPTY, referenced=None, filter_=None):
+def find_nodes(
+        type_=None, namespace=EMPTY, referenced=None, filter_=None,
+        clean_name=None):
     """Find nodes in the current scene.
 
     Args:
@@ -171,6 +197,7 @@ def find_nodes(type_=None, namespace=EMPTY, referenced=None, filter_=None):
         namespace (str): filter by namespace
         referenced (bool): filter by node referenced status
         filter_ (str): node name filter
+        clean_name (str): filter by clean name
 
     Returns:
         (CBaseNode list): nodes in scene
@@ -190,6 +217,8 @@ def find_nodes(type_=None, namespace=EMPTY, referenced=None, filter_=None):
         if namespace is not EMPTY and _node.namespace != namespace:
             continue
         if referenced is not None and _node.is_referenced() != referenced:
+            continue
+        if clean_name and _node.clean_name != clean_name:
             continue
         _nodes.append(_node)
     return _nodes
@@ -399,6 +428,15 @@ def _local_axes_to_m(pos, lx, ly, lz=None):
         ly[0],    ly[1],   ly[2],  0,
         _lz[0],  _lz[1],  _lz[2],  0,
         pos[0],  pos[1],  pos[2],  1])
+
+
+def selected_node():
+    """Obtain currently selected node.
+
+    Returns:
+        (CNode): selected node
+    """
+    return cast_node(single(cmds.ls(selection=True)))
 
 
 def to_m(*args, **kwargs):

@@ -445,6 +445,20 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('TO RES %s', _img.path)
         return _img.to_res()
 
+    def to_seq(self, extn=None):
+        """Build a sequence object based on this sequence.
+
+        Args:
+            extn (str): override extension
+
+        Returns:
+            (Seq): new sequence object
+        """
+        _path = '{dir}/{base}.{frame_expr}.{extn}'.format(
+            dir=self.dir, base=self.base, frame_expr=self.frame_expr,
+            extn=extn or self.extn)
+        return Seq(_path)
+
     def to_start(self):
         """Obtain start/first frame of this sequence.
 

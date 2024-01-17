@@ -585,7 +585,8 @@ class CLSceneTab(object):
             'Apply {:d} scene update{}?'.format(
                 len(_updates), plural(_updates)),
             parent=self, icon=icons.find('Gear'))
-        for _update in qt.progress_bar(_updates, 'Applying {:d} update{}'):
+        for _update in qt.progress_bar(
+                _updates, 'Applying {:d} update{}', parent=self):
             _update()
 
         self.ui.SOutputs.redraw()

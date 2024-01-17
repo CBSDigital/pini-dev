@@ -136,8 +136,8 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _out = self.ref.to_output(cache=False)
 
         # Draw icon
-        _over = obt_icon_pixmap(self.icon, size=25)
-        pix.draw_overlay(_over, (self.margin, self.margin+12), anchor='L')
+        _over = obt_icon_pixmap(self.icon, size=21)
+        pix.draw_overlay(_over, (self.margin+3, self.margin+12), anchor='L')
 
         # Draw namespace
         _FONT.setPointSize(7.5)
@@ -178,11 +178,11 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         # Draw type icon
         _icon = output_to_type_icon(_out)
         if _icon:
-            _over = obt_icon_pixmap(_icon, size=16)
-            pix.draw_overlay(_over, (_right_m+6, 16), anchor='R')
+            _over = obt_icon_pixmap(_icon, size=14)
+            pix.draw_overlay(_over, (_right_m+3, 16), anchor='R')
 
         # Draw version text
-        _text_x = _right_m - 13
+        _text_x = _right_m - 17
         _text_y = 12 if self.detail else 14
         _FONT.setPointSize(7.5)
         _FONT.setBold(True)

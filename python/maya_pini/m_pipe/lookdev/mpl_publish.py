@@ -9,6 +9,8 @@ from maya import cmds
 from maya_pini import open_maya as pom
 from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
 
+from .. import mp_utils
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -135,6 +137,18 @@ def _read_geo_settings():
     return _settings
 
 
+def _read_lights():
+    """Read lights setting.
+
+    If there are lights in the cache set, then these are stored in the
+    lookdev publish, and this is flagged in the metadata.
+
+    Returns:
+        (bool): whether there are lights in cache set
+    """
+    return bool(mp_utils.read_cache_set(mode='lights'))
+
+
 def read_publish_metadata():
     """Read all shading data to save to yml file.
 
@@ -152,6 +166,7 @@ def read_publish_metadata():
     _data['settings'] = _read_geo_settings()
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
     _data['ai_override_sets'] = read_ai_override_sets()
+    _data['lights'] = _read_lights()
 
     return _data
 

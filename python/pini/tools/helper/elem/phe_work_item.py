@@ -179,7 +179,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         # Draw output tags
         _keys = set(_OUTPUT_ICONS.keys())
         _keys.remove('Empty')
-        for _idx, _tag in enumerate(sorted(_keys)):
+        for _idx, _tag in enumerate(sorted(_keys, key=_sort_output_tag)):
             if _tag not in self.output_tags:
                 _tag = 'Empty'
                 _size = 3
@@ -236,6 +236,20 @@ def _get_output_tags(work):
         _o_tags.add('Submitted')
 
     return sorted(_o_tags)
+
+
+def _sort_output_tag(tag):
+    """Sort function for output tag.
+
+    Args:
+        tag (str): output tag to sort
+
+    Returns:
+        (tuple): sort key
+    """
+    _order = ['Published', 'Blasted', 'Cached', 'Rendered']
+    _idx = _order.index(tag) if tag in _order else len(_order)
+    return _idx, tag
 
 
 @cache_result

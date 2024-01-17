@@ -197,16 +197,9 @@ def _clean_list_relatives(results, type=None, parent=False, **kwargs):  # pylint
         (CNode|CTransform list): cleaned results
     """
     from maya_pini import open_maya as pom
-
     _results = results or []
-    if parent:
-        _class = pom.CTransform
-    elif type in ['joint']:
-        _class = pom.CJoint
-    else:
-        _class = pom.CNode
-
-    return [_class(_result) for _result in _results]
+    return [pom.cast_node(_result, maintain_shapes=True)
+            for _result in _results]
 
 
 def _clean_ls(results, type=None, **kwargs):   # pylint: disable=redefined-builtin,unused-argument

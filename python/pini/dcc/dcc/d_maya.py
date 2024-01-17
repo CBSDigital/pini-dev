@@ -134,8 +134,10 @@ class MayaDCC(BaseDCC):
         Returns:
             (CMayaPipeRef): reference
         """
+        from pini import pipe
         from maya_pini import open_maya as pom
         from ..pipe_ref import pr_maya
+
         _LOGGER.debug('CREATE REF %s', namespace)
         _LOGGER.debug(' - PATH %s', path)
 
@@ -172,6 +174,8 @@ class MayaDCC(BaseDCC):
         if _out and _grp is EMPTY:
             if _out.entity.name == 'camera':
                 _grp = 'CAM'
+            elif pipe.map_task(_out.task) == 'LOOKDEV':
+                _grp = 'LOOKDEV'
             elif _out.asset_type:
                 _grp = _ref.output.asset_type.upper()
             elif _out.output_type:

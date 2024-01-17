@@ -399,6 +399,9 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             relative (bool): maintain local transforms
             world (bool): parent to world
         """
+        if world and not self.to_parent():
+            return
+
         _args = [self]
         if parent:
             _args.append(parent)
@@ -408,6 +411,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         if world is not None:
             _kwargs['world'] = world
 
+        _LOGGER.info('PARENT %s %s', _args, _kwargs)
         # print 'PARENT', _args, _kwargs
         cmds.parent(*_args, **_kwargs)
 
@@ -440,6 +444,15 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
     def set_key(self):
         """Set keyframe on this node (ie. key all channels)."""
         cmds.setKeyframe(self)
+
+    def set_outliner_col(self, col):
+        """Set outliner colour of this node.
+
+        Args:
+            col (str): colour to apply
+        """
+        self.plug['useOutlinerColor'].set_val(True)
+        self.plug['outlinerColor'].set_col(col)
 
     def to_anim(self):
         """Find anim curves attached to this node.

@@ -7,8 +7,10 @@ import six
 from maya import cmds
 
 from pini import qt
-from pini.utils import single, File, Dir, abs_path
+from pini.utils import single, File, Dir, abs_path, EMPTY
+
 from maya_pini import open_maya as pom
+from maya_pini.utils import DEFAULT_NODES, to_namespace
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,9 +45,29 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
-        _obj = pom.to_mesh(obj)
+        _obj = obj
+        try:
+            _obj = pom.to_mesh(obj).shp
+        except ValueError:
+            pass  # Possible face assignment
         _se = self.to_se(create=True)
-        cmds.sets(_obj.shp, edit=True, forceElement=_se)
+        cmds.sets(_obj, edit=True, forceElement=_se)
+
+    def duplicate(self, name=None, upstream_nodes=True):
+        """Duplicate this shading network.
+
+        Args:
+            name (str): node name
+            upstream_nodes (bool): duplicate upstream nodes
+
+        Returns:
+            (Shader): duplicated shader
+        """
+        _dup = super(_Shader, self).duplicate(
+            name=name, upstream_nodes=upstream_nodes)
+        _shd = to_shd(_dup)
+        _shd.to_se(create=True)
+        return _shd
 
     def set_col(self, col):
         """Set colour of this shader.
@@ -98,12 +120,16 @@ class _Shader(pom.CNode):
         _geos = []
 
         for _geo in (cmds.sets(self.to_se(), query=True) or []):
-            try:
-                _geo = pom.to_node(_geo)
-            except RuntimeError:
-                _LOGGER.warning(
-                    ' - FAILED TO BUILD NODE %s (POSSIBLE DUPLICATE)', _geo)
-                continue
+            _LOGGER.info('GEO %s', _geo)
+            if '.' in _geo:  # Face assignment
+                pass
+            else:
+                try:
+                    _geo = pom.cast_node(_geo)
+                except RuntimeError:
+                    _LOGGER.warning(
+                        ' - FAILED TO BUILD NODE %s (POSSIBLE DUPLICATE)', _geo)
+                    continue
             _geos.append(_geo)
         return _geos
 
@@ -192,6 +218,41 @@ def create_surface_shader(name='surfaceShader', col=None):
     return _shd
 
 
+def find_shds(default=None, namespace=EMPTY):
+    """Find shaders in the current scene.
+
+    Args:
+        default (bool): filter by default type (True will return
+            only default shaders, False will exclude default shaders)
+        namespace (str): filter by namespace
+
+    Returns:
+        (Shader list): matching shaders
+    """
+    _shds = set()
+    _LOGGER.debug('FIND SHDS')
+    for _se in sorted(set(pom.find_nodes(type_='shadingEngine'))):
+
+        _LOGGER.debug(' - SE %s', _se)
+
+        if default is not None:
+            _is_default = _se in DEFAULT_NODES
+            _LOGGER.debug('   - IS DEFAULT %d', _is_default)
+            if _is_default != default:
+                continue
+        if namespace is not EMPTY and to_namespace(_se) != namespace:
+            continue
+
+        _shd = to_shd(_se)
+        if not _shd:
+            _LOGGER.debug('   - NO SHD')
+            continue
+        _LOGGER.debug('   - SHD %s', _shd)
+        _shds.add(_shd)
+
+    return sorted(_shds)
+
+
 def to_ftn(base, ver_n=None, extn='jpg'):
     """Build a file texture name for the current workspace.
 
@@ -246,6 +307,8 @@ def to_shd(obj):
         _shd = _Lambert(_node)
     elif _type == 'shadingEngine':
         _se = _node
+    elif _type in ['VRayMtl']:
+        _shd = _Shader(_node)
     else:
         _shd = None
 
@@ -253,9 +316,11 @@ def to_shd(obj):
     if _se:
         _LOGGER.debug(' - SE %s', _se)
         _shd = _se.plug['surfaceShader'].find_incoming(plugs=False)
-        _type = _shd.object_type()
-        _LOGGER.debug(' - SHD %s', _shd)
-        _class = {'lambert': _Lambert}[_type]
-        _shd = _class(_shd)
+        if _shd:
+            _type = _shd.object_type()
+            _LOGGER.debug(' - SHD %s', _shd)
+            _class = {
+                'lambert': _Lambert}.get(_type, _Shader)
+            _shd = _class(_shd)
 
     return _shd

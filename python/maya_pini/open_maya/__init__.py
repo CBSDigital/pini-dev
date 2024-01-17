@@ -17,12 +17,13 @@ from .wrapper import (
     CAnimCurve, CMatrix, WORLD_SPACE, find_meshes, plus_plug, minus_plug,
     CReference, find_ref, find_refs, create_ref, active_cam, obtain_ref,
     selected_plugs, to_plug, find_cams, set_render_cam, find_render_cam,
-    find_cam, selected_plug, IDENTITY)
+    find_cam, selected_plug, IDENTITY, selected_ref)
 
 from .pom_cmds import CMDS
 from .pom_utils import (
     to_mobject, get_selected, set_loc_scale, to_node, to_mesh, to_m, to_tfm,
-    to_p, set_to_geos, set_to_tfms, cast_node, add_anim_offs, find_nodes)
+    to_p, set_to_geos, set_to_tfms, cast_node, add_anim_offs, find_nodes,
+    selected_node)
 
 from .pom_joint import CJoint
 from .pom_skeleton import (

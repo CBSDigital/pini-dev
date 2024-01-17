@@ -196,7 +196,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             _result = _child
             if class_:
                 try:
-                    _result = class_(_result)
+                    _result = class_(str(_result))
                 except ValueError:
                     _result = None
             if _result:
@@ -284,19 +284,23 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.orientConstraint(
             self, target, maintainOffset=maintain_offset)
 
-    def parent_constraint(self, target, maintain_offset=False):
+    def parent_constraint(self, target, maintain_offset=False, name=None):
         """Build a parent constraint from this node to the given target.
 
         Args:
             target (CTransform): node to constrain
             maintain_offset (bool): maintain offset
+            name (str): name for constraint node
 
         Returns:
             (CTransform): constraint
         """
         from maya_pini import open_maya as pom
+        _kwargs = {}
+        if name:
+            _kwargs['name'] = name
         return pom.CMDS.parentConstraint(
-            self, target, maintainOffset=maintain_offset)
+            self, target, maintainOffset=maintain_offset, **_kwargs)
 
     def point_constraint(self, target, maintain_offset=False, skip=None):
         """Build a point constraint from this node to the given target.
@@ -394,8 +398,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         Args:
             col (str): override group colour
         """
-        self.plug['useOutlinerColor'].set_val(True)
-        self.plug['outlinerColor'].set_col(col)
+        self.set_outliner_col(col)
         for _plug in self.tfm_plugs:
             _plug.lock()
             _plug.hide()

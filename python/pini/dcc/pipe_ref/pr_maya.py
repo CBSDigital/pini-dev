@@ -10,7 +10,8 @@ from pini.utils import (
     file_to_seq)
 
 from maya_pini import open_maya as pom, tex
-from maya_pini.utils import restore_sel, del_namespace, to_node, to_shps
+from maya_pini.utils import (
+    restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace)
 
 from . import pr_base
 
@@ -183,16 +184,22 @@ class CMayaReference(_CMayaPipeRef):
         """
         raise NotImplementedError
 
-    def to_node(self, node):
+    def to_node(self, node, catch=False):
         """Obtain a node with this reference's namespace applied.
 
         Args:
             node (str): clean node name
+            catch (bool): no error if unable to cast node, just return None
 
         Returns:
             (str): node with namespace
         """
-        return self.ref.to_node(node)
+        try:
+            return self.ref.to_node(node)
+        except RuntimeError as _exc:
+            if catch:
+                return None
+            raise _exc
 
     def update(self, out):
         """Apply a new path to this reference.
@@ -250,6 +257,8 @@ class CMayaLookdevRef(CMayaReference):
         self._apply_shaders(shds=_shd_data, ref_=ref_)
         self._apply_settings(settings=_settings, ref_=ref_)
         self._apply_ai_override_sets(ref_=ref_)
+        if _data.get('lights'):
+            self._apply_lights(ref_)
 
     def _apply_ai_override_sets(self, ref_):
         """Add abc geometry to ai override sets.
@@ -283,6 +292,37 @@ class CMayaLookdevRef(CMayaReference):
             _LOGGER.debug('   - GEOS %s', _geos)
             if _geos:
                 cmds.sets(_geos, addElement=_set)
+
+    @restore_ns
+    def _apply_lights(self, ref_):
+        """Apply lookdev lights to the given cache.
+
+        Args:
+            ref_ (CReference):  reference to apply cache to
+        """
+        set_namespace(':'+self.namespace)
+        _lights = self.to_node('LIGHTS').find_children()
+        _LOGGER.debug(' - LIGHTS %s', _lights)
+        for _light in _lights:
+
+            _LOGGER.debug(' - LIGHT %s', _light)
+            _trg = ref_.to_node(_light, catch=True)
+            _LOGGER.debug('   - TRG %s', _trg)
+            if _trg:
+
+                # Build constraint
+                _name = str(_light.clean_name)+'_CONS'
+                _cons = self.ref.to_node(_name, fmt='str')
+                _LOGGER.debug('   - CONS %s', _cons)
+                if cmds.objExists(_cons):
+                    cmds.delete(_cons)
+                    _LOGGER.debug('   - DELETING EXISTING CONS')
+                _trg.parent_constraint(_light, name=_name)
+
+            # Set light enabled/disabled based on whether target exists
+            _en = bool(_trg)
+            _light.set_visible(_en)
+            _light.shp.plug['enabled'].set_val(_en)
 
     def _apply_shaders(self, shds, ref_):
         """Apply shaders to target ref.
@@ -366,6 +406,14 @@ class CMayaLookdevRef(CMayaReference):
                     _LOGGER.debug('   - APPLY VALUE %s %s', _plug, _val)
                     _plug.set_val(_val)
 
+    def find_target(self):
+        """Find this lookdev's target.
+
+        Returns:
+            (CMayaReference): lookdev target
+        """
+        return single(self.find_targets(), catch=True)
+
     def find_targets(self):
         """Find references using this lookdev (eg. abcs).
 
@@ -373,15 +421,26 @@ class CMayaLookdevRef(CMayaReference):
             (CReference list): references
         """
         _refs = set()
+
+        # Find target by name
+        if self.namespace.endswith('_shd'):
+            _trg = dcc.find_pipe_ref(
+                namespace=self.namespace[:-4], catch=True)
+            if _trg:
+                _refs.add(_trg)
+
+        # Find targets based on shader
         for _se in self.ref.find_nodes(type_='shadingEngine'):
             _shd = tex.to_shd(_se)
-            # _ref = pom.CReference(_shd)
-            _LOGGER.info(' - SHD %s %s', _se, _shd)
+            _LOGGER.debug(' - SHD %s %s', _se, _shd)
             for _geo in _shd.to_geo():
                 if not _geo.is_referenced():
                     continue
                 _ref = pom.CReference(_geo)
-                _LOGGER.info('   - GEO %s %s', _geo, _ref)
+                _ref = dcc.find_pipe_ref(_ref.namespace, catch=True)
+                if not _ref:
+                    continue
+                _LOGGER.debug('   - GEO %s %s', _geo, _ref)
                 _refs.add(_ref)
 
         return sorted(_refs)

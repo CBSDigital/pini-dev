@@ -148,10 +148,11 @@ def restore_ns(func):
     @functools.wraps(func)
     def _restore_ns_func(*args, **kwargs):
         _ns = ':'+cmds.namespaceInfo(currentNamespace=True)
-        _result = func(*args, **kwargs)
-        if cmds.namespace(exists=_ns):
-            cmds.namespace(set=_ns)
-        return _result
+        try:
+            return func(*args, **kwargs)
+        finally:
+            if cmds.namespace(exists=_ns):
+                cmds.namespace(set=_ns)
 
     return _restore_ns_func
 

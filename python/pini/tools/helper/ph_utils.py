@@ -133,13 +133,13 @@ def _lookdev_to_icon(lookdev):
         (CPixmap): icon
     """
     assert lookdev.type_ == 'publish'
-    assert lookdev.output_type == 'lookdev'
 
     # Find rig icon
-    _tmpl = lookdev.job.find_template('publish', has_key={
-        'output_type': False, 'ver': False, 'tag': bool(lookdev.tag)})
+    _tmpl = lookdev.job.find_template(
+        'publish', profile='asset',
+        want_key={'output_type': False, 'ver': False},
+        has_key={'tag': bool(lookdev.tag)})
     _rig_out = lookdev.to_output(task='rig', template=_tmpl)
-    # print _rig_out
     _asset_icon = output_to_icon(_rig_out)
 
     _icon = qt.CPixmap(LOOKDEV_BG_ICON)
@@ -260,7 +260,9 @@ def output_to_icon(output, overlay=None):
         _icon = CAM_ICON
     elif output.asset_type == 'utl' and output.asset == 'lookdev':
         _icon = LOOKDEV_ICON
-    elif output.type_ == 'publish' and output.output_type == 'lookdev':
+    elif output.type_ == 'publish' and (
+            output.output_type == 'lookdev' or
+            pipe.map_task(output.task) == 'lookdev'):
         _icon = _lookdev_to_icon(output)
     elif output.type_ in _TYPE_BG_MAP:
         _bg = _TYPE_BG_MAP[output.type_]
@@ -341,7 +343,7 @@ def output_to_type_icon(output):
 
     return {'model': MODEL_ICON,
             'rig': RIG_ICON,
-            'lookdev': LOOKDEV_ICON}.get(output.task)
+            'lookdev': LOOKDEV_ICON}.get(pipe.map_task(output.task))
 
 
 def work_to_icon(work):

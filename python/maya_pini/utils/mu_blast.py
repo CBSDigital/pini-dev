@@ -318,11 +318,12 @@ def blast(
     _LOGGER.info(' - BLAST COMPLETE IN %.02fs', time.time() - _start)
 
 
-def blast_frame(file_, force=False):
+def blast_frame(file_, settings='Nice', force=False):
     """Blast a single frame.
 
     Args:
         file_ (File): file to write to
+        settings (str): blast settings mode
         force (bool): overwrite without confirmation
     """
     _file = File(file_)
@@ -332,7 +333,7 @@ def blast_frame(file_, force=False):
     _tmp_seq = TMP.to_seq('tmp.%04d.'+file_.extn)
     _tmp_seq.delete(force=True)
     assert not _tmp_seq.exists()
-    blast(clip=_tmp_seq, range_=_rng)
+    blast(clip=_tmp_seq, range_=_rng, settings=settings)
     assert _tmp_seq.exists()
     _tmp_file = File(_tmp_seq[_frame])
     _tmp_file.move_to(_file)

@@ -5,7 +5,7 @@ import logging
 
 from maya import cmds
 
-from pini import qt, pipe
+from pini import qt, pipe, dcc
 from pini.tools import sanity_check
 from pini.utils import single, wrap_fn, check_heart, plural
 
@@ -719,7 +719,7 @@ class CheckShaders(SCMayaCheck):
             _base = _shd[:-4]
             self._check_engine_name(shd=_shd, engine=_se)
 
-            if _ren == 'arnold':
+            if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
 
                 # Flag non-arnold shader
                 if _shd_is_arnold(shd=_shd, engine=_se, type_=_type):

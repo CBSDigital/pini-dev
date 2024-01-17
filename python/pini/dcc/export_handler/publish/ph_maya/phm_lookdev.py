@@ -5,10 +5,10 @@ import logging
 
 from maya import cmds
 
-from pini import pipe
+from pini import pipe, dcc
 from pini.utils import single
 
-from maya_pini import ref
+from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace)
@@ -43,10 +43,15 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             parent=parent, layout=layout, add_footer=False)
 
         self.add_separator_elem()
-        self.ui.ExportAss = self.add_checkbox_elem(
-            val=True, name='ExportAss',
-            label="Export geo as ass.gz file")
-        self.add_separator_elem()
+
+        # Add export ass opts if arnold allowed
+        self.ui.ExportAss = None
+        if 'arnold' in dcc.allowed_renderers():
+            self.ui.ExportAss = self.add_checkbox_elem(
+                val=True, name='ExportAss',
+                label="Export geo as ass.gz file")
+            self.add_separator_elem()
+
         if add_footer:
             self.add_footer_elems()
 
@@ -106,7 +111,10 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
                 raise RuntimeError('Shader has namespace '+_shd)
 
         # Export ass
-        _tgl_export_ass = self.ui.ExportAss.isChecked() if self.ui else True
+        if self.ui and self.ui.ExportAss:
+            _tgl_export_ass = self.ui.ExportAss.isChecked()
+        else:
+            _tgl_export_ass = 'arnold' in dcc.allowed_renderers()
         if _tgl_export_ass:
             _ass = _export_ass(metadata=_metadata, force=force)
             if _ass:
@@ -221,6 +229,11 @@ def _find_export_nodes():
     for _set, _ in lookdev.read_ai_override_sets().items():
         _export_nodes.add(_set)
 
+    # Add lights
+    _lights = m_pipe.read_cache_set(mode='lights')
+    _export_nodes |= {_light.clean_name for _light in _lights}
+    _export_nodes |= {_light.shp.clean_name for _light in _lights}
+
     _export_nodes = sorted(_export_nodes)
     _LOGGER.info(' - EXPORT NODES %s', _export_nodes)
 
@@ -231,6 +244,8 @@ def _flush_scene():
     """Remove geo from scene to prepare for lookdev export."""
     _LOGGER.debug('FLUSH SCENE')
 
+    _keep_nodes = list(DEFAULT_NODES)
+
     # Remove geos from override sets
     _sets = lookdev.read_ai_override_sets(crop_namespace=False)
     _LOGGER.debug(' - SETS %s', _sets)
@@ -238,13 +253,29 @@ def _flush_scene():
         cmds.sets(_geos, remove=_set)
         _LOGGER.debug(' - CLEAN GEO %s set=%s', _geos, _set)
 
-    # Delete dag/unknown nodes
+    # Import refs
     _refs = ref.find_refs()
     _LOGGER.debug(' - REFS %s', _refs)
     for _ref in _refs:
-        _ref.import_()
+        _ref.import_(namespace=None)
+
+    # Move any lights in cache set into group
+    _lights_grp = None
+    _lights = m_pipe.read_cache_set(mode='lights')
+    _LOGGER.debug(' - LIGHTS %s', _lights)
+    for _light in _lights:
+        _lights_grp = _light.add_to_grp('LIGHTS')
+        _keep_nodes.insert(0, _light)
+        _keep_nodes.insert(0, _light.shp)
+    if _lights_grp:
+        _lights_grp.parent(world=True)
+        _lights_grp.set_outliner_col('Orange')
+        _keep_nodes.insert(0, _lights_grp)
+
+    # Delete dag/unknown nodes
+    _LOGGER.debug(' - KEEP NODES %s', _keep_nodes)
     _dag_nodes = [_node for _node in cmds.ls(dag=True)
-                  if _node not in DEFAULT_NODES]
+                  if _node not in _keep_nodes]
     _LOGGER.debug(' - CLEARING DAG NODES %s', _dag_nodes)
     _unknown_nodes = cmds.ls(type='unknown') or []
     _LOGGER.debug(' - UNKNOWN NODES %s', _unknown_nodes)
