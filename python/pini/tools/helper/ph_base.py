@@ -316,12 +316,12 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         menu.add_separator()
 
         # Add reapply to target option
-        _trg = ref.find_target()
+        _trg = ref.find_target() if ref else None
         if _trg:
             _text = 'Reapply to "{}"'.format(_trg.namespace)
         else:
             _text = 'Reapply to target'
-        _func = wrap_fn(ref.attach_to, _trg)
+        _func = wrap_fn(ref.attach_to, _trg) if ref else None
         menu.add_action(
             _text, _func, enabled=bool(_trg), icon=LOOKDEV_BG_ICON)
 
