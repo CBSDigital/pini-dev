@@ -6,7 +6,9 @@ import toolutils  # pylint: disable=import-error
 
 from pini import pipe, dcc
 from pini.tools import error, usage
-from pini.utils import Dir, TMP_PATH, find_exe, find_viewer, Seq
+from pini.utils import find_exe, find_viewer, TMP
+
+from hou_pini.utils import flipbook as u_flipbook
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,13 +29,15 @@ def _prepare_output_path(format_, force):
     assert _work
     _to_video = False
     if format_ in ['mp4']:
-        _seq = Seq(Dir(TMP_PATH).to_file('pini/houBlast/tmp.%04d.jpg'))
+        _seq = TMP.to_seq('pini/houBlast/tmp.%04d.jpg')
         _seq.delete(force=True)
-        _out = _work.to_output('blast_mov', extn=format_)
+        _out = _work.to_output(
+            'blast_mov', extn=format_, output_name='flipbook')
         _viewer = find_viewer(plays_videos=True)
         _to_video = True
     elif format_ in ['png', 'jpg']:
-        _seq = _work.to_output('blast', extn=format_)
+        _seq = _work.to_output(
+            'blast', extn=format_, output_name='flipbook')
         _out = _seq
         _viewer = find_viewer('mplay')
     else:
@@ -48,7 +52,8 @@ def _prepare_output_path(format_, force):
 
 @usage.get_tracker('HouFlipbook')
 @error.catch
-def flipbook(format_='mp4', view=True, range_=None, burnins=False, force=False):
+def flipbook(
+        format_='mp4', view=True, range_=None, burnins=False, force=False):
     """Execute flipbook.
 
     Args:
@@ -68,39 +73,27 @@ def flipbook(format_='mp4', view=True, range_=None, burnins=False, force=False):
     _fps = dcc.get_fps()
     _LOGGER.info(' - CAM %s', _cam)
 
-    # Determine range
-    if range_:
-        _rng = range_
-    else:
-        _rng = dcc.t_range()
-    _LOGGER.info(' - RANGE %d-%d', *_rng)
-
     _seq, _out, _to_video, _viewer = _prepare_output_path(
         format_=format_, force=force)
 
-    # Apply flipbook settings
-    _opts = _sv.flipbookSettings().stash()
-    _opts.output(_seq.path.replace('%04d', '$F4'))
-    _opts.frameRange(_rng)
-    _opts.outputToMPlay(False)
-    if _cam:
-        _res = _cam.parmTuple('res').eval()
-        _LOGGER.info(' - RES %s', _res)
-        _opts.useResolution(True)
-        _opts.resolution(_res)
-
-    # Execute flipbook
-    _seq.test_dir()
-    _sv.flipbook(_vp, _opts)
-    assert _seq.to_frames(force=True)
-    _LOGGER.info(' - FLIPBOOK COMPLETE')
+    u_flipbook(_seq, force=True, view=False, range_=range_)
 
     # Post processing
     if _to_video:
         _LOGGER.info(' - MAKING MOV')
         _seq.to_video(_out, fps=_fps, burnins=burnins)
         _seq.delete(force=True)
+        _thumb = TMP.to_file('pini/tmp.jpg')
+        _out.to_frame(_thumb, force=True)
+    else:
+        _thumb = _seq.to_frame_file()
+    _thumb.copy_to(_work.image, force=True)
     if view:
         _LOGGER.info(' - MPLAY %s', _mplay)
         _viewer.view(_out)
+
+    if pipe.MASTER == 'shotgrid':
+        from pini.pipe import shotgrid
+        shotgrid.create_pub_file(_out, thumb=_thumb, status='ip', force=True)
+
     _work.update_outputs()

@@ -689,7 +689,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         menu.add_separator()
 
         # Add recent works
-        for _r_work in pipe.CACHE.recent_work():
+        for _r_work in pipe.recent_work():
             self._add_jump_to_work_action(menu=menu, work=_r_work)
 
     def _add_jump_to_work_action(self, menu, work):

@@ -157,7 +157,8 @@ def _work_dir_to_task_data(work_dir, data=None, force=False):
     if pipe.MASTER == 'disk' and not _task_data:
         _task_data = _create_task(
             work_dir=work_dir, force=force)
-    assert _task_data
+    if not _task_data:
+        raise RuntimeError('Failed to find shotgrid task '+work_dir.path)
 
     # Check step
     if pipe.MASTER == 'disk':

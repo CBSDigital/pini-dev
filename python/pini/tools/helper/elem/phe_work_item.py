@@ -15,10 +15,10 @@ from .. import ph_utils
 _LOGGER = logging.getLogger(__name__)
 
 _FONT = QtGui.QFont()
-_OUTPUT_ICONS_OFFS = 188
+_OUTPUT_ICONS_OFFS_X = 195
 if dcc.NAME == 'hou':
     _FONT.setPointSize(9)
-    _OUTPUT_ICONS_OFFS += 10
+    _OUTPUT_ICONS_OFFS_X += 10
 _METRICS = QtGui.QFontMetrics(_FONT)
 _THUMB_H = 53
 
@@ -187,7 +187,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
                 _size = 13
             _icon = _to_output_icon(_tag, size=_size)
             _indent = 11
-            _pos = (_indent + _OUTPUT_ICONS_OFFS + 13*_idx, _indent)
+            _pos = (_indent + _OUTPUT_ICONS_OFFS_X + 13*_idx, _indent)
             pix.draw_overlay(_icon, pos=_pos, anchor='C')
 
         # Add thumb if available

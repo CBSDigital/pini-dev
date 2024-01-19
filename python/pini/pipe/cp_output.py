@@ -259,9 +259,13 @@ class CPOutputBase(object):
         _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
                     self.template)
 
+        # Set task
         self.task = task or self.data.get('task', self.template.task)
         if not self.task:
-            self.task = self.data.get('work_dir')
+            if self.work_dir:
+                self.task = self.work_dir.task
+            else:
+                self.task = self.data.get('work_dir')
 
         # Fix userscore in tag
         _LOGGER.log(9, ' - TASK %s %s', self.task, self.data)

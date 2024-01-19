@@ -54,7 +54,8 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (str): cache format
         """
-        return self.to_file('.pini/cache/{func}.pkl').path
+        _rel_path = '.pini/cache/{}/{{func}}.pkl'.format(self.cfg['name'])
+        return self.to_file(_rel_path).path
 
     @property
     def publishes(self):
@@ -455,12 +456,16 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
                       time.time() - _e_start)
 
         # Read tasks from shotgrid
-        _filters = [
-            shotgrid.to_job_filter(self),
-            shotgrid.to_entities_filter(self.entities)]
         _s_start = time.time()
-        _results = _sg.find(
-            'Task', filters=_filters, fields=shotgrid.TASK_FIELDS+['entity'])
+        if self.entities:
+            _filters = [
+                shotgrid.to_job_filter(self),
+                shotgrid.to_entities_filter(self.entities)]
+            _results = _sg.find(
+                'Task', filters=_filters,
+                fields=shotgrid.TASK_FIELDS+['entity'])
+        else:
+            _results = []
         _LOGGER.debug(' - FOUND %d RESULTS IN %.01fs', len(_results),
                       time.time() - _s_start)
 
@@ -502,7 +507,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _work_dir = cache.CCPWorkDir(_path, entity=_ety)
             _work_dirs.append(_work_dir)
 
-        _LOGGER.info(
+        _LOGGER.debug(
             'FOUND %d WORK DIRS (%.01fs)', len(_work_dirs),
             time.time() - _start)
         return _work_dirs

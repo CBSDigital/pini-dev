@@ -111,7 +111,10 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         validate_tokens(self.data, job=self.job)
 
-        self.dcc = self.data.get('dcc') or self.work_dir.dcc
+        self.dcc = (
+            self.data.get('dcc') or
+            self.work_dir.dcc or
+            self.template.dcc)
         self.ver_n = int(self.ver)
         self.sequence = self.entity.sequence
 
@@ -716,7 +719,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         # Obtain fresh template (in case tokens have been filled in)
         _tmpl = self.job.find_template(
-            'work', profile=self.entity.profile,
+            'work', profile=self.entity.profile, dcc_=self.dcc,
             has_key={'tag': 'tag' in _data})
         _LOGGER.debug(' - TMPL %s', _tmpl)
 

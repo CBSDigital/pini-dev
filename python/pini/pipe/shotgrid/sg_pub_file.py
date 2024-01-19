@@ -14,12 +14,13 @@ _PUB_FILE_FIELDS = [
     'path', 'published_file_type', 'name', 'path_cache', 'id']
 
 
-def create_pub_file(output, thumb=None, force=False):
+def create_pub_file(output, thumb=None, status='cmpt', force=False):
     """Create PublishedFile entry in shotgrid.
 
     Args:
         output (CPOutput): output to register
         thumb (File): apply thumbnail image
+        status (str): status for entry (default is complete)
         force (bool): if an entry exists, update data
 
     Returns:
@@ -38,12 +39,19 @@ def create_pub_file(output, thumb=None, force=False):
     _LOGGER.info('CREATE PUBLISHED FILE %s', output.path)
     _notes = output.metadata.get('notes')
 
-    # Find type
-    _code = {
+    # Find type data
+    _map = {
         'ma': 'Maya Scene',
         'abc': 'Abc File',
         'mp4': 'Movie',
-    }.get(output.extn, output.extn)
+        'exr': 'exr',
+    }
+    if output.extn in _map:
+        _code = _map[output.extn]
+    elif isinstance(output, Seq):
+        _code = 'Image Sequence'
+    else:
+        _code = output.extn
     _type = sg_handler.find_one(
         'PublishedFileType', filters=[('code', 'is', _code)])
 
@@ -58,7 +66,7 @@ def create_pub_file(output, thumb=None, force=False):
         'project': sg_job.to_job_data(output.job),
         'published_file_type': _type,
         'task': sg_task.to_task_data(output),
-        'sg_status_list': 'cmpt',
+        'sg_status_list': status,
         'updated_by': sg_user.to_user_data(),
         'version_number': output.ver_n,
     }

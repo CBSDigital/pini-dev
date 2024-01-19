@@ -67,7 +67,8 @@ def blast(
             _update_shotgrid_range(entity=_work.entity, range_=_rng)
         elif pipe.MASTER == 'shotgrid':
             from pini.pipe import shotgrid
-            shotgrid.create_pub_file(_out, thumb=_work.image, force=True)
+            shotgrid.create_pub_file(
+                _out, thumb=_work.image, force=True, status='ip')
         else:
             raise ValueError(pipe.MASTER)
 

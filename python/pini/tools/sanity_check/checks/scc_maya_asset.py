@@ -452,7 +452,8 @@ class CheckGeoNaming(SCMayaCheck):
                     not _grp.endswith('_GRP') and
                     to_clean(_grp) not in ['GEO', 'RIG', 'MDL', 'LYT']):
                 _msg, _fix, _suggestion = _fix_node_suffix(
-                    node=_grp, suffix='_GRP', alts=['_Grp'], type_='group',
+                    node=_grp, suffix='_GRP',
+                    alts=['_Grp', '_gr'], type_='group',
                     ignore=self._ignore_names)
                 self._ignore_names.append(_suggestion)
                 self.add_fail(_msg, node=geo, fix=_fix)

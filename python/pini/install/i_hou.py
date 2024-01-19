@@ -147,7 +147,7 @@ class CIHouMenuInstaller(_CIHouBaseInstaller):
     """
 
     def _build_context_item(self, item, parent):
-        """Build a context (right-clikc) item.
+        """Build a context (right-click) item.
 
         Args:
             item (CITool/CIDivider): context item
@@ -193,15 +193,25 @@ class CIHouMenuInstaller(_CIHouBaseInstaller):
 
 
 @cache_result
-def _obtain_shelf_divider_icon():
+def _obtain_shelf_divider_icon(mode='icons'):
     """Build the icon for a divider.
+
+    Args:
+        mode (str): how to obtain icon (icons/build)
 
     Returns:
         (str): path to divider icon
     """
-    _pix = qt.CPixmap(60, 100)
-    _pix.fill('Transparent')
-    _pix.draw_overlay(i_installer.ICON, _pix.center(), size=20, anchor='C')
-    _tmp_file = Dir(TMP_PATH).to_file('pini/shelfSepIcon.png')
-    _pix.save_as(_tmp_file, force=True)
-    return _tmp_file.path
+    if mode == 'icons':
+        _path = r"C:\Users\hvanderbeek\dev\pini-dev\icons\hou_shelf_spacer.png"
+        return _path
+
+    if mode == 'build':
+        _pix = qt.CPixmap(60, 100)
+        _pix.fill('Transparent')
+        _pix.draw_overlay(i_installer.ICON, _pix.center(), size=20, anchor='C')
+        _tmp_file = Dir(TMP_PATH).to_file('pini/shelfSepIcon.png')
+        _pix.save_as(_tmp_file, force=True)
+        return _tmp_file.path
+
+    raise ValueError(mode)

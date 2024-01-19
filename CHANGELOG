@@ -1,3 +1,25 @@
+## [0.52.0] - Fri 2024-01-19 12:53
+### Summary
+ - Pini Helper:
+    - bugfix error on launch due to incompatible cache (cstewart),
+    - working in houdini using shotgrid pipeline,
+### Updated
+ - pini.pipe.CPWork.dcc use tmpl dcc if not in tokens/work_dir,
+ - pini.pipe.CPWork.to_work match dcc,
+ - pini.pipe.CPOutput bugfix task set to work_dir,
+ - pini.pipe.cache.CCPJob.cache_fmt embed cfg name to avoid using dev cache,
+ - pini.pipe.cache.CCPJob._read_work_dirs_sg bugfix error on no shots in job,
+ - pini.pipe.shotgrid.create_pub_file allow status override,
+ - pini.pipe.shotgrid.create_pub_file use image sequence type for seqs,
+ - pini.install.CIHouMenuInstaller use separator icon in repo,
+ - pini.tools.sanity_check.CheckGeoNaming tfms strip _gr suffix,
+ - pini.tools.helper bugfix error on JumpToCurrent ctx,
+ - pini.tools.refresh added pini_hou sorting,
+ - maya_pini.m_pipe find_cache_set/read_cache_set no error on no cache set,
+ - maya_pini.m_pipe.blast apply sg status ip,
+ - hou_pini.utils flipbook/flipbook_frame added,
+
+
 ## [0.51.1] - Wed 2024-01-17 14:37
 ### Summary
  - Pini Helper:

@@ -11,17 +11,20 @@ from maya_pini import open_maya as pom
 _LOGGER = logging.getLogger(__name__)
 
 
-def find_cache_set():
+def find_cache_set(catch=True):
     """Find cache set from the current scene.
 
     This is for use in an asset scene, where a single cache set (referenced
     or not referenced) should be present.
 
+    Args:
+        catch (bool): no error if no cache set found
+
     Returns:
         (CNode): cache set
     """
     return single(pom.find_nodes(
-        clean_name='cache_SET', type_='objectSet'))
+        clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
 def read_cache_set(mode='geo'):
@@ -37,15 +40,18 @@ def read_cache_set(mode='geo'):
     _set = find_cache_set()
     _LOGGER.info(' - SET %s', _set)
 
+    # Read contents
     _nodes = set()
-    for _root in cmds.sets(_set, query=True) or []:
-        _nodes.add(_root)
-        _children = cmds.listRelatives(
-            _root, allDescendents=True, type='transform', path=True) or []
-        _nodes |= set(_children)
-        _LOGGER.info(' - ROOT %s %s', _root, _children)
+    if _set:
+        for _root in cmds.sets(_set, query=True) or []:
+            _nodes.add(_root)
+            _children = cmds.listRelatives(
+                _root, allDescendents=True, type='transform', path=True) or []
+            _nodes |= set(_children)
+            _LOGGER.info(' - ROOT %s %s', _root, _children)
     _LOGGER.info(' - NODES %s', _nodes)
 
+    # Apply mode filter
     _results = []
     for _node in sorted(_nodes):
         _node = pom.cast_node(_node)

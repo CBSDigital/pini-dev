@@ -131,6 +131,9 @@ _RELOAD_ORDER = [
 
     'maya_pini.m_pipe',
     'maya_pini',
+
+    'hou_pini.utils',
+    'hou_pini',
 ]
 
 _RELOAD_ORDER_APPEND = os.environ.get('PINI_RELOAD_ORDER_APPEND')
