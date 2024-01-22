@@ -243,11 +243,12 @@ def find_one(entity_type, filters=(), fields=(), id_=None):
 
 
 @sg_utils.sg_cache_result
-def to_handler(force=False):
+def to_handler(force=False, use_basic=False):
     """Obtain a shotgrid handler object.
 
     Args:
         force (bool): rebuild handler
+        use_basic (bool): use basic handler rather than pini subclass
 
     Returns:
         (CSGHandler): pini shotgrid handler
@@ -258,6 +259,7 @@ def to_handler(force=False):
         _LOGGER.info('SG_URL %s', _SG_URL)
         raise RuntimeError('Missing shotgrid environment')
 
+    _class = _CSGHandler if not use_basic else shotgun_api3.Shotgun
     return _CSGHandler(_SG_URL, _SG_SCRIPT_NAME, _SG_KEY)
 
 

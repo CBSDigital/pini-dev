@@ -1,3 +1,18 @@
+## [0.53.0] - Mon 2024-01-22 15:03
+### Summary
+ - Pini Helper:
+    - bugfix error publish due to recursion error (eehemann),
+### Updated
+ - pini.utils.to_time_t added datetime handling,
+ - pini.utils.search_files_for_text added encoding/catch args,
+ - pini.dcc.HouDCC catch hou module w/o file,
+ - pini.pipe.CPWork._read_outputs apply video frame to image if none exists,
+ - pini.pipe.shotgrid.to_user_filter added,
+ - pini.pipe.shotgrid.to_handler added use_basic flag,
+ - pini.tools.helper work file item bugfix text issues in hou,
+ - maya_pini.open_maya.cast_node bugfix not applying maintain_shapes for mesh nodes,
+
+
 ## [0.52.0] - Fri 2024-01-19 12:53
 ### Summary
  - Pini Helper:

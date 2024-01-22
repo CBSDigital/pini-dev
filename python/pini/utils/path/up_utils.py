@@ -298,8 +298,8 @@ def restore_cwd(func):
 
 
 def search_files_for_text(
-        files, text=None, filter_=None, edit=False,
-        progress=True, verbose=0):
+        files, text=None, filter_=None, edit=False, encoding=None,
+        progress=True, catch=False, verbose=0):
     """Search  a list of files for text.
 
     Args:
@@ -307,7 +307,9 @@ def search_files_for_text(
         text (str): exact text to search for
         filter_ (str): per line filter
         edit (bool): edit first match and exit
+        encoding (str): override file encoding
         progress (bool): show progress
+        catch (bool): no error if file fails to open
         verbose (int): print process data
 
     Returns:
@@ -322,11 +324,14 @@ def search_files_for_text(
         _files = qt.progress_bar(_files)
     for _file in _files:
 
-        dprint('CHECKING FILE', _file, verbose=verbose)
+        _LOGGER.debug('CHECKING FILE %s', _file)
 
         _printed_path = False
-        _file = File(_file)
-        for _idx, _line in enumerate(_file.read().split('\n')):
+
+        # Read file content
+        _file, _body = _read_file_content(
+            file_=_file, encoding=encoding, catch=catch)
+        for _idx, _line in enumerate(_body.split('\n')):
 
             try:
                 _text_in_line = text and text in _line
@@ -366,3 +371,26 @@ def search_files_for_text(
         dprint('No instances found')
 
     return True
+
+
+def _read_file_content(file_, catch, encoding):
+    """Read content of the given file.
+
+    Args:
+        file_ (str): path to file to read
+        catch (bool): no error if file fails to open
+        encoding (str): override file encoding
+
+    Returns:
+        (File, str): file/body
+    """
+    from pini.utils import File
+    _file = File(file_)
+    try:
+        return _file, _file.read(encoding=encoding)
+    except UnicodeDecodeError as _exc:
+        if catch:
+            _LOGGER.warning(
+                ' - FILE ERRORED ON READ %s %s', _file.path, _exc)
+            return _file, ''
+        raise _exc

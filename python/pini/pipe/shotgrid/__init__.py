@@ -17,7 +17,7 @@ from .sg_entity import (
     SHOT_TEMPLATE, ASSET_TEMPLATE, create_entity, to_entity_filter,
     to_entity_id, to_entity_range, to_entity_data, set_entity_range,
     find_shots, find_assets, to_entities_filter)
-from .sg_user import to_user_data
+from .sg_user import to_user_data, to_user_filter
 from .sg_step import to_step_data, MissingPipelineStep
 from .sg_task import (
     to_task_data, to_task_id, task_to_step_name, find_tasks, TASK_FIELDS)

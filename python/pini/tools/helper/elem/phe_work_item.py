@@ -16,11 +16,13 @@ _LOGGER = logging.getLogger(__name__)
 
 _FONT = QtGui.QFont()
 _OUTPUT_ICONS_OFFS_X = 195
-if dcc.NAME == 'hou':
-    _FONT.setPointSize(9)
-    _OUTPUT_ICONS_OFFS_X += 10
-_METRICS = QtGui.QFontMetrics(_FONT)
+_NOTES_OFFS_X = 47
 _THUMB_H = 53
+if dcc.NAME == 'hou':
+    _FONT.setPointSize(8)
+    _NOTES_OFFS_X -= 5
+    _THUMB_H += 5
+_METRICS = QtGui.QFontMetrics(_FONT)
 
 _BG_COL = qt.CColor('White')
 _BG_COL.setAlphaF(0.1)
@@ -169,12 +171,12 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         _text = self._to_text()
         _pos = qt.to_p(_icon_size+16, 4)
         pix.draw_text(
-            _text, pos=_pos, col=self.text_col)
+            _text, pos=_pos, col=self.text_col, font=_FONT)
         _n_lines = _text.count('\n') + 1
         pix.draw_text(
             self.notes,
-            pos=_pos + qt.to_p(47, (_n_lines-1)*self._line_h),
-            col=self.text_col)
+            pos=_pos + qt.to_p(_NOTES_OFFS_X, (_n_lines-1)*self._line_h),
+            col=self.text_col, font=_FONT)
 
         # Draw output tags
         _keys = set(_OUTPUT_ICONS.keys())

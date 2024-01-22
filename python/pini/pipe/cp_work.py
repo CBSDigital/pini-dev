@@ -15,7 +15,7 @@ import six
 from pini import dcc, icons
 from pini.utils import (
     File, strftime, HOME, cache_property, to_time_f, get_user,
-    passes_filter, single, EMPTY, abs_path)
+    passes_filter, single, EMPTY, abs_path, Video)
 
 from .cp_work_dir import CPWorkDir
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
@@ -368,6 +368,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _outs = []
         _start = time.time()
 
+        # Find outputs
         if pipe.MASTER == 'disk':
 
             # Add entity level outputs
@@ -399,6 +400,16 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         else:
             raise ValueError(pipe.MASTER)
+
+        # Update image thumbnail
+        if not self.image.exists():
+            _vids = [_out for _out in _outs if isinstance(_out, Video)]
+            if _vids:
+                _vid = _vids[0]
+                _LOGGER.info(' - EXTRACT FRAME %s', _vid)
+                _img = _vid.to_frame(self.image)
+                _LOGGER.info(' - IMG %s', _img)
+                assert self.image.exists()
 
         return _outs
 

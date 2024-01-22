@@ -181,8 +181,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         Returns:
             (CNode list): children
         """
-
-        from maya_pini import open_maya as pom
+        _LOGGER.debug('FIND CHILDREN %s', self)
 
         _kwargs = {}
         if type_:
@@ -191,6 +190,8 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         _children = []
         for _child in self.cmds.listRelatives(
                 children=True, path=True, **_kwargs):
+
+            _LOGGER.debug(' - CHILD %s', _child)
 
             # Test if this result should be added
             _result = _child
@@ -203,8 +204,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
                 _children.append(_result)
 
             # Apply recursion
-            if recursive and _child.object_type() in ('transform', 'joint'):
-                _child = pom.CTransform(_child)
+            if recursive and isinstance(_child, CBaseTransform):
                 _children += _child.find_children(
                     type_=type_, recursive=True, class_=class_)
 

@@ -131,3 +131,20 @@ def _name_to_clean_surname(name):
         (str): surname
     """
     return ''.join(name.lower().split()[1:])
+
+
+def to_user_filter(user, condition='is', key='created_by'):
+    """Build user filter for the given user.
+
+    Args:
+        user (str): user name
+        condition (str): filter condition (default: is)
+        key (str): filter key (default: created by)
+
+    Returns:
+        (tuple): user filter
+    """
+    _user_data = dict(to_user_data(user=user))
+    _data = {'type': _user_data['type'], 'id': _user_data['id']}
+    _filter = key, condition, _data
+    return _filter

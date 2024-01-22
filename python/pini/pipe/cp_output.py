@@ -682,6 +682,7 @@ class CPOutputVideo(CPOutput, clip.Video):
     """Represents an output video file (eg. mov/mp4)."""
 
     yaml_tag = '!CPOutputVideo'
+    to_frame = clip.Video.to_frame
 
     def __init__(
             self, file_, job=None, entity=None, work_dir=None, templates=None,

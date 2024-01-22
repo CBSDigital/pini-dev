@@ -191,6 +191,18 @@ class TestOpenMaya(unittest.TestCase):
         assert _c.get_val() == 1
 
     @use_tmp_ns
+    def test_read_cache_set_test(self):
+
+        _sphere = pom.CMDS.polySphere()
+        _shp = pom.cast_node(str(_sphere.shp), maintain_shapes=True)
+        _LOGGER.info('SHP %s', _shp)
+        assert not isinstance(_shp, pom.CMesh)
+
+        _grp = _sphere.add_to_grp('GEO')
+        _grp.add_to_set('cache_SET')
+        pom.set_to_tfms('cache_SET')
+
+    @use_tmp_ns
     def test_transform(self):
 
         # Test solidify

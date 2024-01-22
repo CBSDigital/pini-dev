@@ -746,6 +746,8 @@ def to_time_t(val):
         return time.localtime(val)
     if isinstance(val, time.struct_time):
         return val
+    if isinstance(val, datetime.datetime):
+        return val.timetuple()
     raise ValueError(val)
 
 

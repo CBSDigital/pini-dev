@@ -70,7 +70,7 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
         _kwargs['shp'] = _shp
     elif _type == 'joint':
         _class = pom.CJoint
-    elif _type == 'mesh':
+    elif not maintain_shapes and _type == 'mesh':
         _class = pom.CMesh
         _shp = _node
         _node = to_parent(_shp)

@@ -14,6 +14,9 @@ from .d_base import BaseDCC
 
 _LOGGER = logging.getLogger(__name__)
 
+if not hou.__file__:
+    raise ImportError('Bad hou module')
+
 
 class HouDCC(BaseDCC):
     """Manages interactions with houdini."""
