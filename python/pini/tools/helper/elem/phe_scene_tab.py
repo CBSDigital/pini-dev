@@ -961,7 +961,7 @@ def _sort_outputs(output):
     Returns:
         (tuple): sort key
     """
-    return output.asset, output.path
+    return output.asset or '', output.path or ''
 
 
 def _sort_scene_ref(ref):

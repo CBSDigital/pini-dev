@@ -522,11 +522,13 @@ def cur_work_dir(entity=None):
     return to_work_dir(dcc.cur_file(), entity=entity)
 
 
-def map_task(task, fmt='pini'):
+def map_task(task, step=None, fmt='pini'):
     """Map task name.
 
     Args:
         task (str): task name to map
+        step (str): step name to map - this can be used if the task is not
+            descriptive, eg. dev
         fmt (str): task format
             local - use local task name (ie. does nothing)
             pini - use standardised pini name (eg. mod -> model)
@@ -537,7 +539,12 @@ def map_task(task, fmt='pini'):
     if fmt == 'local':
         _task = task
     elif fmt == 'pini':
-        _task = _TASK_MAP.get(task, task)
+        if task in _TASK_MAP:
+            _task = _TASK_MAP[task]
+        elif step in _TASK_MAP:  # pylint: disable=consider-using-get
+            _task = _TASK_MAP[step]
+        else:
+            _task = task
     else:
         raise ValueError(fmt)
     return _task

@@ -72,7 +72,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             return None
 
         _data = metadata or self.obtain_metadata(
-            work=work, force=force, sanity_check_=sanity_check_)
+            work=work, force=force, sanity_check_=sanity_check_, task='model')
 
         _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
         _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True

@@ -22,7 +22,7 @@ class SanityCheckUi(qt.CUiDialog):
 
     def __init__(
             self, mode='standalone', checks=None, run=True,
-            close_on_success=None, force=False, filter_=None):
+            close_on_success=None, filter_=None, task=None, force=False):
         """Constructor.
 
         Args:
@@ -30,8 +30,9 @@ class SanityCheckUi(qt.CUiDialog):
             checks (SCCheck list): override checks
             run (bool): automatically run checks on launch
             close_on_success (bool): close dialog on all checks passed
-            force (bool): in export mode force export ignoring any issues
             filter_ (str): apply filter based on check name
+            task (str): task to apply checks filter to
+            force (bool): in export mode force export ignoring any issues
         """
         from pini.tools import sanity_check
 
@@ -39,7 +40,8 @@ class SanityCheckUi(qt.CUiDialog):
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
-        self.checks = checks or sanity_check.find_checks(filter_=filter_)
+        self.checks = checks or sanity_check.find_checks(
+            filter_=filter_, task=task)
 
         super(SanityCheckUi, self).__init__(
             ui_file=UI_FILE, show=False)
@@ -188,10 +190,13 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _redraw__ToggleDisabled(self):
         if self.check:
+            _en = True
             _text = 'Enable' if self.check.is_disabled else 'Disable'
         else:
+            _en = False
             _text = 'Disable'
         self.ui.ToggleDisabled.setText(_text)
+        self.ui.ToggleDisabled.setEnabled(_en)
 
     def _redraw__Log(self):
         self.ui.Log.setText(self.check.log if self.check else '')

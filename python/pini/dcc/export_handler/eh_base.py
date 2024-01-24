@@ -242,12 +242,14 @@ class CExportHandler(object):
         """
         _LOGGER.debug('BUILD UI %s %s', parent, layout)
 
-    def obtain_metadata(self, work=None, sanity_check_=False, force=False):
+    def obtain_metadata(
+            self, work=None, sanity_check_=False, task=None, force=False):
         """Obtain metadata to apply to a generated export.
 
         Args:
             work (CPWork): override workfile to read metadata from
             sanity_check_ (bool): run sanity checks before publish
+            task (str): task to pass to sanity check
             force (bool): force completion without any confirmations
 
         Returns:
@@ -262,8 +264,7 @@ class CExportHandler(object):
         _LOGGER.info('NOTES %s', _notes)
         _data = eh_utils.obtain_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,
-            force=force, handler=self.NAME,
-            notes=_notes)
+            force=force, handler=self.NAME, task=task, notes=_notes)
         return _data
 
     @cache_result

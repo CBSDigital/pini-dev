@@ -67,7 +67,7 @@ class CLExportTab(object):
             'publish', filter_='basic', catch=True)
         _work = pipe.CACHE.cur_work
         if _work:
-            _task = pipe.map_task(_work.task)
+            _task = pipe.map_task(_work.task, step=_work.step)
             _handler = dcc.find_export_handler(filter_=_task, catch=True)
             if _handler:
                 _select = _handler

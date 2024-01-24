@@ -50,6 +50,7 @@ class CUiBase(object):
         # Setup basic vars
         self._successful_load = False
         self._ui_file = abs_path(ui_file)
+        self.name = type(self).__name__
 
         self._shortcuts = {
             'q': (self.deleteLater, 'Quit'),
@@ -494,14 +495,14 @@ class CUiBase(object):
 
     def delete(self):
         """Delete this interface."""
-        _LOGGER.debug('DELETE %s', self)
+        _LOGGER.debug('DELETE CUiBase %s', self.name)
 
         # Kill any timer
         try:
             if self.timer:
                 self.killTimer(self.timer)
         except RuntimeError as _exc:
-            _LOGGER.info(' - KILL TIMER ERRORED - %s', str(_exc))
+            _LOGGER.info(' - KILL TIMER ERRORED - %s', self.name)
 
         # Save settings
         _LOGGER.debug(
@@ -512,7 +513,7 @@ class CUiBase(object):
                 self.save_settings()
             except RuntimeError as _exc:
                 _LOGGER.info(
-                    ' - SAVE SETTINGS ERRORED - %s', str(_exc))
+                    ' - SAVE SETTINGS ERRORED - %s', self.name)
             else:
                 _LOGGER.debug(
                     ' - SAVED SETTINGS %s', abs_path(self.settings.fileName()))
@@ -521,9 +522,9 @@ class CUiBase(object):
         try:
             self.deleteLater()
         except RuntimeError as _exc:
-            _LOGGER.info(' - DELETE LATER ERRORED - %s', str(_exc))
+            _LOGGER.info(' - DELETE LATER ERRORED - %s', self.name)
 
-        _LOGGER.debug(' - DELETE %s COMPLETE', self)
+        _LOGGER.debug(' - DELETE %s COMPLETE', self.name)
 
     def closeEvent(self, event=None):
         """Triggered by close.

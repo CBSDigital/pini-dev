@@ -18,19 +18,21 @@ class CBasicPublish(eh_base.CExportHandler):
     LABEL = 'Makes a copy of this scene in the publish directory'
     ACTION = 'publish'
 
-    def obtain_metadata(self, work=None, sanity_check_=True, force=False):
+    def obtain_metadata(
+            self, work=None, sanity_check_=True, task=None, force=False):
         """Obtain metadata for this publish.
 
         Args:
             work (CPWork): override workfile to read metadata from
             sanity_check_ (bool): run sanity checks before publish
+            task (str): task to pass to sanity check
             force (bool): force completion without any confirmations
 
         Returns:
             (dict): metadata
         """
         _data = super(CBasicPublish, self).obtain_metadata(
-            work=work, sanity_check_=sanity_check_, force=force)
+            work=work, sanity_check_=sanity_check_, task=task, force=force)
         _data['publish_type'] = type(self).__name__
         return _data
 

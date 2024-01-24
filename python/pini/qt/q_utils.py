@@ -96,6 +96,15 @@ def find_widget_children(widget, indent=''):
     return _children
 
 
+def flush_dialog_stack():
+    """Empty dialog stack.
+
+    This can be used as a last resort if closing all dialogs is failing because
+    some dialogs are erroring on delete or save.
+    """
+    sys.QT_DIALOG_STACK = {}
+
+
 @cache_result
 def get_application(force=False):
     """Get QApplication instance.

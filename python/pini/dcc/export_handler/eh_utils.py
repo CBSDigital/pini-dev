@@ -9,7 +9,7 @@ from pini.utils import get_user
 
 def obtain_metadata(
         handler, action=None, work=None, sanity_check_=False,
-        force=False, notes=None):
+        force=False, notes=None, task=None):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -19,6 +19,7 @@ def obtain_metadata(
         sanity_check_ (bool): run sanity checks before publish
         force (bool): force completion without any confirmations
         notes (str): export notes
+        task (str): task to pass to sanity check
 
     Returns:
         (dict): metadata
@@ -45,7 +46,7 @@ def obtain_metadata(
         _action = action or handler
         assert _action in ('render', 'publish')
         _results = sanity_check.launch_export_ui(
-            mode=_action, force=force)
+            mode=_action, force=force, task=task)
         _data['sanity_check'] = _results
 
     return _data

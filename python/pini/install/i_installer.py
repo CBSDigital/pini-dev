@@ -7,7 +7,7 @@ each time a dcc launches.
 import copy
 import logging
 
-from pini import icons, pipe, dcc, testing
+from pini import icons, pipe, dcc, testing, qt
 from pini.tools import helper, job_manager, sanity_check, error
 from pini.utils import basic_repr, wrap_fn
 
@@ -224,6 +224,10 @@ class CIInstaller(object):
                     name=self.prefix+'_ToggleNiceIdRepr',
                     label='Toggle nice id repr',
                     icon=icons.find('Police Car Light'), command=_nir_toggle),
+                CITool(
+                    name=self.prefix+'_FlushDialogStack',
+                    label='Flush dialog stack',
+                    icon=icons.CLEAN, command=qt.flush_dialog_stack),
         ]:
             _refresh.add_context(_ctx)
 

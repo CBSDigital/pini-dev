@@ -596,7 +596,7 @@ class CheckForEmptyNamespaces(SCMayaCheck):
             if _ns in ['shared', 'UI']:
                 self.write_log('Allowed standard namespace %s', _ns)
                 continue
-            _nodes = cmds.namespaceInfo(_ns, listOnlyDependencyNodes=True)
+            _nodes = cmds.namespaceInfo(_ns, listNamespace=True)
             if _nodes:
                 self.write_log('Allowed namespace with nodes %s', _ns)
                 continue
@@ -694,6 +694,11 @@ class CheckShaders(SCMayaCheck):
 
         _shds = lookdev.read_shader_assignments(
             catch=True, allow_face_assign=True, referenced=False)
+        self.write_log('Found %d shaders: %s', len(_shds), _shds)
+        if not _shds:
+            self.add_fail(
+                'No shader assignments found - this publish saves out shading '
+                'assignments so you need to apply shaders to your geometry')
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         _ignore_names = set()
         for _shd, _data in _shds.items():

@@ -68,8 +68,8 @@ def check_test_asset(force=False):
 
     _asset_c = pipe.CACHE.obt(TEST_ASSET)
     _tag = _asset_c.job.cfg['tokens']['tag']['default']
-    _mod_task = os.environ.get('PINI_MODEL_TASK', 'model')
-    _ld_task = os.environ.get('PINI_LOOKDEV_TASK', 'lookdev')
+    _mod_task = os.environ.get('PINI_PIPE_MODEL_TASK', 'model')
+    _ld_task = os.environ.get('PINI_PIPE_LOOKDEV_TASK', 'lookdev')
 
     # Check model
     _mdl_work = _asset_c.to_work(task=_mod_task)

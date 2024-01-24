@@ -2,6 +2,7 @@
 
 import copy
 import logging
+import os
 
 from maya import cmds
 
@@ -18,10 +19,24 @@ from . import phm_base
 _LOGGER = logging.getLogger(__name__)
 
 
+def _to_name():
+    """Build name for lookdev publish handler.
+
+    eg. Maya Lookdev Publish
+        Maya Surface Publish
+
+    Returns:
+        (str): handler name
+    """
+    _task = os.environ.get('PINI_PIPE_LOOKDEV_TASK', 'lookdev')
+    _name = {'surf': 'surface'}.get(_task, _task)
+    return 'Maya {} Publish'.format(_name.capitalize())
+
+
 class CMayaLookdevPublish(phm_base.CMayaBasePublish):
     """Manages a maya lookdev publish."""
 
-    NAME = 'Maya Lookdev Publish'
+    NAME = _to_name()
     LABEL = '\n'.join([
         ' - Builds lookdev files for abc attach',
         ' - Shaders are stored in maya file and attached using yml',
@@ -55,19 +70,21 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         if add_footer:
             self.add_footer_elems()
 
-    def obtain_metadata(self, work=None, sanity_check_=True, force=False):
+    def obtain_metadata(
+            self, work=None, sanity_check_=True, task='lookdev', force=False):
         """Obtain publish metadata.
 
         Args:
             work (CPWork): override workfile to read metadata from
             sanity_check_ (bool): run sanity checks before publish
+            task (str): task to pass to sanity check
             force (bool): force completion without any confirmations
 
         Returns:
             (dict): metadata
         """
         _data = super(CMayaLookdevPublish, self).obtain_metadata(
-            work=work, sanity_check_=sanity_check_, force=force)
+            work=work, sanity_check_=sanity_check_, task=task, force=force)
         del _data['range']
         if self.shd_yml:
             _data['shd_yml'] = self.shd_yml.path

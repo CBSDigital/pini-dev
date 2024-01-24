@@ -106,7 +106,7 @@ class SCUiFailItem(qt.CListViewWidgetItem):  # pylint: disable=too-many-instance
         self.widget.setFixedSize(_item_w, _widget_h)
         self.label.setFixedHeight(_widget_h)
         if not self.btns:
-            _label_w = _item_w
+            _label_w = _item_w - self.margin*2
         else:
             _label_w = _item_w - self.btn_w - self.margin*2
         self.label.setFixedSize(_label_w, _item_w)

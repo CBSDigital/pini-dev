@@ -1,3 +1,31 @@
+## [0.55.0] - Wed 2024-01-24 12:58
+### Summary
+ - Pini Helper:
+    - apply sanity checks relevant publish task not current scene,
+    - read step for task if task is non-descriptive,
+    - bugfix error on launch (blutge),
+ - Pini Install:
+    - added option to flush dialog stack under refresh right-click,
+ - Sanity Check:
+    - check for empty namespace bugfix false positive (blutge),
+    - check shaders better error on no assigments found (blutge),
+    - lock disable button if no check selected,
+### Updated
+ - pini.dcc.CBaseExportHandler.obtain_metadata added sanity check task override arg,
+ - pini.dcc CMayaModelPublish/CMayaLookdevPublish force use model/lookdev sanity checks,
+ - pini.dcc.CMayaLookdevHandler allow name update using $PINI_PIPE_LOOKDEV_TASK,
+ - pini.pipe.map_task added step arg for vague tasks,
+ - pini.qt.CBaseDialog.name added from type,
+ - pini.qt.CBaseDialog.delete use name arg for logging to prevent error on delete,
+ - pini.qt.flush_dialog_stack added,
+ - pini.install added flush dialog stack refresh ctx opt,
+ - pini.tools.sanity_check bugfix false positive on check for empty namespace,
+ - pini.tools.sanity_check added task filter override,
+ - pini.tools.sanity_check lock disable button if no check selected,
+ - pini.tools.helper pass task to map_task for select default publisher,
+ - pini.tools.helper bugfix error on sort outputs for output w/o asset,
+
+
 ## [0.54.0] - Wed 2024-01-24 10:07
 ### Summary
  - Sanity Check:
