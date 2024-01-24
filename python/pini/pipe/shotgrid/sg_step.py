@@ -9,11 +9,39 @@ from pini.utils import single
 from . import sg_handler, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
-_STEP_FIELDS = ['entity_type', 'code', 'short_name']
+_STEP_FIELDS = ['entity_type', 'code', 'short_name', 'department']
 
 
 class MissingPipelineStep(RuntimeError):
     """Raised when a step doesn't match the available shotgrid steps."""
+
+
+def find_steps(fmt='dict', only_3d=False):
+    """Find steps data from shotgrid.
+
+    Args:
+        fmt (str): result format (
+            dict - full data dict list
+            name - list of names
+        only_3d (bool): return only 3d steps
+
+    Returns:
+        (list): steps data
+    """
+    _steps = _read_steps_data()
+    if only_3d:
+        _steps = [_step for _step in _steps
+                  if _step['department'] and
+                  _step['department']['name'] == '3D']
+
+    if fmt == 'dict':
+        _result = _steps
+    elif fmt == 'name':
+        _result = [_step['short_name'] for _step in _steps]
+    else:
+        raise NotImplementedError(fmt)
+
+    return _result
 
 
 @sg_utils.sg_cache_result

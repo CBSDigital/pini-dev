@@ -6,7 +6,7 @@ import re
 
 from maya import cmds
 
-from maya_pini import open_maya as pom
+from maya_pini import open_maya as pom, tex
 from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
 
 from .. import mp_utils
@@ -172,24 +172,28 @@ def read_publish_metadata():
 
 
 def read_shader_assignments(
-        allow_face_assign=False, allow_referenced=False, catch=True):
+        fmt='dict', allow_face_assign=False, referenced=None, catch=True):
     """Read shader assignments data.
 
     This data relates to the current scene. Namespaces are removed
     before it's written to disk.
 
     Args:
+        fmt (str): results format
+            dict - full shader details as dict
+            shd - simple list of shaders
         allow_face_assign (bool): do not ignore face assignments (eg. for
             speed tree assets)
-        allow_referenced (bool): include referenced shaders
+        referenced (bool): filter by shader referenced status
         catch (bool): no error if no shaders found
 
     Returns:
-        (dict): shader assignments
+        (dict/list): shader assignments
     """
     _LOGGER.debug('READ SHD ASSIGNMENTS')
     _data = {}
     _ses = pom.find_nodes(type_='shadingEngine')
+    _shds = []
     for _se in _ses:
 
         _LOGGER.debug('SHADING ENGINE %s', _se)
@@ -201,9 +205,13 @@ def read_shader_assignments(
         if not _shd:
             _LOGGER.debug(' - NO SHADER')
             continue
-        if not allow_referenced and _shd.is_referenced():
-            _LOGGER.debug(' - IGNORING REFERENCED')
-            continue
+
+        # Apply referenced filter
+        if referenced is not None:
+            _LOGGER.debug(' - IS REFERENCED %d', _shd.is_referenced())
+            if _shd.is_referenced() != referenced:
+                _LOGGER.debug(' - FILTERED')
+                continue
 
         # Find geos
         _geo_ss = cmds.sets(_se, query=True) or []
@@ -227,9 +235,16 @@ def read_shader_assignments(
         _ai_ss = _se.plug['aiSurfaceShader'].find_incoming(plugs=False)
         _shd_data['ai_shd'] = str(_ai_ss) if _ai_ss else None
 
+        _shds.append(tex.to_shd(_shd))
         _data[str(_shd)] = _shd_data
 
     if not catch and not _data:
         raise RuntimeError('No shader assignments found')
 
-    return _data
+    if fmt == 'dict':
+        _result = _data
+    elif fmt == 'shd':
+        _result = _shds
+    else:
+        raise NotImplementedError(fmt)
+    return _result

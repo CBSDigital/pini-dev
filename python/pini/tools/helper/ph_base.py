@@ -110,12 +110,16 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 self.ui.Profile,
                 self.ui.EntityType,
                 self.ui.Entity,
+
                 self.ui.WTasks,
                 self.ui.WTaskText,
                 self.ui.WTags,
                 self.ui.WTagText,
                 self.ui.WWorks,
                 self.ui.WWorkPath,
+
+                self.ui.SOutputsFilter,
+                self.ui.SSceneRefsFilter,
         ]:
             _elem.disable_save_settings = True
 

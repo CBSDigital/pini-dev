@@ -48,11 +48,11 @@ def _required_tokens_missing(text, required_tokens):
     """
     if not required_tokens:
         return True
-    _LOGGER.debug(' - TESTING REQUIRED %s', required_tokens)
+    _LOGGER.log(9, ' - TESTING REQUIRED %s', required_tokens)
     for _token in required_tokens:
-        _LOGGER.debug('   - TEST TOKEN %s', _token)
+        _LOGGER.log(9, '   - TEST TOKEN %s', _token)
         if _token not in text:
-            _LOGGER.debug(' - FAILED DUE TO MISSING REQUIRED')
+            _LOGGER.log(9, ' - FAILED DUE TO MISSING REQUIRED')
             return False
     return True
 
@@ -69,11 +69,11 @@ def _ignore_tokens_present(text, ignore_tokens):
     """
     if not ignore_tokens:
         return False
-    _LOGGER.debug(' - TESTING IGNORE %s', ignore_tokens)
+    _LOGGER.log(9, ' - TESTING IGNORE %s', ignore_tokens)
     for _token in ignore_tokens:
-        _LOGGER.debug('   - TEST TOKEN %s', _token)
+        _LOGGER.log(9, '   - TEST TOKEN %s', _token)
         if _token in text:
-            _LOGGER.debug(' - FAILED DUE TO IGNORE')
+            _LOGGER.log(9, ' - FAILED DUE TO IGNORE')
             return True
     return False
 
@@ -90,7 +90,7 @@ def passes_filter(text, filter_, case_sensitive=False):
         (bool): whether text passes filter
     """
     check_heart()
-    _LOGGER.debug('PASSES FILTER %s %s', text, filter_)
+    _LOGGER.log(9, 'PASSES FILTER %s %s', text, filter_)
     if not filter_:
         return True
 
@@ -120,10 +120,10 @@ def passes_filter(text, filter_, case_sensitive=False):
 
     # Apply straightforward match
     if _match_tokens:
-        _LOGGER.debug(' - TESTING MATCH %s', _match_tokens)
+        _LOGGER.log(9, ' - TESTING MATCH %s', _match_tokens)
         for _token in _match_tokens:
             if _token in _text:
-                _LOGGER.debug('   - MATCHED %s', _token)
+                _LOGGER.log(9, '   - MATCHED %s', _token)
                 return True
         return False
 

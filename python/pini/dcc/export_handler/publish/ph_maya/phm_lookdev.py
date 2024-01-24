@@ -103,7 +103,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _clean_junk()
         _assignments = lookdev.read_shader_assignments()
         if not _assignments:
-            if lookdev.read_shader_assignments(allow_referenced=True):
+            if lookdev.read_shader_assignments(referenced=True):
                 raise RuntimeError('Referenced shaders are not supported')
             raise RuntimeError('No valid shading assignments found')
         for _shd in _assignments:

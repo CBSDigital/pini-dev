@@ -27,15 +27,15 @@ def check_heart(heart=None):
         _heart = File(abs_path(heart))
     else:
         _heart = HEART
-    _LOGGER.debug('CHECK HEART %s', _heart.path)
+    _LOGGER.log(9, 'CHECK HEART %s', _heart.path)
 
     if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
-        _LOGGER.debug(' - FILE SYSTEM DISABLED - IGNORING')
+        _LOGGER.log(9, ' - FILE SYSTEM DISABLED - IGNORING')
         return
 
     # Make sure heart exists
     if not _INITIATED.get(_heart, False):
-        _LOGGER.debug(' - INITIATING')
+        _LOGGER.log(9, ' - INITIATING')
         _heart.touch()
         _INITIATED[_heart] = True
 
@@ -43,7 +43,7 @@ def check_heart(heart=None):
     if (
             _LAST_CHECK.get(_heart) and
             time.time() - _LAST_CHECK[_heart] < 1.0):
-        _LOGGER.debug(' - CHECKED RECENTLY - IGNORING')
+        _LOGGER.log(9, ' - CHECKED RECENTLY - IGNORING')
         return
 
     if not _heart.exists():
@@ -51,4 +51,4 @@ def check_heart(heart=None):
         raise RuntimeError("Missing heart {}".format(_heart.path))
 
     _LAST_CHECK[_heart] = time.time()
-    _LOGGER.debug(' - CHECKED')
+    _LOGGER.log(9, ' - CHECKED')

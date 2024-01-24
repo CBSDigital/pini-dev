@@ -9,10 +9,10 @@ from pini import qt, pipe, dcc
 from pini.tools import sanity_check
 from pini.utils import single, wrap_fn, check_heart, plural
 
-from maya_pini import ref, open_maya as pom
+from maya_pini import ref, open_maya as pom, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, to_unique, to_shp)
+    DEFAULT_NODES, del_namespace, to_clean, to_unique)
 
 from ..core import SCFail, SCMayaCheck
 
@@ -204,13 +204,10 @@ class CheckRenderStats(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        _geos = _cache_set_to_geos()
+        _geos = m_pipe.read_cache_set()
         if not _geos:
-            self.add_fail('Empty cache set')
+            self.add_fail('No geo in cache_SET')
         for _geo in _geos:
-            _shp = to_shp(_geo, catch=True)
-            if not _shp:
-                continue
             self._check_geo(_geo)
 
     def _check_geo(self, geo):
@@ -220,14 +217,6 @@ class CheckRenderStats(SCMayaCheck):
             geo (str): transform of mesh to check
         """
         self.write_log(' - checking geo %s', geo)
-
-        # Check create MFnMesh object
-        try:
-            _mesh = pom.CMesh(geo)
-        except ValueError:
-            _msg = 'Geo {} failed to build into MFnMesh node'.format(geo)
-            self.add_fail(_msg, node=geo)
-            return
 
         # Check render stats
         for _attr, _val in [
@@ -241,12 +230,12 @@ class CheckRenderStats(SCMayaCheck):
                 ('visibleInRefractions', True),
                 ('doubleSided', True),
         ]:
-            _plug = _mesh.shp.plug[_attr]
+            _plug = geo.shp.plug[_attr]
             if _plug.get_val() != _val:
                 _msg = 'Bad render setting: "{}" set to "{}"'.format(
                     _plug, {True: 'on', False: 'off'}[_plug.get_val()])
                 _fix = wrap_fn(_plug.set_val, _val)
-                self.add_fail(_msg, fix=_fix, node=_mesh)
+                self.add_fail(_msg, fix=_fix, node=geo)
 
 
 class CheckUVs(SCMayaCheck):
@@ -398,7 +387,7 @@ class CheckGeoNaming(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        _geos = _cache_set_to_geos()
+        _geos = m_pipe.read_cache_set()
         self.write_log('GEOS %s', _geos)
         _names = self._check_geos(geos=_geos)
         self._check_for_duplicates(names=_names)
@@ -462,7 +451,8 @@ class CheckGeoNaming(SCMayaCheck):
         self.write_log('   - shape %s', _geo_s)
 
         # Check geo name
-        if not (geo.endswith('_GEO') or geo == 'GEO'):
+        _name = str(geo)
+        if not (_name.endswith('_GEO') or _name == 'GEO'):
             _msg, _fix, _suggestion = _fix_node_suffix(
                 node=geo, suffix='_GEO', alts=['_Geo'], type_='geo',
                 ignore=self._ignore_names)
@@ -473,7 +463,7 @@ class CheckGeoNaming(SCMayaCheck):
         # Check shape name
         _shp_c = pom.CNode(_geo_s)
         _cur_name = _geo_s.split('|')[-1]
-        _good_name = geo.split('|')[-1]+'Shape'
+        _good_name = _name.split('|')[-1]+'Shape'
         self.write_log(
             '   - good name %s instanced=%d', _good_name,
             _shp_c.is_instanced())
@@ -665,6 +655,20 @@ def _shd_is_arnold(shd, engine, type_):
     return not type_.startswith('ai')
 
 
+def _import_referenced_shader(shd):
+    """Import referenced shader and apply the imported shader to the geometry.
+
+    Args:
+        shd (Shader): shader to import
+    """
+    _LOGGER.debug('IMPORT SHADER %s', shd)
+    _dup = shd.duplicate()
+    _LOGGER.debug(' - DUPLICATE SHADER %s', _dup)
+    _geos = shd.to_geo()
+    _LOGGER.debug(' - APPLY TO %s', _geos)
+    _dup.apply_to(_geos)
+
+
 class CheckShaders(SCMayaCheck):
     """Check the shader name matches the shading engine.
 
@@ -680,15 +684,17 @@ class CheckShaders(SCMayaCheck):
         Args:
             check_ai_shd (bool): check any attached arnold shader override
         """
-        _shds = lookdev.read_shader_assignments(
-            catch=True, allow_face_assign=True)
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
 
         # Check for referenced shaders
-        if not _shds and lookdev.read_shader_assignments(allow_referenced=True):
+        for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
             self.add_fail(
-                'Shaders are referenced - this is not supported')
+                'Shader "{}" is referenced - this must be imported into the '
+                'current scene'.format(str(_shd)),
+                node=_shd, fix=wrap_fn(_import_referenced_shader, _shd))
 
+        _shds = lookdev.read_shader_assignments(
+            catch=True, allow_face_assign=True, referenced=False)
+        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         _ignore_names = set()
         for _shd, _data in _shds.items():
 

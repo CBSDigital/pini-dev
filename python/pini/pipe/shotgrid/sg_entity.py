@@ -180,7 +180,7 @@ def to_entity_data(entity=None, force=False):
         (dict): entity data
     """
     _ety = entity or pipe.cur_entity()
-    _ety = pipe.to_entity(entity)
+    _ety = pipe.to_entity(_ety)
     return _ety_to_data(_ety)
 
 

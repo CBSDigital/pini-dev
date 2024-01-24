@@ -66,16 +66,17 @@ def _read_step_names():
     Returns:
         (dict): id -> short name mappings
     """
-    _data = sg_handler.find('Step', fields=['short_name'])
+    _data = sg_step.find_steps()
     _result = {_item['id']: _item['short_name'] for _item in _data}
     return _result
 
 
-def find_tasks(entity):
+def find_tasks(entity, only_3d=False):
     """Find shotgrid tasks data.
 
     Args:
         entity (CPEntity): entity to search
+        only_3d (bool): filter out tasks which are not in 3D steps
 
     Returns:
         (tuple list): task data (task, label, step)
@@ -90,6 +91,11 @@ def find_tasks(entity):
     _tmpl = entity.find_template('work_dir')
     _LOGGER.debug(' - TMPL %s', _tmpl)
 
+    _steps_filter = None
+    if only_3d:
+        _steps_filter = sg_step.find_steps(fmt='name', only_3d=True)
+        _LOGGER.info(' - STEPS FILTER %s', _steps_filter)
+
     _work_dirs = []
     for _item in _data:
         _LOGGER.debug(' - ADDING %s', _item)
@@ -101,7 +107,12 @@ def find_tasks(entity):
         _task = _item[_TASK_KEY]
         if not _item['step']:
             continue
+
+        # Check step
         _step = _read_step_names()[_item['step']['id']]
+        if _steps_filter and _step not in _steps_filter:
+            continue
+
         _path = _tmpl.format(task=_task, step=_step, entity_path=entity.path)
         _LOGGER.debug('   - PATH %s', _path)
 

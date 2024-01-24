@@ -821,7 +821,7 @@ class CheckRenderGlobals(SCMayaCheck):
 
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
 
-        if _ren == 'arnold':
+        if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
 
             if not cmds.objExists('defaultArnoldDriver'):
                 _msg = (

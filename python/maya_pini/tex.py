@@ -45,12 +45,19 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
+        _LOGGER.info('APPLY %s TO %s', self, obj)
+        if isinstance(obj, list):
+            for _item in obj:
+                self.apply_to(_item)
+            return
+
         _obj = obj
         try:
             _obj = pom.to_mesh(obj).shp
         except ValueError:
             pass  # Possible face assignment
         _se = self.to_se(create=True)
+        _LOGGER.info(' - ADD %s TO %s', _obj, _se)
         cmds.sets(_obj, edit=True, forceElement=_se)
 
     def duplicate(self, name=None, upstream_nodes=True):

@@ -16,7 +16,13 @@ _LOGGER = logging.getLogger(__name__)
 _DEFAULT_SETTINGS = {
     'shotgrid': {
         'disable': False,
-        'only_3d': False}}
+        'only_3d': False},
+    'sanity_check': {
+        'ExampleCheck': {
+            'enabled': True,
+        },
+    },
+}
 
 
 @cache_result
@@ -39,7 +45,8 @@ def _obt_default_settings():
         _LOGGER.info(
             'READING $PINI_DEFAULT_PIPE_SETTINGS %s', _file.path)
         assert _file.extn == 'yml'
-        _settings.update(_file.read_yml())
+        _def_data = _file.read_yml(catch=True) or {}
+        _settings = merge_dicts(_settings, _def_data)
 
     return _settings
 
@@ -97,7 +104,7 @@ class CPSettingsLevel(Dir):
         _LOGGER.debug('DEL SETTING %s %s', key, self)
 
         # Update dict
-        _this = self.settings_file.read_yml(catch=True)
+        _this = self.settings_file.read_yml(catch=True) or {}
         if key not in _this:
             return
         del _this[key]
@@ -130,7 +137,7 @@ class CPSettingsLevel(Dir):
         Returns:
             (dict): setting at this level
         """
-        return self.settings_file.read_yml(catch=True)
+        return self.settings_file.read_yml(catch=True) or {}
 
     def set_setting(self, **kwargs):
         """Set the value of the given setting at this level.
@@ -144,7 +151,7 @@ class CPSettingsLevel(Dir):
         assert isinstance(_key, six.string_types)
 
         # Update dict
-        _this = self.settings_file.read_yml(catch=True)
+        _this = self.settings_file.read_yml(catch=True) or {}
         if (
                 isinstance(_val, dict) and
                 _key in _this and

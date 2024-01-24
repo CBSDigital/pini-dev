@@ -1,3 +1,25 @@
+## [0.54.0] - Wed 2024-01-24 10:07
+### Summary
+ - Sanity Check:
+    - disable arnold checks for non-arnold pipelines,
+    - check render stats/geo fix errors due to lights in cache_SET (cstewart),
+    - check shaders added option to import referenced shaders,
+### Updated
+ - pini.pipe added sanity check example in default settings,
+ - pini.pipe.CPSettingsLevel allow for empty yml files,
+ - pini.pipe.CPSettingsLevel bugfix not merging default settings,
+ - pini.pipe.shotgrid.find_steps added,
+ - pini.pipe.shotgrid.to_entity_data bugfix not using cur ety default,
+ - pini.pipe.shotgrid.find_tasks added only_3d filter,
+ - pini.tools.helper disabled save settings on outputs + scene refs filters,
+ - pini.tools.sanity_check.CheckRenderGlobals no arnold checks if arnold not in allowed renderers,
+ - pini.tools.sanity_check.CheckGeoNaming use m_pipe.read_cache_set to grp/lgt rename,
+ - pini.tools.sanity_check.CheckRenderStats use m_pipe.read_cache_set to avoid checking lights,
+ - pini.tools.sanity_check.CheckShaders added option to import referenced shaders,
+ - maya_pini.m_pipe.read_shader_assignments updated arg allow_referenced -> referenced + added fmt arg,
+ - maya_pini.tex.Shader.apply_to allow obj at list,
+
+
 ## [0.53.0] - Mon 2024-01-22 15:03
 ### Summary
  - Pini Helper:
