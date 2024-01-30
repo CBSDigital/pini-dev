@@ -92,7 +92,6 @@ class CCPWork(CPWork):
         _force = kwargs.pop('force', None)
         _LOGGER.log(9, 'FIND OUTPUTS force=%d %s', _force, self)
         if _force:
-            assert isinstance(_force, bool)
             self._read_outputs(force=True)
             _LOGGER.debug(' - UPDATED CACHE %s', self)
         return super(CCPWork, self).find_outputs(*args, **kwargs)

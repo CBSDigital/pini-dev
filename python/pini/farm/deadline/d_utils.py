@@ -180,9 +180,12 @@ def wrap_py(py, name, work=None, maya=False):
         '    except Exception as _exc:',
         '        _LOGGER.info(" - ERRORED %s", _exc)',
         '        _err = error.CEError()',
-        '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())',
-        '        cmds.quit(exitCode=1, force=True)',
-        '        sys.exit()',
+        '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())']
+    if maya:
+        _lines += ['        cmds.quit(exitCode=1, force=True)']
+    else:
+        _lines += ['        sys.exit()']
+    _lines += [
         '',
         '    _LOGGER.info("COMPLETE")',
         '']

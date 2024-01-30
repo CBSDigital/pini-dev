@@ -199,7 +199,10 @@ def _output_to_task_data(output):
         _task = 'plate'
     else:
         _task = output.task
-    _work_dir = output.entity.to_work_dir(task=_task)
+
+    _work_dir = pipe.to_work_dir(output)
+    if not _work_dir:
+        _work_dir = output.entity.to_work_dir(task=_task)
     return _work_dir_to_task_data(_work_dir)
 
 

@@ -24,7 +24,8 @@ class _CDMayaJob(d_job.CDJob):
 
     def __init__(
             self, stime, work, output, name=None, camera=None, priority=50,
-            machine_limit=0, comment=None, frames=None, error_limit=None):
+            machine_limit=0, comment=None, frames=None, error_limit=None,
+            group=None):
         """Constructor.
 
         Args:
@@ -38,6 +39,7 @@ class _CDMayaJob(d_job.CDJob):
             comment (str): job comment
             frames (int list): job frame list
             error_limit (int): job error limit
+            group (str): submission group
         """
         self.output = output
         self.camera = camera
@@ -46,7 +48,7 @@ class _CDMayaJob(d_job.CDJob):
         _name = name or self.output.output_name
         super(_CDMayaJob, self).__init__(
             stime=stime, comment=comment, priority=priority, name=_name,
-            machine_limit=machine_limit, work=work, frames=frames,
+            machine_limit=machine_limit, work=work, frames=frames, group=group,
             error_limit=error_limit, batch_name=self.work.base)
 
     def _build_info_data(self, output_filename=None):
@@ -58,7 +60,11 @@ class _CDMayaJob(d_job.CDJob):
         Returns:
             (dict): submission info data
         """
-        assert self.group
+        from pini import farm
+
+        if not self.group:
+            raise RuntimeError('No group specified - {}'.format(
+                '/'.join(farm.find_groups())))
 
         _data = super(_CDMayaJob, self)._build_info_data()
 
@@ -132,8 +138,8 @@ class _CDMayaJob(d_job.CDJob):
             'CountRenderableCameras': '1',
             'EnableOpenColorIO': '1',
             'IgnoreError211': '0',
-            'ImageHeight': str(_width),
-            'ImageWidth': str(_height),
+            'ImageHeight': str(_height),
+            'ImageWidth': str(_width),
             'OCIOConfigFile': _col_cfg,
             'OCIOPolicyFile': _col_policy,
             "OutputFilePath": _output_file_path,
@@ -176,7 +182,7 @@ class CDMayaRenderJob(_CDMayaJob):
 
     def __init__(
             self, layer, stime, work, camera=None, priority=50, machine_limit=0,
-            comment=None, frames=None):
+            comment=None, frames=None, group=None):
         """Constructor.
 
         Args:
@@ -188,10 +194,15 @@ class CDMayaRenderJob(_CDMayaJob):
             machine_limit (int): job machine limit
             comment (str): job comment
             frames (int list): job frame list
+            group (str): submission group
         """
         self.layer = layer
+        assert camera
 
+        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         _fmt = cmds.getAttr('defaultArnoldDriver.aiTranslator')
+        if _ren == 'arnold' and _fmt == 'jpeg':
+            _fmt = 'jpg'
         _output = pipe.CACHE.cur_work.to_output(
             'render', output_name=self.layer, extn=_fmt, work=work)
         _name = '{} - {} - {}'.format(work.base, layer, camera)
@@ -199,7 +210,7 @@ class CDMayaRenderJob(_CDMayaJob):
         super(CDMayaRenderJob, self).__init__(
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
-            frames=frames or dcc.t_frames(), name=_name)
+            frames=frames or dcc.t_frames(), name=_name, group=group)
 
         assert self.batch_name
 
@@ -322,7 +333,8 @@ def _determine_img_prefix(work=None):
     _imgs = cmds.workspace(fileRuleEntry='images')
     _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
     _tmpl = _work.find_template('render').apply_data(
-        entity_path=_work.entity.path, task=_work.task,
+        entity_path=_work.entity.path, task=_work.task, step=_work.step,
+        work_dir=_work.work_dir.path, user=_work.user,
         entity=_work.entity.name, tag=_work.tag, ver=_work.ver)
     _img_prefix, _ = _imgs_dir.rel_path(_tmpl.pattern).replace(
         '{output_name}', '<RenderLayer>').split('.%04d.', 1)

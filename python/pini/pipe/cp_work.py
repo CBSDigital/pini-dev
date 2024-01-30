@@ -15,7 +15,7 @@ import six
 from pini import dcc, icons
 from pini.utils import (
     File, strftime, HOME, cache_property, to_time_f, get_user,
-    passes_filter, single, EMPTY, abs_path, Video)
+    passes_filter, single, EMPTY, abs_path, Video, Seq)
 
 from .cp_work_dir import CPWorkDir
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
@@ -402,16 +402,41 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             raise ValueError(pipe.MASTER)
 
         # Update image thumbnail
-        if not self.image.exists():
-            _vids = [_out for _out in _outs if isinstance(_out, Video)]
-            if _vids:
-                _vid = _vids[0]
-                _LOGGER.info(' - EXTRACT FRAME %s', _vid)
-                _img = _vid.to_frame(self.image)
-                _LOGGER.info(' - IMG %s', _img)
-                assert self.image.exists()
-
+        self._check_image(_outs)
         return _outs
+
+    def _check_image(self, outputs):
+        """Check this work file's thumbnail image against the given outputs.
+
+        If the image doesn't exist and there are convertable outputs (ie. videos
+        or image sequences), it will be generated from the outputs.
+
+        Args:
+            outputs (CPOutput list): outputs from this work file
+        """
+        if self.image.exists():
+            return
+
+        # Check videos
+        _vids = [_out for _out in outputs if isinstance(_out, Video)]
+        if _vids:
+            _vid = _vids[0]
+            _LOGGER.info(' - EXTRACT FRAME %s', _vid)
+            _img = _vid.to_frame(self.image)
+            _LOGGER.info(' - IMG %s', _img)
+            assert self.image.exists()
+            return
+
+        # Check seqs
+        _seqs = [_out for _out in outputs if isinstance(_out, Seq)]
+        if _seqs:
+            _seq = _seqs[0]
+            _LOGGER.info(' - EXTRACT FRAME %s', _seq)
+            if _seq.extn == 'jpg':
+                _frame = _seq.to_frame_file()
+                _LOGGER.info(' - FRAME %s', _frame)
+                _frame.copy_to(self.image)
+                assert self.image.exists()
 
     def save(self, notes=None, reason=None, mtime=None, parent=None,
              force=None):

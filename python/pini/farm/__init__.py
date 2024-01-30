@@ -10,7 +10,7 @@ _PINI_FARM = os.environ.get('PINI_FARM')
 NAME = FARM = IS_AVAILABLE = ICON = None
 
 if _PINI_FARM == "Deadline":
-    from .deadline import FARM
+    from .deadline import FARM, CDPyJob
 elif _PINI_FARM is None:
     pass
 else:

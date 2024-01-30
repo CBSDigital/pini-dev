@@ -30,13 +30,12 @@ class CDJob(object):
     draft = False
 
     jid = None
-    group = os.environ.get('PINI_DEADLINE_GROUP')
     batch_name = None
 
     def __init__(
             self, name, work, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
-            dependencies=()):
+            dependencies=(), group=None):
         """Constructor.
 
         Args:
@@ -50,6 +49,7 @@ class CDJob(object):
             frames (int list): job frame list
             batch_name (str): job batch/group name
             dependencies (CDJob list): jobs to depend on
+            group (str): submission group
         """
         self.stime = stime or time.time()
         self.comment = comment
@@ -63,6 +63,8 @@ class CDJob(object):
             self.frames = frames
         self.dependencies = dependencies
         assert isinstance(self.dependencies, (list, tuple))
+
+        self.group = group or os.environ.get('PINI_DEADLINE_GROUP')
 
         assert self.stype
         assert self.name

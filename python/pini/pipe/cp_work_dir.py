@@ -10,7 +10,7 @@ import logging
 
 from pini import dcc
 from pini.utils import (
-    Dir, abs_path, single, EMPTY, passes_filter)
+    Dir, abs_path, single, EMPTY, passes_filter, to_str)
 
 from . import cp_utils
 from .cp_entity import to_entity
@@ -42,7 +42,7 @@ class CPWorkDir(Dir):
             entity (CPEntity): force parent entity
             template (CPTemplate): for work dir template
         """
-        _path = abs_path(path)
+        _path = abs_path(to_str(path))
         _LOGGER.debug('INIT CPWorkDir %s', _path)
 
         # Apply entity
@@ -489,6 +489,22 @@ class CPWorkDir(Dir):
         """
         from pini.pipe import shotgrid
         return shotgrid.find_pub_files(work_dir=self)
+
+    def to_output(self, type_, tag=None, output_name=None, ver_n=1, extn=None):
+        """Map this work dir to an output.
+
+        Args:
+            type_ (str): output type (eg. render/cache)
+            tag (str): output tag
+            output_name (str): output name
+            ver_n (int): output version number
+            extn (str): output extension
+
+        Returns:
+            (CPOutput): output
+        """
+        _work = self.to_work(ver_n=ver_n, tag=tag)
+        return _work.to_output(type_, extn=extn, output_name=output_name)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key

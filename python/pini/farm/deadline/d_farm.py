@@ -4,7 +4,7 @@ import logging
 import time
 
 from pini import pipe, qt
-from pini.utils import system, single, to_str, safe_zip
+from pini.utils import system, single, to_str, safe_zip, cache_result
 
 from .. import base
 from . import d_job, d_utils
@@ -17,6 +17,15 @@ class CDFarm(base.CFarm):
 
     NAME = 'Deadline'
     ICON = d_utils.ICON
+
+    @cache_result
+    def find_groups(self):
+        """Find avaliable submission groups.
+
+        Returns:
+            (str list): groups
+        """
+        return system([d_utils.DEADLINE_CMD, '-Groups']).split()
 
     def submit_job(self, job):
         """Submit a job to the farm.
@@ -145,7 +154,7 @@ class CDFarm(base.CFarm):
 
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
-            frames=None):
+            frames=None, group=None, force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -154,6 +163,8 @@ class CDFarm(base.CFarm):
             priority (int): job priority (0-100)
             machine_limit (int): job machine limit
             frames (int list): frames to render
+            group (str): submission group
+            force (bool): submit without confirmation dialogs
 
         Returns:
             (CDJob list): jobs
@@ -167,11 +178,12 @@ class CDFarm(base.CFarm):
         _batch = _work.base
         _lyrs = pom.find_render_layers(renderable=True)
 
-        _work.save(reason='deadline render')
+        _work.save(force=force, reason='deadline render')
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')
-        _metadata = export_handler.obtain_metadata('render', sanity_check_=True)
+        _metadata = export_handler.obtain_metadata(
+            'render', sanity_check_=True, task='lighting', force=force)
 
         # Submit render jobs
         _render_jobs = []
@@ -179,7 +191,7 @@ class CDFarm(base.CFarm):
             _job = d_maya_job.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=camera, comment=comment,
-                machine_limit=machine_limit)
+                machine_limit=machine_limit, group=group)
             _render_jobs.append(_job)
         assert not _render_jobs[0].jid
         self.submit_jobs(_render_jobs, name='render')
@@ -194,10 +206,11 @@ class CDFarm(base.CFarm):
         _progress.set_pc(100)
         _progress.close()
 
-        qt.notify(
-            'Submitted {:d} layers to deadline.\n\nBatch name:\n{}'.format(
-                len(_lyrs), _batch),
-            title='Render Submitted', icon=d_utils.ICON)
+        if not force:
+            qt.notify(
+                'Submitted {:d} layers to deadline.\n\nBatch name:\n{}'.format(
+                    len(_lyrs), _batch),
+                title='Render Submitted', icon=d_utils.ICON)
 
         return _render_jobs + [_update_job]
 
@@ -270,25 +283,9 @@ class CDFarm(base.CFarm):
             (CDPyJob): update job
         """
 
-        # Build update py
-        _lines = [
-            'from pini import pipe',
-            '',
-            '# Update work outputs cache',
-            '_work = pipe.CACHE.obt_work("{}")'.format(work.path),
-            '_work.find_outputs(force=2)']
-        if outputs and metadata:
-            _lines += [
-                '',
-                '# Update metadata',
-                '_metadata = {}'.format(metadata)]
-            for _out in outputs:
-                _lines.append(
-                    'pipe.to_output("{}").set_metadata(_metadata)'.format(
-                        _out.path))
-        _py = '\n'.join(_lines)
-
         # Submit job
+        _py = _build_update_job_py(
+            outputs=outputs, metadata=metadata, work=work)
         _update_job = d_job.CDPyJob(
             name='{} [update cache]'.format(work.base), comment=comment,
             py=_py, batch_name=batch_name, dependencies=dependencies,
@@ -298,3 +295,54 @@ class CDFarm(base.CFarm):
         assert _update_job.jid
 
         return _update_job
+
+
+def _build_update_job_py(outputs, metadata, work):
+    """Build update for update job.
+
+    Args:
+        outputs (CPOutput list): new outputs
+        metadata (dict): output metadata
+        work (CPWork): parent work file
+
+    Returns:
+        (str): python to update outputs
+    """
+    _lines = ['from pini import pipe', '']
+
+    if outputs:
+
+        # Build output objects
+        _lines += [
+            '# Build output objects',
+            '_outs = [']
+        for _out in outputs:
+            _lines += ['    pipe.to_output("{}"),'.format(_out.path)]
+        _lines += [']', '']
+
+        # Register shotgrid
+        if pipe.MASTER == 'shotgrid':
+            _lines += [
+                '# Register outputs in shotgrid',
+                'from pini.pipe import shotgrid',
+                'for _out in _outs:',
+                '    shotgrid.create_pub_file(_out, force=True)',
+                '']
+
+        # Apply metadata
+        if metadata:
+            _lines += [
+                '# Update metadata',
+                '_metadata = {}'.format(metadata),
+                'for _out in _outs:',
+                '    _out.set_metadata(_metadata)',
+                '']
+
+    # Update workfile output cache
+    _lines += [
+        '# Update work outputs cache',
+        '_work_c = pipe.CACHE.obt_work("{}")'.format(work.path),
+        '_work_c.find_outputs(force=True)',
+        '']
+
+    return '\n'.join(_lines)

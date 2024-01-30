@@ -1,5 +1,6 @@
 """Tools for managing the base directory object."""
 
+import functools
 import logging
 import os
 import platform
@@ -97,6 +98,7 @@ class Dir(up_path.Path):
                 icon=_icon, title=wording)
         shutil.rmtree(self.path)
 
+    @functools.wraps(up_find.find)
     def find(self, class_=False, **kwargs):
         """Search for files in this directory.
 

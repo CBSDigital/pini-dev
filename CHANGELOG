@@ -1,3 +1,23 @@
+## [0.56.0] - Tue 2024-01-30 06:59
+### Summary
+ - Pini Helper:
+    - build thumbs from image sequences,
+ - Pini Deadline Submitter:
+    - added tools for shotgrid registration,
+### Updated
+ - pini.utils.Dir.find use functools.wraps to fix missing docs,
+ - pini.pipe.CPWorkDir allow init from Seq object,
+ - pini.pipe.CPWorkDir.to_output added,
+ - pini.pipe.CPWork._read_outputs check image uses seq frame,
+ - pini.farm.wrap_py bugfix applying maya quit outside maya,
+ - pini.farm.deadline.find_groups added,
+ - pini.farm.deadline.submit_maya_render added groups/force args,
+ - pini.farm.deadline.submit_maya_render added shotgrid register to update py,
+ - pini.farm.deadline.CDMayaJob better warning on no group,
+ - pini.farm.deadline.CDMayaJob bugfix width/height swapped,
+ - pini.testing.insert_env_path bugfix filling env until error,
+
+
 ## [0.55.0] - Wed 2024-01-24 12:58
 ### Summary
  - Pini Helper:

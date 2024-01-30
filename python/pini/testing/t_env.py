@@ -140,13 +140,16 @@ def insert_env_path(path, env):
         path (str): path to add
         env (str): environment variable to add to
     """
-    _path = Path(path)
+    _path = Path(abs_path(path))
     assert _path.exists()
     if env not in os.environ:
-        os.environ[env] = path
+        os.environ[env] = _path.path
         return
-    while _path.path not in read_env_paths(env):
-        os.environ[env] = ''.join([_path.path, os.pathsep, os.environ[env]])
+    if _path.path in read_env_paths(env):
+        return
+    assert _path.path not in read_env_paths(env)
+    os.environ[env] = ''.join([_path.path, os.pathsep, os.environ[env]])
+    assert _path.path in read_env_paths(env)
 
 
 def insert_sys_path(path):

@@ -21,7 +21,7 @@ class TestDCC(unittest.TestCase):
         _LOGGER.info(' - CHECKED TEST ASSET')
 
         _tag = testing.TEST_JOB.cfg['tokens']['tag']['default']
-        _model_task = os.environ.get('PINI_MODEL_TASK', 'model')
+        _model_task = os.environ.get('PINI_PIPE_MODEL_TASK', 'model')
         _asset_c = pipe.CACHE.obt(testing.TEST_ASSET)
 
         # Clean up
