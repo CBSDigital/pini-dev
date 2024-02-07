@@ -11,7 +11,6 @@ _LOGGER = logging.getLogger(__name__)
 
 ICON = icons.find('Balloon')
 _USE_DEADLINE_SORTING = bool(os.environ.get('PINI_DEADLINE_USE_SORTING', False))
-_INIT_PY = os.environ.get('PINI_DEADLINE_INIT_PY', 'pass')
 
 
 def info_key_sort(key):
@@ -151,6 +150,7 @@ def wrap_py(py, name, work=None, maya=False):
     Returns:
         (str): wrapped python
     """
+    _init_py = os.environ.get('PINI_DEADLINE_INIT_PY')
 
     # Check init py is valid
     ast.parse(py)
@@ -182,9 +182,14 @@ def wrap_py(py, name, work=None, maya=False):
             '    except RuntimeError:',
             '        pass',
             '']
+
+    if _init_py:
+        _lines += [
+            '    # Run $PINI_DEADLINE_INIT_PY code',
+            '    {}'.format('\n    '.join(_init_py.split('\n'))),
+            '']
     _lines += [
-        '    # Run $PINI_DEADLINE_INIT_PY code',
-        '    {}'.format('\n    '.join(_INIT_PY.split('\n'))),
+        '    # Setup loggging',
         '    from pini import testing, dcc',
         '    testing.setup_logging()',
         '    _LOGGER.info("RUNNING {} %s", _FILE)'.format(name),

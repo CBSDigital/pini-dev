@@ -1,3 +1,12 @@
+## [0.60.1] - Tue 2024-02-06 18:22
+### Summary
+ - Pini Helper,
+    - bugfix error on update cache for farm render/cache,
+### Updated
+ - pini.farm.deadline bugfix not applying $PINI_DEADLINE_INIT_PY,
+ - pini.tools.sanity_check check frame range removed apply range to shotgrid option if shotgrid is pipe master,
+
+
 ## [0.60.0] - Tue 2024-02-06 17:21
 ### Summary
  - Pini Helper,

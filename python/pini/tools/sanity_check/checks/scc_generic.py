@@ -154,9 +154,10 @@ class CheckFrameRange(SCCheck):
             _fail = self.add_fail(_msg, fix=_fix)
             _update = wrap_fn(
                 shotgrid.set_entity_range, entity=_ety, range_=_cur_rng)
-            _fail.add_action(
-                'Update shotgrid', chain_fns(_update, self.run),
-                is_fix=True, index=0)
+            if pipe.MASTER == 'disk':
+                _fail.add_action(
+                    'Update shotgrid', chain_fns(_update, self.run),
+                    is_fix=True, index=0)
 
 
 class SlowCheckTest(SCCheck):
