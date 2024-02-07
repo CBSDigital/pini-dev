@@ -212,7 +212,7 @@ def to_pascal(text):
         (str): converted text
     """
     _LOGGER.debug('TO PASCAL %s', text)
-    _tokens = [_token for _token in re.split(r'[ \-_\[\]\n]', text) if _token]
+    _tokens = [_token for _token in re.split(r'[ \-_\[\]\n:]', text) if _token]
     _LOGGER.debug(' - TOKENS %s', _tokens)
     _result = ''.join([_token[0].upper()+_token[1:] for _token in _tokens])
     _LOGGER.debug(' - RESULT %s', _result)

@@ -55,6 +55,11 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     _type = sg_handler.find_one(
         'PublishedFileType', filters=[('code', 'is', _code)])
 
+    # Obtain user data
+    _user_data = sg_user.to_user_data()
+    _LOGGER.debug(' - USER DATA %s', _user_data)
+    assert _user_data
+
     # Build data
     _data = {
         'code': output.filename,
@@ -67,7 +72,7 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
         'published_file_type': _type,
         'task': sg_task.to_task_data(output),
         'sg_status_list': status,
-        'updated_by': sg_user.to_user_data(),
+        'updated_by': _user_data,
         'version_number': output.ver_n,
     }
     if not _existing_id:

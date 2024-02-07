@@ -138,7 +138,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         # Safety checks (avoid comparing binary)
         assert self.exists()
-        assert _other.exists()
+        if not _other.exists():
+            raise OSError('Missing file '+_other.path)
         if self.matches(_other):
             raise RuntimeError("Files are identical")
         if check_extn and self.extn not in [

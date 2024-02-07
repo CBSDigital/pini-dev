@@ -138,7 +138,6 @@ class PRNotes(object):
         """
         _vers = repo.find_versions()
         _prev = _vers[-2]
-        assert ver == _vers[-1]
 
         _lines = [
             '<b>Repo</b>: {}'.format(repo.name),

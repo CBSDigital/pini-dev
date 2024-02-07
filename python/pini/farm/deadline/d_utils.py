@@ -5,14 +5,12 @@ import logging
 import os
 
 from pini import icons
-from pini.utils import File, single, to_str
+from pini.utils import single, to_str, get_user
 
 _LOGGER = logging.getLogger(__name__)
 
 ICON = icons.find('Balloon')
-DEADLINE_CMD = os.environ.get('PINI_DEADLINE_CMD')
-if DEADLINE_CMD:
-    DEADLINE_CMD = File(DEADLINE_CMD)
+_USE_DEADLINE_SORTING = bool(os.environ.get('PINI_DEADLINE_USE_SORTING', False))
 _INIT_PY = os.environ.get('PINI_DEADLINE_INIT_PY', 'pass')
 
 
@@ -27,6 +25,8 @@ def info_key_sort(key):
     Returns:
         (tuple): sort key
     """
+    if not _USE_DEADLINE_SORTING:
+        return key
     _list = [
         'Plugin', '\ufeffPlugin', 'Name', 'BatchName', 'Comment', 'Pool',
         'SecondaryPool', 'MachineLimit', 'Priority', 'OnJobComplete',
@@ -60,6 +60,8 @@ def job_key_sort(key):
     Returns:
         (tuple): sort key
     """
+    if not _USE_DEADLINE_SORTING:
+        return key
     _list = [
         'Animation', 'RenderSetupIncludeLights', 'Renderer',
         'UsingRenderLayers', 'RenderLayer', 'RenderHalfFrames',
@@ -99,9 +101,42 @@ def read_job_ids(result):
         (str list): job ids
     """
     return [
-        _line[len('JobID='):]
+        _line[len('JobID='):].strip()
         for _line in result.split('\n')
         if _line.startswith('JobID=')]
+
+
+def setup_deadline_submit(group=None, paths=None, verbose=0):
+    """Setup deadline ready for submission.
+
+    Args:
+        group (str): apply default group
+        paths (str): paths to append to sys.path
+        verbose (int): print process data
+    """
+
+    # Apply group
+    if group:
+        os.environ['PINI_DEADLINE_GROUP'] = group
+
+    # Set startup code
+    if paths:
+        _lines = []
+        _lines += [
+            'import sys',
+            'for _path in [']
+        for _path in paths:
+            _lines += ['        "{}",'.format(_path)]
+        _lines += [
+            ']:',
+            '    sys.path.append(_path)']
+        _lines += [
+            'import pini_startup',
+            'pini_startup.init(user="{}")'.format(get_user())]
+        _py = '\n'.join(_lines)
+        os.environ['PINI_DEADLINE_INIT_PY'] = _py
+        if verbose:
+            print('DEADLINE INIT PY:\n'+_py)
 
 
 def wrap_py(py, name, work=None, maya=False):
@@ -116,6 +151,8 @@ def wrap_py(py, name, work=None, maya=False):
     Returns:
         (str): wrapped python
     """
+
+    # Check init py is valid
     ast.parse(py)
 
     # Add header
@@ -184,7 +221,7 @@ def wrap_py(py, name, work=None, maya=False):
     if maya:
         _lines += ['        cmds.quit(exitCode=1, force=True)']
     else:
-        _lines += ['        sys.exit()']
+        _lines += ['        raise _exc']
     _lines += [
         '',
         '    _LOGGER.info("COMPLETE")',

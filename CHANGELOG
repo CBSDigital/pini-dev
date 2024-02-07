@@ -1,3 +1,71 @@
+## [0.60.0] - Tue 2024-02-06 17:21
+### Summary
+ - Pini Helper,
+    - allow vray deadline submit,
+### Updated
+ - pini.utils.check_logging_level added,
+ - pini.utils.File.diff better error on missing file,
+ - pini.utils.Seq.to_range better error on no frames,
+ - pini.utils.Image.convert added non-exr handling using qt,
+ - pini.utils.to_pascal added : to splitters,
+ - pini.dcc.find_export_handler allow type/name match,
+ - pini.dcc.CMayaLocalRender renamed to Maya Local Arnold,
+ - pini.dcc.CMayaFarmRender better stretch for layers,
+ - pini.dcc.CMayaFarmRender added vray handling,
+ - pini.pipe.CPWork.find_outputs use masterLayer image if available,
+ - pini.qt read_layout_contents/read_layout_stretch added,
+ - pini.farm.deadline allow non-deadline key sorting in info/job files,
+ - pini.farm.deadline update job errors on missing output,
+ - pini.farm.deadline added vray handling,
+ - pini.tools.helper bugfix not saving render handler + applied save setting on change,
+ - maya_pini.utils.to_render_extn added,
+ - maya_pini.utils.render_frame error if renderer not arnold,
+
+
+## [0.59.0] - Fri 2024-02-02 08:04
+### Summary
+ - Pini Helper,
+    - bugfix bad colspace on blast (nle),
+### Updated
+ - pini.utils.Image.convert added,
+ - pini.dcc.CMayaLocalRender use CCWork.update_outputs for thumb handing,
+ - pini.pipe.CPwork._read_outputs check image allows format conversion,
+ - pini.tools.helper bugfix error on select Export/Submit tab,
+ - maya_pini.utils.blast bugfix not matching colspace on duplicate image plane,
+ - maya_pini.utils.blast force tmp model editor naming BlastEditor,
+ - maya_pini.utils.render default col mgt on for jpg otherwise off,
+ - maya_pini.ui.MODEL_EDITOR_ATTRS added cmEnabled/viewTransformName,
+
+
+## [0.58.0] - Wed 2024-01-31 08:13
+### Summary
+ - Pini Helper,
+    - maya abc cache on deadline working,
+    - maya render bugfix update job dependencies,
+### Updated
+ - pini.farm.set_farm deprecated,
+ - pini.farm.deadline bugfix newlines in submitted job ids,
+ - pini.farm.deadline.submit_maya_cache_job moved confirm dialog to m_pipe.cache,
+ - pini.farm.CDMayaPyJob disabled strict error checking,
+ - pini.farm.IS_AVAILABLE updated,
+ - pini.tools.helper maya hide cache farm option if no farm available,
+ - pini.tools.usage no usage in batch mode,
+ - maya_pini.m_pipe.cache applied version_up/snapshot to farm mode,
+
+
+## [0.57.0] - Wed 2024-01-31 02:08
+### Summary
+ - Pini Helper,
+    - maya cache added version up + take snapshot options,
+### Updated
+ - pini.farm.deadline.PINI_DEADLINE_CMD retired,
+ - pini.farm.deadline.setup_deadline_submit added for group/paths,
+ - pini.farm.deadline.CDPyJob raise exc on py fail not sys.exit,
+ - pini.farm.deadline.CDJob better error on no cur job for submit files,
+ - pini.tools.helper no save for render handler element,
+ - pini.tools.helper abc cache added version up + snapshot,
+ - maya_pini.m_pipe.cache added version_up/snapshot args,
+
 
 ## [0.56.0] - Tue 2024-01-30 06:59
 ### Summary

@@ -11,7 +11,7 @@ from pini.utils import File, single, find_exe, system, check_heart
 _LOGGER = logging.getLogger(__name__)
 
 
-def _apply_globals_settings(path, col_mgt=True, animation=False):
+def _apply_globals_settings(path, col_mgt=None, animation=False):
     """Apply settings to render global nodes.
 
     Args:
@@ -19,16 +19,22 @@ def _apply_globals_settings(path, col_mgt=True, animation=False):
         col_mgt (bool): apply colour management
         animation (bool): apply animation settings
     """
+
+    # Determine col management
+    _col_mgt = col_mgt
+    if _col_mgt is None:
+        _col_mgt = {'jpg': True}.get(path.extn, False)
+
     cmds.setAttr("defaultArnoldRenderOptions.abortOnError", False)
     cmds.setAttr("defaultArnoldRenderOptions.abortOnLicenseFail",
                  True)  # Avoid watermark
     cmds.setAttr("defaultArnoldDriver.mergeAOVs", True)
     _extn = {'jpg': 'jpeg'}.get(path.extn, path.extn)
     cmds.setAttr('defaultArnoldDriver.aiTranslator', _extn, type='string')
-    cmds.setAttr("defaultArnoldDriver.colorManagement", int(col_mgt))
+    cmds.setAttr("defaultArnoldDriver.colorManagement", int(_col_mgt))
     cmds.setAttr('defaultArnoldDriver.prefix',
                  "{}/{}".format(path.dir, path.base), type='string')
-    _LOGGER.debug(' - COL MGT %d', col_mgt)
+    _LOGGER.debug(' - COL MGT %d', _col_mgt)
 
     cmds.setAttr("defaultRenderGlobals.animation", animation)
     if animation:
@@ -40,11 +46,9 @@ def _apply_globals_settings(path, col_mgt=True, animation=False):
 
 
 def render_frame(
-        file_, camera=None, layer='defaultRenderLayer', col_mgt=True,
-        res=None, mode='mel',
-        pre_frame=None, pre_frame_mel=None,
-        post_frame=None, post_frame_mel=None,
-        force=False):
+        file_, camera=None, layer='defaultRenderLayer', col_mgt=None,
+        res=None, mode='mel', pre_frame=None, pre_frame_mel=None,
+        post_frame=None, post_frame_mel=None, force=False):
     """Render a frame to disk.
 
     Args:
@@ -61,6 +65,10 @@ def render_frame(
         force (bool): overwrite without confirmation
     """
     from maya_pini import open_maya as pom
+
+    _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+    if _ren != 'arnold':
+        raise NotImplementedError(_ren)
 
     _LOGGER.debug('RENDER FRAME force=%d', force)
     cmds.loadPlugin('mtoa', quiet=True)
@@ -286,3 +294,25 @@ def render(
     assert seq.exists()
     if view:
         seq.view()
+
+
+def to_render_extn():
+    """Read render extension based on current renderer.
+
+    Returns:
+        (str): render extn (eg. jpg/exr)
+    """
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _fmt = None
+    if _ren == 'arnold':
+        if cmds.objExists('defaultArnoldDriver'):
+            _fmt = cmds.getAttr('defaultArnoldDriver.aiTranslator')
+            if _fmt == 'jpeg':
+                _fmt = 'jpg'
+    elif _ren == 'vray':
+        if cmds.objExists('vraySettings'):
+            _fmt = cmds.getAttr("vraySettings.imageFormatStr")
+    else:
+        _LOGGER.warning('Renderer not implemented %s', _ren)
+
+    return _fmt

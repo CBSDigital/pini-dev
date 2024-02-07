@@ -9,18 +9,21 @@ import six
 from maya import cmds
 from maya.app.general import createImageFormats
 
-from pini.utils import Seq, str_to_ints, File, TMP, single
+from pini.utils import Seq, str_to_ints, File, TMP, single, safe_zip
 
-from . import mu_dec
+from .mu_dec import reset_ns
+from .mu_namespace import del_namespace, set_namespace
 
 _LOGGER = logging.getLogger(__name__)
 _BLAST_TMP_NS = os.environ.get('PINI_BLAST_TMP_NAMESPACE', 'BlastTmp')
 
 
+@reset_ns
 def _build_tmp_blast_cam(cam):
     """Build tmp camera.
 
-    This allows camera settings to changed without affecting the scene camera.
+    This allows camera settings to be changed without affecting the
+    scene camera.
 
     NOTE: originally this was having its transforms reset, but resetting the
     scale was affecting the clipping planes, so this was removed.
@@ -33,11 +36,28 @@ def _build_tmp_blast_cam(cam):
     """
     from maya_pini import open_maya as pom
 
+    set_namespace(":"+_BLAST_TMP_NS)
+
+    # Duplicate camera + move dulplicate to world
     _src = pom.CCamera(cam)
     _cam = _src.duplicate(upstream_nodes=True)
     for _plug in _cam.tfm_plugs:
         _plug.set_locked(False)
     _src.parent_constraint(_cam)
+
+    # Fix any image place colspaces - it seems these are not necessarily
+    # made to match on duplicate
+    for _src_plane, _cam_plane in safe_zip(
+            _src.shp.find_incoming(
+                type_='imagePlane', plugs=False, connections=False),
+            _cam.shp.find_incoming(
+                type_='imagePlane', plugs=False, connections=False),
+    ):
+        _LOGGER.info(
+            ' - CHECK IMG PLANE COLSPACE %s %s', _src_plane, _cam_plane)
+        _space = _src_plane.shp.plug['colorSpace'].get_val()
+        _LOGGER.info('   - APPLY COLSPACE %s', _space)
+        _cam_plane.shp.plug['colorSpace'].set_val(_space)
 
     return _cam
 
@@ -61,7 +81,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     """
     from maya_pini import ui
 
-    _LOGGER.info('BUILD TMP VIEWPORT')
+    _LOGGER.info(' - BUILD TMP VIEWPORT BlastEditor')
     _width, _height = res
 
     # Clean existing
@@ -81,7 +101,8 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     # Build the window
     _window = cmds.window('BlastWindow', title='Blast Window')
     _form = cmds.formLayout()
-    _editor = cmds.modelEditor(camera=camera, **_editor_attrs)
+    _editor = cmds.modelEditor('BlastEditor', camera=camera, **_editor_attrs)
+    _LOGGER.info(' - CREATED NEW EDITOR %s', _editor)
     cmds.formLayout(
         _form, edit=True,
         attachForm=[
@@ -162,6 +183,7 @@ def _exec_blast(
     if cleanup:
         cmds.deleteUI(_tmp_window)
         cmds.delete(_tmp_cam)
+        del_namespace(':'+_BLAST_TMP_NS, force=True)
 
     _fmt_mgr.popRenderGlobals()
 
@@ -251,7 +273,6 @@ def _to_res(res, is_video):
     return _res
 
 
-@mu_dec.get_ns_cleaner(':'+_BLAST_TMP_NS, delete=True)
 def blast(
         clip, camera=None, range_=None, settings='As is', res='Full',
         use_scene_audio=True, view=False, cleanup=True, burnins=False,

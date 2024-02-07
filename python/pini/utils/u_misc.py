@@ -47,6 +47,18 @@ class SimpleNamespace(object):
 EMPTY = SimpleNamespace(name='EMPTY')
 
 
+def check_logging_level():
+    """Make sure logging level is not set globally to debug.
+
+    This is used to avoid having nefarious code set logging level to
+    debug globally, which can cause pini to spew out (almost) endless
+    debugging logging.
+    """
+    _logger = logging.getLogger()
+    if _logger.level < logging.INFO:
+        _logger.setLevel(logging.INFO)
+
+
 def basic_repr(obj, label, show_nice_id=None, separator=':'):
     """Basic object __repr__ function.
 

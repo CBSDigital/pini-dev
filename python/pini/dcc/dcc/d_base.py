@@ -198,10 +198,13 @@ class BaseDCC(object):
             _refs.append(_ref)
         return sorted(_refs)
 
-    def find_export_handler(self, action=None, filter_=None, catch=False):
+    def find_export_handler(
+            self, match=None, action=None, filter_=None, catch=False):
         """Find an installed export handler.
 
         Args:
+            match (str): token to identify export handler
+                (eg. name/action/type)
             action (str): filter by export type (eg. publish/render)
             filter_ (str): filter by exporter name
             catch (bool): no error if no matching handler found
@@ -210,9 +213,31 @@ class BaseDCC(object):
             (CExportHandler): matching export handler
         """
         _handlers = self.find_export_handlers(action=action, filter_=filter_)
-        return single(
-            _handlers, catch=catch, verbose=1,
-            items_label='{} {} handlers'.format(self.NAME, action))
+        if len(_handlers) == 1:
+            return single(_handlers)
+
+        _action_match = single(
+            [_handler for _handler in _handlers if _handler.ACTION == match],
+            catch=True)
+        if _action_match:
+            return _action_match
+
+        _type_match = single(
+            [_handler for _handler in _handlers
+             if type(_handler).__name__ == match],
+            catch=True)
+        if _type_match:
+            return _type_match
+
+        _name_match = single(
+            [_handler for _handler in _handlers if _handler.NAME == match],
+            catch=True)
+        if _name_match:
+            return _name_match
+
+        if catch:
+            return None
+        raise ValueError(_handlers)
 
     def find_export_handlers(self, action=None, filter_=None):
         """Find render handlers for this dcc.

@@ -19,6 +19,7 @@ MODEL_EDITOR_ATTRS = [
     'controlVertices',
     'controllers',
     'clipGhosts',
+    'cmEnabled',
     'deformers',
     'dimensions',
     'displayAppearance',
@@ -55,6 +56,7 @@ MODEL_EDITOR_ATTRS = [
     'strokes',
     'textures',
     'wireframeOnShaded',
+    'viewTransformName',
 ]
 
 

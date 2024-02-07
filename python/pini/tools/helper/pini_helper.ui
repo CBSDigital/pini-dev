@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -502,7 +502,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -691,28 +691,6 @@
            <string>Cache</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_7">
-           <item row="2" column="0">
-            <widget class="QLabel" name="EntityTypeLabel_5">
-             <property name="minimumSize">
-              <size>
-               <width>75</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>To cache arbitrary geometry in your scene, create a set with _CSET suffix. This will prevent lookdev attach from working though - using cache_SET in a rig is better.</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_12">
              <item>
@@ -765,56 +743,6 @@
              </item>
             </layout>
            </item>
-           <item row="1" column="0">
-            <widget class="CListWidget" name="ECacheRefs">
-             <property name="selectionMode">
-              <enum>QAbstractItemView::ExtendedSelection</enum>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
-             </property>
-             <property name="selectionRectVisible">
-              <bool>false</bool>
-             </property>
-             <item>
-              <property name="text">
-               <string>horse</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>cat</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>dog</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>pig</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="ECache">
-             <property name="text">
-              <string>Cache</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="Line" name="line_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
            <item row="4" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
@@ -822,22 +750,6 @@
                <property name="spacing">
                 <number>1</number>
                </property>
-               <item>
-                <spacer name="verticalSpacer_3">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Minimum</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item>
                 <widget class="QCheckBox" name="ECacheRenderableOnly">
                  <property name="minimumSize">
@@ -901,6 +813,66 @@
                  </property>
                  <property name="text">
                   <string>write UVs</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Minimum</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="ECacheSnapshot">
+                 <property name="minimumSize">
+                  <size>
+                   <width>90</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>take snapshot</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="ECacheVersionUp">
+                 <property name="minimumSize">
+                  <size>
+                   <width>90</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>version up</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -1328,6 +1300,78 @@
              </item>
             </layout>
            </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="EntityTypeLabel_5">
+             <property name="minimumSize">
+              <size>
+               <width>75</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>To cache arbitrary geometry in your scene, create a set with _CSET suffix. This will prevent lookdev attach from working though - using cache_SET in a rig is better.</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="Line" name="line_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="CListWidget" name="ECacheRefs">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::ExtendedSelection</enum>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="selectionRectVisible">
+              <bool>false</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>horse</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>cat</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>dog</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>pig</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QPushButton" name="ECache">
+             <property name="text">
+              <string>Cache</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
          <widget class="QWidget" name="ERenderTab">
@@ -1335,46 +1379,110 @@
            <string>Render</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_8">
-           <property name="verticalSpacing">
-            <number>8</number>
-           </property>
-           <item row="6" column="0">
-            <spacer name="ERenderStretch">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>327</width>
-               <height>354</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="ERender">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Render</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="Line" name="line">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
-            <layout class="QHBoxLayout" name="ERenderHandlerLayout">
-             <property name="spacing">
-              <number>0</number>
-             </property>
+            <layout class="QVBoxLayout" name="ERenderTabLayout" stretch="0,0,0,0,1,0">
              <item>
-              <widget class="QLabel" name="label_9">
+              <layout class="QHBoxLayout" name="ERenderHandlerLayout">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_9">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Render Handler  </string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="CComboBox" name="ERenderHandler">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="editable">
+                  <bool>false</bool>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Maya Deadline</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Maya Viewport</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::MinimumExpanding</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="ERenderHandlerIcon">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Displays icon for current render handler</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.0008.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.0008.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="ERenderHandlerDesc">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
@@ -1388,206 +1496,130 @@
                 </size>
                </property>
                <property name="text">
-                <string>Render Handler  </string>
+                <string>Description of render handler - some text which describes how the render handler works. This can be quite long, so it needs to wrap. It can just go on and on, theoretically. It should affect the width of CarbHelper though.</string>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="CComboBox" name="ERenderHandler">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="editable">
-                <bool>false</bool>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Maya Deadline</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Maya Viewport</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
+              <widget class="Line" name="line">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="ERenderHandlerIcon">
-               <property name="maximumSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Displays icon for current render handler</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>../../../../../pini-icons/icons/android_12l/icon.0008.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.0008.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="flat">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item row="3" column="0">
-            <layout class="QHBoxLayout" name="ProfilePane_4" stretch="0,0,0,0,0">
-             <property name="spacing">
-              <number>2</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="ProfileLabel_7">
-               <property name="minimumSize">
-                <size>
-                 <width>60</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>60</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Frames</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
               </widget>
              </item>
              <item>
-              <widget class="CComboBox" name="ERenderFrames">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
+              <layout class="QHBoxLayout" name="ProfilePane_4" stretch="0,0,0,0,0">
+               <property name="spacing">
+                <number>2</number>
                </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="editable">
+               <item>
+                <widget class="QLabel" name="ProfileLabel_7">
+                 <property name="minimumSize">
+                  <size>
+                   <width>60</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Frames</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="CComboBox" name="ERenderFrames">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="editable">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="ERenderFramesLabel">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>1-10</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="ERenderFramesText"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="ERenderFramesReset">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Reread render frames</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.3140.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3140.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="ERenderLayout"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="ERender">
+               <property name="enabled">
                 <bool>false</bool>
                </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="ERenderFramesLabel">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
                <property name="text">
-                <string>1-10</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="ERenderFramesText"/>
-             </item>
-             <item>
-              <widget class="QPushButton" name="ERenderFramesReset">
-               <property name="maximumSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Reread render frames</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>../../../../../pini-icons/icons/android_12l/icon.3140.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3140.png</iconset>
-               </property>
-               <property name="iconSize">
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="flat">
-                <bool>true</bool>
+                <string>Render</string>
                </property>
               </widget>
              </item>
             </layout>
-           </item>
-           <item row="4" column="0">
-            <layout class="QVBoxLayout" name="ERenderLayout"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="ERenderHandlerDesc">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Description of render handler - some text which describes how the render handler works. This can be quite long, so it needs to wrap. It can just go on and on, theoretically. It should affect the width of CarbHelper though.</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>

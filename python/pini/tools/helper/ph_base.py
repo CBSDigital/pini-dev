@@ -123,6 +123,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         ]:
             _elem.disable_save_settings = True
 
+        self.ui.ERenderHandler.save_policy = qt.SavePolicy.SAVE_ON_CHANGE
+
     @property
     def job(self):
         """Obtain selected job.

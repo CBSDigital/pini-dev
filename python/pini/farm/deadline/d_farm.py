@@ -4,7 +4,7 @@ import logging
 import time
 
 from pini import pipe, qt
-from pini.utils import system, single, to_str, safe_zip, cache_result
+from pini.utils import system, single, to_str, safe_zip, cache_result, find_exe
 
 from .. import base
 from . import d_job, d_utils
@@ -25,7 +25,7 @@ class CDFarm(base.CFarm):
         Returns:
             (str list): groups
         """
-        return system([d_utils.DEADLINE_CMD, '-Groups']).split()
+        return system([find_exe('deadlinecommand'), '-Groups']).split()
 
     def submit_job(self, job):
         """Submit a job to the farm.
@@ -67,8 +67,9 @@ class CDFarm(base.CFarm):
         _LOGGER.info(' - SUB FILE %s', _sub_file.path)
 
         # Execute submission
-        assert d_utils.DEADLINE_CMD and d_utils.DEADLINE_CMD.exists()
-        _cmds = [d_utils.DEADLINE_CMD, _sub_file]
+        _deadline_cmd = find_exe('deadlinecommand')
+        assert _deadline_cmd
+        _cmds = [_deadline_cmd, _sub_file]
         _cmds = [to_str(_cmd) for _cmd in _cmds]
         _LOGGER.debug(' - CMDS %s', ' '.join(_cmds))
         if submit:
@@ -145,11 +146,6 @@ class CDFarm(base.CFarm):
         _progress.set_pc(100)
         _progress.close()
 
-        qt.notify(
-            'Submitted {:d} caches to deadline.\n\nBatch name:\n{}'.format(
-                len(_cbls), _batch),
-            title='Cache Submitted', icon=d_utils.ICON)
-
         return _cache_jobs + [_update_job]
 
     def submit_maya_render(
@@ -178,7 +174,7 @@ class CDFarm(base.CFarm):
         _batch = _work.base
         _lyrs = pom.find_render_layers(renderable=True)
 
-        _work.save(force=force, reason='deadline render')
+        _work.save(force=True, reason='deadline render')
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')
@@ -335,6 +331,8 @@ def _build_update_job_py(outputs, metadata, work):
                 '# Update metadata',
                 '_metadata = {}'.format(metadata),
                 'for _out in _outs:',
+                '    if not _out.exists():',
+                '        raise RuntimeError(_out.path)',
                 '    _out.set_metadata(_metadata)',
                 '']
 

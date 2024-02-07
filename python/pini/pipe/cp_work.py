@@ -15,7 +15,7 @@ import six
 from pini import dcc, icons
 from pini.utils import (
     File, strftime, HOME, cache_property, to_time_f, get_user,
-    passes_filter, single, EMPTY, abs_path, Video, Seq)
+    passes_filter, single, EMPTY, abs_path, Video, Seq, Image)
 
 from .cp_work_dir import CPWorkDir
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
@@ -414,7 +414,9 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         Args:
             outputs (CPOutput list): outputs from this work file
         """
+        _LOGGER.debug(' - CHECK IMAGE')
         if self.image.exists():
+            _LOGGER.debug(' - IMAGE EXISTS')
             return
 
         # Check videos
@@ -428,15 +430,20 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             return
 
         # Check seqs
-        _seqs = [_out for _out in outputs if isinstance(_out, Seq)]
+        _seqs = sorted(
+            [_out for _out in outputs if isinstance(_out, Seq)],
+            key=_out_seq_img_sort)
         if _seqs:
             _seq = _seqs[0]
             _LOGGER.info(' - EXTRACT FRAME %s', _seq)
-            if _seq.extn == 'jpg':
-                _frame = _seq.to_frame_file()
+            _frame = _seq.to_frame_file()
+            if _frame.extn == 'jpg':
                 _LOGGER.info(' - FRAME %s', _frame)
                 _frame.copy_to(self.image)
                 assert self.image.exists()
+            else:
+                Image(_frame).convert(self.image)
+            return
 
     def save(self, notes=None, reason=None, mtime=None, parent=None,
              force=None):
@@ -610,7 +617,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         if dcc.NAME == 'hou':
             import hou
-            hou.putenv('JOB', self.job.path)
+            hou.putenv('JOB', self.job.path)  # pylint: disable=c-extension-no-member
 
         for _, _callback in sorted(_SET_WORK_CALLBACKS.items()):
             _callback(self)
@@ -882,6 +889,18 @@ def recent_work():
             continue
         _works.append(_work)
     return _works
+
+
+def _out_seq_img_sort(seq):
+    """Sort for output sequences to priorities certain layers.
+
+    Args:
+        seq (CPOutputSeq): output to sort
+
+    Returns:
+        (tuple): sort key
+    """
+    return seq.output_name in ['masterLayer', 'defaultRenderLayer'], seq.path
 
 
 def to_work(file_, catch=True):

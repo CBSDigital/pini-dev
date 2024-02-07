@@ -244,6 +244,8 @@ class CDPyJob(CDJob):
 
         # Setup python
         self.py = d_utils.wrap_py(py, name=self.name) if wrap_py else py
+        if not self.job:
+            raise RuntimeError('No current job found')
         self.py_file = File(tmp_py or self._to_submission_file(extn='py'))
         if edit_py:
             self.py_file.edit()

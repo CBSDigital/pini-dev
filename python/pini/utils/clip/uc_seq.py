@@ -427,6 +427,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             (tuple): start/end frames
         """
         _frames = self.to_frames(force=force)
+        if not _frames:
+            raise OSError('No frames found '+self.path)
         return _frames[0], _frames[-1]
 
     def to_res(self):

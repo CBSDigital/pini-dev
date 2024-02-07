@@ -13,6 +13,27 @@ _LOGGER = logging.getLogger(__name__)
 class Image(File):
     """Represents an image file on disk."""
 
+    def convert(self, file_, force=False):
+        """Convert this image to a different format.
+
+        Args:
+            file_ (File): target file
+            force (bool): overwrite existsing without confirmation
+        """
+        _file = File(file_)
+        assert _file != self
+        _LOGGER.info('CONVERT %s -> %s', self.extn, _file.extn)
+        _fmts = {self.extn.lower(), _file.extn.lower()}
+        if self.extn == _file.extn:
+            self.copy_to(_file, force=force)
+        elif 'exr' in _fmts:
+            _convert_file_ffmpeg(self, _file)
+        elif not _fmts - {'png', 'webp', 'jpg', 'jpeg'}:
+            _convert_file_qt(self, _file, force=force)
+        else:
+            raise NotImplementedError(
+                'Convert {} -> {}'.format(self.extn, _file.extn))
+
     def to_aspect(self):
         """Obtain aspect ration of this image.
 
@@ -107,3 +128,32 @@ class Image(File):
         from pini import qt
         _pix = qt.CPixmap(self.path)
         return _pix.width(), _pix.height()
+
+
+def _convert_file_ffmpeg(src, trg, force=False):
+    """Convert image file to a different format using ffmpeg.
+
+    Args:
+        src (File): source file
+        trg (File): output file
+        force (bool): replace existing without confirmation
+    """
+    _ffmpeg = find_exe('ffmpeg')
+    trg.delete(force=force, wording='replace')
+    _cmds = [_ffmpeg, '-i', src, trg]
+    assert not trg.exists()
+    system(_cmds, verbose=1)
+    assert trg.exists()
+
+
+def _convert_file_qt(src, trg, force=False):
+    """Convert image file to a different format using qt.
+
+    Args:
+        src (File): source file
+        trg (File): output file
+        force (bool): replace existing without confirmation
+    """
+    from pini import qt
+    trg.delete(force=force, wording='replace')
+    qt.CPixmap(src).save_as(trg)

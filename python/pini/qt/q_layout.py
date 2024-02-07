@@ -49,3 +49,32 @@ def find_layout_widgets(layout):
         if _lyt:
             _widgets += find_layout_widgets(_lyt)
     return _widgets
+
+
+def read_layout_contents(layout):
+    """Read contents of the given layout.
+
+    Args:
+        layout (QLayout): layout to read
+
+    Returns:
+        (list): objects in layout
+    """
+    _objs = []
+    for _idx in range(layout.count()):
+        _item = layout.itemAt(_idx)
+        _obj = _item.widget() or _item.layout() or _item.spacerItem()
+        _objs.append(_obj)
+    return _objs
+
+
+def read_layout_stretch(layout):
+    """Read layout stretch settings.
+
+    Args:
+        layout (QLayout): layout to read
+
+    Returns:
+        (int list): stretch settings for each item
+    """
+    return [layout.stretch(_idx) for _idx in range(layout.count())]

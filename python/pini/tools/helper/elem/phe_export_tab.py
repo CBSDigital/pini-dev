@@ -87,10 +87,15 @@ class CLExportTab(object):
         self.ui.ECacheRefs.set_items([], emit=False)
 
     def _redraw__ERenderHandler(self):
+        _val = self.settings.value('widgets/ERenderHandler')
+        _LOGGER.debug('REDRAW ERenderHandler %s', _val)
         _handlers = dcc.find_export_handlers('render')
         self.ui.ERenderHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers)
+            data=_handlers, select=_val)
+        _LOGGER.debug(
+            ' - BUILD RENDER HANDLERS %s',
+            self.ui.ERenderHandler.selected_data())
 
     def _redraw__ERender(self):
         _handler = self.ui.ERenderHandler.selected_data()
@@ -181,7 +186,7 @@ class CLExportTab(object):
                 raise ValueError(_ver)
 
             # Add output
-            _item = phe_output_item.OutputItem(
+            _item = phe_output_item.PHOutputItem(
                 list_view=self.ui.ESubmitOutputs,
                 output=_out, helper=self, highlight=not _submitted)
             _items.append(_item)

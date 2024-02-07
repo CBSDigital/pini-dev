@@ -11,7 +11,7 @@ import tempfile
 import six
 
 from ..u_error import DebuggingError
-from ..u_misc import dprint, lprint
+from ..u_misc import dprint, lprint, check_logging_level
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -118,6 +118,7 @@ def abs_path(path, win=False, root=None):
         (str): absolute path
     """
     from .up_path import Path
+    check_logging_level()
 
     # Get/check path string
     _path = path

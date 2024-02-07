@@ -4,7 +4,7 @@ import logging
 import platform
 import time
 
-from pini import icons, qt, pipe
+from pini import icons, qt, pipe, farm
 from pini.tools import usage
 from pini.utils import wrap_fn, MaFile
 
@@ -18,8 +18,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
     """Pini Helper in maya which docks to the main ui."""
-
-    init_ui = ph_base.BasePiniHelper.init_ui
 
     def __init__(self, admin=None, load_settings=True, jump_to=None,
                  parent=None, show=True, reset_cache=True):
@@ -55,6 +53,16 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
         self.apply_docking()
         _LOGGER.debug(' - LAUNCH COMPLETE')
 
+    def init_ui(self):
+        """Setup ui elements."""
+        ph_base.BasePiniHelper.init_ui(self)
+
+        # Apply farm option if available
+        _locs = ['Local']
+        if farm.IS_AVAILABLE:
+            _locs.append('Farm')
+        self.ui.ECacheLocation.set_items(_locs)
+
     def _redraw__ECacheRefs(self):
 
         _cacheables = m_pipe.find_cacheables()
@@ -83,12 +91,15 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
         _step = self.ui.ECacheStep.value()
         _uv_write = self.ui.ECacheUvWrite.isChecked()
         _world_space = self.ui.ECacheWorldSpace.isChecked()
+        _version_up = self.ui.ECacheVersionUp.isChecked()
+        _snapshot = self.ui.ECacheSnapshot.isChecked()
         _LOGGER.info(' - CACHEABLES %s', _cacheables)
 
         m_pipe.cache(
             _cacheables, format_=_format, world_space=_world_space,
             uv_write=_uv_write, range_=_rng, force=force, save=save,
-            step=_step, renderable_only=_renderable_only, use_farm=_farm)
+            step=_step, renderable_only=_renderable_only, use_farm=_farm,
+            version_up=_version_up, snapshot=_snapshot)
         self.entity.find_outputs(force=True)
 
     def _add_load_ctx_opts(self, menu, work=None):

@@ -10,6 +10,7 @@ from pini import pipe, dcc
 from pini.utils import File, Dir, abs_path, to_str
 
 from maya_pini import open_maya as pom, ref
+from maya_pini.utils import to_render_extn
 
 from . import d_job, d_utils
 
@@ -199,10 +200,7 @@ class CDMayaRenderJob(_CDMayaJob):
         self.layer = layer
         assert camera
 
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-        _fmt = cmds.getAttr('defaultArnoldDriver.aiTranslator')
-        if _ren == 'arnold' and _fmt == 'jpeg':
-            _fmt = 'jpg'
+        _fmt = to_render_extn()
         _output = pipe.CACHE.cur_work.to_output(
             'render', output_name=self.layer, extn=_fmt, work=work)
         _name = '{} - {} - {}'.format(work.base, layer, camera)
@@ -242,22 +240,33 @@ class CDMayaRenderJob(_CDMayaJob):
         _imgs = cmds.workspace(fileRuleEntry='images')
         _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
         _output_file_path = output_file_path or _imgs_dir.path+'/'
+        _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
 
         _data = super(CDMayaRenderJob, self)._build_job_data(
             output_file_path=_output_file_path)
 
-        _data.update({
-            'ArnoldVerbose': '2',
+        _shared_data = {
             'FrameNumberOffset': '0',
             'LocalRendering': '0',
             'MaxProcessors': '0',
-            'MayaToArnoldVersion': '5',
             'RenderHalfFrames': '0',
             'RenderLayer': self.output.output_name,
-            'Renderer': 'arnold',
-            'StrictErrorChecking': '1',
-            'UsingRenderLayers': '1',
-        })
+            'Renderer': _ren,
+            'StrictErrorChecking': 'True',
+            'UsingRenderLayers': '1'}
+        _data.update(_shared_data)
+
+        # Add renderer specific data
+        _ren_data = {}
+        if _ren == 'Arnold':
+            _ren_data = {
+                'ArnoldVerbose': '2',
+                'MayaToArnoldVersion': '5'}
+        elif _ren == 'VRay':
+            pass
+        if _ren_data:
+            _data.update(_ren_data)
+
         return _data
 
 
@@ -313,7 +322,7 @@ class CDMayaPyJob(d_job.CDPyJob):
         _data['SceneFile'] = to_str(self.work)
         _data['ScriptFilename'] = self.py_file.path
         _data['ScriptJob'] = 'True'
-        _data['StrictErrorChecking'] = 'True'
+        _data['StrictErrorChecking'] = 'False'
         _data['Version'] = str(_ver)
         _data['UseLegacyRenderLayers'] = '0'
 
@@ -331,11 +340,20 @@ def _determine_img_prefix(work=None):
     """
     _work = work or pipe.cur_work()
     _imgs = cmds.workspace(fileRuleEntry='images')
+
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren == 'arnold':
+        _token = '<RenderLayer>'
+    elif _ren == 'vray':
+        _token = '<layer>'
+
     _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
     _tmpl = _work.find_template('render').apply_data(
         entity_path=_work.entity.path, task=_work.task, step=_work.step,
         work_dir=_work.work_dir.path, user=_work.user,
         entity=_work.entity.name, tag=_work.tag, ver=_work.ver)
+
     _img_prefix, _ = _imgs_dir.rel_path(_tmpl.pattern).replace(
-        '{output_name}', '<RenderLayer>').split('.%04d.', 1)
+        '{output_name}', _token).split('.%04d.', 1)
+
     return _img_prefix

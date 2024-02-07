@@ -69,10 +69,12 @@ def get_tracker(name=None, write_after=False, args=None):
 
             if write_after:
                 _result = func(*fn_args, **fn_kwargs)
-            try:
-                log_usage_event(name or func.__name__, args=_args)
-            except Exception as _exc:  # pylint: disable=broad-exception-caught
-                _LOGGER.info('WRITE USAGE FAILED "%s" (%s)', _exc, type(_exc))
+            if not dcc.batch_mode():
+                try:
+                    log_usage_event(name or func.__name__, args=_args)
+                except Exception as _exc:  # pylint: disable=broad-exception-caught
+                    _LOGGER.info(
+                        'WRITE USAGE FAILED "%s" (%s)', _exc, type(_exc))
             if not write_after:
                 _result = func(*fn_args, **fn_kwargs)
 

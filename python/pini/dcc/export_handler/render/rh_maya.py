@@ -10,7 +10,8 @@ from pini.tools import helper
 from pini.utils import TMP_PATH, strftime, Seq, cache_result, wrap_fn
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import render, find_render_cam, find_cams, to_audio
+from maya_pini.utils import (
+    render, find_render_cam, find_cams, to_audio, to_render_extn)
 
 from . import rh_base
 
@@ -58,6 +59,7 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
             name='Camera', items=_cams, val=_cam,
             disable_save_settings=True)
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
+        self.add_separator_elem()
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.
@@ -74,7 +76,7 @@ class CMayaLocalRender(CMayaRenderHandler):
     Facilities rendering to pipeline through the Render View window.
     """
 
-    NAME = 'Maya Local'
+    NAME = 'Maya Local Arnold'
 
     description = (
         'Renders the current scene locally to disk using the maya interface')
@@ -98,6 +100,8 @@ class CMayaLocalRender(CMayaRenderHandler):
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
 
+        self.layout.addStretch()
+
     def _callback__Mov(self):
         self.ui.Cleanup.setVisible(self.ui.Mov.isChecked())
 
@@ -113,7 +117,7 @@ class CMayaLocalRender(CMayaRenderHandler):
         _cleanup = self.ui.Cleanup.isChecked()
 
         # Determine output paths
-        _work = pipe.cur_work()
+        _work = pipe.CACHE.cur_work
         _output_name = _get_current_lyr()
         if _mov:
             if not _work.find_template('mov', catch=True):
@@ -146,15 +150,12 @@ class CMayaLocalRender(CMayaRenderHandler):
         # Execute render
         _work.save(reason='render')
         render(seq=_out_seq, frames=frames, camera=_cam)
-        _out_seq.to_frame_file().copy_to(_work.image)
         if _mov:
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
             if _cleanup:
                 _out_seq.delete(force=True)
-
-        if pipe.MASTER == 'shotgrid':
-            from pini.pipe import shotgrid
-            shotgrid.create_pub_file(_out)
+        if self.ui.View.isChecked():
+            _out.view()
 
         # Save metadata
         if _mov:
@@ -164,16 +165,11 @@ class CMayaLocalRender(CMayaRenderHandler):
             _data['range'] = _out.to_range(force=True)
         _out.set_metadata(_data, force=True)
 
-        if self.ui.View.isChecked():
-            _out.view()
-
-        # Update pini helper
-        _helper = helper.DIALOG
-        if _helper:
-            _helper.jump_to(_work)
-            assert _work == _helper.work
-            _work = _helper.work
-            _helper.ui.WWorkRefresh.click()
+        # Update pipeline
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file(_out)
+        _work.update_outputs()
 
 
 def _compile_video_with_scene_audio(seq, video):
@@ -213,13 +209,23 @@ class CMayaFarmRender(CMayaRenderHandler):
         _LOGGER.debug('BUILD UI')
         super(CMayaFarmRender, self).build_ui(parent=parent, layout=layout)
 
-        self.add_separator_elem()
-
         self.ui.Comment = self.add_lineedit_elem(
             name='Comment', disable_save_settings=True)
         self.ui.Priority = self.add_spinbox_elem(
             name='Priority', val=50)
         self.add_separator_elem()
+
+        self._build_layers_elem()
+
+        self.ui.HideImgPlanes = self.add_checkbox_elem(
+            name='HideImgPlanes', val=False,
+            label='Hide image planes',
+            tooltip='Hide image planes before submission')
+        self.add_separator_elem()
+
+    def _build_layers_elem(self):
+        """Build render layer selection element."""
+        _work = pipe.cur_work()
 
         # Build layers section
         _label = qt.CLabel('Layers')
@@ -228,32 +234,30 @@ class CMayaFarmRender(CMayaRenderHandler):
         self.ui.Layers = qt.CListWidget()
         self.ui.Layers.setObjectName('Layers')
         self.ui.Layers.setSelectionMode(QtWidgets.QListView.ExtendedSelection)
-        _work = pipe.cur_work()
+
+        # Build layer items
         _items = []
         _select = []
-        if cmds.objExists('defaultArnoldDriver'):
-            _fmt = pom.CPlug('defaultArnoldDriver.aiTranslator').get_val()
-            for _lyr in pom.find_render_layers():
-                _out = _work.to_output(
-                    'render', output_name=_lyr.pass_name, extn=_fmt)
-                _icon = helper.output_to_icon(_out)
-                _item = qt.CListWidgetItem(
-                    _lyr.pass_name, data=_lyr, icon=_icon)
-                if _lyr.is_renderable():
-                    _select.append(_lyr)
-                _items.append(_item)
+        _fmt = to_render_extn()
+        for _lyr in pom.find_render_layers():
+            if not _work or not _lyr.pass_name:
+                continue
+            _out = _work.to_output(
+                'render', output_name=_lyr.pass_name, extn=_fmt)
+            _icon = helper.output_to_icon(_out)
+            _item = qt.CListWidgetItem(
+                _lyr.pass_name, data=_lyr, icon=_icon)
+            if _lyr.is_renderable():
+                _select.append(_lyr)
+            _items.append(_item)
         self.ui.Layers.set_items(_items, select=_select)
         self.ui.Layers.setIconSize(qt.to_size(30))
         self.ui.Layers.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding)
-        self.layout.addWidget(self.ui.Layers)
+            QtWidgets.QSizePolicy.MinimumExpanding)
 
-        self.ui.HideImgPlanes = self.add_checkbox_elem(
-            name='HideImgPlanes', val=False,
-            label='Hide image planes',
-            tooltip='Hide image planes before submission')
-        self.add_separator_elem()
+        self.layout.addWidget(self.ui.Layers)
+        self.layout.setStretch(self.layout.count()-1, 1)
 
     def _callback__Layers(self):
         _sel_lyrs = self.ui.Layers.selected_datas()

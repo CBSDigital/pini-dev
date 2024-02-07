@@ -9,7 +9,7 @@ from pini.tools import sanity_check
 from pini.utils import single, plural, safe_zip, passes_filter
 
 from maya_pini import ref
-from maya_pini.utils import hide_img_planes
+from maya_pini.utils import hide_img_planes, restore_frame, blast_frame
 
 from . import mpc_ref, mpc_cam, mpc_cset
 
@@ -129,7 +129,8 @@ def _write_metadata(abcs, cacheables, range_, step, checks_data):
 def cache(
         cacheables, uv_write=True, world_space=True, format_='Ogawa',
         range_=None, step=1.0, save=True, clean_up=True, renderable_only=True,
-        checks_data=None, use_farm=False, force=False):
+        checks_data=None, use_farm=False, snapshot=False, version_up=False,
+        force=False):
     """Cache the current scene.
 
     Args:
@@ -140,10 +141,12 @@ def cache(
         range_ (tuple): override start/end frames
         step (float): step size in frames
         save (bool): save on cache
-        clean_up (bool): execute cleanup (on by default)
+        clean_up (bool): clean up tmp nodes after cache (on by default)
         renderable_only (bool): export only renderable (visible) geometry
         checks_data (dict): sanity checks data to apply
         use_farm (bool): cache using farm
+        snapshot (bool): take thumbnail snapshot on cache
+        version_up (bool): version up on cache
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -155,6 +158,7 @@ def cache(
     _range = range_ or dcc.t_range(int, expand=1)
     _checks_data = checks_data or sanity_check.launch_export_ui(
         'cache', force=force)
+    _updated = False
     assert _work
 
     # Warn on no cache template set up
@@ -172,18 +176,60 @@ def cache(
         range_=_range, force=force)
     if save and not dcc.batch_mode():
         _work.save(reason='cache', force=True)
+    if snapshot:
+        _take_snapshot(image=_work.image, frame=int(sum(_range)/2))
+        _updated = True
 
-    # Apply farm mode
+    # Execute cache
     if use_farm:
+        _flags = {
+            'uv_write': uv_write,
+            'world_space': world_space,
+            'format_': format_,
+            'range_': _range,
+            'renderable_only': renderable_only,
+            'step': step}
         farm.submit_maya_cache(
             cacheables=cacheables, save=False, checks_data=_checks_data,
-            flags={'uv_write': uv_write,
-                   'world_space': world_space,
-                   'format_': format_,
-                   'range_': range_,
-                   'renderable_only': renderable_only,
-                   'step': step})
-        return _abcs
+            flags=_flags)
+    else:
+        _exec_local_cache(
+            cacheables=cacheables, abcs=_abcs, job_args=_job_args, work=_work,
+            checks_data=_checks_data, range_=_range, step=step,
+            clean_up=clean_up)
+        _updated = True
+
+    # Post cache
+    if _updated:
+        _work.update_outputs()
+    if version_up:
+        pipe.version_up()
+    elif save and not dcc.batch_mode():
+        cmds.file(modified=False)  # Ignore cleanup changes
+
+    if use_farm:
+        qt.notify(
+            'Submitted {:d} caches to {}.\n\nBatch name:\n{}'.format(
+                len(cacheables), farm.NAME, _work.base),
+            title='Cache Submitted', icon=farm.ICON)
+
+    return _abcs
+
+
+def _exec_local_cache(
+        cacheables, abcs, work, checks_data, range_, step, job_args, clean_up):
+    """Exec cache locally.
+
+    Args:
+        cacheables (Cacheable list): items to cache
+        abcs (CPOutput list): output paths
+        work (CPWork): work file
+        checks_data (dict): sanity checks data
+        range_ (tuple): start/end frame
+        step (float): step size in frames
+        job_args (str): abc export args
+        clean_up (bool): clean up tmp nodes after cache (on by default)
+    """
 
     # Pre cache
     for _cbl in cacheables:
@@ -191,27 +237,36 @@ def cache(
 
     # Execute cache
     cmds.loadPlugin('AbcExport', quiet=True)
-    _LOGGER.info(' - cmds.AbcExport(jobArg=%s)', _job_args)
-    hide_img_planes(cmds.AbcExport)(jobArg=_job_args)
+    _LOGGER.info(' - cmds.AbcExport(jobArg=%s)', job_args)
+    hide_img_planes(cmds.AbcExport)(jobArg=job_args)
     _write_metadata(
-        abcs=_abcs, cacheables=cacheables, range_=range_,
-        checks_data=_checks_data, step=step)
+        abcs=abcs, cacheables=cacheables, range_=range_,
+        checks_data=checks_data, step=step)
 
     # Post cache
     if clean_up:
         for _cbl in cacheables:
             _cbl.post_cache()
+
+    # Register in shotgrid
     if pipe.SHOTGRID_AVAILABLE:
         from pini.pipe import shotgrid
-        _thumb = _work.image if _work.image.exists() else None
+        _thumb = work.image if work.image.exists() else None
         for _abc in qt.progress_bar(
-                _abcs, 'Registering {:d} abc{} in shotgrid'):
+                abcs, 'Registering {:d} abc{} in shotgrid'):
             shotgrid.create_pub_file(_abc, thumb=_thumb)
-    _work.update_outputs()
-    if save and not dcc.batch_mode():
-        cmds.file(modified=False)  # Ignore cleanup changes
 
-    return _abcs
+
+@restore_frame
+def _take_snapshot(frame, image):
+    """Take snapshot of the current scene.
+
+    Args:
+        frame (int): frame to take snapshot of
+        image (File): path to save snapshot to
+    """
+    cmds.currentTime(frame)
+    blast_frame(file_=image, force=True)
 
 
 def find_cacheable(filter_=None, type_=None, output_name=None, catch=False):
