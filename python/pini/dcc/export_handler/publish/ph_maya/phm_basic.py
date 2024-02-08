@@ -3,14 +3,15 @@
 import copy
 import logging
 
-from maya import cmds, mel
+from maya import cmds
 
 from pini import pipe, dcc
 from pini.utils import single
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
-    restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean)
+    restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean,
+    save_fbx)
 
 from . import phm_base
 
@@ -266,15 +267,7 @@ def _exec_export_fbx(work, metadata, constraints=True, force=False):
     _LOGGER.debug(' - FBX %s', _fbx.path)
 
     # Export fbx
-    _fbx.test_dir()
-    assert not _fbx.exists()
-    cmds.loadPlugin("fbxmaya", quiet=True)
-    mel.eval('FBXExportConstraints -v {:d}'.format(constraints))
-    cmds.FBXProperty('Export|AdvOptGrp|UI|ShowWarningsManager', '-v', 0)
-    cmds.file(
-        _fbx.path, options="v=0;", type="FBX export", preserveReferences=True,
-        exportSelected=True, force=True)
-    assert _fbx.exists()
+    save_fbx(_fbx, constraints=constraints, selection=True)
 
     _fbx.set_metadata(metadata)
 

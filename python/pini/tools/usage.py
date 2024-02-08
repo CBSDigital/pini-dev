@@ -17,7 +17,7 @@ import pini
 from pini import dcc
 from pini.utils import (
     File, Dir, cache_result, strftime, assert_eq, is_pascal, get_user,
-    read_func_kwargs, Seq)
+    read_func_kwargs, Seq, to_camel)
 
 _SESSION_START = time.time()
 _LOGGER = logging.getLogger(__name__)
@@ -230,14 +230,32 @@ def _read_mod_ver(mod, force=False):
     Returns:
         (PRVersion): release version
     """
+    _LOGGER.debug('READ MOD VER %s', mod)
     from pini.tools import release
 
-    _mod_dir = File(mod.__file__).to_dir()
-    assert_eq(_mod_dir.filename, mod.__name__)
-    _py_dir = _mod_dir.to_dir()
-    assert _py_dir.filename == 'python'
-    _root = _py_dir.to_dir()
-    return release.PRRepo(_root.path).version
+    # Check for env override to get mod dir
+    _mod_env = 'PINI_USAGE_{}_REPO_ROOT'.format(to_camel(mod.__name__).upper())
+    _LOGGER.debug(' - MOD ENV %s', _mod_env)
+    if _mod_env in os.environ:
+
+        _repo_root = os.environ[_mod_env]
+
+    else:
+        _mod_file = os.environ.get(_mod_env, mod.__file__)
+        _LOGGER.debug(' - MOD FILE %s', _mod_file)
+
+        _mod_dir = File(_mod_file).to_dir()
+        assert_eq(_mod_dir.filename, mod.__name__)
+        _py_dir = _mod_dir.to_dir()
+        assert _py_dir.filename == 'python'
+        _repo_root = _py_dir.to_dir().path
+
+    # Read version from repo
+    _LOGGER.debug(' - REPO ROOT %s', _repo_root)
+    _repo = release.PRRepo(_repo_root)
+    _LOGGER.debug(' - REPO %s %s', _repo, _repo.version)
+
+    return _repo.version
 
 
 _TRACKED_MODS = {pini.__name__: _read_mod_ver(pini)}

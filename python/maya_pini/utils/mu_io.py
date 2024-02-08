@@ -3,7 +3,7 @@
 import logging
 import os
 
-from maya import cmds
+from maya import cmds, mel
 
 from pini import icons
 from pini.utils import File, wrap_fn
@@ -313,3 +313,70 @@ def save_ass(geo, ass, force=False):
         boundingBox=True,
         cam='perspShape')
     assert _ass.exists()
+
+
+def _mel(cmd):
+    """Execute mel command.
+
+    Args:
+        cmd (str): mel command
+    """
+    _LOGGER.info(cmd)
+    mel.eval(cmd)
+
+
+def _bool_to_mel(val):
+    """Convert a boolean value to mel.
+
+    Args:
+        val (bool): value to convert
+
+    Returns:
+        (str): mel value
+    """
+    return {True: 'true', False: 'false'}[val]
+
+
+def save_fbx(
+        file_, selection=True, constraints=True, animation=False,
+        version='FBX201600', force=False):
+    """Save fbx file to disk.
+
+    Args:
+        file_ (File): file to save to
+        selection (bool): export selection
+        constraints (bool): export constraints
+        animation (bool): export animation
+        version (str): fbx version
+        force (bool): replace existing without confirmation
+    """
+
+    if not selection:
+        raise NotImplementedError
+
+    _file = File(file_)
+    _file.delete(wording='replace', force=force)
+    _file.test_dir()
+
+    cmds.loadPlugin("fbxmaya", quiet=True)
+
+    _mel('FBXResetExport')
+
+    cmds.FBXProperty('Export|AdvOptGrp|UI|ShowWarningsManager', '-v', 0)
+
+    _mel('FBXExportFileVersion -v "{}"'.format(version))
+    _mel('FBXExportSmoothingGroups -v true')
+    _mel('FBXExportShapes -v true')
+    _mel('FBXExportSkins -v true')
+    _mel('FBXExportTangents -v true')
+    _mel('FBXExportSmoothMesh -v false')
+
+    _mel('FBXExportBakeComplexAnimation -v {}'.format(_bool_to_mel(animation)))
+    _mel('FBXExportConstraints -v {}'.format(_bool_to_mel(constraints)))
+
+    # cmds.file(
+    #     _file.path, options="v=0;", type="FBX export",
+    #     preserveReferences=True, exportSelected=True, force=True)
+    _mel('FBXExport -f "{}" -s'.format(_file.path))
+
+    assert _file.exists()

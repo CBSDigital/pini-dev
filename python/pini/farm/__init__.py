@@ -3,6 +3,8 @@
 import logging
 import os
 
+from pini import dcc
+
 from .base import CFarm
 
 _LOGGER = logging.getLogger(__name__)
@@ -12,6 +14,8 @@ IS_AVAILABLE = False
 
 if NAME == "Deadline":
     from .deadline import FARM, CDPyJob, setup_deadline_submit
+    if dcc.NAME == 'maya':
+        from .deadline import CDMayaPyJob
     IS_AVAILABLE = True
 elif NAME is None:
     pass

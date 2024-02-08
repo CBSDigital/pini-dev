@@ -652,7 +652,7 @@ def system(
     """
     from pini.utils import Path, Seq, clip
 
-    if isinstance(cmd, list):
+    if isinstance(cmd, (list, tuple)):
         _cmds = cmd
     else:
         _cmds = []

@@ -68,8 +68,11 @@ class CPCacheable(object):
         """
         raise NotImplementedError
 
-    def to_abc(self):
-        """Get an abc output based on this camera.
+    def to_output(self, extn='abc'):
+        """Get an output based on this camera.
+
+        Args:
+            extn (str): output extension
 
         Returns:
             (CPOutput): output abc
@@ -79,7 +82,7 @@ class CPCacheable(object):
             return None
         _tmpl = _work.find_template('cache', has_key={'output_name': True})
         _abc = _work.to_output(
-            _tmpl, extn='abc', output_type=self.output_type,
+            _tmpl, extn=extn, output_type=self.output_type,
             output_name=self.output_name, task=_work.task)
         return _abc
 
@@ -108,7 +111,7 @@ class CPCacheable(object):
         Returns:
             (str): job arg
         """
-        _abc = self.to_abc()
+        _abc = self.to_output()
         _geo = self.to_geo()
         _LOGGER.debug(' - GEO %s', _geo)
         return save_abc(

@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 
 from pini import pipe
-from maya_pini import ref
+from maya_pini import ref, open_maya as pom
 from maya_pini.utils import to_namespace
 
 from . import mpc_cacheable
@@ -25,7 +25,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
             ref_node (str): reference node
         """
         super(CPCacheableRef, self).__init__(ref_node)
-        self.node = ref_node
+        self.node = pom.CReference(ref_node)
 
         self.asset = pipe.CPOutput(self.path)
         if self.asset.type_ != 'publish':
@@ -52,8 +52,11 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         """Select this reference in scene (top node)."""
         cmds.select(self.find_top_nodes())
 
-    def to_abc(self):
-        """Get an abc output based on this reference.
+    def to_output(self, extn='abc'):
+        """Get an output based on this reference.
+
+        Args:
+            extn (str): output extension
 
         Returns:
             (CPOutput): output abc
@@ -64,7 +67,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         _tmpl = _work.find_template('cache', has_key={'output_name': True})
         _LOGGER.debug(' - TMPL %s', _tmpl)
         _abc = _work.to_output(
-            _tmpl, extn='abc', output_type=_pub.asset_type or 'geo',
+            _tmpl, extn=extn, output_type=_pub.asset_type or 'geo',
             output_name=self.output_name, task=_work.task)
         return _abc
 

@@ -187,7 +187,7 @@ def get_mod_sort(order=None):
 
     def _mod_sort(name):
 
-        _LOGGER.debug('SORT MOD %s', name)
+        _LOGGER.log(9, 'SORT MOD %s', name)
 
         # Apply default sort
         _val = 10.0
@@ -206,25 +206,25 @@ def get_mod_sort(order=None):
         if 'launch' in name:
             _val += 0.04
         _val -= name.count('.')*0.1
-        _LOGGER.debug(' - VAL A %f', _val)
+        _LOGGER.log(9, ' - VAL A %f', _val)
 
         # Apply ordering
         _idx = 0
         _tokens = name.split('.')
-        _LOGGER.debug(' - TOKENS %s', _tokens)
+        _LOGGER.log(9, ' - TOKENS %s', _tokens)
         for _idx in range(name.count('.')+1):
             _n_tokens = name.count('.') + 1 - _idx
             _name = '.'.join(_tokens[:_n_tokens])
-            _LOGGER.debug(' - TESTING %s %d', _name, _n_tokens)
+            _LOGGER.log(9, ' - TESTING %s %d', _name, _n_tokens)
             if _name in _RELOAD_ORDER:
-                _LOGGER.debug(' - MATCH %s %d', _name, _idx)
+                _LOGGER.log(9, ' - MATCH %s %d', _name, _idx)
                 _order_idx = _RELOAD_ORDER.index(_name)
                 break
         else:
             _order_idx = len(_RELOAD_ORDER)
-            _LOGGER.debug(' - NO MATCH %s %d', name, _idx)
+            _LOGGER.log(9, ' - NO MATCH %s %d', name, _idx)
         _val += _order_idx*10
-        _LOGGER.debug(' - VAL B %f', _val)
+        _LOGGER.log(9, ' - VAL B %f', _val)
 
         return _val
 

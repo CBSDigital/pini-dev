@@ -357,5 +357,6 @@ class Dir(up_path.Path):
         return Dir(self.path+'/'+_rel_path.path)
 
 
+DESKTOP = Dir(up_utils.DESKTOP_PATH)
 HOME = Dir(up_utils.HOME_PATH)
 TMP = Dir(up_utils.TMP_PATH)

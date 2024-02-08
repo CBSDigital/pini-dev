@@ -37,7 +37,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         if not self.to_geo():
             raise ValueError('No export geo')
         try:
-            self.to_abc()
+            self.to_output()
         except ValueError:
             raise ValueError('Failed to map to abc '+self.output_name)
 

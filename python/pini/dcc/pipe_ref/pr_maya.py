@@ -209,7 +209,7 @@ class CMayaReference(_CMayaPipeRef):
         """
         _LOGGER.debug('UPDATE %s', self)
         _LOGGER.debug(' - OUTPUT %s', out)
-        if out.extn in ['ma', 'mb', 'abc']:
+        if out.extn in ['ma', 'mb', 'abc', 'fbx']:
             self.ref.update(out)
             return self
         if out.type_ == 'ass_gz':

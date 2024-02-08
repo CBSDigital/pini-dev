@@ -263,6 +263,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             set_ (str): name of set to add to
         """
         add_to_set(self, set_)
+        return pom_utils.cast_node(set_)
 
     def apply_shd(self, shd):
         """Apply shader to this node.

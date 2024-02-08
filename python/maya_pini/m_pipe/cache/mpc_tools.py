@@ -26,7 +26,7 @@ def _check_for_abc_clash(cacheables):
     _abcs = []
     for _cbl in cacheables:
         _LOGGER.debug(' - TESTING %s', _cbl)
-        _abc = _cbl.to_abc()
+        _abc = _cbl.to_output()
         _LOGGER.debug('   - ABC %s', _abc.path)
         if _abc in _abcs:
             raise RuntimeError(
@@ -45,7 +45,7 @@ def _check_for_overwrite(cacheables, force):
 
     _to_replace = []
     for _cbl in cacheables:
-        _abc = _cbl.to_abc()
+        _abc = _cbl.to_output()
         if _abc.exists():
             _to_replace.append(_abc)
 
@@ -94,7 +94,7 @@ def _setup_cache(
         _LOGGER.debug('CACHEABLE %s', _cbl)
 
         # Check dir exists
-        _abc = _cbl.to_abc()
+        _abc = _cbl.to_output()
         _abc.test_dir()
         _abcs.append(_abc)
 

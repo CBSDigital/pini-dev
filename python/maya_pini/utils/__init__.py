@@ -5,7 +5,7 @@ from .mu_namespace import del_namespace, set_namespace, to_namespace
 from .mu_dec import (
     restore_ns, restore_sel, restore_frame, get_ns_cleaner, use_tmp_ns,
     reset_ns, reset_sel, pause_viewport, hide_img_planes)
-from .mu_io import load_scene, save_scene, save_abc, save_ass
+from .mu_io import load_scene, save_scene, save_abc, save_ass, save_fbx
 from .mu_render import render, render_frame, to_render_extn
 from .mu_blast import blast, blast_frame
 

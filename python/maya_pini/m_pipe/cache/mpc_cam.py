@@ -116,7 +116,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         """Export image planes from this camera."""
         _LOGGER.info('EXPORT IMAGE PLANES %s', self.cam)
 
-        _abc = self.to_abc()
+        _abc = self.to_output()
         _cam = pom.CCamera(self.cam)
         assert isinstance(_cam, pom.CCamera)
 

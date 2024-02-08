@@ -1,3 +1,24 @@
+## [0.61.0] - Thu 2024-02-08 09:55
+### Summary
+ - Pini Helper,
+    - bugfix error on update fbx reference,
+    - updates to facilitate fbx exporting,
+### Updated
+ - pini.utils.system allow cmds as tuple,
+ - pini.utils.DESKTOP added,
+ - pini.utils.Image.convert added catch arg,
+ - pini.dcc.CMayaPipeRef.update added fbx handling,
+ - pini.dcc.CMayaBasicPublish use shared fbx export func,
+ - pini.farm.deadline.setup_deadline_submit added update_root arg,
+ - pini.farm.deadline.CDMayaPyJob made public,
+ - pini.tools.usage allow mod path override via env for exe packaging,
+ - pini.icons allow root override via $PINI_ICONS_ROOT for exe packaging,
+ - maya_pini.utils.save_fbx added,
+ - maya_pini.m_pipe.CPCacheable renamed to_abc -> to_output + added extn arg,
+ - maya_pini.m_pipe.CPCacheableRef.node updated str -> CReference,
+ - maya_pini.open_maya.CBaseNode.add_to_set returns set,
+
+
 ## [0.60.1] - Tue 2024-02-06 18:22
 ### Summary
  - Pini Helper,

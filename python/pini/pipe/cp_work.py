@@ -442,7 +442,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
                 _frame.copy_to(self.image)
                 assert self.image.exists()
             else:
-                Image(_frame).convert(self.image)
+                Image(_frame).convert(self.image, catch=True)
             return
 
     def save(self, notes=None, reason=None, mtime=None, parent=None,

@@ -105,12 +105,13 @@ def read_job_ids(result):
         if _line.startswith('JobID=')]
 
 
-def setup_deadline_submit(group=None, paths=None, verbose=0):
+def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
     """Setup deadline ready for submission.
 
     Args:
         group (str): apply default group
         paths (str): paths to append to sys.path
+        update_root (str): apply update libs check root
         verbose (int): print process data
     """
 
@@ -120,18 +121,26 @@ def setup_deadline_submit(group=None, paths=None, verbose=0):
 
     # Set startup code
     if paths:
+
+        # Gather path update py lines
         _lines = []
         _lines += [
             'import sys',
-            'for _path in [']
+            'for _idx, _path in enumerate([']
         for _path in paths:
             _lines += ['        "{}",'.format(_path)]
         _lines += [
-            ']:',
-            '    sys.path.append(_path)']
+            ']):',
+            '    sys.path.insert(_idx, _path)']
         _lines += [
             'import pini_startup',
             'pini_startup.init(user="{}")'.format(get_user())]
+        if update_root:
+            _lines += [
+                'from pini import refresh',
+                'refresh.update_libs(check_root="{}")'.format(update_root)]
+
+        # Build py + apply to env
         _py = '\n'.join(_lines)
         os.environ['PINI_DEADLINE_INIT_PY'] = _py
         if verbose:

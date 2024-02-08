@@ -3,6 +3,7 @@
 import codecs
 import functools
 import logging
+import os
 import re
 
 import six
@@ -18,7 +19,9 @@ from pini.utils import (
     passes_filter, cache_result)
 
 _LOGGER = logging.getLogger(__name__)
-ICONS_ROOT = Dir(abs_path(pini_icons.__file__)).to_dir().to_dir().path
+ICONS_ROOT = os.environ.get(
+    'PINI_ICONS_ROOT',
+    Dir(abs_path(pini_icons.__file__)).to_dir().to_dir().path)
 
 
 class _Emoji(File):
