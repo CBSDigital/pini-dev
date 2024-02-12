@@ -123,7 +123,8 @@ class CDFarm(base.CFarm):
         for _cbl in _cbls:
             _lines = [
                 'from maya_pini import m_pipe',
-                '_cbl = m_pipe.{}("{}")'.format(type(_cbl).__name__, _cbl.node),
+                '_cbl = m_pipe.{}("{}")'.format(
+                    type(_cbl).__name__, str(_cbl.node)),
                 '_checks_data = {}'.format(_checks_data),
                 '_flags = {}'.format(flags or {}),
                 'm_pipe.cache('

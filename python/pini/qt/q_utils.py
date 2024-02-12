@@ -274,6 +274,8 @@ def to_p(*args, **kwargs):
             isinstance(args[0], float) and
             isinstance(args[1], float)):
         _result = QtCore.QPointF(*args)
+    elif isinstance(_arg, QtGui.QVector2D):
+        _result = QtCore.QPointF(_arg.x(), _arg.y())
     else:
         _result = QtCore.QPoint(*args)
 

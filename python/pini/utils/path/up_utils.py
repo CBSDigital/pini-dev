@@ -395,6 +395,3 @@ def _read_file_content(file_, catch, encoding):
                 ' - FILE ERRORED ON READ %s %s', _file.path, _exc)
             return _file, ''
         raise _exc
-
-
-DESKTOP_PATH = abs_path(os.environ.get('DESKTOP', '~/Desktop'))

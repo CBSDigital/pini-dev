@@ -229,7 +229,8 @@ class PRRepo(Dir):
         return system('git config --get remote.origin.url').strip()
 
 
-_PINI_DIR, _ = __file__.split('python', 1)
+_FILE = os.environ.get('PINI_REPO_FILE', __file__)
+_PINI_DIR, _ = _FILE.split('python', 1)
 PINI = PRRepo(_PINI_DIR)
 
 

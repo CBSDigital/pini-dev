@@ -9,7 +9,8 @@ from .wrapper import (
     CTreeWidget, CTreeWidgetItem, CColor, CProgressBar, CMenu, CPainter,
     CLabel, CSettings, CBaseWidget, CPointF, CHLine, CVLine, CSplitter,
     CListViewPixmapItem, CListViewWidgetItem, CListView, CPixmapLabel,
-    TEST_IMG, CPoint, CTileWidget, CTileWidgetItem, CSlider)
+    TEST_IMG, CPoint, CTileWidget, CTileWidgetItem, CSlider, CVector2D,
+    CSizeF)
 
 from .q_const import BOLD_COLS, PASTEL_COLS
 from .q_layout import find_layout_widgets, delete_layout, flush_layout

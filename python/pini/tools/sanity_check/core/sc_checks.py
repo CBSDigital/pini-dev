@@ -91,8 +91,7 @@ def find_checks(
             continue
 
         # Apply task filter
-        if _check.task_filter and (
-                not _task or
+        if _task and _check.task_filter and (
                 not passes_filter(_task, _check.task_filter)):
             _LOGGER.debug(
                 '   - REJECTED TASK task=%s filter=%s',

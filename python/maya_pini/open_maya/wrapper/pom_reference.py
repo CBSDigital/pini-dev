@@ -185,6 +185,9 @@ class CReference(om.MFnReference, ref.FileRef):
 
         return _node
 
+    def __str__(self):
+        return str(self.ref_node)
+
     def __repr__(self):
         return basic_repr(self, self.namespace)
 

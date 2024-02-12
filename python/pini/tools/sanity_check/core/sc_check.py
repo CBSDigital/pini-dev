@@ -7,7 +7,7 @@ import six
 
 from pini import dcc, pipe
 from pini.tools import error
-from pini.utils import to_nice, strftime, nice_age
+from pini.utils import to_nice, strftime, nice_age, check_heart
 
 from . import sc_fail
 
@@ -226,12 +226,25 @@ class SCCheck(object):
         """Run this check and apply any fixes."""
         _LOGGER.info('RUN AND FIX %s', self)
         self.run()
-        if self.fails:
+
+        _iter = 0
+        while self.fails:
+            check_heart()
+            _LOGGER.info('[%d] FOUND %d FAILS', _iter, len(self.fails))
+
+            # Apply fixes
             for _fail in self.fails:
                 _LOGGER.info(' - FIXING FAIL %s', _fail)
                 _fail.fix()
+
             self.execute()
-        assert not self.fails
+
+            _iter += 1
+
+            if _iter > 10:
+                raise RuntimeError
+
+        _LOGGER.info('RUN AND FIX COMPLETE - %d FAILS', len(self.fails))
 
     def set_disabled(self, disabled=True):
         """Set the disabled state of this check (default is disabled).
