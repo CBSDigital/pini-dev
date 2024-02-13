@@ -248,7 +248,8 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         Args:
             event (QMouseEvent): triggered event
         """
-        _LOGGER.info('MOUSE MOVE %s', event)
+        _LOGGER.debug('MOUSE MOVE %s', event)
+        super(CListWidget, self).mouseMoveEvent(event)
 
     def selectAll(self):
         """Select all items."""

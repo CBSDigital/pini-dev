@@ -1,3 +1,21 @@
+## [0.63.0] - Tue 2024-02-13 11:10
+### Summary
+ - Pini Helper,
+    - maya added fbx as cache option (eehemann),
+### Updated
+ - pini.utils.PyFile.to_module_name added,
+ - pini.dcc.MayaDCC.create_ref use CACHE grp for caches,
+ - pini.pipe.cache bugfix sg work_dir outputs not updated on CCPWork.update_outputs,
+ - pini.qt.CPixmapLabel use objectName as seed for rand col assignment,
+ - pini.qt.QListWidget.mouseMoveEvent bugfix not passing event to parent method,
+ - pini.farm.deadline.submit_maya_cache added extn for fbx handling,
+ - pini.tools.helper added fbx output icons,
+ - pini.tools.helper scene tab outputs added format filter,
+ - pini.tools.helper export/cache added extn for fbx handling,
+ - maya_pini.utils.save_fbx added range_/step args,
+ - maya_pini.m_pipe.cache added extn arg + fbx handling,
+
+
 ## [0.62.0] - Mon 2024-02-12 09:24
 ### Summary
  - Pini Helper,

@@ -139,10 +139,15 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                 _data[_tag] = _file.path
             self._img_plane_data[_name] = _data
 
-    def pre_cache(self):
-        """Execute pre cache code."""
-        self._build_tmp_cam()
-        self._export_img_planes()
+    def pre_cache(self, extn='abc'):
+        """Execute pre cache code.
+
+        Args:
+            extn (str): output extension
+        """
+        if extn == 'abc':
+            self._build_tmp_cam()
+            self._export_img_planes()
 
     def post_cache(self):
         """Build tmp CAM node."""
@@ -163,13 +168,20 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         """Select this camera in the current scene."""
         cmds.select(self.cam)
 
-    def to_geo(self):
+    def to_geo(self, extn='abc'):
         """Get list of nodes to cache from this camera.
+
+        Args:
+            extn (str): output extension
 
         Returns:
             (str list): geo nodes
         """
-        return [self._tmp_cam]
+        if extn == 'abc':
+            return [self._tmp_cam]
+        if extn == 'fbx':
+            return self.cam
+        raise NotImplementedError
 
     def to_icon(self):
         """Get icon for this camera.

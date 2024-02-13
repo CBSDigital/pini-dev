@@ -180,6 +180,8 @@ class MayaDCC(BaseDCC):
                 _grp = _ref.output.asset_type.upper()
             elif _out.output_type:
                 _grp = _ref.output.output_type.upper()
+            elif _out.nice_type == 'cache':
+                _grp = 'CACHE'
             else:
                 _grp = None
         _LOGGER.debug(' - GROUP %s -> %s', group, _grp)

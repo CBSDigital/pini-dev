@@ -163,9 +163,10 @@ class CCPWorkDir(CPWorkDir):
         Returns:
             (CCPOutput list): outputs
         """
+        from pini import pipe
         _LOGGER.debug('FIND OUTPUTS force=%d %s', force, self)
-        if force:
-            self._read_outputs(force=True)
+        if force and pipe.MASTER == 'disk':
+            self._read_outputs_disk(force=True)
             _LOGGER.debug(' - UPDATED CACHE %s', self)
         return super(CCPWorkDir, self).find_outputs(**kwargs)
 
@@ -202,7 +203,7 @@ class CCPWorkDir(CPWorkDir):
         return _work_c
 
     @pipe_cache_on_obj
-    def _read_outputs(self, class_=None, force=False):
+    def _read_outputs_disk(self, class_=None, force=False):
         """Read outputs within this work dir from disk.
 
         Args:

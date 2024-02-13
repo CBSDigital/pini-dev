@@ -339,7 +339,7 @@ def _bool_to_mel(val):
 
 def save_fbx(
         file_, selection=True, constraints=True, animation=False,
-        version='FBX201600', force=False):
+        version='FBX201600', range_=None, step=1.0, force=False):
     """Save fbx file to disk.
 
     Args:
@@ -348,8 +348,11 @@ def save_fbx(
         constraints (bool): export constraints
         animation (bool): export animation
         version (str): fbx version
+        range_ (tuple): start/end (for complex animation)
+        step (float): step size in frames (for complex animation)
         force (bool): replace existing without confirmation
     """
+    from pini import dcc
 
     if not selection:
         raise NotImplementedError
@@ -374,9 +377,11 @@ def save_fbx(
     _mel('FBXExportBakeComplexAnimation -v {}'.format(_bool_to_mel(animation)))
     _mel('FBXExportConstraints -v {}'.format(_bool_to_mel(constraints)))
 
-    # cmds.file(
-    #     _file.path, options="v=0;", type="FBX export",
-    #     preserveReferences=True, exportSelected=True, force=True)
+    _range = range_ or dcc.t_range()
+    _mel('FBXExportBakeComplexStart -v {:f}'.format(_range[0]))
+    _mel('FBXExportBakeComplexEnd -v {:f}'.format(_range[1]))
+    _mel('FBXExportBakeComplexStep -v {:f}'.format(step))
+
     _mel('FBXExport -f "{}" -s'.format(_file.path))
 
     assert _file.exists()

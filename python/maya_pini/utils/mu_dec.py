@@ -52,7 +52,7 @@ def hide_img_planes(func):
     def _hide_img_planes_func(*args, **kwargs):
 
         from maya_pini import open_maya as pom
-        _LOGGER.info('HIDE IMAGE PLANES')
+        _LOGGER.debug('HIDE IMAGE PLANES')
 
         _hidden = []
         for _img in pom.find_nodes(type_='imagePlane'):
@@ -60,12 +60,12 @@ def hide_img_planes(func):
             if _tfm.visibility.get_val():
                 _hidden.append(_tfm)
                 _tfm.visibility.set_val(False)
-        _LOGGER.info(' - HID %d IMAGE PLANES', len(_hidden))
+        _LOGGER.debug(' - HID %d IMAGE PLANES', len(_hidden))
 
         try:
             _result = func(*args, **kwargs)
         finally:
-            _LOGGER.info(' - UNHIDING %d IMAGE PLANES', len(_hidden))
+            _LOGGER.debug(' - UNHIDING %d IMAGE PLANES', len(_hidden))
             for _tfm in _hidden:
                 _tfm.visibility.set_val(True)
 

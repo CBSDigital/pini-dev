@@ -18,6 +18,8 @@ ASS_ICON = icons.find('Peach')
 BLAST_ICON = icons.find('Collision')
 CAM_ICON = icons.find('Movie Camera')
 CSET_ICON = icons.find('Urn')
+FBX_ICON = icons.find('Worm')
+FBX_BG_ICON = icons.find('Green Square')
 LOOKDEV_BG_ICON = icons.find('Green circle')
 LOOKDEV_ICON = icons.find('Palette')
 MISSING_FROM_CACHE_ICON = icons.find('Adhesive Bandage')
@@ -32,6 +34,7 @@ VIDEO_ICON = icons.find('Videocassette')
 EXTN_ICONS = {
     'abc': ABC_ICON,
     'ass': ASS_ICON,
+    'fbx': FBX_ICON,
     'vdb': VDB_ICON,
     'usd': USD_ICON,
 }
@@ -91,17 +94,19 @@ def is_active():
         return False
 
 
-def _abc_to_icon(abc):
-    """Obtain icon for abc output.
+def _cache_to_icon(output):
+    """Obtain icon for cache output.
 
     Args:
-        abc (CPOutput): abc output
+        output (CPOutput): cache
 
     Returns:
         (str|QPixmap): icon
     """
-    _type = abc.metadata.get('type')
-    _asset_path = abc.metadata.get('asset')
+    _type = output.metadata.get('type')
+    _asset_path = output.metadata.get('asset')
+    _bg_icon = {'abc': ABC_BG_ICON, 'fbx': FBX_BG_ICON}.get(output.extn)
+    _fmt_icon = {'abc': ABC_ICON, 'fbx': FBX_ICON}.get(output.extn)
 
     # Find overlay path
     _over_path = None
@@ -115,10 +120,9 @@ def _abc_to_icon(abc):
 
     # Build icon
     if _over_path:
-        _icon = _add_icon_overlay(
-            ABC_BG_ICON, overlay=_over_path, mode='C')
+        _icon = _add_icon_overlay(_bg_icon, overlay=_over_path, mode='C')
     else:
-        _icon = ABC_ICON
+        _icon = _fmt_icon
 
     return _icon
 
@@ -252,8 +256,8 @@ def output_to_icon(output, overlay=None):
 
     # Get base icon
     _bg = None
-    if output.extn == 'abc':
-        _icon = _abc_to_icon(output)
+    if output.nice_type == 'cache':
+        _icon = _cache_to_icon(output)
     elif output.output_type == 'cam':
         _icon = CAM_ICON
     elif output.asset_type == 'utl' and output.asset == 'camera':

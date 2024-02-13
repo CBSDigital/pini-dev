@@ -1,11 +1,10 @@
 """Tools for managing the CPixmapLabel widget."""
 
 import logging
-import random
 
 import six
 
-from pini.utils import basic_repr
+from pini.utils import basic_repr, str_to_seed
 
 from ...q_mgr import QtWidgets, Qt
 
@@ -30,12 +29,14 @@ class CPixmapLabel(QtWidgets.QLabel):
         from pini import qt
         assert parent is None or isinstance(parent, QtWidgets.QWidget)
 
-        self.col = col or random.choice(qt.PASTEL_COLS)
+        super(CPixmapLabel, self).__init__(parent=parent)
+
+        _rand = str_to_seed(self.objectName())
+        self.col = col or _rand.choice(qt.PASTEL_COLS)
         self.text = text  # Hidden to avoid clash with text method
         self.margin = margin
         self.draw_pixmap_func = draw_pixmap_func
 
-        super(CPixmapLabel, self).__init__(parent=parent)
         self.setAlignment(Qt.AlignCenter)
         self.setMinimumSize(1, 1)
 

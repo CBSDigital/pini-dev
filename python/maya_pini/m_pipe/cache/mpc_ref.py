@@ -71,16 +71,23 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
             output_name=self.output_name, task=_work.task)
         return _abc
 
-    def to_geo(self):
+    def to_geo(self, extn='abc'):  # pylint: disable=unused-argument
         """Get list of geo to cache from this reference.
+
+        Args:
+            extn (str): output extension
 
         Returns:
             (str list): geo nodes
         """
-        _cache_set = self.to_node('cache_SET')
-        if not cmds.objExists(_cache_set):
-            return []
-        return cmds.sets(_cache_set, query=True)
+        if extn == 'abc':
+            _cache_set = self.to_node('cache_SET')
+            if not cmds.objExists(_cache_set):
+                return []
+            return cmds.sets(_cache_set, query=True)
+        if extn == 'fbx':
+            return self.node.top_node
+        raise NotImplementedError
 
     def to_icon(self):
         """Get this cacheable's icon.

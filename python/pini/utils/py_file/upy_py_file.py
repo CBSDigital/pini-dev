@@ -55,6 +55,27 @@ class PyFile(File, PyElem):
                 return None
         return ast.parse(self.read())
 
+    def to_module_name(self):
+        """Obtain module name for this python file.
+
+        eg. ~/dev/pini-dev/python/pini/utils/u_misc.py -> pini.utils.u_misc
+
+        Returns:
+            (str): module name
+        """
+        if '/python/' in self.path:
+            _, _rel_path = self.path.rsplit('/python/', 1)
+        elif '/startup/' in self.path:
+            _, _rel_path = self.path.rsplit('/startup/', 1)
+        elif _find_sys_path(self.path):
+            _sys_path = _find_sys_path(self.path)
+            _rel_path = _sys_path.rel_path(self.path)
+        else:
+            raise NotImplementedError(self.path)
+        _tokens, _ = _rel_path.split('.')
+
+        return _tokens.replace('/', '.')
+
     def to_module(self, reload_=False, catch=False):
         """Obtain the module for this py file.
 
@@ -67,18 +88,7 @@ class PyFile(File, PyElem):
         """
         from pini.utils import six_reload
 
-        # Find module name
-        if '/python/' in self.path:
-            _, _rel_path = self.path.rsplit('/python/', 1)
-        elif '/startup/' in self.path:
-            _, _rel_path = self.path.rsplit('/startup/', 1)
-        elif _find_sys_path(self.path):
-            _sys_path = _find_sys_path(self.path)
-            _rel_path = _sys_path.rel_path(self.path)
-        else:
-            raise NotImplementedError(self.path)
-        _tokens, _ = _rel_path.split('.')
-        _mod_name = _tokens.replace('/', '.')
+        _mod_name = self.to_module_name()
 
         # Import module
         try:

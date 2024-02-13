@@ -26,7 +26,7 @@ class CFarm(object):
 
     def submit_maya_cache(
             self, cacheables, comment='', priority=50, machine_limit=0,
-            save=True, checks_data=None, flags=None):
+            save=True, checks_data=None, extn='abc', flags=None):
         """Submit maya cache job to the farm.
 
         Args:
@@ -36,6 +36,7 @@ class CFarm(object):
             machine_limit (int): job machine limit
             save (bool): save scene on submit
             checks_data (dict): sanity check data
+            extn (str): cache output format (abc/fbx)
             flags (dict): cache flags
 
         Returns:

@@ -502,7 +502,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>3</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -690,7 +690,7 @@
           <attribute name="title">
            <string>Cache</string>
           </attribute>
-          <layout class="QGridLayout" name="gridLayout_7">
+          <layout class="QGridLayout" name="gridLayout_7" rowstretch="0,1,0,0,0,0">
            <item row="0" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_12">
              <item>
@@ -746,7 +746,7 @@
            <item row="4" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout">
+              <layout class="QVBoxLayout" name="ECacheLayout" stretch="0,0,0,0,0,0">
                <property name="spacing">
                 <number>1</number>
                </property>
@@ -820,17 +820,17 @@
                 </widget>
                </item>
                <item>
-                <spacer name="verticalSpacer_3">
+                <spacer name="ECacheSpacer">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
                  <property name="sizeType">
-                  <enum>QSizePolicy::Minimum</enum>
+                  <enum>QSizePolicy::MinimumExpanding</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>20</width>
-                   <height>20</height>
+                   <width>50</width>
+                   <height>0</height>
                   </size>
                  </property>
                 </spacer>
@@ -887,9 +887,9 @@
                 <number>5</number>
                </property>
                <item>
-                <layout class="QHBoxLayout" name="ProfilePane_2" stretch="0,0,1">
+                <layout class="QHBoxLayout" name="ProfilePane_2" stretch="0,0,0,1">
                  <property name="spacing">
-                  <number>0</number>
+                  <number>4</number>
                  </property>
                  <item>
                   <spacer name="horizontalSpacer">
@@ -924,6 +924,41 @@
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="CComboBox" name="ECacheExtn">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>100</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="editable">
+                    <bool>false</bool>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>abc</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>fbx</string>
+                    </property>
+                   </item>
                   </widget>
                  </item>
                  <item>
@@ -2051,33 +2086,11 @@
                     <property name="verticalSpacing">
                      <number>3</number>
                     </property>
-                    <item row="0" column="1">
-                     <widget class="CComboBox" name="SOutputType"/>
-                    </item>
-                    <item row="3" column="1">
-                     <widget class="CComboBox" name="SOutputVers">
-                      <item>
-                       <property name="text">
-                        <string>versionless</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>latest</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>all</string>
-                       </property>
-                      </item>
-                     </widget>
+                    <item row="2" column="1">
+                     <widget class="CComboBox" name="SOutputTag"/>
                     </item>
                     <item row="1" column="1">
                      <widget class="CComboBox" name="SOutputTask"/>
-                    </item>
-                    <item row="2" column="1">
-                     <widget class="CComboBox" name="SOutputTag"/>
                     </item>
                     <item row="0" column="0">
                      <widget class="QLabel" name="SOutputTypeLabel">
@@ -2097,6 +2110,47 @@
                        <string>Type</string>
                       </property>
                      </widget>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="CComboBox" name="SOutputVers">
+                      <item>
+                       <property name="text">
+                        <string>versionless</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>latest</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>all</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QLabel" name="SOutputVersLabel">
+                      <property name="minimumSize">
+                       <size>
+                        <width>50</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>55</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Version</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="CComboBox" name="SOutputType"/>
                     </item>
                     <item row="1" column="0">
                      <widget class="QLabel" name="SOutputTaskLabel">
@@ -2137,7 +2191,7 @@
                      </widget>
                     </item>
                     <item row="3" column="0">
-                     <widget class="QLabel" name="SOutputVersLabel">
+                     <widget class="QLabel" name="SOutputFormatLabel">
                       <property name="minimumSize">
                        <size>
                         <width>50</width>
@@ -2151,9 +2205,12 @@
                        </size>
                       </property>
                       <property name="text">
-                       <string>Version</string>
+                       <string>Format</string>
                       </property>
                      </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="CComboBox" name="SOutputFormat"/>
                     </item>
                    </layout>
                   </item>
@@ -3219,6 +3276,11 @@ Range: 1-10</string>
  </widget>
  <customwidgets>
   <customwidget>
+   <class>CListWidget</class>
+   <extends>QListWidget</extends>
+   <header>clistwidget.h</header>
+  </customwidget>
+  <customwidget>
    <class>CComboBox</class>
    <extends>QComboBox</extends>
    <header>ccombobox.h</header>
@@ -3228,11 +3290,6 @@ Range: 1-10</string>
    <extends>QTabWidget</extends>
    <header>ctabwidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CListWidget</class>
-   <extends>QListWidget</extends>
-   <header>clistwidget.h</header>
   </customwidget>
   <customwidget>
    <class>CLabel</class>

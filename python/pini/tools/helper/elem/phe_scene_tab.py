@@ -180,6 +180,7 @@ class CLSceneTab(object):
 
     def _redraw__SOutputTag(self):
 
+        _select = None
         _outs = self.ui.SOutputTask.selected_data() or []
         _tags = sorted({_out.tag for _out in _outs}, key=pipe.tag_sort)
         _data = [
@@ -188,15 +189,34 @@ class CLSceneTab(object):
         if len(_tags) > 1:
             _tags.insert(0, 'all')
             _data.insert(0, _outs)
+            _select = 'all'
         _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
 
-        self.ui.SOutputTag.set_items(_labels, data=_data, emit=True)
+        self.ui.SOutputTag.set_items(
+            _labels, data=_data, emit=True, select=_select)
         self.ui.SOutputTag.setEnabled(len(_labels) > 1)
+
+    def _redraw__SOutputFormat(self):
+
+        _select = None
+        _outs = self.ui.SOutputTag.selected_data() or []
+        _extns = sorted({_out.extn for _out in _outs})
+        _data = [
+            [_out for _out in _outs if _out.extn == _extn]
+            for _extn in _extns]
+        if len(_extns) > 1:
+            _extns.insert(0, 'all')
+            _data.insert(0, _outs)
+            _select = 'all'
+
+        self.ui.SOutputFormat.set_items(
+            _extns, data=_data, emit=True, select=_select)
+        self.ui.SOutputFormat.setEnabled(len(_extns) > 1)
 
     def _redraw__SOutputVers(self):
 
         _cur = self.ui.SOutputVers.currentText()
-        _outs = self.ui.SOutputTag.selected_data() or []
+        _outs = self.ui.SOutputFormat.selected_data() or []
 
         # Build opts list
         _opts = []
@@ -214,7 +234,7 @@ class CLSceneTab(object):
         _LOGGER.debug('REDRAW OOutputs')
 
         _filter = self.ui.SOutputsFilter.text()
-        _outs = self.ui.SOutputTag.selected_data() or []
+        _outs = self.ui.SOutputFormat.selected_data() or []
         _scene_outs = sorted({
             _ref.to_output(cache=False) for _ref in dcc.find_pipe_refs()})
         _version_mode = self.ui.SOutputVers.currentText()
@@ -426,6 +446,9 @@ class CLSceneTab(object):
         self.ui.SOutputTag.redraw()
 
     def _callback__SOutputTag(self):
+        self.ui.SOutputFormat.redraw()
+
+    def _callback__SOutputFormat(self):
         self.ui.SOutputVers.redraw()
 
     def _callback__SOutputVers(self):

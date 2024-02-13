@@ -47,8 +47,12 @@ class CPCacheable(object):
             return None
         return self.asset.task
 
-    def pre_cache(self):
-        """Code to be executed before caching."""
+    def pre_cache(self, extn='abc'):
+        """Code to be executed before caching.
+
+        Args:
+            extn (str): output extension
+        """
 
     def post_cache(self):
         """Code to be executed after caching."""

@@ -78,12 +78,30 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
         self.ui.ECacheRefs.selectAll()
         self._callback__ECacheRefs()
 
+    def _callback__ECacheExtn(self):
+        _extn = self.ui.ECacheExtn.currentText()
+        if _extn == 'abc':
+            _fmts = ['Ogawa', 'HDF5']
+        elif _extn == 'fbx':
+            _fmts = ['FBX201600']
+        else:
+            raise NotImplementedError(_extn)
+        self.ui.ECacheFormat.set_items(_fmts)
+
+        for _abc_elem in [
+                self.ui.ECacheUvWrite,
+                self.ui.ECacheRenderableOnly,
+                self.ui.ECacheWorldSpace,
+        ]:
+            _abc_elem.setVisible(_extn == 'abc')
+
     @usage.get_tracker('PiniHelper.Cache')
     def _callback__ECache(self, force=False, save=True):
 
         _LOGGER.info('CACHE')
 
         _cacheables = self.ui.ECacheRefs.selected_datas()
+        _extn = self.ui.ECacheExtn.currentText()
         _farm = self.ui.ECacheLocation.currentText() == 'Farm'
         _format = self.ui.ECacheFormat.currentText()
         _renderable_only = self.ui.ECacheRenderableOnly.isChecked()
@@ -99,7 +117,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             _cacheables, format_=_format, world_space=_world_space,
             uv_write=_uv_write, range_=_rng, force=force, save=save,
             step=_step, renderable_only=_renderable_only, use_farm=_farm,
-            version_up=_version_up, snapshot=_snapshot)
+            version_up=_version_up, snapshot=_snapshot, extn=_extn)
         self.entity.find_outputs(force=True)
 
     def _add_load_ctx_opts(self, menu, work=None):

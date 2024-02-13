@@ -88,7 +88,7 @@ class CDFarm(base.CFarm):
 
     def submit_maya_cache(
             self, cacheables, comment='', priority=50, machine_limit=0,
-            save=True, checks_data=None, flags=None):
+            save=True, checks_data=None, extn='abc', flags=None):
         """Submit maya cache job to the farm.
 
         Args:
@@ -98,6 +98,7 @@ class CDFarm(base.CFarm):
             machine_limit (int): job machine limit
             save (bool): save scene on submit
             checks_data (dict): sanity check data
+            extn (str): cache output format (abc/fbx)
             flags (dict): cache flags
 
         Returns:
@@ -127,8 +128,10 @@ class CDFarm(base.CFarm):
                     type(_cbl).__name__, str(_cbl.node)),
                 '_checks_data = {}'.format(_checks_data),
                 '_flags = {}'.format(flags or {}),
+                '_extn = '+extn,
                 'm_pipe.cache('
-                '    [_cbl], checks_data=_checks_data, force=True, **_flags)',
+                '    [_cbl], checks_data=_checks_data, extn=_extn, force=True,'
+                '    **_flags)',
             ]
             _py = '\n'.join(_lines)
             _name = '{} - {} [cache]'.format(_batch, _cbl.output_name)

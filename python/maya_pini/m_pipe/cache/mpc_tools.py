@@ -1,4 +1,4 @@
-"""Tools for managing caching out abcs."""
+"""Tools for managing writing out caches."""
 
 import logging
 
@@ -9,134 +9,124 @@ from pini.tools import sanity_check
 from pini.utils import single, plural, safe_zip, passes_filter
 
 from maya_pini import ref
-from maya_pini.utils import hide_img_planes, restore_frame, blast_frame
+from maya_pini.utils import (
+    hide_img_planes, restore_frame, blast_frame, save_fbx, restore_sel)
 
 from . import mpc_ref, mpc_cam, mpc_cset
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def _check_for_abc_clash(cacheables):
-    """Check for multiple abcs writing to the same path.
+def _check_for_output_clash(cacheables, extn):
+    """Check for multiple outputs writing to the same path.
 
     Args:
         cacheables (CPCacheable list): items being cached
+        extn (str): cache output format (abc/fbx)
     """
-    _LOGGER.debug('CHECK FOR ABC CLASH')
-    _abcs = []
+    _LOGGER.debug('CHECK FOR OUTPUT CLASH')
+    _outs = []
     for _cbl in cacheables:
         _LOGGER.debug(' - TESTING %s', _cbl)
-        _abc = _cbl.to_output()
-        _LOGGER.debug('   - ABC %s', _abc.path)
-        if _abc in _abcs:
+        _out = _cbl.to_output(extn=extn)
+        _LOGGER.debug('   - OUTPUT %s', _out.path)
+        if _out in _outs:
             raise RuntimeError(
                 'Multiple {} cacheables writing to same path: {}'.format(
-                    _cbl.output_name, _abc.path))
-        _abcs.append(_abc)
+                    _cbl.output_name, _out.path))
+        _outs.append(_out)
 
 
-def _check_for_overwrite(cacheables, force):
-    """Check for overwrite existing abcs.
+def _check_for_overwrite(cacheables, extn, force):
+    """Check for overwrite existing outputs.
 
     Args:
         cacheables (CPCacheable list): items being cached
+        extn (str): cache output format (abc/fbx)
         force (bool): replace existing without confirmation
     """
 
     _to_replace = []
     for _cbl in cacheables:
-        _abc = _cbl.to_output()
-        if _abc.exists():
-            _to_replace.append(_abc)
+        _out = _cbl.to_output(extn=extn)
+        if _out.exists():
+            _to_replace.append(_out)
 
     # Warn on overwrite
     if _to_replace:
         if not force:
             _msg = 'Replace {:d} existing abc{}?\n\n{}'.format(
                 len(_to_replace), plural(_to_replace),
-                '\n\n'.join([_abc.path for _abc in _to_replace[:10]]))
+                '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
                 _msg += '\n\n(and {:d} other abc{})'.format(
                     len(_to_replace)-10, plural(_to_replace[10:]))
             _icon = icons.find('Bear')
             qt.ok_cancel(
                 _msg, title='Replace Existing', icon=_icon, verbose=0)
-    for _abc in _to_replace:
-        _abc.delete(force=True)
+    for _out in _to_replace:
+        _out.delete(force=True)
 
 
-def _setup_cache(
-        cacheables, uv_write, world_space, step, renderable_only,
-        format_, range_, force):
+def _setup_cache(cacheables, extn='abc', force=False):
     """Prepare for cache + setup job args and abc objects.
 
     Args:
         cacheables (CPCacheable list): items being cached
-        uv_write (bool): write uvs
-        world_space (bool): write in world space
-        step (float): step size in frames
-        renderable_only (bool): export only renderable (visible) geometry
-        format_ (str): cache format
-        range_ (tuple): start/end frames
+        extn (str): cache output format (abc/fbx)
         force (bool): replace existing without confirmation
 
     Returns:
-        (tuple): job args, abcs
+        (tuple): job args, outputs
     """
 
-    _check_for_abc_clash(cacheables)
-    _check_for_overwrite(cacheables, force=force)
+    _check_for_output_clash(cacheables, extn=extn)
+    _check_for_overwrite(cacheables, extn=extn, force=force)
 
-    _job_args = []
-    _abcs = []
+    _outs = []
     for _cbl in cacheables:
 
         _LOGGER.debug('CACHEABLE %s', _cbl)
 
         # Check dir exists
-        _abc = _cbl.to_output()
-        _abc.test_dir()
-        _abcs.append(_abc)
+        _out = _cbl.to_output(extn=extn)
+        _out.test_dir()
+        _outs.append(_out)
 
-        # Get job arg
-        _job_arg = _cbl.to_job_arg(
-            uv_write=uv_write, world_space=world_space, step=step,
-            renderable_only=renderable_only, format_=format_, range_=range_)
-        _job_args.append(_job_arg)
-
-    return _job_args, _abcs
+    return _outs
 
 
-def _write_metadata(abcs, cacheables, range_, step, checks_data):
-    """Write metadata to abcs on disk.
+def _write_metadata(outputs, cacheables, range_, step, checks_data):
+    """Write metadata to outputs on disk.
 
     Args:
-        abcs (CPOutput list): cache abcs
+        outputs (CPOutput list): cache outputs
         cacheables (CPCacheable list): items that were cached
         range_ (tuple): start/end frames
         step (float): step size in frames
         checks_data (dict): sanity checks data to apply
     """
-    for _abc, _cbl in safe_zip(abcs, cacheables):
-        assert _abc.exists()
+    for _out, _cbl in safe_zip(outputs, cacheables):
+        assert _out.exists()
         _data = _cbl.obtain_metadata()
         _data['range'] = range_
         _data['step'] = step
         _data['checks'] = checks_data
-        _abc.set_metadata(_data)
+        _out.set_metadata(_data)
 
 
 def cache(
-        cacheables, uv_write=True, world_space=True, format_='Ogawa',
-        range_=None, step=1.0, save=True, clean_up=True, renderable_only=True,
-        checks_data=None, use_farm=False, snapshot=False, version_up=False,
-        force=False):
+        cacheables, uv_write=True, world_space=True, extn='abc',
+        format_='Ogawa', range_=None, step=1.0, save=True, clean_up=True,
+        renderable_only=True, checks_data=None, use_farm=False, snapshot=True,
+        version_up=False, force=False):
     """Cache the current scene.
 
     Args:
         cacheables (CPCacheable list): items to cache
         uv_write (bool): write uvs
         world_space (bool): write in world space
+        extn (str): cache output format (abc/fbx)
         format_ (str): cache format (Ogawa/HDF)
         range_ (tuple): override start/end frames
         step (float): step size in frames
@@ -170,10 +160,7 @@ def cache(
         return None
 
     # Setup cache
-    _job_args, _abcs = _setup_cache(
-        cacheables=cacheables, uv_write=uv_write, world_space=world_space,
-        step=step, renderable_only=renderable_only, format_=format_,
-        range_=_range, force=force)
+    _outs = _setup_cache(cacheables=cacheables, force=force, extn=extn)
     if save and not dcc.batch_mode():
         _work.save(reason='cache', force=True)
     if snapshot:
@@ -181,22 +168,21 @@ def cache(
         _updated = True
 
     # Execute cache
+    _flags = {
+        'uv_write': uv_write,
+        'world_space': world_space,
+        'format_': format_,
+        'range_': _range,
+        'renderable_only': renderable_only,
+        'step': step}
     if use_farm:
-        _flags = {
-            'uv_write': uv_write,
-            'world_space': world_space,
-            'format_': format_,
-            'range_': _range,
-            'renderable_only': renderable_only,
-            'step': step}
         farm.submit_maya_cache(
             cacheables=cacheables, save=False, checks_data=_checks_data,
-            flags=_flags)
+            flags=_flags, extn=extn)
     else:
         _exec_local_cache(
-            cacheables=cacheables, abcs=_abcs, job_args=_job_args, work=_work,
-            checks_data=_checks_data, range_=_range, step=step,
-            clean_up=clean_up)
+            cacheables=cacheables, outputs=_outs, work=_work, flags=_flags,
+            checks_data=_checks_data, clean_up=clean_up, extn=extn)
         _updated = True
 
     # Post cache
@@ -213,35 +199,35 @@ def cache(
                 len(cacheables), farm.NAME, _work.base),
             title='Cache Submitted', icon=farm.ICON)
 
-    return _abcs
+    return _outs
 
 
 def _exec_local_cache(
-        cacheables, abcs, work, checks_data, range_, step, job_args, clean_up):
+        cacheables, outputs, work, checks_data, extn, flags, clean_up):
     """Exec cache locally.
 
     Args:
         cacheables (Cacheable list): items to cache
-        abcs (CPOutput list): output paths
+        outputs (CPOutput list): output paths
         work (CPWork): work file
         checks_data (dict): sanity checks data
-        range_ (tuple): start/end frame
-        step (float): step size in frames
-        job_args (str): abc export args
+        extn (str): cache output format (abc/fbx)
+        flags (dict): cache flags
         clean_up (bool): clean up tmp nodes after cache (on by default)
     """
 
     # Pre cache
     for _cbl in cacheables:
-        _cbl.pre_cache()
+        _cbl.pre_cache(extn=extn)
 
     # Execute cache
-    cmds.loadPlugin('AbcExport', quiet=True)
-    _LOGGER.info(' - cmds.AbcExport(jobArg=%s)', job_args)
-    hide_img_planes(cmds.AbcExport)(jobArg=job_args)
+    if extn == 'abc':
+        _exec_local_abc_cache(cacheables=cacheables, flags=flags)
+    elif extn == 'fbx':
+        _exec_local_fbx_cache(cacheables=cacheables, flags=flags)
     _write_metadata(
-        abcs=abcs, cacheables=cacheables, range_=range_,
-        checks_data=checks_data, step=step)
+        outputs=outputs, cacheables=cacheables, range_=flags['range_'],
+        checks_data=checks_data, step=flags['step'])
 
     # Post cache
     if clean_up:
@@ -252,9 +238,46 @@ def _exec_local_cache(
     if pipe.SHOTGRID_AVAILABLE:
         from pini.pipe import shotgrid
         _thumb = work.image if work.image.exists() else None
-        for _abc in qt.progress_bar(
-                abcs, 'Registering {:d} abc{} in shotgrid'):
-            shotgrid.create_pub_file(_abc, thumb=_thumb)
+        for _out in qt.progress_bar(
+                outputs, 'Registering {:d} output{} in shotgrid'):
+            shotgrid.create_pub_file(_out, thumb=_thumb)
+
+
+@hide_img_planes
+def _exec_local_abc_cache(cacheables, flags):
+    """Execute local abc cache.
+
+    Args:
+        cacheables (Cacheable list): items to cache
+        flags (dict): cache flags
+    """
+    cmds.loadPlugin('AbcExport', quiet=True)
+
+    # Build job args
+    _job_args = []
+    for _cbl in cacheables:
+        _job_arg = _cbl.to_job_arg(**flags)
+        _job_args.append(_job_arg)
+
+    _LOGGER.info(' - cmds.AbcExport(jobArg=%s)', _job_args)
+    cmds.AbcExport(jobArg=_job_args)
+
+
+@restore_sel
+def _exec_local_fbx_cache(cacheables, flags):  # pylint: disable=unused-argument
+    """Exec local fbx cache.
+
+    Args:
+        cacheables (Cacheable list): items to cache
+        flags (dict): cache flags
+    """
+    for _cbl in qt.progress_bar(cacheables, 'Exporting {:d} fbx{}'):
+        _LOGGER.info(' - FBX CACHE %s', _cbl)
+        cmds.select(_cbl.to_geo(extn='fbx'), hierarchy=True)
+        _out = _cbl.to_output(extn='fbx')
+        save_fbx(
+            _out, animation=True, constraints=True, step=flags['step'],
+            range_=flags['range_'])
 
 
 @restore_frame
