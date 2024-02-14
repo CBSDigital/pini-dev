@@ -1,3 +1,14 @@
+## [0.64.0] - Wed 2024-02-14 15:25
+### Summary
+ - Maya Tools,
+    - added function for exporting obj files,
+### Updated
+ - pini.utils.Dir.to_seq added safe arg,
+ - pini.utils.Seq bugfix flagging bad frame experssions in unsafe mode,
+ - pini.utils.Seq.delete added parent arg,
+ - maya_pini.utils.save_obj added,
+
+
 ## [0.63.0] - Tue 2024-02-13 11:10
 ### Summary
  - Pini Helper,

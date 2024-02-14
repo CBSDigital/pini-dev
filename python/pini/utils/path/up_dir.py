@@ -332,17 +332,19 @@ class Dir(up_path.Path):
 
         return _class(self.path+'/'+_rel_path)
 
-    def to_seq(self, rel_path):
+    def to_seq(self, rel_path, safe=False):
         """Build a child sequence object for this directory.
 
         Args:
             rel_path (str): relative path to sequence from this dir
+            safe (bool): only allow sequences with <base>.%04d.<extn> format
 
         Returns:
             (Seq): child sequence
         """
         from pini.utils import clip
-        return self.to_file(rel_path, class_=clip.Seq)
+        _path = self.to_file(rel_path).path
+        return clip.Seq(_path, safe=safe)
 
     def to_subdir(self, rel_path):
         """Get subdirectory of this dir.

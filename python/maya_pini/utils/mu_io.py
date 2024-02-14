@@ -353,6 +353,7 @@ def save_fbx(
         force (bool): replace existing without confirmation
     """
     from pini import dcc
+    cmds.loadPlugin("fbxmaya", quiet=True)
 
     if not selection:
         raise NotImplementedError
@@ -360,8 +361,6 @@ def save_fbx(
     _file = File(file_)
     _file.delete(wording='replace', force=force)
     _file.test_dir()
-
-    cmds.loadPlugin("fbxmaya", quiet=True)
 
     _mel('FBXResetExport')
 
@@ -385,3 +384,37 @@ def save_fbx(
     _mel('FBXExport -f "{}" -s'.format(_file.path))
 
     assert _file.exists()
+
+
+def save_obj(file_, selection=True, materials=True, force=False):
+    """Save obj file to disk.
+
+    Args:
+        file_ (str): path to save obj to
+        selection (bool): export selection
+        materials (bool): export materials mtl file
+        force (bool): overwrite existing without confirmation
+    """
+    cmds.loadPlugin("objExport", quiet=True)
+
+    if selection:
+        if not cmds.ls(selection=True):
+            raise RuntimeError('No geometry selected')
+    else:
+        raise NotImplementedError
+
+    _file = File(file_)
+    _file.delete(force=force)
+    _opts = ';'.join([
+        'groups={:d}'.format(True),
+        'ptgroups={:d}'.format(True),
+        'materials={:d}'.format(materials),
+        'smoothing={:d}'.format(True),
+        'normals={:d}'.format(True),
+    ])
+
+    # Export obj
+    _file.to_dir().mkdir()
+    cmds.file(
+        _file.path, force=True, options=_opts, type="OBJexport",
+        exportSelected=True)

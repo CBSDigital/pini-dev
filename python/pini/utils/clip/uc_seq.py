@@ -53,6 +53,12 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             if self.filename.count('.') < 2:
                 raise ValueError(self.path)
             self.base, self.frame_expr, self.extn = self.filename.rsplit('.', 2)
+            if (
+                    not len(self.frame_expr) == 4 or
+                    not self.frame_expr.startswith('%0') or
+                    not self.frame_expr.endswith('d')):
+                raise ValueError('Bad frame expr {} - {}'.format(
+                    self.frame_expr, path))
         else:
             for _expr in [
                     '%04d', '%d',
@@ -72,13 +78,6 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         self._frames = None
         if _frames:
             self._frames = set(_frames)
-
-        if (
-                not len(self.frame_expr) == 4 or
-                not self.frame_expr.startswith('%0') or
-                not self.frame_expr.endswith('d')):
-            raise ValueError('Bad frame expr {} - {}'.format(
-                self.frame_expr, path))
 
     @property
     def frames(self):
@@ -161,13 +160,16 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             File(self[_frame]).copy_to(target[_frame])
             target.add_frame(_frame)
 
-    def delete(self, wording='delete', icon=None, frames=None, force=False):
+    def delete(
+            self, wording='delete', frames=None, icon=None, parent=None,
+            force=False):
         """Delete this image sequence.
 
         Args:
             wording (str): override wording on warning dialog
-            icon (str): override icon on warning dialog
             frames (int list): limit list of frames to delete
+            icon (str): override icon on warning dialog
+            parent (QDialog): parent for warning dialog
             force (bool): delete without confirmation
         """
         from pini import qt, icons
@@ -183,7 +185,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 'image sequence?\n\n{}'.format(
                     wording.lower(), plural(_frames), _fr_str, self.path),
                 title='Confirm {}'.format(wording.capitalize()),
-                icon=icon or icons.find('Sponge'))
+                icon=icon or icons.find('Sponge'), parent=parent)
         for _frame in qt.progress_bar(
                 _frames, 'Deleting {:d} file{}', show_delay=1):
             _file = File(self[_frame])
@@ -201,10 +203,13 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Returns:
             (bool): whether sequence exists
         """
+        _LOGGER.debug("EXISTS %s", self.path)
         _frames = self.to_frames(force=force)
+        _LOGGER.debug(" - FRAMES %s", _frames)
         if frames:
+            _LOGGER.debug(" - CHECK FRAMES %s", frames)
             _missing = sorted(set(frames) - set(_frames))
-            _LOGGER.debug('MISSING FRAMES %s', _missing)
+            _LOGGER.debug(' - MISSING FRAMES %s', _missing)
             return not _missing
         return bool(_frames)
 
