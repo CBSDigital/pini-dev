@@ -130,7 +130,7 @@ def read_checks(force=False):
         _dirs += [Dir(abs_path(_path)) for _path in _env.split(';')]
 
     # Search dirs
-    _LOGGER.debug('CHECKING %d DIRS', len(_dirs))
+    _LOGGER.debug('CHECKING %d DIRS %s', len(_dirs), _dirs)
     _pys = []
     for _dir in _dirs:
         if not _dir.exists():
@@ -159,13 +159,14 @@ def read_checks(force=False):
         _LOGGER.debug('   - MOD %s types=%d', _mod, len(_types))
         _py_checks = []
         for _type in _types:
-            _src = File(inspect.getfile(_type)).to_file(extn='py')
+            _src = abs_path(inspect.getfile(_type))
+            _src = File(_src).to_file(extn='py')
             if _src != _py:
                 _LOGGER.debug('   - REJECTED type=%s path=%s', _type, _src.path)
                 continue
             _check = _type()
             _py_checks.append(_check)
-        _LOGGER.debug('   - FOUND %d CHECKS', len(_py_checks))
+        _LOGGER.debug('   - FOUND %d CHECKS %s', len(_py_checks), _py_checks)
         _checks += _py_checks
 
     _LOGGER.debug('FOUND %d CHECKS IN %.01fs', len(_checks),
