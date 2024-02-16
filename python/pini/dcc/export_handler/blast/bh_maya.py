@@ -54,6 +54,13 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         """Excute blast."""
 
         _work = pipe.cur_work()
+        if not _work:
+            qt.notify(
+                "Please save your scene using PiniHelper before blasting.\n\n"
+                "This allows the tools to tell what job/task you're working "
+                "in, to know where to save the blast to.",
+                title='Warning', parent=self.parent)
+            return
         if not _work.find_template('blast', catch=True):
             qt.notify(
                 'No blast template found in this job:\n\n{}\n\n'

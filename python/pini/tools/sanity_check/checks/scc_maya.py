@@ -530,6 +530,10 @@ class CheckAOVs(SCMayaCheck):
         """
         self.write_log('Check for job default AOVs')
 
+        _job = pipe.cur_job()
+        if not _job:
+            self.write_log(' - No current job')
+            return
         _yml = pipe.cur_job().to_file('.pini/aovs.yml')
         if not _yml.exists():
             self.write_log(' - No AOVs set up for this job %s', _yml.path)

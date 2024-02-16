@@ -70,7 +70,6 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         self.shot = self.entity.shot
         self.task = self.work_dir.task
         self.step = self.work_dir.step
-        self.user = self.work_dir.user
 
         # Find templates
         if template:
@@ -154,6 +153,31 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             (str): notes
         """
         return self.metadata.get('notes')
+
+    def owner(self):
+        """Obtain owner of this work file.
+
+        In cases where the user is embedded in the path, this
+        user token should be used, although to avoid ugly shotgrid
+        names mapped from emails (eg. my-name-company-com), if the
+        token is the current user then the login name can be used
+        instead (eg. mname).
+
+        Otherwise, this is simply the owner of the file on disk.
+
+        Returns:
+            (str): file owner
+        """
+        if self.user:
+
+            # Avoid nasty shotgrid name if possible
+            from pini import pipe
+            if self.user == pipe.cur_user():
+                return get_user()
+
+            return self.user
+
+        return super(CPWork, self).owner()
 
     def find_template(self, type_, has_key=None, want_key=None, dcc_=None,
                       catch=False):
@@ -568,7 +592,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _data['machine'] = platform.node()
         _data['mtime'] = mtime
         _data['notes'] = notes
-        _data['owner'] = get_user()
+        _data['owner'] = self.owner()
         _data['platform'] = sys.platform
         _data['range'] = dcc.t_range()
         _data['size'] = int(os.path.getsize(self.path))

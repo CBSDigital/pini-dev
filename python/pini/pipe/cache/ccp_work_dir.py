@@ -214,8 +214,9 @@ class CCPWorkDir(CPWorkDir):
             (CPOutput list): outputs
         """
         from pini.pipe import cache
-        _LOGGER.debug('READ OUTPUTS force=%d %s', force, self)
-        return super(CCPWorkDir, self)._read_outputs(
+        assert not class_
+        _LOGGER.debug('READ OUTPUTS force=%d class=%s %s', force, class_, self)
+        return super(CCPWorkDir, self)._read_outputs_disk(
             class_=class_ or cache.CCPOutput)
 
     def _read_outputs_sg(self):

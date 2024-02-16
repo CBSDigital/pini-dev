@@ -5,6 +5,8 @@ import logging
 import os
 import time
 
+import six
+
 from pini import pipe, dcc
 from pini.utils import (
     passes_filter, File, PyFile, cache_result, abs_path, Dir, single)
@@ -27,7 +29,7 @@ def find_check(filter_, task=None):
     return single(find_checks(filter_=filter_, task=task))
 
 
-def find_checks(
+def find_checks(  # pylint: disable=too-many-branches
         filter_=None, dev=False, work=None, task=None, force=False):
     """Find sanity checks to apply.
 
@@ -35,21 +37,26 @@ def find_checks(
         filter_ (str): filter checks by name
         dev (bool): add dev checks
         work (CPWork): override work file
-        task (str): force task (otherwise current task is used)
+        task (str): force task (otherwise current task is used) - if
+            'all' is passed, no task filter is applied and all checks
+            are returned
         force (bool): force reread checks from disk
 
     Returns:
         (SCCheck list): checks
     """
-    _work = work or pipe.cur_work()
-    _task = pipe.map_task(
-        task or (_work.task if _work else None),
-        fmt='pini')
     _all_checks = read_checks(force=force)
-    _LOGGER.debug('FIND CHECKS task=%s work=%s', _task, _work)
+    _work = work or pipe.cur_work()
+    _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
 
-    _settings = _work.entity.settings if _work else {}
-    _sc_settings = _settings.get('sanity_check', {})
+    # Determine task
+    _task = task
+    _disable_task_filter = _task == 'all'
+    if not _disable_task_filter:
+        _task = pipe.map_task(
+            _task or (_work.task if _work else None),
+            fmt='pini')
+    _LOGGER.debug('FIND CHECKS task=%s work=%s', _task, _work)
 
     # Filter checks based on work
     _LOGGER.debug('FILTERING %d CHECKS', len(_all_checks))
@@ -91,15 +98,23 @@ def find_checks(
             continue
 
         # Apply task filter
-        if _task and _check.task_filter and (
-                not passes_filter(_task, _check.task_filter)):
-            _LOGGER.debug(
-                '   - REJECTED TASK task=%s filter=%s',
-                _task, _check.task_filter)
-            continue
+        if _disable_task_filter:
+            pass
+        elif _task is None:
+            if _check.task_filter:
+                continue
+        elif isinstance(_task, six.string_types):
+            if not passes_filter(_task, _check.task_filter):
+                _LOGGER.debug(
+                    '   - REJECTED TASK task=%s filter=%s',
+                    _task, _check.task_filter)
+                continue
+        else:
+            raise ValueError(_task)
 
         # Apply settings filter
         if not _sc_settings.get(_check.name, {}).get('enabled', True):
+            _LOGGER.debug(' - SETTINGS FILTER')
             continue
 
         _LOGGER.debug('   - ACCEPTED %s', _check)

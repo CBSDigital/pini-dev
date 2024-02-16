@@ -447,10 +447,8 @@ class CPWorkDir(Dir):
         from pini import pipe
 
         _LOGGER.debug('READ OUTPUTS %s', self)
-        _class = class_ or pipe.CPOutput
-
         if pipe.MASTER == 'disk':
-            _outs = self._read_outputs_disk(class_=_class)
+            _outs = self._read_outputs_disk(class_=class_)
         elif pipe.MASTER == 'shotgrid':
             _outs = self._read_outputs_sg()
         else:
@@ -458,7 +456,7 @@ class CPWorkDir(Dir):
 
         return sorted(_outs)
 
-    def _read_outputs_disk(self, class_):
+    def _read_outputs_disk(self, class_=None):
         """Read outputs from disk.
 
         Args:
@@ -469,13 +467,15 @@ class CPWorkDir(Dir):
         """
         from pini import pipe
 
+        _class = class_ or pipe.CPOutput
+        _LOGGER.debug('READ OUTPUTS DISK %s', _class)
         _tmpls = self._find_output_templates()
         _LOGGER.debug(' - FOUND %d TMPLS', len(_tmpls))
 
         _globs = pipe.glob_templates(_tmpls, job=self.job)
         _outs = []
         for _tmpl, _path in _globs:
-            _out = class_(
+            _out = _class(
                 _path, template=_tmpl, work_dir=self, entity=self.entity)
             _outs.append(_out)
 

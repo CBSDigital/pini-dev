@@ -41,14 +41,37 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
         self.check.reset()
         self.redraw()
 
-    def execute_check(self, update_ui=None):
+    def execute_check(self, checks, update_ui=None):
         """Execute this check.
 
         Args:
+            checks (SCCheck check): other checks being executed - if
+                they depend on this check then they are reset if this
+                check is re-run
             update_ui (fn): interface update callback
         """
+        _LOGGER.debug("EXECUTE CHECK %s", self.check)
+        self._reset_dependent_checks(checks=checks, update_ui=update_ui)
         self.check.execute(update_ui=update_ui)
         self.redraw()
+        _LOGGER.debug(" - EXECUTE CHECK COMPLETE %s", self.check)
+
+    def _reset_dependent_checks(self, checks, update_ui):
+        """Reset any checks which have run and are depended on this check.
+
+        Args:
+            checks (SCCheck check): other checks being executed
+            update_ui (fn): interface update callback
+        """
+        _LOGGER.debug(" - RESET DEPENDENT CHECKS %s", self.check)
+        _deps = [_check for _check in checks
+                 if type(self.check) in _check.depends_on and
+                 _check.has_run]
+        _LOGGER.debug(' - DEPS %s', _deps)
+        for _dep in _deps:
+            _dep.reset()
+            update_ui(check=_dep)
+        _LOGGER.debug(' - RESET %d DEPS', len(_deps))
 
     def draw_pixmap(self, pix):
         """Draw this check's pixmap.

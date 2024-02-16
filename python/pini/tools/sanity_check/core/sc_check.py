@@ -33,6 +33,8 @@ class SCCheck(object):
     profile_filter = None  # asset/shot
     task_filter = None
 
+    depends_on = ()
+
     def __init__(self):
         """Constructor."""
         self.disable_key = 'Pini.SanityCheck.{}.Disable'.format(

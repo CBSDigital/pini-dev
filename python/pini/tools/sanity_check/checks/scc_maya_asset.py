@@ -12,7 +12,7 @@ from pini.utils import single, wrap_fn, check_heart, plural
 from maya_pini import ref, open_maya as pom, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, to_unique)
+    DEFAULT_NODES, del_namespace, to_clean, to_unique, add_to_set, to_node)
 
 from ..core import SCFail, SCMayaCheck
 
@@ -64,9 +64,10 @@ def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
     """
     _LOGGER.debug("FIX NODE SUFFIX %s", node)
 
-    if cmds.referenceQuery(node, isNodeReferenced=True):
+    _node = pom.cast_node(str(node))
+    if _node.is_referenced():
         _msg = ('Referenced {} {} does not have "{}" '
-                'suffix'.format(type_, node, suffix))
+                'suffix'.format(type_, _node, suffix))
         return _msg, None, None
 
     # Determine base
@@ -75,11 +76,11 @@ def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
         _splitters = [suffix] + list(alts)
         _LOGGER.debug(' - SPLITTERS %s', _splitters)
         for _splitter in _splitters:
-            if _splitter in node:
-                _base = node.rsplit(_splitter, 1)[0]
+            if _splitter in str(_node):
+                _base = str(_node).rsplit(_splitter, 1)[0]
                 break
         else:
-            _base = node
+            _base = str(_node)
         while _base[-1].isdigit():
             _base = _base[:-1]
     _LOGGER.debug(' - BASE %s', _base)
@@ -90,7 +91,7 @@ def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
     _msg = (
         '{} "{}" does not have "{}" suffix (suggestion: '
         '"{}")'.format(type_.capitalize(), node, suffix, _suggestion))
-    _fix = wrap_fn(cmds.rename, node, _suggestion)
+    _fix = wrap_fn(_node.rename, _suggestion)
 
     return _msg, _fix, _suggestion
 
@@ -117,11 +118,12 @@ class CheckTopNode(SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
     task_filter = 'model rig'
+    sort = 30
 
     def run(self):
         """Run this check."""
         _task = pipe.cur_task(fmt='pini')
-        _name = {'model': 'MDL', 'rig': 'RIG'}[_task]
+        _name = {'model': 'MDL', 'rig': 'RIG'}.get(_task)
 
         # Read top nodes
         _top_nodes = [
@@ -139,7 +141,7 @@ class CheckTopNode(SCMayaCheck):
             self.add_fail('No single top node')
             return
         self.write_log('Top node %s', _top_node)
-        if _top_node != _name:
+        if _name and _top_node != _name:
             _fix = wrap_fn(cmds.rename, _top_node, _name)
             _msg = 'Badly named top node {} (should be {})'.format(
                 _top_node, _name)
@@ -158,29 +160,27 @@ class CheckCacheSet(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        self._check_set()
-        self._check_for_single_top_node()
 
-    def _check_set(self):
-        """Check cache_SET exists and has geometry.
-
-        Returns:
-            (str list): cache set geometry
-        """
+        # Check set
         if not cmds.objExists('cache_SET'):
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)
-            return []
+            return
         if not cmds.objectType('cache_SET') == 'objectSet':
             self.add_fail('Bad cache set type')
-            return []
+            return
 
+        # Check set geos
         _geos = _cache_set_to_geos()
         if not _geos:
-            self.add_fail('Empty cache set')
-
+            _fix = None
+            _top_node = single(_find_top_level_nodes(), catch=True)
+            if _top_node:
+                _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
+            _fail = self.add_fail('Empty cache set', fix=_fix)
+            return
         self.write_log('GEOS %s', _geos)
-        return _geos
+        self._check_for_single_top_node()
 
     def _check_for_single_top_node(self):
         """Make sure cache set geo has a single top node."""
@@ -194,12 +194,27 @@ class CheckCacheSet(SCMayaCheck):
             self.add_fail(_msg)
 
 
+def _find_top_level_nodes():
+    """Find non-default dag nodes with no parents.
+
+    Returns:
+        (str list): top nodes
+    """
+    _all_nodes = cmds.ls(dagObjects=True, long=True, defaultNodes=False)
+    _nodes = [
+        to_node(_node) for _node in _all_nodes
+        if _node.count('|') == 1 and
+        to_node(_node) not in DEFAULT_NODES]
+    return _nodes
+
+
 class CheckRenderStats(SCMayaCheck):
     """Check render stats section on shape nodes."""
 
     task_filter = 'model rig layout'
     sort = 40  # Should happen before checks which need cache set
     _ignore_names = None
+    depends_on = (CheckCacheSet, )
 
     def run(self):
         """Run this check."""
@@ -243,8 +258,7 @@ class CheckUVs(SCMayaCheck):
 
     task_filter = 'model rig'
     _label = 'Check UVs'
-
-    # sort = 100
+    depends_on = (CheckCacheSet, )
 
     def run(self):
         """Run this check."""
@@ -537,6 +551,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
     """
 
     task_filter = 'model rig'
+    depends_on = (CheckCacheSet, )
 
     def run(self):
         """Run this check."""

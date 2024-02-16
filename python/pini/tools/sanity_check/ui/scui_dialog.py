@@ -4,7 +4,7 @@ import logging
 
 from pini import qt, dcc, icons
 from pini.tools import error
-from pini.utils import File, plural
+from pini.utils import File, plural, single
 
 from . import scui_fail, scui_check
 
@@ -62,7 +62,7 @@ class SanityCheckUi(qt.CUiDialog):
             self._callback__RunChecks(force=force)
 
         if _modal and self.isVisible():
-            _LOGGER.info(' - EXEC MODAL force=%d', force)
+            _LOGGER.debug(' - EXEC MODAL force=%d', force)
             self.exec_()
 
     def init_ui(self):
@@ -99,18 +99,29 @@ class SanityCheckUi(qt.CUiDialog):
             _check.reset()
         self.ui.Checks.redraw()
 
-    def _update_ui(self):
+    def _update_ui(self, check=None):
         """Update the ui.
 
         This method is passed to checks to allow them to provide progress
         feedback as they are being executed.
+
+        Args:
+            check (SCCheck): force check to update
         """
+        _LOGGER.debug('UPDATE UI')
         dcc.refresh()
 
-        _check_ui = self.ui.Checks.selected_item()
+        if check:
+            _check_ui = single([
+                _item for _item in self.ui.Checks.all_items()
+                if _item.data() == check])
+        else:
+            _check_ui = self.ui.Checks.selected_item()
+        _LOGGER.debug(' - CHECK TO UPDATE %s', _check_ui)
+
         if _check_ui:
             _check_ui.redraw()
-            assert _check_ui.check is self.check
+
         self.ui.Log.redraw()
         dcc.refresh()
 
@@ -131,18 +142,19 @@ class SanityCheckUi(qt.CUiDialog):
         Args:
             force (bool): force continue with export ignoring any issues
         """
+        _LOGGER.debug('CHECK FOR SUCCESS')
 
         # Check whether there are failed checks
         _checks = self.ui.Checks.all_items()
         _errored = [_check for _check in _checks if _check.status == 'errored']
         _failed = [_check for _check in _checks if _check.status == 'failed']
         _success = not _errored and not _failed
-        _LOGGER.info(
-            'RUN CHECKS COMPLETE close_on_success=%d success=%d errored=%d '
+        _LOGGER.debug(
+            ' - READ CHECKS close_on_success=%d success=%d errored=%d '
             'failed=%d', bool(self.close_on_success), _success,
             len(_errored), len(_failed))
         if force or (self.close_on_success and _success):
-            _LOGGER.info('CLOSING')
+            _LOGGER.debug(' - CLOSING DUE TO SUCCESS')
             self.results = self._build_results()
             self.close()
 
@@ -166,14 +178,21 @@ class SanityCheckUi(qt.CUiDialog):
                 count=len(_checks), plural=plural(_checks), msg=_msg)
             _elem.setText(_label)
 
+        _LOGGER.debug(" - CHECK FOR SUCCESS COMPLETE %s", self.check)
+
     def _redraw__ErrorTab(self):
         if self.check and self.check.error:
             self.error_ui.set_error(self.check.error)
 
     def _redraw__Checks(self):
+
+        _LOGGER.debug('REDRAW Checks')
+
         _items = []
         _show_passed = self.ui.ShowPassed.isChecked()
         _show_disabled = self.ui.ShowDisabled.isChecked()
+
+        _autorun = False
         _sel = None
         for _check in self.checks:
             if not _show_disabled and _check.is_disabled:
@@ -183,10 +202,21 @@ class SanityCheckUi(qt.CUiDialog):
             _item = scui_check.SCUiCheckItem(
                 list_view=self.ui.Checks, check=_check)
             _items.append(_item)
-            if not _sel and _check.has_failed:
-                _sel = _item
-        self.ui.Checks.set_items(_items, select=_sel)
-        self._callback__Checks()
+
+            if not _sel:
+                if not _check.has_run:
+                    _sel = _item
+                    _autorun = True
+                elif _check.has_failed:
+                    _sel = _item
+
+        self.ui.Checks.set_items(_items, select=_sel, emit=True)
+
+        if _autorun:
+            _LOGGER.debug(' - APPLYING AUTORUN %s %s', _sel, self.check)
+            self._callback__RunCheck()
+
+        _LOGGER.debug(' - REDRAW Checks COMPLETE')
 
     def _redraw__ToggleDisabled(self):
         if self.check:
@@ -269,16 +299,19 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _callback__RunChecks(self, force=False):
 
+        _LOGGER.debug('RUN CHECKS')
+
         self.reset_checks()
 
         _show_passed = self.ui.ShowPassed.isChecked()
         _sel = None
 
         for _item in self.ui.Checks.all_items():
+
             self.ui.Checks.select_item(_item)
             dcc.refresh()
 
-            _item.execute_check(update_ui=self._update_ui)
+            _item.execute_check(update_ui=self._update_ui, checks=self.checks)
 
             if not _show_passed and _item.check.has_passed:
                 self.ui.Checks.remove_item(_item)
@@ -293,10 +326,14 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _callback__RunCheck(self):
 
+        # Run selected check
         _check_ui = self.ui.Checks.selected_item()
         if _check_ui:
-            _check_ui.execute_check(update_ui=self._update_ui)
+            _check_ui.execute_check(
+                update_ui=self._update_ui, checks=self.checks)
         self._callback__Checks()
+
+        # Update checks in case this check passed
         if (
                 self.check and
                 not self.check.fails and

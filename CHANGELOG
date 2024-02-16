@@ -1,3 +1,25 @@
+## [0.65.0] - Fri 2024-02-16 12:23
+### Summary
+ - Pini Helper:
+    - maya blast better error on no current work file (blutge),
+    - force ownership of work files with user embedded in path,
+ - Sanity Check,
+    - reset dependent checks on run fix,
+### Updated
+ - pini.dcc.CMayaPlayblast catch no current work,
+ - pini.pipe.cache.CCPWorkDir._read_output_disk bugfix returning non-cacheable,
+ - pini.pipe.CPWork.owner added to force ownership of paths with user tag,
+ - pini.tools.sanity_check.find_checks allow task as all,
+ - pini.tools.sanity_check.find_checks bugfix running all checks if no task,
+ - pini.tools.sanity_check.SCCheck.depends_on added,
+ - pini.tools.sanity_check bugfix error on fix node suffix,
+ - pini.tools.sanity_check.CheckAOVs catch no current job,
+ - pini.tools.sanity_check.CheckTopNode moved increased priority to run before cache set checks,
+ - pini.tools.sanity_check.CheckTopNode bugfix error on run outside rig/model,
+ - pini.tools.sanity_check.CheckCacheSet added empty cache set fix if single top node,
+ - pini.tools.sanity_check.SanityCheckUi reset depdendent checks,
+
+
 ## [0.64.1] - Thu 2024-02-15 14:17
 ### Summary
  - Sanity Check,
