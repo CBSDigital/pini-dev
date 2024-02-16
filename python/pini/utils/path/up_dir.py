@@ -6,6 +6,7 @@ import os
 import platform
 import shutil
 
+from .. u_misc import EMPTY
 from . import up_path, up_utils, up_find
 
 _LOGGER = logging.getLogger(__name__)
@@ -110,19 +111,21 @@ class Dir(up_path.Path):
         """
         return up_find.find(self.path, class_=class_, **kwargs)
 
-    def find_seqs(self, depth=1, include_files=False):
+    def find_seqs(self, depth=1, include_files=False, extn=EMPTY):
         """Find file sequences within this dir.
 
         Args:
             depth (int): search depth
             include_files (bool): include files which are not
                 part of any sequence
+            extn (str|None): filter by extension
 
         Returns:
             (Seq list): file sequences
         """
         from pini.utils import find_seqs
-        return find_seqs(self, depth=depth, include_files=include_files)
+        return find_seqs(
+            self, depth=depth, include_files=include_files, extn=extn)
 
     def flush(self, force=False):
         """Flush the contents of this dir.

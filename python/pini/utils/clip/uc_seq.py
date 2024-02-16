@@ -8,7 +8,7 @@ from . import uc_clip
 
 from ..u_error import DebuggingError
 from ..u_text import plural
-from ..u_misc import single, strftime
+from ..u_misc import single, strftime, EMPTY
 from ..u_six import six_cmp
 
 from ..cache import cache_method_to_file
@@ -652,7 +652,7 @@ class CacheSeq(Seq):
 
 def find_seqs(
         dir_=None, files=None, depth=1, include_files=False, split_chrs='.',
-        filter_=None):
+        filter_=None, extn=EMPTY):
     """Find sequences in the given directory.
 
     Args:
@@ -664,6 +664,7 @@ def find_seqs(
         split_chrs (str): override frame split character
             eg. use "._" to match "blah_%04d.jpg" seqs
         filter_ (str): apply filename filter
+        extn (str): filter by extension
 
     Returns:
         (Seq list): sequences found
@@ -673,14 +674,16 @@ def find_seqs(
             "Find sequences disabled using PINI_DISABLE_FIND_SEQS")
 
     # Obtain list of files
+    _LOGGER.debug('FIND SEQS')
     if files is not None:
-        _LOGGER.debug('FIND SEQS')
         _files = files
     else:
         assert dir_
         _dir = Dir(dir_)
-        _LOGGER.debug('FIND SEQS %s', _dir.path)
-        _files = _dir.find(type_='f', class_=True, depth=depth, filter_=filter_)
+        _LOGGER.debug(' - DIR %s', _dir.path)
+        _files = _dir.find(
+            type_='f', class_=True, depth=depth, filter_=filter_, extn=extn)
+        _LOGGER.debug(' - FOUND %d FILES', len(_files))
 
     # Check which files fall into sequences
     _seqs = {}
@@ -694,7 +697,6 @@ def find_seqs(
 
         # Extract frame str
         _LOGGER.debug('   - BASE %s', _file.base)
-        # _tokens = _file.base.split('.')
         _tokens = _tokenise_base(_file.base, split_chrs=split_chrs)
         _frame_str = _tokens[-1]
         if not _frame_str.isdigit():

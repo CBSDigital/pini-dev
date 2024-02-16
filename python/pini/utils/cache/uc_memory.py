@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import time
 
 try:
     from inspect import getfullargspec as _get_args  # py3
@@ -10,6 +11,28 @@ except ImportError:
 
 _LOGGER = logging.getLogger(__name__)
 _RESULTS = {}
+
+
+class _Result(object):
+    """Represents the result of a cacheable function."""
+
+    def __init__(self, value):
+        """Constructor.
+
+        Args:
+            value (any): function result
+        """
+        self.value = value
+        self.mtime = time.time()
+
+    @property
+    def age(self):
+        """Obtain age of this result.
+
+        Returns:
+            (float): age in seconds
+        """
+        return time.time() - self.mtime
 
 
 def obtain_results_cache(namespace='default'):
@@ -40,12 +63,13 @@ def flush_caches(namespace=None):
         _RESULTS = {}
 
 
-def get_result_cacher(use_args=None, namespace='default'):
+def get_result_cacher(use_args=None, namespace='default', max_age=None):
     """Build a result caching decorator.
 
     Args:
         use_args (list): limit the list of args to use
         namespace (str): cache namespace
+        max_age (float): force recalculate after this many seconds
 
     Returns:
         (fn): caching decorator
@@ -64,14 +88,24 @@ def get_result_cacher(use_args=None, namespace='default'):
                           func.__name__, _args_key)
             _results = obtain_results_cache(namespace)
 
+            # Determine whether result needs to be calculated
+            if _force:
+                _calculate = True
+            elif _args_key not in _results:
+                _calculate = True
+            elif max_age and _results[_args_key].age > max_age:
+                _calculate = True
+            else:
+                _calculate = False
+
             # Retrieve/generate retult
-            if _force or _args_key not in _results:
+            if _calculate:
                 _result = func(*args, **kwargs)
                 _LOGGER.debug('[cache_result] - CALCULATED RESULT %s %s',
                               func.__name__, _result)
-                _results[_args_key] = _result
+                _results[_args_key] = _Result(_result)
             else:
-                _result = _results[_args_key]
+                _result = _results[_args_key].value
                 _LOGGER.debug('[cache_result] - USING CACHED RESULT %s %s',
                               func.__name__, _result)
             return _result

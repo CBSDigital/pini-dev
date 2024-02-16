@@ -162,6 +162,8 @@ def log_usage_event(func, args=None):
         func (str): name of function which was used
         args (dict): args data to store
     """
+    if os.environ.get('PINI_DISABLE_WRITE_USAGE'):
+        return
     _LOGGER.debug('WRITE USAGE TO DISK args=%s', args)
 
     _yml = _get_usage_yml()

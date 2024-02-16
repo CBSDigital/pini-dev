@@ -57,6 +57,7 @@ def find(path, depth=None, class_=None, type_=None, catch_missing=False,
     # Setup extns filter
     _extns = set(extns or [])
     if extn is not EMPTY:
+        _LOGGER.debug(' - ADDING EXTN %s', extn)
         _extns.add(extn)
     _LOGGER.debug(' - EXTNS %s', _extns)
 
