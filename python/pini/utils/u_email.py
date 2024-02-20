@@ -14,8 +14,6 @@ from email.utils import formatdate
 
 import six
 
-from .u_misc import lprint
-
 _LOGGER = logging.getLogger(__name__)
 
 FROM_EMAIL = os.environ.get('PINI_FROM_EMAIL')
@@ -85,7 +83,7 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
     _server.sendmail(_from, _to, _email.as_string())
     _server.quit()
 
-    lprint('SENT EMAIL', _to)
+    _LOGGER.info('SENT EMAIL %s', _to)
 
 
 def set_from_email(email_):
@@ -95,6 +93,6 @@ def set_from_email(email_):
         email_ (str): email address to apply
     """
     global FROM_EMAIL
-    _LOGGER.info('SET FROM EMAIL %s', email_)
+    _LOGGER.debug('SET FROM EMAIL %s', email_)
     os.environ['PINI_FROM_EMAIL'] = email_
     FROM_EMAIL = email_

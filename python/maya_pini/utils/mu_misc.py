@@ -206,7 +206,7 @@ def set_workspace(dir_):
     Args:
         dir_ (Dir): path to apply
     """
-    _LOGGER.info('UPDATING WORKSPACE %s', dir_.path)
+    _LOGGER.debug('UPDATING WORKSPACE %s', dir_.path)
     cmds.workspace(create=dir_.path)
     cmds.workspace(dir_.path, openWorkspace=True)
     cmds.workspace(projectPath=dir_.path)

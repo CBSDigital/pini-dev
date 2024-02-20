@@ -192,7 +192,7 @@ class CCPWork(CPWork):
         Returns:
             (str): owner
         """
-        return self.metadata.get('owner')
+        return self._owner_from_user() or self.metadata.get('owner')
 
     @functools.wraps(CPWork.save)
     def save(self, *args, **kwargs):

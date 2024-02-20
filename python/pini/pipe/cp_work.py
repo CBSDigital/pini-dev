@@ -154,6 +154,23 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         """
         return self.metadata.get('notes')
 
+    def _owner_from_user(self):
+        """Obtain owner based on user tag.
+
+        Returns:
+            (str|None): owner (if any)
+        """
+        if self.user:
+
+            # Avoid nasty shotgrid name if possible
+            from pini import pipe
+            if self.user == pipe.cur_user():
+                return get_user()
+
+            return self.user
+
+        return None
+
     def owner(self):
         """Obtain owner of this work file.
 
@@ -168,16 +185,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         Returns:
             (str): file owner
         """
-        if self.user:
-
-            # Avoid nasty shotgrid name if possible
-            from pini import pipe
-            if self.user == pipe.cur_user():
-                return get_user()
-
-            return self.user
-
-        return super(CPWork, self).owner()
+        return self._owner_from_user() or super(CPWork, self).owner()
 
     def find_template(self, type_, has_key=None, want_key=None, dcc_=None,
                       catch=False):
@@ -592,6 +600,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _data['machine'] = platform.node()
         _data['mtime'] = mtime
         _data['notes'] = notes
+        _data['user'] = get_user()
         _data['owner'] = self.owner()
         _data['platform'] = sys.platform
         _data['range'] = dcc.t_range()
@@ -955,38 +964,3 @@ def to_work(file_, catch=True):
         if catch:
             return None
         raise _exc
-
-
-def version_up(force=False):
-    """Version up the current scene.
-
-    Args:
-        force (bool): overwrite any existing without confirmation
-    """
-    from pini import pipe
-    from pini.tools import usage
-
-    usage.log_usage_event('VersionUp')
-
-    _cur_work = cur_work()
-    if not _cur_work:
-        dcc.error('Unable to version up - no current work file')
-        return None
-
-    _next_work = _cur_work.find_next()
-    _next_work.save(force=force)
-
-    # Update cache if not already updated (it might need to be updated
-    # manually in a save callback eg. in nuke autowrite)
-    if _next_work not in pipe.CACHE.cur_work_dir.works:
-        pipe.CACHE.cur_work_dir.find_works(force=True)
-    assert pipe.CACHE.cur_work
-
-    # Update pini helper
-    if dcc.HELPER_AVAILABLE:
-        from pini.tools import helper
-        if helper.is_active():
-            helper.DIALOG.ui.WWorks.redraw()
-            helper.DIALOG.ui.JumpToCurrent.click()
-
-    return _next_work

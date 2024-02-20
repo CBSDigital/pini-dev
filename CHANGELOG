@@ -1,3 +1,12 @@
+## [0.66.1] - Tue 2024-02-20 10:48
+### Summary
+ - Pini Helper:
+    - bugfix showing incorrect user,
+### Updated
+ - pini.pipe.CPWork.owner bugfix not apply user tag in cache/metadata,
+ - pini.pipe.version_up moved cp_work -> cp_tools,
+
+
 ## [0.66.0] - Fri 2024-02-16 15:52
 ### Summary
  - Pini Tools:
