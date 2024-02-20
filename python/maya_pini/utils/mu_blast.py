@@ -296,7 +296,7 @@ def blast(
     from maya_pini import open_maya as pom
 
     _cam = camera or pom.active_cam()
-    _is_video = clip.extn in ['mp4']
+    _is_video = clip.extn in ('mp4', 'mov')
     _range = _to_range(range_)
     _res = _to_res(res, is_video=_is_video)
 
@@ -333,7 +333,8 @@ def blast(
                 _LOGGER.info(' - TMP %s %s', _tmp_seq.to_range(), _tmp_seq)
                 raise RuntimeError('Range mismatch')
             _tmp_seq.delete(force=True)
-    assert clip.exists()
+    if not clip.exists():
+        raise RuntimeError(clip.path)
     if view:
         clip.view()
     _LOGGER.info(' - BLAST COMPLETE IN %.02fs', time.time() - _start)

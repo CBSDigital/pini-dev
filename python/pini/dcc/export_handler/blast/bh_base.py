@@ -1,6 +1,7 @@
 """Tools for managing the base blast handler."""
 
 import logging
+import os
 
 from pini import dcc, qt, icons
 from pini.qt import QtWidgets, Qt
@@ -70,7 +71,7 @@ class CBlastHandler(eh_base.CExportHandler):
 
     def _callback__Format(self):
         _fmt = self.ui.Format.currentText()
-        self.ui.Burnins.setVisible(_fmt == 'mp4')
+        self.ui.Burnins.setVisible(_fmt in ('mp4', 'mov'))
 
     def _callback__Range(self):
 
@@ -109,8 +110,9 @@ class CBlastHandler(eh_base.CExportHandler):
         self.add_separator_elem()
 
         self._build_range_elems()
+        _vid_fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
         self.ui.Format = self.add_combobox_elem(
-            'Format', items=['mp4', 'jpg', 'png'])
+            'Format', items=[_vid_fmt, 'jpg', 'png'])
         self.add_separator_elem()
 
         self.ui.View = self.add_checkbox_elem(

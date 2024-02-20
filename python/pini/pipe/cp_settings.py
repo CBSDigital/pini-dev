@@ -42,7 +42,7 @@ def _obt_default_settings():
     _file = os.environ.get('PINI_PIPE_DEFAULT_SETTINGS')
     if _file:
         _file = File(_file)
-        _LOGGER.info(
+        _LOGGER.debug(
             'READING $PINI_DEFAULT_PIPE_SETTINGS %s', _file.path)
         assert _file.extn == 'yml'
         _def_data = _file.read_yml(catch=True) or {}

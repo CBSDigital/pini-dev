@@ -5,7 +5,7 @@ import time
 
 from ..u_misc import strftime
 from ..u_exe import find_exe
-from ..path import Dir, File, TMP_PATH
+from ..path import Dir, File, TMP_PATH, abs_path
 from ..u_misc import system, nice_age, to_str
 
 _LOGGER = logging.getLogger(__name__)
@@ -193,6 +193,7 @@ def seq_to_video(
     """
     from pini import dcc
 
+    _video = File(abs_path(to_str(video)))
     _ffmpeg = find_exe('ffmpeg')
     _fps = fps or dcc.get_fps()
     _start, _ = seq.to_range(force=True)
@@ -206,7 +207,7 @@ def seq_to_video(
         _args += ['-start_number', _start]
     _args += ['-i', seq.path]
     if burnins:
-        _args += _build_ffmpeg_burnin_flags(seq, video=video)
+        _args += _build_ffmpeg_burnin_flags(seq, video=_video)
     _args += _build_ffmpeg_audio_flags(
         use_scene_audio=use_scene_audio, audio=audio,
         audio_offset=audio_offset)
@@ -224,7 +225,7 @@ def seq_to_video(
         _args += ['-vf', "nlmeans='{:.01f}:7:5:3:3'".format(denoise)]
     if res:
         _args += ['-vf', 'scale={:d}:{:d}'.format(*res)]
-    _args += [video]
+    _args += [_video]
 
     # Execute ffmpeg
     _LOGGER.debug(' - FFMPEG %s', _args)
@@ -232,10 +233,10 @@ def seq_to_video(
         ' - FFMPEG %s',
         ' '.join(to_str(_arg) for _arg in _args))
     _, _err = system(_args, result='out/err', verbose=verbose)
-    if not video.exists() or not video.size():
-        _handle_conversion_fail(seq=seq, err=_err, video=video)
+    if not _video.exists() or not _video.size():
+        _handle_conversion_fail(seq=seq, err=_err, video=_video)
 
-    return video
+    return _video
 
 
 def _handle_conversion_fail(seq, video, err):

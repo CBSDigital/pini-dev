@@ -172,7 +172,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             _recent = pipe.recent_work()
             if _recent:
                 self.target = _recent[0].path
-        _LOGGER.info(' - TARGET %s', self.target)
+        _LOGGER.debug(' - TARGET %s', self.target)
 
     def jump_to(self, path):
         """Jump interface to the given path.

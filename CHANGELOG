@@ -1,3 +1,15 @@
+## [0.67.0] - Tue 2024-02-20 12:50
+### Summary
+ - Pini Helper:
+    - catch error on build outputs cache if outdated paths in cache,
+### Updated
+ - pini.utils.Seq.to_video added mov handling,
+ - pini.utils.Seq.to_video bugfix error on Video input,
+ - pini.dcc.CBlastHandler allow video format override via $PINI_VIDEO_FORMAT,
+ - pini.pipe.cache.CCPJob read outputs sg added catch to accommodate outdated paths in cache,
+ - maya_pini.utils.blast added mov handling,
+
+
 ## [0.66.1] - Tue 2024-02-20 10:48
 ### Summary
  - Pini Helper:

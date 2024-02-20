@@ -559,19 +559,23 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             if _out.work_dir:
                 _work_dir = _ety.obt_work_dir(_out.work_dir)
 
-            # Build output object
-            _kwargs = {
-                'entity': _ety,
-                'work_dir': _work_dir,
-            }
+            # Determine output class
             if isinstance(_out, pipe.CPOutputVideo):
-                _c_out = cache.CCPOutputVideo(_out, **_kwargs)
+                _class = cache.CCPOutputVideo
             elif isinstance(_out, pipe.CPOutput):
-                _c_out = cache.CCPOutput(_out, **_kwargs)
+                _class = cache.CCPOutput
             elif isinstance(_out, pipe.CPOutputSeq):
-                _c_out = cache.CCPOutputSeq(_out.path, **_kwargs)
+                _class = cache.CCPOutputSeq
             else:
                 raise ValueError(_out)
+
+            # Build output object
+            _kwargs = {'entity': _ety, 'work_dir': _work_dir}
+            try:
+                _c_out = _class(_out.path, **_kwargs)
+            except ValueError:  # Can fail if config changed
+                _LOGGER.warning(' - BUILD OUT FAILED %s', _out)
+                continue
 
             _LOGGER.debug('   - C OUT %s', _c_out)
             _c_outs.append(_c_out)

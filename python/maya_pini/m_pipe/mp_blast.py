@@ -44,7 +44,7 @@ def blast(
     _output_name = output_name
     if output_name == '<camera>':
         _output_name = str(pom.CCamera(_cam))
-    if format_ in ['mp4']:
+    if format_ in ['mp4', 'mov']:
         _tmpl = 'blast_mov'
         _tmp_seq = _work.to_output('blast', output_name='BlastTmp', extn='jpg')
         _tmp_seq.delete(force=True)

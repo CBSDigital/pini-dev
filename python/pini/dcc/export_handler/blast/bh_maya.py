@@ -27,7 +27,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         super(CMayaPlayblast, self).build_ui(parent=parent, layout=layout)
         _cams = [str(_cam) for _cam in pom.find_cams()]
         _cur_cam = str(pom.active_cam())
-        _LOGGER.info('BUILD UI %s %s', _cur_cam, _cams)
+        _LOGGER.debug('BUILD UI %s %s', _cur_cam, _cams)
         self.ui.Camera = self.add_combobox_elem(
             name='Camera', items=_cams, val=_cur_cam,
             disable_save_settings=True)
@@ -41,7 +41,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
     def _callback__Format(self):
         super(CMayaPlayblast, self)._callback__Format()
         _fmt = self.ui.Format.currentText()
-        _tmpl_name = 'blast_mov' if _fmt in ('mp4', ) else 'blast'
+        _tmpl_name = 'blast_mov' if _fmt in ('mp4', 'mov') else 'blast'
         _work = pipe.cur_work()
         _en = False
         if _work:

@@ -288,7 +288,7 @@ def _read_viewers():
             _LOGGER.debug('   - REJECTED %s %d', _viewer.exe, bool(_viewer.exe))
             continue
         _viewers.append(_viewer)
-    _LOGGER.info(
+    _LOGGER.debug(
         'READ %d VIEWERS IN %.01fs', len(_viewers), time.time() - _start)
     return tuple(_viewers)
 
