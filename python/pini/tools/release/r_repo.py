@@ -9,6 +9,7 @@ from pini.utils import (
     Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
     system)
 
+from . import r_test_file
 from .r_version import PRVersion, DEV_VER
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,6 +44,38 @@ class PRRepo(Dir):
             (PRVersion): version
         """
         return self.read_version()
+
+    def find_tests(self, mode='all'):
+        """Find tests in this repo.
+
+        Args:
+            mode (str): type of tests to find (all/unit/integration)
+
+        Returns:
+            (PRTest list): matching tests
+        """
+        from pini import dcc
+
+        _files = self.find(
+            extn='py', filter_='/tests/', class_=r_test_file.PRTestFile)
+
+        # Apply dcc filter
+        _files = [
+            _file for _file in _files
+            if _file.dcc_ in (None, dcc.NAME)]
+
+        # Apply mode filter
+        if str(mode).lower() in ('unit', 'integration'):
+            _files = [
+                _file for _file in _files if _file.test_type == mode.lower()]
+        elif mode is None or str(mode).lower() == 'all':
+            pass
+        else:
+            raise ValueError(mode)
+
+        _tests = sum([_file.find_tests() for _file in _files], [])
+
+        return _tests
 
     def find_versions(self):
         """Find versions of this repo.

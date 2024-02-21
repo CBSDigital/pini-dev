@@ -49,6 +49,15 @@ class Path(object):
         """
         return time.time() - self.mtime()
 
+    def ctime(self):
+        """Get last modified time for this path.
+
+        Returns:
+            (float): mtime in secs
+        """
+        up_utils.error_on_file_system_disabled()
+        return os.path.getctime(self.path)
+
     def exists(self, catch=False, root=None):
         """Test whether this path exists.
 

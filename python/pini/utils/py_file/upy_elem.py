@@ -191,19 +191,20 @@ class PyElem(object):
         return single([_def for _def in self.find_defs()
                        if _def.name == name])
 
-    def find_defs(self, internal=None, filter_=None):
+    def find_defs(self, internal=None, filter_=None, recursive=False):
         """Find child defs of this object.
 
         Args:
             internal (bool): filter by def internal state
             filter_ (str): filter by name
+            recursive (bool): include children of children
 
         Returns:
             (PyDef list): child defs
         """
         from pini.utils import PyDef
         return [_elem for _elem in self.find_children(
-                    internal=internal, filter_=filter_)
+                    internal=internal, filter_=filter_, recursive=recursive)
                 if isinstance(_elem, PyDef)]
 
     def to_ast(self, catch=False):  # pylint: disable=unused-argument

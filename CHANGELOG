@@ -1,3 +1,18 @@
+## [0.68.0] - Tue 2024-02-20 18:00
+### Summary
+ - Pini Tools:
+    - better error on load scene if missing file,
+    - added tools for managing unit/integration testing,
+### Updated
+ - pini.utils.Path.ctime added,
+ - pini.utils.PyFile.find_defs added recursive flag,
+ - pini.dcc.load OSError on file missing,
+ - pini.pipe.cache.CCPJob.ctime use disk cache,
+ - pini.tools.release added PRTestFile/find_tests,
+ - pini.tools.release.PRRepo.find_tests added,
+ - maya_pini.utils.load_scene raise OSError on missing file,
+
+
 ## [0.67.0] - Tue 2024-02-20 12:50
 ### Summary
  - Pini Helper:

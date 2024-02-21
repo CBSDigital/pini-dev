@@ -389,6 +389,8 @@ class BaseDCC(object):
         if lazy and _file.path == self.cur_file():
             _LOGGER.info('Lazy load - scene currently open')
             return
+        if not _file.exists():
+            raise OSError('File not found '+_file.path)
         if not force:
             _save = _file.path != self.cur_file()
             _LOGGER.debug('HANDLE UNSAVED CHANGES save=%d', _save)

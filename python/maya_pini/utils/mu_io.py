@@ -89,6 +89,8 @@ def load_scene(
         return
     if not force:
         dcc.handle_unsaved_changes()
+    if not _file.exists():
+        raise OSError('Missing file')
 
     # Check plugins
     if _file.extn == 'fbx':

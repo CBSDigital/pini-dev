@@ -7,7 +7,8 @@ import time
 
 import six
 
-from pini.utils import single, apply_filter, get_method_to_file_cacher
+from pini.utils import (
+    single, apply_filter, get_method_to_file_cacher, cache_method_to_file)
 
 from .ccp_utils import pipe_cache_result
 from ..cp_job import CPJob
@@ -142,6 +143,15 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         assert self in self.cache.jobs
         _job = self.cache.find_job(self)
         return _job
+
+    @cache_method_to_file
+    def ctime(self):
+        """Obtain create time for this job.
+
+        Returns:
+            (float): create time
+        """
+        return super(CCPJob, self).ctime()
 
     def find_assets(self, asset_type=None, filter_=None, force=False):
         """Find assets in this job.
