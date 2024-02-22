@@ -71,7 +71,7 @@ def find_assets(job=None):
         _ety_to_data(_asset, force=True, data=[_data])  # Update cache
         _assets.append(_asset)
 
-    return _assets
+    return sorted(_assets)
 
 
 def find_shots(job=None, only_3d=False):
@@ -126,7 +126,7 @@ def find_shots(job=None, only_3d=False):
         _ety_to_data(_shot, force=True, data=[_data])  # Update caches
         _shots.append(_shot)
 
-    return _shots
+    return sorted(_shots)
 
 
 def set_entity_range(entity, range_, force=False):

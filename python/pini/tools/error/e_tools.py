@@ -26,6 +26,22 @@ class HandledError(RuntimeError):
         self.title = title
 
 
+class FileError(RuntimeError):
+    """Raises when a file causes an issue."""
+
+    def __init__(self, message, file_, line_n=None):
+        """Constructor.
+
+        Args:
+            message (str): error message
+            file_ (str): path to file
+            line_n (int): line of file causing issue
+        """
+        super(FileError, self).__init__(message)
+        self.file_ = file_
+        self.line_n = line_n
+
+
 def continue_on_fail(func):
     """Ignore any error on function execution and continue.
 

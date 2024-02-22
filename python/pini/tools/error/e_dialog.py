@@ -3,7 +3,7 @@
 from pini import icons, qt
 from pini.utils import File, email
 
-from . import ce_error
+from . import e_error
 
 EMOJI = icons.EMOJI.find_emoji("Lemon")
 ICON = EMOJI.path
@@ -20,7 +20,7 @@ class _ErrorCatcherUi(qt.CUiDialog):
         """Constructor.
 
         Args:
-            error (CEError): override error that triggered ui
+            error (PEError): override error that triggered ui
             parent (QDialog): parent dialog
             show (bool): show the ui
             stack_key (str): override stack key
@@ -31,13 +31,13 @@ class _ErrorCatcherUi(qt.CUiDialog):
             catch_errors=False, show=show, stack_key=stack_key)
         self.set_window_icon(ICON)
 
-        self.set_error(error or ce_error.CEError())
+        self.set_error(error or e_error.PEError())
 
     def set_error(self, error):
         """Apply the given error to the ui.
 
         Args:
-            error (CEError): error to apply
+            error (PEError): error to apply
         """
         self.error = error
 
@@ -48,12 +48,12 @@ class _ErrorCatcherUi(qt.CUiDialog):
             bool(email.FROM_EMAIL and email.SUPPORT_EMAIL))
 
     def _redraw__Label(self):
-        if self.error.type_:
+        if self.error.type_name:
             _text = '\n'.join([
                 'There has been an error ({}):'.format(
-                    self.error.type_.__name__),
+                    self.error.type_name),
                 '',
-                str(self.error.value),
+                str(self.error.message),
             ])
         else:
             _text = ''
@@ -79,7 +79,7 @@ def launch_ui(error=None, parent=None, show=True, stack_key=None):
     """Launch error catcher dialog.
 
     Args:
-        error (CEError): override error that triggered ui
+        error (PEError): override error that triggered ui
         parent (QDialog): parent dialog
         show (bool): show the ui
         stack_key (str): override stack key (to allow multiple error dialogs)

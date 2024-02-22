@@ -3,7 +3,7 @@
 from pini.utils import abs_path, File
 
 
-class CETraceLine(object):
+class PETraceLine(object):
     """Represents a line of a traceback."""
 
     def __init__(self, file_, line_n, func, code):
@@ -41,3 +41,23 @@ class CETraceLine(object):
             '{prefix}  {code}').format(
                 prefix=prefix, file=self.file_, line=self.line_n,
                 func=self.func, code=self.code)
+
+
+def line_from_str(line):
+    """Convert string to tracback line object.
+
+    Args:
+        line (str): traceback line
+
+    Returns:
+        (PETraceLine): traceback line object
+    """
+    _top, _bot = line.split('\n')
+
+    _file = _top.split('"')[1]
+    _line_n = int(_top.split(',')[1].replace('line', '').strip())
+    _func = _top.split()[-1]
+
+    _code = _bot
+
+    return PETraceLine(file_=_file, line_n=_line_n, func=_func, code=_code)

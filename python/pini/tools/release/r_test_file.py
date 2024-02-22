@@ -1,8 +1,12 @@
 """Tools for managing unit/integration test files."""
 
-from pini.utils import PyFile, single
+import logging
+
+from pini.utils import PyFile, single, passes_filter
 
 from . import r_test
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class PRTestFile(PyFile):
@@ -49,18 +53,39 @@ class PRTestFile(PyFile):
 
         raise ValueError(match)
 
-    def find_tests(self):
+    def find_tests(self, filter_=None):
         """Find unit/integration tests in this file.
+
+        Args:
+            filter_ (str): apply test name filter
 
         Returns:
             (PRTest list): unit/integration tests
         """
+        from pini import pipe
+        _LOGGER.debug('FIND TESTS %s', self)
         _tests = []
-        for _class in self.find_classes():
-            for _def in _class.find_defs():
+        _mod = self.to_module()
+        assert _mod
+        for _p_class in self.find_classes():
+
+            # Check for pipe master filter
+            _m_class = getattr(_mod, _p_class.name)
+            _pipe_master_filter = getattr(
+                _m_class, 'pipe_master_filter', None)
+            _LOGGER.debug(' - CLASS %s %s', _p_class, _pipe_master_filter)
+            if not passes_filter(pipe.MASTER, _pipe_master_filter):
+                _LOGGER.debug('   - REJECTED')
+                continue
+
+            # Read tests
+            for _def in _p_class.find_defs():
                 if _def.clean_name == 'setUp':
                     continue
+                if not passes_filter(_def.clean_name, filter_):
+                    continue
                 _test = r_test.PRTest(
-                    method=_def, class_=_class, py_file=self)
+                    method=_def, class_=_p_class, py_file=self)
                 _tests.append(_test)
+
         return _tests

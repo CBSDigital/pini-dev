@@ -54,10 +54,10 @@ def get_catcher(parent=None, qt_safe=False):
                     raise _exc
                 sys.exit()
             except Exception as _exc:  # pylint: disable=broad-exception-caught
-                from . import ce_error, ce_dialog
+                from . import e_error, e_dialog
                 error.TRIGGERED = True
-                _error = ce_error.CEError()
-                ce_dialog.launch_ui(_error, parent=parent)
+                _error = e_error.PEError()
+                e_dialog.launch_ui(_error, parent=parent)
                 if qt_safe or dcc.NAME != 'maya':
                     raise _exc
                 print(_error.to_text())

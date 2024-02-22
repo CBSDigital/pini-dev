@@ -1,3 +1,19 @@
+## [0.69.0] - Thu 2024-02-22 09:35
+### Summary
+ - Pini Helper:
+    - bugfix assets/shots list not sorted (mkim),
+### Updated
+ - pini.dcc.CBaseExportHandler.obtain_metadata catch error on garbage collected ui,
+ - pini.pipe.shotgrid find_shots/find_assets apply sort,
+ - pini.qt.CUiContainer.is_active added,
+ - pini.tools.error updated element prefix C -> P,
+ - pini.tools.error added FileError/error_from_str,
+ - pini.tools.release.run_tests added,
+ - pini.tools.error  PRRepo/PRTestFile find_tests added filter,
+ - pini.tools.error.PRTest.execute implemented error handling,
+ - pini.tools.error.PRTestFile.find_tests implemented pipe_master_filter,
+
+
 ## [0.68.0] - Tue 2024-02-20 18:00
 ### Summary
  - Pini Tools:

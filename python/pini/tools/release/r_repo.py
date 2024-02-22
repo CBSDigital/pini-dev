@@ -45,11 +45,12 @@ class PRRepo(Dir):
         """
         return self.read_version()
 
-    def find_tests(self, mode='all'):
+    def find_tests(self, mode='all', filter_=None):
         """Find tests in this repo.
 
         Args:
             mode (str): type of tests to find (all/unit/integration)
+            filter_ (str): apply filter to test name
 
         Returns:
             (PRTest list): matching tests
@@ -73,7 +74,8 @@ class PRRepo(Dir):
         else:
             raise ValueError(mode)
 
-        _tests = sum([_file.find_tests() for _file in _files], [])
+        _tests = sum(
+            [_file.find_tests(filter_=filter_) for _file in _files], [])
 
         return _tests
 

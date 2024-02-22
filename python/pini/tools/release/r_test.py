@@ -47,7 +47,10 @@ class PRTest(object):
 
     def execute(self):
         """Execute this test."""
+        from pini import qt
         from pini.tools import error
+        error.TRIGGERED = False
+        _start = time.time()
 
         # Print header
         _title = '------------- EXECUTE {} -------------'.format(self)
@@ -55,15 +58,15 @@ class PRTest(object):
         print(_title)
         print('-'*len(_title)+'\n')
 
+        # Locate test method
         _LOGGER.info(' - PY FILE %s', self.py_file.path)
-
-        error.TRIGGERED = False
-        _start = time.time()
-
         _mod = self.py_file.to_module(reload_=True)
         _case = getattr(_mod, self.class_.name)
+        _LOGGER.info(' - CASE %s', _case)
+        assert issubclass(_case, unittest.TestCase)
         _test = _case.__dict__[self.clean_name]
 
+        # Build test runner
         _suite = unittest.TestSuite()
         _suite.addTest(_case(_test.__name__))
         _runner = unittest.TextTestRunner(failfast=True)
@@ -75,18 +78,19 @@ class PRTest(object):
             _msg = _traceback.strip().split('\n')[-1]
             _LOGGER.info('[error] %s', _class)
             _LOGGER.info('[msg] %s', _msg)
-            # import pprint
-            # pprint.pprint(_traceback, width=1000)
+            print('----------------------------')
             print(_traceback)
-            # launch_err_catcher(traceback_=_traceback, message=_msg)
-            # raise qt.DialogCancelled
-            raise NotImplementedError
+            print('----------------------------')
+            _err = error.error_from_str(_traceback)
+            error.launch_ui(error=_err)
+            raise qt.DialogCancelled
 
+        assert not error.TRIGGERED
+
+        # Write execution stats to cache
         _dur = time.time() - _start
         self.last_exec_dur(exec_dur=_dur, force=True)
         self.last_complete_time(complete_time=time.time(), force=True)
-
-        assert not error.TRIGGERED
 
         # Print tail
         _tail = '---------- COMPLETE {} ({:.01f}s) ----------'.format(

@@ -30,6 +30,16 @@ class CUiContainer(object):
             _file.touch()  # Check settings writable
             self.settings = qt.CSettings(_file.path)
 
+    def is_active(self):
+        """Test whether this ui container is active.
+
+        Inactive ui containers will error if any widgets are active.
+
+        Returns:
+            (bool): whether active widgets
+        """
+        return bool(self.find_widgets())
+
     def find_widget(self, name, catch=False, case_sensitive=False):
         """Find a widget within this ui.
 

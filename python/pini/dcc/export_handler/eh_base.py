@@ -256,7 +256,7 @@ class CExportHandler(object):
             (dict): metadata
         """
 
-        if self.ui and self.notes_elem:
+        if self.ui and self.ui.is_active() and self.notes_elem:
             _notes = self.notes_elem.text()
         else:
             _notes = None

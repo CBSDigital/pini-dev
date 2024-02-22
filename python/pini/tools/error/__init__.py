@@ -1,12 +1,13 @@
 """Tools for handling errors."""
 
-from .ce_catcher import catch, get_catcher, toggle
-from .ce_error import CEError
-from .ce_tools import continue_on_fail, HandledError
+from .e_catcher import catch, get_catcher, toggle
+from .e_error import PEError, error_from_str
+from .e_tools import continue_on_fail, HandledError, FileError
+from .e_trace_line import PETraceLine
 
 # Allow import without qt available
 try:
-    from .ce_dialog import UI_FILE, launch_ui
+    from .e_dialog import UI_FILE, launch_ui
 except ImportError:
     pass
 
