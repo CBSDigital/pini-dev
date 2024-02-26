@@ -3,13 +3,15 @@
 eg. PiniHelper is a tool which has options right-click options.
 """
 
-from pini.utils import basic_repr
+import copy
+
+from pini.utils import basic_repr, is_pascal
 
 
-class CITool(object):
+class PITool(object):
     """Container class for a pini tool."""
 
-    def __init__(self, name, command, icon, label):
+    def __init__(self, name, command, icon, label=None):
         """Constructor.
 
         Args:
@@ -19,9 +21,11 @@ class CITool(object):
             label (str): tool label
         """
         self.name = name
+        if not is_pascal(self.name):
+            raise ValueError(self.name)
         self.command = command
         self.icon = icon
-        self.label = label
+        self.label = label or self.name
 
         self.context_items = []
 
@@ -29,7 +33,7 @@ class CITool(object):
         """Add a context (right-click) option to this tool.
 
         Args:
-            item (CITool): context option
+            item (PITool): context option
         """
         self.context_items.append(item)
 
@@ -39,13 +43,38 @@ class CITool(object):
         Args:
             name (str): ui element uid
         """
-        self.add_context(CIDivider(name))
+        self.add_context(PIDivider(name))
+
+    def duplicate(self, command=None):
+        """Duplicate this tool.
+
+        Args:
+            command (str): override command
+
+        Returns:
+            (PITool): tool
+        """
+        _dup = copy.copy(self)
+        if command:
+            _dup.command = command
+        return _dup
+
+    def to_uid(self, prefix):
+        """Obtain uid for this tool, used to replace any existing instances.
+
+        Args:
+            prefix (str): shelf/menu prefix
+
+        Returns:
+            (str): tool uid (eg. PI_PiniHelper)
+        """
+        return prefix+'_'+self.name
 
     def __repr__(self):
         return basic_repr(self, self.name)
 
 
-class CIDivider(object):
+class PIDivider(object):
     """Used to represent a divider/separator."""
 
     def __init__(self, name):
@@ -55,6 +84,8 @@ class CIDivider(object):
             name (str): divider name/uid
         """
         self.name = name
+        if not is_pascal(self.name):
+            raise ValueError(self.name)
 
     def __repr__(self):
         return basic_repr(self, self.name)

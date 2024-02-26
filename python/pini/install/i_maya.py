@@ -7,6 +7,8 @@ from maya import cmds
 
 from pini import icons
 from pini.tools import helper
+from pini.utils import wrap_fn
+
 from maya_pini import ui
 
 from . import i_installer
@@ -14,13 +16,13 @@ from . import i_installer
 _LOGGER = logging.getLogger(__name__)
 
 
-class CIMayaMenuInstaller(i_installer.CIInstaller):
+class PIMayaMenuInstaller(i_installer.PIInstaller):
     """Installer for building the pini menu in maya."""
 
     prefix = 'PM'
 
 
-class CIMayaShelfInstaller(i_installer.CIInstaller):
+class PIMayaShelfInstaller(i_installer.PIInstaller):
     """Installer for building the pini shelf in maya."""
 
     allows_context = True
@@ -39,16 +41,16 @@ class CIMayaShelfInstaller(i_installer.CIInstaller):
 
         # Build refresh button
         _refresh, _items = super(
-            CIMayaShelfInstaller, self)._gather_refresh_tools(items)
-        _refresh.add_divider(self.prefix+'_MayaRefresh1')
+            PIMayaShelfInstaller, self)._gather_refresh_tools(items)
+        _refresh.add_divider('MayaRefresh1')
 
         # Add reset windows
         _cmd = '\n'.join([
             "from maya import cmds",
             "for _win in cmds.lsUI(windows=True):",
             "    cmds.window(_win, edit=True, topLeftCorner=(0, 0))"])
-        _reset_windows = i_installer.CITool(
-            name=self.prefix+'_ResetWindows',
+        _reset_windows = i_installer.PITool(
+            name='ResetWindows',
             command=_cmd,
             icon=icons.find('Sponge'), label='Reset maya windows')
         _refresh.add_context(_reset_windows)
@@ -57,8 +59,8 @@ class CIMayaShelfInstaller(i_installer.CIInstaller):
         _cmd = '\n'.join([
             'from maya import cmds',
             'cmds.currentTime(cmds.currentTime(query=True))'])
-        _redraw_viewport = i_installer.CITool(
-            name=self.prefix+'_RedrawViewport',
+        _redraw_viewport = i_installer.PITool(
+            name='RedrawViewport',
             command=_cmd,
             icon=icons.find('Sponge'), label='Redraw viewport')
         _refresh.add_context(_redraw_viewport)
@@ -69,12 +71,13 @@ class CIMayaShelfInstaller(i_installer.CIInstaller):
         """Build shelf button tool.
 
         Args:
-            tool (CITool): tool to add
+            tool (PITool): tool to add
             parent (str): parent shelf
         """
-        _LOGGER.debug('BUILD TOOL %s %s', tool, parent)
+        _name = tool.to_uid(self.prefix)
+        _LOGGER.debug('BUILD TOOL %s parent=%s name=%s', tool, parent, _name)
         ui.add_shelf_button(
-            name=self.shelf+'_'+tool.name, command=tool.command,
+            name=_name, command=tool.command,
             image=tool.icon,
             parent=self.shelf, annotation=tool.label)
         _LOGGER.debug(
@@ -87,15 +90,15 @@ class CIMayaShelfInstaller(i_installer.CIInstaller):
         """Build shelf right-click menu item.
 
         Args:
-            item (CITool): tool to add
+            item (PITool): tool to add
             parent (str): parent shelf button
         """
         _LOGGER.debug('BUILD CONTEXT ITEM %s %s', item, parent)
-        if isinstance(item, i_installer.CITool):
+        if isinstance(item, i_installer.PITool):
             ui.add_menu_item(
                 label=item.label, parent=parent,
                 image=item.icon, command=item.command)
-        elif isinstance(item, i_installer.CIDivider):
+        elif isinstance(item, i_installer.PIDivider):
             cmds.menuItem(divider=True)
         else:
             raise ValueError(item)
@@ -104,50 +107,75 @@ class CIMayaShelfInstaller(i_installer.CIInstaller):
         """Build shelf divider.
 
         Args:
-            divider (CIDivider): divider to build
+            divider (PIDivider): divider to build
             parent (str): parent shelf
         """
         _LOGGER.debug('ADD SHELF SEPARATOR %s', divider)
         ui.add_shelf_separator(
             parent=self.shelf, name=self.shelf+'_'+divider.name)
 
-    def run(self, parent=None, launch_helper=True):  # pylint: disable=unused-argument
+    def run(self, parent=None, launch_helper=True, flush=True):  # pylint: disable=unused-argument
         """Execute this installer.
 
         Args:
             parent (str): parent shelf name
             launch_helper (bool): not applicable
+            flush (bool): flush shelf on run
         """
-        _LOGGER.debug('RUN CIMayaShelfInstaller %s', self)
-        _shelf_name = parent or os.environ.get('PINI_SHELF', "Pini")
+        _LOGGER.debug('RUN PIMayaShelfInstaller %s', self)
+        _shelf_name = parent or os.environ.get('PINI_SHELF', self.name)
+
         _LOGGER.debug(' - SHELF NAME %s', _shelf_name)
         self.shelf = ui.obtain_shelf(_shelf_name)
-        super(CIMayaShelfInstaller, self).run(parent=parent)
+        if flush:
+            ui.flush_shelf(self.shelf)
+        super(PIMayaShelfInstaller, self).run(parent=parent)
 
 
-class CIMayaCombinedInstaller(i_installer.CIInstaller):
+class PIMayaInstaller(i_installer.PIInstaller):
     """Combined shelf/menu installer for pini."""
 
     def __init__(self, menu_installer=None, shelf_installer=None):
         """Constructor.
 
         Args:
-            menu_installer (CIInstaller): menu installer
-            shelf_installer (CIInstaller): shelf installer
+            menu_installer (PIInstaller): menu installer
+            shelf_installer (PIInstaller): shelf installer
         """
-        super(CIMayaCombinedInstaller, self).__init__()
-        self.menu_installer = menu_installer or CIMayaMenuInstaller()
-        self.shelf_installer = shelf_installer or CIMayaShelfInstaller()
+        super(PIMayaInstaller, self).__init__()
 
-    def run(self, parent=None, launch_helper=True):
+        self.menu_installer = menu_installer or PIMayaMenuInstaller()
+        self.shelf_installer = shelf_installer or PIMayaShelfInstaller()
+
+        assert self.menu_installer.prefix != self.shelf_installer.prefix
+
+    def run(self, parent=None, launch_helper=True, deferred=True):
         """Execute combined installer.
+
+        Args:
+            parent (str): parent shelf/menu name
+            launch_helper (bool): launch pini helper on startup
+            deferred (bool): run deferred (required for userSetup.py)
+        """
+        _func = wrap_fn(
+            self._exec_run, parent=parent, launch_helper=launch_helper)
+        if deferred:
+            cmds.evalDeferred(_func, lowestPriority=True)
+        else:
+            _func()
+
+    def _exec_run(self, parent=None, launch_helper=True):
+        """Execute running this installation.
 
         Args:
             parent (str): parent shelf/menu name
             launch_helper (bool): launch pini helper on startup
         """
         _LOGGER.debug('RUN %s', self)
-        self.menu_installer.run(parent='Pini')
-        self.shelf_installer.run()
+        self.menu_installer.run(parent=parent)
+        self.shelf_installer.run(parent=parent)
         if launch_helper:
             helper.launch()
+
+
+INSTALLER = PIMayaInstaller()

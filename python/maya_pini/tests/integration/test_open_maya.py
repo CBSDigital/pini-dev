@@ -3,7 +3,9 @@ import unittest
 
 from maya import cmds
 
+from pini import dcc
 from pini.utils import single
+
 from maya_pini import open_maya as pom
 from maya_pini.utils import use_tmp_ns
 
@@ -204,6 +206,8 @@ class TestOpenMaya(unittest.TestCase):
 
     @use_tmp_ns
     def test_transform(self):
+
+        dcc.new_scene(force=True)
 
         # Test solidify
         if cmds.objExists('BLAH'):

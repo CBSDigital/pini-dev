@@ -389,11 +389,31 @@ def _fix_uvs(geo):
         _LOGGER.debug(' - REMOVED UNUSED remaining=%s', _sets)
 
 
+class CheckModelGeo(SCMayaCheck):
+    """Check naming of cache set geometry."""
+
+    task_filter = 'model'
+    _ignore_names = None
+    depends_on = (CheckCacheSet, )
+
+    def run(self):
+        """Run this check."""
+
+        _geos = m_pipe.read_cache_set()
+        for _geo in _geos:
+            for _plug in _geo.tfm_plugs:
+                if _plug.find_incoming():
+                    self.add_fail(
+                        'Plug has incoming connections: "{}"'.format(_plug),
+                        fix=_plug.break_connections)
+
+
 class CheckGeoNaming(SCMayaCheck):
     """Check naming of cache set geometry."""
 
     task_filter = 'model rig layout'
     _ignore_names = None
+    depends_on = (CheckCacheSet, )
 
     # Should happen late as renames geo
     sort = 90
@@ -522,7 +542,7 @@ class CheckGeoNaming(SCMayaCheck):
         Args:
             nodes (str): duplicate nodes to fix
         """
-        _name = nodes[0].split('|')[-1]
+        _name = str(nodes[0]).split('|')[-1]
         _root = _name
         while _root[0].isdigit():
             _root = _root[:-1]
@@ -536,6 +556,9 @@ class CheckGeoNaming(SCMayaCheck):
                 if cmds.objExists(_new_name):
                     continue
                 break
+            if not cmds.objExists(_node):
+                _LOGGER.warning(' - MISSING NODE %s', _node)
+                continue
             cmds.rename(_node, _new_name)
 
 

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mainMenu>
+  <menuBar>
+    <subMenu id="PI_Pini">
+      <label>Pini</label>
+
+      <!--Add Pini Helper-->
+      <scriptItem id="PI_PiniHelper">
+        <label>Pini Helper</label>
+          <scriptCode><![CDATA[
+from pini.tools import helper
+helper.launch()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <!--Add Version Up-->
+      <scriptItem id="PI_VersionUp">
+        <label>Version Up</label>
+          <scriptCode><![CDATA[
+from pini import pipe
+pipe.version_up()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <!--Add Load recent-->
+      <scriptItem id="PI_LoadRecent">
+        <label>Load recent</label>
+          <scriptCode><![CDATA[
+from pini import pipe
+pipe.load_recent()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <separatorItem/>
+
+      <!--Add Job Manager-->
+      <scriptItem id="PI_JobManager">
+        <label>Job Manager</label>
+          <scriptCode><![CDATA[
+from pini.tools import job_manager
+job_manager.launch()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <!--Add Sanity Check-->
+      <scriptItem id="PI_SanityCheck">
+        <label>Sanity Check</label>
+          <scriptCode><![CDATA[
+from pini.tools import sanity_check
+sanity_check.launch_ui()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <separatorItem/>
+
+      <!--Add Flipbook MP4-->
+      <scriptItem id="PI_FlipbookMp4">
+        <label>Flipbook MP4</label>
+          <scriptCode><![CDATA[
+from hou_pini import h_pipe
+h_pipe.flipbook()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+      <separatorItem/>
+
+      <!--Add Reload tools-->
+      <scriptItem id="PI_Refresh">
+        <label>Reload tools</label>
+          <scriptCode><![CDATA[
+from pini import refresh
+refresh.reload_libs()
+]]>
+         </scriptCode>
+      </scriptItem>
+
+
+    </subMenu>
+  </menuBar>
+</mainMenu>

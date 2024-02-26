@@ -26,7 +26,9 @@ def _prepare_output_path(format_, force):
     """
     _work = pipe.CACHE.cur_work
 
-    assert _work
+    if not _work:
+        raise error.HandledError('No current work file found.')
+
     _to_video = False
     if format_ in ['mp4']:
         _seq = TMP.to_seq('pini/houBlast/tmp.%04d.jpg')

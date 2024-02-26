@@ -38,7 +38,13 @@ class CUiContainer(object):
         Returns:
             (bool): whether active widgets
         """
-        return bool(self.find_widgets())
+        _widgets = self.find_widgets()
+        for _widget in _widgets:
+            try:
+                _widget.objectName()
+            except RuntimeError:
+                return False
+        return True
 
     def find_widget(self, name, catch=False, case_sensitive=False):
         """Find a widget within this ui.

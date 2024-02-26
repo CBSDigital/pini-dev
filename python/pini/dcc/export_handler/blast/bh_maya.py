@@ -3,6 +3,8 @@
 import logging
 
 from pini import pipe, qt
+from pini.tools import error
+
 from maya_pini import m_pipe, open_maya as pom
 
 from . import bh_base
@@ -25,9 +27,17 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             layout (QLayout): parent layout
         """
         super(CMayaPlayblast, self).build_ui(parent=parent, layout=layout)
+
+        # Read cams
         _cams = [str(_cam) for _cam in pom.find_cams()]
-        _cur_cam = str(pom.active_cam())
+        if pom.find_render_cam():
+            _cur_cam = pom.find_render_cam()
+        elif pom.active_cam():
+            _cur_cam = pom.active_cam()
+        if _cur_cam:
+            _cur_cam = str(_cur_cam)
         _LOGGER.debug('BUILD UI %s %s', _cur_cam, _cams)
+
         self.ui.Camera = self.add_combobox_elem(
             name='Camera', items=_cams, val=_cur_cam,
             disable_save_settings=True)
@@ -38,17 +48,63 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         self.ui.OutputName = self.add_combobox_elem(
             name='OutputName', items=['blast', '<camera>'])
 
-    def _callback__Format(self):
-        super(CMayaPlayblast, self)._callback__Format()
+    @property
+    def output(self):
+        """Obtain blast output path.
+
+        Returns:
+            (CPOutput): blast output
+        """
+        _fmt = self.ui.Format.currentText()
+        _work = pipe.cur_work()
+        return _work.to_output(
+            self.template, output_name=self.output_name, extn=_fmt)
+
+    @property
+    def output_name(self):
+        """Obtain current output name.
+
+        Returns:
+            (str): output name
+        """
+        _output_name = self.ui.OutputName.currentText()
+        _cam = self.ui.Camera.currentText()
+        if _output_name == '<camera>':
+            _output_name = _cam.replace(':', '_')
+        return _output_name
+
+    @property
+    def template(self):
+        """Obtain current blast template.
+
+        Returns:
+            (CPTemplate): template
+        """
+        _work = pipe.cur_work()
+        if not _work:
+            return None
         _fmt = self.ui.Format.currentText()
         _tmpl_name = 'blast_mov' if _fmt in ('mp4', 'mov') else 'blast'
-        _work = pipe.cur_work()
+        return _work.find_template(_tmpl_name, catch=True)
+
+    def _callback__Format(self):
+        super(CMayaPlayblast, self)._callback__Format()
         _en = False
-        if _work:
-            _tmpl = _work.find_template(_tmpl_name, catch=True)
-            if _tmpl:
-                _en = 'output_name' in _tmpl.keys()
+        if self.template:
+            _en = 'output_name' in self.template.keys()
         self.ui.OutputName.setEnabled(_en)
+
+    def _validate_output_name(self):
+        """Check output name is valid."""
+        if not self.ui.OutputName.isEnabled():
+            return
+        try:
+            self.output
+        except ValueError:
+            raise error.HandledError(
+                'You have chosen "{}" as the output name which is not '
+                'valid within the pipeline.\n\nPlease select another '
+                'output name.'.format(self.output_name))
 
     def blast(self):
         """Excute blast."""
@@ -68,13 +124,17 @@ class CMayaPlayblast(bh_base.CBlastHandler):
                 title='Warning', parent=self.parent)
             return
 
+        _output_name = self.ui.OutputName.currentText()
+        _cam = self.ui.Camera.currentText()
+        self._validate_output_name()
+
         m_pipe.blast(
             format_=self.ui.Format.currentText(),
             view=self.ui.View.isChecked(),
             range_=self._read_range(),
             burnins=self.ui.Burnins.isChecked(),
             res=self.ui.Resolution.currentText(),
-            camera=self.ui.Camera.currentText(),
+            camera=_cam,
             settings=self.ui.Settings.currentText(),
-            output_name=self.ui.OutputName.currentText(),
+            output_name=_output_name,
         )

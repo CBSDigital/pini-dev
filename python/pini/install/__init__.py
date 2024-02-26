@@ -5,20 +5,20 @@ This is run each time a dcc launches to set up pini tools.
 
 from pini import dcc
 
-from .i_tools import setup
-from .i_installer import CIInstaller, CITool, CIDivider
+from .i_utils import setup
+from .i_installer import PIInstaller, PITool, PIDivider
+from .i_tools import (
+    REFRESH_TOOL, PINI_HELPER_TOOL, LOAD_RECENT_TOOL, VERSION_UP_TOOL)
 
 INSTALLER = None
 
 if dcc.NAME == 'hou':
-    from .i_hou import CIHouShelfInstaller
-    INSTALLER = CIHouShelfInstaller()
+    from .i_hou import PIHouShelfInstaller, PIHouMenuInstaller, INSTALLER
 
 elif dcc.NAME == 'maya':
     from .i_maya import (
-        CIMayaCombinedInstaller, CIMayaShelfInstaller, CIMayaMenuInstaller)
-    INSTALLER = CIMayaCombinedInstaller()
+        PIMayaInstaller, PIMayaShelfInstaller, PIMayaMenuInstaller,
+        INSTALLER)
 
 elif dcc.NAME == 'nuke':
-    from .i_nuke import CINukeMenuInstaller
-    INSTALLER = CINukeMenuInstaller()
+    from .i_nuke import PINukeMenuInstaller, INSTALLER

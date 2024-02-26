@@ -238,7 +238,7 @@ class CMayaFarmRender(CMayaRenderHandler):
         # Build layer items
         _items = []
         _select = []
-        _fmt = to_render_extn()
+        _fmt = to_render_extn() or 'jpg'
         for _lyr in pom.find_render_layers():
             if not _work or not _lyr.pass_name:
                 continue

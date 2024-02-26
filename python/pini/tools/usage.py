@@ -52,6 +52,9 @@ def get_tracker(name=None, write_after=False, args=None):
             _LOGGER.debug(
                 'RUNNING USAGE TRACKED FUNC %s %s', fn_args, fn_kwargs)
 
+            if os.environ.get('PINI_DISABLE_WRITE_USAGE'):
+                return func(*fn_args, **fn_kwargs)
+
             # Read args
             _args = {}
             if args:

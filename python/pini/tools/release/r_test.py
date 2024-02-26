@@ -5,7 +5,7 @@ import time
 import unittest
 
 from pini.utils import (
-    basic_repr, cache_method_to_file, build_cache_fmt, to_pascal)
+    cache_method_to_file, build_cache_fmt, to_pascal)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class PRTest(object):
 
     def execute(self):
         """Execute this test."""
-        from pini import qt
+        from pini import qt, testing
         from pini.tools import error
         error.TRIGGERED = False
         _start = time.time()
@@ -78,10 +78,17 @@ class PRTest(object):
             _msg = _traceback.strip().split('\n')[-1]
             _LOGGER.info('[error] %s', _class)
             _LOGGER.info('[msg] %s', _msg)
-            print('----------------------------')
+            print('')
+            print('-----------------------------------------------')
+            print('--------------- TRACEBACK (START) -------------')
+            print('-----------------------------------------------')
             print(_traceback)
-            print('----------------------------')
+            print('-----------------------------------------------')
+            print('---------------- TRACEBACK (END) --------------')
+            print('-----------------------------------------------')
+            print('')
             _err = error.error_from_str(_traceback)
+            testing.enable_file_system(True)
             error.launch_ui(error=_err)
             raise qt.DialogCancelled
 
@@ -127,4 +134,5 @@ class PRTest(object):
         return complete_time or time.time()
 
     def __repr__(self):
-        return basic_repr(self, self.name)
+        return '<{}({}):{}>'.format(
+            type(self).__name__, self.test_type[0].upper(), self.name)

@@ -127,10 +127,10 @@ class HouDCC(BaseDCC):
         Returns:
             (str): scene path
         """
-        _path = abs_path(hou.hipFile.name())
-        _file = File(_path)
-        if _file.filename == 'untitled.hip' and not _file.exists():
+        _name = hou.hipFile.name()
+        if _name == 'untitled.hip':
             return None
+        _path = abs_path(_name)
         return _path
 
     def _force_load(self, file_):

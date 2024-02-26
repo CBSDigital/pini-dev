@@ -350,6 +350,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             _LOGGER.info('SCANNER ERROR: %s', _exc)
             _LOGGER.info(' - FILE: %s', self.path)
             _LOGGER.info(' - MESSAGE %s', str(_exc))
+            if catch:
+                return {}
             raise RuntimeError('Yaml scanner error '+self.path)
 
     def to_bkp(self):

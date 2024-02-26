@@ -24,7 +24,7 @@ def find_tests(mode=None, repos=(), filter_=None):
     return _tests
 
 
-def _test_sort_key(test):
+def _test_sort_key(test, mode='completed'):
     """Sort function for release tests.
 
     Unit tests should be run before integration tests, and then the tests
@@ -32,11 +32,18 @@ def _test_sort_key(test):
 
     Args:
         test (PRTest): release test to sort
+        mode (str): sort mode
 
     Returns:
         (tuple): sort key
     """
-    return test.test_type != 'unit', test.last_complete_time()
+    if mode == 'completed':
+        _key = test.last_complete_time()
+    elif mode == 'type/completed':
+        _key = test.test_type != 'unit', test.last_complete_time()
+    else:
+        raise ValueError(mode)
+    return _key
 
 
 def run_tests(mode='all', tests=None, force=False):
@@ -47,7 +54,9 @@ def run_tests(mode='all', tests=None, force=False):
         tests (PRTest list): override list of tests to run
         force (bool): lose unsaved changes without confirmation
     """
-    from pini import qt, dcc
+    from pini import qt, dcc, testing
+
+    testing.enable_file_system(True)
 
     _tests = list(tests) if tests else find_tests(mode=mode)
     _tests.sort(key=_test_sort_key)

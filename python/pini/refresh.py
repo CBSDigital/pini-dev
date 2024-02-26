@@ -86,6 +86,7 @@ _RELOAD_ORDER = [
     'pini.farm',
 
     'pini.install.i_tool',
+    'pini.install.i_tools',
     'pini.install.i_installer',
     'pini.install',
 

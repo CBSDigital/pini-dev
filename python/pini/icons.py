@@ -221,7 +221,7 @@ class _EmojiSet(Seq):
 
 _ANDROID_PATH = Dir(ICONS_ROOT).to_file(
     'icons/android_12l/icon.%04d.png')
-_ANDROID = _EmojiSet(_ANDROID_PATH)
+ANDROID = _EmojiSet(_ANDROID_PATH)
 
 _JOYPIXELS_PATH = Dir(ICONS_ROOT).to_file(
     'icons/joypixels_4.5/icon.%04d.png')
@@ -231,7 +231,7 @@ _OPENMOJI_PATH = Dir(ICONS_ROOT).to_file(
     'icons/openmoji_13.1/icon.%04d.png')
 _OPENMOJI = _EmojiSet(_OPENMOJI_PATH)
 
-EMOJI = _ANDROID
+EMOJI = ANDROID
 
 _FRUIT = (
     'Grapes', 'Melon', 'Watermelon', 'Tangerine', 'Lemon', 'Banana',

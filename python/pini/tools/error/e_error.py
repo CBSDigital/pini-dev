@@ -114,15 +114,27 @@ def error_from_str(traceback_):
     _LOGGER.debug(traceback_)
     _LOGGER.debug('-------------------------')
 
-    _tb_lines = traceback_.strip().split('\n')
+    # Extract (last) traceback lines
+    _tb = traceback_.strip()
+    _tb = _tb.split(
+        'During handling of the above exception, another exception '
+        'occurred:')[-1]
+    _tb_lines = _tb.strip().split('\n')
 
     # Flag bad traceback
     if (
             _tb_lines[0] != 'Traceback (most recent call last):' or
             len(_tb_lines) % 2):
-        print('-------------------------')
-        print(traceback_)
-        print('-------------------------')
+        _LOGGER.info(' - TOP LINE "%s"', _tb_lines[0])
+        _LOGGER.info(' - LINE COUNT "%s"', len(_tb_lines))
+        _LOGGER.info(' - LINES %s', _tb_lines)
+        print('----------------------------------------------------')
+        print('----------- INVALID TRACEBACK (START) --------------')
+        print('----------------------------------------------------')
+        print(_tb)
+        print('----------------------------------------------------')
+        print('------------ INVALID TRACEBACK (END) ---------------')
+        print('----------------------------------------------------')
         raise RuntimeError('Invalid traceback str')
 
     _tail = _tb_lines.pop(-1)

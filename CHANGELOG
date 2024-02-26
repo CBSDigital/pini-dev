@@ -1,3 +1,39 @@
+## [1.0.0] - Mon 2024-02-26 13:03
+### Summary
+ - Pini Helper:
+    - maya blast better error on invalid output name (mkim),
+ - Sanity Check:
+    - maya model added check for incoming connection on geo (eehemann),
+ - Pini Install:
+    - updated to streamline houdini installation,
+    - added houdini menu xml + pythonrc.py,
+### Updated
+ - startup/hou added hou startup files,
+ - pini.utils.File.read_yml bugfix catch on yml error,
+ - pini.dcc.HouDCC.cur_file removed test file exists for untitled.hip,
+ - pini.dcc.CMayaFarmRender catch error on unsupported renderer,
+ - pini.dcc.CMayaBlastHandler better error on invalid output name,
+ - pini.qt.CUiContainer.is_active test object names to catch garbage collected,
+ - pini.install updated tools prefix C -> P,
+ - pini.install REFRESH_TOOL/VERSION_UP_TOOL/LOAD_RECENT_TOOL/REVERT_SCENE_TOOL/PINI_HELPER_BASIC_TOOL/PINI_HELPER_TOOL added tools as globals,
+ - pini.install PITool/PIDivider force pascal naming,
+ - pini.install prefix applied at installer level,
+ - pini.install.PITool duplicate/to_uid added,
+ - pini.install.PIInstaller removed refresh_cmd/helper_cmd,
+ - pini.install.PIInstaller.to_uid added,
+ - pini.install.PIHouShelfInstaller bugfix bad gamma in android icons,
+ - pini.install.PIHouMenuInstaller xml_file/to_xml added,
+ - pini.install.PIMayaShelfInstaller.run added flush arg,
+ - pini.install.PIMayaInstaller.run added deferred arg,
+ - pini.tools.sanity_check.CheckModelGeo added,
+ - pini.tools.sanity_check.CheckGeoNaming bugfix error on duplicate nodes,
+ - pini.tools.error.error_from_str added multi error traceback handling (use last error),
+ - pini.tools.release.run_tests ignore unit/integration type in test sorting,
+ - pini.tools.usage allow disable write usage via $PINI_DISABLE_WRITE_USAGE,
+ - pini.icons.ANDROID made public,
+ - hou_pini.h_pipe.blast better error on no cur work,
+
+
 ## [0.69.0] - Thu 2024-02-22 09:35
 ### Summary
  - Pini Helper:

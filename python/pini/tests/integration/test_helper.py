@@ -36,6 +36,8 @@ class TestHelper(unittest.TestCase):
                 File(_render[_frame]).touch()
             assert testing.TEST_SHOT.find_outputs('render')
 
+        assert not error.TRIGGERED
+
         # Check switch helper output tabs with file system disabled
         _helper = helper.DIALOG
         _helper.jump_to(testing.TEST_SHOT)
@@ -52,6 +54,7 @@ class TestHelper(unittest.TestCase):
                 _helper.ui.SOutputsPane.select_tab(_type)
                 assert _helper.ui.SOutputs.all_data()
             _helper.ui.MainPane.select_tab('Export')
+            assert not error.TRIGGERED
         testing.enable_file_system(True)
         _helper.ui.MainPane.select_tab('Scene')
 

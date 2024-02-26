@@ -182,7 +182,7 @@ class SCCheck(object):
                 _LOGGER.info(' - ERRORED %s', _exc)
                 self.write_log('Errored - %s', str(_exc).strip())
                 self.status = 'errored'
-                self.error = error.CEError()
+                self.error = error.PEError()
 
         if not self.error:
             self.status = 'failed' if self.fails else 'passed'

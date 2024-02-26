@@ -416,7 +416,11 @@ class CTPTestPipe(testing.CTmpPipeTestCase):
 
         _ver_1 = _work_dir.to_work(tag='blah', ver_n=1)
         _ver_2 = _work_dir.to_work(tag='blah', ver_n=2)
-        _hip = _work_dir.to_work(tag='blah', ver_n=2, extn='hip')
+        if dcc.NAME == 'hou':
+            _extn = dcc.DEFAULT_EXTN
+        else:
+            _extn = 'hip'
+        _hip = _work_dir.to_work(tag='blah', ver_n=2, extn=_extn)
         for _ver in [_ver_1, _ver_2, _hip]:
             _LOGGER.info(' - TOUCH WORK %s', _ver)
             _ver.touch()

@@ -170,7 +170,7 @@ class TestPublish(unittest.TestCase):
 
         # Test publish with PiniHelper
         _helper = helper.DIALOG
-        if not _helper:
+        if not helper.is_active():
             _helper = helper.launch()
         else:
             _helper._callback__Refresh()

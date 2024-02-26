@@ -15,14 +15,19 @@ Install pini python libraries:
     git clone git@bitbucket.org:ninhenzo64/pini-release.git
 
  -  Add the following paths to $PYTHONPATH:
-    python/pini
+    $PINI/python/pini
 
 
 Maya install:
 
- - Add startup dir to $PYTHONPATH
+ - Add $PINI/startup dir to $PYTHONPATH
 
 
 Nuke install:
 
- - Add startup dir to $NUKE_PATH
+ - Add $PINI/startup dir to $NUKE_PATH
+
+
+Hou install:
+
+ - Add $PINI/startup/hou to $HOUDINI_PATH
