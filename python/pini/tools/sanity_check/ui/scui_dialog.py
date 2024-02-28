@@ -114,7 +114,7 @@ class SanityCheckUi(qt.CUiDialog):
         if check:
             _check_ui = single([
                 _item for _item in self.ui.Checks.all_items()
-                if _item.data() == check])
+                if _item.data() == check], catch=True)
         else:
             _check_ui = self.ui.Checks.selected_item()
         _LOGGER.debug(' - CHECK TO UPDATE %s', _check_ui)

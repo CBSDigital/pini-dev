@@ -68,10 +68,13 @@ class CLExportTab(object):
         _work = pipe.CACHE.cur_work
         if _work:
             _task = pipe.map_task(_work.task, step=_work.step)
-            _handler = dcc.find_export_handler(filter_=_task, catch=True)
+            _LOGGER.debug(' - PUB HANDLER TASK "%s"', _task)
+            _handler = dcc.find_export_handler(_task, catch=True)
+            _LOGGER.debug(' - PUB HANDLER %s', _handler)
             if _handler:
                 _select = _handler
 
+        _LOGGER.debug(' - SELECT PUB HANDLER %s', _select)
         self.ui.EPublishHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
             data=_handlers, select=_select)

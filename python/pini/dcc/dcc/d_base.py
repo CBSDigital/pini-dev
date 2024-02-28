@@ -216,12 +216,14 @@ class BaseDCC(object):
         if len(_handlers) == 1:
             return single(_handlers)
 
+        # Try type match
         _action_match = single(
             [_handler for _handler in _handlers if _handler.ACTION == match],
             catch=True)
         if _action_match:
             return _action_match
 
+        # Try type match
         _type_match = single(
             [_handler for _handler in _handlers
              if type(_handler).__name__ == match],
@@ -229,11 +231,20 @@ class BaseDCC(object):
         if _type_match:
             return _type_match
 
+        # Try exact name match
         _name_match = single(
             [_handler for _handler in _handlers if _handler.NAME == match],
             catch=True)
         if _name_match:
             return _name_match
+
+        # Try type filter match
+        _filter_match = single(
+            [_handler for _handler in _handlers
+             if passes_filter(type(_handler).__name__, match)],
+            catch=True)
+        if _filter_match:
+            return _filter_match
 
         if catch:
             return None

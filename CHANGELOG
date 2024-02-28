@@ -1,3 +1,14 @@
+## [1.0.1] - Wed 2024-02-28 11:09
+### Summary
+ - Pini Helper:
+    - bugfix lookdev publish not selected by default in lookdev task,
+### Updated
+ - pini.dcc.find_export_handler try type name match,
+ - pini.pipe.shotgrid.find_jobs ignore jobs not on disk,
+ - pini.qt.CUiBase added title arg,
+ - pini.tools.sanity_check catch ui error on unable to find check to update,
+
+
 ## [1.0.0] - Mon 2024-02-26 13:03
 ### Summary
  - Pini Helper:

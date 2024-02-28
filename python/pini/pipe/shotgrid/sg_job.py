@@ -75,14 +75,18 @@ def find_jobs():
     Returns:
         (CPJob list): job
     """
+    _LOGGER.debug('FIND JOBS')
     _results = sg_handler.find(
         'Project', fields=_JOB_FIELDS,
         filters=[('sg_status', 'in', ('Active', 'Bidding', 'Test'))])
 
+    _disk_jobs = pipe.JOBS_ROOT.find(type_='d', depth=1, full_path=False)
     _jobs = []
     for _data in _results:
         _name = _data[_JOB_NAME_TOKEN]
         if not _name:
+            continue
+        if _name not in _disk_jobs:
             continue
         _job = pipe.to_job(_name)
         _job_to_data(_job, data=[_data], force=True)  # Update cache

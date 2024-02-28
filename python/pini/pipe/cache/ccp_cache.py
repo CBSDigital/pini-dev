@@ -204,23 +204,30 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
 
         raise NotImplementedError(match)
 
-    def find_job(self, match=None, filter_=None, catch=False):
+    def find_job(self, match=None, filter_=None, name=None, catch=False):
         """Find a matching job in the cache.
 
         Args:
             match (str): match by name/path
             filter_ (str): job name filter
+            name (str): match by name
             catch (bool): no error if no job found
 
         Returns:
             (CCPJob): job
         """
         _jobs = self.find_jobs(filter_=filter_)
+
+        if name:
+            return single([_job for _job in _jobs if _job.name == name])
+
         if len(_jobs) > 1 and match:
             _name_jobs = [
                 _job for _job in _jobs if match in (_job.name, _job)]
             if _name_jobs:
                 _jobs = _name_jobs
+
+        _LOGGER.debug(' - JOBS %s', _jobs)
         return single(_jobs, catch=catch)
 
     def find_jobs(self, filter_=None, cfg_name=None, force=False):

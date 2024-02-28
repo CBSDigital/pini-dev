@@ -27,7 +27,7 @@ class CUiBase(object):
 
     def __init__(
             self, ui_file, stack_key=None, load_settings=True, show=True,
-            catch_errors=True, modal=False, ui_loader=None,
+            catch_errors=True, modal=False, ui_loader=None, title=None,
             settings_file=None, settings_suffix=None, fps=None):
         """Constructor.
 
@@ -41,6 +41,7 @@ class CUiBase(object):
             catch_errors (bool): decorate callbacks with error catcher
             modal (bool): execute dialog modally
             ui_loader (QUiLoader): override ui loader
+            title (str): override window title
             settings_file (File): override path to settings file
             settings_suffix (str): apply suffix to default settings
                 file name
@@ -103,6 +104,8 @@ class CUiBase(object):
 
         self._successful_load = True
 
+        if title:
+            self.setWindowTitle(title)
         if modal:
             self.exec_()
 
