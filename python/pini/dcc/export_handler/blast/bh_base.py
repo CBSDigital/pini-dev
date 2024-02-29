@@ -115,6 +115,8 @@ class CBlastHandler(eh_base.CExportHandler):
             'Format', items=[_vid_fmt, 'jpg', 'png'])
         self.add_separator_elem()
 
+        self.ui.Force = self.add_checkbox_elem(
+            'Force', label='Replace existing without confirmation')
         self.ui.View = self.add_checkbox_elem(
             'View', label='View blast on completion')
         self.ui.Burnins = self.add_checkbox_elem(

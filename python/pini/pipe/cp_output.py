@@ -255,7 +255,7 @@ class CPOutputBase(object):
             (bool): submittable
         """
         from pini import pipe
-        if not pipe.SHOTGRID_AVAILABLE:
+        if not pipe.SUBMIT_AVAILABLE:
             return False
         if isinstance(self, CPOutputVideo):
             return True

@@ -298,6 +298,25 @@ def restore_cwd(func):
     return _restore_cwd_fn
 
 
+def search_dir_files_for_text(
+        dir_, text=None, filter_=None, file_filter=None, edit=False,
+        extns=('py', )):
+    """Search text in files in the given directory.
+
+    Args:
+        dir_ (str): directory to search
+        text (str): exact text to search for
+        filter_ (str): per line filter
+        file_filter (str): file path filter
+        edit (bool): edit first match and exit
+        extns (tuple): file extensions to match
+    """
+    from pini.utils import Dir
+    _dir = Dir(dir_)
+    _files = _dir.find(type_='f', filter_=file_filter, extns=extns)
+    search_files_for_text(_files, text=text, filter_=filter_, edit=edit)
+
+
 def search_files_for_text(
         files, text=None, filter_=None, edit=False, encoding=None,
         progress=True, catch=False, verbose=0):

@@ -4,7 +4,7 @@ import logging
 import os
 
 from pini import qt, pipe
-from pini.utils import single
+from pini.utils import single, passes_filter
 
 from . import sg_handler, sg_utils, sg_sequence, sg_job
 
@@ -74,12 +74,13 @@ def find_assets(job=None):
     return sorted(_assets)
 
 
-def find_shots(job=None, only_3d=False):
+def find_shots(job=None, only_3d=False, filter_=None):
     """Find shots in the given job.
 
     Args:
         job (CPJob): job to read
         only_3d (bool): filter out non-3d shots
+        filter_ (str): apply shot name filter
 
     Returns:
         (CPShot list): shots
@@ -124,6 +125,8 @@ def find_shots(job=None, only_3d=False):
         except ValueError:
             continue
         _ety_to_data(_shot, force=True, data=[_data])  # Update caches
+        if filter_ and not passes_filter(_shot.name, filter_):
+            continue
         _shots.append(_shot)
 
     return sorted(_shots)

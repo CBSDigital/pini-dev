@@ -139,6 +139,8 @@ class TestPublish(unittest.TestCase):
         # Test publish without PiniHelper
         _LOGGER.info(' - CUR WORK OUTS %s', pipe.cur_work().find_outputs())
         assert not pipe.cur_work().find_outputs()
+        if _work_c.outputs:
+            _work_c.find_outputs(force=True)
         _LOGGER.info(' - WORK C OUTS %s', _work_c.find_outputs())
         assert not _work_c.find_outputs()
         assert not _work_c.outputs
@@ -208,6 +210,6 @@ class TestPublish(unittest.TestCase):
 
         # Version up
         _helper.ui.WWorks.select_data(_helper.next_work)
-        _helper._callback__WSave()
+        _helper.ui.WSaveOver.click()
         assert pipe.CACHE.cur_work.ver_n == 3
         assert not error.TRIGGERED

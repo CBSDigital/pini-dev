@@ -21,6 +21,8 @@ class CHouFlipbook(bh_base.CBlastHandler):
         _fmt = self.ui.Format.currentText()
         _rng = self._read_range()
         _burnins = self.ui.Burnins.isChecked()
+        _force = self.ui.Force.isChecked()
         _LOGGER.info('BLAST view=%d format=%s range=%s', _view, _fmt, _rng)
         h_pipe.flipbook(
-            format_=_fmt, view=_view, range_=_rng, burnins=_burnins)
+            format_=_fmt, view=_view, range_=_rng, burnins=_burnins,
+            force=_force)

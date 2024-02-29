@@ -3,6 +3,7 @@
 import logging
 
 from pini import dcc, qt
+from pini.dcc import export_handler
 from pini import pipe
 
 from maya_pini import open_maya as pom, ui
@@ -54,13 +55,19 @@ def blast(
     _out = _work.to_output(_tmpl, output_name=_output_name, extn=format_)
     _LOGGER.info(' - OUT %s', _out)
 
+    # Execute blast
+    _bkp = None
     if save:
-        _work.save(reason='blast', force=True)
+        _bkp = _work.save(reason='blast', force=True, result='bkp')
+        _LOGGER.info(' - BKP %s', _bkp)
+    _data = _obt_metadata(range_=range_, bkp=_bkp)
     u_blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq, copy_frame=_work.image)
+    _out.set_metadata(_data, force=True)
 
+    # Update shotgrid
     if pipe.SHOTGRID_AVAILABLE:
         if pipe.MASTER == 'disk':
             _rng = range_ or dcc.t_range(int)
@@ -75,6 +82,23 @@ def blast(
     _work.update_outputs()
 
     return _out
+
+
+def _obt_metadata(range_, bkp):
+    """Obtain metadata for this blast.
+
+    Args:
+        range_ (tuple): blast range
+        bkp (File): backup file
+
+    Returns:
+        (dict): metadata
+    """
+    _data = export_handler.obtain_metadata(handler='Blast')
+    _data['range'] = range_
+    if bkp:
+        _data['bkp'] = bkp.path
+    return _data
 
 
 def _update_shotgrid_range(entity=None, range_=None, force=False):

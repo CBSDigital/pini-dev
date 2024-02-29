@@ -87,7 +87,7 @@ class TestHelper(unittest.TestCase):
         assert pipe.CACHE.cur_work
 
         _helper = helper.DIALOG
-        if not _helper:
+        if not helper.is_active():
             _helper = helper.launch()
         else:
             _helper.ui.Refresh.click()
@@ -106,7 +106,7 @@ class TestHelper(unittest.TestCase):
         assert _helper.work_dir is _work_dir_c
 
         assert _helper.work
-        _helper._callback__WSave(force=True)
+        _helper._callback__WSaveOver(force=True)
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
         assert _helper.work is pipe.CACHE.cur_work
 

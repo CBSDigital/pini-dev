@@ -10,7 +10,7 @@ import sys
 from pini import dcc, icons
 from pini.utils import (
     TMP_PATH, abs_path, File, cache_property, nice_id, to_pascal, wrap_fn,
-    passes_filter, single, strftime)
+    passes_filter, single, strftime, check_logging_level)
 
 from ..q_ui_container import CUiContainer
 from ..q_utils import SETTINGS_DIR, find_widget_children
@@ -559,6 +559,7 @@ class CUiBase(object):
         Args:
             event (QTimerEvent): triggered event
         """
+        check_logging_level()
         _LOGGER.debug(
             'TIMER EVENT [%s] %s', nice_id(self), strftime('%H:%M:%S'))
         if (

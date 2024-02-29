@@ -141,7 +141,7 @@ class PRNotes(object):
 
         _lines = [
             '<b>Repo</b>: {}'.format(repo.name),
-            '<b>Update</b>: {} -> {}'.format(_prev.string, ver.string),
+            '<b>Update</b>: {} (from {})'.format(ver.string, _prev.string),
             '<b>Date</b>: '+strftime('%a %b %m - %H:%M %p PST', mtime),
         ]
 

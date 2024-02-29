@@ -533,7 +533,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _LOGGER.debug(' - SAVE SCENE %s', self.path)
         dcc.save(file_=self.path, force=_force, parent=parent)
         self._save_metadata(notes=_notes, mtime=_mtime)
-        self._save_bkp(
+        _bkp = self._save_bkp(
             source=self, reason=_reason, mtime=_mtime, notes=_notes,
             owner=get_user())
 
@@ -548,6 +548,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
                 _LOGGER.error('FAILED TO UPDATE SHOTGRID %s', _exc)
 
         self.set_env()
+
+        return _bkp
 
     def _save_bkp(
             self, reason, source=None, mtime=None, owner=None, notes=None):

@@ -403,7 +403,7 @@ class CLWorkTab(object):
         self.ui.WLoad.setEnabled(_loadable)
         _saveable = bool(
             _work and _work.user in (None, get_user(), pipe.cur_user()))
-        self.ui.WSave.setEnabled(_saveable)
+        self.ui.WSaveOver.setEnabled(_saveable)
 
         if _work:
             _notes = _work.notes or ''
@@ -482,8 +482,8 @@ class CLWorkTab(object):
         if _new:
             self._callback__WWorksRefresh()
 
-    @usage.get_tracker('PiniHelper.Save', write_after=True)
-    def _callback__WSave(self, force=False):
+    @usage.get_tracker('PiniHelper.SaveOver', write_after=True)
+    def _callback__WSaveOver(self, force=False):
 
         _work = self.ui.WWorks.selected_data()
         _new = not _work.exists()
@@ -505,6 +505,10 @@ class CLWorkTab(object):
             self.ui.WTags.select_data(_work.tag)
         self.ui.WWorks.redraw()
         self.jump_to(_work.path)
+
+    @usage.get_tracker('PiniHelper.VersionUp', write_after=True)
+    def _callback__WVersionUp(self):
+        pipe.version_up()
 
     def _warn_on_switch_stream(self):
         """Pop up a warning dialog if we switch stream."""

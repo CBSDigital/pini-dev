@@ -124,6 +124,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
                 title='Warning', parent=self.parent)
             return
 
+        _force = self.ui.Force.isChecked()
         _output_name = self.ui.OutputName.currentText()
         _cam = self.ui.Camera.currentText()
         self._validate_output_name()
@@ -137,4 +138,4 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             camera=_cam,
             settings=self.ui.Settings.currentText(),
             output_name=_output_name,
-        )
+            force=_force)

@@ -234,6 +234,8 @@ class PRRepo(Dir):
             notes=notes, ver=_next, pull_mode=pull_mode, target=target,
             tmp_yml=_tmp_yml, email=email, dev_label=dev_label)
 
+        return _tmp_yml
+
     def search_code(self, filter_=None, edit=False, text=None,
                     file_filter=None, extn='py', verbose=0):
         """Search code for text.

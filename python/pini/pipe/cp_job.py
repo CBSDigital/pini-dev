@@ -694,11 +694,12 @@ class CPJob(cp_settings.CPSettingsLevel):
 
         return _shots
 
-    def read_shots_sg(self, class_=None):
+    def read_shots_sg(self, class_=None, filter_=None):
         """Read shots from shotgrid.
 
         Args:
             class_ (class): override shot class
+            filter_ (str): apply name filter
 
         Returns:
             (CPShot list): shots
@@ -706,10 +707,13 @@ class CPJob(cp_settings.CPSettingsLevel):
         _LOGGER.debug('READ SHOTS SG')
         from pini.pipe import shotgrid
         _only_3d = self.settings['shotgrid']['only_3d']
-        _shots = shotgrid.find_shots(job=self, only_3d=_only_3d)
+        _shots = shotgrid.find_shots(
+            job=self, only_3d=_only_3d, filter_=filter_)
+        _LOGGER.debug(' - READ %d SHOTS %s', len(_shots), _shots)
         if class_:
             _LOGGER.debug(' - CLASS %s', class_)
             _shots = [class_(_shot, job=self) for _shot in _shots]
+            _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
         return _shots
 
     def read_type_assets(self, asset_type, class_=None):

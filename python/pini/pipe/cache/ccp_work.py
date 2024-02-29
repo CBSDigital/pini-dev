@@ -195,9 +195,9 @@ class CCPWork(CPWork):
         return self._owner_from_user() or self.metadata.get('owner')
 
     @functools.wraps(CPWork.save)
-    def save(self, *args, **kwargs):
+    def save(self, *args, result='this', **kwargs):
         """Save this work."""
-        _LOGGER.info('SAVE %s', self)
+        _LOGGER.info('SAVE %s result=%s', self, result)
         from pini import pipe
         from pini.pipe import cache
 
@@ -210,7 +210,7 @@ class CCPWork(CPWork):
         _LOGGER.debug(' - ENTITY %s', self.entity)
         _LOGGER.debug(' - WORK DIR %s', self.work_dir)
 
-        super(CCPWork, self).save(*args, **kwargs)
+        _bkp = super(CCPWork, self).save(*args, **kwargs)
         self._exists = True
         assert File(self).exists()
         assert self.exists()
@@ -240,7 +240,14 @@ class CCPWork(CPWork):
         # Reread outputs
         self.find_outputs(force=True)
 
-        return _this_work
+        # Return result
+        if result == 'this':
+            _result = _this_work
+        elif result == 'bkp':
+            _result = _bkp
+        else:
+            raise ValueError(result)
+        return _result
 
     def set_metadata(self, data):
         """Set work file metadata.

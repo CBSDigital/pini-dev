@@ -1,3 +1,25 @@
+## [1.2.0] - Thu 2024-02-29 15:37
+### Summary
+ - Pini Helper:
+    - added version up button in work tab (mkim) [PT-233],
+    - disable submit tab (mkim),
+    - maya blast bugfix blasts missing metadata,
+### Updated
+ - pini.utils.search_dir_files_for_text added,
+ - pini.utils.check_logging_level made public,
+ - pini.dcc.CBlastHandler added force checkbox,
+ - pini.pipe.SUBMIT_AVAILABLE added using $PINI_PIPE_ENABLE_SUBMIT,
+ - pini.pipe CPJob.find_shots_sg/shotgrid.find_shots added filter_ flag,
+ - pini.pipe.CPWork.save returns bkp file,
+ - pini.pipe.CPOutput.submittable uses pini.pipe.SUBMIT_AVAIABLE,
+ - pini.pipe.cache.CCPWork.save added result flag,
+ - pini.qt.CUiBase.timerEvent added check_logging_level,
+ - pini.tools.helper renamed WSave -> WSaveOver,
+ - pini.tools.helper WVersionUp,
+ - pini.tools.release.PRRepo.release returns tmp yml,
+ - maya_pini.m_pipe.blast bugfix no metadata for blast,
+
+
 ## [1.1.1] - Wed 2024-02-28 16:46
 ### Summary
  - Pini Helper:
