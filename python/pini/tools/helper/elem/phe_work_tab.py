@@ -91,24 +91,25 @@ class CLWorkTab(object):
 
             # Build task items
             _work_dirs = self.entity.find_work_dirs(dcc_=dcc.NAME)
-            for _work_dir in _work_dirs:
+            for _work_dir in sorted(_work_dirs):
                 _col = 'Grey'
                 if _work_dir.works:
                     _col = None
                     if not _task_in_use:
-                        _task_in_use = _work_dir.task
+                        _task_in_use = _work_dir.task_label
+
                 _item = qt.CListWidgetItem(
-                    _work_dir.task, col=_col, data=_work_dir)
+                    _work_dir.task_label, col=_col, data=_work_dir)
                 _items.append(_item)
 
             # Determine initial selection
             if self.target:
-                _work = pipe.to_work(self.target)
-                if _work:
-                    _select = _work.task
+                _work_dir = pipe.to_work_dir(self.target)
+                if _work_dir:
+                    _select = _work_dir.task_label
                     _LOGGER.debug(' - USING TARGET TASK')
             if not _select:
-                _select = pipe.cur_task()
+                _select = pipe.cur_task(fmt='full')
                 _LOGGER.debug(' - USING CURRENT TASK')
             if not _task_in_use:
                 _select = _task_in_use

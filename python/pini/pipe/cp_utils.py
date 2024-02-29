@@ -251,12 +251,32 @@ def task_sort(task):
         task (str): task to sort
 
     Returns:
-        (str): sort token
+        (tuple): sort token
+    """
+
+    _task = task or ''
+
+    if not isinstance(_task, six.string_types):
+        raise ValueError(_task)
+
+    # Test for step (if task has embedded step eg. surf/dev)
+    _step = None
+    if _task and '/' in _task:
+        _step, _task = _task.split('/')
+
+    return _to_task_sort_idx(_step), _to_task_sort_idx(_task), _task
+
+
+def _to_task_sort_idx(task):
+    """Obtain task sort key for the given task name.
+
+    Args:
+        task (str): task name to sort
+
+    Returns:
+        (int): task sort index
     """
     from pini import pipe
-
-    if not isinstance(task, six.string_types):
-        raise ValueError(task)
 
     _tasks = [
         None,
@@ -284,6 +304,7 @@ def task_sort(task):
         'trk',
         'track',
         'tracking',
+        'anm',
         'anim',
         'animation',
 
@@ -307,11 +328,13 @@ def task_sort(task):
         'dev',
     ]
     _task = pipe.map_task(task)
-    if _task.lower() in _tasks:
+    if str(_task).lower() in _tasks:
         _idx = _tasks.index(_task.lower())
     else:
         _idx = len(_tasks)
-    return _idx, _task
+    _LOGGER.debug(' - TASK SORT KEY %s mapped=%s idx=%d', task, _task, _idx)
+
+    return _idx
 
 
 def validate_token(value, token, job):

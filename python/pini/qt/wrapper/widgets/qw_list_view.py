@@ -135,6 +135,20 @@ class CListView(QtWidgets.QListView):
             return
         raise ValueError(obj)
 
+    def select_data(self, data, catch=True):
+        """Select item by its embedded data.
+
+        Args:
+            data (any): data to select
+            catch (bool): no error on fail to select
+        """
+        _datas, _items = self.all_data(), self.all_items()
+        if data not in _datas:
+            if not catch:
+                raise ValueError
+            return
+        self.select_item(_items[_datas.index(data)])
+
     def select_item(self, item, replace=True):
         """Select the given item.
 
@@ -155,19 +169,14 @@ class CListView(QtWidgets.QListView):
         # Make item visible
         self.scrollTo(item.index())
 
-    def select_data(self, data, catch=True):
-        """Select item by its embedded data.
+    def select_row(self, idx):
+        """Select the given row index.
 
         Args:
-            data (any): data to select
-            catch (bool): no error on fail to select
+            idx (int): row to select
         """
-        _datas, _items = self.all_data(), self.all_items()
-        if data not in _datas:
-            if not catch:
-                raise ValueError
-            return
-        self.select_item(_items[_datas.index(data)])
+        _item = self.all_items()[idx]
+        self.select_item(_item)
 
     def selected_data(self, catch=True):
         """Obtain data from currently selected item.

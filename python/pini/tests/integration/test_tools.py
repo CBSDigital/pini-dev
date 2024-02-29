@@ -3,9 +3,23 @@ import unittest
 
 from pini import pipe, dcc, testing
 from pini.tools import helper, job_manager, error
-from pini.utils import strftime
+from pini.utils import strftime, system
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class TestPiniHelper(unittest.TestCase):
+
+    def test_for_cyclical_import(self):
+
+        # NOTE: doesn't seem to give output for some reason (could pipe out
+        # to file if wanted)
+        _cmd = 'print("HELLO"); from pini.tools import helper; print(helper)'
+        _out, _err = system(
+            ['python', '-c', '"""{}"""'.format(_cmd)], result='out/err')
+        print(_out)
+        print(_err)
+        assert not _err
 
 
 class TestDiskPiniHelper(unittest.TestCase):

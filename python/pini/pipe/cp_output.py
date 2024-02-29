@@ -51,6 +51,7 @@ class CPOutputBase(object):
     task = None
     user = None
     tag = None
+    step = None
     task = None
     output_type = None
     output_name = None
@@ -59,6 +60,122 @@ class CPOutputBase(object):
 
     data = None
     template = None
+
+    def _extract_data_from_templates(
+            self, job, entity, types, templates=None, template=None, task=None):
+        """Match path with a template and extract data.
+
+        Args:
+            job (CPJob): parent job
+            entity (CPEntity): parent entity
+            types (str list): template types to check
+            templates (CPTemplate list): force list of templates to check
+            template (CPTemplate): force template to use
+            task (str): apply task (if known)
+        """
+        _LOGGER.debug(' - EXTRACT DATA FROM TEMPLATES %s', self.path)
+
+        # Set up entity/job
+        self.entity = entity or to_entity(self.path, job=job)
+        self.job = self.entity.job
+        self.profile = self.entity.profile
+
+        # Apply templates to data. Apply single template alone to get better
+        # error on fail. NOTE: sometimes the templates can fail due to data
+        # not represented in the repr, eg. tokens fail to validate.
+        _tmpls = self._extract_data_find_output_templates(
+            template=template, templates=templates, types=types)
+        if len(_tmpls) == 1:
+            self.template = single(_tmpls)
+            _LOGGER.debug(' - TMPL %s', self.template)
+            _LOGGER.debug(' - PATH %s', self.path)
+            try:
+                self.data = self.template.parse(self.path)
+            except lucidity.ParseError as _exc:
+                _LOGGER.debug(' - ERROR %s', _exc)
+                raise ValueError(_exc)
+        else:
+            try:
+                self.data, self.template = lucidity.parse(self.path, _tmpls)
+            except lucidity.ParseError as _exc:
+                _LOGGER.log(9, ' - PATH "%s"', self.path)
+                _LOGGER.log(9, ' - ERROR %s', _exc)
+                raise ValueError('No output templates matched path '+self.path)
+        _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
+                    self.template)
+
+        # Set task
+        self.task = task or self.data.get('task', self.template.task)
+        if not self.task:
+            if self.work_dir:
+                self.task = self.work_dir.task
+            else:
+                self.task = self.data.get('work_dir')
+
+        # Fix userscore in tag
+        _LOGGER.log(9, ' - TASK %s %s', self.task, self.data)
+        if 'tag' in self.data and self.task and '_' in self.task:
+            _LOGGER.log(
+                9, ' - FIXING UNDERSCORE IN TASK %s %s', self.task, self.data)
+            self.task = self.data['task'].split('_')[0]
+            self.template = self.template.apply_data(task=self.task)
+            _LOGGER.debug(' - TEMPLATE (fixed) %s', self.template)
+            self.data = self.template.parse(self.path)
+
+        validate_tokens(self.data, job=self.job)
+
+        self.output_name = self.data.get('output_name')
+        self.step = self.data.get('step')
+        self.tag = self.data.get('tag')
+        self.user = self.data.get('user')
+
+        self.asset_type = self.entity.asset_type
+        self.asset = self.entity.asset
+        self.sequence = self.entity.sequence
+        self.shot = self.entity.shot
+
+        self.ver = self.data.get('ver')
+        self.ver_n = int(self.ver) if self.ver else None
+
+        self.output_type = self.data.get('output_type')
+
+    def _extract_data_find_output_templates(self, template, templates, types):
+        """Find output templates to match with this output.
+
+        Args:
+            template (CPTemplate): force template to use
+            templates (CPTemplate list): force list of templates to check
+            types (str list): template types to check
+
+        Returns:
+            (CPTemplate list): templates to test
+        """
+
+        # Get list of templates to test
+        if template:
+            _tmpls = [template]
+        elif templates:
+            _tmpls = templates
+        else:
+            _tmpls = self._find_templates(types=types)
+        _tmpls = [
+            _tmpl.apply_data(
+                entity=self.entity.name, entity_path=self.entity.path,
+                extn=self.extn)
+            for _tmpl in _tmpls]
+
+        # Apply work dir if needed
+        _keys = set(sum([list(_tmpl.keys()) for _tmpl in _tmpls], []))
+        if 'work_dir' in _keys and self.work_dir:
+            _tmpls = [_tmpl.apply_data(work_dir=self.work_dir.path)
+                      for _tmpl in _tmpls]
+
+        # Log data
+        _LOGGER.debug(' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
+        for _idx, _tmpl in enumerate(_tmpls):
+            _LOGGER.debug(' - TEMPLATES[%d] %s', _idx, _tmpl)
+
+        return _tmpls
 
     @property
     def pini_ver(self):
@@ -177,121 +294,6 @@ class CPOutputBase(object):
         The kwargs are added to the existing metadata dict.
         """
         self.set_metadata(kwargs, mode='add')
-
-    def _extract_data_find_output_templates(self, template, templates, types):
-        """Find output templates to match with this output.
-
-        Args:
-            template (CPTemplate): force template to use
-            templates (CPTemplate list): force list of templates to check
-            types (str list): template types to check
-
-        Returns:
-            (CPTemplate list): templates to test
-        """
-
-        # Get list of templates to test
-        if template:
-            _tmpls = [template]
-        elif templates:
-            _tmpls = templates
-        else:
-            _tmpls = self._find_templates(types=types)
-        _tmpls = [
-            _tmpl.apply_data(
-                entity=self.entity.name, entity_path=self.entity.path,
-                extn=self.extn)
-            for _tmpl in _tmpls]
-
-        # Apply work dir if needed
-        _keys = set(sum([list(_tmpl.keys()) for _tmpl in _tmpls], []))
-        if 'work_dir' in _keys and self.work_dir:
-            _tmpls = [_tmpl.apply_data(work_dir=self.work_dir.path)
-                      for _tmpl in _tmpls]
-
-        # Log data
-        _LOGGER.debug(' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
-        for _idx, _tmpl in enumerate(_tmpls):
-            _LOGGER.debug(' - TEMPLATES[%d] %s', _idx, _tmpl)
-
-        return _tmpls
-
-    def _extract_data_from_templates(
-            self, job, entity, types, templates=None, template=None, task=None):
-        """Match path with a template and extract data.
-
-        Args:
-            job (CPJob): parent job
-            entity (CPEntity): parent entity
-            types (str list): template types to check
-            templates (CPTemplate list): force list of templates to check
-            template (CPTemplate): force template to use
-            task (str): apply task (if known)
-        """
-        _LOGGER.debug(' - EXTRACT DATA FROM TEMPLATES %s', self.path)
-
-        # Set up entity/job
-        self.entity = entity or to_entity(self.path, job=job)
-        self.job = self.entity.job
-        self.profile = self.entity.profile
-
-        # Apply templates to data. Apply single template alone to get better
-        # error on fail. NOTE: sometimes the templates can fail due to data
-        # not represented in the repr, eg. tokens fail to validate.
-        _tmpls = self._extract_data_find_output_templates(
-            template=template, templates=templates, types=types)
-        if len(_tmpls) == 1:
-            self.template = single(_tmpls)
-            _LOGGER.debug(' - TMPL %s', self.template)
-            _LOGGER.debug(' - PATH %s', self.path)
-            try:
-                self.data = self.template.parse(self.path)
-            except lucidity.ParseError as _exc:
-                _LOGGER.debug(' - ERROR %s', _exc)
-                raise ValueError(_exc)
-        else:
-            try:
-                self.data, self.template = lucidity.parse(self.path, _tmpls)
-            except lucidity.ParseError as _exc:
-                _LOGGER.log(9, ' - PATH "%s"', self.path)
-                _LOGGER.log(9, ' - ERROR %s', _exc)
-                raise ValueError('No output templates matched path '+self.path)
-        _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
-                    self.template)
-
-        # Set task
-        self.task = task or self.data.get('task', self.template.task)
-        if not self.task:
-            if self.work_dir:
-                self.task = self.work_dir.task
-            else:
-                self.task = self.data.get('work_dir')
-
-        # Fix userscore in tag
-        _LOGGER.log(9, ' - TASK %s %s', self.task, self.data)
-        if 'tag' in self.data and self.task and '_' in self.task:
-            _LOGGER.log(
-                9, ' - FIXING UNDERSCORE IN TASK %s %s', self.task, self.data)
-            self.task = self.data['task'].split('_')[0]
-            self.template = self.template.apply_data(task=self.task)
-            _LOGGER.debug(' - TEMPLATE (fixed) %s', self.template)
-            self.data = self.template.parse(self.path)
-
-        validate_tokens(self.data, job=self.job)
-
-        self.user = self.data.get('user')
-        self.tag = self.data.get('tag')
-        self.output_name = self.data.get('output_name')
-
-        self.asset_type = self.entity.asset_type
-        self.asset = self.entity.asset
-        self.sequence = self.entity.sequence
-        self.shot = self.entity.shot
-
-        self.ver = self.data.get('ver')
-        self.ver_n = int(self.ver) if self.ver else None
-
-        self.output_type = self.data.get('output_type')
 
     def get_metadata(self):
         """Obtain this output's metadata.

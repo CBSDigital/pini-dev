@@ -9,6 +9,7 @@ import pprint
 import six
 
 from pini import pipe, icons, dcc, qt
+from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
@@ -186,6 +187,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _work = pipe.to_work(path)
         if _work:
             self.ui.MainPane.select_tab('Work')
+        _out = pipe.to_output(path, catch=True)
+        if _out:
+            self.ui.MainPane.select_tab('Scene')
         self.ui.Job.redraw()
         self.target = None
 
@@ -276,9 +280,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 enabled=_rng != dcc.t_range(int))
 
         # Add lookdev opts
-        if output.type_ == 'publish' and (
-                 output.output_type == 'lookdev' or
-                 output.metadata.get('publish_type') == 'CMayaLookdevPublish'):
+        if _apply_lookdev_opts(output, ref):
             self._add_output_lookdev_opts(
                 menu, lookdev=output, ref=ref, ignore_ui=ignore_ui)
 
@@ -735,3 +737,25 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             self.killTimer(self.timer)
             _LOGGER.debug('KILLED TIMER %s', event)
         self.flush_notes_stack()
+
+
+def _apply_lookdev_opts(output, ref):
+    """Check whether lookdev options need to be applied.
+
+    Args:
+        output (CPOutput): selected output
+        ref (CPipeRef): associated reference
+
+    Returns:
+        (bool): whether lookdev options should be applied
+    """
+    if dcc.NAME != 'maya':
+        return False
+
+    if output.metadata.get('publish_type') != 'CMayaLookdevPublish':
+        return False
+
+    if ref and not isinstance(ref, pipe_ref.CMayaLookdevRef):
+        return False
+
+    return True

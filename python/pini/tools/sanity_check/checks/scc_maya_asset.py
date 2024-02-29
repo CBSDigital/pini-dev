@@ -1,5 +1,6 @@
 """Maya asset checks."""
 
+import os
 import collections
 import logging
 
@@ -484,11 +485,21 @@ class CheckGeoNaming(SCMayaCheck):
         _geo_s = single(_geo_ss)
         self.write_log('   - shape %s', _geo_s)
 
+        # Check for namespace
+        if geo.namespace:
+            _clean_name = to_clean(geo)
+            _fix = wrap_fn(cmds.rename, geo, _clean_name)
+            _msg = 'Geo "{}" is using a namespace'.format(geo)
+            self.add_fail(_msg, fix=_fix, node=geo)
+            return
+
         # Check geo name
         _name = str(geo)
-        if not (_name.endswith('_GEO') or _name == 'GEO'):
+        _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
+        if not (_name.endswith('_'+_geo_suffix) or _name == _geo_suffix):
             _msg, _fix, _suggestion = _fix_node_suffix(
-                node=geo, suffix='_GEO', alts=['_Geo'], type_='geo',
+                node=geo, suffix='_'+_geo_suffix,
+                alts=['_Geo', '_GEO', '_geo'], type_='geo',
                 ignore=self._ignore_names)
             self._ignore_names.append(_suggestion)
             self.add_fail(_msg, node=geo, fix=_fix)

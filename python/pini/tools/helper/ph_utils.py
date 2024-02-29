@@ -345,9 +345,13 @@ def output_to_type_icon(output):
     if output.extn in EXTN_ICONS:
         return EXTN_ICONS[output.extn]
 
-    return {'model': MODEL_ICON,
-            'rig': RIG_ICON,
-            'lookdev': LOOKDEV_ICON}.get(pipe.map_task(output.task))
+    _task_map = {
+        'model': MODEL_ICON,
+        'rig': RIG_ICON,
+        'lookdev': LOOKDEV_ICON}
+    _step = pipe.map_task(output.step)
+    _task = pipe.map_task(output.task)
+    return _task_map.get(_step) or _task_map.get(_task)
 
 
 def work_to_icon(work):

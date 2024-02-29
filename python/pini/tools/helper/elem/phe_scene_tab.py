@@ -9,7 +9,7 @@ from pini import qt, pipe, dcc, icons
 from pini.dcc import pipe_ref
 from pini.tools import usage
 from pini.utils import (
-    wrap_fn, plural, chain_fns, strftime, clip, passes_filter,
+    wrap_fn, plural, chain_fns, strftime, clip, passes_filter, safe_zip,
     apply_filter, single, split_base_index)
 
 from .phe_output_item import PHOutputItem
@@ -45,16 +45,27 @@ class CLSceneTab(object):
                 (this can be disabled if the tab is being re-initiated
                 internally)
         """
+        _LOGGER.debug('INIT UI')
 
-        # Select tab based on current task
-        _task = pipe.cur_task(fmt='pini')
-        _map = {'anim': 'Asset',
-                'fx': 'Cache',
-                'lighting': 'Cache',
-                'lsc': 'Render',
-                'comp': 'Render'}
-        if switch_tabs and self.work and _task in _map:
-            self.ui.SOutputsPane.select_tab(_map[_task])
+        # Choose selected tab
+        _tab = None
+        if switch_tabs:
+            if self.target and isinstance(self.target, pipe.CPOutputBase):
+                if self.target.nice_type == 'publish':
+                    _tab = 'Asset'
+            if not _tab:
+                _task = pipe.cur_task(fmt='pini')
+                _map = {'anim': 'Asset',
+                        'fx': 'Cache',
+                        'lighting': 'Cache',
+                        'lsc': 'Render',
+                        'comp': 'Render'}
+
+                if self.work and _task in _map:
+                    _tab = _map[_task]
+        _LOGGER.debug(' - SELECT TAG %s', _tab)
+        if _tab:
+            self.ui.SOutputsPane.select_tab(_tab)
         else:
             self.settings.apply_to_widget(self.ui.SOutputsPane)
 
@@ -102,13 +113,7 @@ class CLSceneTab(object):
         _mode = self.ui.SOutputsPane.current_tab_text()
         _add_all = True
         if _mode == 'Asset':
-            _label = 'Category'
-            _types = sorted({_out.asset_type for _out in self.all_outs},
-                            key=_sort_asset_type)
-            _data = [
-                [_out for _out in self.all_outs if _out.asset_type == _type]
-                for _type in _types]
-            _select = 'rig'
+            _label, _types, _data, _select = self._redraw_out_type_asset()
         elif _mode == 'Cache':
             _label = 'Type'
             _types = sorted({_out.output_type for _out in self.all_outs})
@@ -141,6 +146,31 @@ class CLSceneTab(object):
 
         self.ui.SOutputTask.redraw()
 
+    def _redraw_out_type_asset(self):
+        """Build redraw output type elements in assets mode.
+
+        Returns:
+            (tuple): output type elements
+        """
+        _label = 'Category'
+        _outs = [_out for _out in self.all_outs if _out.asset]
+        _types = sorted({
+            _out.asset_type for _out in _outs})
+        _data = [
+            [_out for _out in _outs if _out.asset_type == _type]
+            for _type in _types]
+
+        # Determine selection
+        if (
+                self.target and
+                isinstance(self.target, pipe.CPOutputBase) and
+                self.target.asset_type in _types):
+            _select = self.target.asset_type
+        else:
+            _select = 'rig'
+
+        return _label, _types, _data, _select
+
     def _redraw__SOutputTask(self):
 
         _mode = self.ui.SOutputsPane.current_tab_text()
@@ -149,13 +179,21 @@ class CLSceneTab(object):
 
         # Build list of tasks/data
         _tasks, _data = [], []
-        for _task in sorted({_out.task for _out in _outs},
+        for _task in sorted({_output_to_task_label(_out) for _out in _outs},
                             key=pipe.task_sort):
             _tasks.append(_task or '<None>')
-            _data.append([_out for _out in _outs if _out.task == _task])
+            _data.append([
+                _out for _out in _outs if _output_to_task_label(_out) == _task])
 
         # Select default
-        if _mode == 'render':
+        if self.target in _outs:
+            _select = single([
+                _task for _task, _task_outs in safe_zip(_tasks, _data)
+                if self.target in _task_outs])
+            _LOGGER.debug(
+                ' - FIND SELECTED TASK FROM TARGET %s %s', _select,
+                self.target)
+        elif _mode == 'render':
             _select = 'lighting'
         elif 'rig' in _tasks:  # Select default before add all
             _select = 'rig'
@@ -175,7 +213,9 @@ class CLSceneTab(object):
         for _elem in [self.ui.SOutputTask, self.ui.SOutputTaskLabel]:
             _elem.setVisible(_type != 'plate')
         self.ui.SOutputTask.setEnabled(len(_tasks) > 1)
-        self.settings.apply_to_widget(self.ui.SOutputTask, emit=False)
+        if not _select:
+            self.settings.apply_to_widget(self.ui.SOutputTask, emit=False)
+
         self.ui.SOutputTag.redraw()
 
     def _redraw__SOutputTag(self):
@@ -190,6 +230,10 @@ class CLSceneTab(object):
             _tags.insert(0, 'all')
             _data.insert(0, _outs)
             _select = 'all'
+        if (
+                isinstance(self.target, pipe.CPOutputBase) and
+                self.target.tag in _tags):
+            _select = self.target.tag
         _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
 
         self.ui.SOutputTag.set_items(
@@ -563,7 +607,7 @@ class CLSceneTab(object):
         self.ui.SSceneRefsFilter.setText('')
 
     @usage.get_tracker(name='PiniHelper.RefOutputs')
-    def _callback__SApply(self):
+    def _callback__SApply(self, force=False):
 
         # Build list of updates
         _updates = []
@@ -604,10 +648,11 @@ class CLSceneTab(object):
             _updates.append(wrap_fn(_ref.rename, _name))
 
         # Execute updates
-        qt.ok_cancel(
-            'Apply {:d} scene update{}?'.format(
-                len(_updates), plural(_updates)),
-            parent=self, icon=icons.find('Gear'))
+        if not force:
+            qt.ok_cancel(
+                'Apply {:d} scene update{}?'.format(
+                    len(_updates), plural(_updates)),
+                parent=self, icon=icons.find('Gear'))
         for _update in qt.progress_bar(
                 _updates, 'Applying {:d} update{}', parent=self):
             _update()
@@ -1030,6 +1075,20 @@ def _output_to_label(out):
     if out.ver_n:
         _label += ' v{:03d}{}'.format(out.ver_n, _fmt)
     return _label
+
+
+def _output_to_task_label(out):
+    """Obtain task label for the given output.
+
+    Args:
+        out (CPOutput): output to read
+
+    Returns:
+        (str): task label (eg. rig, surf/dev)
+    """
+    if out.step:
+        return '{}/{}'.format(out.step, out.task)
+    return out.task
 
 
 class _StagedRef(pipe_ref.CPipeRef):  # pylint: disable=abstract-method

@@ -605,20 +605,25 @@ def _read_reference_pipe_refs(selected=False):
     for _ref in _all_refs:
 
         _LOGGER.debug('TESTING %s', _ref)
+
+        # Obtain output
         _out = pipe.to_output(_ref.path, catch=True)
         if not _out:
             _LOGGER.debug(' - NOT VALID OUTPUT %s', _ref.path)
             continue
         _LOGGER.debug(' - OUT %s', _ref)
+
+        # Obtained cache output
         try:
             _out_c = pipe.CACHE.obt_output(_out)
         except ValueError:
             _LOGGER.debug(' - MISSING FROM CACHE')
             continue
 
-        if (
-                _out_c.type_ == 'publish' and
-                pipe.map_task(_out_c.task) == 'lookdev'):
+        # Determine class based on publish type
+        _pub_type = _out_c.metadata.get('publish_type')
+        _LOGGER.debug(' - PUB TYPE %s', _pub_type)
+        if _pub_type == 'CMayaLookdevPublish':
             _class = CMayaLookdevRef
         else:
             _class = CMayaReference

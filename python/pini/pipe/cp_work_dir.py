@@ -20,6 +20,8 @@ from .cp_output import OUTPUT_TEMPLATE_TYPES
 _LOGGER = logging.getLogger(__name__)
 _TASK_MAP = {
     'animation': 'anim',
+    'ani': 'anim',
+    'anm': 'anim',
     'mod': 'model',
     'surf': 'lookdev',
     'mat': 'lookdev',
@@ -95,7 +97,23 @@ class CPWorkDir(Dir):
         Returns:
             (tuple): sort key
         """
-        return cp_utils.task_sort(self.task), self.path
+        _step_sort = cp_utils.task_sort(self.step)
+        _task_sort = cp_utils.task_sort(self.task)
+        return _step_sort, _task_sort, self.path
+
+    @property
+    def task_label(self):
+        """Obtain task label for this work dir.
+
+        Generally this is just the task, but if the pipeline uses steps and
+        tasks then this is "<step>/<task>" - eg. "surf/dev"
+
+        Returns:
+            (str): task label
+        """
+        if self.step:
+            return '{}/{}'.format(self.step, self.task)
+        return self.task
 
     def create(self, force=False):
         """Create this work dir.
@@ -523,7 +541,16 @@ def cur_task(fmt='local'):
     """
     _work_dir = cur_work_dir()
     _task = _work_dir.task if _work_dir else None
-    return map_task(_task, fmt=fmt)
+    _step = _work_dir.step if _work_dir else None
+
+    if fmt == 'full':
+        if not _work_dir:
+            return None
+        if _step:
+            return '{}/{}'.format(_step, _task)
+        return _work_dir.task
+
+    return map_task(_task, step=_step, fmt=fmt)
 
 
 def cur_work_dir(entity=None):
@@ -552,15 +579,11 @@ def map_task(task, step=None, fmt='pini'):
     Returns:
         (str): mapped task name
     """
+
     if fmt == 'local':
         _task = task
     elif fmt == 'pini':
-        if task in _TASK_MAP:
-            _task = _TASK_MAP[task]
-        elif step in _TASK_MAP:  # pylint: disable=consider-using-get
-            _task = _TASK_MAP[step]
-        else:
-            _task = task
+        _task = _TASK_MAP.get(step) or _TASK_MAP.get(task) or task
     else:
         raise ValueError(fmt)
     return _task
