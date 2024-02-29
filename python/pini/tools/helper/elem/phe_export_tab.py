@@ -4,6 +4,7 @@
 
 import collections
 import logging
+import os
 
 from pini import qt, pipe, icons, dcc
 from pini.tools import usage, error
@@ -53,7 +54,9 @@ class CLExportTab(object):
         if _tab:
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
-        self.ui.EExportPane.set_tab_enabled('Submit', pipe.SHOTGRID_AVAILABLE)
+        # Setup submit tab
+        _en = bool(os.environ.get("PINI_HELPER_ENABLE_SUBMIT"))
+        self.ui.EExportPane.set_tab_enabled('Submit', _en)
         self.ui.ESubmitComment.disable_save_settings = True
 
         self._callback__EExportPane()
