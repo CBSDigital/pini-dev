@@ -4,7 +4,7 @@ import time
 import unittest
 
 from pini import pipe, testing, dcc
-from pini.pipe import cache
+from pini.pipe import cache, cp_template
 from pini.utils import File, single, flush_caches, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +49,11 @@ class TestPipe(unittest.TestCase):
                     _LOGGER.info('OUT %s', _out)
         else:
             _LOGGER.info('NO PUBLISH TEMPLATES FOUND')
+
+        # Test alt from template name
+        assert cp_template._extract_alt_from_name('blah') == ('blah', 0)
+        assert cp_template._extract_alt_from_name('blah_alt1') == ('blah', 1)
+        assert cp_template._extract_alt_from_name('alt_blah_alt3') == ('alt_blah', 3)
 
     def test_settings(self):
 

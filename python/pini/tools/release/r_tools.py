@@ -1,6 +1,7 @@
 """General release tools."""
 
 import logging
+import os
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,6 +56,8 @@ def run_tests(mode='all', tests=None, force=False):
         force (bool): lose unsaved changes without confirmation
     """
     from pini import qt, dcc, testing
+
+    assert not os.environ.get('PINI_PIPE_CFG_PATH')
 
     testing.enable_file_system(True)
 

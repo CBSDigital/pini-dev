@@ -24,7 +24,7 @@ class CPTemplate(lucidity.Template):
     task = None
 
     def __init__(self, name, pattern, anchor=lucidity.Template.ANCHOR_END,
-                 separate_dir=False, path_type=None, job=None):
+                 separate_dir=False, path_type=None, job=None, alt=None):
         """Constructor.
 
         For a dcc template override the dcc needs to be at the front of the
@@ -44,6 +44,11 @@ class CPTemplate(lucidity.Template):
                 (eg. abc files with many tokens)
             path_type (str): specify path type (d for dir, f for file)
             job (CPJob): template job (used to validate tokens)
+            alt (int): this is used to prioritise different versions of the
+                same templates type - eg. if cache and cache_alt1 templates
+                are declared, the basic pattern (alt will be zero) will be
+                used for cacheing, but the alt1 pattern will still be valid
+                and appear in output lists
         """
         self._separate_dir = separate_dir
 
@@ -56,6 +61,7 @@ class CPTemplate(lucidity.Template):
         self.path_type = path_type
         self.anchor = anchor
         self.job = job
+        self.alt = alt
 
         # Read dcc override
         _tokens = self.name.split('_')
@@ -65,10 +71,12 @@ class CPTemplate(lucidity.Template):
             self._dcc = _tokens.pop(0)
         assert not _dcc & set(_tokens)
 
+        # Set profile
         _profiles = {'asset', 'shot'}
         if _tokens[0] in _profiles:
             self.profile = _tokens.pop(0)
         assert not _profiles & set(_tokens)
+        assert self.profile in ['asset', 'shot', None]
 
         self.type_ = '_'.join(_tokens)
         self.embedded_data = {}
@@ -510,7 +518,8 @@ def build_job_templates(job, catch=True):
         _LOGGER.debug(' - EXPANDING FMT %s', _fmt)
         _fmts = expand_pattern_variations(_fmt)
         for _fmt in _fmts:
-            _LOGGER.debug(' - ADD FMT %s', _fmt)
+
+            _LOGGER.debug('   - ADD FMT %s', _fmt)
 
             # Determine whether dir is to be separated + anchor type
             _anchor = lucidity.Template.ANCHOR_END
@@ -525,19 +534,47 @@ def build_job_templates(job, catch=True):
                 _separate_dir = True
 
             # Build template
-            _path_type = _tmpl_name_to_path_type(_name)
+            _name, _alt = _extract_alt_from_name(_name)
+            _path_type = _to_path_type(name=_name, pattern=_fmt)
             _tmpl = CPTemplate(
-                _name, _fmt, anchor=_anchor, separate_dir=_separate_dir,
-                job=job, path_type=_path_type)
+                _name, pattern=_fmt, anchor=_anchor, separate_dir=_separate_dir,
+                job=job, path_type=_path_type, alt=_alt)
             _tmpls[_name].append(_tmpl)
 
     _build_seq_dir_tmpls(_tmpls, job=job)
     _build_sequence_tmpl(_tmpls, job=job)
-    _build_ass_gz_tmpls(_tmpls, job=job)
+    if 'arnold' in dcc.allowed_renderers():
+        _build_ass_gz_tmpls(_tmpls, job=job)
     _LOGGER.debug(' - BUILT %s TEMPLATES IN %.02fs', job.name,
                   time.time() - _start)
 
     return dict(_tmpls)
+
+
+def _extract_alt_from_name(name):
+    """Extract alt index from template name.
+
+    If there is no alt suffix, the alt is set to zero.
+
+    eg. blah -> blah, 0
+        blah_alt1 -> blah, 1
+
+    Args:
+        name (str): template name to extract alt from
+
+    Returns:
+        (tuple): cleaned name, alt index
+    """
+    if '_' not in name:
+        return name, 0
+    _base, _alt_token = name.rsplit('_', 1)
+    if not _alt_token.startswith('alt'):
+        return name, 0
+    _alt_digit = _alt_token[3:]
+    if not _alt_digit.isdigit():
+        return name, 0
+    _alt_n = int(_alt_digit)
+    return _base, _alt_n
 
 
 def _build_seq_dir_tmpls(tmpls, job):
@@ -601,11 +638,12 @@ def _build_ass_gz_tmpls(tmpls, job):
             tmpls[_ass_gz_name].append(_ass_gz_tmpl)
 
 
-def _tmpl_name_to_path_type(name):
+def _to_path_type(name, pattern=None):
     """Match a template name to a path type.
 
     Args:
         name (str): template name
+        pattern (str): template pattern
 
     Returns:
         (chr): path type
@@ -630,6 +668,8 @@ def _tmpl_name_to_path_type(name):
     ]:
         if name.endswith(_suffix):
             return _type
+    if pattern and pattern.endswith('.{extn}'):
+        return 'f'
     raise ValueError(name)
 
 

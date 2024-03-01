@@ -248,6 +248,8 @@ def get_main_window_ptr(fix_core=False):
     # Find main window
     _widgets = _app.topLevelWidgets()
     for _widget in _widgets:
+        if isinstance(_widget, QtWidgets.QSpacerItem):
+            continue
         if _widget.objectName() == 'MayaWindow':
             return _widget
 

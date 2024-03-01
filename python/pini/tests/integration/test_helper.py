@@ -12,7 +12,7 @@ class TestHelper(unittest.TestCase):
 
     def setUp(self):
         assert not error.TRIGGERED
-        if not helper.DIALOG:
+        if not helper.is_active():
             helper.launch()
         assert not error.TRIGGERED
 

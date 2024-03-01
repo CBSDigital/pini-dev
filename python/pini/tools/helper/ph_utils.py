@@ -312,7 +312,7 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
         _base = output.entity.name
     elif output.type_ in ['cache', 'cache_seq', 'ass_gz']:
         _mode = 'cache'
-        _base = output.output_name
+        _base = output.output_name or output.entity.name
 
     elif isinstance(output, (Seq, Video)):
         _ver = 'v{:03d}'.format(output.ver_n)

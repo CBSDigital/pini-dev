@@ -1,3 +1,20 @@
+## [1.3.0] - Fri 2024-03-01 12:43
+### Summary
+ - Pini Install:
+    - added handling for multiple cache output formats [PT-236],
+### Updated
+ - pini.pipe.CPTemplate added alt flag,
+ - pini.pipe.build_job_templates added handling for alts,
+ - pini.pipe.build_job_templates disable ass.gz templates if arnold not in allowed renderers,
+ - pipe.pipe.CPJob.find_template applied alt filtering,
+ - pini.pipe.cache.CPCache.find_job added filter match + better error on fail,
+ - pini.tools.helper added handling for cache output w/o output_name,
+ - pini.tools.helper added job label ctx for rebuild outputs cache in shotgrid pipeline,
+ - maya_pini.m_pipe.blast added res/camera to blast metadata,
+ - maya_pini.open_maya.find_render_cam added catch by default,
+ - maya_pini.ui.get_main_window_pointer catch error due to QSpacerItems,
+
+
 ## [1.2.0] - Thu 2024-02-29 15:37
 ### Summary
  - Pini Helper:

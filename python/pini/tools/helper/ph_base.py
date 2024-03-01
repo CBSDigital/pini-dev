@@ -606,15 +606,28 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.Job.redraw()  # Rebuild ui elements
 
     def _context__JobLabel(self, menu):
-        if self.job:
-            menu.add_dir_actions(self.job)
-            menu.add_separator()
+        if not self.job:
+            return
+
+        menu.add_dir_actions(self.job)
+        menu.add_separator()
+
+        if pipe.MASTER == 'disk':
             menu.add_action(
                 'Force reread publishes',
                 chain_fns(
                     wrap_fn(self.job.find_publishes, force=2),
                     self._callback__Refresh),
                 icon=icons.REFRESH)
+        elif pipe.MASTER == 'shotgrid':
+            menu.add_action(
+                'Force rebuild outputs cache',
+                chain_fns(
+                    wrap_fn(self.job.find_outputs, force=2),
+                    self._callback__Refresh),
+                icon=icons.REFRESH)
+        else:
+            raise ValueError(pipe.MASTER)
 
     def _context__EntityLabel(self, menu):
 

@@ -17,6 +17,11 @@ class TestDCC(unittest.TestCase):
     def test_swap_refs(self):
 
         _LOGGER.info('TEST SWAP REFS')
+
+        if 'arnold' not in dcc.allowed_renderers():
+            _LOGGER.info(' - TEST DISABLED OUTSIDE ARNOLD')
+            return
+
         testing.check_test_asset()
         _LOGGER.info(' - CHECKED TEST ASSET')
 

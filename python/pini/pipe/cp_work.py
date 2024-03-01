@@ -204,13 +204,20 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             (CPTemplate): matching template
         """
         _LOGGER.debug('FIND TEMPLATE %s', type_)
+
+        # Set has_key (required keys)
         _has_key = {'ver': True}
         if has_key:
             _has_key.update(has_key)
+        _LOGGER.debug(' - HAS KEY %s', _has_key)
+
+        # Set want_key (desired keys)
         _want_key = {'tag': bool(self.tag),
                      'user': bool(self.user)}
         if want_key:
             _want_key.update(want_key)
+        _LOGGER.debug(' - WANT KEY %s', _want_key)
+
         _dcc = dcc_ or EXTN_TO_DCC[self.extn]
         return self.entity.find_template(
             type_=type_, has_key=_has_key, dcc_=_dcc, want_key=_want_key,

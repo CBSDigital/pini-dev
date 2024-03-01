@@ -77,7 +77,7 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     }
     if not _existing_id:
         _result = sg_handler.create('PublishedFile', _data)
-        _LOGGER.info(' - RESULT %s', _result)
+        _LOGGER.debug(' - RESULT %s', _result)
         _id = _result['id']
         to_pub_file_data(output, data=_result, force=True)  # Update cache
     else:
@@ -91,7 +91,7 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     if not _thumb and isinstance(output, Seq):
         _thumb = output.to_frame_file()
     if _thumb:
-        _LOGGER.info(' - APPLY THUMB %s', _thumb)
+        _LOGGER.debug(' - APPLY THUMB %s', _thumb)
         assert _thumb.exists()
         sg_handler.to_handler().upload_thumbnail(
             'PublishedFile', _id, _thumb.path)
@@ -190,7 +190,7 @@ def to_pub_file_data(output, data=None, force=False):
     _data = data
     _LOGGER.debug(' - DATA (A) %s', _data)
     if not _data:
-        _LOGGER.info(' - FIND PUB FILE DATA %s', output.path)
+        _LOGGER.debug(' - FIND PUB FILE DATA %s', output.path)
         _data = sg_handler.find_one(
             'PublishedFile',
             fields=_PUB_FILE_FIELDS,

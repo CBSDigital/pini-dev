@@ -130,8 +130,11 @@ def find_cams(
     return _cams
 
 
-def find_render_cam():
+def find_render_cam(catch=True):
     """Find current scene render cam.
+
+    Args:
+        catch (bool): no error if unable to determine render camera
 
     Returns:
         (CCamera): renderable camera (if any)
@@ -142,6 +145,8 @@ def find_render_cam():
     _cams = find_cams(default=False, renderable=True)
     if len(_cams) == 1:
         return single(_cams)
+    if catch:
+        return None
     raise ValueError('Failed to find render camera')
 
 

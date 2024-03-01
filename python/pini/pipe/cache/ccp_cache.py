@@ -10,12 +10,14 @@ objects as their types have CCP prefix, rather than just CP.
 """
 
 import logging
+import operator
 import time
 
 import six
 
 from pini.utils import (
-    single, passes_filter, Dir, nice_age, norm_path, Path, flush_caches)
+    single, passes_filter, Dir, nice_age, norm_path, Path, flush_caches,
+    apply_filter)
 
 from ..cp_job import find_jobs, CPJob, cur_job
 from ..cp_entity import cur_entity, to_entity
@@ -216,19 +218,32 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPJob): job
         """
+        _LOGGER.debug('FIND JOBS')
         _jobs = self.find_jobs(filter_=filter_)
 
+        if len(_jobs) == 1:
+            return single(_jobs)
         if name:
-            return single([_job for _job in _jobs if _job.name == name])
+            return single(
+                [_job for _job in _jobs if _job.name == name], catch=catch)
 
-        if len(_jobs) > 1 and match:
-            _name_jobs = [
-                _job for _job in _jobs if match in (_job.name, _job)]
-            if _name_jobs:
-                _jobs = _name_jobs
+        # Try name/path match
+        _match_jobs = [_job for _job in _jobs if match in (_job.name, _job)]
+        if len(_match_jobs) == 1:
+            return single(_match_jobs)
+        _LOGGER.debug(' - MATCH JOBS %s', _match_jobs)
+
+        # Try filter match
+        _filter_jobs = apply_filter(
+            _jobs, match, key=operator.attrgetter('name'))
+        if len(_filter_jobs) == 1:
+            return single(_filter_jobs)
+        _LOGGER.debug(' - FILTER JOBS %s', _filter_jobs)
 
         _LOGGER.debug(' - JOBS %s', _jobs)
-        return single(_jobs, catch=catch)
+        if catch:
+            return None
+        raise ValueError(match)
 
     def find_jobs(self, filter_=None, cfg_name=None, force=False):
         """Find jobs on the current pipeline.

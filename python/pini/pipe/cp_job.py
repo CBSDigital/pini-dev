@@ -175,9 +175,22 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPTemplate): matching template
         """
+        _LOGGER.debug('FIND TEMPLATE')
+
+        # Find matching templates
         _tmpls = self.find_templates(
             type_=type_, profile=profile, dcc_=dcc_, has_key=has_key,
             want_key=want_key)
+        if len(_tmpls) == 1:
+            return single(_tmpls)
+        _LOGGER.debug(' - FOUND %s TEMPLATES', len(_tmpls))
+
+        # Apply alt filtering
+        _alts = sorted({_tmpl.alt for _tmpl in _tmpls})
+        if len(_alts) > 1:
+            _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl.alt == _alts[0]]
+            _LOGGER.debug(' - DISCARDING ALTS %d %s', len(_tmpls), _alts)
+
         try:
             return single(_tmpls, catch=catch)
         except ValueError:
@@ -215,6 +228,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         if type_:
             _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl.type_ == type_]
         if profile:
+            assert profile in ['shot', 'asset']
             _tmpls = [_tmpl for _tmpl in _tmpls
                       if _tmpl.profile in (None, profile)]
 

@@ -60,11 +60,12 @@ def blast(
     if save:
         _bkp = _work.save(reason='blast', force=True, result='bkp')
         _LOGGER.info(' - BKP %s', _bkp)
-    _data = _obt_metadata(range_=range_, bkp=_bkp)
     u_blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq, copy_frame=_work.image)
+    _data = _obt_metadata(
+        range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res())
     _out.set_metadata(_data, force=True)
 
     # Update shotgrid
@@ -84,18 +85,22 @@ def blast(
     return _out
 
 
-def _obt_metadata(range_, bkp):
+def _obt_metadata(range_, bkp, camera, res):
     """Obtain metadata for this blast.
 
     Args:
         range_ (tuple): blast range
         bkp (File): backup file
+        camera (str): blast camera
+        res (int tuple): blast resolution
 
     Returns:
         (dict): metadata
     """
     _data = export_handler.obtain_metadata(handler='Blast')
     _data['range'] = range_
+    _data['camera'] = str(camera)
+    _data['res'] = res
     if bkp:
         _data['bkp'] = bkp.path
     return _data
