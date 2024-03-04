@@ -316,7 +316,7 @@ class CLWorkTab(object):
         # Build list of recent works
         _data = []
         _items = []
-        for _work in pipe.recent_work():
+        for _work in ph_utils.obt_recent_work():
             _ety = _work.shot or (_work.asset_type+'/'+_work.asset)
             _uid = '{}/{}/{}'.format(_work.job.name, _ety, _work.task)
             if _work.tag:

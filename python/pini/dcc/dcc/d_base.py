@@ -147,7 +147,7 @@ class BaseDCC(object):
 
     def find_pipe_ref(
             self, namespace=None, selected=False, extn=None, filter_=None,
-            catch=False):
+            task=None, catch=False):
         """Find a reference in the current scene.
 
         Args:
@@ -155,13 +155,15 @@ class BaseDCC(object):
             selected (bool): return only selected refs
             extn (str): filter by extension
             filter_ (str): filter by namespace
+            task (str): filter by task
             catch (bool): no error if no matching ref found
 
         Returns:
             (CPipeRef): matching ref
         """
         _refs = self.find_pipe_refs(
-            extn=extn, namespace=namespace, selected=selected, filter_=filter_)
+            extn=extn, namespace=namespace, selected=selected, filter_=filter_,
+            task=task)
         _error = 'Failed to match reference'
         if selected:
             _error = 'Multiple references selected'
@@ -183,6 +185,7 @@ class BaseDCC(object):
         Returns:
             (CPipeRef list): list of references
         """
+        from pini import pipe
         _refs = []
         for _ref in self._read_pipe_refs(selected=selected):
             if filter_ and not passes_filter(_ref.namespace, filter_):
@@ -193,7 +196,8 @@ class BaseDCC(object):
                 continue
             if head and not _ref.namespace.startswith(head):
                 continue
-            if task and _ref.output.task != task:
+            if task and task not in (
+                    _ref.output.task, pipe.map_task(_ref.output.task)):
                 continue
             _refs.append(_ref)
         return sorted(_refs)

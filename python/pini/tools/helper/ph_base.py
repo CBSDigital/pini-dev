@@ -17,7 +17,7 @@ from pini.utils import (
     get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
-from .ph_utils import LOOKDEV_BG_ICON
+from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work
 
 _DIALOG = None
 _DIR = File(__file__).to_dir()
@@ -170,7 +170,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             if _cur_out:
                 self.target = _cur_out.metadata.get('src')
         if not self.target:
-            _recent = pipe.recent_work()
+            _recent = obt_recent_work()
             if _recent:
                 self.target = _recent[0].path
         _LOGGER.debug(' - TARGET %s', self.target)
@@ -656,7 +656,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add recent entities
         _r_etys = []
-        for _r_work in pipe.recent_work():
+        for _r_work in obt_recent_work():
             _LOGGER.debug('CHECKING WORK %s', _r_work)
             if _r_work.entity == self.entity:
                 continue
@@ -710,7 +710,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         menu.add_separator()
 
         # Add recent works
-        for _r_work in pipe.recent_work():
+        for _r_work in obt_recent_work():
             self._add_jump_to_work_action(menu=menu, work=_r_work)
 
     def _add_jump_to_work_action(self, menu, work):

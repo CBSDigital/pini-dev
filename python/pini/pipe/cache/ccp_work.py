@@ -265,6 +265,8 @@ class CCPWork(CPWork):
         disk cache), otherwise the disk cache is just updated directly.
         """
         from pini.tools import helper
+        if self.image.exists():
+            helper.obt_pixmap(self.image, force=True)
         if helper.is_active():
             helper.DIALOG.jump_to(self)
             helper.DIALOG.ui.WWorkRefresh.click()

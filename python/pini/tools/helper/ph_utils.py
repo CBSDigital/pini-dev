@@ -5,7 +5,8 @@ import logging
 import six
 
 from pini import icons, qt, pipe, dcc
-from pini.utils import str_to_seed, cache_result, Seq, Video
+from pini.qt import QtGui
+from pini.utils import str_to_seed, cache_result, Seq, Video, File
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -226,19 +227,35 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
 
 
 @cache_result
-def obt_icon_pixmap(path, size):
+def obt_pixmap(file_, size=None, force=False):
     """Obtain pixmap for the given icon/size, resuing existing icons.
 
     Args:
-        path (str): path to pixmap
+        file_ (str): image file to read
         size (int): icon size
+        force (bool): force reread item from disk
 
     Returns:
         (QPixmap): icon
     """
-    _pix = qt.CPixmap(path)
-    _pix = _pix.resize(size)
+    _file = File(file_)
+    _pix = qt.to_pixmap(_file)
+    if size:
+        _pix = _pix.resize(size)
     return _pix
+
+
+@cache_result
+def obt_recent_work(force=False):
+    """Obtain recent work list.
+
+    Args:
+        force (bool): force reread from disk
+
+    Returns:
+        (CPWork list): recent work files
+    """
+    return pipe.recent_work()
 
 
 @cache_result
@@ -278,6 +295,9 @@ def output_to_icon(output, overlay=None):
         _icon = _add_icon_overlay(icon=_icon, overlay=overlay)
     if _bg:
         _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
+
+    _icon = qt.to_pixmap(_icon)
+    assert isinstance(_icon, QtGui.QPixmap)
 
     return _icon
 

@@ -65,12 +65,6 @@ class CUiBase(object):
         self._settings_file = settings_file
         self._save_settings = load_settings
 
-        # Setup QHBoxLayout size policies cache to fix bad transfer
-        # from designer to nuke
-        _file = File(self._ui_file)
-        self._hbox_size_policies_yml = _file.to_file(
-            base=_file.base+'_hsp', extn='yml', hidden=True)
-
         # Setup dialog stack
         self._dialog_stack_key = stack_key or self._ui_file
         self._register_in_dialog_stack()
@@ -91,11 +85,19 @@ class CUiBase(object):
             self.load_settings()
         if not modal and show:
             self.show()
+        if title:
+            self.setWindowTitle(title)
 
         self._check_tooltips()
         self._connect_redraws()
         self._connect_callbacks()
         self._connect_contexts()
+
+        # Setup QHBoxLayout size policies cache to fix bad transfer
+        # from designer to nuke
+        _file = File(self._ui_file)
+        self._hbox_size_policies_yml = _file.to_file(
+            base=_file.base+'_hsp', extn='yml', hidden=True)
         if dcc.NAME == 'nuke':
             self.fix_hbox_size_policies()
 
@@ -104,8 +106,6 @@ class CUiBase(object):
 
         self._successful_load = True
 
-        if title:
-            self.setWindowTitle(title)
         if modal:
             self.exec_()
 

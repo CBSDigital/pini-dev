@@ -68,19 +68,20 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         if work is helper.next_work:
             self.notes = 'this version will be created if you load/save'
-            self.icon = _NEXT_WORK_ICON
+            _icon = _NEXT_WORK_ICON
             self.text_col = _NEXT_TEXT_COL
             self.output_tags = []
             self._mtime = time.time()
             self._has_thumb = False
         else:
-            self.icon = ph_utils.work_to_icon(work)
+            _icon = ph_utils.work_to_icon(work)
             self.output_tags = _get_output_tags(self.work)
             self.text_col = (
                 _DEF_TEXT_COL if self.output_tags else _NO_OUTPUT_TEXT_COL)
             self._mtime = self.work.mtime()
             self._has_thumb = bool(self.work.obt_image())
             self.set_notes(self.work.notes, redraw=False)
+        self.icon = ph_utils.obt_pixmap(_icon)
 
         _text_h = 9 + self._line_h * self._to_n_lines()
 
@@ -195,8 +196,8 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         # Add thumb if available
         if self._has_thumb:
             _margin = 10
-            _pix = qt.CPixmap(self.work.obt_image())
-            _size = _pix.size() * _THUMB_H/_pix.height()
+            _pix = ph_utils.obt_pixmap(self.work.image)
+            _size = _pix.size() * _THUMB_H/_pix.height()  # pylint: disable=no-member
             self._draw_right_fade(pix, offset=_size.width()+_margin*2)
             pix.draw_overlay(
                 _pix, pos=(pix.width()-_margin, _margin),

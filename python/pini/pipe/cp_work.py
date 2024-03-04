@@ -646,6 +646,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
     def set_env(self):
         """Set environment to match this work file."""
+        from pini.tools import helper
+
         add_recent_work(self)
 
         os.environ['PINI_JOB'] = self.job.name
@@ -663,6 +665,9 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         for _, _callback in sorted(_SET_WORK_CALLBACKS.items()):
             _callback(self)
+
+        # Update helper recent work cache
+        helper.obt_recent_work(force=True)
 
     def load(self, parent=None, force=False, lazy=False, load_func=None):
         """Load this work file in the current dcc.

@@ -60,13 +60,13 @@ class TestDiskPiniHelper(unittest.TestCase):
         _work = _helper.ui.WWorks.selected_data()
         assert _work.sequence == _seq_name
         assert len(_helper.ui.WWorks.all_data()) == 1
-        _helper._callback__WSave(force=True)
+        _helper._callback__WSaveOver(force=True)
         assert pipe.cur_work() == _work
         _works = _helper.ui.WWorks.all_data()
         assert len(_works) == 2
         _helper.ui.WWorks.select_data(_works[0])
         assert _helper.ui.WWorks.selected_data().ver_n == 2
-        _helper._callback__WSave(force=True)
+        _helper._callback__WSaveOver(force=True)
         assert pipe.cur_work().ver_n == 2
         assert _work.ver_n == 1
         _helper.ui.WWorks.select_data(_work)
@@ -83,7 +83,7 @@ class TestDiskPiniHelper(unittest.TestCase):
         assert _helper.work is _helper.next_work
         assert len(_helper.ui.WWorks.all_items()) == 1
         assert not _helper.ui.WTasks.selected_text()
-        _helper._callback__WSave(force=True)
+        _helper._callback__WSaveOver(force=True)
         assert _helper.ui.WTasks.selected_text() == _task
         assert _helper.ui.WTaskText.text() == _task
         assert _helper.work.exists()

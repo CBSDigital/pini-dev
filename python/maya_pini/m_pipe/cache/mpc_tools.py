@@ -348,12 +348,20 @@ def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
     # Apply filters
     _cbls = []
     for _cbl in _all:
+
         if not passes_filter(_cbl.label, filter_):
             continue
         if task and _cbl.task != task:
             continue
         if output_name and _cbl.output_name != output_name:
             continue
+
+        # Check maps to asset correctly
+        try:
+            assert _cbl.to_output()
+        except ValueError:
+            continue
+
         _cbls.append(_cbl)
 
     return _cbls

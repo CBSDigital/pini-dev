@@ -6,7 +6,7 @@ from pini import qt
 from pini.qt import QtGui
 from pini.utils import basic_repr, Seq, Video
 
-from ..ph_utils import output_to_icon, output_to_type_icon, obt_icon_pixmap
+from ..ph_utils import output_to_icon, output_to_type_icon, obt_pixmap
 
 _FONT = QtGui.QFont()
 
@@ -126,7 +126,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _left_m = 27
 
         # Draw icon
-        _over = obt_icon_pixmap(self.icon, size=self.icon_w+4)
+        _over = self.icon.resize(self.icon_w+4)
         pix.draw_overlay(
             _over, pos=(self.margin+1, self.text_y+1), anchor='L')
 
@@ -166,7 +166,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         _icon = output_to_type_icon(self.output)
         if _icon:
-            _over = obt_icon_pixmap(_icon, size=self.icon_w-2)
+            _over = obt_pixmap(_icon, size=self.icon_w-2)
             _pix = pix.draw_overlay(
                 _over, pos=(_right_m+3, self.text_y+2), anchor='R')
 

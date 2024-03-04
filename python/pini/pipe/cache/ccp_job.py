@@ -342,17 +342,20 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         return super(CCPJob, self)._read_shots_disk(class_=class_ or CCPShot)
 
     @pipe_cache_result
-    def read_shots_sg(self, class_=None, force=False):
+    def read_shots_sg(self, class_=None, filter_=None, force=False):
         """Read shots from shotgrid.
 
         Args:
             class_ (class): override shot class
+            filter_ (str): apply name filter
             force (bool): force reread shots from disk
 
         Returns:
             (CCPShot list): shots
         """
         from .ccp_entity import CCPShot
+        if filter_:
+            raise RuntimeError('Filter not allowed to maintain cache integrity')
         _LOGGER.debug('READ SHOTS force=%d', force)
         return super(CCPJob, self).read_shots_sg(class_=class_ or CCPShot)
 
@@ -538,24 +541,27 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         return super(CCPJob, self).find_outputs(*args, **_kwargs)
 
     @pipe_cache_result
-    def _read_outputs_sg(self, force=False):
+    def _read_outputs_sg(self, force=False, progress=False):
         """Read outputs in this job from shotgrid.
 
         Args:
             force (bool): force reread outputs
+            progress (bool): show progress dialog
 
         Returns:
             (CCPOutput list): outputs
         """
-        from pini import pipe
+        from pini import pipe, qt
         from pini.pipe import cache
 
         assert pipe.MASTER == 'shotgrid'
-        _outs = self._read_sg_pub_files(force=force)
+        _start = time.time()
+        _outs = self._read_sg_pub_files(force=force, progress=progress)
 
         # Convert to cacheable objects
         _c_outs = []
-        for _out in _outs:
+        for _out in qt.progress_bar(
+                _outs, 'Registering {:d} outs', show=progress):
 
             _LOGGER.debug(' - ADD OUT %s', _out)
 
@@ -590,20 +596,24 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _LOGGER.debug('   - C OUT %s', _c_out)
             _c_outs.append(_c_out)
 
+        _LOGGER.info(
+            ' - READ %d OUTPUTS IN %.01fs', len(_c_outs), time.time() - _start)
         return _c_outs
 
     @get_method_to_file_cacher(max_age=60*60*24)
-    def _read_sg_pub_files(self, force=False):
+    def _read_sg_pub_files(self, progress=False, force=False):
         """Read shotgrid published files for this job.
 
         Args:
+            progress (bool): show progress dialog
             force (bool): force re-read cache
 
         Returns:
             (CPOutput list): outputs
         """
         from pini.pipe import shotgrid
-        _outs = shotgrid.find_pub_files(job=self, entities=self.entities)
+        _outs = shotgrid.find_pub_files(
+            job=self, entities=self.entities, progress=progress)
         return _outs
 
     @pipe_cache_result

@@ -99,8 +99,45 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     return _data
 
 
+def _build_filters(
+        job=None, entity=None, entities=None, work_dir=None, id_=None):
+    """Build shotgrid pub files request filters.
+
+    Args:
+        job (CPJob): job to search
+        entity (CPEntity): apply entity filter
+        entities (CPEntity list): filter by the given list of entities
+        work_dir (CPWorkDir): filter by work dir
+        id_ (int): filter by pub file id
+
+    Returns:
+        (tuple list): filters
+    """
+    _LOGGER.debug(' - BUILDING FILTERS')
+
+    _filters = [
+        sg_job.to_job_filter(job),
+        ('sg_status_list', 'not_in', ('omt', ))]
+
+    if entity:
+        _LOGGER.debug(' - BUILDING ENTITY FILTER')
+        _filters += [sg_entity.to_entity_filter(entity)]
+    if entities:
+        _LOGGER.debug(' - BUILDING ENTITIES FILTER')
+        _filters += [sg_entity.to_entities_filter(entities)]
+    if work_dir:
+        _LOGGER.debug(' - BUILDING WORK DIR FILTER')
+        _filters += [sg_task.to_task_filter(work_dir)]
+    if id_:
+        _LOGGER.debug(' - BUILDING ID FILTER')
+        _filters += [('id', 'is', id_)]
+
+    return _filters
+
+
 def find_pub_files(
-        job=None, entity=None, entities=None, work_dir=None, filter_=None):
+        job=None, entity=None, entities=None, work_dir=None, id_=None,
+        filter_=None, progress=False):
     """Find PublishedFile entries.
 
     Args:
@@ -108,11 +145,15 @@ def find_pub_files(
         entity (CPEntity): apply entity filter
         entities (CPEntity list): filter by the given list of entities
         work_dir (CPWorkDir): filter by work dir
+        id_ (int): filter by pub file id
         filter_ (str): apply path filter
+        progress (bool): show progress
 
     Returns:
         (CPOutput list): outputs
     """
+    from pini import qt
+
     _start = time.time()
     _LOGGER.debug('FIND PUB FILES')
 
@@ -126,15 +167,8 @@ def find_pub_files(
         _job = pipe.cur_job()
 
     # Request data
-    _filters = [
-        sg_job.to_job_filter(_job),
-        ('sg_status_list', 'not_in', ('omt', ))]
-    if entity:
-        _filters += [sg_entity.to_entity_filter(entity)]
-    if entities:
-        _filters += [sg_entity.to_entities_filter(entities)]
-    if work_dir:
-        _filters += [sg_task.to_task_filter(work_dir)]
+    _filters = _build_filters(
+        job=_job, entity=entity, entities=entities, work_dir=work_dir, id_=id_)
     _LOGGER.debug(' - FILTERS %s', _filters)
     _results = sg_handler.find(
         'PublishedFile', fields=_PUB_FILE_FIELDS,
@@ -143,8 +177,13 @@ def find_pub_files(
 
     # Find paths
     _paths = []
-    for _result in _results:
-        _path = _result['path_cache']
+    for _idx, _result in qt.progress_bar(
+            enumerate(_results), 'Checking {:d} results', show=progress):
+        _LOGGER.log(9, '[%d] ADDING RESULT %s', _idx, _result)
+        _path = _result.get('path_cache')
+        if not _path:
+            _path_dict = _result.get('path') or {}
+            _path = _path_dict.get('local_path')
         if not _path:
             continue
         _path = abs_path(_path, root=pipe.JOBS_ROOT)
@@ -156,15 +195,16 @@ def find_pub_files(
 
     # Convert into output objects
     _outs = []
-    for _path, _result in _paths:
-        _LOGGER.debug('PATH %s', _path)
+    for _idx, (_path, _result) in qt.progress_bar(
+            enumerate(_paths), 'Converting {:d} paths', show=progress):
+        _LOGGER.log(9, '[%d] PATH %s', _idx, _path)
         _out = pipe.to_output(_path, job=_job, catch=True)
-        _LOGGER.debug(' - OUT %s', _out)
+        _LOGGER.log(9, ' - OUT %s', _out)
         if not _out:
-            _LOGGER.debug(' - REJECTED %s', _path)
+            _LOGGER.log(9, ' - REJECTED %s', _path)
             continue
         to_pub_file_data(_out, data=_result, force=True)  # Update cache
-        _LOGGER.debug(' - ACCEPTED %s', _path)
+        _LOGGER.log(9, ' - ACCEPTED %s', _path)
         _outs.append(_out)
     _outs.sort()
     _LOGGER.debug(
@@ -185,10 +225,10 @@ def to_pub_file_data(output, data=None, force=False):
     Returns:
         (dict): data
     """
-    _LOGGER.debug(' - TO PUB FILE DATA %s', output)
+    _LOGGER.log(9, ' - TO PUB FILE DATA %s', output)
     assert isinstance(output, pipe.CPOutputBase)
     _data = data
-    _LOGGER.debug(' - DATA (A) %s', _data)
+    _LOGGER.log(9, ' - DATA (A) %s', _data)
     if not _data:
         _LOGGER.debug(' - FIND PUB FILE DATA %s', output.path)
         _data = sg_handler.find_one(

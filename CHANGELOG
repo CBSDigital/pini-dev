@@ -1,3 +1,21 @@
+## [1.4.0] - Mon 2024-03-04 12:30
+### Summary
+ - Pini Helper:
+    - bugfix not showing track abc/fbx/ma caches [PT-236],
+    - maya cache hide invalid cacheables,
+    - optimised disk reads on build work file list to improve speed,
+### Updated
+ - pini.dcc.find_pipe_ref added task filter,
+ - pini.pipe.CPWork.set_env rebuild helper recent work cache,
+ - pini.pipe.CPJob.read_outputs_sg added progress flag,
+ - pini.pipe.cache.CCPWork.update_outputs force update helper thumb cache,
+ - pini.pipe.shotgrid.find_pub_files added handling for results w/o path cache (use path),
+ - pini.tools.helper optimised pixmap caching + bugfix read icon on work file rebuild,
+ - pini.tools.helper renamed obt_icon_pixmap -> obt_pixmap,
+ - pini.tools.helper.obt_recent_work added,
+ - maya_pini.m_pipe.find_cacheables hide invalid cacheables,
+
+
 ## [1.3.0] - Fri 2024-03-01 12:43
 ### Summary
  - Pini Install:
