@@ -245,7 +245,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if output.submittable:
             from pini.pipe import shotgrid
             assert parent
-            _submit = wrap_fn(shotgrid.submit, output)
+            _submit = wrap_fn(shotgrid.SUBMITTER.run, output)
             _func = chain_fns(_submit, parent.redraw)
             menu.add_action(
                 'Submit to shotgrid', icon=shotgrid.ICON, func=_func)

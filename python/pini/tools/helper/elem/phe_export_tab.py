@@ -4,7 +4,6 @@
 
 import collections
 import logging
-import os
 
 from pini import qt, pipe, icons, dcc
 from pini.tools import usage, error
@@ -54,12 +53,23 @@ class CLExportTab(object):
         if _tab:
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
-        # Setup submit tab
-        _en = bool(os.environ.get("PINI_HELPER_ENABLE_SUBMIT"))
-        self.ui.EExportPane.set_tab_enabled('Submit', _en)
-        self.ui.ESubmitComment.disable_save_settings = True
-
+        self._init_submit_tab()
         self._callback__EExportPane()
+
+    def _init_submit_tab(self):
+        """Setup submit tab."""
+        self.ui.EExportPane.set_tab_enabled('Submit', pipe.SUBMIT_AVAILABLE)
+        if not pipe.SUBMIT_AVAILABLE:
+            return
+        from pini.pipe import shotgrid
+
+        self.ui.ESubmitComment.disable_save_settings = True
+        for _elem in [
+                self.ui.ESubmitComment,
+                self.ui.ESubmitCommentLabel,
+                self.ui.ESubmitCommentLine,
+        ]:
+            _elem.setVisible(shotgrid.SUBMITTER.supports_comment)
 
     def _redraw__EPublishHandler(self):
 
@@ -133,9 +143,18 @@ class CLExportTab(object):
     def _redraw__ESubmitTemplate(self):
         _outs = self.entity.find_outputs() if self.entity else []
         _outs = [_out for _out in _outs if _out.submittable]
+
+        # Determine selection
+        _select = None
+        if self.work:
+            if self.work.find_outputs('render'):
+                _select = 'render'
+            elif self.work.find_outputs('blast'):
+                _select = 'blast'
+
         _tmpls, _data = _sort_by_attr(_outs, attr='nice_type')
         self.ui.ESubmitTemplate.set_items(
-            _tmpls, data=_data, select='render', emit=True)
+            _tmpls, data=_data, select=_select, emit=True)
         self.ui.ESubmitTemplate.setEnabled(len(_tmpls) > 1)
 
     def _redraw__ESubmitTask(self):
@@ -144,8 +163,8 @@ class CLExportTab(object):
         _tasks, _data = _sort_by_attr(_outs, attr='task')
 
         # Apply default selection
-        if pipe.CACHE.cur_work:
-            _select = pipe.CACHE.cur_work.task
+        if self.work:
+            _select = self.work.task
         elif dcc.NAME == 'maya':
             _select = 'lighting'
         elif dcc.NAME == 'hou':
@@ -160,10 +179,27 @@ class CLExportTab(object):
         self.ui.ESubmitTask.setEnabled(len(_tasks) > 1)
 
     def _redraw__ESubmitFormat(self):
+
+        _LOGGER.debug('REDRAW ESubmitFormat')
+
+        _type = self.ui.ESubmitFormat.currentText()
         _outs = self.ui.ESubmitTask.selected_data() or []
         _fmts, _data = _sort_by_attr(_outs, attr='extn')
+
+        # Determine selection
+        _LOGGER.debug(' - TYPE %s', _type)
+        _select = None
+        if self.work:
+            for _fmt in _fmts:
+                _outs = self.work.find_outputs(_type, extn=_fmt)
+                _LOGGER.debug('   - FMT OUTS %s %s', _fmt, _outs)
+                if _outs:
+                    _select = _fmt
+                    break
+        _LOGGER.debug(' - SELECT %s', _select)
+
         self.ui.ESubmitFormat.set_items(
-            _fmts, data=_data, select='exr', emit=True)
+            _fmts, data=_data, select=_select, emit=True)
         self.ui.ESubmitFormat.setEnabled(len(_fmts) > 1)
 
     def _redraw__ESubmitOutputs(self):
@@ -379,22 +415,34 @@ class CLExportTab(object):
         self.ui.ESubmitView.setEnabled(bool(_out))
 
     def _callback__ESubmit(self):
+
         from pini.pipe import shotgrid
+
         _outs = self.ui.ESubmitOutputs.selected_datas()
         _comment = self.ui.ESubmitComment.text()
         _LOGGER.info('SUBMIT %d %s', len(_outs), _outs)
         _LOGGER.info(' - COMMENT %s', _comment)
+
+        # Submit
         _force = len(_outs) > 1
         for _out in qt.progress_bar(
                 _outs, 'Submitting {:d} output{}', stack_key='SubmitOuts',
                 show=_force):
             _LOGGER.info(' - SUBMIT %s', _out)
-            shotgrid.submit(_out, comment=_comment, force=_force)
-        if _force:
+            _kwargs = {}
+            if shotgrid.SUBMITTER.supports_comment:
+                _kwargs = {'comment': _comment}
+            if shotgrid.SUBMITTER.is_direct:
+                _kwargs = {'force': _force}
+            shotgrid.SUBMITTER.run(_out, **_kwargs)
+
+        # Notify
+        if _force and shotgrid.SUBMITTER.is_direct:
             qt.notify(
                 'Submitted {:d} versions to shotgrid.\n\nSee script editor '
                 'for details.'.format(len(_outs)),
                 title='Versions Submitted', icon=shotgrid.ICON)
+
         self.ui.ESubmitOutputs.redraw()
 
     def _context__ECacheRefs(self, menu):

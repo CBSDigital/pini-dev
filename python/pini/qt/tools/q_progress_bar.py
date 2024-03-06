@@ -248,6 +248,9 @@ def progress_bar(items, *args, **kwargs):
         (ProgressDialog): iterator which displays a progress dialog
     """
     from pini import dcc, qt
+    _show = kwargs.get('show', True)
+    if not _show:
+        return items
     if dcc.batch_mode():
         _LOGGER.info('DISABLE PROGRESS BAR IN BATCH MODE')
         return items

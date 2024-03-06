@@ -195,9 +195,10 @@ class CCPWork(CPWork):
         return self._owner_from_user() or self.metadata.get('owner')
 
     @functools.wraps(CPWork.save)
-    def save(self, *args, result='this', **kwargs):
+    def save(self, *args, **kwargs):
         """Save this work."""
-        _LOGGER.info('SAVE %s result=%s', self, result)
+        _result = kwargs.pop('result', 'this')
+        _LOGGER.info('SAVE %s result=%s', self, _result)
         from pini import pipe
         from pini.pipe import cache
 
@@ -241,13 +242,13 @@ class CCPWork(CPWork):
         self.find_outputs(force=True)
 
         # Return result
-        if result == 'this':
-            _result = _this_work
-        elif result == 'bkp':
-            _result = _bkp
+        if _result == 'this':
+            _val = _this_work
+        elif _result == 'bkp':
+            _val = _bkp
         else:
-            raise ValueError(result)
-        return _result
+            raise ValueError(_result)
+        return _val
 
     def set_metadata(self, data):
         """Set work file metadata.

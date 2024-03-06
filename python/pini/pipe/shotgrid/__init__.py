@@ -25,4 +25,5 @@ from .sg_version import create_version, to_version_id, to_version_data
 from .sg_pub_file import (
     create_pub_file, to_pub_file_id, to_pub_file_data, find_pub_files)
 
-from .sg_tools import submit, update_work_task
+from .sg_tools import update_work_task
+from .sg_submit import submit, set_submitter, CPSubmitter, SUBMITTER

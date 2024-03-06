@@ -559,6 +559,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _outs = self._read_sg_pub_files(force=force, progress=progress)
 
         # Convert to cacheable objects
+        _r_start = time.time()
         _c_outs = []
         for _out in qt.progress_bar(
                 _outs, 'Registering {:d} outs', show=progress):
@@ -597,7 +598,8 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _c_outs.append(_c_out)
 
         _LOGGER.info(
-            ' - READ %d OUTPUTS IN %.01fs', len(_c_outs), time.time() - _start)
+            ' - REGISTERED %d OUTPUTS IN %.01fs', len(_c_outs),
+            time.time() - _r_start)
         return _c_outs
 
     @get_method_to_file_cacher(max_age=60*60*24)

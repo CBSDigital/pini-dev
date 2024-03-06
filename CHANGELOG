@@ -1,3 +1,20 @@
+## [1.5.0] - Wed 2024-03-06 10:26
+### Summary
+ - Pini Helper:
+    - store reference data in work file metadata,
+    - allow shotgrid submitted to be overridden [PT-241],
+### Updated
+ - pini.pipe.CPWork.find_outputs promoted type_ to first arg + apply to nice_type,
+ - pini.pipe.CPWork._save_metadata store refs data,
+ - pini.pipe.cache.CCPWork.save bugfix py2 error,
+ - pini.pipe.shotgrid added set_submitter/CPSubmitter/SUBMITTER,
+ - pini.pipe.SUBMIT_AVAILABLE bugfix not bool,
+ - pini.qt.progress_bar show=False simply returns items,
+ - pini.tools.helper submit jumps to cur work outputs,
+ - pini.tools.helper hide submit comment elems if n/a,
+ - pini.tools.helper updated for submitter style submission,
+
+
 ## [1.4.0] - Mon 2024-03-04 12:30
 ### Summary
  - Pini Helper:

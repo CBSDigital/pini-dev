@@ -362,12 +362,12 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         return single(_outs, catch=catch, items_label='outputs')
 
     def find_outputs(
-            self, base=None, type_=None, output_name=None, extn=None):
+            self, type_=None, base=None, output_name=None, extn=None):
         """Find outputs generated from this work file.
 
         Args:
-            base (str): filter by filename base
             type_ (str): filter by type (eg. publish/cache)
+            base (str): filter by filename base
             output_name (str): filter by output name (eg. bty_ao/horse02)
             extn (str): filter by file extension (eg. abc/jpg)
 
@@ -378,7 +378,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         for _out in self._read_outputs():
             if base and _out.base != base:
                 continue
-            if type_ and _out.type_ != type_:
+            if type_ and type_ not in (_out.type_, _out.nice_type):
                 continue
             if output_name and _out.output_name != output_name:
                 continue
@@ -614,6 +614,11 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _data['platform'] = sys.platform
         _data['range'] = dcc.t_range()
         _data['size'] = int(os.path.getsize(self.path))
+
+        # Obtain refs
+        _refs = dcc.find_pipe_refs()
+        _refs_data = {_ref.namespace: _ref.path for _ref in _refs}
+        _data['refs'] = _refs_data
 
         self.set_metadata(_data)
 
