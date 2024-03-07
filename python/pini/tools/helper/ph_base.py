@@ -13,11 +13,11 @@ from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, wrap_fn, chain_fns, copied_path, clip, Video, Seq,
+    File, wrap_fn, chain_fns, copied_path, clip,
     get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
-from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work
+from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work, obt_pixmap
 
 _DIALOG = None
 _DIR = File(__file__).to_dir()
@@ -290,12 +290,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         Args:
             clip_ (Clip): video or image sequence to apply
         """
-        if isinstance(clip_, Video):
-            clip_.to_frame(self.work.image, force=True)
-        elif isinstance(clip_, Seq):
-            clip_.to_frame_file().copy_to(self.work.image, force=True)
-        else:
-            raise NotImplementedError(clip_)
+        clip_.build_thumbnail(self.work.image, force=True)
+        obt_pixmap(self.work.image, force=True)
         self.ui.WWorks.redraw()
 
     def _add_output_lookdev_opts(

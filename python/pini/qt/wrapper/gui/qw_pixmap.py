@@ -6,13 +6,17 @@ import os
 import six
 
 from pini.utils import (
-    File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled)
+    File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled,
+    single)
 
 from .qw_painter import CPainter
 from ...q_mgr import QtGui, Qt, QtCore
 
 _LOGGER = logging.getLogger(__name__)
 TEST_IMG = TMP_PATH+'/test.jpg'
+PIXMAP_FMTS = [
+    str(_item, encoding='utf-8')
+    for _item in QtGui.QImageWriter.supportedImageFormats()]
 
 
 class CPixmap(QtGui.QPixmap):
@@ -358,29 +362,41 @@ class CPixmap(QtGui.QPixmap):
         _col = qt.to_col(col)
         super(CPixmap, self).fill(_col)
 
-    def resize(self, width=None, height=None):
+    def resize(self, *args, width=None, height=None):
         """Resize this image.
 
-        Args:
-            width (int|QSize): new width
-            height (int): new height
+        If only height or width is passed, aspect is maintained.
+
+        Size outputs (for aspect 2):
+         - resize(10) -> (10, 5)
+         - resize(height=10) -> (20, 5)
+         - resize(10, 20) -> (10, 20)
+         - resize([10, 20]) -> (10, 20)
 
         Returns:
             (QPixmap): resized image
         """
-        if isinstance(width, (int, float)):
-            _width = width
+        if width:
             _height = height or width
-        elif isinstance(width, (QtCore.QSize, QtCore.QSizeF)):
-            _width = width.width()
-            _height = width.height()
-        elif width is None:
-            assert height
-            _height = height
-            _width = _height*self.get_aspect()
+        elif height:
+            _width = height * self.get_aspect()
         else:
-            raise ValueError(width)
+            assert not height and not width
+            _arg = single(args, catch=True)
+            if isinstance(_arg, (int, float)):
+                _width = _arg
+                _height = height or _width
+            elif isinstance(_arg, (QtCore.QSize, QtCore.QSizeF)):
+                _width = _arg.width()
+                _height = _arg.height()
+            elif isinstance(_arg, (tuple, list)) and len(_arg) == 2:
+                _width, _height = _arg
+            elif len(args) == 2:
+                _width, _height = args
+            else:
+                raise ValueError(args, width, height)
 
+        # Use QImage for better resolution
         _img = self.toImage()
         _img = _img.scaled(
             _width, _height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)

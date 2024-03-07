@@ -21,6 +21,7 @@ class Image(File):
             catch (bool): no error if conversion fails
             force (bool): overwrite existsing without confirmation
         """
+        from pini import qt
         _file = File(file_)
         assert _file != self
         _LOGGER.info('CONVERT %s -> %s', self.extn, _file.extn)
@@ -28,8 +29,8 @@ class Image(File):
         if self.extn == _file.extn:
             self.copy_to(_file, force=force)
         elif 'exr' in _fmts:
-            _convert_file_ffmpeg(self, _file, catch=catch)
-        elif not _fmts - {'png', 'webp', 'jpg', 'jpeg'}:
+            _convert_file_ffmpeg(self, _file, catch=catch, force=force)
+        elif not _fmts - set(qt.PIXMAP_FMTS):
             _convert_file_qt(self, _file, force=force)
         else:
             raise NotImplementedError(
@@ -141,7 +142,7 @@ def _convert_file_ffmpeg(src, trg, catch=False, force=False):
         force (bool): replace existing without confirmation
     """
     _ffmpeg = find_exe('ffmpeg')
-    trg.delete(force=force, wording='replace')
+    trg.delete(force=force, wording='Replace')
     _cmds = [_ffmpeg, '-i', src, trg]
     assert not trg.exists()
     system(_cmds, verbose=1)

@@ -1,3 +1,19 @@
+## [1.7.0] - Thu 2024-03-07 10:56
+### Summary
+ - Pini Helper:
+    - bugfix work file right-click set as thumbnail error on exr,
+### Updated
+ - pini.utils.Clip.build_thumbnail added,
+ - pini.utils Video.to_frame/video_to_frame added res arg,
+ - pini.utils.Image.convert bugfix not passing force to ffmpeg,
+ - pini.pipe.CPWork._check_image updated to use Clip.build_thumbnail,
+ - pini.qt.PIXMAP_FMTS added,
+ - pini.qt.CPixmap.resize added tuple/list arg handling,
+ - pini.qt.progress_bar added ~/.progress_heart heart check,
+ - pini.tools.helper set work thumb updated to use Clip.build_thumbnail,
+ - pini.testing.obt_image added,
+
+
 ## [1.6.0] - Wed 2024-03-06 17:03
 ### Summary
  - Pini Helper:

@@ -269,12 +269,13 @@ def _handle_conversion_fail(seq, video, err):
     raise RuntimeError('Conversion failed '+seq.path)
 
 
-def video_to_frame(video, file_, force=False):
+def video_to_frame(video, file_, res=None, force=False):
     """Extract a frame from a video.
 
     Args:
         video (Video): source video
         file_ (File): output file path
+        res (tuple): apply width/height
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -294,8 +295,11 @@ def video_to_frame(video, file_, force=False):
         _ffmpeg,
         '-ss', _time,
         '-i', video,
-        '-frames:v', 1,
-        _img]
+        '-frames:v', 1]
+    if res:
+        _cmds += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+    _cmds += [_img]
+
     assert not _img.exists()
     _out, _err = system(_cmds, result='out/err', verbose=1)
     if not _img.exists():

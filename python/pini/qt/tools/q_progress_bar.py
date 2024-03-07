@@ -8,13 +8,14 @@ import logging
 import time
 
 from pini.utils import (
-    plural, check_heart, to_time_t, str_to_seed, dprint,
+    plural, check_heart, to_time_t, str_to_seed, dprint, HOME,
     SixIterable)
 
 from ..q_mgr import QtWidgets, QtCore
 
 _LOGGER = logging.getLogger('pini.qt')
 _PROGRESS_BARS = []
+_PROGRESS_HEART = HOME.to_file('.progress_heart')
 
 
 def _get_next_pos(stack_key):
@@ -211,6 +212,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             self._hidden = False
         _LOGGER.debug('ITERATING %s %s', self.isVisible(), _dur)
         check_heart()
+        check_heart(heart=_PROGRESS_HEART)
 
         if not self._hidden and not self.isVisible():
             raise qt.DialogCancelled

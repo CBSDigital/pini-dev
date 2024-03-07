@@ -3,6 +3,8 @@
 A clip is a video or an image sequence.
 """
 
+# pylint: disable=no-member
+
 import logging
 import os
 
@@ -13,6 +15,33 @@ class Clip(object):
     """Base class for any video or image sequence."""
 
     path = None
+
+    def build_thumbnail(self, file_, width=100, force=False):
+        """Build thumbnail for this clip.
+
+        Args:
+            file_ (str): thumbnail path
+            width (int): thumbnail width in pixels
+            force (bool): overwrite existing without confirmation
+        """
+        raise NotImplementedError
+
+    def _to_thumb_res(self, width):
+        """Calculate thumbnail res.
+
+        Args:
+            width (int): required width
+
+        Returns:
+            (tuple): thumbnail width/height
+        """
+        _cur_res = self.to_res()
+        if not _cur_res:
+            raise RuntimeError(self)
+        _aspect = 1.0 * _cur_res[0] / _cur_res[1]
+        _thumb_res = width, int(width/_aspect)
+        _LOGGER.info(' - RES %s -> %s', _cur_res, _thumb_res)
+        return _thumb_res
 
     def view(self, viewer=None):
         """View this clip.

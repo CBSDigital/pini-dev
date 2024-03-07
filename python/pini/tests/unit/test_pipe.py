@@ -207,7 +207,7 @@ class TestDiskPipe(unittest.TestCase):
         assert _shot_c.find_output_seq_dirs()
 
         # Create frame so seq exists
-        _frame_1.touch()
+        testing.obt_image('exr').copy_to(_frame_1)
         assert _seq.exists(force=True)
         assert _shot.find_outputs()
         assert _work.find_outputs()

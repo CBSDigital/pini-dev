@@ -4,12 +4,13 @@ import logging
 import os
 import sys
 
-from pini.utils import Dir, TMP_PATH, check_heart
+from pini import icons
+from pini.utils import check_heart, TMP, Image
 
 _LOGGER = logging.getLogger(__name__)
 
-TEST_YML = Dir(TMP_PATH).to_file('test.yml')
-TEST_DIR = Dir(TMP_PATH).to_subdir('PiniTesting')
+TEST_YML = TMP.to_file('test.yml')
+TEST_DIR = TMP.to_subdir('PiniTesting')
 
 
 def dev_mode():
@@ -19,6 +20,26 @@ def dev_mode():
         (bool): whether currently in dev mode
     """
     return os.environ.get('PINI_DEV') == '1'
+
+
+def obt_image(extn='exr'):
+    """Obtain a valid tmp image file of the given format for testing.
+
+    Args:
+        extn (str): file format
+
+    Returns:
+        (File): image file
+    """
+    _file = TMP.to_file(base='tmp', extn=extn)
+    if not _file.exists():
+
+        _src = Image(icons.find('Green Apple'))
+        _src.convert(_file)
+
+    assert _file.exists()
+
+    return _file
 
 
 def setup_logging():

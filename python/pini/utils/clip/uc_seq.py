@@ -112,6 +112,37 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """Open a browser in this seq's parent directory."""
         Dir(self.dir).browser()
 
+    def build_thumbnail(self, file_, width=100, force=False):
+        """Build thumbnail for this image sequence.
+
+        Args:
+            file_ (str): thumbnail path
+            width (int): thumbnail width in pixels
+            force (bool): overwrite existing without confirmation
+        """
+        from pini import qt
+        from pini.utils import Image, TMP
+
+        _LOGGER.info('BUILD THUMB %s', self.path)
+        _thumb = File(file_)
+        assert _thumb.extn == 'jpg'
+        _res = self._to_thumb_res(width)
+
+        # Build pixmap
+        _frame = self.to_frame_file()
+        if _frame.extn in qt.PIXMAP_FMTS:
+            _pix = qt.CPixmap(_frame)
+        elif _frame.extn in ('exr', ):
+            _img = Image(_frame)
+            _tmp = TMP.to_file('tmp.jpg')
+            _img.convert(_tmp, force=True)
+            _pix = qt.CPixmap(_tmp)
+        else:
+            raise NotImplementedError(self.extn)
+
+        _pix = _pix.resize(_res)
+        _pix.save_as(_thumb, force=force)
+
     def contains(self, file_):
         """Test whether this sequence contains the given file.
 
