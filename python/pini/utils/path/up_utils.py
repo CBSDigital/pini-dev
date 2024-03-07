@@ -300,7 +300,7 @@ def restore_cwd(func):
 
 def search_dir_files_for_text(
         dir_, text=None, filter_=None, file_filter=None, edit=False,
-        extns=('py', )):
+        extns=('py', ), encoding=None):
     """Search text in files in the given directory.
 
     Args:
@@ -310,16 +310,19 @@ def search_dir_files_for_text(
         file_filter (str): file path filter
         edit (bool): edit first match and exit
         extns (tuple): file extensions to match
+        encoding (str): override file encoding
     """
     from pini.utils import Dir
     _dir = Dir(dir_)
     _files = _dir.find(type_='f', filter_=file_filter, extns=extns)
-    search_files_for_text(_files, text=text, filter_=filter_, edit=edit)
+    _LOGGER.info('FOUND %d FILES', len(_files))
+    search_files_for_text(
+        _files, text=text, filter_=filter_, edit=edit, encoding=encoding)
 
 
 def search_files_for_text(
         files, text=None, filter_=None, edit=False, encoding=None,
-        progress=True, catch=False, verbose=0):
+        progress=True, catch=False):
     """Search  a list of files for text.
 
     Args:
@@ -330,13 +333,10 @@ def search_files_for_text(
         encoding (str): override file encoding
         progress (bool): show progress
         catch (bool): no error if file fails to open
-        verbose (int): print process data
 
     Returns:
         (bool): whether search completed without matches
     """
-    from pini.utils import File, passes_filter
-
     _found_instance = False
     _files = files
     if progress:
@@ -346,51 +346,77 @@ def search_files_for_text(
 
         _LOGGER.debug('CHECKING FILE %s', _file)
 
-        _printed_path = False
+        # Read file contents
+        try:
+            _file, _body = _read_file_content(
+                file_=_file, encoding=encoding, catch=catch)
+        except UnicodeDecodeError:
+            _LOGGER.error('UNICODE ERROR ON READ %s', _file)
+            continue
 
-        # Read file content
-        _file, _body = _read_file_content(
-            file_=_file, encoding=encoding, catch=catch)
-        for _idx, _line in enumerate(_body.split('\n')):
-
-            try:
-                _text_in_line = text and text in _line
-            except UnicodeDecodeError:
-                continue
-
-            try:
-                _filter_in_line = filter_ and passes_filter(
-                    _line, filter_, case_sensitive=True)
-            except UnicodeDecodeError:
-                continue
-
-            # Check if this line should be printed
-            _print_line = False
-            if _text_in_line:
-                lprint(' - MATCHED TEXT IN LINE', text, verbose=verbose)
-                _print_line = True
-            elif _filter_in_line:
-                lprint(' - MATCHED FILTER IN LINE', filter_, verbose=verbose)
-                _print_line = True
-
-            if _print_line:
-                if not _printed_path:
-                    lprint(abs_path(_file))
-                lprint('{:>6} {}'.format(
-                    '[{:d}]'.format(_idx+1), _line.rstrip()))
-                _printed_path = True
-                _found_instance = True
-                if edit:
-                    File(_file).edit(line_n=_idx+1)
-                    return False
-
+        # Check file contents
+        _printed_path = _search_file_contents(
+            file_=_file, body=_body, text=text, filter_=filter_, edit=edit)
         if _printed_path:
-            lprint()
+            _found_instance = True
 
     if not _found_instance:
         dprint('No instances found')
 
     return True
+
+
+def _search_file_contents(file_, body, text, filter_, edit):
+    """Apply search to file contents.
+
+    Args:
+        file_ (str): path to source file
+        body (str): file body
+        text (str): exact text to search for
+        filter_ (str): per line filter
+        edit (bool): edit first match and exit
+    """
+    from pini.utils import File, passes_filter
+
+    # Check line of file
+    _printed_path = False
+    for _idx, _line in enumerate(body.split('\n')):
+
+        # Check line
+        try:
+            _text_in_line = text and text in _line
+        except UnicodeDecodeError:
+            continue
+
+        try:
+            _filter_in_line = filter_ and passes_filter(
+                _line, filter_, case_sensitive=True)
+        except UnicodeDecodeError:
+            continue
+
+        # Check if this line should be printed
+        _print_line = False
+        if _text_in_line:
+            _LOGGER.debug(' - MATCHED TEXT IN LINE %s', text)
+            _print_line = True
+        elif _filter_in_line:
+            _LOGGER.debug(' - MATCHED FILTER IN LINE %s', filter_)
+            _print_line = True
+
+        if _print_line:
+            if not _printed_path:
+                lprint(abs_path(file_))
+            lprint('{:>6} {}'.format(
+                '[{:d}]'.format(_idx+1), _line.rstrip()))
+            _printed_path = True
+            if edit:
+                File(file_).edit(line_n=_idx+1)
+                return False
+
+    if _printed_path:
+        lprint()
+
+    return _printed_path
 
 
 def _read_file_content(file_, catch, encoding):

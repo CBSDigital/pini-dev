@@ -952,7 +952,8 @@ def _out_seq_img_sort(seq):
     Returns:
         (tuple): sort key
     """
-    return seq.output_name in ['masterLayer', 'defaultRenderLayer'], seq.path
+    _priority_lyrs = ['masterLayer', 'defaultRenderLayer']
+    return seq.output_name not in _priority_lyrs, seq.path
 
 
 def to_work(file_, catch=True):

@@ -157,18 +157,3 @@ class CBasicPublish(eh_base.CExportHandler):
             work (CPWork): work file
         """
         raise NotImplementedError
-
-    def _apply_version_up(self, version_up):
-        """Apply version up setting.
-
-        Args:
-            version_up (bool): force version up setting
-        """
-        if version_up is not None:
-            _version_up = version_up
-        elif self.ui:
-            _version_up = self.ui.VersionUp.isChecked()
-        else:
-            raise RuntimeError
-        if _version_up:
-            pipe.version_up()

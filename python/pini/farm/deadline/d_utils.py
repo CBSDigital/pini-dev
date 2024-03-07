@@ -3,14 +3,72 @@
 import ast
 import logging
 import os
+import time
 
-from pini import icons
-from pini.utils import single, to_str, get_user
+from pini import icons, qt
+from pini.utils import single, to_str, get_user, to_time_f, plural
 
 _LOGGER = logging.getLogger(__name__)
 
 ICON = icons.find('Balloon')
 _USE_DEADLINE_SORTING = bool(os.environ.get('PINI_DEADLINE_USE_SORTING', False))
+
+
+def _age_from_nice(nice):
+    """Obtain age from readable age.
+
+    Args:
+        nice (str): readable age (eg. 6w)
+
+    Returns:
+        (int): age in seconds
+    """
+    if nice.endswith('w') and nice[:-1].isdigit():
+        return int(nice[:-1])*60*60*24*7
+    raise NotImplementedError(nice)
+
+
+def flush_old_submissions(job, max_age='2w', count=20, force=False):
+    """Flush old submission file from job tmp dir.
+
+    Args:
+        job (CPJob): job to flush
+        max_age (str): remove submissions old than this
+        count (int): leave a maximum of this many submissions
+        force (bool): remove submissions without confirmation
+    """
+    _LOGGER.info("FLUSH OLD SUBMISSIONS")
+
+    _max_age = _age_from_nice(max_age)
+    _root = job.to_subdir('.pini/Deadline/'+get_user())
+
+    # Find submissions
+    _subs = _root.find(type_='d', class_=True, catch_missing=True, depth=1)
+    _subs.reverse()
+    _LOGGER.info('FOUND %d SUBS', len(_subs))
+    _subs = _subs[count:]
+    _LOGGER.info('CHECKING %d OLD SUBS', len(_subs))
+
+    # Check remaining for older that max age
+    _to_delete = []
+    for _sub in _subs:
+        _LOGGER.info(' - SUB %s', _sub.filename)
+        _time_f = to_time_f(time.strptime(_sub.filename, '%y%m%d_%H%M%S'))
+        _age = time.time() - _time_f
+        if _age > _max_age:
+            _LOGGER.info('   - OLD')
+            _to_delete.append(_sub)
+
+    if not _to_delete:
+        _LOGGER.info('NOTHING TO FLUSH')
+    else:
+        if not force:
+            qt.ok_cancel(
+                'Flush {:d} old submission{}?'.format(
+                    len(_to_delete), plural(_to_delete)),
+                title="Clean Submissions", icon=icons.CLEAN)
+        for _sub in qt.progress_bar(_to_delete):
+            _sub.delete(force=True)
 
 
 def info_key_sort(key):
@@ -230,7 +288,7 @@ def wrap_py(py, name, work=None, maya=False):
         '        _exec_task()',
         '    except Exception as _exc:',
         '        _LOGGER.info(" - ERRORED %s", _exc)',
-        '        _err = error.CEError()',
+        '        _err = error.PEError()',
         '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())']
     if maya:
         _lines += ['        cmds.quit(exitCode=1, force=True)']

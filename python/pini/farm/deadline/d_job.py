@@ -25,7 +25,6 @@ class CDJob(object):
     priority = 50
     camera = ''
     frames = (1, )
-    chunk_size = 1
     error_limit = None
     draft = False
 
@@ -35,7 +34,7 @@ class CDJob(object):
     def __init__(
             self, name, work, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
-            dependencies=(), group=None):
+            dependencies=(), group=None, chunk_size=1):
         """Constructor.
 
         Args:
@@ -50,6 +49,7 @@ class CDJob(object):
             batch_name (str): job batch/group name
             dependencies (CDJob list): jobs to depend on
             group (str): submission group
+            chunk_size (int): apply chunk size
         """
         self.stime = stime or time.time()
         self.comment = comment
@@ -59,6 +59,8 @@ class CDJob(object):
         self.work = work
         self.error_limit = error_limit
         self.batch_name = batch_name
+        self.chunk_size = chunk_size
+
         if frames:
             self.frames = frames
         self.dependencies = dependencies

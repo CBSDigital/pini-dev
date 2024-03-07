@@ -163,6 +163,7 @@ class CLExportTab(object):
         _tasks, _data = _sort_by_attr(_outs, attr='task')
 
         # Apply default selection
+        _select = None
         if self.work:
             _select = self.work.task
         elif dcc.NAME == 'maya':
@@ -171,19 +172,31 @@ class CLExportTab(object):
             _select = 'fx'
         elif dcc.NAME == 'nuke':
             _select = 'comp'
-        else:
-            _select = None
 
         self.ui.ESubmitTask.set_items(
             _tasks, data=_data, select=_select, emit=True)
         self.ui.ESubmitTask.setEnabled(len(_tasks) > 1)
+
+    def _redraw__ESubmitTag(self):
+
+        _outs = self.ui.ESubmitTask.selected_data() or []
+        _tasks, _data = _sort_by_attr(_outs, attr='tag')
+
+        # Apply default selection
+        _select = None
+        if self.work:
+            _select = self.work.tag
+
+        self.ui.ESubmitTag.set_items(
+            _tasks, data=_data, select=_select, emit=True)
+        self.ui.ESubmitTag.setEnabled(len(_tasks) > 1)
 
     def _redraw__ESubmitFormat(self):
 
         _LOGGER.debug('REDRAW ESubmitFormat')
 
         _type = self.ui.ESubmitFormat.currentText()
-        _outs = self.ui.ESubmitTask.selected_data() or []
+        _outs = self.ui.ESubmitTag.selected_data() or []
         _fmts, _data = _sort_by_attr(_outs, attr='extn')
 
         # Determine selection
@@ -385,6 +398,9 @@ class CLExportTab(object):
         self.ui.ESubmitTask.redraw()
 
     def _callback__ESubmitTask(self):
+        self.ui.ESubmitTag.redraw()
+
+    def _callback__ESubmitTag(self):
         self.ui.ESubmitFormat.redraw()
 
     def _callback__ESubmitFormat(self):
@@ -414,30 +430,27 @@ class CLExportTab(object):
         _out = self.ui.ESubmitOutputs.selected_data()
         self.ui.ESubmitView.setEnabled(bool(_out))
 
-    def _callback__ESubmit(self):
+    def _callback__ESubmit(self, force=False):
 
         from pini.pipe import shotgrid
 
         _outs = self.ui.ESubmitOutputs.selected_datas()
         _comment = self.ui.ESubmitComment.text()
+
         _LOGGER.info('SUBMIT %d %s', len(_outs), _outs)
         _LOGGER.info(' - COMMENT %s', _comment)
 
         # Submit
-        _force = len(_outs) > 1
-        for _out in qt.progress_bar(
-                _outs, 'Submitting {:d} output{}', stack_key='SubmitOuts',
-                show=_force):
-            _LOGGER.info(' - SUBMIT %s', _out)
-            _kwargs = {}
-            if shotgrid.SUBMITTER.supports_comment:
-                _kwargs = {'comment': _comment}
-            if shotgrid.SUBMITTER.is_direct:
-                _kwargs = {'force': _force}
-            shotgrid.SUBMITTER.run(_out, **_kwargs)
+        _LOGGER.info(' - SUBMIT %s', _outs)
+        _kwargs = {}
+        if shotgrid.SUBMITTER.supports_comment:
+            _kwargs = {'comment': _comment}
+        if shotgrid.SUBMITTER.is_direct:
+            _kwargs = {'force': force}
+        shotgrid.SUBMITTER.run(_outs, **_kwargs)
 
         # Notify
-        if _force and shotgrid.SUBMITTER.is_direct:
+        if not force and shotgrid.SUBMITTER.is_direct:
             qt.notify(
                 'Submitted {:d} versions to shotgrid.\n\nSee script editor '
                 'for details.'.format(len(_outs)),

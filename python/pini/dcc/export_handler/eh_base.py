@@ -182,13 +182,15 @@ class CExportHandler(object):
         self.layout.addWidget(_sep)
 
     def add_spinbox_elem(
-            self, name, val, label=None, label_width=None, tooltip=None,
-            disable_save_settings=False):
+            self, name, val, min_=0, max_=10000, label=None, label_width=None,
+            tooltip=None, disable_save_settings=False):
         """Build a QSpinBox element in this handler's interface.
 
         Args:
             name (str): element name
             val (int): element value
+            min_ (int): element minimum
+            max_ (int): element maximum
             label (str): element label
             label_width (int): element label width
             tooltip (str): apply tooltip
@@ -199,6 +201,8 @@ class CExportHandler(object):
         """
         _spinbox = QtWidgets.QSpinBox()
         _spinbox.setValue(val)
+        _spinbox.setMinimum(min_)
+        _spinbox.setMaximum(max_)
         _spinbox.setFixedWidth(45)
 
         self._add_elem(
@@ -317,6 +321,21 @@ class CExportHandler(object):
             else:
                 _func = self.ui.save_settings
             _signal.connect(_func)
+
+    def _apply_version_up(self, version_up=None):
+        """Apply version up setting.
+
+        Args:
+            version_up (bool): force version up setting
+        """
+        if version_up is not None:
+            _version_up = version_up
+        elif self.ui:
+            _version_up = self.ui.VersionUp.isChecked()
+        else:
+            raise RuntimeError
+        if _version_up:
+            pipe.version_up()
 
     def __repr__(self):
         return '<{}>'.format(type(self).__name__.strip('_'))

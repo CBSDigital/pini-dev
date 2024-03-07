@@ -32,24 +32,25 @@ class CPSubmitter(object):
         self.is_direct = is_direct
         self.supports_comment = supports_comment
 
-    def run(self, output):
+    def run(self, outputs):
         """Run this submitter with the given output.
 
         Args:
-            output (CPOutput): output to submit
+            outputs (CPOutput list): outputs to submit
         """
-        self._submit(output)
-        _update_work_metadata(output)
+        self._submit(outputs)
+        for _out in outputs:
+            _update_work_metadata(_out)
 
-    def _submit(self, output):
+    def _submit(self, outputs):
         """Submit this output to shotgrid.
 
         (Can be reimplemented in subclass)
 
         Args:
-            output (CPOutput): output to submit
+            outputs (CPOutput list): outputs to submit
         """
-        submit(output)
+        submit(outputs)
 
     def __repr__(self):
         return basic_repr(self, label=None)

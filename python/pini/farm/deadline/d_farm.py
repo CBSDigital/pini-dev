@@ -4,7 +4,8 @@ import logging
 import time
 
 from pini import pipe, qt
-from pini.utils import system, single, to_str, safe_zip, cache_result, find_exe
+from pini.utils import (
+    system, single, to_str, safe_zip, cache_result, find_exe, plural)
 
 from .. import base
 from . import d_job, d_utils
@@ -84,6 +85,8 @@ class CDFarm(base.CFarm):
         for _job, _id in safe_zip(jobs, _job_ids):
             _job.jid = _id
 
+        d_utils.flush_old_submissions(job=pipe.cur_job(), force=True)
+
         return _job_ids
 
     def submit_maya_cache(
@@ -154,7 +157,8 @@ class CDFarm(base.CFarm):
 
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
-            frames=None, group=None, force=False):
+            frames=None, group=None, chunk_size=1, version_up=False,
+            force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -164,6 +168,8 @@ class CDFarm(base.CFarm):
             machine_limit (int): job machine limit
             frames (int list): frames to render
             group (str): submission group
+            chunk_size (int): apply job chunk size
+            version_up (bool): version up on render
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -191,7 +197,7 @@ class CDFarm(base.CFarm):
             _job = d_maya_job.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=camera, comment=comment,
-                machine_limit=machine_limit, group=group)
+                machine_limit=machine_limit, group=group, chunk_size=chunk_size)
             _render_jobs.append(_job)
         assert not _render_jobs[0].jid
         self.submit_jobs(_render_jobs, name='render')
@@ -206,10 +212,13 @@ class CDFarm(base.CFarm):
         _progress.set_pc(100)
         _progress.close()
 
+        if version_up:
+            pipe.version_up()
+
         if not force:
             qt.notify(
-                'Submitted {:d} layers to deadline.\n\nBatch name:\n{}'.format(
-                    len(_lyrs), _batch),
+                'Submitted {:d} layer{} to deadline.\n\nBatch name:\n{}'.format(
+                    len(_lyrs), plural(_lyrs), _batch),
                 title='Render Submitted', icon=d_utils.ICON)
 
         return _render_jobs + [_update_job]

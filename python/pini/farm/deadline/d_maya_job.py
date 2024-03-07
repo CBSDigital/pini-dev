@@ -26,7 +26,7 @@ class _CDMayaJob(d_job.CDJob):
     def __init__(
             self, stime, work, output, name=None, camera=None, priority=50,
             machine_limit=0, comment=None, frames=None, error_limit=None,
-            group=None):
+            group=None, chunk_size=1):
         """Constructor.
 
         Args:
@@ -41,6 +41,7 @@ class _CDMayaJob(d_job.CDJob):
             frames (int list): job frame list
             error_limit (int): job error limit
             group (str): submission group
+            chunk_size (int): apply job chunk size
         """
         self.output = output
         self.camera = camera
@@ -50,7 +51,8 @@ class _CDMayaJob(d_job.CDJob):
         super(_CDMayaJob, self).__init__(
             stime=stime, comment=comment, priority=priority, name=_name,
             machine_limit=machine_limit, work=work, frames=frames, group=group,
-            error_limit=error_limit, batch_name=self.work.base)
+            error_limit=error_limit, batch_name=self.work.base,
+            chunk_size=chunk_size)
 
     def _build_info_data(self, output_filename=None):
         """Build info data for this job.
@@ -183,7 +185,7 @@ class CDMayaRenderJob(_CDMayaJob):
 
     def __init__(
             self, layer, stime, work, camera=None, priority=50, machine_limit=0,
-            comment=None, frames=None, group=None):
+            comment=None, frames=None, group=None, chunk_size=1):
         """Constructor.
 
         Args:
@@ -196,6 +198,7 @@ class CDMayaRenderJob(_CDMayaJob):
             comment (str): job comment
             frames (int list): job frame list
             group (str): submission group
+            chunk_size (int): apply job chunk size
         """
         self.layer = layer
         assert camera
@@ -208,7 +211,8 @@ class CDMayaRenderJob(_CDMayaJob):
         super(CDMayaRenderJob, self).__init__(
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
-            frames=frames or dcc.t_frames(), name=_name, group=group)
+            frames=frames or dcc.t_frames(), name=_name, group=group,
+            chunk_size=chunk_size)
 
         assert self.batch_name
 
@@ -252,7 +256,7 @@ class CDMayaRenderJob(_CDMayaJob):
             'RenderHalfFrames': '0',
             'RenderLayer': self.output.output_name,
             'Renderer': _ren,
-            'StrictErrorChecking': 'True',
+            'StrictErrorChecking': 'False',
             'UsingRenderLayers': '1'}
         _data.update(_shared_data)
 

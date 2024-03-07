@@ -213,6 +213,8 @@ class CMayaFarmRender(CMayaRenderHandler):
             name='Comment', disable_save_settings=True)
         self.ui.Priority = self.add_spinbox_elem(
             name='Priority', val=50)
+        self.ui.ChunkSize = self.add_spinbox_elem(
+            name='ChunkSize', val=1, min_=1)
         self.add_separator_elem()
 
         self._build_layers_elem()
@@ -221,6 +223,10 @@ class CMayaFarmRender(CMayaRenderHandler):
             name='HideImgPlanes', val=False,
             label='Hide image planes',
             tooltip='Hide image planes before submission')
+        self.ui.VersionUp = self.add_checkbox_elem(
+            name='VersionUp', val=False,
+            label='Version up on render',
+            tooltip='Version up scene file after render submitted')
         self.add_separator_elem()
 
     def _build_layers_elem(self):
@@ -273,7 +279,6 @@ class CMayaFarmRender(CMayaRenderHandler):
         Args:
             frames (int list): list of frames to render
         """
-
         _cam = self.ui.Camera.currentText()
         pom.set_render_cam(_cam)
 
@@ -294,8 +299,10 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         farm.submit_maya_render(
             frames=frames, camera=_cam,
+            chunk_size=self.ui.ChunkSize.value(),
             comment=self.ui.Comment.text(),
-            priority=self.ui.Priority.value())
+            priority=self.ui.Priority.value(),
+            version_up=self.ui.VersionUp.isChecked())
 
         for _revert in _reverts:
             _revert()
