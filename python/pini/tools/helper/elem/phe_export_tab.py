@@ -6,6 +6,7 @@ import collections
 import logging
 
 from pini import qt, pipe, icons, dcc
+from pini.qt import QtWidgets
 from pini.tools import usage, error
 from pini.utils import single, str_to_ints, passes_filter, wrap_fn
 
@@ -63,6 +64,7 @@ class CLExportTab(object):
             return
         from pini.pipe import shotgrid
 
+        # Set up comments
         self.ui.ESubmitComment.disable_save_settings = True
         for _elem in [
                 self.ui.ESubmitComment,
@@ -70,6 +72,13 @@ class CLExportTab(object):
                 self.ui.ESubmitCommentLine,
         ]:
             _elem.setVisible(shotgrid.SUBMITTER.supports_comment)
+
+        # Apply selection mode to outputs list
+        if shotgrid.SUBMITTER.supports_multi:
+            _mode = QtWidgets.QAbstractItemView.ExtendedSelection
+        else:
+            _mode = QtWidgets.QAbstractItemView.SingleSelection
+        self.ui.ESubmitOutputs.setSelectionMode(_mode)
 
     def _redraw__EPublishHandler(self):
 
@@ -223,7 +232,7 @@ class CLExportTab(object):
         _filter = self.ui.ESubmitFilter.text()
 
         _items = []
-        for _out in _outs:
+        for _out in sorted(_outs, key=pipe.output_clip_sort):
 
             if not passes_filter(_out.filename, _filter):
                 continue
@@ -246,7 +255,6 @@ class CLExportTab(object):
                 output=_out, helper=self, highlight=not _submitted)
             _items.append(_item)
 
-        _items.sort()
         self.ui.ESubmitOutputs.set_items(_items)
 
     def _callback__EExportPane(self):
@@ -441,13 +449,13 @@ class CLExportTab(object):
         _LOGGER.info(' - COMMENT %s', _comment)
 
         # Submit
-        _LOGGER.info(' - SUBMIT %s', _outs)
         _kwargs = {}
         if shotgrid.SUBMITTER.supports_comment:
             _kwargs = {'comment': _comment}
         if shotgrid.SUBMITTER.is_direct:
             _kwargs = {'force': force}
-        shotgrid.SUBMITTER.run(_outs, **_kwargs)
+        for _out in _outs:
+            shotgrid.SUBMITTER.run(_out, **_kwargs)
 
         # Notify
         if not force and shotgrid.SUBMITTER.is_direct:

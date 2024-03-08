@@ -1,3 +1,19 @@
+## [1.8.0] - Fri 2024-03-08 09:30
+### Summary
+ - Pini Helper:
+    - show publish type on work file right-click (cstewart),
+### Updated
+ - pini.pipe.output_clip_sort added,
+ - pini.pipe.cache.CACHE.obt added CPOutput handling,
+ - pini.pipe.shotgrid.CPSubmitter added supports_multi arg,
+ - pini.pipe.shotgrid.CPSubmitter updated arg outputs -> output,
+ - pini.pipe.shotgrid.CPSubmitter run/_submit added work arg,
+ - pini.qt renamed PIXMAP_FMTS -> PIXMAP_EXTNS + added py2 handling,
+ - pini.qt.CPixmap.resize bugfix py2 handling,
+ - pini.tools.helper submit set selection mode based on submitter.support_multi,
+ - pini.tools.helper work ctx outputs better sorting + labelling,
+
+
 ## [1.7.0] - Thu 2024-03-07 10:56
 ### Summary
  - Pini Helper:

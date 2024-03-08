@@ -232,6 +232,19 @@ def map_path(path, mode='start'):
     return _path
 
 
+def output_clip_sort(output):
+    """Sort for output sequences to priorities certain layers.
+
+    Args:
+        output (CPOutput): output to sort
+
+    Returns:
+        (tuple): sort key
+    """
+    _priority_lyrs = ['masterLayer', 'defaultRenderLayer']
+    return output.output_name not in _priority_lyrs, output.path
+
+
 def tag_sort(tag):
     """Sort tags with None as first to avoid py3 sorting error.
 

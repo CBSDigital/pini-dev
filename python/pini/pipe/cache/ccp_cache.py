@@ -333,6 +333,8 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
             return self.obt_entity(obj)
         if isinstance(obj, pipe.CPWork):
             return self.obt_work(obj)
+        if isinstance(obj, pipe.CPOutputBase):
+            return self.obt_output(obj)
         raise NotImplementedError(obj)
 
     def obt_sequence(self, match):

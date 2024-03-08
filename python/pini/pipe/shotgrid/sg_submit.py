@@ -20,7 +20,8 @@ _LOGGER = logging.getLogger(__name__)
 class CPSubmitter(object):
     """Default shotgrid submitter."""
 
-    def __init__(self, is_direct=True, supports_comment=False):
+    def __init__(
+            self, is_direct=True, supports_comment=False, supports_multi=True):
         """Constructor.
 
         Args:
@@ -28,29 +29,32 @@ class CPSubmitter(object):
                 whether it launches a separate interface
             supports_comment (bool): whether this submitter supports
                 comments directly
+            supports_multi (bool): whether multiple submission is supported
         """
         self.is_direct = is_direct
         self.supports_comment = supports_comment
+        self.supports_multi = supports_multi
 
-    def run(self, outputs):
+    def run(self, output, work=None):
         """Run this submitter with the given output.
 
         Args:
-            outputs (CPOutput list): outputs to submit
+            output (CPOutput): output to submit
+            work (CPWork): work file to submit
         """
-        self._submit(outputs)
-        for _out in outputs:
-            _update_work_metadata(_out)
+        self._submit(output=output, work=work)
+        _update_work_metadata(output)
 
-    def _submit(self, outputs):
+    def _submit(self, output, work=None):  # pylint: disable=unused-argument
         """Submit this output to shotgrid.
 
         (Can be reimplemented in subclass)
 
         Args:
-            outputs (CPOutput list): outputs to submit
+            output (CPOutput): output to submit
+            work (CPWork): work file to submit
         """
-        submit(outputs)
+        submit(output)
 
     def __repr__(self):
         return basic_repr(self, label=None)

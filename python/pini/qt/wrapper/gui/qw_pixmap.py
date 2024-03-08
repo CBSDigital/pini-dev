@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 
 import six
 
@@ -14,9 +15,18 @@ from ...q_mgr import QtGui, Qt, QtCore
 
 _LOGGER = logging.getLogger(__name__)
 TEST_IMG = TMP_PATH+'/test.jpg'
-PIXMAP_FMTS = [
-    str(_item, encoding='utf-8')
-    for _item in QtGui.QImageWriter.supportedImageFormats()]
+
+# Set pixmap formats
+if sys.version_info.major == 3:
+    PIXMAP_EXTNS = [
+        str(_item, encoding='utf-8')
+        for _item in QtGui.QImageWriter.supportedImageFormats()]
+elif sys.version_info.major == 2:
+    PIXMAP_EXTNS = [
+        'bmp', 'cur', 'icns', 'ico', 'jpeg', 'jpg', 'pbm', 'pgm', 'png', 'ppm',
+        'tif', 'tiff', 'wbmp', 'webp', 'xbm', 'xpm']
+else:
+    raise NotImplementedError
 
 
 class CPixmap(QtGui.QPixmap):
@@ -362,7 +372,7 @@ class CPixmap(QtGui.QPixmap):
         _col = qt.to_col(col)
         super(CPixmap, self).fill(_col)
 
-    def resize(self, *args, width=None, height=None):
+    def resize(self, *args, **kwargs):
         """Resize this image.
 
         If only height or width is passed, aspect is maintained.
@@ -376,16 +386,19 @@ class CPixmap(QtGui.QPixmap):
         Returns:
             (QPixmap): resized image
         """
-        if width:
-            _height = height or width
-        elif height:
-            _width = height * self.get_aspect()
+        _arg = single(args, catch=True)
+        _width = kwargs.pop('width', None)
+        _height = kwargs.pop('height', None)
+
+        if _width:
+            _height = _width / self.get_aspect()
+        elif _height:
+            _width = _height * self.get_aspect()
         else:
-            assert not height and not width
-            _arg = single(args, catch=True)
+            assert not _height and not _width
             if isinstance(_arg, (int, float)):
                 _width = _arg
-                _height = height or _width
+                _height = _arg
             elif isinstance(_arg, (QtCore.QSize, QtCore.QSizeF)):
                 _width = _arg.width()
                 _height = _arg.height()
@@ -394,9 +407,10 @@ class CPixmap(QtGui.QPixmap):
             elif len(args) == 2:
                 _width, _height = args
             else:
-                raise ValueError(args, width, height)
+                raise ValueError(args, kwargs)
 
-        # Use QImage for better resolution
+        # Use QImage for better scaling algorithm
+        _LOGGER.debug(' - WIDTH/HEIGHT %s/%s', _width, _height)
         _img = self.toImage()
         _img = _img.scaled(
             _width, _height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)

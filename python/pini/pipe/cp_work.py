@@ -17,6 +17,7 @@ from pini.utils import (
     File, strftime, HOME, cache_property, to_time_f, get_user,
     passes_filter, single, EMPTY, abs_path, Video, Seq)
 
+from . import cp_utils
 from .cp_work_dir import CPWorkDir
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
 
@@ -471,7 +472,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         # Check seqs
         _seqs = sorted(
             [_out for _out in outputs if isinstance(_out, Seq)],
-            key=_out_seq_img_sort)
+            key=cp_utils.output_clip_sort)
         if _seqs:
             _seqs[0].build_thumbnail(self.image)
 
@@ -932,19 +933,6 @@ def recent_work():
             continue
         _works.append(_work)
     return _works
-
-
-def _out_seq_img_sort(seq):
-    """Sort for output sequences to priorities certain layers.
-
-    Args:
-        seq (CPOutputSeq): output to sort
-
-    Returns:
-        (tuple): sort key
-    """
-    _priority_lyrs = ['masterLayer', 'defaultRenderLayer']
-    return seq.output_name not in _priority_lyrs, seq.path
 
 
 def to_work(file_, catch=True):

@@ -3,7 +3,6 @@
 # pylint: disable=no-member
 
 import logging
-import operator
 import pprint
 
 from pini import qt, pipe, icons, dcc
@@ -506,7 +505,6 @@ class CLWorkTab(object):
         self.ui.WWorks.redraw()
         self.jump_to(_work.path)
 
-    @usage.get_tracker('PiniHelper.VersionUp', write_after=True)
     def _callback__WVersionUp(self):
         pipe.version_up()
 
@@ -600,7 +598,7 @@ class CLWorkTab(object):
             menu.add_label('No outputs found', icon=helper.OUTS_ICON)
         else:
             _outs_menu = menu.add_menu('Outputs', icon=helper.OUTS_ICON)
-            _outs.sort(key=operator.attrgetter('type_'))
+            _outs.sort(key=_menu_out_sort)
             for _out in _outs:
                 self._add_out_menu(parent=_outs_menu, out=_out)
 
@@ -627,19 +625,27 @@ class CLWorkTab(object):
         _LOGGER.debug('ADD OUTPUT MENU %s', out)
 
         # Set label/header
+        _icon = None
         _header = '{}: {}'.format(
             out.type_.capitalize(), out.filename)
-        _label = '{} - {}'.format(out.type_, out.filename)
+        _label = '{} - {}'.format(out.nice_type.capitalize(), out.filename)
         if out.type_ == 'publish':
-            _label = 'publish'
+            _p_type = out.metadata.get('publish_type')
+            _map = {
+                'CMayaBasicPublish': 'Publish',
+                'CMayaModelPublish': 'Model Publish',
+                'CMayaLookdevPublish': 'Lookdev Publish',
+            }
+            _label = '{} ({})'.format(_map.get(_p_type, 'Publish'), out.extn)
+            _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
-            _label = 'cache - {} ({})'.format(out.output_name, out.extn)
+            _label = 'Cache - {} ({})'.format(out.output_name, out.extn)
         elif isinstance(out, pipe.CPOutputSeq):
             _header += ' '+ints_to_str(out.frames)
             _label += ' '+ints_to_str(out.frames)
 
         # Set icon
-        _icon = ph_utils.output_to_icon(out)
+        _icon = _icon or ph_utils.output_to_icon(out)
         if submenu:
             _out_menu = parent.add_menu(_label, icon=_icon)
         else:
@@ -676,3 +682,16 @@ class CLWorkTab(object):
             'Load scene + version up',
             wrap_fn(self._load_scene_version_up, _work),
             icon=icons.LOAD)
+
+
+def _menu_out_sort(out):
+    """Sort function for output context menu.
+
+    Args:
+        out (CPOutput): output to sort
+
+    Returns:
+        (tuple): sort key
+    """
+    _type = out.nice_type
+    return _type != 'publish', _type, out.path

@@ -130,7 +130,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
         # Build pixmap
         _frame = self.to_frame_file()
-        if _frame.extn in qt.PIXMAP_FMTS:
+        if _frame.extn in qt.PIXMAP_EXTNS:
             _pix = qt.CPixmap(_frame)
         elif _frame.extn in ('exr', ):
             _img = Image(_frame)

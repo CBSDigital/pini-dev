@@ -30,7 +30,7 @@ class Image(File):
             self.copy_to(_file, force=force)
         elif 'exr' in _fmts:
             _convert_file_ffmpeg(self, _file, catch=catch, force=force)
-        elif not _fmts - set(qt.PIXMAP_FMTS):
+        elif not _fmts - set(qt.PIXMAP_EXTNS):
             _convert_file_qt(self, _file, force=force)
         else:
             raise NotImplementedError(
