@@ -354,7 +354,9 @@ def to_mesh(node):
         return pom.CMesh(node)
     if isinstance(node, pom.CMesh):
         return node
-    return ValueError(node)
+    if isinstance(node, pom.CTransform):
+        return pom.CMesh(str(node))
+    raise ValueError(node)
 
 
 def to_mobject(node):
@@ -494,7 +496,8 @@ def to_p(*args):
 
     if len(args) == 1 and isinstance(args[0], (
                 six.string_types,
-                pom.CBaseNode)):
+                pom.CBaseNode,
+                pom.CPlug)):
         _obj = single(args)
         _val = cmds.xform(_obj, query=True, worldSpace=True, translation=True)
         return pom.CPoint(_val)

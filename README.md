@@ -30,4 +30,4 @@ Nuke install:
 
 Hou install:
 
- - Add $PINI/startup/hou to $HOUDINI_PATH
+ - Add $PINI/startup/hou to $HOUDINI_PATH (eg. $PINI/startup/hou;&)

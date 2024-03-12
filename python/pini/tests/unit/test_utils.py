@@ -14,7 +14,7 @@ from pini.utils import (
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
     merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, EMPTY,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image)
+    Image, TMP)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -262,33 +262,15 @@ class TestPath(unittest.TestCase):
         assert abs_path('P:pipeline') == 'P:/pipeline'
         assert abs_path('file:///mnt/jobs') == '/mnt/jobs'
 
-    def test_norm_path(self):
+    def test_bkp_file(self):
 
-        # Test norm path
-        _path = 'c:\\test'
-        assert_eq(norm_path(_path), 'C:/test')
-        _path = '/c/test'
-        assert_eq(norm_path(_path), 'C:/test')
-        _path = r'c:\users\hvande~1'
-        assert_eq(norm_path(_path), 'C:/users/hvande~1')
-
-    def test_path(self):
-
-        # Test path object
-        _path = 'C:\\test'
-        assert Path(_path).path == 'C:/test'
-        _path = '~/test'
-        assert_eq(Path(_path).path, HOME_PATH+'/test')
-        assert Path(_path).path == HOME_PATH+'/test'
-        assert Path('~').path == HOME_PATH
-        os.chdir(Path('~').path)
-        assert_eq(Path('./test').path, 'test')
-        assert_eq(abs_path('./test'), HOME_PATH+'/test')
-        assert_eq(Path(abs_path('./test')).path, HOME_PATH+'/test')
-        _file = File('C:/test/hello.txt')
-        assert _file.base == 'hello'
-        assert _file.extn == 'txt'
-        assert _file.dir == 'C:/test'
+        _file = TMP.to_file('test/.minttyrc')
+        _file.delete(force=True)
+        assert not _file.extn
+        assert not _file.to_file().extn
+        _file.touch()
+        _file.bkp()
+        assert _file.find_bkps()
 
     def test_find(self):
 
@@ -350,6 +332,47 @@ class TestPath(unittest.TestCase):
         assert not _tmp_dir.find(catch_missing=True)
         assert isinstance(_tmp_dir.find(catch_missing=True), list)
 
+    def test_matches(self):
+
+        # Test matches
+        _file_a = Dir(TMP_PATH).to_file('test_a.txt')
+        _file_a.write('AAA\nBBB\nCCC', force=True)
+        assert _file_a.exists()
+        _file_b = Dir(TMP_PATH).to_file('test_b.txt')
+        _file_b.write('AAA\nBBB\nDDD', force=True)
+        assert _file_b.exists()
+        _file_c = Dir(TMP_PATH).to_file('test_c.txt')
+        _file_c.write('AAA\nBBB\nCCC', force=True)
+        assert _file_c.exists()
+
+    def test_norm_path(self):
+
+        # Test norm path
+        _path = 'c:\\test'
+        assert_eq(norm_path(_path), 'C:/test')
+        _path = '/c/test'
+        assert_eq(norm_path(_path), 'C:/test')
+        _path = r'c:\users\hvande~1'
+        assert_eq(norm_path(_path), 'C:/users/hvande~1')
+
+    def test_path(self):
+
+        # Test path object
+        _path = 'C:\\test'
+        assert Path(_path).path == 'C:/test'
+        _path = '~/test'
+        assert_eq(Path(_path).path, HOME_PATH+'/test')
+        assert Path(_path).path == HOME_PATH+'/test'
+        assert Path('~').path == HOME_PATH
+        os.chdir(Path('~').path)
+        assert_eq(Path('./test').path, 'test')
+        assert_eq(abs_path('./test'), HOME_PATH+'/test')
+        assert_eq(Path(abs_path('./test')).path, HOME_PATH+'/test')
+        _file = File('C:/test/hello.txt')
+        assert _file.base == 'hello'
+        assert _file.extn == 'txt'
+        assert _file.dir == 'C:/test'
+
     def test_rel_path(self):
 
         _dir = Dir('C:/test')
@@ -376,25 +399,12 @@ class TestPath(unittest.TestCase):
 
         # Test write objects
         _work = testing.TEST_SHOT.to_work(task='test')
-        _out = _work.to_output('publish', has_key={'output_type': False})
+        _out = _work.to_output('publish', want_key={'output_type': False})
         _notes = release.PRNotes('Release', 'module: notes')
         for _obj in [_out, _notes]:
             _file = Dir(TMP_PATH).to_file('test.yml')
             _file.write_yml(_obj, force=True)
             assert _file.read_yml()
-
-    def test_matches(self):
-
-        # Test matches
-        _file_a = Dir(TMP_PATH).to_file('test_a.txt')
-        _file_a.write('AAA\nBBB\nCCC', force=True)
-        assert _file_a.exists()
-        _file_b = Dir(TMP_PATH).to_file('test_b.txt')
-        _file_b.write('AAA\nBBB\nDDD', force=True)
-        assert _file_b.exists()
-        _file_c = Dir(TMP_PATH).to_file('test_c.txt')
-        _file_c.write('AAA\nBBB\nCCC', force=True)
-        assert _file_c.exists()
 
 
 class TestImage(unittest.TestCase):

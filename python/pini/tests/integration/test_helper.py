@@ -106,7 +106,7 @@ class TestHelper(unittest.TestCase):
         assert _helper.work_dir is _work_dir_c
 
         assert _helper.work
-        _helper._callback__WSaveOver(force=True)
+        _helper._callback__WSave(force=True)
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
         assert _helper.work is pipe.CACHE.cur_work
 

@@ -60,6 +60,9 @@ def find_render_cam(catch=False):
     Returns:
         (str): camera transform
     """
+    from pini.tools import release
+    release.apply_deprecation('11/03/24', 'Use pom.find_render_cam')
+
     _cams = set(find_cams())
     _LOGGER.debug("FIND RENDER CAMS %s", sorted(_cams))
 

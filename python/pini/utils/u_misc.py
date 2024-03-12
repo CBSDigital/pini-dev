@@ -633,7 +633,8 @@ def str_to_seed(string, offset=0):
 
 
 def system(
-        cmd, result=True, decode='utf-8', block_shell_window=True, verbose=0):
+        cmd, result=True, decode='utf-8', block_shell_window=True, env=None,
+        verbose=0):
     """Execute a system command.
 
     Args:
@@ -645,6 +646,7 @@ def system(
             (default is utf-8)
         block_shell_window (bool): prevent shell window from appearing
             (windows only)
+        env (dict): override environment
         verbose (int): print process data
 
     Returns:
@@ -668,17 +670,24 @@ def system(
             '"{}"'.format(_cmd) if ' ' in _cmd else _cmd
             for _cmd in _cmds]))
 
-    # Execute command
+    # Build args/kwargs
     _si = None
     if block_shell_window and platform.system() == 'Windows':
         _si = subprocess.STARTUPINFO()
         _si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _kwargs = {}
+    if env is not None:
+        _kwargs['shell'] = True
+        _kwargs['env'] = env
+
+    # Execute command
     _pipe = subprocess.Popen(
         _cmds,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        startupinfo=_si)
+        startupinfo=_si,
+        **_kwargs)
     if not result:
         return None
 

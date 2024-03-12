@@ -163,6 +163,21 @@ def insert_sys_path(path):
     _add_sys_path(path, action='insert')
 
 
+def print_sys_paths(sort=False):
+    """Print sys paths.
+
+    Args:
+        sort (bool): sort items
+    """
+    _paths = [abs_path(_path) for _path in sys.path]
+    if sort:
+        _paths.sort()
+    for _idx, _path in enumerate(_paths):
+        if _paths.count(_path) > 1 and _paths.index(_path) != _idx:
+            continue
+        print('{:d} {}'.format(os.path.exists(_path), _path))
+
+
 def read_env_paths(env):
     """Read paths from the given environment variable.
 

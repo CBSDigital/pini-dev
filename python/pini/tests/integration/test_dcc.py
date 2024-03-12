@@ -210,6 +210,6 @@ class TestPublish(unittest.TestCase):
 
         # Version up
         _helper.ui.WWorks.select_data(_helper.next_work)
-        _helper.ui.WSaveOver.click()
+        _helper.ui.WSave.click()
         assert pipe.CACHE.cur_work.ver_n == 3
         assert not error.TRIGGERED

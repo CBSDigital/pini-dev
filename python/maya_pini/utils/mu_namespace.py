@@ -5,11 +5,12 @@ import logging
 from maya import cmds
 
 from pini import icons
-from .mu_dec import restore_ns
+from .mu_dec import restore_ns, restore_sel
 
 _LOGGER = logging.getLogger(__name__)
 
 
+@restore_sel
 @restore_ns
 def del_namespace(namespace, force=False):
     """Delete a namespace.

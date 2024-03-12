@@ -45,7 +45,7 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
-        _LOGGER.info('APPLY %s TO %s', self, obj)
+        _LOGGER.info('APPLY %s TO %s (%s)', self, obj, type(obj).__name__)
         if isinstance(obj, list):
             for _item in obj:
                 self.apply_to(_item)

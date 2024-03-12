@@ -139,12 +139,23 @@ def find_render_cam(catch=True):
     Returns:
         (CCamera): renderable camera (if any)
     """
-    _cams = find_cams(default=None, renderable=True)
-    if len(_cams) == 1:
-        return single(_cams)
-    _cams = find_cams(default=False, renderable=True)
-    if len(_cams) == 1:
-        return single(_cams)
+    _LOGGER.info('FIND RENDER CAM')
+
+    _ren_cams = find_cams(default=None, renderable=True)
+    _LOGGER.info(' - RENDERABLE %d %s', len(_ren_cams), _ren_cams)
+    if len(_ren_cams) == 1:
+        return single(_ren_cams)
+
+    _non_def = find_cams(default=False, renderable=True)
+    _LOGGER.info(' - NON-DEFAULT %d %s', len(_non_def), _non_def)
+    if len(_non_def) == 1:
+        return single(_non_def)
+
+    _active = active_cam()
+    _LOGGER.info(' - ACTIVE %s', _active)
+    if _active and _active.renderable.get_val():
+        return _active
+
     if catch:
         return None
     raise ValueError('Failed to find render camera')

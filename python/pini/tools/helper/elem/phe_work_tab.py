@@ -161,7 +161,8 @@ class CLWorkTab(object):
             _tags = []
         else:
             _tags = set()
-            _existing_tags = {_work.tag for _work in self.work_dir.works}
+            _works = self.work_dir.find_works(extns=dcc.VALID_EXTNS)
+            _existing_tags = {_work.tag for _work in _works}
             _tags |= _existing_tags
             if _default_tag:
                 _default_exists = _default_tag in _existing_tags
@@ -402,7 +403,7 @@ class CLWorkTab(object):
         self.ui.WLoad.setEnabled(_loadable)
         _saveable = bool(
             _work and _work.user in (None, get_user(), pipe.cur_user()))
-        self.ui.WSaveOver.setEnabled(_saveable)
+        self.ui.WSave.setEnabled(_saveable)
 
         if _work:
             _notes = _work.notes or ''
@@ -481,8 +482,8 @@ class CLWorkTab(object):
         if _new:
             self._callback__WWorksRefresh()
 
-    @usage.get_tracker('PiniHelper.SaveOver', write_after=True)
-    def _callback__WSaveOver(self, force=False):
+    @usage.get_tracker('PiniHelper.Save', write_after=True)
+    def _callback__WSave(self, force=False):
 
         _work = self.ui.WWorks.selected_data()
         _new = not _work.exists()

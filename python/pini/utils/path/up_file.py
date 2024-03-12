@@ -17,7 +17,7 @@ from ..u_misc import system, single
 
 _LOGGER = logging.getLogger(__name__)
 _DIFF_TOOL = None
-_BKP_FMT = '.bkp/{base}_{tstr}_{user}.{extn}'
+_BKP_FMT = '.bkp/{base}_{tstr}_{user}'
 
 
 def _find_diff_exe():
@@ -53,16 +53,36 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _path = '{}/{}.{}'.format(self.dir, self.base, extn)
         return File(_path)
 
-    def bkp(self):
+    def bkp(self, verbose=1):
         """Backup this file.
+
+        Args:
+            verbose (int): print process data
 
         Returns:
             (File): bkp file
         """
+        _start = time.time()
         if not self.exists():
             _LOGGER.warning('UNABLE TO BACKUP MISSING FILE %s', self.path)
             return None
-        return self.copy_to(self.to_bkp())
+
+        # Check for unchanged
+        _bkps = self.find_bkps()
+        if _bkps:
+            _latest = _bkps[-1]
+            _LOGGER.debug(' - LATEST BKP %s', _latest)
+            if self.matches(_latest):
+                _LOGGER.warning('NO CHANGES SINCE LAST BKP %s', self.path)
+                return _latest
+
+        _bkp = self.to_bkp()
+        self.copy_to(_bkp)
+        if verbose:
+            _LOGGER.info(
+                'SAVED BKP %s (%.01fs)', _bkp.path, time.time() - _start)
+
+        return _bkp
 
     def browser(self):
         """Open a browser in this file's parent directory."""
@@ -182,14 +202,16 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         # Read bkp format
         _head, _tail = _BKP_FMT.split('{tstr}')
         _head = _head.format(base=self.base)
-        _tail = _tail.format(extn=self.extn, user=get_user())
+        _tail = _tail.format(user=get_user())
         _LOGGER.debug(' - HEAD/TAIL %s %s', _head, _tail)
         _dir, _head = _head.rsplit('/', 1)
         _LOGGER.debug(' - DIR/BASE %s %s', _dir, _head)
         _dir = self.to_dir().to_subdir(_dir)
         _LOGGER.debug(' - DIR %s', _dir)
 
-        _bkps = _dir.find(head=_head, tail=_tail, class_=True, type_='f')
+        _bkps = _dir.find(
+            head=_head, tail=_tail, class_=True, type_='f', extn=self.extn,
+            hidden=True, catch_missing=True)
         return _bkps
 
     def find_and_replace_text(self, find, replace, force=False, diff=False):
@@ -364,11 +386,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             (File): backup file
         """
         from pini.utils import get_user
-        return self.to_file(_BKP_FMT.format(
+        _base = _BKP_FMT.format(
             base=self.base,
             tstr=time.strftime('%y%m%d_%H%M%S'),
-            user=get_user(),
-            extn=self.extn))
+            user=get_user())
+        return self.to_file(base=_base, extn=self.extn)
 
     def to_file(self, filename=None, dir_=None, base=None, extn=None,
                 hidden=False):
@@ -391,9 +413,13 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             _filename = filename
         else:
             assert not filename
-            _filename = '{}.{}'.format(
-                base or self.base,
-                extn or self.extn)
+            _extn = extn or self.extn
+            _LOGGER.debug(' - EXTN %s %s', extn, _extn)
+            _base = base or self.base
+            if not _extn:
+                _filename = _base
+            else:
+                _filename = '{}.{}'.format(_base, _extn)
         if hidden:
             _filename = '.'+_filename
         _LOGGER.debug(' - FILENAME %s', _filename)

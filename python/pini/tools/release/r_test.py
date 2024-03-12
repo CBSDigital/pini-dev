@@ -41,14 +41,15 @@ class PRTest(object):
             self.class_.name, to_pascal(self.method.clean_name)])
         _LOGGER.debug(' - NAME %s', self.name)
         _cache_fmt = build_cache_fmt(
-            path=_path, mode='home', tool='Release', extn='pkl')
+            path=_path, mode='home', tool='Release', extn='pkl', dcc_=True)
         _LOGGER.debug(' - CACHE FMT %s', _cache_fmt)
         return _cache_fmt
 
     def execute(self):
         """Execute this test."""
-        from pini import qt, testing
+        from pini import qt, testing, pipe
         from pini.tools import error
+
         error.TRIGGERED = False
         _start = time.time()
 
@@ -93,6 +94,9 @@ class PRTest(object):
             raise qt.DialogCancelled
 
         assert not error.TRIGGERED
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.to_handler().requests_limit = 0
 
         # Write execution stats to cache
         _dur = time.time() - _start

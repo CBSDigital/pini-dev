@@ -28,13 +28,14 @@ class PIInstaller(object):
     _items = None
     allows_context = False
 
-    def __init__(self, name=None, dividers=True, prefix=None):
+    def __init__(self, name=None, dividers=True, prefix=None, label=None):
         """Constructor.
 
         Args:
             name (str): override installer name
             dividers (bool): whether to build dividers
             prefix (str): apply name prefix for element uids
+            label (str): label for installer (if different from name)
         """
         if name:
             self.name = name
@@ -42,6 +43,7 @@ class PIInstaller(object):
             self.prefix = prefix
         assert is_pascal(self.name)
         self.dividers = dividers
+        self.label = label or self.name
 
     @property
     def items(self):

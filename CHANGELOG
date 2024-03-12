@@ -1,3 +1,30 @@
+## [1.9.0] - Tue 2024-03-12 13:26
+### Summary
+ - Pini Install:
+    - updates to facilitate pini houdini installation [PT-246],
+### Updated
+ - pini.utils.system added env arg,
+ - pini.utils.File.bkp added no extn handling,
+ - pini.utils.File.bkp check latest bkp for unchanged,
+ - pini.pipe.CPWorkDir.find_works added extns filter,
+ - pini.pipe.CPWork.find_vers apply dcc.VALID_EXTNS filter,
+ - pini.pipe.CPWork.to_output pass step,
+ - pini.pipe.cache.CCPWork.owner use user if no owner in path,
+ - pini.farm.deadline bugfix error on maya farm cache,
+ - pini.install.PIInstaller added label arg,
+ - pini.install houdini use uid for shelf/tool/menu name,
+ - pini.install houdini store tmp icons in HOME not TMP,
+ - pini.tools.helper renamed ui elem SaveOver -> Save,
+ - pini.tools.release.PRTest.cache_fmt include dcc,
+ - pini.tools.release.PRTest.execute reset sg requests limit after test,
+ - pini.testing.print_sys_paths added,
+ - maya_pini.utils.find_render_cam deprecated,
+ - maya_pini.utils.del_namespace apply restore sel,
+ - maya_pini.open_maya.to_mesh added CTransform handling,
+ - maya_pini.open_maya.to_p added CPlug handling,
+ - maya_pini.open_maya.find_render_cam use active cam if not clear,
+
+
 ## [1.8.0] - Fri 2024-03-08 09:30
 ### Summary
  - Pini Helper:

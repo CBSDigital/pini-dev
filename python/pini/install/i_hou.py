@@ -8,8 +8,7 @@ import six
 
 from pini import qt, icons, dcc
 from pini.tools import release
-from pini.utils import (
-    cache_result, TMP, File)
+from pini.utils import cache_result, TMP, File, HOME
 
 from . import i_installer
 
@@ -78,20 +77,21 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _LOGGER.debug('BUILD TOOL %s', tool)
         del parent
 
-        if tool.name in hou.shelves.tools():
-            hou.shelves.tools()[tool.name].destroy()
+        _uid = tool.to_uid(prefix=self.prefix)
+        if _uid in hou.shelves.tools():
+            hou.shelves.tools()[_uid].destroy()
         if not isinstance(tool.command, six.string_types):
-            _LOGGER.debug(' - FAILED TO ADD TOOL %s', tool.name)
+            _LOGGER.debug(' - FAILED TO ADD TOOL %s', _uid)
             return None
 
-        _LOGGER.debug('    - ADD TOOL %s icon=%s', tool.name, tool.icon)
+        _LOGGER.debug('    - ADD TOOL %s icon=%s', _uid, tool.icon)
 
         assert '\b' not in tool.command
         assert isinstance(tool.icon, six.string_types)
         assert os.path.exists(tool.icon)
 
         _tool = hou.shelves.newTool(
-            file_path=self.shelf_file, name=tool.name,
+            file_path=self.shelf_file, name=_uid,
             label=tool.label,
             script=tool.command,
             icon=_fix_icon_gamma(tool.icon))
@@ -135,7 +135,7 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         # Make sure this shelf exists
         if self.name not in hou.shelves.shelves():
             hou.shelves.newShelf(
-                file_path=self.shelf_file, name=self.name, label=self.name)
+                file_path=self.shelf_file, name=self.name, label=self.label)
         _shelf = hou.shelves.shelves()[self.name]
 
         _tools = super(PIHouShelfInstaller, self).run()
@@ -160,16 +160,18 @@ def _fix_icon_gamma(icon):
     Returns:
         (str): path to use for icon
     """
-    _LOGGER.debug('FIX ICON GAMMA %s', icon)
+    _LOGGER.log(9, 'FIX ICON GAMMA %s', icon)
 
     if not icons.ANDROID.contains(icon):
         return icon
 
+    _cache_dir = HOME.to_subdir('.pini/icons')
+
     _root = icons.ANDROID.to_dir(levels=2)
-    _LOGGER.debug(' - ROOT %s', _root)
+    _LOGGER.log(9, ' - ROOT %s', _root)
     _rel_path = _root.rel_path(icon)
-    _tmp_path = TMP.to_file(_rel_path)
-    _LOGGER.debug(' - TMP %s', _root)
+    _tmp_path = _cache_dir.to_file(_rel_path)
+    _LOGGER.log(9, ' - TMP %s', _root)
     if not _tmp_path.exists():
         _pix = qt.CPixmap(icon)
         _pix.save_as(_tmp_path)
@@ -205,14 +207,14 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
             '<mainMenu>',
             '  <menuBar>',
             '    <subMenu id="{id}">',
-            '      <label>{name}</label>',
-        ]).format(name=self.name, id=self.to_uid())
+            '      <label>{label}</label>',
+        ]).format(label=self.label, id=self.to_uid())
 
         _footer = '\n'.join([
             '    </subMenu>',
             '  </menuBar>',
             '</mainMenu>',
-        ]).format(self.name)
+        ])
 
         _xmls = self.run()
         _xmls = [

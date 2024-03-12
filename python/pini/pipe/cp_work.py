@@ -294,7 +294,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         Returns:
             (CPWorkFile list): work file list
         """
-        return self.work_dir.find_works(tag=self.tag)
+        return self.work_dir.find_works(tag=self.tag, extns=dcc.VALID_EXTNS)
 
     def has_bkp(self):
         """Test if this file has a corresponding backup file.
@@ -719,6 +719,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             'entity_path': self.entity.path,
             'entity': self.entity.name,
             'user': self.user,
+            'step': self.step,
             'dcc': _dcc}
         _data.update(self.data)
         if 'data' in kwargs:
@@ -790,6 +791,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         # Build data dict
         _data = copy.copy(self.data)
+        _data['extn'] = self.extn
+        _LOGGER.debug(' - EXTN %s', self.extn)
         if user:
             _data['user'] = user
         _data['work_dir'] = _work_dir.path

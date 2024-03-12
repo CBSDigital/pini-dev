@@ -138,7 +138,8 @@ class CPWorkDir(Dir):
         """
         return single(self.find_works(**kwargs), catch=catch)
 
-    def find_works(self, filter_=None, tag=EMPTY, dcc_=None, ver_n=None):
+    def find_works(
+            self, filter_=None, tag=EMPTY, dcc_=None, ver_n=None, extns=None):
         """Find work files in this work dir.
 
         Args:
@@ -147,6 +148,7 @@ class CPWorkDir(Dir):
                 a valid value, use -1 no tag filter)
             dcc_ (str): apply dcc filter
             ver_n (int): filter by version number
+            extns (str list): filter by file extensions
 
         Returns:
             (CPWork list): matching work files
@@ -175,6 +177,8 @@ class CPWorkDir(Dir):
             if dcc_ and EXTN_TO_DCC[_work.extn] != dcc_:
                 continue
             if filter_ and not passes_filter(_work.path, filter_):
+                continue
+            if extns and _work.extn not in extns:
                 continue
             _filtered_works.append(_work)
 

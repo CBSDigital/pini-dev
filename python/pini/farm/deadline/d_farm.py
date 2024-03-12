@@ -131,7 +131,7 @@ class CDFarm(base.CFarm):
                     type(_cbl).__name__, str(_cbl.node)),
                 '_checks_data = {}'.format(_checks_data),
                 '_flags = {}'.format(flags or {}),
-                '_extn = '+extn,
+                '_extn = "{}"'.format(extn),
                 'm_pipe.cache('
                 '    [_cbl], checks_data=_checks_data, extn=_extn, force=True,'
                 '    **_flags)',
