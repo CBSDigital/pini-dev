@@ -5,7 +5,7 @@ import time
 import unittest
 
 from pini.utils import (
-    cache_method_to_file, build_cache_fmt, to_pascal)
+    cache_method_to_file, build_cache_fmt, to_pascal, nice_age)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,11 +47,12 @@ class PRTest(object):
 
     def execute(self):
         """Execute this test."""
-        from pini import qt, testing, pipe
         from pini.tools import error
 
         error.TRIGGERED = False
         _start = time.time()
+        _last_exec_dur = self.last_exec_dur()
+        _last_complete_time = self.last_complete_time()
 
         # Print header
         _title = '------------- EXECUTE {} -------------'.format(self)
@@ -60,6 +61,11 @@ class PRTest(object):
         print('-'*len(_title)+'\n')
 
         # Locate test method
+        if _last_exec_dur and _last_complete_time:
+            _age = time.time() - _last_complete_time
+            _LOGGER.info(
+                ' - LAST EXEC DUR %.00fs (%s AGO)', _last_exec_dur,
+                nice_age(_age))
         _LOGGER.info(' - PY FILE %s', self.py_file.path)
         _mod = self.py_file.to_module(reload_=True)
         _case = getattr(_mod, self.class_.name)
@@ -71,10 +77,36 @@ class PRTest(object):
         _suite = unittest.TestSuite()
         _suite.addTest(_case(_test.__name__))
         _runner = unittest.TextTestRunner(failfast=True)
+
+        # Run test
         _result = _runner.run(_suite)
+        _LOGGER.info(' - RESULT %s %s', _result, type(_result))
+        self._check_for_fail(result=_result)
+        self._reset_env()
+
+        # Write execution stats to cache
+        _dur = time.time() - _start
+        self.last_exec_dur(exec_dur=_dur, force=True)
+        self.last_complete_time(complete_time=time.time(), force=True)
+
+        # Print tail
+        _tail = '---------- COMPLETE {} ({:.01f}s) ----------'.format(
+            self, _dur)
+        print('\n'+'-'*len(_tail))
+        print(_tail)
+        print('-'*len(_tail)+'\n')
+
+    def _check_for_fail(self, result):
+        """Handle test has failed.
+
+        Args:
+            result (TextTestResult): test result
+        """
+        from pini import qt, testing
+        from pini.tools import error
 
         # Handle test failed
-        _issues = _result.errors + _result.failures
+        _issues = result.errors + result.failures
         for _class, _traceback in _issues:
             _msg = _traceback.strip().split('\n')[-1]
             _LOGGER.info('[error] %s', _class)
@@ -94,21 +126,13 @@ class PRTest(object):
             raise qt.DialogCancelled
 
         assert not error.TRIGGERED
+
+    def _reset_env(self):
+        """Reset testing environment."""
+        from pini import pipe
         if pipe.MASTER == 'shotgrid':
             from pini.pipe import shotgrid
             shotgrid.to_handler().requests_limit = 0
-
-        # Write execution stats to cache
-        _dur = time.time() - _start
-        self.last_exec_dur(exec_dur=_dur, force=True)
-        self.last_complete_time(complete_time=time.time(), force=True)
-
-        # Print tail
-        _tail = '---------- COMPLETE {} ({:.01f}s) ----------'.format(
-            self, _dur)
-        print('\n'+'-'*len(_tail))
-        print(_tail)
-        print('-'*len(_tail)+'\n')
 
     @cache_method_to_file
     def last_exec_dur(self, exec_dur=0, force=False):

@@ -23,8 +23,10 @@ class CPTemplate(lucidity.Template):
 
     task = None
 
-    def __init__(self, name, pattern, anchor=lucidity.Template.ANCHOR_END,
-                 separate_dir=False, path_type=None, job=None, alt=None):
+    def __init__(
+            self, name, pattern, anchor=lucidity.Template.ANCHOR_END,
+            separate_dir=False, path_type=None, job=None, alt=None,
+            source=None):
         """Constructor.
 
         For a dcc template override the dcc needs to be at the front of the
@@ -47,8 +49,9 @@ class CPTemplate(lucidity.Template):
             alt (int): this is used to prioritise different versions of the
                 same templates type - eg. if cache and cache_alt1 templates
                 are declared, the basic pattern (alt will be zero) will be
-                used for cacheing, but the alt1 pattern will still be valid
+                used for caching, but the alt1 pattern will still be valid
                 and appear in output lists
+            source (CPTemplate): original source of this template (if any)
         """
         self._separate_dir = separate_dir
 
@@ -62,6 +65,7 @@ class CPTemplate(lucidity.Template):
         self.anchor = anchor
         self.job = job
         self.alt = alt
+        self.source = source or self
 
         # Read dcc override
         _tokens = self.name.split('_')
@@ -166,7 +170,7 @@ class CPTemplate(lucidity.Template):
         _tmpl = CPTemplate(
             name or self.name, pattern or self.pattern, anchor=self.anchor,
             separate_dir=_separate_dir, path_type=self.path_type,
-            job=self.job)
+            job=self.job, source=self.source)
         _tmpl.embedded_data.update(self.embedded_data)
         return _tmpl
 

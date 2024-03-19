@@ -279,7 +279,7 @@ def merge_dicts(dict_a, dict_b):
     return _result
 
 
-def nice_age(age, depth=None, pad=None, weeks=True, seconds=True):
+def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     """Convert an age in seconds to a readable form (eg. 6w3d).
 
     Args:

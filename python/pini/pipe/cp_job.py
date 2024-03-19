@@ -158,8 +158,9 @@ class CPJob(cp_settings.CPSettingsLevel):
         """
         return cp_template.build_job_templates(job=self, catch=catch)
 
-    def find_template(self, type_, profile=None, dcc_=None, catch=False,
-                      has_key=None, want_key=None):
+    def find_template(
+            self, type_, profile=None, dcc_=None, catch=False,
+            has_key=None, want_key=None):
         """Find a single template within this job's templates.
 
         Args:
@@ -201,9 +202,21 @@ class CPJob(cp_settings.CPSettingsLevel):
                 'Failed to find template "{}" in {}'.format(
                     type_, self.name))
 
+    @cache_result
+    def find_template_by_pattern(self, pattern):
+        """Find template by its pattern.
+
+        Args:
+            pattern (str): pattern to match
+
+        Returns:
+            (CPTemplate): matching template
+        """
+        return single(self.find_templates(pattern=pattern))
+
     def find_templates(
             self, type_=None, profile=None, dcc_=None, has_key=None,
-            want_key=None):
+            want_key=None, pattern=None):
         """Find templates in this job.
 
         The list is sorted in order of precendence, ie. a nuke_shot_work
@@ -218,47 +231,100 @@ class CPJob(cp_settings.CPSettingsLevel):
                 be present in the template
             want_key (dict): dict of keys which are preferred
                 but not necessary
+            pattern (str): match template by pattern
 
         Returns:
             (CPTemplate list): matching templates
         """
         _LOGGER.log(9, 'FIND TEMPLATES %s type_=%s', self.name, type_)
 
-        _tmpls = sum(self.templates.values(), [])
-        if type_:
-            _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl.type_ == type_]
+        # Apply simple filters
         if profile:
             assert profile in ['shot', 'asset']
-            _tmpls = [_tmpl for _tmpl in _tmpls
-                      if _tmpl.profile in (None, profile)]
+        _tmpls = []
+        for _tmpl in sum(self.templates.values(), []):
+            if type_ and _tmpl.type_ != type_:
+                continue
+            if profile and _tmpl.profile not in (None, profile):
+                continue
+            if pattern and _tmpl.pattern != pattern:
+                continue
+            _tmpls.append(_tmpl)
 
+        # Apply complex filters
         if dcc_:
-            _dcc_tmpls = [_tmpl for _tmpl in _tmpls if _tmpl.dcc == dcc_]
-            if _dcc_tmpls:
-                _tmpls = _dcc_tmpls
-            else:
-                _tmpls = [_tmpl for _tmpl in _tmpls if not _tmpl.dcc]
-
+            _tmpls = self._find_templates_dcc(_tmpls, dcc_=dcc_)
         if has_key:
-            _LOGGER.debug(' - APPLY HAS KEY %s', has_key)
-            assert isinstance(has_key, dict)
-            for _key, _toggle in has_key.items():
-                _tmpls = [_tmpl for _tmpl in _tmpls
-                          if (_key in _tmpl.keys()) == _toggle]
-            _LOGGER.debug(' - APPLIED HAS KEY %d %s', len(_tmpls), _tmpls)
-
+            _tmpls = self._find_templates_has_key(_tmpls, has_key=has_key)
         if want_key:
-            _LOGGER.debug(' - APPLY WANT KEY %s %s', want_key, _tmpls)
-            assert isinstance(want_key, dict)
-            for _key, _toggle in want_key.items():
-                _matching_tmpls = [_tmpl for _tmpl in _tmpls
-                                   if (_key in _tmpl.keys()) == _toggle]
-                if _matching_tmpls:
-                    _tmpls = _matching_tmpls
-                    _LOGGER.debug('   - ALLOWED %s FILTER', _key)
-            _LOGGER.debug(' - APPLIED WANT KEY %d %s', len(_tmpls), _tmpls)
+            _tmpls = self._find_templates_want_key(_tmpls, want_key=want_key)
 
         _tmpls = sorted(_tmpls, key=operator.attrgetter('name'))
+        return _tmpls
+
+    def _find_templates_dcc(self, templates, dcc_):
+        """Find templates matching the given dcc.
+
+        If no templates match the given dcc then the filter is not applied.
+
+        Args:
+            templates (CPTemplate list): list of templates to filter
+            dcc_ (str): dcc filter to apply
+
+        Returns:
+            (CPTemplate list): matching templates
+        """
+        _dcc_tmpls = [_tmpl for _tmpl in templates if _tmpl.dcc == dcc_]
+        if _dcc_tmpls:
+            _tmpls = _dcc_tmpls
+        else:
+            _tmpls = [_tmpl for _tmpl in templates if not _tmpl.dcc]
+        return _tmpls
+
+    def _find_templates_has_key(self, templates, has_key):
+        """Find templates with specific keys.
+
+        Args:
+            templates (CPTemplate list): list of templates to filter
+            has_key (dict): dict of keys and whether that key should
+                be present in the template
+
+        Returns:
+            (CPTemplate list): matching templates
+        """
+        _tmpls = templates
+        _LOGGER.debug(' - APPLY HAS KEY %s', has_key)
+        assert isinstance(has_key, dict)
+        for _key, _toggle in has_key.items():
+            _tmpls = [_tmpl for _tmpl in _tmpls
+                      if (_key in _tmpl.keys()) == _toggle]
+        _LOGGER.debug(' - APPLIED HAS KEY %d %s', len(_tmpls), _tmpls)
+        return _tmpls
+
+    def _find_templates_want_key(self, templates, want_key):
+        """Find templates with specific keys if they're available.
+
+        If a want key is available, templates with that key are returned.
+        However, if the key in unavailable then no filter is applied.
+
+        Args:
+            templates (CPTemplate list): list of templates to filter
+            want_key (dict): dict of keys which are preferred
+                but not necessary
+
+        Returns:
+            (CPTemplate list): matching templates
+        """
+        _tmpls = templates
+        _LOGGER.debug(' - APPLY WANT KEY %s %s', want_key, _tmpls)
+        assert isinstance(want_key, dict)
+        for _key, _toggle in want_key.items():
+            _matching_tmpls = [_tmpl for _tmpl in _tmpls
+                               if (_key in _tmpl.keys()) == _toggle]
+            if _matching_tmpls:
+                _tmpls = _matching_tmpls
+                _LOGGER.debug('   - ALLOWED %s FILTER', _key)
+        _LOGGER.debug(' - APPLIED WANT KEY %d %s', len(_tmpls), _tmpls)
         return _tmpls
 
     @cache_property
@@ -896,7 +962,7 @@ class CPJob(cp_settings.CPSettingsLevel):
 
     def find_outputs(
             self, type_=None, entity=None, task=None, tag=EMPTY, ver_n=None,
-            extns=None):
+            extns=None, progress=False):
         """Find outputs in this job.
 
         (Only applicable to shotgrid jobs)
@@ -908,6 +974,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             tag (str): filter by tag
             ver_n (int): filter by version number
             extns (str list): filter by output extensions
+            progress (bool): show progress
 
         Returns:
             (CPOutput list): outputs
@@ -919,7 +986,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             raise TypeError(entity)
 
         _outs = []
-        for _out in self._read_outputs_sg():
+        for _out in self._read_outputs_sg(progress=progress):
             _LOGGER.debug(' - TESTING %s', _out)
             if type_ and _out.type_ != type_:
                 continue
@@ -939,8 +1006,11 @@ class CPJob(cp_settings.CPSettingsLevel):
         _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
         return _outs
 
-    def _read_outputs_sg(self):
+    def _read_outputs_sg(self, progress=False):
         """Read outputs in this job from shotgrid.
+
+        Args:
+            progress (bool): show progress
 
         Returns:
             (CPOutput list): outputs
@@ -948,7 +1018,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         from pini import pipe
         from pini.pipe import shotgrid
         assert pipe.MASTER == 'shotgrid'
-        return shotgrid.find_pub_files(job=self)
+        return shotgrid.find_pub_files(job=self, progress=progress)
 
     def to_prefix(self):
         """Obtain prefix for this job.

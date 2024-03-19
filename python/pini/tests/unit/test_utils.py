@@ -103,7 +103,7 @@ class TestUtils(unittest.TestCase):
         assert split_base_index('blah67') == ('blah', 67)
 
     def test_nice_age(self):
-        assert nice_age(60*60+1, pad=2) == '01h00m01s'
+        assert nice_age(60*60+1, pad=2) == '01h00m'
         assert nice_age(24*60*60+1, pad=2, depth=2) == '01d00h'
 
     def test_strftime(self):

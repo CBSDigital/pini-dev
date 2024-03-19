@@ -525,28 +525,27 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             time.time() - _start)
         return _work_dirs
 
-    def find_outputs(self, *args, **kwargs):
+    def find_outputs(self, type_=None, force=False, **kwargs):
         """Find outputs in this job.
 
         Args:
+            type_ (str): filter by output type
             force (bool): force reread outputs
 
         Returns:
             (CPOutput list): outputs
         """
-        _kwargs = kwargs
-        _force = _kwargs.pop('force', False)
-        if _force:
-            self._read_outputs_sg(force=True)
-        return super(CCPJob, self).find_outputs(*args, **_kwargs)
+        if force:
+            self._read_outputs_sg(force=True, progress=kwargs.get('progress'))
+        return super(CCPJob, self).find_outputs(type_=type_, **kwargs)
 
     @pipe_cache_result
-    def _read_outputs_sg(self, force=False, progress=False):
+    def _read_outputs_sg(self, progress=False, force=False):
         """Read outputs in this job from shotgrid.
 
         Args:
-            force (bool): force reread outputs
             progress (bool): show progress dialog
+            force (bool): force reread outputs
 
         Returns:
             (CCPOutput list): outputs
@@ -587,9 +586,10 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
                 raise ValueError(_out)
 
             # Build output object
-            _kwargs = {'entity': _ety, 'work_dir': _work_dir}
+            _tmpl = self.find_template_by_pattern(_out.template.source.pattern)
             try:
-                _c_out = _class(_out.path, **_kwargs)
+                _c_out = _class(
+                    _out.path, entity=_ety, work_dir=_work_dir, template=_tmpl)
             except ValueError:  # Can fail if config changed
                 _LOGGER.warning(' - BUILD OUT FAILED %s', _out)
                 continue
@@ -602,7 +602,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             time.time() - _r_start)
         return _c_outs
 
-    @get_method_to_file_cacher(max_age=60*60*24)
+    @get_method_to_file_cacher(max_age=60*60*24, min_mtime=1710877461)
     def _read_sg_pub_files(self, progress=False, force=False):
         """Read shotgrid published files for this job.
 
@@ -617,6 +617,24 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _outs = shotgrid.find_pub_files(
             job=self, entities=self.entities, progress=progress)
         return _outs
+
+    @get_method_to_file_cacher()
+    def get_sg_output_template_map(self, map_=None, force=False):
+        """Get shotgrid output template map.
+
+        This maps paths to their output template pattern, and is used to
+        streamline build output objects from shotgrid results, by avoiding
+        each result needing to be checked against a full list output
+        templates.
+
+        Args:
+            map_ (dict): output template map to apply to cache
+            force (bool): force write result to disk
+
+        Returns:
+            (dict): output template map
+        """
+        return map_ or {}
 
     @pipe_cache_result
     def to_prefix(self):

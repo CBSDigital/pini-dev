@@ -93,6 +93,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         self.start = time.time()
         self.durs = []
         self.info = ''
+        self._display_pc = None
 
         _parent = parent or dcc.get_main_window_ptr()
         _args = [_parent] if _parent else []
@@ -143,7 +144,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         Returns:
             (float): percent complete
         """
-        return 100.0 * self.counter / max(len(self.items), 1)
+        return round(100.0 * self.counter / max(len(self.items), 1))
 
     def isVisible(self):
         """Garbage collection safe wrapper for isVisible."""
@@ -217,10 +218,14 @@ class _ProgressDialog(QtWidgets.QDialog):
         if not self._hidden and not self.isVisible():
             raise qt.DialogCancelled
 
-        self.progress_bar.setValue(self.cur_pc)
-        if update_ui:
-            self.update_ui()
+        # Apply update
+        if self.cur_pc != self._display_pc:
+            self.progress_bar.setValue(self.cur_pc)
+            if update_ui:
+                self.update_ui()
+        self._display_pc = self.cur_pc
 
+        # Increment item
         self.counter += 1
         try:
             _result = self.items[self.counter-1]
@@ -236,7 +241,7 @@ class _ProgressDialog(QtWidgets.QDialog):
 
         return _result
 
-    next = __next__
+    next = __next__  # py2 compatibility
 
 
 @functools.wraps(_ProgressDialog.__init__)

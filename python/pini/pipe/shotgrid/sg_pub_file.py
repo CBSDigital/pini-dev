@@ -135,9 +135,79 @@ def _build_filters(
     return _filters
 
 
+def _build_outputs(job, results, progress, use_cache=True):
+    """Build output objects from the given list of shotgrid results.
+
+    Args:
+        job (CCPJob): parent job
+        results (tuple list): list of paths and shotgrid results
+        progress (bool): show progress on build object lists
+        use_cache (bool): use cached output template mapping
+
+    Returns:
+        (CPOutput list): outputs
+    """
+    from pini import qt
+
+    _cache = None
+    _cache_updated = False
+    if use_cache:
+        _cache = job.get_sg_output_template_map()
+
+    # Convert into output objects
+    _o_start = time.time()
+    _outs = []
+    for _idx, (_path, _result) in qt.progress_bar(
+            enumerate(results), 'Converting {:d} paths', show=progress):
+
+        _LOGGER.log(9, '[%d] PATH %s', _idx, _path)
+
+        if _cache and _path in _cache:
+            _pattern = _cache[_path]
+            _LOGGER.log(9, ' - PATTERN %s', _pattern)
+            if not _pattern:
+                continue
+            _tmpl = job.find_template_by_pattern(_pattern)
+            _LOGGER.log(9, ' - TEMPLATE %s', _tmpl)
+            _out = pipe.to_output(_path, job=job, template=_tmpl, catch=False)
+            _LOGGER.log(9, ' - OUT %s', _out)
+
+        else:
+            _out = pipe.to_output(_path, job=job, catch=True)
+            if use_cache:
+                if not _out:
+                    _pattern = None
+                else:
+                    _tmpl = _out.template
+                    _LOGGER.log(9, ' - TEMPLATE %s', _tmpl)
+                    _pattern = _tmpl.source.pattern
+                    _LOGGER.log(9, ' - PATTERN %s', _pattern)
+                _cache[_path] = _pattern
+                _cache_updated = True
+
+        _LOGGER.log(9, ' - OUT %s', _out)
+        if not _out:
+            _LOGGER.log(9, ' - REJECTED %s', _path)
+            continue
+
+        to_pub_file_data(_out, data=_result, force=True)  # Update cache
+        _LOGGER.log(9, ' - ACCEPTED %s', _path)
+
+        _outs.append(_out)
+
+    if _cache_updated:
+        job.get_sg_output_template_map(_cache, force=True)
+        _LOGGER.info(' - UPDATED SG OUTPUT TMPL MAP')
+
+    _LOGGER.debug(
+        ' - BUILT %d OUTS (%.01fs)', len(_outs), time.time() - _o_start)
+
+    return _outs
+
+
 def find_pub_files(
         job=None, entity=None, entities=None, work_dir=None, id_=None,
-        filter_=None, progress=False):
+        filter_=None, progress=False, use_cache=True):
     """Find PublishedFile entries.
 
     Args:
@@ -148,6 +218,7 @@ def find_pub_files(
         id_ (int): filter by pub file id
         filter_ (str): apply path filter
         progress (bool): show progress
+        use_cache (bool): use cached output template mapping
 
     Returns:
         (CPOutput list): outputs
@@ -165,21 +236,25 @@ def find_pub_files(
         _job = entity.job
     if not _job:
         _job = pipe.cur_job()
+    _job = pipe.CACHE.obt(_job)
 
     # Request data
     _filters = _build_filters(
         job=_job, entity=entity, entities=entities, work_dir=work_dir, id_=id_)
     _LOGGER.debug(' - FILTERS %s', _filters)
+    _f_start = time.time()
     _results = sg_handler.find(
         'PublishedFile', fields=_PUB_FILE_FIELDS,
         filters=_filters)
-    _LOGGER.debug(' - FOUND %d RESULTS', len(_results))
+    _LOGGER.debug(
+        ' - FOUND %d RESULTS (%.01fs)', len(_results), time.time() - _f_start)
 
     # Find paths
-    _paths = []
+    _p_start = time.time()
+    _paths = {}
     for _idx, _result in qt.progress_bar(
             enumerate(_results), 'Checking {:d} results', show=progress):
-        _LOGGER.log(9, '[%d] ADDING RESULT %s', _idx, _result)
+        _LOGGER.log(8, '[%d] ADDING RESULT %s', _idx, _result)
         _path = _result.get('path_cache')
         if not _path:
             _path_dict = _result.get('path') or {}
@@ -189,23 +264,15 @@ def find_pub_files(
         _path = abs_path(_path, root=pipe.JOBS_ROOT)
         if not passes_filter(_path, filter_):
             continue
-        _paths.append((_path, _result))
-    _paths.sort(key=operator.itemgetter(0))
-    _LOGGER.debug(' - FOUND %d PATHS', len(_paths))
-
-    # Convert into output objects
-    _outs = []
-    for _idx, (_path, _result) in qt.progress_bar(
-            enumerate(_paths), 'Converting {:d} paths', show=progress):
-        _LOGGER.log(9, '[%d] PATH %s', _idx, _path)
-        _out = pipe.to_output(_path, job=_job, catch=True)
-        _LOGGER.log(9, ' - OUT %s', _out)
-        if not _out:
-            _LOGGER.log(9, ' - REJECTED %s', _path)
+        if _path in _paths:
             continue
-        to_pub_file_data(_out, data=_result, force=True)  # Update cache
-        _LOGGER.log(9, ' - ACCEPTED %s', _path)
-        _outs.append(_out)
+        _paths[_path] = _result
+    _paths = sorted(_paths.items(), key=operator.itemgetter(0))
+    _LOGGER.debug(
+        ' - FOUND %d PATHS (%.01fs)', len(_paths), time.time() - _p_start)
+
+    _outs = _build_outputs(
+        job=_job, results=_paths, progress=progress, use_cache=use_cache)
     _outs.sort()
     _LOGGER.debug(
         ' - FOUND %d OUTS IN %.01fs', len(_outs), time.time() - _start)

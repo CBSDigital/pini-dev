@@ -1,3 +1,20 @@
+## [1.11.0] - Tue 2024-03-19 14:27
+### Summary
+ - Pini Helper:
+    - added output template caching to improve speed,
+### Updated
+ - pini.utils.nice_age depth as 2 by default,
+ - pini.pipe.CPTemplate.source added attribute,
+ - pini.pipe.CPJob.find_template_by_pattern added,
+ - pini.pipe.CPJob.find_templates added pattern filter,
+ - pini.pipe.CPJob.find_outputs added progress flag,
+ - pini.pipe.CPJob._read_outputs_sg pass template to output init,
+ - pini.pipe.CPJob.get_sg_output_template_map added,
+ - pini.pipe.shotgrid.find_pub_files added use_cache flag + output template map cache,
+ - pini.qt.progress_bar block update if val unchanged,
+ - pini.tools.PRTest.run logger prints last exec dur,
+
+
 ## [1.10.0] - Tue 2024-03-19 10:27
 ### Summary
  - Pini Helper:
