@@ -36,6 +36,9 @@ class TestPublish(unittest.TestCase):
 
         dcc.new_scene(force=True)
 
+        if not helper.is_active():
+            helper.launch()
+
         _job_c = pipe.CACHE.obt_job(testing.TEST_JOB)
         assert isinstance(_job_c, cache.CCPJob)
         assert _job_c.exists()

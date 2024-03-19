@@ -94,16 +94,17 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _LOGGER.info('PUBLISH force=%d', force)
 
         # Read options/outputs
-        _work = work or pipe.cur_work()
+        _work = work or pipe.CACHE.cur_work
         _metadata = metadata or self.obtain_metadata(
             work=_work, force=force, sanity_check_=sanity_check_)
+        _LOGGER.info(' - OBTAINED METADATA %s', _metadata)
         _pub = _work.to_output('publish', output_type=None)
         _LOGGER.info(' - OUTPUT %s', _pub.path)
 
         if self.ui:
             self.ui.save_settings()
         _pub.delete(wording='Replace', force=force)
-        _work.save(reason='publish', force=True)
+        _work.save(reason='publish', force=True, update_outputs=False)
 
         self._clean_scene(references=references)
 

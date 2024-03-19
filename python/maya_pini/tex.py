@@ -7,7 +7,7 @@ import six
 from maya import cmds
 
 from pini import qt
-from pini.utils import single, File, Dir, abs_path, EMPTY
+from pini.utils import single, File, Dir, abs_path, EMPTY, Image
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import DEFAULT_NODES, to_namespace
@@ -76,13 +76,14 @@ class _Shader(pom.CNode):
         _shd.to_se(create=True)
         return _shd
 
-    def set_col(self, col):
+    def set_col(self, col, colspace=None):
         """Set colour of this shader.
 
         Args:
             col (str|File): colour to apply - can be:
              - name of colour (eg. IndianRed)
              - path to file texture to apply
+            colspace (str): colourspace for file node (if applicable)
         """
         if isinstance(col, six.string_types):
             _col = qt.to_col(col)
@@ -90,6 +91,8 @@ class _Shader(pom.CNode):
         elif isinstance(col, File):
             _file = self.to_file(create=True)
             _file.plug['fileTextureName'].set_val(col.path)
+            if colspace:
+                _file.plug['colorSpace'].set_val(colspace)
         else:
             raise ValueError(col)
 
@@ -112,11 +115,11 @@ class _Shader(pom.CNode):
         """Obtain file texture name for this shader (ie. path to texture).
 
         Returns:
-            (File): file texture name
+            (Image): file texture name
         """
         _file = self.to_file()
         assert _file
-        return File(_file.plug['fileTextureName'].get_val())
+        return Image(_file.plug['fileTextureName'].get_val())
 
     def to_geo(self):
         """Find geometry using this shader.
@@ -170,12 +173,13 @@ class _SurfaceShader(_Shader):
     col_attr = 'outColor'
 
 
-def create_lambert(name='lambert', col=None):
+def create_lambert(name='lambert', col=None, colspace='Raw'):
     """Create a lambert texture.
 
     Args:
         name (str): texture node name
         col (CColor|str|File): colour to apply
+        colspace (str): colourspace for file node (if applicable)
 
     Returns:
         (Lambert): lambert texture
@@ -186,7 +190,7 @@ def create_lambert(name='lambert', col=None):
     _shd = _Lambert(_node)
     _LOGGER.debug(' - SHD %s', _shd)
     if col:
-        _shd.set_col(col)
+        _shd.set_col(col, colspace=colspace)
     return _shd
 
 
@@ -274,7 +278,7 @@ def to_ftn(base, ver_n=None, extn='jpg'):
     _base = base.replace(':', '_')
     return to_ftn_root().to_file('{base}{ver}.{extn}'.format(
         base=_base, extn=extn,
-        ver='v{:03d}'.format(ver_n) if ver_n else ''))
+        ver='_v{:03d}'.format(ver_n) if ver_n else ''))
 
 
 def to_ftn_root():

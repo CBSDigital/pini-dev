@@ -1,3 +1,24 @@
+## [1.10.0] - Tue 2024-03-19 10:27
+### Summary
+ - Pini Helper:
+    - no outputs update on blast/cache/publish to improve speed (mkim),
+### Updated
+ - pini.dcc.load use lower extn for valid extn match,
+ - pini.dcc added unreal handling,
+ - pini.dcc maya basic/lookdev publish disable update outputs on pre-save,
+ - pini.pipe.CPWork.to_output added want_key as kwarg for clarity,
+ - pini.pipe.cache.CCPWork.save added update_outputs arg,
+ - maya_pini.m_pipe blast/cache disable update outputs on pre-save,
+ - maya_pini.open_maya.to_mesh added class_ arg,
+ - maya_pini.open_maya.to_p added plug handling for pivots,
+ - maya_pini.open_maya.CBaseNode.break_connections added,
+ - maya_pini.open_maya.CMesh n_faces/n_vtxs/to_faces added,
+ - maya_pini.open_maya find_ref/find_refs added task filter,
+ - maya_pini.tex.create_lambert added colspace arg,
+ - maya_pini.tex.Shader.to_ftn returns Image,
+ - maya_pini.tex.to_ftn include work file version,
+
+
 ## [1.9.0] - Tue 2024-03-12 13:26
 ### Summary
  - Pini Install:

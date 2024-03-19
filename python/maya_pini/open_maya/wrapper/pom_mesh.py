@@ -42,6 +42,24 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         if _shp.object_type() != 'mesh':
             raise ValueError('Bad shape {}'.format(_shp))
 
+    @property
+    def n_faces(self):
+        """Obtain face count for this mesh.
+
+        Returns:
+            (int): face count
+        """
+        return cmds.polyEvaluate(self, face=True)
+
+    @property
+    def n_vtxs(self):
+        """Obtain vertex count for this mesh.
+
+        Returns:
+            (int): vertex count
+        """
+        return self.numVertices
+
     def closest_p(self, point):
         """Get the closest point on this mesh to the given point.
 
@@ -119,6 +137,18 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
             (str): face (eg. polySphere.f[0])
         """
         return self.shp.attr['f[{:d}]'.format(idx)]
+
+    def to_faces(self, idxs=None):
+        """Obtain list of faces for this mesh.
+
+        Args:
+            idxs (int list): override face indices
+
+        Returns:
+            (str list): face attributes
+        """
+        _idxs = idxs or range(self.n_faces)
+        return [self.to_face(_idx) for _idx in _idxs]
 
     def to_uv(self, idx):
         """Obtain the uv attribute for the given uv index.

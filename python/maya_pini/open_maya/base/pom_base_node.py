@@ -274,6 +274,12 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         from maya_pini import tex
         tex.to_shd(shd).apply_to(self)
 
+    def break_connections(self):
+        """Break incoming connections on this node."""
+        _plugs = [_dest for _, _dest in self.find_incoming()]
+        for _plug in _plugs:
+            _plug.break_connections()
+
     def delete(self):
         """Delete this node."""
         self.cmds.delete(self.node)

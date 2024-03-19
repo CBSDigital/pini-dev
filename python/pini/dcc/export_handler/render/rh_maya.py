@@ -11,7 +11,7 @@ from pini.utils import TMP_PATH, strftime, Seq, cache_result, wrap_fn
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import (
-    render, find_render_cam, find_cams, to_audio, to_render_extn)
+    render, to_audio, to_render_extn, find_cams)
 
 from . import rh_base
 
@@ -47,7 +47,7 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
-        _cam = find_render_cam(catch=True)
+        _cam = pom.find_render_cam(catch=True)
         if not _cam:
             _r_cams = find_cams(renderable=True, orthographic=False)
             if _r_cams:

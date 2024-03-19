@@ -216,7 +216,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             dcc_ (str): filter by dcc
             has_key (dict): dict of keys and whether that key should
                 be present in the template
-            want_key (list): list of keys which are preferred
+            want_key (dict): dict of keys which are preferred
                 but not necessary
 
         Returns:
@@ -245,9 +245,10 @@ class CPJob(cp_settings.CPSettingsLevel):
             for _key, _toggle in has_key.items():
                 _tmpls = [_tmpl for _tmpl in _tmpls
                           if (_key in _tmpl.keys()) == _toggle]
+            _LOGGER.debug(' - APPLIED HAS KEY %d %s', len(_tmpls), _tmpls)
 
         if want_key:
-            _LOGGER.debug(' - APPLY WANT KEYS %s %s', want_key, _tmpls)
+            _LOGGER.debug(' - APPLY WANT KEY %s %s', want_key, _tmpls)
             assert isinstance(want_key, dict)
             for _key, _toggle in want_key.items():
                 _matching_tmpls = [_tmpl for _tmpl in _tmpls
@@ -255,7 +256,7 @@ class CPJob(cp_settings.CPSettingsLevel):
                 if _matching_tmpls:
                     _tmpls = _matching_tmpls
                     _LOGGER.debug('   - ALLOWED %s FILTER', _key)
-            _LOGGER.debug(' - APPLIED WANT KEYS %d %s', len(_tmpls), _tmpls)
+            _LOGGER.debug(' - APPLIED WANT KEY %d %s', len(_tmpls), _tmpls)
 
         _tmpls = sorted(_tmpls, key=operator.attrgetter('name'))
         return _tmpls

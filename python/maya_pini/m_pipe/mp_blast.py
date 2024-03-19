@@ -58,7 +58,8 @@ def blast(
     # Execute blast
     _bkp = None
     if save:
-        _bkp = _work.save(reason='blast', force=True, result='bkp')
+        _bkp = _work.save(
+            reason='blast', force=True, result='bkp', update_outputs=False)
         _LOGGER.info(' - BKP %s', _bkp)
     u_blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,

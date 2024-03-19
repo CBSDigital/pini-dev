@@ -198,10 +198,20 @@ class CCPWork(CPWork):
             self.metadata.get('user'))
 
     @functools.wraps(CPWork.save)
-    def save(self, *args, **kwargs):
-        """Save this work."""
-        _result = kwargs.pop('result', 'this')
-        _LOGGER.info('SAVE %s result=%s', self, _result)
+    def save(self, result='this', update_outputs=True, **kwargs):
+        """Save this work.
+
+        Args:
+            result (str): what result to return
+                this - this work file (CPWork)
+                bkp - backup file (CPWorkBkp)
+            update_outputs (bool): update workfile outputs on save (disable
+                for save preceeding a publish)
+
+        Returns:
+            (CPWork): work file
+        """
+        _LOGGER.info('SAVE %s result=%s', self, result)
         from pini import pipe
         from pini.pipe import cache
 
@@ -214,7 +224,7 @@ class CCPWork(CPWork):
         _LOGGER.debug(' - ENTITY %s', self.entity)
         _LOGGER.debug(' - WORK DIR %s', self.work_dir)
 
-        _bkp = super(CCPWork, self).save(*args, **kwargs)
+        _bkp = super(CCPWork, self).save(**kwargs)
         self._exists = True
         assert File(self).exists()
         assert self.exists()
@@ -242,15 +252,16 @@ class CCPWork(CPWork):
         _LOGGER.debug(' - CUR WORK %s', pipe.CACHE.cur_work)
 
         # Reread outputs
-        self.find_outputs(force=True)
+        if update_outputs:
+            self.find_outputs(force=True)
 
         # Return result
-        if _result == 'this':
+        if result == 'this':
             _val = _this_work
-        elif _result == 'bkp':
+        elif result == 'bkp':
             _val = _bkp
         else:
-            raise ValueError(_result)
+            raise ValueError(result)
         return _val
 
     def set_metadata(self, data):

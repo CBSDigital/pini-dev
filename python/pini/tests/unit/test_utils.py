@@ -399,7 +399,7 @@ class TestPath(unittest.TestCase):
 
         # Test write objects
         _work = testing.TEST_SHOT.to_work(task='test')
-        _out = _work.to_output('publish', want_key={'output_type': False})
+        _out = _work.to_output('publish', want_key={'output_type': False, 'ver': True})
         _notes = release.PRNotes('Release', 'module: notes')
         for _obj in [_out, _notes]:
             _file = Dir(TMP_PATH).to_file('test.yml')

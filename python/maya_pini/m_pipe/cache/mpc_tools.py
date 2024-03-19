@@ -162,7 +162,7 @@ def cache(
     # Setup cache
     _outs = _setup_cache(cacheables=cacheables, force=force, extn=extn)
     if save and not dcc.batch_mode():
-        _work.save(reason='cache', force=True)
+        _work.save(reason='cache', force=True, update_outputs=False)
     if snapshot:
         _take_snapshot(image=_work.image, frame=int(sum(_range)/2))
         _updated = True

@@ -5,6 +5,7 @@ import logging
 from maya import cmds
 from maya.api import OpenMaya as om
 
+from pini import pipe
 from pini.utils import basic_repr, single, check_heart, passes_filter
 from maya_pini import ref
 
@@ -208,7 +209,7 @@ def create_ref(file_, namespace, force=False):
 
 
 def find_ref(
-        match=None, namespace=None, selected=False, unloaded=False,
+        match=None, namespace=None, selected=False, unloaded=False, task=None,
         catch=True):
     """Find a reference in the current scene.
 
@@ -218,13 +219,15 @@ def find_ref(
         selected (bool): filter by selected refs
         unloaded (bool): filter by loaded status (only loaded reference
             are returned by default)
+        task (str): filter by task
         catch (bool): no error if no matching reference found
 
     Returns:
         (CReference|None): matching reference (if any)
     """
     _refs = find_refs(
-        selected=selected, namespace=namespace, unloaded=unloaded)
+        selected=selected, namespace=namespace, unloaded=unloaded,
+        task=task)
 
     # Try match as filter
     if match and len(_refs) > 1:
@@ -242,7 +245,7 @@ def find_ref(
     return single(_refs, catch=catch)
 
 
-def find_refs(namespace=None, selected=False, unloaded=False):
+def find_refs(namespace=None, selected=False, unloaded=False, task=None):
     """Find references in the current scene.
 
     Args:
@@ -250,6 +253,7 @@ def find_refs(namespace=None, selected=False, unloaded=False):
         selected (bool): return only selected references
         unloaded (bool): filter by loaded status (only loaded reference
             are returned by default)
+        task (str): filter by task
 
     Returns:
         (CReference list): references
@@ -262,6 +266,7 @@ def find_refs(namespace=None, selected=False, unloaded=False):
     _LOGGER.debug(' - REFS %s', _refs)
     _c_refs = []
     for _ref in _refs:
+
         _LOGGER.debug(' - ADDING %s', _ref)
         try:
             _c_ref = CReference(_ref.ref_node)
@@ -269,8 +274,15 @@ def find_refs(namespace=None, selected=False, unloaded=False):
             continue
         if namespace and _ref.namespace != namespace:
             continue
+
+        if task:
+            _out = pipe.to_output(_ref.path)
+            if not _out or _out.task != task:
+                continue
+
         _c_refs.append(_c_ref)
         _LOGGER.debug('   - CREATED %s', _c_ref)
+
     return _c_refs
 
 

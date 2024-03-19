@@ -9,7 +9,7 @@ import logging
 _LOGGER = logging.getLogger(__name__)
 
 DCC = None
-DCCS = ['maya', 'nuke', 'hou', 'c4d', 'flame', 'blender']
+DCCS = ['maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal']
 
 _LOGGER.debug('IMPORT DCC')
 
@@ -54,6 +54,13 @@ if not DCC:
         DCC = BlenderDCC()
     except ImportError as _exc:
         _LOGGER.debug(' - BLENDER REJECTED %s', _exc)
+
+if not DCC:
+    try:
+        from .d_unreal import UnrealDCC
+        DCC = UnrealDCC()
+    except ImportError as _exc:
+        _LOGGER.debug(' - UNREAL REJECTED %s', _exc)
 
 if not DCC:
     from . import d_base

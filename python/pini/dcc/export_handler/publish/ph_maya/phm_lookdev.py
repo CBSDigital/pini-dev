@@ -104,7 +104,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         """
         _LOGGER.info('LOOKDEV PUBLISH')
 
-        _work = work or pipe.cur_work()
+        _work = work or pipe.CACHE.cur_work
         _pub = _work.to_output('publish', output_type='lookdev')
         _data_dir = _pub.to_dir().to_subdir('data')
         _outs = []
@@ -114,7 +114,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
 
         _metadata = self.obtain_metadata(force=force)
-        _work.save(reason='lookdev publish', force=True)
+        _work.save(reason='lookdev publish', force=True, update_outputs=False)
 
         # Check scene
         _clean_junk()

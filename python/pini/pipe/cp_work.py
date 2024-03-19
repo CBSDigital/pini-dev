@@ -476,8 +476,9 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         if _seqs:
             _seqs[0].build_thumbnail(self.image)
 
-    def save(self, notes=None, reason=None, mtime=None, parent=None,
-             force=None):
+    def save(
+            self, notes=None, reason=None, mtime=None, parent=None,
+            force=None):
         """Save this work version.
 
         Args:
@@ -697,13 +698,16 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         self.set_env()
 
     def to_output(
-            self, template, has_key=None, dcc_=None, ver_n=None, **kwargs):
+            self, template, has_key=None, want_key=None, dcc_=None, ver_n=None,
+            **kwargs):
         """Build an output from this work file's template data.
 
         Args:
             template (CPTemplate): output template to use
             has_key (dict): dict of keys and whether that key should
                 be present in the template
+            want_key (dict): dict of keys and whether that key are desired
+                in the template
             dcc_ (str): filter by dcc
             ver_n (int): apply version number
 
@@ -730,22 +734,11 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _data.update(kwargs)
         _LOGGER.debug(' - DATA %s', _data)
 
-        # Get template
-        if isinstance(template, pipe.CPTemplate):
-            _tmpl = template
-        elif isinstance(template, six.string_types):
-            _want_key = {}
-            for _key in ['output_name', 'output_type', 'tag']:
-                if _key in _data:
-                    _want_key[_key] = bool(_data[_key])
-            _LOGGER.debug(' - WANT KEY %s', _want_key)
-            _tmpl = self.find_template(
-                template, dcc_=_dcc, has_key=has_key, want_key=_want_key)
-        else:
-            raise ValueError(template)
-        _LOGGER.debug(' - TEMPLATE %s', _tmpl)
-
         # Get output class
+        _tmpl = self._to_output_template(
+            template=template, want_key=want_key, has_key=has_key,
+            dcc_=_dcc, data=_data)
+        _LOGGER.debug(' - TEMPLATE %s', _tmpl)
         if _tmpl.type_ in pipe.OUTPUT_TEMPLATE_TYPES:
             _class = pipe.CPOutput
         elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TEMPLATE_TYPES:
@@ -764,6 +757,40 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         return _class(_path, templates=[_tmpl], entity=self.entity,
                       work_dir=_work_dir)
+
+    def _to_output_template(
+            self, template, has_key, want_key, dcc_, data):
+        """To locate template for output.
+
+        Args:
+            template (CPTemplate): output template to use
+            has_key (dict): dict of keys and whether that key should
+                be present in the template
+            want_key (dict): dict of keys and whether that key are desired
+                in the template
+            dcc_ (str): filter by dcc
+            data (dict): data to apply to template
+
+        Returns:
+            (CPTemplate): output template
+        """
+        from pini import pipe
+
+        if isinstance(template, pipe.CPTemplate):
+            return template
+
+        if isinstance(template, six.string_types):
+            _want_key = {}
+            for _key in ['output_name', 'output_type', 'tag']:
+                if _key in data:
+                    _want_key[_key] = bool(data[_key])
+            if want_key:
+                _want_key.update(want_key)
+            _LOGGER.debug(' - WANT KEY %s', _want_key)
+            return self.find_template(
+                template, dcc_=dcc_, has_key=has_key, want_key=_want_key)
+
+        raise ValueError(template)
 
     def to_work(
             self, task=None, tag=EMPTY, user=EMPTY, ver_n=None, class_=None):

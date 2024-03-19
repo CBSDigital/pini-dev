@@ -340,23 +340,29 @@ def set_to_tfms(set_):
     return _tfms
 
 
-def to_mesh(node):
+def to_mesh(node, class_=None):
     """Obtain a mesh object from the given data.
 
     Args:
         node (str|CMesh): object to map to a mesh
+        class_ (class): override mesh class
 
     Returns:
         (CMesh): matching mesh
     """
     from maya_pini import open_maya as pom
-    if isinstance(node, six.string_types):
-        return pom.CMesh(node)
-    if isinstance(node, pom.CMesh):
-        return node
-    if isinstance(node, pom.CTransform):
-        return pom.CMesh(str(node))
-    raise ValueError(node)
+    _class = class_ or pom.CMesh
+    _node = node
+    if isinstance(_node, six.string_types):
+        _type = cmds.objectType(_node)
+        if _type == 'mesh':
+            _node = to_parent(_node)
+        return _class(_node)
+    if isinstance(_node, _class):
+        return _node
+    if isinstance(_node, pom.CTransform):
+        return _class(str(_node))
+    raise ValueError(_node)
 
 
 def to_mobject(node):
@@ -494,13 +500,20 @@ def to_p(*args):
     """
     from maya_pini import open_maya as pom
 
-    if len(args) == 1 and isinstance(args[0], (
+    if len(args) == 1:
+
+        _arg = single(args)
+        if isinstance(_arg, om.MPoint):
+            return pom.CPoint(_arg)
+
+        # Read point from object
+        if isinstance(_arg, (
                 six.string_types,
                 pom.CBaseNode,
                 pom.CPlug)):
-        _obj = single(args)
-        _val = cmds.xform(_obj, query=True, worldSpace=True, translation=True)
-        return pom.CPoint(_val)
+            _val = cmds.xform(
+                _arg, query=True, worldSpace=True, translation=True)
+            return pom.CPoint(_val)
 
     if len(args) == 3:
         return pom.CPoint(*args)

@@ -399,7 +399,7 @@ class BaseDCC(object):
             lazy (bool): don't load if file is already open
         """
         _file = File(file_)
-        if _file.extn not in self.VALID_EXTNS:
+        if _file.extn.lower() not in self.VALID_EXTNS:
             raise RuntimeError('Invalid file '+_file.path)
         if lazy and _file.path == self.cur_file():
             _LOGGER.info('Lazy load - scene currently open')
