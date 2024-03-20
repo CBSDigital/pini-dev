@@ -158,7 +158,8 @@ def _build_outputs(job, results, progress, use_cache=True):
     _o_start = time.time()
     _outs = []
     for _idx, (_path, _result) in qt.progress_bar(
-            enumerate(results), 'Converting {:d} paths', show=progress):
+            enumerate(results), 'Converting {:d} paths', show=progress,
+            stack_id='BuildingShotgridOutputs'):
 
         _LOGGER.log(9, '[%d] PATH %s', _idx, _path)
 
@@ -253,7 +254,8 @@ def find_pub_files(
     _p_start = time.time()
     _paths = {}
     for _idx, _result in qt.progress_bar(
-            enumerate(_results), 'Checking {:d} results', show=progress):
+            enumerate(_results), 'Checking {:d} results', show=progress,
+            stack_id='CheckShotgridPaths'):
         _LOGGER.log(8, '[%d] ADDING RESULT %s', _idx, _result)
         _path = _result.get('path_cache')
         if not _path:

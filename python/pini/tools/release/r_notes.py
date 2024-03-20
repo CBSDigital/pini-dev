@@ -37,8 +37,7 @@ class PRNotes(object):
 
                 _LOGGER.debug(' - CHECKING LINE %s', _line)
 
-                _line = _line.strip(',')
-                _line = _line.rstrip()
+                _line = _line.rstrip(', \n')
 
                 # Check head
                 if (
@@ -56,6 +55,10 @@ class PRNotes(object):
                         not _line[-1].isalpha() and
                         not _line[-1].isdigit() and
                         not _line[-1] in '):_]'):
+                    _LOGGER.info(
+                        'FAILED %d %d %d "%s" "%s"', _line[-1].isalpha(),
+                        _line[-1].isdigit(), not _line[-1] in '):_]',
+                        _line[-1], _line)
                     raise ValueError(_line)
                 assert '"' not in _line
 

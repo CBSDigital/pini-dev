@@ -31,4 +31,6 @@ from .pom_skeleton import (
 from .pom_render_layer import (
     find_render_layers, CRenderLayer, cur_render_layer)
 
+from .cpnt_mesh import PCpntMesh, to_uv, PUV
+
 LOC_SCALE = 1.0

@@ -19,6 +19,7 @@ from .cp_output import OUTPUT_TEMPLATE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 _TASK_MAP = {
+
     'animation': 'anim',
     'ani': 'anim',
     'anm': 'anim',
@@ -27,6 +28,10 @@ _TASK_MAP = {
     'mat': 'lookdev',
     'lgt': 'lighting',
     'trk': 'tracking',
+
+    'ani/rig': 'rig',
+    'lgt/mod': 'model',
+    'lgt/surf': 'lookdev',
 }
 
 
@@ -587,7 +592,11 @@ def map_task(task, step=None, fmt='pini'):
     if fmt == 'local':
         _task = task
     elif fmt == 'pini':
-        _task = _TASK_MAP.get(step) or _TASK_MAP.get(task) or task
+        _task = (
+            _TASK_MAP.get('{}/{}'.format(step, task)) or
+            _TASK_MAP.get(step) or
+            _TASK_MAP.get(task) or
+            task)
     else:
         raise ValueError(fmt)
     return _task

@@ -1,3 +1,20 @@
+## [1.12.0] - Wed 2024-03-20 16:30
+### Summary
+ - Pini Helper:
+    - rig/surface publish added handling for redshift lights (cstewart),
+### Updated
+ - pini.dcc.CMayaLookdevRef._apply_lights added RedshiftPhysicalLight handling,,
+ - pini.pipe.map_task added special step/task cases for shot rig/surf/mod tasks,
+ - pini.pipe.cache.CCPJob work_dirs/outputs made non-sg specific,
+ - pini.pipe.cache.CCPJob.find_outputs added progress flag,
+ - pini.pipe.cache.CCPJob._read_outputs_sg progress gave unique stack_key,
+ - pini.pipe.shotgrid.find_pub_files progress gave unique stack_key,
+ - pini.tools.helper.output_to_icon bugfix error on apply shot lookdev,
+ - maya_pini.m_pipe.read_cache_set added lights mode handling for RedshiftPhysicalLight,
+ - maya_pini.open_maya added PCpntMesh/to_uv/PUV,
+ - maya_pini.open_maya.find_render_layers ignore lyrs w/o pass name,
+
+
 ## [1.11.0] - Tue 2024-03-19 14:27
 ### Summary
  - Pini Helper:

@@ -103,7 +103,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPWorkDir tuple): work dirs
         """
-        return tuple(self._read_work_dirs_sg())
+        return tuple(self.find_work_dirs())
 
     @property
     def outputs(self):
@@ -114,7 +114,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPWorkDir tuple): outputs
         """
-        return tuple(self._read_outputs_sg())
+        return tuple(self.find_outputs())
 
     @pipe_cache_result
     def find_asset_types(self, force=False):
@@ -525,18 +525,21 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             time.time() - _start)
         return _work_dirs
 
-    def find_outputs(self, type_=None, force=False, **kwargs):
+    def find_outputs(self, type_=None, force=False, progress=False, **kwargs):
         """Find outputs in this job.
 
         Args:
             type_ (str): filter by output type
             force (bool): force reread outputs
+            progress (bool): show progress dialog
 
         Returns:
             (CPOutput list): outputs
         """
+        _LOGGER.debug(
+            'FIND OUTPUTS type=%s force=%d progress=%d', type_, force, progress)
         if force:
-            self._read_outputs_sg(force=True, progress=kwargs.get('progress'))
+            self._read_outputs_sg(force=True, progress=progress)
         return super(CCPJob, self).find_outputs(type_=type_, **kwargs)
 
     @pipe_cache_result
@@ -550,6 +553,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CCPOutput list): outputs
         """
+        _LOGGER.debug('READ OUTPUTS SG %s', self)
         from pini import pipe, qt
         from pini.pipe import cache
 
@@ -561,7 +565,8 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _r_start = time.time()
         _c_outs = []
         for _out in qt.progress_bar(
-                _outs, 'Registering {:d} outs', show=progress):
+                _outs, 'Registering {:d} outs', show=progress,
+                stack_key='RegisteringJobOutputs'):
 
             _LOGGER.debug(' - ADD OUT %s', _out)
 

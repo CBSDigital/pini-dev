@@ -64,7 +64,7 @@ def read_cache_set(mode='geo'):
                 continue
             _type = _node.shp.object_type()
             _LOGGER.debug('   - TYPE %s', _type)
-            if _type not in ['VRayLightSphereShape']:
+            if _type not in ['VRayLightSphereShape', 'RedshiftPhysicalLight']:
                 continue
         else:
             raise NotImplementedError(mode)

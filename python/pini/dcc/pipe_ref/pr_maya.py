@@ -321,8 +321,10 @@ class CMayaLookdevRef(CMayaReference):
 
             # Set light enabled/disabled based on whether target exists
             _en = bool(_trg)
+            _type = _light.shp.object_type()
+            _plug = {'RedshiftPhysicalLight': 'on'}.get(_type, 'enabled')
             _light.set_visible(_en)
-            _light.shp.plug['enabled'].set_val(_en)
+            _light.shp.plug[_plug].set_val(_en)
 
     def _apply_shaders(self, shds, ref_):
         """Apply shaders to target ref.

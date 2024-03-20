@@ -95,6 +95,8 @@ def find_render_layers(referenced=False, renderable=None):
     for _lyr in cmds.ls(type='renderLayer'):
         _LOGGER.debug('CHECKING LAYER %s', _lyr)
         _lyr = CRenderLayer(_lyr)
+        if not _lyr.pass_name:
+            continue
         if referenced is not None and _lyr.is_referenced() != referenced:
             continue
         if renderable is not None and _lyr.is_renderable() != renderable:

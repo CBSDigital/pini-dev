@@ -137,13 +137,15 @@ def _lookdev_to_icon(lookdev):
     Returns:
         (CPixmap): icon
     """
+    _LOGGER.debug('LOOKDEV TO ICON %s', lookdev)
     assert lookdev.type_ == 'publish'
 
     # Find rig icon
     _tmpl = lookdev.job.find_template(
-        'publish', profile='asset',
+        'publish', profile=lookdev.profile,
         want_key={'output_type': False, 'ver': False},
         has_key={'tag': bool(lookdev.tag)})
+    _LOGGER.debug(' - TMPL %s', _tmpl)
     _rig_out = lookdev.to_output(task='rig', template=_tmpl)
     _asset_icon = output_to_icon(_rig_out)
 
