@@ -1,5 +1,9 @@
 """Tools for managing mesh UVs."""
 
+import six
+
+from maya import cmds
+
 from pini.utils import basic_repr
 
 
@@ -14,6 +18,9 @@ def to_uv(uv):
     """
     if isinstance(uv, PUV):
         return uv
+    if isinstance(uv, six.string_types):
+        _vals = cmds.polyEditUV(uv, query=True)
+        return PUV(_vals)
     return PUV(uv)
 
 
@@ -70,4 +77,6 @@ class PUVBBox(object):
             uv.v <= self.max.v)
 
     def __repr__(self):
-        return basic_repr(self, '{} - {}'.format(self.min, self.max))
+        _label = '({:.02f}, {:.02f}) -> ({:.02f}, {:.02f})'.format(
+            self.min.u, self.min.v, self.max.u, self.max.v)
+        return basic_repr(self, _label)

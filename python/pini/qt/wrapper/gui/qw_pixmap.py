@@ -58,6 +58,24 @@ class CPixmap(QtGui.QPixmap):
         """
         return self.rect().center()
 
+    def crop(self, top=0, bottom=0, left=0, right=0):
+        """Apply crop to this pixmap.
+
+        Args:
+            top (int): crop pixels from top
+            bottom (int): crop pixels from bottom
+            left (int): crop pixels from left
+            right (int): crop pixels from right
+
+        Returns:
+            (QPixmap): cropped pixmap
+        """
+        from pini import qt
+        _pos = qt.to_p(left, top)
+        _size = qt.to_size(self.width() - right, self.height() - bottom)
+        _rect = qt.to_rect(pos=_pos, size=_size)
+        return qt.to_pixmap(self.copy(_rect))
+
     def draw_dot(self, pos, col='Black', radius=1.0, outline=None,
                  anchor='C'):
         """Draw a circular dot on this pixmap.

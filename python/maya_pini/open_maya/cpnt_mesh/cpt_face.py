@@ -4,7 +4,7 @@ from maya import cmds
 
 from pini.utils import single, basic_repr
 
-from . import pom_uv, pom_vertex
+from . import cpt_uv, cpt_vertex
 
 
 class PFace(object):
@@ -47,7 +47,7 @@ class PFace(object):
         Returns:
             (bool): whether contained
         """
-        _bbox = pom_uv.PUVBBox(self.uvs)
+        _bbox = cpt_uv.PUVBBox(self.uvs)
         return _bbox.contains(uv)
 
     def to_vtxs(self):
@@ -58,7 +58,7 @@ class PFace(object):
         """
         _, _v_str = single(cmds.polyInfo(self, faceToVertex=True)).split(':')
         _v_idxs = [int(_token) for _token in _v_str.split()]
-        return [pom_vertex.PVertex(
+        return [cpt_vertex.PVertex(
             idx=_v_idx, mesh=self.mesh) for _v_idx in _v_idxs]
 
     def __str__(self):

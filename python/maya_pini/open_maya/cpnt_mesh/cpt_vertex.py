@@ -2,7 +2,7 @@
 
 from pini.utils import basic_repr
 
-from . import pom_uv
+from . import cpt_uv
 
 
 def to_vtx(vtx):
@@ -38,7 +38,7 @@ class PVertex(object):
         Returns:
             (PUV): uv
         """
-        return pom_uv.PUV(self.mesh.getUV(self.idx))
+        return cpt_uv.PUV(self.mesh.getUV(self.idx))
 
     def __str__(self):
         return '{}.vtx[{:d}]'.format(self.mesh, self.idx)

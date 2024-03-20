@@ -361,6 +361,8 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
             _result = QtCore.QSize(_size.x(), _size.y())
         elif isinstance(_size, QtCore.QPointF):
             _result = QtCore.QSizeF(_size.x(), _size.y())
+        elif isinstance(_size, QtGui.QVector2D):
+            _result = QtCore.QSizeF(abs(_size.x()), abs(_size.y()))
         elif isinstance(_size, (tuple, list)):
             _result = QtCore.QSize(_size[0], _size[1])
         elif isinstance(_size, six.string_types):

@@ -3,5 +3,6 @@
 This is an mesh with access to all its components (eg. faces, vertices, uvs).
 """
 
-from .pom_cpnt_mesh import PCpntMesh
-from .pom_uv import to_uv, PUV
+from .cpt_mesh import PCpntMesh
+from .cpt_uv import to_uv, PUV
+from .cpt_vertex import to_vtx

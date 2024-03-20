@@ -1,8 +1,12 @@
+import logging
+import math
 import unittest
 
 from pini import qt
 from pini.qt import QtCore
 from pini.utils import File
+
+_LOGGER = logging.getLogger(__name__)
 
 _BLAH = False
 _DIR = File(__file__).to_dir()
@@ -41,6 +45,17 @@ class TestQt(unittest.TestCase):
         assert isinstance(_pt - _pt, qt.CPointF)
         _pt -= _pt
         assert isinstance(_pt, qt.CPointF)
+
+    def test_cvector2d(self):
+
+        for _angle in range(0, 361, 45):
+            _rad = math.radians(_angle)
+            _vec = qt.CVector2D(
+                100*math.sin(_rad),
+                -100*math.cos(_rad),
+            )
+            _LOGGER.info(' - %10s %30s %.02f', _angle, _vec, _vec.bearing())
+            assert _angle == _vec.bearing()
 
     def test_list_widget(self):
 
