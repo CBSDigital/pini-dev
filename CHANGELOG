@@ -1,3 +1,13 @@
+## [1.14.0] - Thu 2024-03-21 10:36
+### Summary
+ - Shotgrid Tools:
+    - added job search function,
+### Updated
+ - pini.pipe.shotgrid.find_job added,
+ - maya_pini.open_maya.find_nodes apply cast_node,
+ - maya_pini.tex.to_shd added surfaceShader handling,
+
+
 ## [1.13.0] - Wed 2024-03-20 16:48
 ### Summary
  - Pini Helper:

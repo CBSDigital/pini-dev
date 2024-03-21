@@ -316,6 +316,8 @@ def to_shd(obj):
         _se = single(_ses, catch=True)
     elif _type == 'lambert':
         _shd = _Lambert(_node)
+    elif _type == 'surfaceShader':
+        _shd = _SurfaceShader(_node)
     elif _type == 'shadingEngine':
         _se = _node
     elif _type in ['VRayMtl']:

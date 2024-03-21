@@ -69,6 +69,26 @@ def create_job(job, force=False):
     return [_sg.create('Project', _data)]
 
 
+def find_job(match):
+    """Find a single job by matching shotgrid data.
+
+    Args:
+        match (any): shotgrid data to match (eg. id)
+
+    Returns:
+        (CPJob): matching job
+    """
+    _jobs = find_jobs()
+
+    _id_match = single(
+        [_job for _job in _jobs if _job_to_data(_job)['id'] == match],
+        catch=True)
+    if _id_match:
+        return _id_match
+
+    raise ValueError(match)
+
+
 def find_jobs():
     """Find jobs.
 

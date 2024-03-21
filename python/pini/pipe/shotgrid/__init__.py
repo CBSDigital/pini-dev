@@ -9,7 +9,7 @@ from .sg_handler import (
     upload_filmstrip_thumbnail)
 
 from .sg_job import (
-    to_job_data, to_job_filter, create_job, to_job_id, find_jobs)
+    to_job_data, to_job_filter, create_job, to_job_id, find_jobs, find_job)
 from .sg_sequence import (
     to_sequence_filter, to_sequence_data, create_sequence, to_sequence_id,
     find_sequences)

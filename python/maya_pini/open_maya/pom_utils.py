@@ -189,7 +189,7 @@ def find_connections(
 
 def find_nodes(
         type_=None, namespace=EMPTY, referenced=None, filter_=None,
-        clean_name=None):
+        clean_name=None, selected=False):
     """Find nodes in the current scene.
 
     Args:
@@ -198,6 +198,7 @@ def find_nodes(
         referenced (bool): filter by node referenced status
         filter_ (str): node name filter
         clean_name (str): filter by clean name
+        selected (bool): apply selection flag to ls command
 
     Returns:
         (CBaseNode list): nodes in scene
@@ -208,6 +209,8 @@ def find_nodes(
     _kwargs = {}
     if type_:
         _kwargs['type'] = type_
+    if selected:
+        _kwargs['selection'] = True
     _results = pom.CMDS.ls(**_kwargs)
 
     _nodes = []
@@ -220,6 +223,7 @@ def find_nodes(
             continue
         if clean_name and _node.clean_name != clean_name:
             continue
+        _node = cast_node(str(_node))
         _nodes.append(_node)
     return _nodes
 
