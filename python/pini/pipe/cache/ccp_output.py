@@ -131,6 +131,54 @@ class CCPOutput(CPOutput, CCPOutputBase):
         """
         return self._exists
 
+    def find_lookdev(self):
+        """Find matching lookdev for this output.
+
+        This is used to find a lookdev publish to attach to an abc export.
+        Any lookdev publish in the same asset should be allowed to attach to
+        to this output.
+
+        Lookdevs are matched in this order:
+         - matching tag
+         - default tag
+         - any tag
+
+        Returns:
+            (CPOutput): matching lookdev
+        """
+        from pini import pipe
+        _LOGGER.debug('FIND LOOKDEV %s', self)
+
+        # Find asset
+        _asset_path = pipe.map_path(self.metadata.get('asset'))
+        if not _asset_path:
+            _LOGGER.debug(' - NO ASSET FOUND')
+            return None
+        _out = pipe.to_output(_asset_path)
+        _out = pipe.CACHE.obt(_out)
+        _LOGGER.debug(' - ASSET %s', _out.entity)
+
+        # Find lookdevs
+        _lookdevs = _out.entity.find_publishes(task='lookdev')
+        _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
+        if not _lookdevs:
+            return None
+
+        # Match to tag
+        _tags = sorted(
+            {_lookdev.tag for _lookdev in _lookdevs}, key=pipe.tag_sort)
+        _default_tag = self.job.cfg['tokens']['tag']['default']
+        if _out.tag in _tags:
+            _tag = _out.tag
+        elif _default_tag in _tags:
+            _tag = _default_tag
+        else:
+            _tag = _tags[0]
+        _LOGGER.debug(' - TAG %s %s', _tag, _tags)
+        _lookdevs = [_lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
+
+        return _lookdevs[-1]
+
 
 class CCPOutputVideo(CPOutputVideo, CCPOutput):  # pylint: disable=too-many-ancestors
     """Represents an output video on disk with built in caching."""
@@ -201,21 +249,18 @@ class CCPOutputSeqDir(CPOutputSeqDir):
         return _out_seqs
 
     @pipe_cache_to_file
-    def find_seqs(self, depth=2, include_files=True, force=False):
+    def find_seqs(self, force=False, **kwargs):
         """Find file sequences within this dir.
 
         Args:
-            depth (int): search depth (in dirs)
-            include_files (bool): include files which are not
-                part of any sequence
             force (bool): force reread from disk
 
         Returns:
             (Seq|File list): matching seqs
         """
-        assert include_files
+        assert not kwargs
         _seqs = super(CCPOutputSeqDir, self).find_seqs(
-            include_files=include_files, depth=2)
+            include_files=True, depth=2)
         _LOGGER.debug('FIND SEQS force=%d n_seqs=%d %s', force,
                       len(_seqs), self)
         return _seqs

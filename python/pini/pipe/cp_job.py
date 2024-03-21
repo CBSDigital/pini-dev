@@ -979,10 +979,10 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPOutput list): outputs
         """
-        from pini.pipe import cp_entity
+        from pini import pipe
         _LOGGER.debug('FIND OUTPUTS %s', self)
 
-        if not (entity is None or isinstance(entity, cp_entity.CPEntity)):
+        if not (entity is None or isinstance(entity, pipe.ENTITY_TYPES)):
             raise TypeError(entity)
 
         _outs = []
@@ -990,7 +990,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             _LOGGER.debug(' - TESTING %s', _out)
             if type_ and _out.type_ != type_:
                 continue
-            if task and _out.task != task:
+            if task and task not in (_out.task, _out.pini_task):
                 continue
             if tag is not EMPTY and _out.tag != tag:
                 continue

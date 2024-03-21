@@ -37,5 +37,6 @@ SHOTGRID_AVAILABLE = bool(
     os.environ.get('PINI_SG_KEY') and
     os.environ.get('PINI_SG_URL'))
 SUBMIT_AVAILABLE = os.environ.get('PINI_PIPE_ENABLE_SUBMIT', False)
+ENTITY_TYPES = CPAsset, CPShot
 
 CACHE = cache.CPCache()

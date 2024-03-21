@@ -1,3 +1,17 @@
+## [1.15.0] - Thu 2024-03-21 14:39
+### Summary
+ - Pini Helper:
+    - bugfix not finding abc lookdev with tag mismatch (cstewart),
+    - added output right-click option to find asset,
+### Updated
+ - pini.pipe.ENTITY_TYPES added,
+ - pini.pipe.CPOutput.pini_task added,
+ - pini.pipe CPJob.find_outputs/CPEntity.find_outputs/CPEntity.find_publishes task match tests mapped task,
+ - pini.pipe moved CPOutput.find_lookdev -> cache.CCPOutput.find_lookdev to use cache,
+ - pini.pipe.cache.CCPOutputSeqDev disabled kwargs,
+ - pini.tools.helper added output ctx find asset opt,
+
+
 ## [1.14.0] - Thu 2024-03-21 10:36
 ### Summary
  - Shotgrid Tools:

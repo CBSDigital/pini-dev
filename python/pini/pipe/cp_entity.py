@@ -434,7 +434,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
                 continue
             if output_name and _out.output_name != output_name:
                 continue
-            if task and _out.task != task:
+            if task and task not in (_out.task, _out.pini_task):
                 continue
             if (
                     tag is not EMPTY and
@@ -723,7 +723,6 @@ class CPEntity(cp_settings.CPSettingsLevel):
         Returns:
             (CPOutput list): matching publishes
         """
-        from pini import pipe
 
         # Determine extns filter
         _extns = []
@@ -736,9 +735,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _pubs = []
         for _pub in self._read_publishes():
 
-            if task and (
-                    _pub.task != task and
-                    pipe.map_task(_pub.task) != task):
+            if task and task not in (_pub.task, _pub.pini_task):
                 continue
             if output_name and _pub.output_name != output_name:
                 continue
@@ -805,7 +802,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         Args:
             force (bool): remove contents without confirmation
         """
-        from pini import pipe, qt
+        from pini import qt, pipe
         super(CPEntity, self).flush(force=force)
 
         # Omit pub files in shotgrid

@@ -269,6 +269,13 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             menu.add_action(
                 'Find work file', wrap_fn(self.jump_to, _src),
                 icon=icons.FIND, enabled=bool(_src))
+            _asset = output.metadata.get('asset')
+            if _asset:
+                _asset = pipe.map_path(_asset)
+                _LOGGER.info(' - ASSET %s', _asset)
+                menu.add_action(
+                    'Find asset', wrap_fn(self.jump_to, _asset),
+                    icon=icons.FIND, enabled=bool(_src))
 
         # Add apply range option
         _rng = output.metadata.get('range')

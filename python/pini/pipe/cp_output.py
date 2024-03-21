@@ -61,6 +61,20 @@ class CPOutputBase(object):
     data = None
     template = None
 
+    @property
+    def pini_task(self):
+        """Obtain mapped/pini task.
+
+        This accomodates for different task labelling at different sites.
+
+        eg. a surf/dev task is identified in pini as lookdev
+
+        Returns:
+            (str): pini task
+        """
+        from pini import pipe
+        return pipe.map_task(task=self.task, step=self.step)
+
     def _extract_data_from_templates(
             self, job, entity, types, templates=None, template=None, task=None):
         """Match path with a template and extract data.
@@ -73,7 +87,7 @@ class CPOutputBase(object):
             template (CPTemplate): force template to use
             task (str): apply task (if known)
         """
-        _LOGGER.debug(' - EXTRACT DATA FROM TEMPLATES %s', self.path)
+        _LOGGER.log(9, ' - EXTRACT DATA FROM TEMPLATES %s', self.path)
 
         # Set up entity/job
         self.entity = entity or to_entity(self.path, job=job)
@@ -87,12 +101,12 @@ class CPOutputBase(object):
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
-            _LOGGER.debug(' - TMPL %s', self.template)
-            _LOGGER.debug(' - PATH %s', self.path)
+            _LOGGER.log(9, ' - TMPL %s', self.template)
+            _LOGGER.log(9, ' - PATH %s', self.path)
             try:
                 self.data = self.template.parse(self.path)
             except lucidity.ParseError as _exc:
-                _LOGGER.debug(' - ERROR %s', _exc)
+                _LOGGER.log(9, ' - ERROR %s', _exc)
                 raise ValueError(_exc)
         else:
             try:
@@ -119,7 +133,7 @@ class CPOutputBase(object):
                 9, ' - FIXING UNDERSCORE IN TASK %s %s', self.task, self.data)
             self.task = self.data['task'].split('_')[0]
             self.template = self.template.apply_data(task=self.task)
-            _LOGGER.debug(' - TEMPLATE (fixed) %s', self.template)
+            _LOGGER.log(9, ' - TEMPLATE (fixed) %s', self.template)
             self.data = self.template.parse(self.path)
 
         validate_tokens(self.data, job=self.job)
@@ -171,15 +185,15 @@ class CPOutputBase(object):
                       for _tmpl in _tmpls]
 
         # Log data
-        _LOGGER.debug(' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
+        _LOGGER.log(9, ' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
         for _idx, _tmpl in enumerate(_tmpls):
-            _LOGGER.debug(' - TEMPLATES[%d] %s', _idx, _tmpl)
+            _LOGGER.log(9, ' - TEMPLATES[%d] %s', _idx, _tmpl)
 
         return _tmpls
 
     @property
     def pini_ver(self):
-        """Obtain which carb version this output was generated with.
+        """Obtain which pini version this output was generated with.
 
         If none was written at export time, zero version is returned.
 
@@ -634,51 +648,6 @@ class CPOutput(File, CPOutputBase):
         _LOGGER.debug('TO YAML %s %s', cls.yaml_tag, _tag)
         return dumper.represent_scalar(_tag, data.path)
 
-    def find_lookdev(self, cache=None):
-        """Find matching lookdev for this output.
-
-        This is used to find a lookdev publish to attach to an abc export.
-
-        Args:
-            cache (CPCache): use this cache to search with
-
-        Returns:
-            (CPOutput): matching lookdev
-        """
-        from pini import pipe
-        _LOGGER.debug('FIND LOOKDEV %s', self)
-
-        # Find asset
-        _asset_path = pipe.map_path(self.metadata.get('asset'))
-        if not _asset_path:
-            return None
-        _asset = pipe.to_entity(_asset_path)
-        if cache:
-            _asset = cache.find_entity(_asset)
-        _LOGGER.debug(' - ASSET %s', _asset)
-        _asset_out = pipe.to_output(_asset_path)
-
-        # Find lookdevs
-        _lookdevs = _asset.find_publishes(task='lookdev')
-        _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
-        if not _lookdevs:
-            return None
-
-        # Make sure we ignore tags if untagged available
-        _tags = sorted(
-            {_lookdev.tag for _lookdev in _lookdevs}, key=pipe.tag_sort)
-        _default_tag = self.job.cfg['tokens']['tag']['default']
-        if _asset_out.tag in _tags:
-            _tag = _asset_out.tag
-        elif _default_tag in _tags:
-            _tag = _default_tag
-        else:
-            _tag = _tags[0]
-        _LOGGER.debug(' - TAG %s %s', _tag, _tags)
-        _lookdevs = [_lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
-
-        return _lookdevs[-1]
-
 
 class CPOutputVideo(CPOutput, clip.Video):
     """Represents an output video file (eg. mov/mp4)."""
@@ -700,7 +669,7 @@ class CPOutputVideo(CPOutput, clip.Video):
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
         """
-        _LOGGER.debug('INIT CPOutputVideo %s', file_)
+        _LOGGER.log(9, 'INIT CPOutputVideo %s', file_)
         super(CPOutputVideo, self).__init__(
             file_, job=job, entity=entity, work_dir=work_dir,
             templates=templates, template=template,
