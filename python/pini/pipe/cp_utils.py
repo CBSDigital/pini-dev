@@ -389,9 +389,11 @@ def validate_token(value, token, job):
     # Apply length filter
     _len = _cfg.get('len')
     _LOGGER.debug(' - LEN %s', _len)
-    if _len and len(value) != _len:
-        raise ValueError('Token "{}" as "{}" fails len'.format(
-            token, value))
+    if _len:
+        _lens = _len if isinstance(_len, list) else [_len]
+        if len(value) not in _lens:
+            raise ValueError('Token "{}" as "{}" fails len'.format(
+                token, value))
 
     # Apply isdigit filter
     _is_digit = _cfg.get('isdigit')

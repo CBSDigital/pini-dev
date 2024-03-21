@@ -178,15 +178,20 @@ def abs_path(path, win=False, root=None):
     return _path
 
 
-def error_on_file_system_disabled():
+def error_on_file_system_disabled(path=None):
     """Thown an error if file system disabled.
 
     File system is disabled using  $PINI_DISABLE_FILE_SYSTEM. This is
     used for debugging.
+
+    Args:
+        path (str): path that was accessed (for error message)
     """
     if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
-        raise DebuggingError(
-            "Access file system disabled using PINI_DISABLE_FILE_SYSTEM")
+        _msg = "Access file system disabled using PINI_DISABLE_FILE_SYSTEM"
+        if path:
+            _msg += ' '+path
+        raise DebuggingError(_msg)
 
 
 def copied_path():

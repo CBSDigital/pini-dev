@@ -1,3 +1,15 @@
+## [1.15.1] - Thu 2024-03-21 15:26
+### Summary
+ - Pipeline Modules:
+    - accomodate for multiple sequence lengths declared in config,
+### Updated
+ - pini.utils.error_on_file_system_disabled added path arg,
+ - pini.pipe.validate_token allow len as list,
+ - pini.qt.CPixmap pass path on file system disabled error,
+ - pini.tools.release added REPOS/find_test,
+ - pini.tools.release.find_tests use age modulo for sorting,
+
+
 ## [1.15.0] - Thu 2024-03-21 14:39
 ### Summary
  - Pini Helper:

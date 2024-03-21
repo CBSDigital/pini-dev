@@ -38,7 +38,7 @@ class CPixmap(QtGui.QPixmap):
         if len(_args) == 1 and isinstance(_args[0], File):
             _args[0] = _args[0].path
         if len(_args) == 1 and isinstance(_args[0], six.string_types):
-            error_on_file_system_disabled()
+            error_on_file_system_disabled(path=_args[0])
 
         super(CPixmap, self).__init__(*_args)
 
