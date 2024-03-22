@@ -41,7 +41,7 @@ class CCPOutputBase(CPOutputBase):
         Returns:
             (dict): metadata
         """
-        _LOGGER.debug('GET METADATA %s', self)
+        _LOGGER.log(9, 'GET METADATA %s', self)
         return data or super(CCPOutputBase, self).get_metadata()
 
     def set_metadata(self, data, mode='replace', force=True):
@@ -159,7 +159,7 @@ class CCPOutput(CPOutput, CCPOutputBase):
         _LOGGER.debug(' - ASSET %s', _out.entity)
 
         # Find lookdevs
-        _lookdevs = _out.entity.find_publishes(task='lookdev')
+        _lookdevs = _out.entity.find_publishes(publish_type='lookdev')
         _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
         if not _lookdevs:
             return None

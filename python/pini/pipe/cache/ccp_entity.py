@@ -372,7 +372,7 @@ class CCPEntity(CPEntity):
             video_class=video_class or cache.CCPOutputVideo)
 
     @functools.wraps(CPEntity.find_publishes)
-    def find_publishes(self, force=False, **kwargs):
+    def find_publishes(self, force=False, publish_type=None, **kwargs):
         """Find publishes within this entity.
 
         Publishes are cached to disk a entity level, so a force flag
@@ -380,11 +380,13 @@ class CCPEntity(CPEntity):
 
         Args:
             force (bool): force reread from disk
+            publish_type (str): apply publish type filter (eg. lookdev)
 
         Returns:
             (CCPOutput list): publishes
         """
         from pini import pipe
+
         if force:
             if pipe.MASTER == 'disk':
                 self._read_work_dirs_disk(force=True)
@@ -393,7 +395,18 @@ class CCPEntity(CPEntity):
                 self.job.find_publishes(force=True)
             else:
                 raise NotImplementedError(pipe.MASTER)
-        return super(CCPEntity, self).find_publishes(**kwargs)
+
+        _pubs = super(CCPEntity, self).find_publishes(**kwargs)
+
+        # Apply publish type filter
+        if publish_type:
+            _map = {'lookdev': 'CMayaLookdevPublish'}
+            _match = _map.get(publish_type, publish_type)
+            _pubs = [
+                _pub for _pub in _pubs
+                if _pub.metadata.get('publish_type') == _match]
+
+        return _pubs
 
     @pipe_cache_to_file
     def _read_publishes_disk(self, force=False):

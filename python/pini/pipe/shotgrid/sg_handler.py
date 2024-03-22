@@ -123,7 +123,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
         """
         return sorted(self.schema_field_read(entity_type).keys())
 
-    def find_one(self, entity_type, filters, fields):
+    def find_one(self, entity_type, filters, fields):  # pylint: disable=arguments-differ
         """Find one matching shotgrid entry.
 
         Args:
