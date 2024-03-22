@@ -50,12 +50,10 @@ def find_checks(  # pylint: disable=too-many-branches
     _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
 
     # Determine task
-    _task = task
+    _task = task or (_work.pini_task if _work else None)
     _disable_task_filter = _task == 'all'
     if not _disable_task_filter:
-        _task = pipe.map_task(
-            _task or (_work.task if _work else None),
-            fmt='pini')
+        _task = pipe.map_task(_task, fmt='pini')
     _LOGGER.debug('FIND CHECKS task=%s work=%s', _task, _work)
 
     # Filter checks based on work
@@ -119,6 +117,8 @@ def find_checks(  # pylint: disable=too-many-branches
 
         _LOGGER.debug('   - ACCEPTED %s', _check)
         _checks.append(_check)
+
+    _LOGGER.info(' - FOUND %d %s CHECKS', len(_checks), _task)
 
     return sorted(_checks)
 

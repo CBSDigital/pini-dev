@@ -654,38 +654,6 @@ class CheckForEmptyNamespaces(SCMayaCheck):
             self.add_fail('Empty namespace {}'.format(_ns), fix=_fix)
 
 
-class NoObjectsWithDefaultShader(SCMayaCheck):
-    """Lookdev check to make sure no geos have default shader assigned."""
-
-    task_filter = 'lookdev'
-
-    def run(self):
-        """Run this check."""
-        _shds = lookdev.read_shader_assignments()
-
-        for _shd, _data in _shds.items():
-
-            _se = _data['shadingEngine']
-            _geos = _data['geos']
-
-            # Check for default shader
-            if _shd in DEFAULT_NODES:
-                for _geo in _geos:
-                    _msg = 'Geo "{}" has default shader "{}" applied'.format(
-                        _geo, _shd)
-                    self.add_fail(_msg, node=_geo)
-
-            # Check for default shading group
-            if _se in DEFAULT_NODES:
-                for _geo in _geos:
-                    _msg = (
-                        'Geo "{}" has shader "{}" applied which uses default '
-                        'shading engine "{}" - this will cause issues as '
-                        'default nodes do not appear in references'.format(
-                            _geo, _shd, _se))
-                    self.add_fail(_msg, node=_geo)
-
-
 def _shd_is_arnold(shd, engine, type_):
     """Test whether the given shader is arnold.
 
@@ -861,3 +829,36 @@ class CheckForFaceAssignments(SCMayaCheck):
         _node, _ = assign.split('.')
         cmds.sets(assign, edit=True, remove=engine)
         cmds.sets(_node, edit=True, add=engine)
+
+
+class NoObjectsWithDefaultShader(SCMayaCheck):
+    """Lookdev check to make sure no geos have default shader assigned."""
+
+    task_filter = 'lookdev'
+    depends_on = (CheckForFaceAssignments, )
+
+    def run(self):
+        """Run this check."""
+        _shds = lookdev.read_shader_assignments()
+
+        for _shd, _data in _shds.items():
+
+            _se = _data['shadingEngine']
+            _geos = _data['geos']
+
+            # Check for default shader
+            if _shd in DEFAULT_NODES:
+                for _geo in _geos:
+                    _msg = 'Geo "{}" has default shader "{}" applied'.format(
+                        _geo, _shd)
+                    self.add_fail(_msg, node=_geo)
+
+            # Check for default shading group
+            if _se in DEFAULT_NODES:
+                for _geo in _geos:
+                    _msg = (
+                        'Geo "{}" has shader "{}" applied which uses default '
+                        'shading engine "{}" - this will cause issues as '
+                        'default nodes do not appear in references'.format(
+                            _geo, _shd, _se))
+                    self.add_fail(_msg, node=_geo)

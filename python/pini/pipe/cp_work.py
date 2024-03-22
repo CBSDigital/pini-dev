@@ -1,6 +1,6 @@
 """Tools for managing work files."""
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-lines
 
 import copy
 import logging
@@ -18,7 +18,7 @@ from pini.utils import (
     passes_filter, single, EMPTY, abs_path, Video, Seq)
 
 from . import cp_utils
-from .cp_work_dir import CPWorkDir
+from .cp_work_dir import CPWorkDir, map_task
 from .cp_utils import EXTN_TO_DCC, validate_tokens, map_path, cur_user
 
 _LOGGER = logging.getLogger(__name__)
@@ -154,6 +154,17 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             (str): notes
         """
         return self.metadata.get('notes')
+
+    @property
+    def pini_task(self):
+        """Obtain pini task for this work file.
+
+        eg. surf/dev -> lookdev
+
+        Returns:
+            (str): pini task
+        """
+        return map_task(task=self.task, step=self.step)
 
     def _owner_from_user(self):
         """Obtain owner based on user tag.

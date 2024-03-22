@@ -739,7 +739,7 @@ class CPOutputSeqDir(Dir):
         _output_seq_class = output_seq_class or pipe.CPOutputSeq
         _output_video_class = output_video_class or pipe.CPOutputVideo
         _LOGGER.debug(' - OUTPUT SEQ CLASS %s', _output_seq_class)
-        for _path in self.find_seqs(include_files=True, depth=2):
+        for _path in self.find_seqs():
 
             _LOGGER.debug(' - TESTING PATH %s', _path)
 
