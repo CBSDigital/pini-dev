@@ -321,7 +321,13 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add print option
         _ld_data = menu.shd_yml.read_yml()
-        _func = wrap_fn(pprint.pprint, _ld_data)
+        _func = chain_fns(
+            wrap_fn(
+                _LOGGER.info,
+                strftime(
+                    'Published at %H:%M:%S on %a %D %b',
+                    lookdev.metadata.get('mtime'))),
+            wrap_fn(pprint.pprint, _ld_data))
         menu.add_action(
             'Print shaders data', _func, icon=icons.PRINT)
         menu.add_separator()

@@ -331,7 +331,7 @@ class Dir(up_path.Path):
             if extn:
                 _rel_path += '.'+extn
         else:
-            raise TypeError
+            raise TypeError(rel_path, base, extn)
 
         return _class(self.path+'/'+_rel_path)
 

@@ -1,3 +1,16 @@
+## [1.18.0] - Tue 2024-03-26 13:46
+### Summary
+ - Pini Helper:
+    - maya blast fix error if camera translate locked (mkim/cmiller),
+    - next work file label reworded for clarity (nwray),
+### Updated
+ - pini.utils.Dir.to_file better error on bad args,
+ - pini.pipe.shotgrid.SGC added,
+ - pini.tools.helper next work reworded for clarity,
+ - pini.tools.helper output ctx print nice mtime,
+ - maya_pini.utils.blast build tmp cam unlock t/r/s to fix locked,
+
+
 ## [1.17.0] - Fri 2024-03-22 11:55
 ### Summary
  - Sanity Check:

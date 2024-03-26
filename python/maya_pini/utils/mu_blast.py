@@ -34,6 +34,7 @@ def _build_tmp_blast_cam(cam):
     Returns:
         (CCamera): tmp camera
     """
+    _LOGGER.debug(' - BUILD TMP BLAST CAM %s', cam)
     from maya_pini import open_maya as pom
 
     set_namespace(":"+_BLAST_TMP_NS)
@@ -41,7 +42,8 @@ def _build_tmp_blast_cam(cam):
     # Duplicate camera + move dulplicate to world
     _src = pom.CCamera(cam)
     _cam = _src.duplicate(upstream_nodes=True)
-    for _plug in _cam.tfm_plugs:
+    for _plug in [_cam.plug[_attr] for _attr in 'trs']+_cam.tfm_plugs:
+        _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
     _src.parent_constraint(_cam)
 

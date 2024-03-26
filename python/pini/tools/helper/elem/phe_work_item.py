@@ -67,7 +67,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         self._line_h = _METRICS.size(0, 'test').height()
 
         if work is helper.next_work:
-            self.notes = 'this version will be created if you load/save'
+            self.notes = 'this will be created if you version up'
             _icon = _NEXT_WORK_ICON
             self.text_col = _NEXT_TEXT_COL
             self.output_tags = []
