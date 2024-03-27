@@ -16,6 +16,7 @@ class _SGCContainer(object):
         """
         self.data = data
         self.id_ = data['id']
+        self.updated_at = data['updated_at']
 
 
 class SGCStep(_SGCContainer):
@@ -45,6 +46,9 @@ class SGCUser(_SGCContainer):
         """
         super(SGCUser, self).__init__(data)
         self.login = data['login']
+        self.name = data['name']
+        self.email = data['email']
+        self.status = data['sg_status_list']
 
     def __repr__(self):
         return basic_repr(self, self.login)

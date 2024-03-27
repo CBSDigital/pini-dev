@@ -8,7 +8,6 @@ import pprint
 import time
 
 from pini import pipe, qt
-from pini.pipe import shotgrid
 from pini.utils import (
     single, strftime, to_time_f, check_heart, Path, basic_repr, cache_on_obj)
 
@@ -32,7 +31,7 @@ class SGCJob(object):
         self.cache = cache
         self.job = job
 
-        self.sg = shotgrid.to_handler()
+        self.sg = cache.sg
         self.prefix = data['sg_short_name']
         self.name = data['tank_name']
         self.id_ = data['id']

@@ -1,3 +1,16 @@
+## [1.19.1] - Wed 2024-03-27 14:18
+### Summary
+ - Shotgrid Cache:
+    - bugfix cyclical import error,
+### Updated
+ - pini.pipe.shotgrid.SGC.SGDataCache removed property caches,
+ - pini.pipe.shotgrid.SGC bugfix cyclical import error,
+ - pini.pipe.shotgrid.SGC.find_user added,
+ - pini.pipe.shotgrid.SGC.users added updated_at to fields,
+ - pini.pipe.shotgrid.SGC.SGCContainer.update_at added attr,
+ - pini.pipe.shotgrid.SGC.SGCUser added name/email/login attrs,
+
+
 ## [1.19.0] - Wed 2024-03-27 12:38
 ### Summary
  - Shotgrid Cache:

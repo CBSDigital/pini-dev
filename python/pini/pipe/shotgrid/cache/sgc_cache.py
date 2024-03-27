@@ -7,7 +7,6 @@ import logging
 import operator
 
 from pini import pipe
-from pini.pipe import shotgrid
 from pini.utils import (
     single, strftime, basic_repr, cache_on_obj, apply_filter)
 
@@ -20,10 +19,7 @@ _GLOBAL_CACHE_DIR = pipe.GLOBAL_CACHE_ROOT.to_subdir('sgc')
 class SGDataCache(object):
     """Base container class for the shotgrid data cache."""
 
-    def __init__(self):
-        """Constructor."""
-        self.sg = shotgrid.to_handler()
-        self._jobs = self._steps = self._users = None
+    _sg = None
 
     @property
     def jobs(self):
@@ -32,9 +28,7 @@ class SGDataCache(object):
         Returns:
             (SGCJob list): jobs
         """
-        if not self._jobs:
-            self._jobs = self._read_jobs()
-        return self._jobs
+        return self._read_jobs()
 
     @property
     def steps(self):
@@ -43,9 +37,19 @@ class SGDataCache(object):
         Returns:
             (SGCStep list): steps
         """
-        if not self._steps:
-            self._steps = self._read_steps()
-        return self._steps
+        return self._read_steps()
+
+    @property
+    def sg(self):
+        """Obtain shotgrid handler.
+
+        Returns:
+            (CSGHandler): shotgrid request handler
+        """
+        if not self._sg:
+            from pini.pipe import shotgrid
+            self._sg = shotgrid.to_handler()
+        return self._sg
 
     @property
     def users(self):
@@ -54,9 +58,7 @@ class SGDataCache(object):
         Returns:
             (SGCUser list): users
         """
-        if not self._users:
-            self._users = self._read_users()
-        return self._users
+        return self._read_users()
 
     def find_job(self, match):
         """Find a job.
@@ -113,6 +115,38 @@ class SGDataCache(object):
             ():
         """
         return self._read_steps(force=force)
+
+    def find_user(self, match, catch=True):
+        """Find a user entry.
+
+        Args:
+            match (str): username/login/email
+            catch (bool): no error if no entry found
+
+        Returns:
+            (SGCUser): user entry
+        """
+        _LOGGER.debug('FIND USER %s', match)
+
+        _users = [_user for _user in self.users if _user.status != 'dis']
+
+        _login_matches = [
+            _user for _user in _users
+            if _name_to_login(_user.name) == match]
+        if len(_login_matches) == 1:
+            return single(_login_matches)
+        _LOGGER.debug(' - FOUND %d LOGIN MATCHES', len(_login_matches))
+
+        _email_matches = [
+            _user for _user in _users
+            if _email_to_login(_user.email) == match]
+        if len(_email_matches) == 1:
+            return single(_email_matches)
+        _LOGGER.debug(' - FOUND %d EMAIL MATCHES', len(_email_matches))
+
+        if catch:
+            return None
+        raise ValueError(match)
 
     def _read_data(self, entity_type, fields, force=False):
         """Read data from shotgrid.
@@ -175,7 +209,7 @@ class SGDataCache(object):
             _data = _cache_file.read_pkl()
         else:
             _LOGGER.info(' - READING STEPS')
-            _data = shotgrid.find(entity_type, fields=fields)
+            _data = self.sg.find(entity_type, fields=fields)
             _cache_file.write_pkl(_data, force=True)
 
         return _data
@@ -237,10 +271,44 @@ class SGDataCache(object):
         Returns:
             (SGCUser list): users
         """
-        _fields = ('name', 'email', 'login', 'sg_status_list')
+        _fields = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
         _users_data = self._read_data('HumanUser', fields=_fields)
         _users = [sgc_container.SGCUser(_data) for _data in _users_data]
         return _users
 
     def __repr__(self):
         return basic_repr(self, None)
+
+
+def _email_to_login(email):
+    """Try to convert an email to a login.
+
+    eg. billy.thekid@wildwest.com -> bthekid
+
+    Args:
+        email (str): email to convert
+
+    Returns:
+        (str): login
+    """
+    if '@' not in email:
+        return None
+    _name, _ = email.split('@', 1)
+    return _name_to_login(_name.replace('.', ' '))
+
+
+def _name_to_login(name):
+    """Try to convert a name to a login.
+
+    eg. "Billy the Kid" -> bthekid
+
+    Args:
+        name (str): name to convert
+
+    Returns:
+        (str): login
+    """
+    if ' ' not in name:
+        return None
+    _first, _last = name.split(' ', 1)
+    return _first[0].lower() + _last.lower().replace(' ', '')
