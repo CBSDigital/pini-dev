@@ -4,15 +4,17 @@ This manages global shotgrid requests, eg. jobs, steps, users.
 """
 
 import logging
+import operator
 
-from pini import pipe, testing
+from pini import pipe
 from pini.pipe import shotgrid
-from pini.utils import single, strftime, basic_repr, cache_on_obj
+from pini.utils import (
+    single, strftime, basic_repr, cache_on_obj, apply_filter)
 
 from . import sgc_job, sgc_utils, sgc_container
 
 _LOGGER = logging.getLogger(__name__)
-_GLOBAL_CACHE_DIR = testing.TEST_JOB.to_subdir('.pini/sgc_shared')
+_GLOBAL_CACHE_DIR = pipe.GLOBAL_CACHE_ROOT.to_subdir('sgc')
 
 
 class SGDataCache(object):
@@ -65,9 +67,18 @@ class SGDataCache(object):
         Returns:
             (SGCJob): matching job
         """
-        return single([
+        _match_jobs = [
             _job for _job in self.jobs
-            if match in (_job.name, _job.id_, _job.prefix)])
+            if match in (_job.name, _job.id_, _job.prefix)]
+        if len(_match_jobs) == 1:
+            return single(_match_jobs)
+
+        _filter_jobs = apply_filter(
+            self.jobs, match, key=operator.attrgetter('name'))
+        if len(_filter_jobs) == 1:
+            return single(_filter_jobs)
+
+        raise ValueError(match)
 
     def find_jobs(self, force=False):
         """Search for valid jobs.

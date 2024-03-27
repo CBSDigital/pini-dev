@@ -2,6 +2,8 @@
 
 import os
 
+from pini.utils import HOME_PATH, Dir
+
 from .cp_job import (
     CPJob, JOBS_ROOT, find_jobs, find_job, obtain_job, cur_job,
     set_jobs_root, to_job)
@@ -32,6 +34,8 @@ from .cp_tools import version_up
 from . import cache
 
 NAME = os.environ.get('PINI_PIPE_NAME', 'pini')
+GLOBAL_CACHE_ROOT = Dir(
+    os.environ.get('PINI_GLOBAL_CACHE_ROOT', HOME_PATH+'/.pini'))
 MASTER = os.environ.get('PINI_PIPE_MASTER', 'disk')
 SHOTGRID_AVAILABLE = bool(
     os.environ.get('PINI_SG_KEY') and

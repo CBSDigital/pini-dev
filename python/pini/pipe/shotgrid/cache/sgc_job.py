@@ -40,12 +40,6 @@ class SGCJob(object):
         if not self.name:
             raise ValueError(data)
 
-        self._job = None
-        self._assets = None
-        self._shots = None
-        self._tasks = None
-        self._pub_files = None
-
         self.root = pipe.JOBS_ROOT.to_subdir(self.name)
 
     @property
@@ -55,9 +49,7 @@ class SGCJob(object):
         Returns:
             (SGCAsset list): assets
         """
-        if not self._assets:
-            self._assets = self._read_assets()
-        return self._assets
+        return self._read_assets()
 
     @property
     def entities(self):
@@ -75,9 +67,7 @@ class SGCJob(object):
         Returns:
             (SGCPubFile list): pub files
         """
-        if not self._pub_files:
-            self._pub_files = self._read_pub_files()
-        return self._pub_files
+        return self._read_pub_files()
 
     @property
     def shots(self):
@@ -86,9 +76,7 @@ class SGCJob(object):
         Returns:
             (SGCShot list): shots
         """
-        if not self._shots:
-            self._shots = self._read_shots()
-        return self._shots
+        return self._read_shots()
 
     @property
     def tasks(self):
@@ -97,9 +85,7 @@ class SGCJob(object):
         Returns:
             (SGCTask list): tasks
         """
-        if not self._tasks:
-            self._tasks = self._read_tasks()
-        return self._tasks
+        return self._read_tasks()
 
     def find_assets(self, progress=True, force=False):
         """Search assets within this job.
@@ -272,8 +258,9 @@ class SGCJob(object):
                 _sg_results,
                 '[SGC] Checking {{:d}} result{{}} ({} {})'.format(
                     self.name, range_.label),
-                show=progress, col='Yellow', show_delay=5,
+                show=progress, col='Yellow',
                 stack_key='SGCValidateResults'):
+
             check_heart()
             _LOGGER.debug(' - RESULT %s', _result)
 
@@ -293,9 +280,13 @@ class SGCJob(object):
                 step=_step, entity_map=entity_map)
             if not _path:
                 continue
-            _r_results.append(_result)
+
+            # Add path data to result
             _result['path'] = _path.path
-            _result['template'] = _path.template.pattern
+            _result['template'] = _path.template.source.pattern
+            _result['template_type'] = _path.template.type_
+
+            _r_results.append(_result)
 
         return _r_results
 

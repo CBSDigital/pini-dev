@@ -1,3 +1,15 @@
+## [1.19.0] - Wed 2024-03-27 12:38
+### Summary
+ - Shotgrid Cache:
+    - bugfix error on build global shared cache path,
+### Updated
+ - pini.pipe.shotgrid.SGC bugfix error on set cache dir,
+ - pini.pipe.shotgrid.SGC.find_job applied filter match,
+ - pini.pipe.shotgrid.SGC.SGCJob removed property caches,
+ - pini.pipe.shotgrid.SGC.SGCJob._read_data use source template pattern,
+ - pini.pipe.shotgrid.SGC.SGCJob._read_data include template type,
+
+
 ## [1.18.0] - Tue 2024-03-26 13:46
 ### Summary
  - Pini Helper:
