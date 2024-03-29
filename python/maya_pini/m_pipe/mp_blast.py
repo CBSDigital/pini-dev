@@ -64,7 +64,8 @@ def blast(
     u_blast(
         clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
-        view=view, cleanup=cleanup, tmp_seq=_tmp_seq, copy_frame=_work.image)
+        view=view, cleanup=cleanup, tmp_seq=_tmp_seq,
+        frame_to_thumb=_work.image)
     _data = _obt_metadata(
         range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res())
     _out.set_metadata(_data, force=True)

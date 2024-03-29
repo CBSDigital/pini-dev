@@ -1,3 +1,14 @@
+## [1.21.0] - Fri 2024-03-29 16:10
+### Summary
+ - Pini Helper:
+    - maya blast limit thumbnail aspect to 2 (mkim/cmiller),
+### Updated
+ - pini.qt.CPixmap.crop bugfix apply bottom/right crop,
+ - pini.qt.CPixmap.resize bugfix apply height w/o width + vice versa,
+ - maya_pini.utils.blast renamed arg copy_frame -> frame_to_thumb,
+ - maya_pini.utils.blast apply resize/crop to thumb,
+
+
 ## [1.20.2] - Fri 2024-03-29 14:53
 ### Summary
  - Sanity Check:

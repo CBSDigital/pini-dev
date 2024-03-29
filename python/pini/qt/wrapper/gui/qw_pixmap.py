@@ -72,7 +72,9 @@ class CPixmap(QtGui.QPixmap):
         """
         from pini import qt
         _pos = qt.to_p(left, top)
-        _size = qt.to_size(self.width() - right, self.height() - bottom)
+        _size = qt.to_size(
+            self.width() - right - left,
+            self.height() - bottom - top)
         _rect = qt.to_rect(pos=_pos, size=_size)
         return qt.to_pixmap(self.copy(_rect))
 
@@ -409,9 +411,9 @@ class CPixmap(QtGui.QPixmap):
         _height = kwargs.pop('height', None)
 
         if _width:
-            _height = _width / self.get_aspect()
+            _height = _width / self.aspect()
         elif _height:
-            _width = _height * self.get_aspect()
+            _width = _height * self.aspect()
         else:
             assert not _height and not _width
             if isinstance(_arg, (int, float)):
