@@ -1,3 +1,15 @@
+## [1.20.2] - Fri 2024-03-29 14:53
+### Summary
+ - Sanity Check:
+    - better handling for buggy face assignments (blutge),
+### Updated
+ - pini.tools.sanity_check.CheckForFaceAssignments added select node/material opts,
+ - pini.tools.sanity_check.CheckForFaceAssignments added handling for buggy face assign,
+ - pini.tools.sanity_check.NoObjectsWithDefaultShader fix duplicate fails,
+ - maya_pini.utils to_long/to_parent bugfix error on path/face passed,
+ - maya_pini.utils.to_node added shorten flag,
+
+
 ## [1.20.1] - Fri 2024-03-29 11:57
 ### Summary
  - Pini Helper:

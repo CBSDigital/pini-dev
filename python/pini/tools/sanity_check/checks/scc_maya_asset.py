@@ -7,7 +7,7 @@ import logging
 from maya import cmds
 
 from pini import qt, pipe, dcc
-from pini.tools import sanity_check
+from pini.tools import sanity_check, error
 from pini.utils import single, wrap_fn, check_heart, plural
 
 from maya_pini import ref, open_maya as pom, m_pipe
@@ -809,25 +809,40 @@ class CheckForFaceAssignments(SCMayaCheck):
                 self.write_log(' - no surface shader %s', _se)
             _assigns = cmds.sets(_se, query=True) or []
             for _assign in _assigns:
+                _node = to_node(_assign)
                 self.write_log(' - checking assignment %s', _se)
                 if '.f' not in _assign:
                     continue
                 _msg = '{} has face assigment: {}'.format(_mtl, _assign)
                 _fix = wrap_fn(
-                    self._fix_face_assignment, engine=_se, assign=_assign)
-                self.add_fail(_msg, node=_mtl, fix=_fix)
+                    self._fix_face_assignment, engine=_se, assign=_assign,
+                    material=_mtl)
+                _fail = SCFail(_msg, node=_node)
+                _fail.add_action(
+                    'Select shader', wrap_fn(cmds.select, _mtl, noExpand=True))
+                _fail.add_action('Fix', _fix)
+                self.add_fail(_fail)
 
-    def _fix_face_assignment(self, engine, assign):
+    def _fix_face_assignment(self, engine, assign, material):
         """Fix shader face assignment.
 
         Args:
             engine (str): shading engine
             assign (str): face assignment (eg. body.f[0:100])
+            material (str): shader
         """
         _LOGGER.info('FIX FACE ASSIGNMENTS %s %s', engine, assign)
         assert '.f' in assign
         _node, _ = assign.split('.')
-        cmds.sets(assign, edit=True, remove=engine)
+        try:
+            cmds.sets(assign, edit=True, remove=engine)
+        except ValueError:
+            raise error.HandledError(
+                'Failed to remove "{}" from shading engine "{}".'
+                '\n\n'
+                'It seems like maya is having trouble with this assignment.'
+                'Try deleting history on this node or removing it '
+                'if possible'.format(assign, material))
         cmds.sets(_node, edit=True, add=engine)
 
 
@@ -841,6 +856,7 @@ class NoObjectsWithDefaultShader(SCMayaCheck):
         """Run this check."""
         _shds = lookdev.read_shader_assignments()
 
+        _flagged_geos = set()
         for _shd, _data in _shds.items():
 
             _se = _data['shadingEngine']
@@ -852,10 +868,13 @@ class NoObjectsWithDefaultShader(SCMayaCheck):
                     _msg = 'Geo "{}" has default shader "{}" applied'.format(
                         _geo, _shd)
                     self.add_fail(_msg, node=_geo)
+                    _flagged_geos.add(_geo)
 
             # Check for default shading group
             if _se in DEFAULT_NODES:
                 for _geo in _geos:
+                    if _geo in _flagged_geos:
+                        continue
                     _msg = (
                         'Geo "{}" has shader "{}" applied which uses default '
                         'shading engine "{}" - this will cause issues as '

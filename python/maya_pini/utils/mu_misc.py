@@ -268,17 +268,17 @@ def to_long(node):
         node (str): node to get dag path of
 
     Returns:
-        ():
+        (str): long name
     """
-    _node = to_node(node)
-    _ls = cmds.ls(node, long=True)
+    _node = to_node(node, shorten=False)
+    _ls = cmds.ls(_node, long=True)
     try:
         return str(single(_ls))
     except ValueError:
-        raise ValueError(node)
+        raise ValueError(node, type(node))
 
 
-def to_node(name, namespace=None, class_=None, clean=True):
+def to_node(name, shorten=True, namespace=None, class_=None, clean=True):
     """Obtain a node from the given object.
 
     eg. to_node(CNode('persp')) -> 'persp'
@@ -287,6 +287,7 @@ def to_node(name, namespace=None, class_=None, clean=True):
 
     Args:
         name (str): object to convert
+        shorten (bool): strip out path pipes from node name
         namespace (str): force namespace
         class_ (class): cast node to given type
         clean (bool): strip namespaces from name
@@ -295,7 +296,8 @@ def to_node(name, namespace=None, class_=None, clean=True):
         (str): node name
     """
     _node = str(name)
-    _node = _node.split('|')[-1]
+    if shorten:
+        _node = _node.split('|')[-1]
     _node = _node.split('->')[-1]
     _node = _node.split('.')[0]
     if namespace:
@@ -316,7 +318,8 @@ def to_parent(node):
     Returns:
         (str): parent
     """
-    _parents = cmds.listRelatives(node, parent=True, path=True) or []
+    _node = to_node(node, shorten=False)
+    _parents = cmds.listRelatives(_node, parent=True, path=True) or []
     _parent = single(_parents, catch=True)
     if _parent:
         _parent = str(_parent)
