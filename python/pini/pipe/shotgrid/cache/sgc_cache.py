@@ -196,22 +196,35 @@ class SGDataCache(object):
         Returns:
             (SGCStep): matching step
         """
-        return single([_step for _step in self.steps if match in (
-            _step.id_, _step.short_name)])
+        _matches = [
+            _step for _step in self.steps
+            if match in (_step.id_, _step.short_name)]
+        if len(_matches) == 1:
+            return single(_matches)
 
-    def find_steps(self, department=None, force=False):
+        if _matches:
+            _matches.sort(key=operator.attrgetter('list_order'))
+            return _matches[0]
+
+        raise ValueError(match)
+
+    def find_steps(self, short_name=None, department=None, force=False):
         """Search pipeline steps.
 
         Args:
+            short_name (str): filter by short name (NOTE: short
+                names are not unique - eg. multiple fx steps)
             department (str): filter by department (eg. 3D/2D)
             force (bool): force rebuild cache
 
         Returns:
-            ():
+            (SGCStep list): matching steps
         """
         _steps = []
         for _step in self._read_steps(force=force):
             if department and _step.department != department:
+                continue
+            if short_name and _step.short_name != short_name:
                 continue
             _steps.append(_step)
         return _steps
@@ -234,22 +247,33 @@ class SGDataCache(object):
         if not _job and path:
             _job = pipe.CPJob(path)
         assert _job
+
         return self.find_job(_job).find_task(
             path=path, entity=entity, step=step, task=task)
 
-    def find_tasks(self, job, department=None, filter_=None):
+    def find_tasks(
+            self, job=None, entity=None, step=None, task=None, department=None,
+            filter_=None):
         """Search tasks in the cache.
 
         Args:
             job (CPJob): job to search
+            entity (str): filter by entity
+            step (str): filter by step
+            task (str): filter by task
             department (str): filter by department (eg. 3D/2D)
             filter_ (str): apply step/task name filter
 
         Returns:
             (SGCTask list): matching tasks
         """
-        return self.find_job(job).find_tasks(
-            department=department, filter_=filter_)
+        _job = job
+        if not _job and entity:
+            _job = entity.job
+        assert _job
+        return self.find_job(_job).find_tasks(
+            department=department, entity=entity, filter_=filter_, task=task,
+            step=step)
 
     def find_user(self, match=None, catch=True):
         """Find a user entry.
@@ -393,7 +417,8 @@ class SGDataCache(object):
             (SGCStep list): steps
         """
         _fields = (
-            'entity_type', 'code', 'short_name', 'department', 'updated_at')
+            'entity_type', 'code', 'short_name', 'department', 'updated_at',
+            'list_order')
         _steps_data = self._read_data('Step', fields=_fields)
         _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
         return _steps

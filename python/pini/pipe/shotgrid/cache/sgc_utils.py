@@ -71,6 +71,7 @@ def to_fields_key(fields):
         'entity': 'En',
         'entity_type': 'Et',
         'login': 'L',
+        'list_order': 'Lo',
         'name': 'Na',
         'path': 'P',
         'path_cache': 'Pc',

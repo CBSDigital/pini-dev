@@ -39,6 +39,8 @@ class SGCStep(SGCContainer):
         """
         super(SGCStep, self).__init__(data)
         self.short_name = data['short_name']
+        self.list_order = data['list_order']
+
         _dept = data.get('department') or {}
         self.department = _dept.get('name')
 

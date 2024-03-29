@@ -1,3 +1,15 @@
+## [1.20.1] - Fri 2024-03-29 11:57
+### Summary
+ - Pini Helper:
+    - bugfix error register in shotgrid on blast in fx task,
+### Updated
+ - pini.pipe.shotgrid.SGC.find_step if many matches use first in list order,
+ - pini.pipe.shotgrid.SGC.find_steps store list_order data,
+ - pini.pipe.shotgrid.SGC.find_steps added short_name filter,
+ - pini.pipe.shotgrid.SGC.find_tasks added entity/step/task filters,
+ - pini.pipe.shotgrid.SGC disable progress bars by default,
+
+
 ## [1.20.0] - Fri 2024-03-29 10:17
 ### Summary
  - Pini Helper:

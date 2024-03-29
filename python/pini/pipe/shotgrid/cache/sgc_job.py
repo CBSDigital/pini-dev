@@ -103,7 +103,7 @@ class SGCJob(sgc_container.SGCContainer):
             _asset for _asset in self.assets
             if match in (_asset.name, _asset.path)])
 
-    def find_assets(self, progress=True, force=False):
+    def find_assets(self, progress=False, force=False):
         """Search assets within this job.
 
         Args:
@@ -145,7 +145,7 @@ class SGCJob(sgc_container.SGCContainer):
         raise ValueError(path)
 
     def find_pub_files(
-            self, entity=None, work_dir=None, progress=True, force=False):
+            self, entity=None, work_dir=None, progress=False, force=False):
         """Search pub file within this job.
 
         Args:
@@ -188,7 +188,8 @@ class SGCJob(sgc_container.SGCContainer):
 
         raise ValueError(match, filter_)
 
-    def find_shots(self, has_3d=None, filter_=None, progress=True, force=False):
+    def find_shots(
+            self, has_3d=None, filter_=None, progress=False, force=False):
         """Search shots within this job.
 
         Args:
@@ -227,11 +228,11 @@ class SGCJob(sgc_container.SGCContainer):
         for _task in _tasks:
             if _task.path == path:
                 return _task
-        raise ValueError(path)
+        raise ValueError(path, entity, task, step)
 
     def find_tasks(
             self, entity=None, task=None, step=None, department=None,
-            filter_=None, progress=True, force=False):
+            filter_=None, progress=False, force=False):
         """Search tasks within this job.
 
         Args:
@@ -248,12 +249,12 @@ class SGCJob(sgc_container.SGCContainer):
         """
 
         # Prepare steps data
-        _step_ids = set()
+        _steps = set()
         if step:
-            _step_ids.add(self.cache.find_step(step).id_)
+            _steps |= set(self.cache.find_steps(short_name=step))
         if department:
-            _steps = self.cache.find_steps(department='3d')
-            _step_ids |= {_step.id_ for _step in _step_ids}
+            _steps |= set(self.cache.find_steps(department='3d'))
+        _step_ids = {_step.id_ for _step in _steps}
         _step_map = {_step.id_: _step.short_name for _step in self.cache.steps}
 
         _tasks = []
@@ -279,7 +280,7 @@ class SGCJob(sgc_container.SGCContainer):
 
     def _read_data(
             self, entity_type, fields, entity_map=None, ver_n=None,
-            use_snapshots=True, progress=True, force=False):
+            use_snapshots=True, progress=False, force=False):
         """Read data from shotgrid.
 
         If the data hasn't been updated since it was last read, the cached
