@@ -8,7 +8,7 @@ from pini.utils import cache_result, strftime, to_time_f, nice_age
 _LOGGER = logging.getLogger(__name__)
 
 
-def to_cache_file(range_, entity_type, job, fields):
+def to_cache_file(range_, entity_type, job, fields, ver_n=None):
     """Build cache file path for the given range.
 
     Args:
@@ -16,17 +16,20 @@ def to_cache_file(range_, entity_type, job, fields):
         entity_type (str): entity being requested
         job (SGCJob): job being queried
         fields (str tuple): fields being requested
+        ver_n (int): append version token - this can be used to regenerate
+            caches if the data format is changed in the code
 
     Returns:
         (File): cache file
     """
     _fields_key = to_fields_key(tuple(fields))
+    _ver_key = '' if ver_n is None else '_V{:d}'.format(ver_n)
 
     if not range_.end_t:
         _d_token = strftime('T%y%m%d_%H%M%S', range_.start_t)
         return job.to_cache_dir().to_file(
-            'snapshot_{}_{}_{}.pkl'.format(
-                entity_type, _d_token, _fields_key))
+            'snapshot_{}_{}_{}{}.pkl'.format(
+                entity_type, _d_token, _fields_key, _ver_key))
 
     if range_.end_t >= datetime.datetime.today():
         return None
@@ -39,11 +42,13 @@ def to_cache_file(range_, entity_type, job, fields):
         _d_token = strftime('M%y%m', range_.start_t)
     elif 7*24*60*60 - 1*60*60 <= _dur <= 7*24*60*60 + 1*60*60:
         _d_token = strftime('W%y%m%d', range_.start_t)
+    elif 23*60*60 <= _dur <= 25*60*60:
+        _d_token = strftime('D%y%m%d', range_.start_t)
     else:
         raise ValueError(nice_age(_dur))
     return job.to_cache_dir().to_file(
-        'region_{}_{}_{}.pkl'.format(
-            entity_type, _d_token, _fields_key))
+        'region_{}_{}_{}{}.pkl'.format(
+            entity_type, _d_token, _fields_key, _ver_key))
 
 
 @cache_result

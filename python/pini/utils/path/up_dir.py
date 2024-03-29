@@ -66,7 +66,7 @@ class Dir(up_path.Path):
             (bool): whether this dir is a parent of the given path
         """
         _path = up_utils.abs_path(path)
-        return _path.startswith(self.path)
+        return _path.startswith(self.path+'/')
 
     def copy_to(self, trg, force=False):
         """Copy this dir and its contents to another location.

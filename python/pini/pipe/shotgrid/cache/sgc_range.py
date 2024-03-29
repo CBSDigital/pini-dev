@@ -6,8 +6,9 @@ to keep re-reading old data.
 
 import datetime
 import logging
+import time
 
-from pini.utils import strftime, check_heart, basic_repr
+from pini.utils import strftime, check_heart, basic_repr, to_time_f
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,9 +62,21 @@ def build_ranges(start_t):
     while True:
         check_heart()
         _start_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
-        _LOGGER.debug(' - MONTH %s', _start_s)
-        _day += 7
-        _end_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
+        _end_s = _add_days(_start_s, 7)
+        _rng = SGCRange(
+            datetime.datetime.strptime(_start_s, '%d/%m/%y'),
+            datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+        _label = '{} -> {}'.format(_start_s, _end_s)
+        if _rng.end_t >= datetime.datetime.today():
+            break
+        _day = int(strftime('%d', _rng.end_t))
+        _rngs.append(_rng)
+
+    # Add days
+    while True:
+        check_heart()
+        _start_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
+        _end_s = _add_days(_start_s, 1)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
             datetime.datetime.strptime(_end_s, '%d/%m/%y'))
@@ -71,9 +84,29 @@ def build_ranges(start_t):
         _rngs.append(_rng)
         if _rng.end_t >= datetime.datetime.today():
             break
+
     _LOGGER.debug(' - BUILT %d RANGES %s', len(_rngs), _rngs)
 
     return _rngs
+
+
+def _add_days(date, days):
+    """Add the given number of days to the given date.
+
+    Args:
+        date (str): date to add days to (eg. 29/07/81)
+        days (int): number of days to add
+
+    Returns:
+        (str): updated date
+    """
+    _date_s = date
+    _date_f = to_time_f(time.strptime(_date_s, '%d/%m/%y'))
+    for _ in range(days):
+        _date_f += 25*60*60  # 25 to account for clocks changing
+        _date_s = strftime('%d/%m/%y', _date_f)
+
+    return _date_s
 
 
 class SGCRange(object):

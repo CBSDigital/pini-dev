@@ -6,6 +6,7 @@ import os
 import six
 
 from pini import qt, pipe
+from pini.tools import release
 from pini.utils import single, norm_path
 
 from . import sg_handler, sg_utils
@@ -95,6 +96,8 @@ def find_jobs():
     Returns:
         (CPJob list): job
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
+
     _LOGGER.debug('FIND JOBS')
     _results = sg_handler.find(
         'Project', fields=_JOB_FIELDS,

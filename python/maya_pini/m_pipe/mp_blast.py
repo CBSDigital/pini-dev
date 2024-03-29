@@ -122,7 +122,6 @@ def _update_shotgrid_range(entity=None, range_=None, force=False):
 
     _cur_rng = range_ or dcc.t_range(int)
     _LOGGER.debug(' - CUR RANGE %s', _cur_rng)
-    # print shotgrid.to_entity_filter(_ety)
 
     # Read range from shotgrid
     _job_filter = shotgrid.to_job_filter(_ety)

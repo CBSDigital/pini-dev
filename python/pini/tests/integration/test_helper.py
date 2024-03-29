@@ -24,12 +24,13 @@ class TestHelper(unittest.TestCase):
 
         # Check outputs exists
         _work = testing.TEST_SHOT.to_work(task='anim', tag='test')
-        if not testing.TEST_SHOT.find_outputs('cache'):
+        _shot_c = pipe.CACHE.obt(testing.TEST_SHOT)
+        if not _shot_c.find_outputs('cache'):
             _abc = _work.to_output(
                 'cache', output_type='char', output_name='null', extn='abc')
             _abc.touch()
-            assert testing.TEST_SHOT.find_outputs('cache')
-        if not testing.TEST_SHOT.find_outputs('render'):
+            assert _shot_c.find_outputs('cache')
+        if not _shot_c.find_outputs('render'):
             _render = _work.to_output(
                 'render', output_name='null', extn='jpg')
             for _frame in range(1001, 1006):

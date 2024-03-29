@@ -1,3 +1,25 @@
+## [1.20.0] - Fri 2024-03-29 10:17
+### Summary
+ - Pini Helper:
+    - updated shotgrid caching system to improved speed,
+### Updated
+ - pini.utils.Dir.contains bugfix false potitive on matching root,
+ - pini.utils.File.read_pkl better EOFError,
+ - pini.pipe shotgrid updated to use SGC,
+ - pini.pipe.to_work_dir added catch,
+ - pini.pipe.CPWork.to_output better error on missing keys,
+ - pini.pipe.CPOutputBase.__init__ added for clarity,
+ - pini.pipe.CPOutputBase unified job/entity/work_dir handling across output types,
+ - pini.pipe.to_output added entity/work_dir,
+ - pini.pipe.CACHE.obt added work dir handling,
+ - pini.pipe.shotgrid.cache.to_cache_file added ver_n arg,
+ - pini.pipe.shotgrid.cache.SGCContainer.type_ added attr,
+ - pini.pipe.shotgrid.SGC added search functions,
+ - pini.pipe.shotgrid.SGC.find_user default return cur user,
+ - pini.pipe.shotgrid applied deprecations to non-cache functions,
+ - pini.pipe.shotgrid.update_work_task allow disable via $PINI_SG_DISABLE_UPDATE_TASK,
+
+
 ## [1.19.1] - Wed 2024-03-27 14:18
 ### Summary
  - Shotgrid Cache:

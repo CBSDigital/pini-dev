@@ -9,14 +9,15 @@ import time
 
 from pini import pipe, qt
 from pini.utils import (
-    single, strftime, to_time_f, check_heart, Path, basic_repr, cache_on_obj)
+    single, strftime, to_time_f, check_heart, Path, basic_repr, cache_on_obj,
+    passes_filter, to_str)
 
 from . import sgc_range, sgc_container, sgc_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SGCJob(object):
+class SGCJob(sgc_container.SGCContainer):
     """Represents a job on shotgrid."""
 
     def __init__(self, data, cache, job):
@@ -27,15 +28,18 @@ class SGCJob(object):
             cache (SGDataCache): parent cache
             job (CPJob): pipe job object
         """
-        self.data = data
+        super(SGCJob, self).__init__(data)
+
         self.cache = cache
         self.job = job
 
         self.sg = cache.sg
+
         self.prefix = data['sg_short_name']
         self.name = data['tank_name']
-        self.id_ = data['id']
-        self.filter_ = ('project', 'is', [{'type': 'Project', 'id': self.id_}])
+        self.path = data['path']
+
+        self.filter_ = ('project', 'is', self.to_entry())
         if not self.name:
             raise ValueError(data)
 
@@ -86,6 +90,19 @@ class SGCJob(object):
         """
         return self._read_tasks()
 
+    def find_asset(self, match):
+        """Find asset within this job.
+
+        Args:
+            match (str): asset name/path
+
+        Returns:
+            (SGCAsset): matching asset
+        """
+        return single([
+            _asset for _asset in self.assets
+            if match in (_asset.name, _asset.path)])
+
     def find_assets(self, progress=True, force=False):
         """Search assets within this job.
 
@@ -98,45 +115,171 @@ class SGCJob(object):
         """
         return self._read_assets(progress=progress, force=force)
 
-    def find_pub_files(self, progress=True, force=False):
+    def find_entity(self, match):
+        """Find entity within this job.
+
+        Args:
+            match (str|CPEntity): entity or path to match
+
+        Returns:
+            (SGCAsset|SGCShot): matching entity
+        """
+        _match_s = to_str(match)
+        return single([
+            _ety for _ety in self.entities
+            if _match_s in (_ety.name, _ety.path)])
+
+    def find_pub_file(self, path=None):
+        """Find a pub file in this job.
+
+        Args:
+            path (str): match by path
+
+        Returns:
+            (SGCPubFile): matching pub file
+        """
+        _path = to_str(path)
+        for _pub_file in self.pub_files:
+            if _pub_file.path == _path:
+                return _pub_file
+        raise ValueError(path)
+
+    def find_pub_files(
+            self, entity=None, work_dir=None, progress=True, force=False):
         """Search pub file within this job.
 
         Args:
+            entity (CPEntity): filter by entity
+            work_dir (CPWorkDir): filter by work dir
             progress (bool): show read progress
             force (bool): force reread data
 
         Returns:
             (SGCPubFile list): pub files
         """
-        return self._read_pub_files(progress=progress, force=force)
+        _pubs = []
+        for _pub in self._read_pub_files(progress=progress, force=force):
+            if entity and not entity.contains(_pub.path):
+                continue
+            if work_dir and not work_dir.contains(_pub.path):
+                continue
+            _pubs.append(_pub)
+        return _pubs
 
-    def find_shots(self, progress=True, force=False):
+    def find_shot(self, match=None, filter_=None):
+        """Find shot in this job.
+
+        Args:
+            match (str): match by name/path
+            filter_ (str): apply shot name filter
+
+        Returns:
+            (SGCShot): matching shot
+        """
+        _shots = self.find_shots(filter_=filter_)
+
+        if len(_shots) == 1:
+            return single(_shots)
+
+        _match_shots = [
+            _shot for _shot in _shots if match in (_shot.name, _shot.path)]
+        if len(_match_shots):
+            return single(_match_shots)
+
+        raise ValueError(match, filter_)
+
+    def find_shots(self, has_3d=None, filter_=None, progress=True, force=False):
         """Search shots within this job.
 
         Args:
+            has_3d (bool): filter by has 3d status
+            filter_ (str): apply shot name filter
             progress (bool): show read progress
             force (bool): force reread data
 
         Returns:
             (SGCShot list): shots
         """
-        return self._read_shots(progress=progress, force=force)
+        _shots = []
+        for _shot in self._read_shots(progress=progress, force=force):
+            if has_3d is not None and _shot.has_3d != has_3d:
+                continue
+            if filter_ and not passes_filter(_shot.name, filter_):
+                continue
+            _shots.append(_shot)
+        return _shots
 
-    def find_tasks(self, progress=True, force=False):
+    def find_task(self, path=None, entity=None, task=None, step=None):
+        """Find task within this job.
+
+        Args:
+            path (str): match by path
+            entity (CPEntity): filter by entity
+            task (str): filter by task
+            step (str): filter by step
+
+        Returns:
+            (SGCTask): matching task
+        """
+        _tasks = self.find_tasks(entity=entity, task=task, step=step)
+        if len(_tasks) == 1:
+            return single(_tasks)
+        for _task in _tasks:
+            if _task.path == path:
+                return _task
+        raise ValueError(path)
+
+    def find_tasks(
+            self, entity=None, task=None, step=None, department=None,
+            filter_=None, progress=True, force=False):
         """Search tasks within this job.
 
         Args:
+            entity (CPEntity): filter by entity
+            task (str): filter by task
+            step (str): filter by step
+            department (str): filter by department (eg. 3D/2D)
+            filter_ (str): apply step/task name filter
             progress (bool): show read progress
             force (bool): force reread data
 
         Returns:
             (SGCTask list): tasks
         """
-        return self._read_tasks(progress=progress, force=force)
+
+        # Prepare steps data
+        _step_ids = set()
+        if step:
+            _step_ids.add(self.cache.find_step(step).id_)
+        if department:
+            _steps = self.cache.find_steps(department='3d')
+            _step_ids |= {_step.id_ for _step in _step_ids}
+        _step_map = {_step.id_: _step.short_name for _step in self.cache.steps}
+
+        _tasks = []
+        for _task in self._read_tasks(progress=progress, force=force):
+
+            if entity and not entity.contains(_task.path):
+                continue
+            if task and _task.name != task:
+                continue
+            if _step_ids and _task.step_id not in _step_ids:
+                continue
+
+            if filter_:
+                if not passes_filter(_task.name, filter_):
+                    continue
+                _full_task = '{}/{}'.format(
+                    _step_map[_task.step_id], _task.name)
+                if not passes_filter(_full_task, filter_):
+                    continue
+
+            _tasks.append(_task)
+        return _tasks
 
     def _read_data(
-            self, entity_type, fields, entity_map=None,
-            progress=True, force=False):
+            self, entity_type, fields, entity_map=None, ver_n=None,
+            use_snapshots=True, progress=True, force=False):
         """Read data from shotgrid.
 
         If the data hasn't been updated since it was last read, the cached
@@ -146,6 +289,8 @@ class SGCJob(object):
             entity_type (str): entity type to read
             fields (str list): fields to read
             entity_map (dict): map of profile/id keys with entity values
+            ver_n (int): apply version number suffix to cache file
+            use_snapshots (bool): use timestamped snapshots
             progress (bool): show read progress
             force (bool): force reread data
                 1 - rebuild cache from date ranges
@@ -158,27 +303,31 @@ class SGCJob(object):
 
         _last_t = self._read_last_t(entity_type=entity_type)
         _last_rng = sgc_range.SGCRange(_last_t)
-        _cache_file = sgc_utils.to_cache_file(
+        _snapshot = sgc_utils.to_cache_file(
             entity_type=entity_type, job=self, fields=fields,
-            range_=_last_rng)
-        _LOGGER.debug(' - CACHE FILE %s', _cache_file)
+            range_=_last_rng, ver_n=ver_n)
+        _LOGGER.debug(' - SNAPSHOT %s', _snapshot)
 
-        if not force and _cache_file.exists():
-            _results = _cache_file.read_pkl()
-        else:
+        _results = None
+        if use_snapshots and not force and _snapshot.exists():
+            try:
+                _results = _snapshot.read_pkl()
+            except EOFError:
+                _LOGGER.info(' - FAILED TO READ SNAPSHOT %s', self.path)
+
+        if _results is None:
             _LOGGER.info(
                 ' - BUILDING CACHE %d %s %s %s',
-                force, self.job.name,
-                entity_type, _cache_file.path)
+                force, self.job.name, entity_type, _snapshot.path)
             _results = self._read_data_from_ranges(
                 entity_type=entity_type, fields=fields, entity_map=entity_map,
-                progress=progress, force=force > 1)
-            _cache_file.write_pkl(_results, force=True)
+                progress=progress, ver_n=ver_n, force=force > 1)
+            _snapshot.write_pkl(_results, force=True)
 
-        return _results
+        return sorted(_results, key=operator.itemgetter('path'))
 
     def _read_data_from_ranges(
-            self, entity_type, fields, entity_map=None,
+            self, entity_type, fields, entity_map=None, ver_n=None,
             progress=False, force=False):
         """Read shotgrid data from time range buckets.
 
@@ -186,6 +335,7 @@ class SGCJob(object):
             entity_type (str): entity type to read
             fields (str list): fields to read
             entity_map (dict): map of profile/id keys with entity values
+            ver_n (int): apply version number suffix to cache file
             progress (bool): show read progress
             force (bool): force reread data from shotgrid
 
@@ -206,7 +356,8 @@ class SGCJob(object):
 
             _LOGGER.debug(_rng.label)
             _cache_file = sgc_utils.to_cache_file(
-                entity_type=entity_type, fields=fields, job=self, range_=_rng)
+                entity_type=entity_type, fields=fields, job=self, range_=_rng,
+                ver_n=ver_n)
 
             # Obtain results
             if not force and _cache_file and _cache_file.exists():
@@ -222,7 +373,7 @@ class SGCJob(object):
             for _result in _r_results:
                 _path_map[_result['path']] = _result
 
-        _results = sorted(_path_map.values(), key=operator.itemgetter('path'))
+        _results = list(_path_map.values())
         _LOGGER.debug(
             ' - FOUND %d RESULTS IN %.01fs', len(_results),
             time.time() - _v_start)
@@ -255,8 +406,8 @@ class SGCJob(object):
 
         for _result in qt.progress_bar(
                 _sg_results,
-                '[SGC] Checking {{:d}} result{{}} ({} {})'.format(
-                    self.name, range_.label),
+                '[SGC] Checking {{:d}} {} result{{}} ({} {})'.format(
+                    entity_type, self.name, range_.label),
                 show=progress, col='Yellow',
                 stack_key='SGCValidateResults'):
 
@@ -281,6 +432,8 @@ class SGCJob(object):
                 continue
 
             # Add path data to result
+            if isinstance(_path, pipe.CPOutputBase):
+                _result['has_work_dir'] = bool(_path.work_dir)
             _result['path'] = _path.path
             _result['template'] = _path.template.source.pattern
             _result['template_type'] = _path.template.type_
@@ -361,10 +514,10 @@ class SGCJob(object):
         Returns:
             (SGCAsset list): assets
         """
+        _fields = ['sg_asset_type', 'code', 'sg_status_list', 'updated_at']
         _data = self._read_data(
-            entity_type='Asset',
-            fields=['sg_asset_type', 'code', 'sg_status_list'],
-            progress=progress, force=force)
+            entity_type='Asset', fields=_fields, progress=progress,
+            force=force)
         _assets = []
         for _item in _data:
             _asset = sgc_container.SGCAsset(_item)
@@ -386,7 +539,7 @@ class SGCJob(object):
             'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by']
         _data = self._read_data(
             entity_type='PublishedFile', fields=_fields, progress=progress,
-            force=force)
+            ver_n=1, force=force)
         _pub_files = []
         for _item in _data:
             _pub_file = sgc_container.SGCPubFile(_item)
@@ -404,11 +557,12 @@ class SGCJob(object):
         Returns:
             (SGCShot list): shots
         """
+        _fields = [
+            'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
+            'updated_at', 'sg_has_3d']
         _data = self._read_data(
             entity_type='Shot',
-            fields=[
-                'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
-                'sg_has_3d'],
+            fields=_fields,
             progress=progress, force=force)
         _shots = []
         for _item in _data:
@@ -427,10 +581,11 @@ class SGCJob(object):
         Returns:
             (SGCTask list): tasks
         """
+        _fields = [
+            'step', 'sg_short_name', 'entity', 'sg_status_list', 'updated_at']
         _ety_map = {(_ety.type_, _ety.id_): _ety for _ety in self.entities}
         _data = self._read_data(
-            entity_type='Task', entity_map=_ety_map,
-            fields=['step', 'sg_short_name', 'entity', 'sg_status_list'],
+            entity_type='Task', entity_map=_ety_map, fields=_fields,
             progress=progress, force=force)
         _tasks = []
         for _item in _data:
@@ -566,5 +721,5 @@ def _work_dir_from_result(result, step, entity_map, job):
         entity_path=_ety.path, step=step, task=_task)
     _LOGGER.debug(' - PATH %s', _path)
     _ety = pipe.to_entity(_path, job=job)
+
     return pipe.CPWorkDir(_path, entity=_ety)
-    # return _ety.to_work_dir(step=_step, task=_task)

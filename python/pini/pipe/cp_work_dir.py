@@ -514,8 +514,13 @@ class CPWorkDir(Dir):
         Returns:
             (CPOutput list): outputs
         """
+        from pini import pipe
         from pini.pipe import shotgrid
-        return shotgrid.find_pub_files(work_dir=self)
+        _outs = []
+        for _sg_pub in shotgrid.SGC.find_pub_files(work_dir=self):
+            _out = pipe.to_output(_sg_pub.path, work_dir=self)
+            _outs.append(_out)
+        return _outs
 
     def to_output(self, type_, tag=None, output_name=None, ver_n=1, extn=None):
         """Map this work dir to an output.
@@ -602,17 +607,20 @@ def map_task(task, step=None, fmt='pini'):
     return _task
 
 
-def to_work_dir(path, entity=None):
+def to_work_dir(path, entity=None, catch=True):
     """Build a work dir object from the given path.
 
     Args:
         path (str): path to convert to work dir
         entity (CPEntity): force parent entity (to facilitate caching)
+        catch (bool): no error if fail to create work dir
 
     Returns:
         (CPWorkDir|None): work dir (if any)
     """
     try:
         return CPWorkDir(path, entity=entity)
-    except ValueError:
-        return None
+    except ValueError as _exc:
+        if catch:
+            return None
+        raise _exc

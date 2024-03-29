@@ -65,7 +65,7 @@ def cur_user():
     from pini import pipe
     if pipe.MASTER == 'shotgrid':
         from . import shotgrid
-        _login = shotgrid.to_user_data()['login']
+        _login = shotgrid.SGC.find_user(get_user()).login
         _user = '-'.join(re.split('[@.]', _login))
         return _user
     return get_user()

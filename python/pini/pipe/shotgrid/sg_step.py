@@ -4,6 +4,7 @@ import logging
 
 import six
 
+from pini.tools import release
 from pini.utils import single
 
 from . import sg_handler, sg_utils
@@ -28,6 +29,7 @@ def find_steps(fmt='dict', only_3d=False):
     Returns:
         (list): steps data
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
     _steps = _read_steps_data()
     if only_3d:
         _steps = [_step for _step in _steps

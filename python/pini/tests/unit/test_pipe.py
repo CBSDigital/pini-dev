@@ -349,13 +349,26 @@ class TestCache(unittest.TestCase):
             _LOGGER.info('NO PUBLISH TEMPLATES SET UP')
             return
 
-        _pub = testing.TEST_ASSET.find_publishes(task='model')[-1]
-        _pub_c = pipe.CACHE.obt_output(_pub)
-        _ety_c = pipe.CACHE.obt_entity(_pub.entity)
+        pipe.CACHE.reset()
+
+        _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
+        _pub = _ety_c.find_publishes(task='model')[-1]
+        _pub_c = pipe.CACHE.obt(_pub)
+        _LOGGER.info('ETY (PUB) %s', _pub_c.entity)
+        _LOGGER.info('ETY       %s', _ety_c)
+
         assert isinstance(_pub_c, cache.CCPOutput)
         assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
         assert isinstance(_pub_c.work_dir.entity, cache.CCPEntity)
+
+        assert isinstance(_pub_c.entity, pipe.ENTITY_TYPES)
+        assert isinstance(_pub_c.entity, pipe.CPAsset)
+        assert isinstance(_pub_c.entity, cache.CCPAsset)
         assert isinstance(_pub_c.entity, cache.CCPEntity)
+
+        assert _ety_c == pipe.CACHE.obt(_pub_c.entity)
+        assert _ety_c is pipe.CACHE.obt(_pub_c.entity)
+        assert _pub_c.entity == _ety_c
         assert _pub_c.entity is _ety_c
         assert _pub_c.work_dir.entity is _ety_c
 

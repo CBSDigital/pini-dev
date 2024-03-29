@@ -5,9 +5,10 @@ import operator
 import time
 
 from pini import pipe
+from pini.tools import release
 from pini.utils import abs_path, passes_filter, Seq
 
-from . import sg_handler, sg_job, sg_task, sg_user, sg_entity, sg_utils
+from . import sg_handler, sg_job, sg_task, sg_entity, sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 _PUB_FILE_FIELDS = [
@@ -26,6 +27,7 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     Returns:
         (dict): registered data
     """
+    from pini.pipe import shotgrid
     _LOGGER.info('CREATE PUB FILE %s', output)
 
     # Catch already exists
@@ -52,39 +54,49 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
         _code = 'Image Sequence'
     else:
         _code = output.extn
-    _type = sg_handler.find_one(
+    _sg_type = sg_handler.find_one(
         'PublishedFileType', filters=[('code', 'is', _code)])
 
-    # Obtain user data
-    _user_data = sg_user.to_user_data()
-    _LOGGER.debug(' - USER DATA %s', _user_data)
-    assert _user_data
+    _sg_ety = shotgrid.SGC.find_entity(output.entity)
+    _sg_user = shotgrid.SGC.find_user()
+    _sg_job = shotgrid.SGC.find_job(output.job)
+    _sg_task = shotgrid.SGC.find_task(
+        entity=output.entity, step=output.step, task=output.task)
 
     # Build data
     _data = {
         'code': output.filename,
-        'created_by': sg_user.to_user_data(),
+        'created_by': _sg_user.to_entry(),
         'description': _notes,
-        'entity': sg_entity.to_entity_data(output),
+        'entity': _sg_ety.to_entry(),
         'name': output.filename,
         'path_cache': pipe.JOBS_ROOT.rel_path(output.path),
-        'project': sg_job.to_job_data(output.job),
-        'published_file_type': _type,
-        'task': sg_task.to_task_data(output),
+        'project': _sg_job.to_entry(),
+        'published_file_type': _sg_type,
+        'task': _sg_task.to_entry(),
         'sg_status_list': status,
-        'updated_by': _user_data,
+        'updated_by': _sg_user.to_entry(),
         'version_number': output.ver_n,
     }
+
+    # Apply to shotgrid
     if not _existing_id:
         _result = sg_handler.create('PublishedFile', _data)
         _LOGGER.debug(' - RESULT %s', _result)
         _id = _result['id']
-        to_pub_file_data(output, data=_result, force=True)  # Update cache
     else:
         for _field in ['created_by', 'updated_by']:
             _data.pop(_field)
         sg_handler.update('PublishedFile', _existing_id, _data)
         _id = _existing_id
+
+    # Update cache
+    _sg_job.find_pub_files(force=True)
+    assert _sg_job.find_pub_file(output)
+    _job_c = pipe.CACHE.obt(output.job)
+    _job_c.find_outputs(force=True)
+    _out_c = pipe.CACHE.obt(output)
+    assert _out_c
 
     # Apply thumb
     _thumb = thumb
@@ -225,6 +237,7 @@ def find_pub_files(
         (CPOutput list): outputs
     """
     from pini import qt
+    release.apply_deprecation('27/03/24', 'Use shotgrid.SGC')
 
     _start = time.time()
     _LOGGER.debug('FIND PUB FILES')

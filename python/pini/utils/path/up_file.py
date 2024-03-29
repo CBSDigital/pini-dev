@@ -328,7 +328,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             (any): pickled data
         """
         _handle = open(self.path, "rb")
-        _obj = pickle.load(_handle)
+        try:
+            _obj = pickle.load(_handle)
+        except EOFError as _exc:
+            _handle.close()
+            raise EOFError('{} {}'.format(_exc, self.path))
         _handle.close()
         return _obj
 

@@ -3,12 +3,13 @@
 import functools
 import logging
 import operator
-import time
+import os
 
 import six
 
 from pini.utils import (
-    single, apply_filter, get_method_to_file_cacher, cache_method_to_file)
+    single, apply_filter, get_method_to_file_cacher, cache_method_to_file,
+    check_heart)
 
 from .ccp_utils import pipe_cache_result
 from ..cp_job import CPJob
@@ -165,7 +166,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             (CCPAsset list): matching assets
         """
         from pini import pipe
-        _LOGGER.debug('FIND ASSETS force=%d', force)
+        _LOGGER.log(9, 'FIND ASSETS force=%d', force)
 
         if pipe.MASTER == 'disk':
             _types = [asset_type] if asset_type else self.asset_types
@@ -317,7 +318,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         Returns:
             (CPShot list): matching shots
         """
-        _LOGGER.debug('FIND SHOTS')
+        _LOGGER.log(9, 'FIND SHOTS')
         if force:
             if not self.uses_sequence_dirs:
                 self._read_shots_disk(force=True)
@@ -370,7 +371,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             (CCPEntity): matching entity
         """
         from pini import pipe
-        _LOGGER.debug('FIND ENTITY %s', match)
+        _LOGGER.log(9, 'FIND ENTITY %s', match)
 
         _match = match
         if isinstance(_match, six.string_types):
@@ -388,9 +389,9 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
         if isinstance(_match, CPEntity):
             _etys = self.entities
-            _LOGGER.debug(' - ETYS %s', _etys)
+            _LOGGER.log(9, ' - ETYS %s', _etys)
             _matches = [_ety for _ety in _etys if _ety == _match]
-            _LOGGER.debug(' - ETY MATCHES %s', _matches)
+            _LOGGER.log(9, ' - ETY MATCHES %s', _matches)
             return single(_matches, catch=True)
 
         return super(CCPJob, self).find_entity(_match)
@@ -452,77 +453,23 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('READ WORK DIRS SG %s', self)
         from pini.pipe import shotgrid, cache
 
-        _start = time.time()
-        _sg = shotgrid.to_handler()
-        _tmpl = self.find_template('work_dir')
-        _LOGGER.debug(' - TMPL %s', _tmpl)
-
-        # Build entity map
-        _etys = self.entities
-        _LOGGER.debug(' - FOUND %d ETYS', len(_etys))
-        _e_start = time.time()
-        _ety_map = {}
-        for _ety in reversed(_etys):
-            _key = _ety.profile, shotgrid.to_entity_id(_ety)
-            _ety_map[_key] = _ety
-        _LOGGER.debug(' - MAPPED %d ETYS IN %.01fs', len(_ety_map),
-                      time.time() - _e_start)
-
-        # Read tasks from shotgrid
-        _s_start = time.time()
-        if self.entities:
-            _filters = [
-                shotgrid.to_job_filter(self),
-                shotgrid.to_entities_filter(self.entities)]
-            _results = _sg.find(
-                'Task', filters=_filters,
-                fields=shotgrid.TASK_FIELDS+['entity'])
-        else:
-            _results = []
-        _LOGGER.debug(' - FOUND %d RESULTS IN %.01fs', len(_results),
-                      time.time() - _s_start)
-
-        # Map tasks to work dirs
+        _etys = list(self.entities)
         _work_dirs = []
-        for _idx, _result in enumerate(_results):
+        _filter = os.environ.get('PINI_PIPE_TASK_FILTER')
+        for _sg_task in shotgrid.SGC.find_tasks(
+                job=self, department='3d', filter_=_filter):
 
-            _task = _result['sg_short_name']
-            if not _result['step'] or not _task:
-                continue
+            _LOGGER.debug(' - TASK %s', _sg_task)
 
             # Find entity
-            _LOGGER.debug(
-                '[%d/%d] TESTING %s %s', _idx, len(_results),
-                _result['entity']['name'], _result['sg_short_name'])
-            _ety_data = _result['entity']
-            _ety_type = _ety_data['type']
-            if _ety_type in ['Sequence']:
-                _LOGGER.debug(' - REJECTING TYPE %s', _ety_type)
+            _ety = _iter_to_next_parent(path=_sg_task.path, parents=_etys)
+            _LOGGER.debug('   - ETY %s', _ety)
+            if not _ety:
                 continue
-            _ety_key = _ety_data['type'].lower(), _ety_data['id']
-            _LOGGER.debug(' - ETY KEY %s', _ety_key)
-            if _ety_key not in _ety_map:
-                continue
-            _ety = _ety_map[_ety_key]
-            _LOGGER.debug(' - ETY %s', _ety)
 
-            # Obtain step data
-            _step_data = shotgrid.to_step_data(_result['step']['id'])
-            _LOGGER.debug(' - STEP DATA %s', _step_data)
-            _step = _step_data['short_name']
-            _LOGGER.debug(' - STEP/TASK %s %s', _step, _task)
-
-            # Build path
-            _path = _tmpl.format(
-                entity_path=_ety.path, step=_step, task=_task)
-            _LOGGER.debug(' - PATH %s', _path)
-
-            _work_dir = cache.CCPWorkDir(_path, entity=_ety)
+            _work_dir = cache.CCPWorkDir(_sg_task.path, entity=_ety)
             _work_dirs.append(_work_dir)
 
-        _LOGGER.debug(
-            'FOUND %d WORK DIRS (%.01fs)', len(_work_dirs),
-            time.time() - _start)
         return _work_dirs
 
     def find_outputs(self, type_=None, force=False, progress=False, **kwargs):
@@ -554,73 +501,55 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             (CCPOutput list): outputs
         """
         _LOGGER.debug('READ OUTPUTS SG %s', self)
-        from pini import pipe, qt
-        from pini.pipe import cache
+        from pini.pipe import cache, shotgrid
 
-        assert pipe.MASTER == 'shotgrid'
-        _start = time.time()
-        _outs = self._read_sg_pub_files(force=force, progress=progress)
+        _etys = list(self.entities)
+        _work_dirs = list(self.work_dirs)
 
-        # Convert to cacheable objects
-        _r_start = time.time()
-        _c_outs = []
-        for _out in qt.progress_bar(
-                _outs, 'Registering {:d} outs', show=progress,
-                stack_key='RegisteringJobOutputs'):
+        _outs = []
+        for _sg_pub in shotgrid.SGC.find_pub_files(job=self):
 
-            _LOGGER.debug(' - ADD OUT %s', _out)
-
-            # Find entity
-            _ety = self.obt_entity(_out.entity)
-            if not _ety:
+            _LOGGER.debug('PUB %s', _sg_pub)
+            if _sg_pub.status in ('omt', ):
                 continue
 
-            # Find work dir
-            _work_dir = None
-            if _out.work_dir:
-                _work_dir = _ety.obt_work_dir(_out.work_dir)
+            # Find parent entity or work dir
+            _work_dir = _ety = None
+            if not _sg_pub.has_work_dir:
+                _ety = _iter_to_next_parent(
+                    path=_sg_pub.path, parents=_etys)
+            else:
+                _work_dir = _iter_to_next_parent(
+                    path=_sg_pub.path, parents=_work_dirs)
+            if not (_ety or _work_dir):
+                continue
+            _LOGGER.debug(' - ETY %s', _ety)
+            _LOGGER.debug(' - WORK DIR %s', _work_dir)
 
             # Determine output class
-            if isinstance(_out, pipe.CPOutputVideo):
-                _class = cache.CCPOutputVideo
-            elif isinstance(_out, pipe.CPOutput):
+            if _sg_pub.template_type in ('publish', 'cache'):
                 _class = cache.CCPOutput
-            elif isinstance(_out, pipe.CPOutputSeq):
+            elif _sg_pub.template_type in ('blast_mov', 'mov'):
+                _class = cache.CCPOutputVideo
+            elif _sg_pub.template_type in ('blast', 'render', 'cache_seq'):
                 _class = cache.CCPOutputSeq
             else:
-                raise ValueError(_out)
+                raise ValueError(_sg_pub.template_type)
 
             # Build output object
-            _tmpl = self.find_template_by_pattern(_out.template.source.pattern)
+            _tmpl = self.find_template_by_pattern(_sg_pub.template)
             try:
-                _c_out = _class(
-                    _out.path, entity=_ety, work_dir=_work_dir, template=_tmpl)
+                _out = _class(
+                    _sg_pub.path, entity=_ety, work_dir=_work_dir,
+                    template=_tmpl)
             except ValueError:  # Can fail if config changed
-                _LOGGER.warning(' - BUILD OUT FAILED %s', _out)
+                _LOGGER.warning(' - BUILD OUT FAILED %s', _sg_pub)
                 continue
+            _LOGGER.debug('   - OUT %s', _out)
 
-            _LOGGER.debug('   - C OUT %s', _c_out)
-            _c_outs.append(_c_out)
+            _outs.append(_out)
+            assert isinstance(_out.entity, cache.CCPEntity)
 
-        _LOGGER.info(
-            ' - REGISTERED %d OUTPUTS IN %.01fs', len(_c_outs),
-            time.time() - _r_start)
-        return _c_outs
-
-    @get_method_to_file_cacher(max_age=60*60*24, min_mtime=1710877461)
-    def _read_sg_pub_files(self, progress=False, force=False):
-        """Read shotgrid published files for this job.
-
-        Args:
-            progress (bool): show progress dialog
-            force (bool): force re-read cache
-
-        Returns:
-            (CPOutput list): outputs
-        """
-        from pini.pipe import shotgrid
-        _outs = shotgrid.find_pub_files(
-            job=self, entities=self.entities, progress=progress)
         return _outs
 
     @get_method_to_file_cacher()
@@ -705,3 +634,38 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         """
         super(CCPJob, self).create_asset_type(*args, **kwargs)
         self.find_asset_types(force=True)
+
+
+def _iter_to_next_parent(path, parents):
+    """Iterate the given order list to find the next parent.
+
+    eg. Iterate over a sorted list of shots to find the shot containing the
+    given path. If the path provided falls before (alphabetically) the next
+    shot, it's assumed that the path doesn't fall within a shot and None
+    is returned.
+
+    NOTE: the list of parents is altered during this process
+
+    Args:
+        path (str): path to iterate to
+        parents (Dir list): ordered list of parents
+
+    Returns:
+        (Dir|None): next parent dir (if any)
+    """
+    _parent = None
+    while parents:
+        check_heart()
+        if parents[0].contains(path):
+            _parent = parents[0]
+            break
+        if parents[0].path > path:
+            _LOGGER.debug('   - PARENT NOT FOUND')
+            break
+        _LOGGER.debug('   - MOVING TO NEXT PARENT %s', parents[0])
+        parents.pop(0)
+
+    if _parent:
+        assert _parent.contains(path)
+
+    return _parent

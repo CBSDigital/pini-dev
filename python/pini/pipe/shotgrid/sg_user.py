@@ -4,6 +4,7 @@ import logging
 
 import six
 
+from pini.tools import release
 from pini.utils import single, get_user
 
 from . import sg_handler, sg_utils
@@ -38,6 +39,7 @@ def to_user_data(user=None, catch=True, force=False):
     Returns:
         (dict): user data
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
     _LOGGER.debug('TO USER DATA %s', user)
 
     # Read username

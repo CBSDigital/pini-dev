@@ -61,27 +61,52 @@ class CPOutputBase(object):
     data = None
     template = None
 
-    @property
-    def pini_task(self):
-        """Obtain mapped/pini task.
+    def __init__(
+            self, job=None, entity=None, work_dir=None, templates=None,
+            template=None, types=None):
+        """Constructor.
 
-        This accomodates for different task labelling at different sites.
-
-        eg. a surf/dev task is identified in pini as lookdev
-
-        Returns:
-            (str): pini task
+        Args:
+            job (CPJob): force parent job
+            entity (CPEntity): force the parent entity object
+            work_dir (CPWorkDir): force parent work dir
+            templates (CPTemplate list): force list of templates to check
+            template (CPTemplate): force template to use
+            types (str list): override list of template types to test for
         """
-        from pini import pipe
-        return pipe.map_task(task=self.task, step=self.step)
 
-    def _extract_data_from_templates(
-            self, job, entity, types, templates=None, template=None, task=None):
+        # Setup job
+        self.job = job
+        if not self.job and entity:
+            self.job = entity.job
+        if not self.job and work_dir:
+            self.job = work_dir.job
+
+        # Setup entity
+        self.entity = entity
+        if not self.entity and work_dir:
+            self.entity = work_dir.entity
+        if not self.entity:
+            self.entity = to_entity(self.path, job=job)
+            if not self.job:
+                self.job = self.entity.job
+        self.profile = self.entity.profile
+        assert self.job
+
+        # Setup work dir
+        self._work_dir = work_dir
+        if self._work_dir:
+            self.task = self._work_dir.task
+
+        self._init_extract_data_from_templates(
+            types=types or OUTPUT_TEMPLATE_TYPES,
+            templates=templates, template=template)
+
+    def _init_extract_data_from_templates(
+            self, types, templates=None, template=None, task=None):
         """Match path with a template and extract data.
 
         Args:
-            job (CPJob): parent job
-            entity (CPEntity): parent entity
             types (str list): template types to check
             templates (CPTemplate list): force list of templates to check
             template (CPTemplate): force template to use
@@ -89,15 +114,10 @@ class CPOutputBase(object):
         """
         _LOGGER.log(9, ' - EXTRACT DATA FROM TEMPLATES %s', self.path)
 
-        # Set up entity/job
-        self.entity = entity or to_entity(self.path, job=job)
-        self.job = self.entity.job
-        self.profile = self.entity.profile
-
         # Apply templates to data. Apply single template alone to get better
         # error on fail. NOTE: sometimes the templates can fail due to data
         # not represented in the repr, eg. tokens fail to validate.
-        _tmpls = self._extract_data_find_output_templates(
+        _tmpls = self._init_extract_data_find_output_templates(
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
@@ -153,7 +173,8 @@ class CPOutputBase(object):
 
         self.output_type = self.data.get('output_type')
 
-    def _extract_data_find_output_templates(self, template, templates, types):
+    def _init_extract_data_find_output_templates(
+            self, template, templates, types):
         """Find output templates to match with this output.
 
         Args:
@@ -190,6 +211,20 @@ class CPOutputBase(object):
             _LOGGER.log(9, ' - TEMPLATES[%d] %s', _idx, _tmpl)
 
         return _tmpls
+
+    @property
+    def pini_task(self):
+        """Obtain mapped/pini task.
+
+        This accomodates for different task labelling at different sites.
+
+        eg. a surf/dev task is identified in pini as lookdev
+
+        Returns:
+            (str): pini task
+        """
+        from pini import pipe
+        return pipe.map_task(task=self.task, step=self.step)
 
     @property
     def pini_ver(self):
@@ -594,13 +629,13 @@ class CPOutput(File, CPOutputBase):
     __lt__ = CPOutputBase.__lt__
     yaml_tag = '!CPOutput'
 
-    def __init__(
-            self, file_, job=None, entity=None, work_dir=None, templates=None,
+    def __init__(  # pylint: disable=unused-argument
+            self, path, job=None, entity=None, work_dir=None, templates=None,
             template=None, types=None):
         """Constructor.
 
         Args:
-            file_ (str): path to file
+            path (str): path to file
             job (CPJob): parent job
             entity (CPEntity): force the parent entity object
             work_dir (CPWorkDir): force parent work dir
@@ -608,14 +643,11 @@ class CPOutput(File, CPOutputBase):
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
         """
-        super(CPOutput, self).__init__(file_)
-        self._extract_data_from_templates(
-            entity=entity, types=types or OUTPUT_TEMPLATE_TYPES,
-            templates=templates, template=template, job=job,
-            task=work_dir.task if work_dir else None)
-        if work_dir:
-            self._work_dir = work_dir
-            self.task = work_dir.task
+        super(CPOutput, self).__init__(path)
+        CPOutputBase.__init__(
+            self, job=job, entity=entity, work_dir=work_dir,
+            template=template, templates=templates,
+            types=types or OUTPUT_TEMPLATE_TYPES)
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -656,12 +688,12 @@ class CPOutputVideo(CPOutput, clip.Video):
     to_frame = clip.Video.to_frame
 
     def __init__(
-            self, file_, job=None, entity=None, work_dir=None, templates=None,
+            self, path, job=None, entity=None, work_dir=None, templates=None,
             template=None, types=None):
         """Constructor.
 
         Args:
-            file_ (str): path to file
+            path (str): path to file
             job (CPJob): force parent job
             entity (CPEntity): force the parent entity object
             work_dir (CPWorkDir): force parent work dir
@@ -669,10 +701,9 @@ class CPOutputVideo(CPOutput, clip.Video):
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
         """
-        _LOGGER.log(9, 'INIT CPOutputVideo %s', file_)
         super(CPOutputVideo, self).__init__(
-            file_, job=job, entity=entity, work_dir=work_dir,
-            templates=templates, template=template,
+            path, job=job, entity=entity, work_dir=work_dir,
+            template=template, templates=templates,
             types=types or OUTPUT_VIDEO_TEMPLATE_TYPES)
 
     @classmethod
@@ -775,9 +806,9 @@ class CPOutputSeq(Seq, CPOutputBase):
     yaml_tag = '!CPOutputSeq'
     to_file = Seq.to_file
 
-    def __init__(
+    def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,
-            template=None, frames=None, dir_=None):
+            template=None, frames=None, dir_=None, types=None):
         """Constructor.
 
         Args:
@@ -789,16 +820,15 @@ class CPOutputSeq(Seq, CPOutputBase):
             template (CPTemplate): force template to use
             frames (int list): force frame cache
             dir_ (Dir): parent directory (to facilitate caching)
+            types (str list): override list of template types to test for
         """
         _LOGGER.debug('INIT CPOutputSeq %s', path)
-        super(CPOutputSeq, self).__init__(path, frames=frames)
+        super(CPOutputSeq, self).__init__(path=path, frames=frames)
+        CPOutputBase.__init__(
+            self, job=job, entity=entity, work_dir=work_dir,
+            template=template, templates=templates,
+            types=types or OUTPUT_SEQ_TEMPLATE_TYPES)
         self._dir = dir_
-        self._work_dir = work_dir
-        _LOGGER.debug(' - PATH %s', self.path)
-        self._extract_data_from_templates(
-            entity=entity, types=OUTPUT_SEQ_TEMPLATE_TYPES, job=job,
-            templates=templates, template=template)
-
         self._thumb = File('{}/.pini/{}_thumb.jpg'.format(self.dir, self.base))
 
     @classmethod
@@ -906,12 +936,15 @@ def cur_output():
         return None
 
 
-def to_output(path, job=None, template=None, catch=False):
+def to_output(
+        path, job=None, entity=None, work_dir=None, template=None, catch=False):
     """Get an output object based on the given path.
 
     Args:
         path (str): path to convert
         job (CPJob): parent job
+        entity (CPEntity): parent entity
+        work_dir (CPWorkDir): parent work dir
         template (CPTemplate): template to use
         catch (bool): no error if no output created
 
@@ -931,13 +964,15 @@ def to_output(path, job=None, template=None, catch=False):
         raise ValueError('Empty path')
 
     _file = File(path)
-    _LOGGER.log(9, ' - FILE %s', _file)
+    _LOGGER.log(9, ' - PATH %s', _file.path)
     if '%' in _file.path:
-        return CPOutputSeq(path, job=job, template=template)
-    _class = CPOutput
-    if _file.extn and _file.extn.lower() in ['mp4', 'mov']:
+        _class = CPOutputSeq
+    elif _file.extn and _file.extn.lower() in ('mp4', 'mov'):
         _class = CPOutputVideo
-    return _class(path, job=job, template=template)
+    else:
+        _class = CPOutput
+    return _class(
+        path, job=job, entity=entity, template=template, work_dir=work_dir)
 
 
 def ver_sort(out):

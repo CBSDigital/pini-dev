@@ -152,7 +152,6 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         Args:
             references (str): how to handle references (eg. Remove)
         """
-
         _remove_junk = self.ui.RemoveJunk.isChecked() if self.ui else True
         _remove_sets = self.ui.RemoveSets.isChecked() if self.ui else True
 

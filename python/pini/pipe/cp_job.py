@@ -553,10 +553,11 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPAsset list): assets
         """
+        from pini import pipe
         from pini.pipe import shotgrid
-        _assets = shotgrid.find_assets(job=self)
-        if class_:
-            _assets = [class_(_asset, job=self) for _asset in _assets]
+        _sg_assets = shotgrid.SGC.find_assets(job=self)
+        _class = class_ or pipe.CPAsset
+        _assets = [_class(_sg_asset.path, job=self) for _sg_asset in _sg_assets]
         return _assets
 
     def find_sequence(self, match=None):
@@ -775,26 +776,27 @@ class CPJob(cp_settings.CPSettingsLevel):
 
         return _shots
 
-    def read_shots_sg(self, class_=None, filter_=None):
+    def read_shots_sg(self, class_=None):
         """Read shots from shotgrid.
 
         Args:
             class_ (class): override shot class
-            filter_ (str): apply name filter
 
         Returns:
             (CPShot list): shots
         """
-        _LOGGER.debug('READ SHOTS SG')
+        from pini import pipe
         from pini.pipe import shotgrid
-        _only_3d = self.settings['shotgrid']['only_3d']
-        _shots = shotgrid.find_shots(
-            job=self, only_3d=_only_3d, filter_=filter_)
-        _LOGGER.debug(' - READ %d SHOTS %s', len(_shots), _shots)
-        if class_:
-            _LOGGER.debug(' - CLASS %s', class_)
-            _shots = [class_(_shot, job=self) for _shot in _shots]
-            _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
+        _LOGGER.debug('READ SHOTS SG')
+        _class = class_ or pipe.CPShot
+        _has_3d = True if self.settings['shotgrid']['only_3d'] else None
+        _sg_shots = shotgrid.SGC.find_shots(job=self, has_3d=_has_3d)
+        _sg_shots = [
+            _sg_shot for _sg_shot in _sg_shots
+            if _sg_shot.status not in ('omt', )]
+        _shots = [_class(_sg_shot.path, job=self) for _sg_shot in _sg_shots]
+        _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
+        assert len(_sg_shots) == len(_shots)
         return _shots
 
     def read_type_assets(self, asset_type, class_=None):
@@ -1015,10 +1017,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPOutput list): outputs
         """
-        from pini import pipe
-        from pini.pipe import shotgrid
-        assert pipe.MASTER == 'shotgrid'
-        return shotgrid.find_pub_files(job=self, progress=progress)
+        raise NotImplementedError("Use cache")
 
     def to_prefix(self):
         """Obtain prefix for this job.
@@ -1269,7 +1268,7 @@ def find_jobs(filter_=None, class_=None, cfg_name=None, jobs_root=None):
         _dirs = _root.find(depth=1, type_='d', catch_missing=True)
     elif pipe.MASTER == 'shotgrid':
         from pini.pipe import shotgrid
-        _dirs = shotgrid.find_jobs()
+        _dirs = [_job.path for _job in shotgrid.SGC.jobs]
     else:
         raise ValueError(pipe.MASTER)
 

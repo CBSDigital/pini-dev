@@ -15,7 +15,7 @@ import six
 from pini import dcc, icons
 from pini.utils import (
     File, strftime, HOME, cache_property, to_time_f, get_user,
-    passes_filter, single, EMPTY, abs_path, Video, Seq)
+    passes_filter, single, EMPTY, abs_path, Video, Seq, plural)
 
 from . import cp_utils
 from .cp_work_dir import CPWorkDir, map_task
@@ -444,9 +444,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
 
         elif pipe.MASTER == 'shotgrid':
             _LOGGER.debug(' - SEARCHING JOB OUTS %s', self.job)
-            _outs = self.job.find_outputs(
-                entity=self.entity, task=self.task, ver_n=self.ver_n,
-                tag=self.tag)
+            _outs = self.work_dir.find_outputs(
+                ver_n=self.ver_n, tag=self.tag)
             _LOGGER.debug(' - FOUND %d OUTS', len(_outs))
 
         else:
@@ -501,6 +500,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
                 without confirmation
         """
         from pini import pipe
+        from pini.tools import error
         _LOGGER.debug('SAVE WORK %s', self)
 
         if not self.work_dir.exists():
@@ -556,6 +556,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             try:
                 shotgrid.update_work_task(self)
             except Exception as _exc:  # pylint: disable=broad-except
+                _LOGGER.debug(error.PEError().to_text())
                 _LOGGER.error('FAILED TO UPDATE SHOTGRID %s', _exc)
 
         self.set_env()
@@ -760,8 +761,16 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             raise ValueError(_tmpl.name)
         _LOGGER.debug(' - CLASS %s', _class)
 
+        # Build path
+        _missing_keys = [
+            _key for _key in _tmpl.keys()
+            if _key not in _data or _data[_key] is None]
+        if _missing_keys:
+            raise ValueError('Missing key{} {}'.format(
+                plural(_missing_keys), '/'.join(_missing_keys)))
         _path = _tmpl.format(_data)
         _LOGGER.debug(' - PATH %s', _path)
+
         _work_dir = self.work_dir if self.work_dir.contains(_path) else None
         if _work_dir:
             _tmpl = _tmpl.apply_data(work_dir=_work_dir.path)

@@ -272,6 +272,12 @@ class TestPath(unittest.TestCase):
         _file.bkp()
         assert _file.find_bkps()
 
+    def test_contains(self):
+
+        assert not Dir('/test/blah').contains('/test/blah')
+        assert Dir('/test/blah').contains('/test/blah/blah')
+        assert not Dir('/test/blah').contains('/test/blahblah')
+
     def test_find(self):
 
         # Test find in test dir

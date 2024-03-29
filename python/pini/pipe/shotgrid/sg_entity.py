@@ -4,6 +4,7 @@ import logging
 import os
 
 from pini import qt, pipe
+from pini.tools import release
 from pini.utils import single, passes_filter
 
 from . import sg_handler, sg_utils, sg_sequence, sg_job
@@ -46,6 +47,7 @@ def find_assets(job=None):
     Returns:
         (CPAsset list): assets
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
 
     _job = job or pipe.cur_job()
     _tmpl = _job.find_template('entity_path', profile='asset')
@@ -85,6 +87,8 @@ def find_shots(job=None, only_3d=False, filter_=None):
     Returns:
         (CPShot list): shots
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
+
     _LOGGER.debug('FIND SHOTS %s', job)
 
     _job = job or pipe.cur_job()

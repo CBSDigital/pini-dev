@@ -8,7 +8,7 @@ import operator
 
 from pini import pipe
 from pini.utils import (
-    single, strftime, basic_repr, cache_on_obj, apply_filter)
+    single, strftime, basic_repr, cache_on_obj, apply_filter, get_user)
 
 from . import sgc_job, sgc_utils, sgc_container
 
@@ -60,6 +60,41 @@ class SGDataCache(object):
         """
         return self._read_users()
 
+    def find_asset(self, match):
+        """Find an asset.
+
+        Args:
+            match (str): path/name to match
+
+        Returns:
+            (SGCAsset): matching asset
+        """
+        _job = pipe.to_job(match)
+        return self.find_job(_job).find_asset(match)
+
+    def find_assets(self, job):
+        """Search assets in the cache.
+
+        Args:
+            job (CPJob): job to search
+
+        Returns:
+            (SGCAsset list): assets
+        """
+        return self.find_job(job).find_assets()
+
+    def find_entity(self, match):
+        """Find an entity within the cache.
+
+        Args:
+            match (str|CPEntity): entity or path to match
+
+        Returns:
+            (SGCAsset|SGCShot): matching entity
+        """
+        _job = pipe.to_job(match)
+        return self.find_job(_job).find_entity(match)
+
     def find_job(self, match):
         """Find a job.
 
@@ -71,7 +106,7 @@ class SGDataCache(object):
         """
         _match_jobs = [
             _job for _job in self.jobs
-            if match in (_job.name, _job.id_, _job.prefix)]
+            if match in (_job.name, _job.id_, _job.prefix, _job.job)]
         if len(_match_jobs) == 1:
             return single(_match_jobs)
 
@@ -93,6 +128,65 @@ class SGDataCache(object):
         """
         return self._read_jobs(force=force)
 
+    def find_pub_file(self, path=None, job=None):
+        """Find a pub file in the cache.
+
+        Args:
+            path (str): match by path
+            job (CPJob): job to search
+
+        Returns:
+            (SGCPubFile): matching pub file
+        """
+        _job = job or pipe.CPJob(path)
+        return self.find_job(_job).find_pub_file(path=path)
+
+    def find_pub_files(self, job=None, entity=None, work_dir=None):
+        """Search pub files in the cache.
+
+        Args:
+            job (CPJob): job to search
+            entity (CPEntity): filter by entity
+            work_dir (CPWorkDir): filter by work dir
+
+        Returns:
+            (SGCPubFile list): pub files
+        """
+        _job = None
+        if job:
+            _job = job
+        if not _job and entity:
+            _job = entity.job
+        if not _job and work_dir:
+            _job = work_dir.job
+        assert _job
+        return self.find_job(_job).find_pub_files(
+            entity=entity, work_dir=work_dir)
+
+    def find_shot(self, match):
+        """Find a shot in the cache.
+
+        Args:
+            match (str): shot name/path
+
+        Returns:
+            (SGCShot): matching shot
+        """
+        _job = pipe.to_job(match)
+        return self.find_job(_job).find_shot(match)
+
+    def find_shots(self, job, has_3d=None):
+        """Search the cache for shots.
+
+        Args:
+            job (CPJob): job to search
+            has_3d (bool): filter by shot has 3D status
+
+        Returns:
+            (SGCShot list): matching shots
+        """
+        return self.find_job(job).find_shots(has_3d=has_3d)
+
     def find_step(self, match):
         """Find a pipeline step.
 
@@ -105,18 +199,59 @@ class SGDataCache(object):
         return single([_step for _step in self.steps if match in (
             _step.id_, _step.short_name)])
 
-    def find_steps(self, force=False):
+    def find_steps(self, department=None, force=False):
         """Search pipeline steps.
 
         Args:
+            department (str): filter by department (eg. 3D/2D)
             force (bool): force rebuild cache
 
         Returns:
             ():
         """
-        return self._read_steps(force=force)
+        _steps = []
+        for _step in self._read_steps(force=force):
+            if department and _step.department != department:
+                continue
+            _steps.append(_step)
+        return _steps
 
-    def find_user(self, match, catch=True):
+    def find_task(self, path=None, entity=None, step=None, task=None):
+        """Find a task in the cache.
+
+        Args:
+            path (str): path to match
+            entity (str): filter by entity
+            step (str): filter by step
+            task (str): filter by task
+
+        Returns:
+            (SGCTask): matching task
+        """
+        _job = None
+        if entity:
+            _job = entity.job
+        if not _job and path:
+            _job = pipe.CPJob(path)
+        assert _job
+        return self.find_job(_job).find_task(
+            path=path, entity=entity, step=step, task=task)
+
+    def find_tasks(self, job, department=None, filter_=None):
+        """Search tasks in the cache.
+
+        Args:
+            job (CPJob): job to search
+            department (str): filter by department (eg. 3D/2D)
+            filter_ (str): apply step/task name filter
+
+        Returns:
+            (SGCTask list): matching tasks
+        """
+        return self.find_job(job).find_tasks(
+            department=department, filter_=filter_)
+
+    def find_user(self, match=None, catch=True):
         """Find a user entry.
 
         Args:
@@ -126,20 +261,21 @@ class SGDataCache(object):
         Returns:
             (SGCUser): user entry
         """
-        _LOGGER.debug('FIND USER %s', match)
+        _match = match or get_user()
+        _LOGGER.debug('FIND USER %s', _match)
 
         _users = [_user for _user in self.users if _user.status != 'dis']
 
         _login_matches = [
             _user for _user in _users
-            if _name_to_login(_user.name) == match]
+            if _name_to_login(_user.name) == _match]
         if len(_login_matches) == 1:
             return single(_login_matches)
         _LOGGER.debug(' - FOUND %d LOGIN MATCHES', len(_login_matches))
 
         _email_matches = [
             _user for _user in _users
-            if _email_to_login(_user.email) == match]
+            if _email_to_login(_user.email) == _match]
         if len(_email_matches) == 1:
             return single(_email_matches)
         _LOGGER.debug(' - FOUND %d EMAIL MATCHES', len(_email_matches))
@@ -225,7 +361,6 @@ class SGDataCache(object):
             (SGCJob list): jobs
         """
         _LOGGER.debug(' - READING JOBS')
-
         _fields = (
             'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
             'sg_status', 'created_at')
@@ -240,6 +375,7 @@ class SGDataCache(object):
             _cfg = _job_root.to_file('.pini/config.yml')
             if not _cfg.exists():
                 continue
+            _result['path'] = _job_root.path
             _job = pipe.CPJob(_job_root)
             _job = sgc_job.SGCJob(_result, cache=self, job=_job)
             _jobs.append(_job)
@@ -256,7 +392,8 @@ class SGDataCache(object):
         Returns:
             (SGCStep list): steps
         """
-        _fields = ('entity_type', 'code', 'short_name', 'department')
+        _fields = (
+            'entity_type', 'code', 'short_name', 'department', 'updated_at')
         _steps_data = self._read_data('Step', fields=_fields)
         _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
         return _steps

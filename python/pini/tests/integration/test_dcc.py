@@ -116,12 +116,15 @@ class TestPublish(unittest.TestCase):
         assert not error.TRIGGERED
         testing.TMP_ASSET.flush(force=True)
         pipe.CACHE.reset()
+        _ety_c = pipe.CACHE.obt(testing.TMP_ASSET)
+        assert not _ety_c.find_outputs()
 
         _handler = dcc.find_export_handler(
             'publish', filter_='basic', catch=True)
         if not _handler:
             assert dcc.NAME in ['hou', 'nuke']
             return
+        _handler.ui = None  # Reset any leftover ui elems
 
         # Save basic scene to publish
         dcc.new_scene(force=True)
@@ -136,12 +139,11 @@ class TestPublish(unittest.TestCase):
         _work = testing.TMP_ASSET.to_work(task='mod')
         _LOGGER.info('WORK %s', _work.path)
         _work.save(force=True)
-        assert not _work.find_outputs()
+        assert not _ety_c.find_outputs()
         _work_c = pipe.CACHE.obt_work(_work)
 
         # Test publish without PiniHelper
-        _LOGGER.info(' - CUR WORK OUTS %s', pipe.cur_work().find_outputs())
-        assert not pipe.cur_work().find_outputs()
+        _LOGGER.info(' - CUR WORK OUTS %s', _work_c.find_outputs())
         if _work_c.outputs:
             _work_c.find_outputs(force=True)
         _LOGGER.info(' - WORK C OUTS %s', _work_c.find_outputs())

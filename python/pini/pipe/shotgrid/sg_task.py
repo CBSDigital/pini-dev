@@ -5,6 +5,7 @@ import os
 import pprint
 
 from pini import pipe, qt
+from pini.tools import release
 from pini.utils import single, assert_eq, check_heart
 
 from . import sg_step, sg_handler, sg_entity, sg_job, sg_utils
@@ -81,6 +82,7 @@ def find_tasks(entity, only_3d=False):
     Returns:
         (tuple list): task data (task, label, step)
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
     check_heart()
 
     _LOGGER.info('FIND TASKS %s', entity)
@@ -144,6 +146,7 @@ def _work_dir_to_task_data(work_dir, data=None, force=False):
         (dict): task data
     """
     from pini.pipe import shotgrid
+    release.apply_deprecation('28/03/24', 'Use SGC')
 
     assert isinstance(work_dir, pipe.CPWorkDir)
 

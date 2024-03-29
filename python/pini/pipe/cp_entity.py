@@ -808,11 +808,12 @@ class CPEntity(cp_settings.CPSettingsLevel):
         # Omit pub files in shotgrid
         if pipe.MASTER == 'shotgrid':
             from pini.pipe import shotgrid
-            _outs = shotgrid.find_pub_files(entity=self)
-            for _out in qt.progress_bar(_outs, 'Updating {:d} output{}'):
-                _id = shotgrid.to_pub_file_id(_out)
+            _sg_job = shotgrid.SGC.find_job(self.job)
+            _sg_pubs = _sg_job.find_pub_files(entity=self)
+            for _sg_pub in qt.progress_bar(_sg_pubs, 'Updating {:d} output{}'):
                 _data = {'sg_status_list': 'omt'}
-                shotgrid.update('PublishedFile', _id, _data)
+                shotgrid.update('PublishedFile', _sg_pub.id_, _data)
+            _sg_job.find_pub_files(force=True)
 
     def to_output(
             self, template, task=None, step=None, tag=None, output_type=None,

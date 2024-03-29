@@ -3,6 +3,7 @@
 import logging
 
 from pini import pipe, qt
+from pini.tools import release
 from pini.utils import single
 
 from . import sg_job, sg_utils, sg_handler
@@ -52,6 +53,7 @@ def find_sequences(job, template):
     Returns:
         (CPSequence list): sequences
     """
+    release.apply_deprecation('28/03/24', 'Use SGC')
     _results = sg_handler.find(
         'Sequence',
         filters=[
