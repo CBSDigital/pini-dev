@@ -14,7 +14,8 @@ from pini.utils import single, wrap_fn, check_heart, plural
 from maya_pini import ref, open_maya as pom, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, to_unique, add_to_set, to_node)
+    DEFAULT_NODES, del_namespace, to_clean, to_unique, add_to_set, to_node,
+    to_long)
 
 from ..core import SCFail, SCMayaCheck
 
@@ -535,6 +536,13 @@ class CheckGeoNaming(SCMayaCheck):
             name (str): new name to apply
         """
         _LOGGER.debug('FIX BAD SHAPE %s -> %s', shp, name)
+
+        # Check for name clash
+        if cmds.objExists(name):
+            _node = pom.cast_node(name, maintain_shapes=True)
+            assert _node.plug['intermediateObject'].get_val()
+            _node.rename(name+'Undeformed')
+
         cmds.rename(shp, name)
 
     def fix_duplicate_nodes(self, nodes):
@@ -801,8 +809,12 @@ class CheckForFaceAssignments(SCMayaCheck):
                 self.write_log(' - no surface shader %s', _se)
             _assigns = cmds.sets(_se, query=True) or []
             for _assign in _assigns:
+                self.write_log(' - checking assignment %s', _assign)
+                _long = to_long(_assign)
+                if _long.startswith('|JUNK'):
+                    continue
+                self.write_log('    - long %s', _long)
                 _node = to_node(_assign)
-                self.write_log(' - checking assignment %s', _se)
                 if '.f' not in _assign:
                     continue
                 _msg = '{} has face assigment: {}'.format(_mtl, _assign)

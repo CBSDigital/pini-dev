@@ -120,7 +120,7 @@ def find_ref(
 
 def find_refs(
         filter_=None, class_=None, unloaded=False, extn=None, selected=None,
-        nested=False):
+        nested=False, allow_no_namespace=False):
     """Find references in the current scene.
 
     Args:
@@ -130,11 +130,12 @@ def find_refs(
         extn (str): filter by file extension
         selected (bool): filter by selected state
         nested (bool): include nested refs (disabled by default)
+        allow_no_namespace (bool): include references with no namespace
 
     Returns:
         (FileRef list): matching references
     """
-    _refs = _read_refs(class_=class_)
+    _refs = _read_refs(class_=class_, allow_no_namespace=allow_no_namespace)
     if not unloaded:
         _refs = [_ref for _ref in _refs if _ref.is_loaded]
     if nested is not None:
@@ -149,24 +150,34 @@ def find_refs(
     return _refs
 
 
-def _read_refs(class_=None):
+def _read_refs(class_=None, allow_no_namespace=False):
     """Read all references in the current scene.
 
     Args:
         class_ (class): override ref class
+        allow_no_namespace (bool): include references with no namespace
 
     Returns:
         (FileRef list): all references
     """
-    _class = class_ or FileRef
     _refs = []
     for _ref_node in cmds.ls(type='reference'):
+
+        # Check ref node
         try:
-            _ref = _class(_ref_node)
-        except ValueError:
+            _ref = FileRef(_ref_node, allow_no_namespace=allow_no_namespace)
+        except (ValueError, RuntimeError):
             continue
-        assert _ref.namespace
+
+        # Apply type cast
+        if class_:
+            try:
+                _ref = class_(_ref_node)
+            except ValueError:
+                continue
+
         _refs.append(_ref)
+
     return _refs
 
 

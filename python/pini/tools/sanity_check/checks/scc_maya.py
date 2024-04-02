@@ -685,9 +685,21 @@ class CheckReferences(SCMayaCheck):
     def run(self):
         """Run this check."""
         _cur_ver = dcc.to_version()
-        for _ref in ref.find_refs():
+        for _ref in pom.find_refs(allow_no_namespace=True):
 
             self.write_log('Checking ref %s', _ref.namespace)
+
+            # Check for no namespace
+            if not _ref.namespace:
+                _msg = (
+                    'Reference "{}" has no namespace which can make maya '
+                    'unstable.'.format(_ref.ref_node))
+                _fail = SCFail(_msg, node=_ref.ref_node)
+                _fail.add_action('Import nodes', _ref.import_, is_fix=True)
+                _fail.add_action('Remove', _ref.delete, is_fix=True)
+                self.add_fail(_fail)
+                return
+
             _out = pipe.to_output(_ref.path, catch=True)
             if not _out:
                 self.write_log(' - off pipeline')

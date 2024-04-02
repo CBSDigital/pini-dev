@@ -16,17 +16,19 @@ _LOGGER = logging.getLogger(__name__)
 class FileRef(r_path_ref.PathRef):
     """Represents a file reference."""
 
-    def __init__(self, ref_node):
+    def __init__(self, ref_node, allow_no_namespace=False):
         """Constructor.
 
         Args:
             ref_node (str): reference node
+            allow_no_namespace (bool): check for namespace
         """
         self.ref_node = ref_node
-        try:
-            assert self.namespace
-        except (RuntimeError, AssertionError):
-            raise ValueError('Missing namespace {}'.format(self.ref_node))
+        if not allow_no_namespace:
+            try:
+                assert self.namespace and self.namespace != ':'
+            except (RuntimeError, AssertionError):
+                raise ValueError('Missing namespace {}'.format(self.ref_node))
         self.cmp_str = self.namespace
 
     @property
@@ -129,8 +131,9 @@ class FileRef(r_path_ref.PathRef):
 
         if not force:
             qt.ok_cancel(
-                'Delete existing {} reference?'.format(self.namespace),
-                title='Replace Reference')
+                'Delete existing {} reference?'.format(
+                    self.namespace or '<no namespace>'),
+                title='Remove Reference')
 
         self.unload()
         cmds.file(self.path_uid, removeReference=True)

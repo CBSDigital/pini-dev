@@ -18,11 +18,12 @@ _LOGGER = logging.getLogger(__name__)
 class CReference(om.MFnReference, ref.FileRef):
     """Represents a file reference."""
 
-    def __init__(self, node):
+    def __init__(self, node, allow_no_namespace=False):
         """Constructor.
 
         Args:
             node (str): reference node or node in a reference
+            allow_no_namespace (bool): no error if ref has no namespace
         """
         _LOGGER.debug('CReference INIT %s', node)
         super(CReference, self).__init__()  # pylint: disable=no-value-for-parameter
@@ -59,7 +60,8 @@ class CReference(om.MFnReference, ref.FileRef):
         _LOGGER.debug(' - LOCATED REF')
 
         _ref_node = pom_node.CNode(self.name())
-        ref.FileRef.__init__(self, _ref_node)
+        ref.FileRef.__init__(
+            self, _ref_node, allow_no_namespace=allow_no_namespace)
 
     @property
     def namespace(self):
@@ -190,7 +192,7 @@ class CReference(om.MFnReference, ref.FileRef):
         return str(self.ref_node)
 
     def __repr__(self):
-        return basic_repr(self, self.namespace)
+        return basic_repr(self, self.namespace or self.ref_node)
 
 
 def create_ref(file_, namespace, force=False):
@@ -245,7 +247,9 @@ def find_ref(
     return single(_refs, catch=catch)
 
 
-def find_refs(namespace=None, selected=False, unloaded=False, task=None):
+def find_refs(
+        namespace=None, selected=False, unloaded=False, task=None,
+        allow_no_namespace=False):
     """Find references in the current scene.
 
     Args:
@@ -254,6 +258,7 @@ def find_refs(namespace=None, selected=False, unloaded=False, task=None):
         unloaded (bool): filter by loaded status (only loaded reference
             are returned by default)
         task (str): filter by task
+        allow_no_namespace (bool): include references with no namespace
 
     Returns:
         (CReference list): references
@@ -262,14 +267,16 @@ def find_refs(namespace=None, selected=False, unloaded=False, task=None):
     if selected:
         _refs = ref.get_selected(multi=True)
     else:
-        _refs = ref.find_refs(unloaded=unloaded)
+        _refs = ref.find_refs(
+            unloaded=unloaded, allow_no_namespace=allow_no_namespace)
     _LOGGER.debug(' - REFS %s', _refs)
     _c_refs = []
     for _ref in _refs:
 
         _LOGGER.debug(' - ADDING %s', _ref)
         try:
-            _c_ref = CReference(_ref.ref_node)
+            _c_ref = CReference(
+                _ref.ref_node, allow_no_namespace=allow_no_namespace)
         except ValueError:
             continue
         if namespace and _ref.namespace != namespace:

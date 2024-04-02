@@ -1,3 +1,17 @@
+## [1.24.0] - Tue 2024-04-02 15:35
+### Summary
+ - Sanity Check:
+    - check refs flags references with no namespace (farnold),
+    - check geo bugfix fail to fix shape name if correct name in use by undeformed (cstewart),
+    - check for face assigns ignore JUNK nodes (farnold),
+### Updated
+ - pini.tools.sanity_check.CheckReferences flag no-namespace refs,
+ - pini.tools.sanity_check.CheckGeoNaming catch bad shape with good name used,
+ - pini.tools.sanity_check.CheckForFaceAssignments ignore JUNK nodes,
+ - maya_pini.ref find_refs/FileRef added allow_no_namespace flag,
+ - maya_pini.open_maya find_refs/CReference added allow_no_namespace flag,
+
+
 ## [1.23.0] - Tue 2024-04-02 13:15
 ### Summary
  - Sanity Check:
