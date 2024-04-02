@@ -7,6 +7,14 @@ from . import qw_base_widget
 class CLineEdit(QtWidgets.QLineEdit, qw_base_widget.CBaseWidget):
     """Wrapper for QLineEdit."""
 
+    def get_val(self):
+        """Read this widget's text.
+
+        Returns:
+            (str): text
+        """
+        return self.text()
+
     def set_bg_col(self, col):
         """Set background colour for this element.
 
@@ -32,10 +40,10 @@ class CLineEdit(QtWidgets.QLineEdit, qw_base_widget.CBaseWidget):
         if _blocked is not None:
             self.blockSignals(_blocked)
 
-    def to_value(self):
-        """Read this widget's text.
+    def set_val(self, val):
+        """Apply text to this widget.
 
-        Returns:
-            (str): text
+        Args:
+            val (str): value to apply
         """
-        return self.text()
+        self.setText(val)

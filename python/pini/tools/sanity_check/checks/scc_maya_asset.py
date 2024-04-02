@@ -7,6 +7,7 @@ import logging
 from maya import cmds
 
 from pini import qt, pipe, dcc
+from pini.dcc import export_handler
 from pini.tools import sanity_check, error
 from pini.utils import single, wrap_fn, check_heart, plural
 
@@ -20,33 +21,21 @@ from ..core import SCFail, SCMayaCheck
 _LOGGER = logging.getLogger(__name__)
 
 
-def _cache_set_to_geos(set_=None, shapes=False):
-    """Get a list of geometry in the current scene's cache_SET.
+def _read_cache_set():
+    """Read cache_SET contents.
 
-    By default this is a list of all transforms.
-
-    Args:
-        set_ (str): cache set to read (if not default)
-        shapes (bool): return shapes rather than transforms
+    Based on publish references mode, this can contain different values,
+    namely whether to include referenced nodes.
 
     Returns:
-        (str list): geos
+        (CBaseTransform list): cache set nodes
     """
-    _geos = []
-    _set = set_ or 'cache_SET'
-    if not cmds.objExists(_set):
-        return []
-    for _root in cmds.sets(_set, query=True) or []:
-        _children = cmds.listRelatives(
-            _root, allDescendents=True, type='transform', path=True) or []
-        for _geo in [_root]+_children:
-            if not shapes:
-                _geos.append(_geo)
-            else:
-                _geo_ss = cmds.listRelatives(
-                    _geo, shapes=True, noIntermediate=True, path=True) or []
-                _geos += _geo_ss
-    return _geos
+    _refs_mode = export_handler.get_publish_references_mode()
+    _include_referenced = _refs_mode in (
+        export_handler.ReferencesMode.LEAVE_INTACT,
+        export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE)
+    return m_pipe.read_cache_set(
+        mode='geo', include_referenced=_include_referenced)
 
 
 def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
@@ -172,7 +161,8 @@ class CheckCacheSet(SCMayaCheck):
             return
 
         # Check set geos
-        _geos = _cache_set_to_geos()
+        _geos = _read_cache_set()
+        self.write_log('Geos %s', _geos)
         if not _geos:
             _fix = None
             _top_node = single(_find_top_level_nodes(), catch=True)
@@ -421,8 +411,7 @@ class CheckGeoNaming(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-
-        _geos = m_pipe.read_cache_set()
+        _geos = _read_cache_set()
         self.write_log('GEOS %s', _geos)
         _names = self._check_geos(geos=_geos)
         self._check_for_duplicates(names=_names)
@@ -486,7 +475,9 @@ class CheckGeoNaming(SCMayaCheck):
         self.write_log('   - shape %s', _geo_s)
 
         # Check for namespace
-        if geo.namespace:
+        _refs_mode = export_handler.get_publish_references_mode()
+        _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
+        if geo.namespace and _refs_mode != _import:
             _clean_name = to_clean(geo)
             _fix = wrap_fn(cmds.rename, geo, _clean_name)
             _msg = 'Geo "{}" is using a namespace'.format(geo)
@@ -494,25 +485,24 @@ class CheckGeoNaming(SCMayaCheck):
             return
 
         # Check geo name
-        _name = str(geo)
+        _name = to_clean(geo)
         _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
         if not (_name.endswith('_'+_geo_suffix) or _name == _geo_suffix):
             _msg, _fix, _suggestion = _fix_node_suffix(
                 node=geo, suffix='_'+_geo_suffix,
-                alts=['_Geo', '_GEO', '_geo'], type_='geo',
+                alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
                 ignore=self._ignore_names)
             self._ignore_names.append(_suggestion)
             self.add_fail(_msg, node=geo, fix=_fix)
             return
 
         # Check shape name
-        _shp_c = pom.CNode(_geo_s)
-        _cur_name = _geo_s.split('|')[-1]
-        _good_name = _name.split('|')[-1]+'Shape'
+        _cur_name = to_clean(geo.shp)
+        _good_name = to_clean(geo)+'Shape'
         self.write_log(
             '   - good name %s instanced=%d', _good_name,
-            _shp_c.is_instanced())
-        if not _shp_c.is_instanced() and _cur_name != _good_name:
+            geo.shp.is_instanced())
+        if not geo.shp.is_instanced() and _cur_name != _good_name:
             _msg = ('Geo {} does not have matching shape name {} (shape '
                     'is currently {})'.format(geo, _good_name, _geo_s))
             _fix = wrap_fn(self.fix_bad_shape, _geo_s, _good_name)
@@ -589,16 +579,18 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = _cache_set_to_geos(shapes=True)
+
+        _geos = _read_cache_set()
         if not _geos:
             self.add_fail('No geo found')
+
         for _geo in qt.progress_bar(_geos):
 
             self.write_log('Checking %s', _geo)
 
             # Ignore nodes with blendShape
             _hist = cmds.listHistory(
-                _geo, pruneDagObjects=True, interestLevel=2) or []
+                _geo.shp, pruneDagObjects=True, interestLevel=2) or []
             _blend = [_node for _node in _hist
                       if cmds.objectType(_node) == 'blendShape']
             if _blend:
@@ -607,7 +599,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
             # If skin cluster, check has more than one joint input
             _skin = single(
                 cmds.listConnections(
-                    _geo, type='skinCluster', destination=False) or [],
+                    _geo.shp, type='skinCluster', destination=False) or [],
                 catch=True)
             if not _skin:
                 continue
@@ -619,8 +611,8 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
             _msg = (
                 '{} has a skinCluster with no blendShape and a single '
                 'input joint - this can cause bloat in abcs and cause '
-                'memory issues'.format(_geo))
-            self.add_fail(_msg, node=_geo)
+                'memory issues'.format(_geo.shp))
+            self.add_fail(_msg, node=_geo.shp)
 
 
 class CheckForEmptyNamespaces(SCMayaCheck):

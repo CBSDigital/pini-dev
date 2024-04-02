@@ -11,4 +11,4 @@ from .ph_basic import CBasicPublish
 if dcc.NAME == 'maya':
     from .ph_maya import (
         CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        ReferencesMode)
+        ReferencesMode, get_publish_references_mode)

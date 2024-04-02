@@ -1,3 +1,23 @@
+## [1.23.0] - Tue 2024-04-02 13:15
+### Summary
+ - Sanity Check:
+    - added handling for referenced geo in cache set (mkim) [PT-263],
+    - bugfix error on rename shape with namespace (cstewart),
+### Updated
+ - pini.dcc.CExportHandler _add_elem/add_combobox_elem added settings_key arg,
+ - pini.dcc.CExportHandler._add_elem apply load setting on create,
+ - pini.dcc.CMayaBasicPublish use shader references mode setting key,
+ - pini.dcc.get_publish_references_mode added,
+ - pini.qt.CBaseWidget renamed to_value -> get_Val for symmetry,
+ - pini.qt.CBaseWidget added load_setting/read_setting/set_val,
+ - pini.qt.CComboBox.select_text bugfix apply emit,
+ - pini.qt.CComboBox.set_items read scene setting for selection if applicable,
+ - pini.tools.sanity_check use m_pipe.read_cache_set + apply refs mode,
+ - pini.tools.sanity_check.CheckGeoNaming accommodate for imported ref geo,
+ - pini.tools.sanity_check.CheckGeoNaming bugfix error on rename bad shape with namespace,
+ - maya_pini.read_cache_set added include_referenced flag,
+
+
 ## [1.22.0] - Tue 2024-04-02 07:55
 ### Summary
  - Pini Install:

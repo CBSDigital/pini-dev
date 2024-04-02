@@ -29,6 +29,14 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         """
         return [self.itemText(_idx) for _idx in range(self.count())]
 
+    def get_val(self):
+        """Obtain value of this combobox's selected text.
+
+        Returns:
+            (str): selected text
+        """
+        return self.currentText()
+
     def select_data(self, data, catch=False):
         """Select item based on its data.
 
@@ -54,23 +62,25 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
             emit (bool): emit changed signal on apply this change
             catch (bool): no error if fail to select
         """
+        _LOGGER.debug('SELECT TEXT %s', text)
         if emit is False:
             raise NotImplementedError
 
         # Apply value
-        _applied_val = False
+        _updated = False
+        _cur_idx = self.currentIndex()
         for _idx in range(self.count()):
             if self.itemText(_idx) == text:
                 self.setCurrentIndex(_idx)
-                _applied_val = True
+                _updated = _cur_idx != _idx
                 break
-
-        # Apply catch
-        if not _applied_val and not catch:
-            raise ValueError('Failed to select {}'.format(text))
+        else:
+            if not catch:
+                raise ValueError('Failed to select {}'.format(text))
 
         # Apply emit
-        if emit and not _applied_val:
+        if emit and not _updated:
+            _LOGGER.debug(' - EMIT CURRENT TEXT CHANGED')
             self.currentTextChanged.emit(self.currentText())
 
     def selected_text(self):
@@ -130,10 +140,11 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
 
         # Apply selection
         _LOGGER.debug('APPLY SELECTION %s', select)
-        if select and select in labels:
-            self.select_text(select)
-        elif select and data and select in data:
-            self.select_data(select)
+        _select = select or self.read_setting()
+        if _select and _select in labels:
+            self.select_text(_select)
+        elif _select and data and _select in data:
+            self.select_data(_select)
         elif _cur_text in labels:
             self.select_text(_cur_text)
 
@@ -141,10 +152,10 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         if not _blocked and emit:
             self.currentTextChanged.emit(self.currentText())
 
-    def to_value(self):
-        """Obtain value of this combobox's selected text.
+    def set_val(self, val):
+        """Apply value to this combo box.
 
-        Returns:
-            (str): selected text
+        Args:
+            val (str): text to select
         """
-        return self.currentText()
+        self.select_text(val)

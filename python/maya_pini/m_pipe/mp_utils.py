@@ -23,15 +23,18 @@ def find_cache_set(catch=True):
     Returns:
         (CNode): cache set
     """
+    if cmds.objExists('cache_SET'):
+        return pom.cast_node('cache_SET')
     return single(pom.find_nodes(
         clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
-def read_cache_set(mode='geo'):
+def read_cache_set(mode='geo', include_referenced=True):
     """Read cache set contents.
 
     Args:
         mode (str): content to find (geo/lights)
+        include_referenced (bool): include referenced geometry
 
     Returns:
         (CNode list): cache set contents
@@ -52,10 +55,18 @@ def read_cache_set(mode='geo'):
     _LOGGER.debug(' - NODES %s', _nodes)
 
     # Apply mode filter
+    _LOGGER.debug(' - APPLYING FILTERS refs=%d', include_referenced)
     _results = []
     for _node in sorted(_nodes):
+
         _node = pom.cast_node(_node)
-        _LOGGER.debug(' - NODE %s %s', _node, type(_node).__name__)
+        _LOGGER.debug(
+            ' - NODE %s %s refd=%d', _node, type(_node).__name__,
+            _node.is_referenced())
+
+        if not include_referenced and _node.is_referenced():
+            continue
+
         if mode == 'geo':
             if not isinstance(_node, pom.CMesh):
                 continue
@@ -68,6 +79,9 @@ def read_cache_set(mode='geo'):
                 continue
         else:
             raise NotImplementedError(mode)
+
         _results.append(_node)
+
+    _LOGGER.info(' - RESULTS %s', _results)
 
     return _results

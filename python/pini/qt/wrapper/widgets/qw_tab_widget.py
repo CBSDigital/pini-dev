@@ -18,6 +18,14 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
         _idx = self.currentIndex()
         return self.tabText(_idx)
 
+    def get_val(self):
+        """Get currently selected tab text.
+
+        Returns:
+            (str): tab text
+        """
+        return self.current_tab_text()
+
     def select_tab(self, match, emit=None):
         """Select tab by name.
 
@@ -57,10 +65,10 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
                 return
         raise RuntimeError(name)
 
-    def to_value(self):
-        """Get currently selected tab text.
+    def set_val(self, val):
+        """Select the given tab.
 
-        Returns:
-            (str): tab text
+        Args:
+            val (str): name of tab to select
         """
-        return self.current_tab_text()
+        self.select_tab(val)

@@ -515,6 +515,7 @@ class CUiBase(object):
             try:
                 self.save_settings()
             except RuntimeError as _exc:
+                _LOGGER.debug(' - ERROR %s', _exc)
                 _LOGGER.info(
                     ' - SAVE SETTINGS ERRORED - %s', self.name)
             else:

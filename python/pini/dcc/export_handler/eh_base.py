@@ -6,7 +6,7 @@ publishing) to pipeline by a dcc.
 
 import logging
 
-from pini import qt, icons, pipe, dcc
+from pini import qt, icons, pipe
 from pini.qt import QtWidgets
 from pini.utils import to_nice, cache_result, str_to_seed, wrap_fn
 
@@ -40,7 +40,8 @@ class CExportHandler(object):
 
     def _add_elem(
             self, name, elem, label=None, label_width=None, tooltip=None,
-            disable_save_settings=False, save_policy=None, stretch=True):
+            disable_save_settings=False, save_policy=None, settings_key=None,
+            stretch=True):
         """Add a layout containing the given element.
 
         Args:
@@ -52,6 +53,7 @@ class CExportHandler(object):
             disable_save_settings (bool): apply disable save settings to element
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
+            settings_key (str): override settings key for element
             stretch (bool): apply stretch to element to fill available
                 horizontal space
         """
@@ -89,11 +91,13 @@ class CExportHandler(object):
 
         # Setup settings
         elem.disable_save_settings = disable_save_settings
-        _settings_key = _to_settings_key(name=name, handler=self)
+        _settings_key = settings_key or _to_settings_key(
+            name=name, handler=self)
         elem.set_settings_key(_settings_key)
         _save_policy = save_policy or qt.SavePolicy.SAVE_ON_CHANGE
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
+        elem.load_setting()
 
         # Connect signals
         _signal = qt.widget_to_signal(elem)
@@ -107,7 +111,7 @@ class CExportHandler(object):
     def add_combobox_elem(
             self, name, items, data=None, val=None, width=None, label=None,
             label_width=None, tooltip=None, disable_save_settings=False,
-            save_policy=None):
+            save_policy=None, settings_key=None):
         """Add a combobox element.
 
         Args:
@@ -122,6 +126,7 @@ class CExportHandler(object):
             disable_save_settings (bool): apply disable save settings to element
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
+            settings_key (str): override settings key for element
 
         Returns:
             (CComboBox): combo box element
@@ -130,20 +135,16 @@ class CExportHandler(object):
         # Build combo box element
         _combo_box = qt.CComboBox(self.parent)
         _combo_box.setObjectName(name)
-        _select = None
-        if save_policy is qt.SavePolicy.SAVE_IN_SCENE:
-            _settings_key = _to_settings_key(name=name, handler=self)
-            _select = dcc.get_scene_data(_settings_key)
-            _LOGGER.info(' - READ SCENE SETTING %s %s', _settings_key, _select)
         if width:
             _combo_box.setFixedWidth(width)
-        _combo_box.set_items(items, data=data, select=_select)
+        _combo_box.set_items(items, data=data)
         _LOGGER.info(' - BUILT COMBOBOX %s', _combo_box)
 
         self._add_elem(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
             label_width=label_width, save_policy=save_policy,
-            disable_save_settings=disable_save_settings)
+            disable_save_settings=disable_save_settings,
+            settings_key=settings_key)
         if val:
             _LOGGER.info(' - APPLY VALUE %s', val)
             _combo_box.select_text(val)

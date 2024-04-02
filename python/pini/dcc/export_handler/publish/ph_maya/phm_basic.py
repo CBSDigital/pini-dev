@@ -6,7 +6,7 @@ import logging
 from maya import cmds
 
 from pini import pipe, dcc, qt
-from pini.utils import single, SixIntEnum, to_nice
+from pini.utils import single, SixIntEnum, to_nice, to_snake
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
@@ -16,6 +16,7 @@ from maya_pini.utils import (
 from . import phm_base
 
 _LOGGER = logging.getLogger(__name__)
+_REFERENCES_MODE_KEY = 'PiniQt.Publish.References'
 
 
 class ReferencesMode(SixIntEnum):
@@ -40,15 +41,6 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         '',
         'You can use the sanity check tool to check your scene.',
     ])
-
-    @property
-    def references_mode(self):
-        """Obtain current references mode setting.
-
-        Returns:
-            (ReferencesMode): current references mode
-        """
-        return self.ui.References.selected_data()
 
     def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.
@@ -81,7 +73,8 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _items = [to_nice(_item.name.lower()).capitalize() for _item in _data]
         self.ui.References = self.add_combobox_elem(
             name='References', items=_items, data=_data,
-            save_policy=qt.SavePolicy.SAVE_IN_SCENE)
+            save_policy=qt.SavePolicy.SAVE_IN_SCENE,
+            settings_key=_REFERENCES_MODE_KEY)
         self.add_separator_elem()
 
         # Add notes
@@ -339,3 +332,21 @@ def _find_dag_sets():
              if _set.object_type() == 'objectSet' and
              not _is_deform_set(_set)]
     return _sets
+
+
+def get_publish_references_mode():
+    """Obtain current references mode setting.
+
+    Returns:
+        (ReferencesMode): current references mode
+    """
+    _mode = None
+    _scn = dcc.get_scene_data(_REFERENCES_MODE_KEY)
+    if _scn:
+        _match = to_snake(_scn).upper()
+        _mode = single(
+            [_item for _item in list(ReferencesMode)
+             if _item.name == _match],
+            catch=True)
+
+    return _mode or ReferencesMode.REMOVE

@@ -190,11 +190,11 @@ class TestHelper(unittest.TestCase):
         assert _m_pub.ui.References.save_policy is qt.SavePolicy.SAVE_IN_SCENE
         _m_pub.ui.References.select_text('Import into root namespace', emit=True)
         _LOGGER.info(' - SETTING KEY %s', _m_pub.ui.References.settings_key)
-        assert _m_pub.ui.References.settings_key == 'PiniQt.CMayaModelPublish.References'
+        assert _m_pub.ui.References.settings_key == 'PiniQt.Publish.References'
         assert _m_pub.ui.References.has_scene_setting()
         assert _m_pub.ui.References.get_scene_setting() == 'Import into root namespace'
         assert _m_pub.ui.References.selected_data() is _import
-        assert _m_pub.references_mode is _import
+        assert export_handler.get_publish_references_mode() is _import
 
         # Check setting maintained
         _helper.close()
@@ -202,10 +202,10 @@ class TestHelper(unittest.TestCase):
         _helper.ui.MainPane.select_tab('Export')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert _m_pub.references_mode is _import
+        assert export_handler.get_publish_references_mode() is _import
         _m_pub.ui.References.select_text('Remove')
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
-        assert _m_pub.references_mode is _remove
+        assert export_handler.get_publish_references_mode() is _remove
         _helper.close()
         _LOGGER.info('HELPER CLOSED')
         print('')
@@ -214,13 +214,13 @@ class TestHelper(unittest.TestCase):
         _helper.ui.MainPane.select_tab('Export')
         _LOGGER.info('SELECTED EXPORT TAB')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
-        assert _m_pub.references_mode is _remove
+        assert export_handler.get_publish_references_mode() is _remove
         _helper.close()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert _m_pub.references_mode is _remove
+        assert export_handler.get_publish_references_mode() is _remove
 
 
 class TestDiskPiniHelper(TestHelper):
@@ -258,8 +258,9 @@ class TestDiskPiniHelper(TestHelper):
         assert _helper.entity.settings['shotgrid']['disable']
 
         # Test save/load
-        _helper.reset()
-        _work = _helper.ui.WWorks.selected_data()
+        _work = _helper.work
+        _LOGGER.info(' - WORK %s', _work)
+        _LOGGER.info(' - SEQ NAME %s', _seq_name)
         assert _work.sequence == _seq_name
         assert len(_helper.ui.WWorks.all_data()) == 1
         _helper._callback__WSave(force=True)
