@@ -591,6 +591,8 @@ class SGCJob(sgc_container.SGCContainer):
         _tasks = []
         for _item in _data:
             _task = sgc_container.SGCTask(_item)
+            if _task.status in ('omt', ):
+                continue
             _tasks.append(_task)
         return _tasks
 

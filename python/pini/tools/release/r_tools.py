@@ -4,7 +4,7 @@ import logging
 import os
 import time
 
-from pini.utils import single
+from pini.utils import single, six_maxint
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,6 +63,8 @@ def _test_sort_key(test, mode='mca/dur'):
         _c_time = test.last_complete_time()
         _c_age = time.time() - _c_time
         _dur = test.last_exec_dur()
+        if not _dur:
+            return -six_maxint, 0
         _mod_c_age = _c_age % (10*60*60)
         _key = -_mod_c_age, _dur
     elif mode == 'completed':

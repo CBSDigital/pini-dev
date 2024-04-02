@@ -1,3 +1,30 @@
+## [1.22.0] - Tue 2024-04-02 07:55
+### Summary
+ - Pini Install:
+    - bugfix error on launch (mkim),
+ - Pini Helper:
+    - store settings in scene for export tab + publish handler references mode,
+### Updated
+ - pini.dcc.CExportHandler._add_elem added save_policy arg,
+ - pini.dcc.CExportHandler._add_elem added apply_save_policy_on_change,
+ - pini.dcc.CExportHandler.add_combobox_elem added data arg,
+ - pini.dcc.CExportHandler.add_combobox_elem implemented save in scene,
+ - pini.dcc.CExportHandler.ui_is_active added,
+ - pini.dcc.ReferencesMode added enum,
+ - pini.dcc.CMayaBasicPublish store references mode in scene,
+ - pini.pipe.CPEntity.find_work_dirs task filter check pini task,
+ - pini.pipe.CPWorkDir.pini_task added,
+ - pini.pipe.shotgrid.SGC.find_tasks ignore omitted,
+ - pini.pipe.shotgrid.SGC.build_ranges bugfix infinite loop on add days + added overrun error,
+ - pini.qt.CBaseWidget added settings_key/get_scene_setting/has_scene_setting/set_settings_key/to_value,
+ - pini.qt.CComboBox.select_text added emit arg,
+ - pini.qt CComboBox/CLineEdit/CTabWidget to_value added,
+ - pini.qt.CSettings implemented save in scene policy,
+ - pini.qt.SavePolicy added SAVE_IN_SCENE to enum,
+ - pini.tools.helper applied save in scene to export tab,
+ - pini.tools.release.PRTest sort tests not run before first,
+
+
 ## [1.21.0] - Fri 2024-03-29 16:10
 ### Summary
  - Pini Helper:

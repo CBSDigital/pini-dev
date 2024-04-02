@@ -150,7 +150,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         for _work_dir in _all_work_dirs:
             if _filter and not passes_filter(_work_dir.task_label, _filter):
                 continue
-            if task and _work_dir.task != task:
+            if task and task not in (_work_dir.task, _work_dir.pini_task):
                 continue
             if step and _work_dir.step != step:
                 continue

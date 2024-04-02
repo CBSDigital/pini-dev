@@ -107,6 +107,17 @@ class CPWorkDir(Dir):
         return _step_sort, _task_sort, self.path
 
     @property
+    def pini_task(self):
+        """Obtain pini task for this work file.
+
+        eg. surf/dev -> lookdev
+
+        Returns:
+            (str): pini task
+        """
+        return map_task(task=self.task, step=self.step)
+
+    @property
     def task_label(self):
         """Obtain task label for this work dir.
 

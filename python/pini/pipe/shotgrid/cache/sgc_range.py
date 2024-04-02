@@ -25,6 +25,7 @@ def build_ranges(start_t):
     Returns:
         (SGCRange list): ranges
     """
+    _LOGGER.debug('BUILD RANGES')
     _rngs = []
 
     # Add completed years
@@ -60,6 +61,7 @@ def build_ranges(start_t):
     # Add weeks
     _day = 1
     while True:
+        _LOGGER.debug(' - ADD WEEK')
         check_heart()
         _start_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
         _end_s = _add_days(_start_s, 7)
@@ -73,17 +75,23 @@ def build_ranges(start_t):
         _rngs.append(_rng)
 
     # Add days
-    while True:
+    _start_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
+    for _ in range(100):
         check_heart()
-        _start_s = '{:02d}/{:02d}/{:02d}'.format(_day, _month, _year)
         _end_s = _add_days(_start_s, 1)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
             datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+        _LOGGER.debug(
+            ' - ADD DAY %s %s %d', _start_s, _end_s,
+            _rng.end_t >= datetime.datetime.today())
         _label = '{} -> {}'.format(_start_s, _end_s)
         _rngs.append(_rng)
         if _rng.end_t >= datetime.datetime.today():
             break
+        _start_s = _end_s
+    else:
+        raise RuntimeError('Overrun')
 
     _LOGGER.debug(' - BUILT %d RANGES %s', len(_rngs), _rngs)
 

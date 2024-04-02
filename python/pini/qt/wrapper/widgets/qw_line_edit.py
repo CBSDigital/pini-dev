@@ -1,9 +1,10 @@
 """Tools for managing the QLineEdit wrapper."""
 
 from ...q_mgr import QtWidgets, QtGui
+from . import qw_base_widget
 
 
-class CLineEdit(QtWidgets.QLineEdit):
+class CLineEdit(QtWidgets.QLineEdit, qw_base_widget.CBaseWidget):
     """Wrapper for QLineEdit."""
 
     def set_bg_col(self, col):
@@ -30,3 +31,11 @@ class CLineEdit(QtWidgets.QLineEdit):
         self.setText(text)
         if _blocked is not None:
             self.blockSignals(_blocked)
+
+    def to_value(self):
+        """Read this widget's text.
+
+        Returns:
+            (str): text
+        """
+        return self.text()

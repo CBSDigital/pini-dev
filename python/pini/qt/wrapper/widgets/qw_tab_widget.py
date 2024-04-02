@@ -1,10 +1,13 @@
 """Tools for adding functionality to QTabWidget."""
 
 from ...q_mgr import QtWidgets
+from . import qw_base_widget
 
 
-class CTabWidget(QtWidgets.QTabWidget):
+class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
     """Wrapper for QTabWidget."""
+
+    __repr__ = qw_base_widget.CBaseWidget.__repr__
 
     def current_tab_text(self):
         """Read text from current tab.
@@ -53,3 +56,11 @@ class CTabWidget(QtWidgets.QTabWidget):
                 self.setTabEnabled(_idx, enabled)
                 return
         raise RuntimeError(name)
+
+    def to_value(self):
+        """Get currently selected tab text.
+
+        Returns:
+            (str): tab text
+        """
+        return self.current_tab_text()

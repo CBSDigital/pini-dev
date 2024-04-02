@@ -6,9 +6,9 @@ publishing) to pipeline by a dcc.
 
 import logging
 
-from pini import qt, icons, pipe
+from pini import qt, icons, pipe, dcc
 from pini.qt import QtWidgets
-from pini.utils import to_nice, cache_result, str_to_seed, chain_fns
+from pini.utils import to_nice, cache_result, str_to_seed, wrap_fn
 
 from . import eh_utils
 
@@ -40,7 +40,7 @@ class CExportHandler(object):
 
     def _add_elem(
             self, name, elem, label=None, label_width=None, tooltip=None,
-            disable_save_settings=False, stretch=True):
+            disable_save_settings=False, save_policy=None, stretch=True):
         """Add a layout containing the given element.
 
         Args:
@@ -50,6 +50,8 @@ class CExportHandler(object):
             label_width (int): override default label width
             tooltip (str): add tooltip to element
             disable_save_settings (bool): apply disable save settings to element
+            save_policy (SavePolicy): save policy to apply
+                (default is save on change)
             stretch (bool): apply stretch to element to fill available
                 horizontal space
         """
@@ -84,37 +86,69 @@ class CExportHandler(object):
         if tooltip:
             elem.setToolTip(tooltip)
             _label_e.setToolTip(tooltip)
+
+        # Setup settings
         elem.disable_save_settings = disable_save_settings
+        _settings_key = _to_settings_key(name=name, handler=self)
+        elem.set_settings_key(_settings_key)
+        _save_policy = save_policy or qt.SavePolicy.SAVE_ON_CHANGE
+        assert isinstance(_save_policy, qt.SavePolicy)
+        elem.save_policy = _save_policy
+
+        # Connect signals
+        _signal = qt.widget_to_signal(elem)
+        _callback = getattr(self, '_callback__'+name, None)
+        if _callback:
+            _signal.connect(_callback)
+        _apply_save_policy = wrap_fn(
+            elem.apply_save_policy_on_change, self.ui.settings)
+        _signal.connect(_apply_save_policy)
 
     def add_combobox_elem(
-            self, name, items, val=None, width=None, label=None,
-            label_width=None, tooltip=None, disable_save_settings=False):
+            self, name, items, data=None, val=None, width=None, label=None,
+            label_width=None, tooltip=None, disable_save_settings=False,
+            save_policy=None):
         """Add a combobox element.
 
         Args:
             name (str): element name
             items (str list): combobox items
+            data (list): list of data corresponding to items
             val (str): item to select
             width (int): override element width
             label (str): element label
             label_width (int): override default label width
             tooltip (str): add tooltip to element
             disable_save_settings (bool): apply disable save settings to element
+            save_policy (SavePolicy): save policy to apply
+                (default is save on change)
 
         Returns:
             (CComboBox): combo box element
         """
+
+        # Build combo box element
         _combo_box = qt.CComboBox(self.parent)
+        _combo_box.setObjectName(name)
+        _select = None
+        if save_policy is qt.SavePolicy.SAVE_IN_SCENE:
+            _settings_key = _to_settings_key(name=name, handler=self)
+            _select = dcc.get_scene_data(_settings_key)
+            _LOGGER.info(' - READ SCENE SETTING %s %s', _settings_key, _select)
         if width:
             _combo_box.setFixedWidth(width)
-        _combo_box.set_items(items)
+        _combo_box.set_items(items, data=data, select=_select)
+        _LOGGER.info(' - BUILT COMBOBOX %s', _combo_box)
 
         self._add_elem(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
-            label_width=label_width,
+            label_width=label_width, save_policy=save_policy,
             disable_save_settings=disable_save_settings)
         if val:
+            _LOGGER.info(' - APPLY VALUE %s', val)
             _combo_box.select_text(val)
+        _LOGGER.info(' - COMPLETED ADD COMBOBOX %s', _combo_box)
+
         return _combo_box
 
     def add_checkbox_elem(
@@ -283,6 +317,20 @@ class CExportHandler(object):
         _rand = str_to_seed(self.NAME)
         return _rand.choice(icons.find_grp('AnimalFaces'))
 
+    def ui_is_active(self):
+        """Test whether this export handler's ui is currently active.
+
+        Returns:
+            (bool): ui active status
+        """
+        if not self.ui:
+            return False
+        try:
+            self.ui.find_widgets()
+        except RuntimeError:
+            return False
+        return True
+
     def update_ui(self, parent, layout):
         """Builds the ui into the given layout, flushing any existing widgets.
 
@@ -296,31 +344,11 @@ class CExportHandler(object):
         self.layout = layout
 
         _LOGGER.debug('UPDATE UI %s', self)
-        self.ui = self.ui or qt.CUiContainer(
-            settings_file=self._settings_file)
+        self.ui = self.ui or qt.CUiContainer(settings_file=self._settings_file)
 
         qt.flush_layout(layout)
         self.build_ui(parent=parent, layout=layout)
         self.ui.load_settings()
-
-        # Connect callbacks + save settings on change vals
-        _widgets = qt.find_layout_widgets(layout)
-        _LOGGER.debug(' - CONNECTING %d WIDGETS', len(_widgets))
-        for _widget in _widgets:
-            _name = _widget.objectName()
-            _signal = qt.widget_to_signal(_widget)
-            if not _signal:
-                continue
-            _callback = getattr(self, '_callback__'+_name, None)
-            _LOGGER.debug('   - CHECKING %s callback=%s', _name, _callback)
-            if _callback:
-                _func = chain_fns(
-                    self.ui.save_settings,
-                    _callback)
-                _callback()
-            else:
-                _func = self.ui.save_settings
-            _signal.connect(_func)
 
     def _apply_version_up(self, version_up=None):
         """Apply version up setting.
@@ -339,3 +367,16 @@ class CExportHandler(object):
 
     def __repr__(self):
         return '<{}>'.format(type(self).__name__.strip('_'))
+
+
+def _to_settings_key(handler, name):
+    """Build scene settings key based on the given handler/name.
+
+    Args:
+        handler (CExportHandler): export handler
+        name (str): widget name
+
+    Returns:
+        (str): scene settings key (eg. PiniQt.CMayaModelPublish.References)
+    """
+    return 'PiniQt.{}.{}'.format(type(handler).__name__, name)

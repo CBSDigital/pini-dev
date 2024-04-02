@@ -124,6 +124,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         ]:
             _elem.disable_save_settings = True
 
+        self.ui.EExportPane.save_policy = qt.SavePolicy.SAVE_IN_SCENE
         self.ui.ERenderHandler.save_policy = qt.SavePolicy.SAVE_ON_CHANGE
 
     @property

@@ -25,11 +25,16 @@ class DialogCancelled(RuntimeError):
 
 
 class SavePolicy(SixIntEnum):
-    """Enum to manage widget save policy options."""
+    """Enum to manage widget save policy options.
 
-    DEFAULT = 0
-    NO_SAVE = 1
-    SAVE_ON_CHANGE = 2
+    NOTE: Start numbering at zero so that boolean of DEFAULT is still
+    non-zero.
+    """
+
+    DEFAULT = 1
+    NO_SAVE = 2
+    SAVE_ON_CHANGE = 3
+    SAVE_IN_SCENE = 4
 
 
 def close_all_interfaces(filter_=None):

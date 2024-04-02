@@ -11,6 +11,8 @@ _LOGGER = logging.getLogger(__name__)
 class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
     """Wrapper for QComboBox."""
 
+    __repr__ = qw_base_widget.CBaseWidget.__repr__
+
     def all_data(self):
         """Get list of all item data.
 
@@ -44,19 +46,32 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         if not catch:
             raise ValueError(data)
 
-    def select_text(self, text, catch=True):
+    def select_text(self, text, emit=None, catch=True):
         """Select item by text.
 
         Args:
             text (str): text to select
+            emit (bool): emit changed signal on apply this change
             catch (bool): no error if fail to select
         """
+        if emit is False:
+            raise NotImplementedError
+
+        # Apply value
+        _applied_val = False
         for _idx in range(self.count()):
             if self.itemText(_idx) == text:
                 self.setCurrentIndex(_idx)
-                return
-        if not catch:
+                _applied_val = True
+                break
+
+        # Apply catch
+        if not _applied_val and not catch:
             raise ValueError('Failed to select {}'.format(text))
+
+        # Apply emit
+        if emit and not _applied_val:
+            self.currentTextChanged.emit(self.currentText())
 
     def selected_text(self):
         """Obtain currently selected text.
@@ -125,3 +140,11 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         self.blockSignals(_blocked)
         if not _blocked and emit:
             self.currentTextChanged.emit(self.currentText())
+
+    def to_value(self):
+        """Obtain value of this combobox's selected text.
+
+        Returns:
+            (str): selected text
+        """
+        return self.currentText()

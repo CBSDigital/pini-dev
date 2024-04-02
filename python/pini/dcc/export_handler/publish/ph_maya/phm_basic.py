@@ -5,8 +5,8 @@ import logging
 
 from maya import cmds
 
-from pini import pipe, dcc
-from pini.utils import single
+from pini import pipe, dcc, qt
+from pini.utils import single, SixIntEnum, to_nice
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
@@ -16,6 +16,14 @@ from maya_pini.utils import (
 from . import phm_base
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class ReferencesMode(SixIntEnum):
+    """Enum for managing how to handle references on publish."""
+
+    REMOVE = 1
+    LEAVE_INTACT = 2
+    IMPORT_INTO_ROOT_NAMESPACE = 3
 
 
 class CMayaBasicPublish(phm_base.CMayaBasePublish):
@@ -33,6 +41,15 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         'You can use the sanity check tool to check your scene.',
     ])
 
+    @property
+    def references_mode(self):
+        """Obtain current references mode setting.
+
+        Returns:
+            (ReferencesMode): current references mode
+        """
+        return self.ui.References.selected_data()
+
     def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.
 
@@ -41,6 +58,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
+        _LOGGER.info('BUILD UI %s', self)
         super(CMayaBasicPublish, self).build_ui(
             parent=parent, layout=layout, add_footer=False)
 
@@ -59,16 +77,18 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         self.add_separator_elem()
 
         # Add reference option
+        _data = list(ReferencesMode)
+        _items = [to_nice(_item.name.lower()).capitalize() for _item in _data]
         self.ui.References = self.add_combobox_elem(
-            name='References', items=[
-                'Remove',
-                'Leave intact',
-                'Import into root namespace'])
+            name='References', items=_items, data=_data,
+            save_policy=qt.SavePolicy.SAVE_IN_SCENE)
         self.add_separator_elem()
 
         # Add notes
         if add_footer:
             self.add_footer_elems()
+
+        _LOGGER.info(' - COMPLETED BUILD UI %s', self)
 
     @restore_sel
     def publish(
@@ -152,8 +172,10 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         Args:
             references (str): how to handle references (eg. Remove)
         """
-        _remove_junk = self.ui.RemoveJunk.isChecked() if self.ui else True
-        _remove_sets = self.ui.RemoveSets.isChecked() if self.ui else True
+        _remove_junk = (
+            self.ui.RemoveJunk.isChecked() if self.ui_is_active() else True)
+        _remove_sets = (
+            self.ui.RemoveSets.isChecked() if self.ui_is_active() else True)
 
         # Apply reference option
         _refs = references

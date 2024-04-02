@@ -33,6 +33,8 @@ class CSettings(QtCore.QSettings, File):
             ui (CUiContainer): ui to apply settings to
             filter_ (str): filter by widget name
         """
+        from pini import qt
+
         _keys = [_key for _key in self.allKeys()
                  if _key.startswith('widgets/')]
         for _key in _keys:
@@ -52,9 +54,13 @@ class CSettings(QtCore.QSettings, File):
                 continue
 
             # Check for disabled
-            if (
-                    hasattr(_widget, 'disable_save_settings') and
-                    _widget.disable_save_settings):
+            _save_policy = getattr(
+                _widget, 'save_policy', qt.SavePolicy.DEFAULT)
+            if _save_policy == qt.SavePolicy.SAVE_IN_SCENE:
+                continue
+            _disable_save_settings = getattr(
+                _widget, 'disable_save_settings', False)
+            if _disable_save_settings:
                 _LOGGER.debug('   - DISABLED')
                 continue
 

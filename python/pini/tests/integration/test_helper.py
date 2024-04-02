@@ -1,9 +1,11 @@
 import unittest
 import logging
 
-from pini import testing, dcc, pipe
+from pini import testing, dcc, pipe, qt
+from pini.dcc import export_handler
 from pini.tools import helper, error
-from pini.utils import File, assert_eq
+from pini.utils import File, assert_eq, system, strftime
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,8 +15,19 @@ class TestHelper(unittest.TestCase):
     def setUp(self):
         assert not error.TRIGGERED
         if not helper.is_active():
-            helper.launch()
+            helper.launch(reset_cache=False)
         assert not error.TRIGGERED
+
+    def test_for_cyclical_import(self):
+
+        # NOTE: doesn't seem to give output for some reason (could pipe out
+        # to file if wanted)
+        _cmd = 'print("HELLO"); from pini.tools import helper; print(helper)'
+        _out, _err = system(
+            ['python', '-c', '"""{}"""'.format(_cmd)], result='out/err')
+        print(_out)
+        print(_err)
+        assert not _err
 
     def test_helper_caching(self):
 
@@ -88,10 +101,7 @@ class TestHelper(unittest.TestCase):
         assert pipe.CACHE.cur_work
 
         _helper = helper.DIALOG
-        if not helper.is_active():
-            _helper = helper.launch()
-        else:
-            _helper.ui.Refresh.click()
+        _helper.ui.Refresh.click()
         _helper.jump_to(_work)
         assert_eq(_helper.work, _work)
         _helper.ui.WWorksRefresh.click()
@@ -113,7 +123,7 @@ class TestHelper(unittest.TestCase):
 
         assert not error.TRIGGERED
 
-    def scene_refs_filter_test(self):
+    def test_scene_refs_filter(self):
 
         assert not error.TRIGGERED
 
@@ -127,5 +137,174 @@ class TestHelper(unittest.TestCase):
         helper.DIALOG.ui.SSceneRefsTypeFilterReset.click()
         for _filter in _filters:
             assert not _filter.isChecked()
+
+        assert not error.TRIGGERED
+
+    def test_store_settings_in_scene_basic(self):
+
+        _LOGGER.info('STORE SETTINGS IN SCENE TEST')
+
+        _ety_c = pipe.CACHE.obt(testing.TEST_SHOT)
+        _work_dir = _ety_c.find_work_dir(dcc_='maya', task='anim')
+        _LOGGER.info(' - WORK DIR %s', _work_dir)
+        _work = _work_dir.to_work()
+        _LOGGER.info(' - WORK %s', _work)
+
+        _helper = helper.DIALOG
+        _helper.jump_to(_work)
+        dcc.new_scene(force=True)
+        _work.save(force=True)
+
+        # Select render tab to store data in scene
+        _helper.ui.MainPane.select_tab('Export')
+        assert _helper.ui.EExportPane.save_policy == qt.SavePolicy.SAVE_IN_SCENE
+        _LOGGER.info(' - SCENE SETTINGS KEY %s', _helper.ui.EExportPane.settings_key)
+        _helper.ui.EExportPane.select_tab('Render', emit=True)
+        assert _helper.ui.EExportPane.current_tab_text() == 'Render'
+        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane')
+        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Render'
+
+        # Re-open helper and check render tab is still selected
+        _helper.close()
+        _helper = helper.launch(reset_cache=False)
+        _helper.ui.MainPane.select_tab('Export')
+        assert _helper.ui.EExportPane.current_tab_text() == 'Render'
+
+    def test_store_settings_in_scene_export_handler(self):
+
+        _helper = helper.DIALOG
+        _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
+        _remove = export_handler.ReferencesMode.REMOVE
+
+        # Apply refs mode
+        _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
+        _work_dir = _ety_c.find_work_dir(dcc_='maya', task='model')
+        _work = _work_dir.to_work().find_latest()
+        _LOGGER.info(' - WORK %s', _work)
+        _work.load(force=True)
+        _helper.jump_to(_work)
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Publish')
+        _m_pub = _helper.ui.EPublishHandler.selected_data()
+        assert _m_pub.NAME == 'Maya Model Publish'
+        assert _m_pub.ui.References.save_policy is qt.SavePolicy.SAVE_IN_SCENE
+        _m_pub.ui.References.select_text('Import into root namespace', emit=True)
+        _LOGGER.info(' - SETTING KEY %s', _m_pub.ui.References.settings_key)
+        assert _m_pub.ui.References.settings_key == 'PiniQt.CMayaModelPublish.References'
+        assert _m_pub.ui.References.has_scene_setting()
+        assert _m_pub.ui.References.get_scene_setting() == 'Import into root namespace'
+        assert _m_pub.ui.References.selected_data() is _import
+        assert _m_pub.references_mode is _import
+
+        # Check setting maintained
+        _helper.close()
+        _helper = helper.launch(reset_cache=False)
+        _helper.ui.MainPane.select_tab('Export')
+        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
+        _m_pub = _helper.ui.EPublishHandler.selected_data()
+        assert _m_pub.references_mode is _import
+        _m_pub.ui.References.select_text('Remove')
+        assert _m_pub.ui.References.get_scene_setting() == 'Remove'
+        assert _m_pub.references_mode is _remove
+        _helper.close()
+        _LOGGER.info('HELPER CLOSED')
+        print('')
+        _helper = helper.launch(reset_cache=False)
+        _LOGGER.info('HELPER LAUNCHED')
+        _helper.ui.MainPane.select_tab('Export')
+        _LOGGER.info('SELECTED EXPORT TAB')
+        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
+        assert _m_pub.references_mode is _remove
+        _helper.close()
+        _helper = helper.launch(reset_cache=False)
+        _helper.ui.MainPane.select_tab('Export')
+        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
+        _m_pub = _helper.ui.EPublishHandler.selected_data()
+        assert _m_pub.references_mode is _remove
+
+
+class TestDiskPiniHelper(TestHelper):
+
+    pipe_master_filter = 'disk'
+
+    def test_pini_helper_create(self):
+
+        assert not error.TRIGGERED
+
+        dcc.new_scene(force=True)
+        _helper = helper.DIALOG
+        _helper._callback__ToggleAdmin(True)
+
+        _job = testing.TEST_JOB
+        _seq_name = strftime('Tmp_%y%m%d_%H%M%S')
+
+        # Test create seq
+        _shot = _job.find_shots()[0]
+        assert _shot.exists()
+        _LOGGER.info('JUMP TO %s', _shot)
+        _helper.jump_to(_shot.path)
+        assert not _helper.ui.EntityTypeCreate.isEnabled()
+        _helper.ui.EntityType.setEditText(_seq_name)
+        assert _helper.ui.EntityTypeCreate.isEnabled()
+        assert not _helper.ui.EntityCreate.isEnabled()
+        _helper.ui.Entity.setEditText('shot010')
+        assert _helper.ui.EntityCreate.isEnabled()
+        _helper._callback__EntityCreate(force=True, shotgrid_=False)
+        _seq = _helper.ui.EntityType.selected_data()
+        assert _seq
+        assert _seq.name == _seq_name
+        assert _helper.entity.exists()
+        _helper.entity.set_setting(shotgrid={'disable': True})
+        assert _helper.entity.settings['shotgrid']['disable']
+
+        # Test save/load
+        _helper.reset()
+        _work = _helper.ui.WWorks.selected_data()
+        assert _work.sequence == _seq_name
+        assert len(_helper.ui.WWorks.all_data()) == 1
+        _helper._callback__WSave(force=True)
+        assert pipe.cur_work() == _work
+        _works = _helper.ui.WWorks.all_data()
+        assert len(_works) == 2
+        _helper.ui.WWorks.select_data(_works[0])
+        assert _helper.ui.WWorks.selected_data().ver_n == 2
+        _helper._callback__WSave(force=True)
+        assert pipe.cur_work().ver_n == 2
+        assert _work.ver_n == 1
+        _helper.ui.WWorks.select_data(_work)
+        _helper._callback__WLoad(force=True)
+        assert pipe.cur_work().ver_n == 1
+
+        # Test create new task
+        _tasks = _helper.ui.WTasks.all_text()
+        _task = 'groom'
+        assert _task not in _tasks
+        _helper.ui.WTaskText.setText(_task)
+        assert _helper.work.task == _task
+        assert not _helper.work.exists()
+        assert _helper.work is _helper.next_work
+        assert len(_helper.ui.WWorks.all_items()) == 1
+        assert not _helper.ui.WTasks.selected_text()
+        _helper._callback__WSave(force=True)
+        assert _helper.ui.WTasks.selected_text() == _task
+        assert _helper.ui.WTaskText.text() == _task
+        assert _helper.work.exists()
+
+        # Test create shot in existing seq
+        _helper._callback__ToggleAdmin(True)
+        _seq = _job.to_sequence(_seq_name)
+        _shot = _seq.to_shot('shot020')
+        assert not _shot.exists()
+        _helper.ui.EntityType.select_text(_shot.sequence, catch=False)
+        assert _shot.name not in _helper.ui.Entity.all_text()
+        _LOGGER.info('CREATE SHOT %s', _shot)
+        _helper.ui.Entity.setEditText(_shot.name)
+        _helper._callback__EntityCreate(force=True, shotgrid_=False)
+        assert _shot.name in _helper.ui.Entity.all_text()
+
+        # Clean up
+        _seq.delete(force=True)
+        pipe.CACHE.reset()
+        dcc.new_scene(force=True)
 
         assert not error.TRIGGERED
