@@ -10,7 +10,7 @@ from pini import qt
 from pini.utils import single, File, Dir, abs_path, EMPTY, Image
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import DEFAULT_NODES, to_namespace
+from maya_pini.utils import DEFAULT_NODES, to_namespace, to_node
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -121,26 +121,39 @@ class _Shader(pom.CNode):
         assert _file
         return Image(_file.plug['fileTextureName'].get_val())
 
-    def to_geo(self):
+    def to_geo(self, faces=None, node=None):
         """Find geometry using this shader.
+
+        Args:
+            faces (bool): filter by face assignments
+            node (str): filter by node name
 
         Returns:
             (CNode list): nodes
         """
         _geos = []
-
         for _geo in (cmds.sets(self.to_se(), query=True) or []):
-            _LOGGER.info('GEO %s', _geo)
-            if '.' in _geo:  # Face assignment
-                pass
-            else:
+            _LOGGER.debug('GEO %s', _geo)
+
+            if node and node != to_node(_geo):
+                continue
+
+            # Check for face assignment
+            _is_face = '.' in _geo
+            if faces is not None and _is_face != faces:
+                continue
+
+            # Cast node
+            if not _is_face:
                 try:
                     _geo = pom.cast_node(_geo)
                 except RuntimeError:
                     _LOGGER.warning(
                         ' - FAILED TO BUILD NODE %s (POSSIBLE DUPLICATE)', _geo)
                     continue
+
             _geos.append(_geo)
+
         return _geos
 
     def to_se(self, create=False):
@@ -161,6 +174,21 @@ class _Shader(pom.CNode):
             _se = pom.CNode(_se)
             self.out_col.connect(_se.plug['surfaceShader'])
         return _se
+
+    def unapply(self, node=None):
+        """Remove this shader from its geometry.
+
+        Args:
+            node (str): only remove the given geometry node
+        """
+        _engine = self.to_se()
+        _assigns = cmds.sets(_engine, query=True)
+        _LOGGER.info('UNAPPLY %s', _assigns)
+        for _assign in _assigns:
+            if node and node != to_node(_assign):
+                continue
+            _LOGGER.info(' - UNAPPLY %s', _assign)
+            cmds.sets(_assign, edit=True, remove=_engine)
 
 
 class _Lambert(_Shader):
@@ -308,12 +336,13 @@ def to_shd(obj):
     _LOGGER.debug('TO SHD %s type=%s', obj, _type)
 
     # Determine shader based on type
-    _se = None
+    _se = _shd = None
     if _node.shp:
         _LOGGER.debug(' - SHADED OBJECT')
         _ses = _node.shp.find_outgoing(
             type_='shadingEngine', connections=False, plugs=False)
         _se = single(_ses, catch=True)
+        _LOGGER.debug(' - ENGINE %s %s', _se, _ses)
     elif _type == 'lambert':
         _shd = _Lambert(_node)
     elif _type == 'surfaceShader':

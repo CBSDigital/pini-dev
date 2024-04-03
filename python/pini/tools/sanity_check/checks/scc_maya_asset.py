@@ -11,7 +11,7 @@ from pini.dcc import export_handler
 from pini.tools import sanity_check, error
 from pini.utils import single, wrap_fn, check_heart, plural
 
-from maya_pini import ref, open_maya as pom, m_pipe
+from maya_pini import ref, open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     DEFAULT_NODES, del_namespace, to_clean, to_unique, add_to_set, to_node,
@@ -777,7 +777,8 @@ class CheckShaders(SCMayaCheck):
             engine (str): shading engine
             shader (str): shader
         """
-        _geos = cmds.sets(engine, query=True)
+        _geos = sorted({
+            to_node(_geo) for _geo in cmds.sets(engine, query=True)})
         self.write_log(' - geos %s', _geos)
 
         for _geo in _geos:
@@ -842,53 +843,57 @@ class CheckForFaceAssignments(SCMayaCheck):
     def run(self):
         """Run this check."""
         for _se in cmds.ls(type='shadingEngine'):
-            self.write_log('Checking %s', _se)
-            _mtl = single(
-                cmds.listConnections(_se+'.surfaceShader') or [],
-                catch=True)
-            if not _mtl:
-                self.write_log(' - no surface shader %s', _se)
-            _assigns = cmds.sets(_se, query=True) or []
-            for _assign in _assigns:
-                self.write_log(' - checking assignment %s', _assign)
+
+            # Deterine shader
+            self.write_log('Checking %s ', _se)
+            _shd = tex.to_shd(_se)
+            if not _shd:
+                continue
+            self.write_log(' - shader %s ', _shd)
+
+            # Find relevant face assignments
+            _face_assigns = {}
+            for _assign in _shd.to_geo(faces=True):
+                self.write_log(' - checking face assignment %s', _assign)
                 _long = to_long(_assign)
                 if _long.startswith('|JUNK'):
                     continue
-                self.write_log('    - long %s', _long)
-                _node = to_node(_assign)
-                if '.f' not in _assign:
-                    continue
-                _msg = '{} has face assigment: {}'.format(_mtl, _assign)
+                _geo = to_node(_assign)
+                _face_assigns[_geo] = _shd
+
+            # Add fails
+            for _geo, _shd in _face_assigns.items():
+                _assigns = _shd.to_geo(node=_geo, faces=True)
+                _msg = 'Shader "{}" has face assigment{}: {}'.format(
+                    _shd, plural(_assigns),
+                    ', '.join([
+                        '"{}"'.format(_assign) for _assign in _assigns]))
                 _fix = wrap_fn(
-                    self._fix_face_assignment, engine=_se, assign=_assign,
-                    material=_mtl)
-                _fail = SCFail(_msg, node=_node)
+                    self._fix_face_assignment, geo=_geo, shader=_shd)
+                _fail = SCFail(_msg, node=_geo)
                 _fail.add_action(
-                    'Select shader', wrap_fn(cmds.select, _mtl, noExpand=True))
-                _fail.add_action('Fix', _fix)
+                    'Select shader', wrap_fn(cmds.select, _shd))
+                _fail.add_action('Fix', _fix, is_fix=True)
                 self.add_fail(_fail)
 
-    def _fix_face_assignment(self, engine, assign, material):
+    def _fix_face_assignment(self, shader, geo):
         """Fix shader face assignment.
 
         Args:
-            engine (str): shading engine
-            assign (str): face assignment (eg. body.f[0:100])
-            material (str): shader
+            shader (Shader): shader with face assignment
+            geo (str): geometry to apply
         """
-        _LOGGER.info('FIX FACE ASSIGNMENTS %s %s', engine, assign)
-        assert '.f' in assign
-        _node, _ = assign.split('.')
+        _LOGGER.info('FIX FACE ASSIGNMENTS %s %s', shader, geo)
         try:
-            cmds.sets(assign, edit=True, remove=engine)
+            shader.unapply(node=geo)
         except ValueError:
             raise error.HandledError(
-                'Failed to remove "{}" from shading engine "{}".'
+                'Failed to unassign "{}" from "{}".'
                 '\n\n'
                 'It seems like maya is having trouble with this assignment.'
                 'Try deleting history on this node or removing it '
-                'if possible'.format(assign, material))
-        cmds.sets(_node, edit=True, add=engine)
+                'if possible'.format(shader, geo))
+        shader.apply_to(geo)
 
 
 class NoObjectsWithDefaultShader(SCMayaCheck):
