@@ -17,12 +17,16 @@ class CHouFlipbook(bh_base.CBlastHandler):
 
     def blast(self):
         """Excute flipbook."""
-        _view = self.ui.View.isChecked()
-        _fmt = self.ui.Format.currentText()
-        _rng = self._read_range()
+
+        # Read settings
         _burnins = self.ui.Burnins.isChecked()
+        _fmt = self.ui.Format.currentText()
         _force = self.ui.Force.isChecked()
+        _rng = self._read_range()
+        _save = not self.ui.DisableSave.isChecked()
+        _view = self.ui.View.isChecked()
         _LOGGER.info('BLAST view=%d format=%s range=%s', _view, _fmt, _rng)
+
         h_pipe.flipbook(
             format_=_fmt, view=_view, range_=_rng, burnins=_burnins,
-            force=_force)
+            save=_save, force=_force)

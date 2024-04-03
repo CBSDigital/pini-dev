@@ -69,6 +69,8 @@ class CBlastHandler(eh_base.CExportHandler):
             self.ui.RangeManReset,
         ]
 
+        self._callback__Range()
+
     def _callback__Format(self):
         _fmt = self.ui.Format.currentText()
         self.ui.Burnins.setVisible(_fmt in ('mp4', 'mov'))
@@ -121,6 +123,11 @@ class CBlastHandler(eh_base.CExportHandler):
             'View', label='View blast on completion')
         self.ui.Burnins = self.add_checkbox_elem(
             'Burnins', val=True, label='Add burnins on video compile')
+        self.ui.DisableSave = self.add_checkbox_elem(
+            'DisableSave', val=False, label='Disable save on blast (unsafe)',
+            save_policy=qt.SavePolicy.SAVE_IN_SCENE, tooltip=(
+                'Disabling save on blast is unsafe as you may get animation '
+                'that does not have a scene file approved'))
         self.add_separator_elem()
 
     def blast(self):

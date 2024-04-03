@@ -39,6 +39,43 @@ class CExportHandler(object):
         self._settings_file = '{}/{}.ini'.format(qt.SETTINGS_DIR, _name)
 
     def _add_elem(
+            self, elem, name, disable_save_settings=False, save_policy=None,
+            settings_key=None, tooltip=None):
+        """Setup element in the export handler's ui.
+
+        Args:
+            elem (QWidget): widget to add
+            name (str): widget name
+            disable_save_settings (bool): apply disable save settings to element
+            save_policy (SavePolicy): save policy to apply
+                (default is save on change)
+            settings_key (str): override settings key for element
+            tooltip (str): add tooltip to element
+        """
+        elem.setObjectName(name)
+        if tooltip:
+            elem.setToolTip(tooltip)
+
+        # Setup settings
+        elem.disable_save_settings = disable_save_settings
+        _settings_key = settings_key or _to_settings_key(
+            name=name, handler=self)
+        elem.set_settings_key(_settings_key)
+        _save_policy = save_policy or qt.SavePolicy.SAVE_ON_CHANGE
+        assert isinstance(_save_policy, qt.SavePolicy)
+        elem.save_policy = _save_policy
+        elem.load_setting()
+
+        # Connect signals
+        _signal = qt.widget_to_signal(elem)
+        _callback = getattr(self, '_callback__'+name, None)
+        if _callback:
+            _signal.connect(_callback)
+        _apply_save_policy = wrap_fn(
+            elem.apply_save_policy_on_change, self.ui.settings)
+        _signal.connect(_apply_save_policy)
+
+    def _add_elem_lyt(
             self, name, elem, label=None, label_width=None, tooltip=None,
             disable_save_settings=False, save_policy=None, settings_key=None,
             stretch=True):
@@ -74,6 +111,8 @@ class CExportHandler(object):
         _label_e.setText(_label)
         _label_e.setObjectName(_label_name)
         _label_e.setFixedWidth(label_width or self.LABEL_WIDTH)
+        if tooltip:
+            _label_e.setToolTip(tooltip)
         setattr(self.ui, _label_name, _label_e)
         _LOGGER.debug(' - SET LABEL %s %s', _label_name, _label_e)
 
@@ -83,30 +122,40 @@ class CExportHandler(object):
             _h_lyt.addStretch()
         self.layout.addLayout(_h_lyt)
 
-        # Update element
-        elem.setObjectName(name)
-        if tooltip:
-            elem.setToolTip(tooltip)
-            _label_e.setToolTip(tooltip)
+        self._add_elem(
+            elem, disable_save_settings=disable_save_settings, name=name,
+            save_policy=save_policy, tooltip=tooltip,
+            settings_key=settings_key)
 
-        # Setup settings
-        elem.disable_save_settings = disable_save_settings
-        _settings_key = settings_key or _to_settings_key(
-            name=name, handler=self)
-        elem.set_settings_key(_settings_key)
-        _save_policy = save_policy or qt.SavePolicy.SAVE_ON_CHANGE
-        assert isinstance(_save_policy, qt.SavePolicy)
-        elem.save_policy = _save_policy
-        elem.load_setting()
+    def add_checkbox_elem(
+            self, name, val=True, label=None, tooltip=None, enabled=True,
+            save_policy=None):
+        """Add QCheckBox element in this handler's interface.
 
-        # Connect signals
-        _signal = qt.widget_to_signal(elem)
-        _callback = getattr(self, '_callback__'+name, None)
-        if _callback:
-            _signal.connect(_callback)
-        _apply_save_policy = wrap_fn(
-            elem.apply_save_policy_on_change, self.ui.settings)
-        _signal.connect(_apply_save_policy)
+        Args:
+            name (str): element name
+            val (bool): element checked state
+            label (str): element label
+            tooltip (str): apply tooltip
+            enabled (bool): apply enabled state
+            save_policy (SavePolicy): save policy to apply
+                (default is save on change)
+
+        Returns:
+            (QCheckBox): checkbox element
+        """
+        _label = label or to_nice(name).capitalize()
+        _checkbox_e = qt.CCheckBox(_label, self.parent)
+        _checkbox_e.setChecked(val)
+        if not enabled:
+            _checkbox_e.setEnabled(False)
+        self.layout.addWidget(_checkbox_e)
+
+        self._add_elem(
+            elem=_checkbox_e, save_policy=save_policy, name=name,
+            tooltip=tooltip)
+
+        return _checkbox_e
 
     def add_combobox_elem(
             self, name, items, data=None, val=None, width=None, label=None,
@@ -140,7 +189,7 @@ class CExportHandler(object):
         _combo_box.set_items(items, data=data)
         _LOGGER.info(' - BUILT COMBOBOX %s', _combo_box)
 
-        self._add_elem(
+        self._add_elem_lyt(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
             label_width=label_width, save_policy=save_policy,
             disable_save_settings=disable_save_settings,
@@ -151,33 +200,6 @@ class CExportHandler(object):
         _LOGGER.info(' - COMPLETED ADD COMBOBOX %s', _combo_box)
 
         return _combo_box
-
-    def add_checkbox_elem(
-            self, name, val=True, label=None,
-            tooltip=None, enabled=True):
-        """Add QCheckBox element in this handler's interface.
-
-        Args:
-            name (str): element name
-            val (bool): element checked state
-            label (str): element label
-            tooltip (str): apply tooltip
-            enabled (bool): apply enabled state
-
-        Returns:
-            (QCheckBox): checkbox element
-        """
-        _label = label or to_nice(name).capitalize()
-        _checkbox_e = QtWidgets.QCheckBox(_label, self.parent)
-        _checkbox_e.setObjectName(name)
-        _checkbox_e.setChecked(val)
-        if not enabled:
-            _checkbox_e.setEnabled(False)
-        if tooltip:
-            _checkbox_e.setToolTip(tooltip)
-        self.layout.addWidget(_checkbox_e)
-
-        return _checkbox_e
 
     def add_lineedit_elem(
             self, name, val=None, label=None, tooltip=None,
@@ -200,7 +222,7 @@ class CExportHandler(object):
         _lineedit.setSizePolicy(
             QtWidgets.QSizePolicy.MinimumExpanding,
             QtWidgets.QSizePolicy.Fixed)
-        self._add_elem(
+        self._add_elem_lyt(
             name=name, elem=_lineedit, label=label, tooltip=tooltip,
             disable_save_settings=disable_save_settings, stretch=False)
         return _lineedit
@@ -240,7 +262,7 @@ class CExportHandler(object):
         _spinbox.setMaximum(max_)
         _spinbox.setFixedWidth(45)
 
-        self._add_elem(
+        self._add_elem_lyt(
             name=name, elem=_spinbox, label=label, tooltip=tooltip,
             disable_save_settings=disable_save_settings,
             label_width=label_width)

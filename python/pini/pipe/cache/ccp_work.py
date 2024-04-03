@@ -273,18 +273,25 @@ class CCPWork(CPWork):
         super(CCPWork, self).set_metadata(data)
         self._read_metadata(force=True)
 
-    def update_outputs(self):
+    def update_outputs(self, update_helper=True):
         """To be called when outputs are added.
 
         If the PiniHelper is active then this is updated (which updates the
         disk cache), otherwise the disk cache is just updated directly.
+
+        Args:
+            update_helper (bool): switch helper back to work tab to
+                show new outputs
         """
         from pini.tools import helper
+
+        self._read_outputs(force=True)
         if self.image.exists():
             helper.obt_pixmap(self.image, force=True)
+
+        # Update helper
         if helper.is_active():
-            helper.DIALOG.jump_to(self)
-            helper.DIALOG.ui.WWorkRefresh.click()
-            helper.DIALOG.ui.WWorksRefresh.click()
-        else:
-            self._read_outputs(force=True)
+            _helper = helper.DIALOG
+            _helper.ui.WWorks.redraw(force=True)
+            if update_helper:
+                _helper.jump_to(self)

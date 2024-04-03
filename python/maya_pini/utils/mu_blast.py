@@ -55,10 +55,10 @@ def _build_tmp_blast_cam(cam):
             _cam.shp.find_incoming(
                 type_='imagePlane', plugs=False, connections=False),
     ):
-        _LOGGER.info(
+        _LOGGER.debug(
             ' - CHECK IMG PLANE COLSPACE %s %s', _src_plane, _cam_plane)
         _space = _src_plane.shp.plug['colorSpace'].get_val()
-        _LOGGER.info('   - APPLY COLSPACE %s', _space)
+        _LOGGER.debug('   - APPLY COLSPACE %s', _space)
         _cam_plane.shp.plug['colorSpace'].set_val(_space)
 
     return _cam
@@ -83,7 +83,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     """
     from maya_pini import ui
 
-    _LOGGER.info(' - BUILD TMP VIEWPORT BlastEditor')
+    _LOGGER.debug(' - BUILD TMP VIEWPORT BlastEditor')
     _width, _height = res
 
     # Clean existing
@@ -98,13 +98,13 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     for _attr in ui.MODEL_EDITOR_ATTRS:
         _editor_attrs[_attr] = cmds.modelEditor(
             _editor_tmpl, query=True, **{_attr: True})
-    _LOGGER.info(' - COPIED EDITOR SETTINGS  %s', _editor_attrs)
+    _LOGGER.debug(' - COPIED EDITOR SETTINGS  %s', _editor_attrs)
 
     # Build the window
     _window = cmds.window('BlastWindow', title='Blast Window')
     _form = cmds.formLayout()
     _editor = cmds.modelEditor('BlastEditor', camera=camera, **_editor_attrs)
-    _LOGGER.info(' - CREATED NEW EDITOR %s', _editor)
+    _LOGGER.debug(' - CREATED NEW EDITOR %s', _editor)
     cmds.formLayout(
         _form, edit=True,
         attachForm=[
@@ -130,7 +130,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
         pass
     else:
         raise ValueError(settings)
-    _LOGGER.info(' - OVERRIDDEN EDITOR SETTINGS  %s', _me_settings)
+    _LOGGER.debug(' - OVERRIDDEN EDITOR SETTINGS  %s', _me_settings)
     if _me_settings:
         cmds.modelEditor(_editor, edit=True, **_me_settings)
 
@@ -159,12 +159,12 @@ def _exec_blast(
         cleanup (bool): cleanup tmp window/cam
         settings (str): blast settings mode
     """
-    _LOGGER.info('BLAST')
+    _LOGGER.debug('BLAST')
     assert isinstance(seq, Seq)
 
     _start, _end = range_
     _tmp_cam = _build_tmp_blast_cam(camera)
-    _LOGGER.info(' - BLAST CAM %s %s', camera, _tmp_cam)
+    _LOGGER.debug(' - BLAST CAM %s %s', camera, _tmp_cam)
     _tmp_window, _tmp_editor = _build_tmp_viewport_window(
         res=res, camera=_tmp_cam, show=not cleanup, settings=settings)
 
@@ -175,8 +175,8 @@ def _exec_blast(
     }.get(seq.extn, seq.extn.upper()))
 
     _filename = '{}/{}'.format(seq.dir, seq.base)
-    _LOGGER.info(' - BLAST FILENAME %s', _filename)
-    _LOGGER.info(' - START/END %d/%d', _start, _end)
+    _LOGGER.debug(' - BLAST FILENAME %s', _filename)
+    _LOGGER.debug(' - START/END %d/%d', _start, _end)
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True,
@@ -302,10 +302,10 @@ def blast(
     _range = _to_range(range_)
     _res = _to_res(res, is_video=_is_video)
 
-    _LOGGER.info('BLAST')
-    _LOGGER.info(' - CAM %s', _cam)
-    _LOGGER.info(' - RANGE %s', _range)
-    _LOGGER.info(' - RES %s', _res)
+    _LOGGER.debug('BLAST')
+    _LOGGER.debug(' - CAM %s', _cam)
+    _LOGGER.debug(' - RANGE %s', _range)
+    _LOGGER.debug(' - RES %s', _res)
 
     # Prepare output paths
     if _is_video:
@@ -316,7 +316,7 @@ def blast(
     clip.delete(force=force, wording='Replace')
     clip.test_dir()
     _seq = _tmp_seq or clip
-    _LOGGER.info(' - SEQ %s', _seq)
+    _LOGGER.debug(' - SEQ %s', _seq)
     assert isinstance(_seq, Seq)
     assert not _seq.exists()
 
@@ -335,14 +335,14 @@ def blast(
             clip, use_scene_audio=use_scene_audio, burnins=burnins, verbose=1)
         if cleanup:
             if _tmp_seq.to_range() != _range:
-                _LOGGER.info(' - TMP %s %s', _tmp_seq.to_range(), _tmp_seq)
+                _LOGGER.debug(' - TMP %s %s', _tmp_seq.to_range(), _tmp_seq)
                 raise RuntimeError('Range mismatch')
             _tmp_seq.delete(force=True)
     if not clip.exists():
         raise RuntimeError(clip.path)
     if view:
         clip.view()
-    _LOGGER.info(' - BLAST COMPLETE IN %.02fs', time.time() - _start)
+    _LOGGER.debug(' - BLAST COMPLETE IN %.02fs', time.time() - _start)
 
 
 def _copy_frame_as_thumb(image, thumb, max_aspect=2.0, height=100):
@@ -358,17 +358,17 @@ def _copy_frame_as_thumb(image, thumb, max_aspect=2.0, height=100):
         height (int): thumb height
     """
     from pini import qt
-    _LOGGER.info('COPY FRAME AS THUMB')
+    _LOGGER.debug('COPY FRAME AS THUMB')
     _pix = qt.CPixmap(image)
-    _LOGGER.info(' - RES %s', _pix.size())
+    _LOGGER.debug(' - RES %s', _pix.size())
     _pix = _pix.resize(height=height)
-    _LOGGER.info(' - RES %s', _pix.size())
-    _LOGGER.info(' - ASPECT %s', _pix.aspect())
+    _LOGGER.debug(' - RES %s', _pix.size())
+    _LOGGER.debug(' - ASPECT %s', _pix.aspect())
     if _pix.aspect() > max_aspect:
         _crop = int((_pix.width() - (_pix.height() * max_aspect)) / 2)
-        _LOGGER.info(' - CROP %d', _crop)
+        _LOGGER.debug(' - CROP %d', _crop)
         _pix = _pix.crop(left=_crop, right=_crop)
-    _LOGGER.info(' - RES %s', _pix.size())
+    _LOGGER.debug(' - RES %s', _pix.size())
     _pix.save_as(thumb, force=True)
 
 

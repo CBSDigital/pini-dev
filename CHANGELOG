@@ -1,3 +1,21 @@
+## [1.25.0] - Wed 2024-04-03 09:22
+### Summary
+ - Pini Helper:
+    - maya blast added option to disable save (mkim),
+    - maya blast disable jump back to work tab on blast (mkim),
+ - Sanity Check:
+    - check shaders flags assign to intermediate object (cstewart),
+### Updated
+ - pini.dcc.CBaseExportHander separated out _add_elem/_add_elem_lyt,
+ - pini.dcc.CBaseExportHander.add_checkbox_elem added save_policy arg,
+ - pini.dcc.CBlastHandler added disable save option,
+ - pini.dcc.CBlastHandler bugfix not hiding manual range elems,
+ - pini.pipe.cache.CCPWork.update_outputs added update_helper arg,
+ - pini.qt.CCheckBox added,
+ - pini.tools.sanity_check.CheckShaders added check assigned to intermediate object,
+ - maya_pini.tex added phong handling,
+
+
 ## [1.24.0] - Tue 2024-04-02 15:35
 ### Summary
  - Sanity Check:

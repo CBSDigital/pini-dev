@@ -136,6 +136,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             burnins=self.ui.Burnins.isChecked(),
             res=self.ui.Resolution.currentText(),
             camera=_cam,
+            save=not self.ui.DisableSave.isChecked(),
             settings=self.ui.Settings.currentText(),
             output_name=_output_name,
             force=_force)

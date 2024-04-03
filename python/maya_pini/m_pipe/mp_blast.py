@@ -67,7 +67,8 @@ def blast(
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq,
         frame_to_thumb=_work.image)
     _data = _obt_metadata(
-        range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res())
+        range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res(),
+        save_disabled=not save)
     _out.set_metadata(_data, force=True)
 
     # Update shotgrid
@@ -82,12 +83,12 @@ def blast(
         else:
             raise ValueError(pipe.MASTER)
 
-    _work.update_outputs()
+    _work.update_outputs(update_helper=False)
 
     return _out
 
 
-def _obt_metadata(range_, bkp, camera, res):
+def _obt_metadata(range_, bkp, camera, res, save_disabled):
     """Obtain metadata for this blast.
 
     Args:
@@ -95,6 +96,7 @@ def _obt_metadata(range_, bkp, camera, res):
         bkp (File): backup file
         camera (str): blast camera
         res (int tuple): blast resolution
+        save_disabled (bool): whether save on blast was disabled
 
     Returns:
         (dict): metadata
@@ -103,6 +105,7 @@ def _obt_metadata(range_, bkp, camera, res):
     _data['range'] = range_
     _data['camera'] = str(camera)
     _data['res'] = res
+    _data['save_disabled'] = save_disabled
     if bkp:
         _data['bkp'] = bkp.path
     return _data

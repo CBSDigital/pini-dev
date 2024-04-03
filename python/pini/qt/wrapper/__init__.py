@@ -7,4 +7,5 @@ from .widgets import (
     CListWidget, CListWidgetItem, CTabWidget, CComboBox, CTreeWidget,
     CTreeWidgetItem, CProgressBar, CLineEdit, CMenu, CLabel, CBaseWidget,
     CHLine, CVLine, CSplitter, CListView, CListViewPixmapItem, CSlider,
-    CListViewWidgetItem, CPixmapLabel, CTileWidget, CTileWidgetItem)
+    CListViewWidgetItem, CPixmapLabel, CTileWidget, CTileWidgetItem,
+    CCheckBox)

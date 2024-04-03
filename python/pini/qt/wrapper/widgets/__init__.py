@@ -2,6 +2,7 @@
 
 from .qw_base_widget import CBaseWidget
 
+from .qw_check_box import CCheckBox
 from .qw_combo_box import CComboBox
 from .qw_label import CLabel
 from .qw_line import CHLine, CVLine

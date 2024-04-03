@@ -727,8 +727,8 @@ class CheckShaders(SCMayaCheck):
 
             _se = _data['shadingEngine']
             self.write_log(' - shading engine %s', _se)
-            _geos = _data['geos']
             _type = cmds.objectType(_shd)
+            _select_shd = wrap_fn(cmds.select, _shd)
 
             # Flag namespace
             if _shd != to_clean(_shd):
@@ -747,6 +747,8 @@ class CheckShaders(SCMayaCheck):
                 continue
             _base = _shd[:-4]
             self._check_engine_name(shd=_shd, engine=_se)
+
+            self._flag_assigned_to_intermediate_node(engine=_se, shader=_shd)
 
             if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
 
@@ -767,6 +769,45 @@ class CheckShaders(SCMayaCheck):
                             type_='ai shader', base=_base, ignore=_ignore_names)
                         _ignore_names.add(_suggestion)
                         self.add_fail(_msg, fix=_fix, node=_ai_shd)
+
+    def _flag_assigned_to_intermediate_node(self, engine, shader):
+        """Flag geo assigned to intermediate nodes.
+
+        Args:
+            engine (str): shading engine
+            shader (str): shader
+        """
+        _geos = cmds.sets(engine, query=True)
+        self.write_log(' - geos %s', _geos)
+
+        for _geo in _geos:
+            _geo = pom.cast_node(_geo, maintain_shapes=True)
+            self.write_log(' - check geo %s %s', _geo, _geo.object_type())
+            if _geo.object_type() != 'mesh':
+                continue
+            self.write_log('   - is mesh')
+            if not _geo.plug['intermediateObject'].get_val():
+                continue
+            _msg = (
+                'Shader "{}" is assigned to intermediate object "{}" '
+                'which is not renderable. This assigment has no effect '
+                'and may bloat the publish file.'.format(
+                    shader, _geo))
+            _fix = wrap_fn(
+                self._unassign_shader, engine=engine, geo=_geo)
+            _fail = SCFail(_msg, node=_geo)
+            _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
+            _fail.add_action('Fix', _fix, is_fix=True)
+            self.add_fail(_fail)
+
+    def _unassign_shader(self, engine, geo):
+        """Unassign a shader from the given geometry.
+
+        Args:
+            engine (str): shading engine (set)
+            geo (str): geometry to detatch
+        """
+        cmds.sets(geo, edit=True, remove=engine)
 
     def _check_engine_name(self, shd, engine):
         """Check shading group matches shader.
