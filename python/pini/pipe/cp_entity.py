@@ -515,6 +515,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _data = {'entity': self.name,
                  'entity_path': self.path}
         _tmpls = [_tmpl.apply_data(**_data) for _tmpl in _tmpls]
+        _LOGGER.log(9, ' - FOUND %d TMPLS %s', len(_tmpls), _tmpls)
 
         return _tmpls
 

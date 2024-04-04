@@ -1,3 +1,24 @@
+## [1.27.0] - Thu 2024-04-04 12:20
+### Summary
+ - Pini Helper:
+    - allow for underscores in cacheable names/namespaces (mkim/nwray),
+    - better error if underscore in tag [PT-250],
+### Updated
+ - pini.pipe.validate_token check for nounderscore setting,
+ - pini.pipe.CPTemplate.apply_data accommodate for regex in placeholder,
+ - pini.pipe.build_job_templates added no underscore to placeholder regex,
+ - pini.pipe.CPJob.cfg added token.tag.nounderscore to default cfg,
+ - pini.pipe.CPJob.cfg_file allow abs path $PINI_PIPE_CFG_PATH override,
+ - pini.pipe.CPOutput removed underscore in tag hack,
+ - pini.pipe.CPOutput build templates include step/task from work dir,
+ - pini.pipe.shotgrid.SGC.find_job update match arg -> kwarg + allow None,
+ - pini.pipe.shotgrid.SGC.find_pub_files added force arg,
+ - pini.pipe.shotgrid.SGC read pub files updated ver_n 1 -> 2 to accomodate template changes,
+ - pini.pipe.shotgrid.SGC read shots added handling for empty sequence in shot data,
+ - pini.tools.helper bugfix handling of underscore in tag,
+ - pini.tools.release.run_tests added safe arg,
+
+
 ## [1.26.0] - Wed 2024-04-03 13:25
 ### Summary
  - Sanity Check:

@@ -411,6 +411,14 @@ def validate_token(value, token, job):
             'Token "{}" as "{}" fails as it contains spaces'.format(
                 token, value))
 
+    # Apply nounderscore filter
+    _no_underscore = _cfg.get('nounderscore')
+    _LOGGER.debug(' - NO UNDERSCORE %s', _no_underscore)
+    if _no_underscore and '_' in value:
+        raise ValueError(
+            'Token "{}" as "{}" fails as it contains underscores'.format(
+                token, value))
+
     # Apply text filter
     _filter = _cfg.get('filter')
     _LOGGER.debug(' - FILTER %s', _filter)

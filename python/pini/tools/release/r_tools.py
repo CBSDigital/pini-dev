@@ -76,17 +76,19 @@ def _test_sort_key(test, mode='mca/dur'):
     return _key
 
 
-def run_tests(mode='all', tests=None, force=False):
+def run_tests(mode='all', tests=None, safe=True, force=False):
     """Run release tests.
 
     Args:
         mode (str): which tests to run (all/unit/integration)
         tests (PRTest list): override list of tests to run
+        safe (bool): check environment is clean before running tests
         force (bool): lose unsaved changes without confirmation
     """
     from pini import qt, dcc, testing
 
-    assert not os.environ.get('PINI_PIPE_CFG_PATH')
+    if safe:
+        assert not os.environ.get('PINI_PIPE_CFG_PATH')
 
     testing.enable_file_system(True)
 

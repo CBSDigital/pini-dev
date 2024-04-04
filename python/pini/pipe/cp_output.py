@@ -121,7 +121,7 @@ class CPOutputBase(object):
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
-            _LOGGER.log(9, ' - TMPL %s', self.template)
+            _LOGGER.log(9, ' - TMPL %s %s', self.template, self.template.anchor)
             _LOGGER.log(9, ' - PATH %s', self.path)
             try:
                 self.data = self.template.parse(self.path)
@@ -145,16 +145,6 @@ class CPOutputBase(object):
                 self.task = self.work_dir.task
             else:
                 self.task = self.data.get('work_dir')
-
-        # Fix userscore in tag
-        _LOGGER.log(9, ' - TASK %s %s', self.task, self.data)
-        if 'tag' in self.data and self.task and '_' in self.task:
-            _LOGGER.log(
-                9, ' - FIXING UNDERSCORE IN TASK %s %s', self.task, self.data)
-            self.task = self.data['task'].split('_')[0]
-            self.template = self.template.apply_data(task=self.task)
-            _LOGGER.log(9, ' - TEMPLATE (fixed) %s', self.template)
-            self.data = self.template.parse(self.path)
 
         validate_tokens(self.data, job=self.job)
 
@@ -186,6 +176,17 @@ class CPOutputBase(object):
             (CPTemplate list): templates to test
         """
 
+        # Build dict of data to apply to template
+        _data = {}
+        _data['entity'] = self.entity.name
+        _data['entity_path'] = self.entity.path
+        _data['extn'] = self.extn
+        if self.work_dir:
+            _data['work_dir'] = self.work_dir.path
+            _data['task'] = self.work_dir.task
+            _data['step'] = self.work_dir.step
+        _LOGGER.log(9, ' - DATA %s', _data)
+
         # Get list of templates to test
         if template:
             _tmpls = [template]
@@ -193,17 +194,7 @@ class CPOutputBase(object):
             _tmpls = templates
         else:
             _tmpls = self._find_templates(types=types)
-        _tmpls = [
-            _tmpl.apply_data(
-                entity=self.entity.name, entity_path=self.entity.path,
-                extn=self.extn)
-            for _tmpl in _tmpls]
-
-        # Apply work dir if needed
-        _keys = set(sum([list(_tmpl.keys()) for _tmpl in _tmpls], []))
-        if 'work_dir' in _keys and self.work_dir:
-            _tmpls = [_tmpl.apply_data(work_dir=self.work_dir.path)
-                      for _tmpl in _tmpls]
+        _tmpls = [_tmpl.apply_data(**_data) for _tmpl in _tmpls]
 
         # Log data
         _LOGGER.log(9, ' - MATCHED %d TEMPLATES: %s', len(_tmpls), _tmpls)
@@ -573,7 +564,7 @@ class CPOutputBase(object):
             _tmpl = self.entity.find_template(
                 _tmpl, has_key={'tag': bool('tag' in kwargs or self.tag)})
         assert isinstance(_tmpl, pipe.CPTemplate)
-        _LOGGER.debug(' - TEMPLATE %s', _tmpl.pattern)
+        _LOGGER.debug(' - TEMPLATE %s', _tmpl)
 
         # Build data
         _data = copy.copy(self.data)
@@ -589,7 +580,10 @@ class CPOutputBase(object):
             _data['entity_path'] = self.entity.path
         _LOGGER.debug(' - DATA %s', _data)
 
-        return to_output(_tmpl.pattern.format(**_data))
+        _path = _tmpl.format(**_data)
+        _LOGGER.debug(' - PATH %s', _path)
+        _out = to_output(_path)
+        return _out
 
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.

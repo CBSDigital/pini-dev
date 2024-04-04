@@ -183,9 +183,9 @@ class CCPWorkDir(CPWorkDir):
         # Obtain work object to match with
         _work = super(CCPWorkDir, self).to_work(**kwargs)
         _LOGGER.debug(' - WORK %s', _work)
-        _LOGGER.debug(' - WORK DIR %s', _work.work_dir)
         if not _work:
             return None
+        _LOGGER.debug(' - WORK DIR %s', _work.work_dir)
         _work_c = self.obt_work(_work, catch=True)
         _LOGGER.debug(' - WORK C %s', _work_c)
         if _work_c:

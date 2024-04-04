@@ -13,7 +13,7 @@ from pini import dcc, icons
 from pini.utils import (
     Dir, abs_path, single, cache_property, norm_path, merge_dicts, to_str,
     apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result,
-    passes_filter, HOME_PATH)
+    passes_filter, HOME_PATH, is_abs)
 
 from . import cp_settings, cp_template
 from .cp_utils import map_path
@@ -35,7 +35,7 @@ _DEFAULT_CFG = {
         'asset_type': {'filter': None},
         'sequence': {'filter': None, 'whitelist': []},
         'dcc': {'allowed': dcc.DCCS},
-        'tag': {'default': None},
+        'tag': {'default': None, 'nounderscore': True},
         'ver': {'len': 3},
     }}
 
@@ -67,8 +67,8 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (File): config
         """
-        _filename = os.environ.get('PINI_PIPE_CFG_PATH', '.pini/config.yml')
-        _file = self.to_file(_filename)
+        _path = os.environ.get('PINI_PIPE_CFG_PATH', '.pini/config.yml')
+        _file = self.to_file(_path) if not is_abs(_path) else File(_path)
         _file = File(map_path(_file.path))
         return _file
 
@@ -212,7 +212,10 @@ class CPJob(cp_settings.CPSettingsLevel):
         Returns:
             (CPTemplate): matching template
         """
-        return single(self.find_templates(pattern=pattern))
+        _tmpl = single(self.find_templates(pattern=pattern), catch=True)
+        if not _tmpl:
+            raise ValueError('Failed to match pattern {}'.format(pattern))
+        return _tmpl
 
     def find_templates(
             self, type_=None, profile=None, dcc_=None, has_key=None,

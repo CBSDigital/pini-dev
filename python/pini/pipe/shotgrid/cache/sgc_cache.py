@@ -95,7 +95,7 @@ class SGDataCache(object):
         _job = pipe.to_job(match)
         return self.find_job(_job).find_entity(match)
 
-    def find_job(self, match):
+    def find_job(self, match=None):
         """Find a job.
 
         Args:
@@ -104,14 +104,16 @@ class SGDataCache(object):
         Returns:
             (SGCJob): matching job
         """
+        _match = match or pipe.cur_job()
+
         _match_jobs = [
             _job for _job in self.jobs
-            if match in (_job.name, _job.id_, _job.prefix, _job.job)]
+            if _match in (_job.name, _job.id_, _job.prefix, _job.job)]
         if len(_match_jobs) == 1:
             return single(_match_jobs)
 
         _filter_jobs = apply_filter(
-            self.jobs, match, key=operator.attrgetter('name'))
+            self.jobs, _match, key=operator.attrgetter('name'))
         if len(_filter_jobs) == 1:
             return single(_filter_jobs)
 
@@ -141,13 +143,15 @@ class SGDataCache(object):
         _job = job or pipe.CPJob(path)
         return self.find_job(_job).find_pub_file(path=path)
 
-    def find_pub_files(self, job=None, entity=None, work_dir=None):
+    def find_pub_files(
+            self, job=None, entity=None, work_dir=None, force=False):
         """Search pub files in the cache.
 
         Args:
             job (CPJob): job to search
             entity (CPEntity): filter by entity
             work_dir (CPWorkDir): filter by work dir
+            force (bool): force rebuild cache
 
         Returns:
             (SGCPubFile list): pub files
@@ -161,7 +165,7 @@ class SGDataCache(object):
             _job = work_dir.job
         assert _job
         return self.find_job(_job).find_pub_files(
-            entity=entity, work_dir=work_dir)
+            entity=entity, work_dir=work_dir, force=force)
 
     def find_shot(self, match):
         """Find a shot in the cache.

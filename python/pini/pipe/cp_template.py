@@ -118,12 +118,22 @@ class CPTemplate(lucidity.Template):
         _pattern = self.pattern
         _updated = {}
         for _name, _val in kwargs.items():
+
             if not _val:
                 continue
             if _name not in self.keys():
                 continue
+
+            # Update pattern
+            _token_s = '{{{}}}'.format(_name)  # Basic pattern
+            if _token_s not in _pattern:  # Pattern contains regex
+                _start = _pattern.find(_token_s[:-1]+':')
+                _end = _pattern.find('}', _start)+1
+                _token_s = _pattern[_start: _end]
+            _pattern = _pattern.replace(_token_s,  _val)
+
             _updated[_name] = _val
-            _pattern = _pattern.replace('{%s}' % _name,  _val)
+
         _tmpl = self.duplicate(pattern=_pattern)
         _tmpl.embedded_data.update(_updated)
         return _tmpl
@@ -393,6 +403,7 @@ class CPTemplate(lucidity.Template):
         except lucidity.ParseError as _exc:
             _LOGGER.log(9, ' - PARSE FAILED')
             raise _exc
+        _LOGGER.debug(' - PARSED %s', _data)
 
         if self.job:
             try:
@@ -401,6 +412,7 @@ class CPTemplate(lucidity.Template):
                 raise lucidity.ParseError(_exc)
 
         _data.update(self.embedded_data)
+        _LOGGER.debug(' - UPDATED DATA %s', _data)
 
         # Test remap data into path
         _remap_path = self.format(_data)
@@ -423,11 +435,13 @@ class CPTemplate(lucidity.Template):
         Returns:
             (dict): token/value data
         """
-        _LOGGER.log(9, 'PARSE SEPARATE DIR %s', path)
+        _LOGGER.log(9, ' - PARSE SEPARATE DIR %s', path)
 
+        # Extract data from dir
         _dir = File(path).dir
         _dir_tmpl = self.duplicate(
             'tmp', File(self.pattern).dir, separate_dir=False)
+        _LOGGER.log(9, ' - DIR TMPL %s %s', _dir_tmpl, _dir_tmpl.anchor)
         _data = _dir_tmpl.parse(_dir)
 
         _file = File(path).filename
@@ -518,12 +532,12 @@ def build_job_templates(job, catch=True):
 
     # Build configs into dict
     _tmpls = collections.defaultdict(list)
-    for _name, _fmt in _tmpls_cfg.items():
-        _LOGGER.debug(' - EXPANDING FMT %s', _fmt)
-        _fmts = expand_pattern_variations(_fmt)
-        for _fmt in _fmts:
+    for _name, _pattern in _tmpls_cfg.items():
+        _LOGGER.debug(' - EXPANDING FMT %s', _pattern)
+        _fmts = expand_pattern_variations(_pattern)
+        for _pattern in _fmts:
 
-            _LOGGER.debug('   - ADD FMT %s', _fmt)
+            _LOGGER.debug('   - ADD PATTERN %s', _pattern)
 
             # Determine whether dir is to be separated + anchor type
             _anchor = lucidity.Template.ANCHOR_END
@@ -531,18 +545,30 @@ def build_job_templates(job, catch=True):
             if (
                     'render' in _name or
                     'plate' in _name or
+                    # 'cache' in _name or
                     'mov' in _name):
                 _anchor = lucidity.Template.ANCHOR_START
                 _separate_dir = True
             elif 'cache' in _name:
                 _separate_dir = True
 
+            # Add regex to placeholders
+            for _token, _data in job.cfg['tokens'].items():
+                _regex = None
+                if _data.get('nounderscore'):
+                    _regex = '[^_]+'
+                if _regex:
+                    _find = '{{{}}}'.format(_token)
+                    _replace = '{{{}:{}}}'.format(_token, _regex)
+                    _pattern = _pattern.replace(_find, _replace)
+                    _LOGGER.debug('   - FIND %s %s', _find, _replace)
+
             # Build template
             _name, _alt = _extract_alt_from_name(_name)
-            _path_type = _to_path_type(name=_name, pattern=_fmt)
+            _path_type = _to_path_type(name=_name, pattern=_pattern)
             _tmpl = CPTemplate(
-                _name, pattern=_fmt, anchor=_anchor, separate_dir=_separate_dir,
-                job=job, path_type=_path_type, alt=_alt)
+                _name, pattern=_pattern, anchor=_anchor, job=job,
+                separate_dir=_separate_dir, path_type=_path_type, alt=_alt)
             _tmpls[_name].append(_tmpl)
 
     _build_seq_dir_tmpls(_tmpls, job=job)
@@ -691,6 +717,7 @@ def _separate_finalised_templates(templates, dir_):
     Returns:
         (list, list): subdir templates, final templates
     """
+    _LOGGER.log(9, ' - SEP FINALISED TMPLS %s %s', dir_, templates)
     _subdir_tmpls = collections.defaultdict(set)
     _fin_tmpls = []
 
@@ -699,8 +726,9 @@ def _separate_finalised_templates(templates, dir_):
 
         # Catch templates which map to outside this dir
         if not dir_.contains(_tmpl.pattern):
-            _LOGGER.debug('IGNORICING TEMPLATE %s OUTSIDE DIR %s',
-                          _tmpl, dir_.path)
+            _LOGGER.debug(
+                ' - IGNORING TEMPLATE OUTSIDE DIR %s %s',
+                _tmpl, dir_.path)
             continue
 
         _rel_path = dir_.rel_path(_tmpl.pattern)
@@ -734,7 +762,7 @@ def _glob_rel_templates(templates, dir_, job):  # pylint: disable=too-many-branc
     Returns:
         (tuple list): list of valid template/path pairs
     """
-    _LOGGER.debug('GLOB REL TEMPLATES %s', dir_.path)
+    _LOGGER.debug('GLOB REL TEMPLATES %s %s', dir_.path, templates)
 
     _subdir_tmpls, _fin_tmpls = _separate_finalised_templates(templates, dir_)
     _LOGGER.debug(
@@ -753,6 +781,7 @@ def _glob_rel_templates(templates, dir_, job):  # pylint: disable=too-many-branc
     for _path in _paths:
 
         _abs_path = dir_.to_subdir(_path.path)
+        _LOGGER.log(9, ' - CHECK PATH %s', _abs_path)
 
         # Check unfinished template roots and recurse into subdir
         if isinstance(_path, Dir):
@@ -761,20 +790,28 @@ def _glob_rel_templates(templates, dir_, job):  # pylint: disable=too-many-branc
             _tmpls = set()
             for _dir_tmpl, _child_tmpls in _subdir_tmpls.items():
 
+                _LOGGER.log(
+                    9, '   - TESTING SUBDIR %s %s', _dir_tmpl, _child_tmpls)
+
                 # Check template
+                _LOGGER.log(9, '   - CHECKING TEMPLATE')
                 try:
                     _data = _dir_tmpl.parse(_path.path)
                 except lucidity.ParseError:
+                    _LOGGER.log(9, '     - PARSE FAILED %s', _path.path)
                     continue
+                _LOGGER.log(9, '     - DATA %s', _data)
                 try:
                     validate_tokens(_data, job=job)
                 except ValueError:
+                    _LOGGER.log(9, '     - VALIDATE TOKENS FAILED')
                     continue
 
                 # Apply data from this dir to child templates and
                 # add them to list of templates to apply in subdir
                 _tmpls |= {_tmpl.apply_data(**_data) for
                            _tmpl in _child_tmpls}
+                _LOGGER.log(9, '     - ACCEPTED %s', _tmpls)
 
             # Get results from this dir from matching templates
             if _tmpls:
@@ -866,6 +903,7 @@ def glob_templates(templates, job):
     Returns:
         (tuple list): list of valid template/path pairs
     """
+    _LOGGER.debug('GLOB TEMPLATES')
 
     # Sort into hardened roots
     _roots = collections.defaultdict(list)
@@ -874,6 +912,7 @@ def glob_templates(templates, job):
         assert _root.is_abs()
         _roots[_root].append(_tmpl)
     _roots = dict(_roots)
+    _LOGGER.debug(' - ROOTS %s', _root)
 
     # Search roots
     _results = []

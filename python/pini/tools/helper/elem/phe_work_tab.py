@@ -255,16 +255,16 @@ class CLWorkTab(object):
 
         # Create dummy next work item
         _LOGGER.debug(' - WORK DIR %s', self.work_dir)
+        self.next_work = None
         if self.work_dir:
             if not _works:
                 _work = self.work_dir.to_work(
-                    tag=self.tag, user=pipe.cur_user())
+                    tag=self.tag, user=pipe.cur_user(), catch=True)
             else:
                 _work = _works[0]
             _LOGGER.debug(' - WORK %s', _work)
-            self.next_work = _work.find_next()
-        else:
-            self.next_work = None
+            if _work:
+                self.next_work = _work.find_next()
         if self.next_work:
             self.next_work.set_exists(False)
             assert not self.next_work.exists()

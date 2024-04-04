@@ -12,6 +12,17 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestPipe(unittest.TestCase):
 
+    def test_work_to_output(self):
+
+        # Check caches can have underscores in output name
+        _ety = pipe.CACHE.obt(testing.TEST_SHOT)
+        _work_dir = _ety.find_work_dir(task='anim', dcc_=dcc.NAME)
+        _work = _work_dir.to_work()
+        _out = _work.to_output('cache', output_name='blah_2', extn='abc')
+        assert _out
+        assert _out.task == 'anim'
+        assert _out.output_name == 'blah_2'
+
     def test_templates(self):
 
         assert testing.TEST_JOB
@@ -54,6 +65,10 @@ class TestPipe(unittest.TestCase):
         assert cp_template._extract_alt_from_name('blah') == ('blah', 0)
         assert cp_template._extract_alt_from_name('blah_alt1') == ('blah', 1)
         assert cp_template._extract_alt_from_name('alt_blah_alt3') == ('alt_blah', 3)
+
+        # Test apply data to tag with regex
+        _tmpl = pipe.CPTemplate(name='test', pattern='{task}/{tag:[^_]+}_v{ver}/{output_name}')
+        assert _tmpl.apply_data(tag='blah').pattern == '{task}/blah_v{ver}/{output_name}'
 
     def test_settings(self):
 
@@ -126,6 +141,7 @@ class TestDiskPipe(unittest.TestCase):
         # Setup output
         _out = _shot.to_output(
             'render', task='anim', output_name='masterLayer', user=pipe.cur_user())
+        _LOGGER.info('OUT %s', _out)
         File(_out[1]).touch()
         assert _out.exists()
         _out.set_metadata({'blah': 1})

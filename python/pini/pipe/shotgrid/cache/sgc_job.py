@@ -540,7 +540,7 @@ class SGCJob(sgc_container.SGCContainer):
             'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by']
         _data = self._read_data(
             entity_type='PublishedFile', fields=_fields, progress=progress,
-            ver_n=1, force=force)
+            ver_n=2, force=force)
         _pub_files = []
         for _item in _data:
             _pub_file = sgc_container.SGCPubFile(_item)
@@ -635,8 +635,10 @@ def _path_from_result(result, entity_type, job, step=None, entity_map=None):
         return _asset
 
     if entity_type == 'Shot':
+        _seq_data = result.get('sg_sequence', {}) or {}
+        _seq_name = _seq_data.get('name')
         _path = job.to_subdir('episodes/{}/{}'.format(
-            result['sg_sequence']['name'], result['code']))
+            _seq_name, result['code']))
         try:
             _shot = pipe.CPShot(_path, job=job)
         except ValueError:
