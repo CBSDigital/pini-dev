@@ -38,7 +38,8 @@ def build_ranges(start_t):
         _end_s = '01/01/{:02d}'.format(_year)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
-            datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+            datetime.datetime.strptime(_end_s, '%d/%m/%y'),
+            period='Y')
         _rngs.append(_rng)
         if _year >= int(strftime('%y')):
             break
@@ -53,7 +54,8 @@ def build_ranges(start_t):
         _end_s = '01/{:02d}/{:02d}'.format(_month, _year)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
-            datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+            datetime.datetime.strptime(_end_s, '%d/%m/%y'),
+            period='M')
         _rngs.append(_rng)
         if _month >= int(strftime('%m')):
             break
@@ -67,7 +69,8 @@ def build_ranges(start_t):
         _end_s = _add_days(_start_s, 7)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
-            datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+            datetime.datetime.strptime(_end_s, '%d/%m/%y'),
+            period='D')
         _label = '{} -> {}'.format(_start_s, _end_s)
         if _rng.end_t >= datetime.datetime.today():
             break
@@ -81,7 +84,8 @@ def build_ranges(start_t):
         _end_s = _add_days(_start_s, 1)
         _rng = SGCRange(
             datetime.datetime.strptime(_start_s, '%d/%m/%y'),
-            datetime.datetime.strptime(_end_s, '%d/%m/%y'))
+            datetime.datetime.strptime(_end_s, '%d/%m/%y'),
+            period='D')
         _LOGGER.debug(
             ' - ADD DAY %s %s %d', _start_s, _end_s,
             _rng.end_t >= datetime.datetime.today())
@@ -120,20 +124,29 @@ def _add_days(date, days):
 class SGCRange(object):
     """Represents a time range (or point in time) to read shotgrid at."""
 
-    def __init__(self, start_t, end_t=None):
+    def __init__(self, start_t, end_t=None, period=None):
         """Constructor.
 
         Args:
             start_t (float): range start
             end_t (float): range end
+            period (str): time period of range (Y/M/W/D)
         """
         self.start_t = start_t
         self.end_t = end_t
+        self.period = period
 
-        _fmt = '%d/%m/%y'
-        self.label = '{} -> {}'.format(
-            strftime(_fmt, self.start_t),
-            strftime(_fmt, self.end_t))
+        _fmt = {
+            'Y': '%Y',
+            'M': '%m/%y',
+            'W': '%d/%m/%y',
+            'D': '%d/%m/%y'}[period]
+        if period == 'W':
+            self.label = '{} -> {}'.format(
+                strftime(_fmt, self.start_t),
+                strftime(_fmt, self.end_t))
+        else:
+            self.label = strftime(_fmt, self.start_t)
 
     def to_tuple(self):
         """Obtain tuple of this range.

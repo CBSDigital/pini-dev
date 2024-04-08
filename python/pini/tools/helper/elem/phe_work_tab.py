@@ -55,11 +55,15 @@ class CLWorkTab(object):
         Returns:
             (CPWorkDir): work dir (if any)
         """
+        _LOGGER.debug('WORK DIR %s', self.entity)
         if not self.entity:
             return None
 
         # Existing task
         _work_dir = self.ui.WTasks.selected_data()
+        if _work_dir and not self.entity.contains(_work_dir):
+            self.ui.WTasks.redraw()
+            _work_dir = self.ui.WTasks.selected_data()
         if _work_dir:
             return _work_dir
 
@@ -69,6 +73,7 @@ class CLWorkTab(object):
             task=_task, dcc_=dcc.NAME, catch=True)
         if _new_work_dir:
             _new_work_dir.set_badly_named_files(0)
+
         return _new_work_dir
 
     @property

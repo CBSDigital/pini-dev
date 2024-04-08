@@ -10,4 +10,5 @@ from .t_pipe import (
     TEST_SEQUENCE, check_test_asset)
 from .t_profile import (
     profile, profile_start, profile_stop, PROFILE_FILE, PROFILE_TXT)
-from .t_tools import dev_mode, setup_logging, TEST_YML, TEST_DIR, obt_image
+from .t_tools import (
+    dev_mode, setup_logging, TEST_YML, TEST_DIR, obt_image, set_dev_mode)

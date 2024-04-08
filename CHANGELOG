@@ -1,3 +1,33 @@
+## [1.28.0] - Mon 2024-04-08 10:21
+### Summary
+ - Pini Helper:
+    - houdini use archive to reference abc in all cases (achepakov),
+    - maya cache camera bugfix error on drawing overrides locked,
+    - bugfix error on switch to cache tab with no current work file,
+### Updated
+ - pini.utils.path added paths to error on file system disabled,
+ - pini.dcc.HouDCC.create_ref use archive by default,
+ - pini.dcc.HouDCC.create_ref moved abc import to h_pipe,
+ - pini.dcc.HouDCC._read_pipe_refs moved to pipe_ref,
+ - pini.dcc.pipe_ref.find_pipe_refs implemented for hou,
+ - pini.dcc.pipe_ref renamed CHouAbcRef -> CHouAbcGeomentry,
+ - pini.dcc.pipe_ref renamed CHouAbcCamRef -> CHouAbcArchiveRef,
+ - pini.dcc.pipe_ref.find_pipe_refs hou catch geo refs inside archives,
+ - pini.pipe.CPOutput.step bugfix attr not being set if only declared in work_dir,
+ - pini.pipe.shotgrid.SGC find_pub_type/find_pub_types added,
+ - pini.pipe.shotgrid.SGC._read_data force updated_at into fields,
+ - pini.pipe.shotgrid.SGC.build_ranges added Y/M/W/D period to range + more concise labels,
+ - pini.pipe.shotgrid.create_pub_file use SGC for file type,
+ - pini.pipe.shotgrid.create_pub_file added update_cache arg,
+ - pini.tools.helper bugfix bad work dir if work tab not selected,
+ - pini.tools.helper bugfix error on switch to cache tab with no current work,
+ - pini.testing.set_dev_mode added,
+ - maya_pini.m_pipe.cache bugfix error on cam with drawing overrides locked,
+ - maya_pini.m_pipe.cache bugfix rebuilding sg cache on each register,
+ - maya_pini.open_maya.CPlug.set_val added unlock flag,
+ - hou_pini.h_pipe added import_abc_geometry/import_abc/import_abc_archive,
+
+
 ## [1.27.0] - Thu 2024-04-04 12:20
 ### Summary
  - Pini Helper:

@@ -167,6 +167,54 @@ class SGDataCache(object):
         return self.find_job(_job).find_pub_files(
             entity=entity, work_dir=work_dir, force=force)
 
+    def find_pub_type(self, match, type_='File'):
+        """Find published file type.
+
+        Args:
+            match (str): token to match
+            type_ (str): path type (File/Sequence)
+
+        Returns:
+            (SGCPubType): published file type
+        """
+
+        # Try matching code
+        _code_matches = [
+            _type for _type in self.find_pub_types() if _type.code == match]
+        if len(_code_matches) == 1:
+            return single(_code_matches)
+
+        # Try using type suffix
+        _file_matches = [
+            _type for _type in self.find_pub_types()
+            if _type.code == '{} {}'.format(match.capitalize(), type_)]
+        if len(_file_matches) == 1:
+            return single(_file_matches)
+
+        # Try using mapping
+        _map = {
+            'mp4': 'Movie',
+            'mov': 'Movie',
+        }
+        _map_matches = [
+            _type for _type in self.find_pub_types()
+            if _type.code == _map.get(match)]
+        if len(_map_matches) == 1:
+            return single(_map_matches)
+
+        if type_ == 'Sequence':
+            return self.find_pub_type('Image Sequence')
+
+        raise ValueError(match)
+
+    def find_pub_types(self):
+        """Find published file types.
+
+        Returns:
+            (SGCPubType list): published file types
+        """
+        return self._read_pub_types()
+
     def find_shot(self, match):
         """Find a shot in the cache.
 
@@ -328,15 +376,16 @@ class SGDataCache(object):
         Returns:
             (dict list): shotgrid results
         """
+        _fields = tuple(sorted(set(fields) | {'updated_at'}))
         _day_cache = _GLOBAL_CACHE_DIR.to_file(
             '{}_D{}_{}.pkl'.format(
                 entity_type, strftime('%y%m%d'),
-                sgc_utils.to_fields_key(fields)))
+                sgc_utils.to_fields_key(_fields)))
         if not force and _day_cache.exists():
             _data = _day_cache.read_pkl()
         else:
             _data = self._read_data_last_update(
-                entity_type=entity_type, fields=fields, force=force > 1)
+                entity_type=entity_type, fields=_fields, force=force > 1)
             _day_cache.write_pkl(_data, force=True)
 
         return _data
@@ -409,6 +458,21 @@ class SGDataCache(object):
             _jobs.append(_job)
 
         return sorted(_jobs)
+
+    @cache_on_obj
+    def _read_pub_types(self, force=False):
+        """Build list of publish types.
+
+        Args:
+            force (bool): force rebuild cache
+
+        Returns:
+            (SGCPubType list): steps
+        """
+        _fields = ('code', )
+        _steps_data = self._read_data('PublishedFileType', fields=_fields)
+        _steps = [sgc_container.SGCPubType(_data) for _data in _steps_data]
+        return _steps
 
     @cache_on_obj
     def _read_steps(self, force=False):

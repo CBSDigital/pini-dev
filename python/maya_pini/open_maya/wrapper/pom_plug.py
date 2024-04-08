@@ -128,8 +128,10 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
     def break_connections(self):
         """Break any incoming connection to this plug."""
+        _LOGGER.debug('BREAK CONNECTIONS %s', self)
         _incoming = cmds.listConnections(
             self, destination=False, plugs=True, connections=True)
+        _LOGGER.debug(' - INCOMING %s', _incoming)
         if not _incoming:
             return
         _dest, _src = _incoming
@@ -492,17 +494,23 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """
         self.to_anim().set_tangents(type_)
 
-    def set_val(self, val, break_connections=False):
+    def set_val(self, val, break_connections=False, unlock=False):
         """Set value of this attribute.
 
         Args:
             val (any): value to apply
             break_connections (bool): break connections on apply value
+            unlock (bool): unlock attr before apply
         """
         _LOGGER.debug('SET VAL %s %s', self, val)
         from maya_pini import open_maya as pom
+
         if break_connections:
             self.break_connections()
+        if unlock:
+            self.unlock()
+
+        # Apply value
         if isinstance(val, six.string_types):
             cmds.setAttr(self, val, type='string')
             return

@@ -182,7 +182,7 @@ def set_col(node, col, force=False):
     _node = pom.to_node(node)
     if force:
         _node.plug['drawOverride'].break_connections()
-    _node.plug['overrideEnabled'].set_val(1)
+    _node.plug['overrideEnabled'].set_val(True)
     _node.plug['overrideColor'].set_val(COLS.index(_col))
 
 

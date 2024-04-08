@@ -8,6 +8,7 @@ from pini.utils import basic_repr
 
 class SGCContainer(object):
     """Base class for all container classes."""
+
     def __init__(self, data):
         """Constructor.
 
@@ -26,6 +27,22 @@ class SGCContainer(object):
             (dict): shotgrid entry
         """
         return {'type': self.type_, 'id': self.id_}
+
+
+class SGCPubType(SGCContainer):
+    """Represents a published file type."""
+
+    def __init__(self, data):
+        """Constructor.
+
+        Args:
+            data (dict): shotgrid data
+        """
+        super(SGCPubType, self).__init__(data)
+        self.code = data['code']
+
+    def __repr__(self):
+        return basic_repr(self, self.code)
 
 
 class SGCStep(SGCContainer):

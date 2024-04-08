@@ -96,28 +96,14 @@ class HouDCC(BaseDCC):
             force (bool): replace existing without confirmation
         """
         from pini import pipe
+        from hou_pini import h_pipe
+
         _out = pipe.to_output(path)
-        if _out.extn == 'abc' and _out.metadata.get('type') == 'CPCacheableCam':
-            _root = hou.node('/obj')
-            _cam = _root.createNode('alembicarchive', namespace)
-            _cam.parm('fileName').set(_out.path)
-            _cam.parm('buildHierarchy').pressButton()
-            _ref = self.find_pipe_ref(namespace)
-            _ref.update_res()
-        elif _out.extn == 'abc':
-            _root = hou.node('/obj')
-            _geo = _root.createNode('geo', node_name=namespace)
-            _abc = _geo.createNode('alembic')
-            _abc.parm('fileName').set(_out.path)
-            _out = _geo.createNode('null', 'OUT')
-            _out.setInput(0, _abc)
-            _out.setRenderFlag(True)
-            _out.setDisplayFlag(True)
-            _out.setPosition((0, -1))
-            _ref = self.find_pipe_ref(namespace)
+        if _out.extn == 'abc':
+            _ref = h_pipe.import_abc(abc=_out, namespace=namespace)
         else:
             raise ValueError(_out)
-        _root.moveToGoodPosition()
+        _ref.node.moveToGoodPosition()
 
         return _ref
 
@@ -231,38 +217,8 @@ class HouDCC(BaseDCC):
         Returns:
             (CPipeRef list): list of references
         """
-        _LOGGER.debug('READ PIPE REFS')
-        from ..pipe_ref import pr_hou
-        _refs = []
-        for _cat, _type, _class in [
-                (hou.sopNodeTypeCategory, 'alembic',
-                 pr_hou.CHouAbcRef),
-                (hou.objNodeTypeCategory, 'alembicarchive',
-                 pr_hou.CHouAbcCamRef),
-        ]:
-            for _node in _cat().nodeType(_type).instances():
-
-                _LOGGER.debug('CHECKING NODE %s', [_node])
-
-                # Check if node references pipeline output
-                try:
-                    _ref = _class(_node)
-                except ValueError:
-                    continue
-
-                # Check if root is selected
-                if selected:
-                    _root = _node
-                    while _root.parent() != hou.node('/obj'):
-                        check_heart()
-                        _root = _root.parent()
-                    _LOGGER.debug(' - ROOT %s', _root)
-                    if _root not in hou.selectedNodes():
-                        _LOGGER.debug(' - NOT SELECTED %s', hou.selectedNodes())
-                        continue
-
-                _refs.append(_ref)
-        return _refs
+        from .. import pipe_ref
+        return pipe_ref.find_pipe_refs(selected=selected)
 
     def select_node(self, node):
         """Select the given node.

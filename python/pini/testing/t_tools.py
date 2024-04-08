@@ -42,6 +42,18 @@ def obt_image(extn='exr'):
     return _file
 
 
+def set_dev_mode(value):
+    """Set dev mode environment variable.
+
+    Args:
+        value (bool): value to apply
+    """
+    if value:
+        os.environ['PINI_DEV'] = '1'
+    else:
+        del os.environ['PINI_DEV']
+
+
 def setup_logging():
     """Setup logging with a generic handler."""
     _logger = logging.getLogger()

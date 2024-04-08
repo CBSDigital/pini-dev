@@ -6,7 +6,7 @@ from maya import cmds
 
 from pini import pipe, icons, qt, dcc, farm
 from pini.tools import sanity_check
-from pini.utils import single, plural, safe_zip, passes_filter
+from pini.utils import single, plural, safe_zip, passes_filter, last
 
 from maya_pini import ref
 from maya_pini.utils import (
@@ -238,9 +238,10 @@ def _exec_local_cache(
     if pipe.SHOTGRID_AVAILABLE:
         from pini.pipe import shotgrid
         _thumb = work.image if work.image.exists() else None
-        for _out in qt.progress_bar(
-                outputs, 'Registering {:d} output{} in shotgrid'):
-            shotgrid.create_pub_file(_out, thumb=_thumb)
+        for _last, _out in qt.progress_bar(
+                last(outputs), 'Registering {:d} output{} in shotgrid'):
+            shotgrid.create_pub_file(
+                _out, thumb=_thumb, update_cache=_last)
 
 
 @hide_img_planes
@@ -357,10 +358,11 @@ def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
             continue
 
         # Check maps to asset correctly
-        try:
-            assert _cbl.to_output()
-        except ValueError:
-            continue
+        if pipe.cur_work():
+            try:
+                assert _cbl.to_output()
+            except ValueError:
+                continue
 
         _cbls.append(_cbl)
 

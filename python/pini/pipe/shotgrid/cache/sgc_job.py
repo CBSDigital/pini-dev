@@ -303,7 +303,7 @@ class SGCJob(sgc_container.SGCContainer):
         _LOGGER.debug('FIND %s IN %s', entity_type, self.name)
 
         _last_t = self._read_last_t(entity_type=entity_type)
-        _last_rng = sgc_range.SGCRange(_last_t)
+        _last_rng = sgc_range.SGCRange(_last_t, period='D')
         _snapshot = sgc_utils.to_cache_file(
             entity_type=entity_type, job=self, fields=fields,
             range_=_last_rng, ver_n=ver_n)
@@ -407,8 +407,8 @@ class SGCJob(sgc_container.SGCContainer):
 
         for _result in qt.progress_bar(
                 _sg_results,
-                '[SGC] Checking {{:d}} {} result{{}} ({} {})'.format(
-                    entity_type, self.name, range_.label),
+                '[SGC] Reading {} {} results ({{:d}})'.format(
+                    range_.label, entity_type),
                 show=progress, col='Yellow',
                 stack_key='SGCValidateResults'):
 

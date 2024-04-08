@@ -82,6 +82,6 @@ def read_cache_set(mode='geo', include_referenced=True):
 
         _results.append(_node)
 
-    _LOGGER.info(' - RESULTS %s', _results)
+    _LOGGER.debug(' - RESULTS %s', _results)
 
     return _results

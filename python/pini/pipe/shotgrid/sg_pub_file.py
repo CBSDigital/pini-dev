@@ -15,13 +15,16 @@ _PUB_FILE_FIELDS = [
     'path', 'published_file_type', 'name', 'path_cache', 'id']
 
 
-def create_pub_file(output, thumb=None, status='cmpt', force=False):
+def create_pub_file(
+        output, thumb=None, status='cmpt', update_cache=True, force=False):
     """Create PublishedFile entry in shotgrid.
 
     Args:
         output (CPOutput): output to register
         thumb (File): apply thumbnail image
         status (str): status for entry (default is complete)
+        update_cache (bool): update cache on create
+            (disable for multiple creates)
         force (bool): if an entry exists, update data
 
     Returns:
@@ -41,22 +44,8 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
     _LOGGER.info('CREATE PUBLISHED FILE %s', output.path)
     _notes = output.metadata.get('notes')
 
-    # Find type data
-    _map = {
-        'ma': 'Maya Scene',
-        'abc': 'Abc File',
-        'mp4': 'Movie',
-        'exr': 'exr',
-    }
-    if output.extn in _map:
-        _code = _map[output.extn]
-    elif isinstance(output, Seq):
-        _code = 'Image Sequence'
-    else:
-        _code = output.extn
-    _sg_type = sg_handler.find_one(
-        'PublishedFileType', filters=[('code', 'is', _code)])
-
+    _sg_type = shotgrid.SGC.find_pub_type(
+        output.extn, type_='Sequence' if isinstance(output, Seq) else 'File')
     _sg_ety = shotgrid.SGC.find_entity(output.entity)
     _sg_user = shotgrid.SGC.find_user()
     _sg_job = shotgrid.SGC.find_job(output.job)
@@ -72,7 +61,7 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
         'name': output.filename,
         'path_cache': pipe.JOBS_ROOT.rel_path(output.path),
         'project': _sg_job.to_entry(),
-        'published_file_type': _sg_type,
+        'published_file_type': _sg_type.to_entry(),
         'task': _sg_task.to_entry(),
         'sg_status_list': status,
         'updated_by': _sg_user.to_entry(),
@@ -91,12 +80,13 @@ def create_pub_file(output, thumb=None, status='cmpt', force=False):
         _id = _existing_id
 
     # Update cache
-    _sg_job.find_pub_files(force=True)
-    assert _sg_job.find_pub_file(output)
-    _job_c = pipe.CACHE.obt(output.job)
-    _job_c.find_outputs(force=True)
-    _out_c = pipe.CACHE.obt(output)
-    assert _out_c
+    if update_cache:
+        _sg_job.find_pub_files(force=True)
+        assert _sg_job.find_pub_file(output)
+        _job_c = pipe.CACHE.obt(output.job)
+        _job_c.find_outputs(force=True)
+        _out_c = pipe.CACHE.obt(output)
+        assert _out_c
 
     # Apply thumb
     _thumb = thumb

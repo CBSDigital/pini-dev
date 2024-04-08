@@ -8,3 +8,5 @@ if dcc.NAME == 'maya':
     from .pr_maya import CMayaAiStandIn, CMayaReference, CMayaLookdevRef
 elif dcc.NAME == 'nuke':
     from .pr_nuke import CNukeReadRef
+elif dcc.NAME == 'hou':
+    from .pr_hou import find_pipe_refs

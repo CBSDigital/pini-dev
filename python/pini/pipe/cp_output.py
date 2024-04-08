@@ -138,6 +138,8 @@ class CPOutputBase(object):
         _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
                     self.template)
 
+        validate_tokens(self.data, job=self.job)
+
         # Set task
         self.task = task or self.data.get('task', self.template.task)
         if not self.task:
@@ -146,10 +148,12 @@ class CPOutputBase(object):
             else:
                 self.task = self.data.get('work_dir')
 
-        validate_tokens(self.data, job=self.job)
+        # Set step
+        self.step = self.data.get('step')
+        if not self.step and self.work_dir:
+            self.step = self.work_dir.step
 
         self.output_name = self.data.get('output_name')
-        self.step = self.data.get('step')
         self.tag = self.data.get('tag')
         self.user = self.data.get('user')
 

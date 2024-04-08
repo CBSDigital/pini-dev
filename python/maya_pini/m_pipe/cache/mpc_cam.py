@@ -94,7 +94,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
             cmds.parent(_dup, world=True)
         _cons = pom.CMDS.parentConstraint(self.cam, _dup)
         _LOGGER.info(' - CONS %s', _cons)
-        set_col(_dup, 'green')
+        set_col(_dup, 'green', force=True)
         _dup.u_scale(scale)
 
         # Move rotate axis off export cam
