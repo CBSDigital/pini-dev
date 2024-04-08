@@ -5,6 +5,7 @@ import logging
 from pini import pipe, qt
 from pini.pipe import cache
 from pini.qt import QtWidgets
+from pini.utils import last
 
 from .. import eh_base
 
@@ -133,11 +134,12 @@ class CBasicPublish(eh_base.CExportHandler):
         if pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
             _thumb = work.image if work.image.exists() else None
-            for _out in outs:
+            for _last, _out in last(outs):
                 if _out.asset_type == 'test':
                     continue
                 try:
-                    shotgrid.create_pub_file(_out, thumb=_thumb, force=True)
+                    shotgrid.create_pub_file(
+                        _out, thumb=_thumb, force=True, update_cache=_last)
                 except shotgrid.MissingPipelineStep:
                     qt.notify(
                         'Failed to find pipeline step for output:\n\n{}'.format(

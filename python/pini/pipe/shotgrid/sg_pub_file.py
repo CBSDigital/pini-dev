@@ -81,7 +81,7 @@ def create_pub_file(
 
     # Update cache
     if update_cache:
-        _sg_job.find_pub_files(force=True)
+        _sg_job.find_pub_files(force=True, progress=True)
         assert _sg_job.find_pub_file(output)
         _job_c = pipe.CACHE.obt(output.job)
         _job_c.find_outputs(force=True)

@@ -187,7 +187,7 @@ class CExportHandler(object):
         if width:
             _combo_box.setFixedWidth(width)
         _combo_box.set_items(items, data=data)
-        _LOGGER.info(' - BUILT COMBOBOX %s', _combo_box)
+        _LOGGER.debug(' - BUILT COMBOBOX %s', _combo_box)
 
         self._add_elem_lyt(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
@@ -195,9 +195,9 @@ class CExportHandler(object):
             disable_save_settings=disable_save_settings,
             settings_key=settings_key)
         if val:
-            _LOGGER.info(' - APPLY VALUE %s', val)
+            _LOGGER.debug(' - APPLY VALUE %s', val)
             _combo_box.select_text(val)
-        _LOGGER.info(' - COMPLETED ADD COMBOBOX %s', _combo_box)
+        _LOGGER.debug(' - COMPLETED ADD COMBOBOX %s', _combo_box)
 
         return _combo_box
 
@@ -322,7 +322,7 @@ class CExportHandler(object):
         else:
             _notes = None
 
-        _LOGGER.info('NOTES %s', _notes)
+        _LOGGER.debug('NOTES %s', _notes)
         _data = eh_utils.obtain_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,
             force=force, handler=self.NAME, task=task, notes=_notes)

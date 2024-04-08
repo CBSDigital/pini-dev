@@ -1,3 +1,12 @@
+## [1.28.1] - Mon 2024-04-08 12:17
+### Summary
+ - Pini Helper:
+    - maya publish optimise shotgrid register to improve speed (mkim),
+### Updated
+ - pini.dcc.CBasePublish.post_publish optimise sg register - only rebuild cache on last,
+ - pini.pipe.shotgrid.create_pub_file show progress on update cache,
+
+
 ## [1.28.0] - Mon 2024-04-08 10:21
 ### Summary
  - Pini Helper:
