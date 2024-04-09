@@ -1,3 +1,18 @@
+## [1.29.0] - Tue 2024-04-09 13:28
+### Summary
+ - Pini Helper:
+    - bugfix showing shot publishes in assets list,
+    - scene refs right-click added find/apply asset + lookdev options,
+### Updated
+ - pini.pipe.CPJob.find_publishes sg bugfix finding shot publishes,
+ - pini.pipe.CPJob.find_outputs added profile filter,
+ - pini.pipe.cache.CCPOutput.find_lookdev added handling for asset,
+ - pini.tools.helper jump to asset output bugfix not selecting task/output,
+ - pini.tools.helper scene refs reset staged bugfix ignoring renames,
+ - pini.tools.helper target use CPWork/CPOutput objects,
+ - pini.tools.helper scene refs ctx added find asset/lookdev + apply lookdev opts,
+
+
 ## [1.28.1] - Mon 2024-04-08 12:17
 ### Summary
  - Pini Helper:

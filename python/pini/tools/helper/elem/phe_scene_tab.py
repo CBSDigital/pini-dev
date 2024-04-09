@@ -152,6 +152,7 @@ class CLSceneTab(object):
         Returns:
             (tuple): output type elements
         """
+        _LOGGER.debug(' - REDRAW OUT TYPE ASSET %s', self.target)
         _label = 'Category'
         _outs = [_out for _out in self.all_outs if _out.asset]
         _types = sorted({
@@ -161,6 +162,9 @@ class CLSceneTab(object):
             for _type in _types]
 
         # Determine selection
+        _LOGGER.debug(
+            '   - SELECTION %d %s',
+            isinstance(self.target, pipe.CPOutputBase), _types)
         if (
                 self.target and
                 isinstance(self.target, pipe.CPOutputBase) and
@@ -168,10 +172,13 @@ class CLSceneTab(object):
             _select = self.target.asset_type
         else:
             _select = 'rig'
+        _LOGGER.debug('   - SELECT OUT TYPE ASSET %s', _select)
 
         return _label, _types, _data, _select
 
     def _redraw__SOutputTask(self):
+
+        _LOGGER.debug(' - REDRAW SOutputTask')
 
         _mode = self.ui.SOutputsPane.current_tab_text()
         _type = self.ui.SOutputType.selected_text()
@@ -191,7 +198,7 @@ class CLSceneTab(object):
                 _task for _task, _task_outs in safe_zip(_tasks, _data)
                 if self.target in _task_outs])
             _LOGGER.debug(
-                ' - FIND SELECTED TASK FROM TARGET %s %s', _select,
+                '   - FIND SELECTED TASK FROM TARGET %s %s', _select,
                 self.target)
         elif _mode == 'render':
             _select = 'lighting'
@@ -201,7 +208,10 @@ class CLSceneTab(object):
             _select = _tasks[0]
         else:
             _select = None
-        _select = {'anim': 'rig'}.get(pipe.cur_task(), _select)
+        if not _select:
+            _select = {'anim': 'rig'}.get(pipe.cur_task(), _select)
+        _LOGGER.debug('   - SELECT %s', _select)
+
         if len(_tasks) > 1:
             _tasks.insert(0, 'all')
             _data.insert(0, _outs)
@@ -275,7 +285,7 @@ class CLSceneTab(object):
 
     def _redraw__SOutputs(self):
 
-        _LOGGER.debug('REDRAW OOutputs')
+        _LOGGER.debug(' - REDRAW OOutputs')
 
         _filter = self.ui.SOutputsFilter.text()
         _outs = self.ui.SOutputFormat.selected_data() or []
@@ -296,7 +306,13 @@ class CLSceneTab(object):
             pass
         else:
             raise ValueError(_version_mode)
-        _LOGGER.debug(' - FOUND %d OUTS', len(_outs))
+        _LOGGER.debug('   - FOUND %d OUTS', len(_outs))
+
+        # Determine selection
+        _select = None
+        if self.target in _outs:
+            _select = self.target
+        _LOGGER.debug('   - SELECT %s', _select)
 
         # Build items
         _items = []
@@ -305,7 +321,7 @@ class CLSceneTab(object):
                 helper=self, output=_out, list_view=self.ui.SOutputs,
                 highlight=_out in _scene_outs)
             _items.append(_item)
-        self.ui.SOutputs.set_items(_items, select=None)
+        self.ui.SOutputs.set_items(_items, select=_select)
 
         # Update dependent elements
         self.ui.SOutputInfo.redraw()
@@ -360,6 +376,16 @@ class CLSceneTab(object):
         _text = _text.strip()
         self.ui.SOutputInfo.setVisible(bool(_text))
         self.ui.SOutputInfo.setText(_text)
+
+    def _redraw__SReset(self):
+
+        # Update 'reset' button
+        _resettable = bool(
+            self._staged_imports or
+            self._staged_updates or
+            self._staged_renames or
+            self._staged_deletes)
+        self.ui.SReset.setEnabled(_resettable)
 
     def _redraw__SAdd(self):
         _outs = [_out for _out in self.ui.SOutputs.selected_datas()
@@ -546,6 +572,7 @@ class CLSceneTab(object):
 
         self._staged_updates = {}
         self._staged_imports = []
+        self._staged_renames = {}
         self._staged_deletes = set()
 
         self.ui.SSceneRefs.redraw()
@@ -561,13 +588,7 @@ class CLSceneTab(object):
 
         _refs = self.ui.SSceneRefs.selected_datas()
         self.ui.SDelete.setEnabled(bool(_refs))
-
-        # Update 'reset' button
-        _resettable = bool(
-            self._staged_imports or
-            self._staged_updates or
-            self._staged_deletes)
-        self.ui.SReset.setEnabled(_resettable)
+        self.ui.SReset.redraw()
 
         # Update 'Update to latest' button
         _updateables = _refs or self.ui.SSceneRefs.all_data()

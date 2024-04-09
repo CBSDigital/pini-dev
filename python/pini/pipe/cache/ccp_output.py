@@ -150,13 +150,21 @@ class CCPOutput(CPOutput, CCPOutputBase):
         _LOGGER.debug('FIND LOOKDEV %s', self)
 
         # Find asset
-        _asset_path = pipe.map_path(self.metadata.get('asset'))
-        if not _asset_path:
+        _asset = _out = None
+        if self.profile == 'asset':
+            if self.metadata.get('publish_type') != 'CMayaLookdevPublish':
+                _out = self
+                _asset = self.entity
+        if not _asset:
+            _asset_path = pipe.map_path(self.metadata.get('asset'))
+            if _asset_path:
+                _out = pipe.to_output(_asset_path)
+                _out = pipe.CACHE.obt(_out)
+                _asset = _out.entity
+        if not _asset:
             _LOGGER.debug(' - NO ASSET FOUND')
             return None
-        _out = pipe.to_output(_asset_path)
-        _out = pipe.CACHE.obt(_out)
-        _LOGGER.debug(' - ASSET %s', _out.entity)
+        _LOGGER.debug(' - ASSET %s', _asset)
 
         # Find lookdevs
         _lookdevs = _out.entity.find_publishes(publish_type='lookdev')

@@ -169,11 +169,13 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if not self.target:
             _cur_out = pipe.cur_output()
             if _cur_out:
-                self.target = _cur_out.metadata.get('src')
+                _src = _cur_out.metadata.get('src')
+                if _src:
+                    self.target = pipe.to_output(_src)
         if not self.target:
             _recent = obt_recent_work()
             if _recent:
-                self.target = _recent[0].path
+                self.target = pipe.to_work(_recent[0].path)
         _LOGGER.debug(' - TARGET %s', self.target)
 
     def jump_to(self, path):
@@ -184,14 +186,24 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         """
         _LOGGER.debug('JUMP TO %s', path)
 
-        self.target = path
-        _work = pipe.to_work(path)
-        if _work:
-            self.ui.MainPane.select_tab('Work')
-        _out = pipe.to_output(path, catch=True)
-        if _out:
-            self.ui.MainPane.select_tab('Scene')
+        # Assign target
+        self.target = _tab = None
+        if not self.target:
+            self.target = pipe.to_work(path)
+            if self.target:
+                _tab = 'Work'
+        if not self.target:
+            self.target = pipe.to_output(path, catch=True)
+            if self.target:
+                _tab = 'Scene'
+        if not self.target:
+            self.target = pipe.to_entity(path)
+
+        # Update ui
+        if _tab:
+            self.ui.MainPane.select_tab(_tab)
         self.ui.Job.redraw()
+
         self.target = None
 
     def reset(self):
@@ -252,33 +264,24 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
         menu.add_separator()
 
-        _func = chain_fns(
-            wrap_fn(self.ui.MainPane.select_tab, 'Scene'),
-            wrap_fn(self._stage_import, output),
-            self.ui.SSceneRefs.redraw)
         if add:
+            _func = chain_fns(
+                wrap_fn(self.ui.MainPane.select_tab, 'Scene'),
+                wrap_fn(self._stage_import, output),
+                self.ui.SSceneRefs.redraw)
             menu.add_action(
                 'Add to scene', _func, icon=icons.find('Plus'),
                 enabled=dcc.can_reference_output(output))
+
+        # Add find options
+        self._add_output_find_opts(
+            menu=menu, find_work=find_work, ref=ref, output=output)
+
+        # Add apply range option
+        menu.add_separator()
         menu.add_action(
             'Print metadata', wrap_fn(pprint.pprint, output.metadata),
             icon=icons.PRINT)
-
-        # Add find work option
-        if find_work:
-            _src = pipe.map_path(output.metadata.get('src'))
-            menu.add_action(
-                'Find work file', wrap_fn(self.jump_to, _src),
-                icon=icons.FIND, enabled=bool(_src))
-            _asset = output.metadata.get('asset')
-            if _asset:
-                _asset = pipe.map_path(_asset)
-                _LOGGER.info(' - ASSET %s', _asset)
-                menu.add_action(
-                    'Find asset', wrap_fn(self.jump_to, _asset),
-                    icon=icons.FIND, enabled=bool(_src))
-
-        # Add apply range option
         _rng = output.metadata.get('range')
         if _rng and len(set(_rng)) > 1:
             menu.add_action(
@@ -291,6 +294,50 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if _apply_lookdev_opts(output, ref):
             self._add_output_lookdev_opts(
                 menu, lookdev=output, ref=ref, ignore_ui=ignore_ui)
+
+    def _add_output_find_opts(self, menu, find_work, ref, output):
+        """Add find options for the given output.
+
+        Args:
+            menu (QMenu): menu to add items to
+            find_work (bool): add find work option
+            ref (CPipeRef): scene ref associated with this output
+            output (CPOutput): output to add options for
+        """
+        menu.add_separator()
+
+        # Add find work
+        _asset = None
+        if find_work:
+            _src = pipe.map_path(output.metadata.get('src'))
+            menu.add_action(
+                'Find work file', wrap_fn(self.jump_to, _src),
+                icon=icons.FIND, enabled=bool(_src))
+            _asset = output.metadata.get('asset')
+
+        # Add find asset
+        if (
+                not _asset and
+                output.nice_type == 'publish' and
+                output.profile == 'asset'):
+            _asset = output
+            _asset = pipe.map_path(_asset)
+            _LOGGER.info(' - ASSET %s', _asset)
+        menu.add_action(
+            'Find asset', wrap_fn(self.jump_to, _asset),
+            icon=icons.FIND, enabled=bool(_asset))
+
+        # Add lookdev opts
+        _lookdev = output.find_lookdev()
+        menu.add_action(
+            'Find lookdev', wrap_fn(self.jump_to, _lookdev),
+            icon=icons.FIND, enabled=bool(_lookdev))
+        _attach = chain_fns(
+            wrap_fn(self._stage_import, _lookdev, attach=ref),
+            self.ui.SSceneRefs.redraw)
+        menu.add_action(
+            'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
+            enabled=bool(_lookdev and ref))
 
     def _set_work_thumb(self, clip_):
         """Update current work thumbnail to match the given clip.

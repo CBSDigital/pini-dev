@@ -959,21 +959,22 @@ class CPJob(cp_settings.CPSettingsLevel):
             assert extn is EMPTY
             _pubs = self.find_outputs(
                 type_='publish', entity=entity, task=task, tag=tag, ver_n=ver_n,
-                extns=extns)
+                extns=extns, profile='asset')
         else:
             raise ValueError(pipe.MASTER)
 
         return _pubs
 
     def find_outputs(
-            self, type_=None, entity=None, task=None, tag=EMPTY, ver_n=None,
-            extns=None, progress=False):
+            self, type_=None, profile=None, entity=None, task=None, tag=EMPTY,
+            ver_n=None, extns=None, progress=False):
         """Find outputs in this job.
 
         (Only applicable to shotgrid jobs)
 
         Args:
             type_ (str): filter by output type
+            profile (str): filter by entity profile (asset/shot)
             entity (CPEntity): filter by entity
             task (str): filter by task
             tag (str): filter by tag
@@ -1000,6 +1001,8 @@ class CPJob(cp_settings.CPSettingsLevel):
             if tag is not EMPTY and _out.tag != tag:
                 continue
             if ver_n and _out.ver_n != ver_n:
+                continue
+            if profile and _out.entity.profile != profile:
                 continue
             if entity and _out.entity != entity:
                 _LOGGER.debug('   - REJECT ENTITY %s %s', _out.entity, entity)
