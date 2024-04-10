@@ -105,7 +105,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _LOGGER.info('LOOKDEV PUBLISH')
 
         _work = work or pipe.CACHE.cur_work
-        _pub = _work.to_output('publish', output_type='lookdev')
+        _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
         _data_dir = _pub.to_dir().to_subdir('data')
         _outs = []
         self.shd_yml = _pub.to_file(

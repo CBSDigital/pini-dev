@@ -6,7 +6,7 @@ import logging
 
 from maya import cmds
 
-from pini import qt, pipe, dcc
+from pini import pipe, dcc
 from pini.dcc import export_handler
 from pini.tools import sanity_check, error
 from pini.utils import single, wrap_fn, check_heart, plural
@@ -595,7 +595,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
         if not _geos:
             self.add_fail('No geo found')
 
-        for _geo in qt.progress_bar(_geos):
+        for _geo in self.update_progress(_geos):
 
             self.write_log('Checking %s', _geo)
 
@@ -845,7 +845,8 @@ class CheckForFaceAssignments(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        for _se in cmds.ls(type='shadingEngine'):
+        _LOGGER.debug('CHECK FOR FACE ASSIGNMENTS')
+        for _se in self.update_progress(cmds.ls(type='shadingEngine')):
 
             # Deterine shader
             self.write_log('Checking %s ', _se)

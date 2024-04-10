@@ -58,6 +58,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.setModal(_modal)
         self.show()
         self.load_settings()
+
         if run:
             self._callback__RunChecks(force=force)
 
@@ -108,7 +109,7 @@ class SanityCheckUi(qt.CUiDialog):
         Args:
             check (SCCheck): force check to update
         """
-        _LOGGER.debug('UPDATE UI')
+        _LOGGER.log(9, 'UPDATE UI')
         dcc.refresh()
 
         if check:
@@ -117,7 +118,7 @@ class SanityCheckUi(qt.CUiDialog):
                 if _item.data() == check], catch=True)
         else:
             _check_ui = self.ui.Checks.selected_item()
-        _LOGGER.debug(' - CHECK TO UPDATE %s', _check_ui)
+        _LOGGER.log(9, ' - CHECK TO UPDATE %s', _check_ui)
 
         if _check_ui:
             _check_ui.redraw()
@@ -184,7 +185,7 @@ class SanityCheckUi(qt.CUiDialog):
         if self.check and self.check.error:
             self.error_ui.set_error(self.check.error)
 
-    def _redraw__Checks(self):
+    def _redraw__Checks(self, autorun=False):
 
         _LOGGER.debug('REDRAW Checks')
 
@@ -192,13 +193,16 @@ class SanityCheckUi(qt.CUiDialog):
         _show_passed = self.ui.ShowPassed.isChecked()
         _show_disabled = self.ui.ShowDisabled.isChecked()
 
-        _autorun = False
+        _could_autorun = False
         _sel = None
         for _check in self.checks:
+
+            # Apply filters
             if not _show_disabled and _check.is_disabled:
                 continue
             if not _show_passed and _check.has_passed:
                 continue
+
             _item = scui_check.SCUiCheckItem(
                 list_view=self.ui.Checks, check=_check)
             _items.append(_item)
@@ -206,13 +210,13 @@ class SanityCheckUi(qt.CUiDialog):
             if not _sel:
                 if not _check.has_run:
                     _sel = _item
-                    _autorun = True
+                    _could_autorun = True
                 elif _check.has_failed:
                     _sel = _item
 
         self.ui.Checks.set_items(_items, select=_sel, emit=True)
 
-        if _autorun:
+        if autorun and _could_autorun:
             _LOGGER.debug(' - APPLYING AUTORUN %s %s', _sel, self.check)
             self._callback__RunCheck()
 

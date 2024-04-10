@@ -295,7 +295,9 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         else:
             _ver_n = _latest.ver_n+1
         _user = user or cur_user()
-        _next = self.to_work(ver_n=_ver_n, class_=class_, user=_user)
+
+        _next = self.to_work(
+            ver_n=_ver_n, class_=class_, user=_user, extn=dcc.DEFAULT_EXTN)
         assert _next.work_dir is self.work_dir
         return _next
 
@@ -813,7 +815,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         raise ValueError(template)
 
     def to_work(
-            self, task=None, tag=EMPTY, user=EMPTY, ver_n=None, class_=None):
+            self, task=None, tag=EMPTY, user=EMPTY, ver_n=None, extn=EMPTY,
+            class_=None):
         """Build a work file using this work file's template data.
 
         Args:
@@ -821,6 +824,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             tag (str): override tag
             user (str): over user
             ver_n (int): override version number
+            extn (str): override extension
             class_ (class): override work file class
 
         Returns:
@@ -849,6 +853,8 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             _data['work_dir'] = _work_dir.path
         if tag is not EMPTY:
             _data['tag'] = tag
+        if extn is not EMPTY:
+            _data['extn'] = extn
         if ver_n is not None:
             _ver_pad = self.job.cfg['tokens']['ver']['len']
             _data['ver'] = str(ver_n).zfill(_ver_pad)
