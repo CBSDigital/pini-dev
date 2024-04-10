@@ -111,7 +111,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _metadata = metadata or self.obtain_metadata(
             work=_work, force=force, sanity_check_=sanity_check_)
         _LOGGER.info(' - OBTAINED METADATA %s', _metadata)
-        _pub = _work.to_output('publish', output_type=None)
+        _pub = _work.to_output('publish', output_type=None, extn='ma')
         _LOGGER.info(' - OUTPUT %s', _pub.path)
 
         if self.ui:

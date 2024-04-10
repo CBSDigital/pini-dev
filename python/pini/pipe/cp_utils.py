@@ -254,7 +254,9 @@ def tag_sort(tag):
     Returns:
         (str): tag sort key
     """
-    return tag not in ('default', 'main', None), tag or ''
+    _default_tags = {
+        os.environ.get('PINI_PIPE_DEFAULT_TAG'), 'default', 'main', None}
+    return tag not in _default_tags, (tag or '').lower()
 
 
 def task_sort(task):

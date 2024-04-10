@@ -68,8 +68,11 @@ def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
         _LOGGER.debug(' - SPLITTERS %s', _splitters)
         for _splitter in _splitters:
             if _splitter in str(_node):
-                _base = str(_node).rsplit(_splitter, 1)[0]
-                break
+                _new_base = str(_node).rsplit(_splitter, 1)[0]
+                if _new_base:
+                    _base = _new_base
+                    _LOGGER.debug(' - UPDATED BASE %s', _base)
+                    break
         else:
             _base = str(_node)
         while _base[-1].isdigit():

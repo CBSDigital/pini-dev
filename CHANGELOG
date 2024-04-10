@@ -1,3 +1,16 @@
+## [1.30.0] - Wed 2024-04-10 10:11
+### Summary
+ - Pini Helper:
+    - bugfix error on publish from mb file (cstewart),
+ - Sanity Check:
+    - bugfix error on fix node name if name starts with underscore (cstewart),
+### Updated
+ - pini.dcc.CMayaBasicPublish force extn ma,
+ - pini.pipe.tag_sort bugfix $PINI_PIPE_DEFAULT_TAG not included in defaults,
+ - pini.pipe.tag_sort sort using lower,
+ - pini.tools.sanity_check fix node suffix bugfix error on leading underscore,
+
+
 ## [1.29.0] - Tue 2024-04-09 13:28
 ### Summary
  - Pini Helper:
