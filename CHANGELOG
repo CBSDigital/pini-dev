@@ -1,3 +1,18 @@
+## [1.32.0] - Thu 2024-04-11 15:00
+### Summary
+ - Pini Helper:
+    - bugfix error on update lookdev tag (farnold),
+    - bugfix failing to assign shaders on update lookdev (cstewart),
+### Updated
+ - pini.dcc.CPipeRef._init_path_attrs added,
+ - pini.dcc.CMayaReference.update bugfix path attrs not updated after update,
+ - maya_pini.utils.apply_namespace added,
+ - maya_pini.ref.get_selected bugfix error on select ref w/o ns,
+ - maya_pini.tex.Shader.to_assignments added,
+ - maya_pini.tex.Shader deprecated apply_to -> assign_to,
+ - maya_pini.tex.Shader deprecated unapply -> unassign,
+
+
 ## [1.31.0] - Thu 2024-04-11 11:02
 ### Summary
  - Pini Helper:

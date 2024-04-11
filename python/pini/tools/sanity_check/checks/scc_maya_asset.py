@@ -686,7 +686,7 @@ def _import_referenced_shader(shd):
     _LOGGER.debug(' - DUPLICATE SHADER %s', _dup)
     _geos = shd.to_geo()
     _LOGGER.debug(' - APPLY TO %s', _geos)
-    _dup.apply_to(_geos)
+    _dup.assign_to(_geos)
 
 
 class CheckShaders(SCMayaCheck):
@@ -889,7 +889,7 @@ class CheckForFaceAssignments(SCMayaCheck):
         """
         _LOGGER.info('FIX FACE ASSIGNMENTS %s %s', shader, geo)
         try:
-            shader.unapply(node=geo)
+            shader.unassign(node=geo)
         except ValueError:
             raise error.HandledError(
                 'Failed to unassign "{}" from "{}".'
@@ -897,7 +897,7 @@ class CheckForFaceAssignments(SCMayaCheck):
                 'It seems like maya is having trouble with this assignment.'
                 'Try deleting history on this node or removing it '
                 'if possible'.format(shader, geo))
-        shader.apply_to(geo)
+        shader.assign_to(geo)
 
 
 class NoObjectsWithDefaultShader(SCMayaCheck):

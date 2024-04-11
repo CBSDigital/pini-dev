@@ -1,7 +1,8 @@
 """General utilities for maya."""
 
 from .mu_cam import find_render_cam, find_cams
-from .mu_namespace import del_namespace, set_namespace, to_namespace
+from .mu_namespace import (
+    del_namespace, set_namespace, to_namespace, apply_namespace)
 from .mu_dec import (
     restore_ns, restore_sel, restore_frame, get_ns_cleaner, use_tmp_ns,
     reset_ns, reset_sel, pause_viewport, hide_img_planes)

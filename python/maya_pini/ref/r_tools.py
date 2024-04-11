@@ -198,7 +198,10 @@ def get_selected(multi=False):
             _ref_node = _node
         else:
             continue
-        _ref = FileRef(_ref_node)
+        try:
+            _ref = FileRef(_ref_node)
+        except ValueError:
+            continue
         _refs.add(_ref)
     if multi:
         return sorted(_refs)

@@ -11,6 +11,11 @@ class CPipeRef(object):
 
     node = None
 
+    path = None
+    extn = None
+    _out = None
+    _out_c = None
+
     def __init__(self, path, namespace):
         """Constructor.
 
@@ -18,12 +23,19 @@ class CPipeRef(object):
             path (str): path to reference
             namespace (str): namespace for node
         """
+        self.namespace = namespace
+        self.cmp_str = to_cmp_str(self.namespace)
+        self._init_path_attrs(path)
+
+    def _init_path_attrs(self, path):
+        """Initiate/update path attributes.
+
+        Args:
+            path (str): reference file path
+        """
         _file = File(path)
         self.path = _file.path
         self.extn = _file.extn
-
-        self.namespace = namespace
-        self.cmp_str = to_cmp_str(self.namespace)
 
         # Setup outputs (uncached/cached)
         self._out = pipe.to_output(self.path, catch=True)

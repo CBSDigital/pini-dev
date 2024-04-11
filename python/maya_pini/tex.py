@@ -7,6 +7,7 @@ import six
 from maya import cmds
 
 from pini import qt
+from pini.tools import release
 from pini.utils import single, File, Dir, abs_path, EMPTY, Image
 
 from maya_pini import open_maya as pom
@@ -45,10 +46,19 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
+        release.apply_deprecation('11/04/24', 'Use assign to')
+        self.assign_to(obj)
+
+    def assign_to(self, obj):
+        """Assign this shader to the given object.
+
+        Args:
+            obj (str): object to apply to
+        """
         _LOGGER.info('APPLY %s TO %s (%s)', self, obj, type(obj).__name__)
         if isinstance(obj, list):
             for _item in obj:
-                self.apply_to(_item)
+                self.assign_to(_item)
             return
 
         _obj = obj
@@ -96,6 +106,14 @@ class _Shader(pom.CNode):
         else:
             raise ValueError(col)
 
+    def to_assignments(self):
+        """Read this shader's list of assignments.
+
+        Returns:
+            (str list): assigments
+        """
+        return cmds.sets(self.to_se(), query=True) or []
+
     def to_file(self, create=False):
         """Obtain this shader file input.
 
@@ -132,7 +150,7 @@ class _Shader(pom.CNode):
             (CNode list): nodes
         """
         _geos = []
-        for _geo in (cmds.sets(self.to_se(), query=True) or []):
+        for _geo in self.to_assignments():
             _LOGGER.debug('GEO %s', _geo)
 
             if node and node != to_node(_geo):
@@ -175,7 +193,7 @@ class _Shader(pom.CNode):
             self.out_col.connect(_se.plug['surfaceShader'])
         return _se
 
-    def unapply(self, node=None):
+    def unassign(self, node=None):
         """Remove this shader from its geometry.
 
         Args:
@@ -189,6 +207,15 @@ class _Shader(pom.CNode):
                 continue
             _LOGGER.info(' - UNAPPLY %s', _assign)
             cmds.sets(_assign, edit=True, remove=_engine)
+
+    def unapply(self, node=None):
+        """Remove this shader from its geometry.
+
+        Args:
+            node (str): only remove the given geometry node
+        """
+        release.apply_deprecation('11/04/24', 'Use unassign')
+        self.unassign(node=node)
 
 
 class _Lambert(_Shader):

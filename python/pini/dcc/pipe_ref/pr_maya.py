@@ -211,7 +211,9 @@ class CMayaReference(_CMayaPipeRef):
         _LOGGER.debug(' - OUTPUT %s', out)
         if out.extn in ['ma', 'mb', 'abc', 'fbx']:
             self.ref.update(out)
+            self._init_path_attrs(out)
             return self
+
         if out.type_ == 'ass_gz':
             _ns = self.namespace
             _grp = self.node.to_parent()
@@ -222,6 +224,7 @@ class CMayaReference(_CMayaPipeRef):
             _LOGGER.debug(' - REF %s', _ref)
             _mtx.apply_to(_ref.node)
             return _ref
+
         raise NotImplementedError(out)
 
 
@@ -245,10 +248,12 @@ class CMayaLookdevRef(CMayaReference):
             ref_ (CMayaReference): ref_ to attach shaders to
         """
         _LOGGER.debug('ATTACH %s -> %s', self, ref_)
+        _LOGGER.debug(' - OUTPUT %s', self.output)
         assert isinstance(ref_, pr_base.CPipeRef)
 
         # Read data from yml
         _shd_yml = pipe.map_path(self.output.metadata['shd_yml'])
+        _LOGGER.debug(' - SHD YML %s', _shd_yml)
         _data = File(_shd_yml).read_yml()
         _LOGGER.debug(' - PINI %s', self.output.pini_ver)
         _shd_data = self.shd_data['shds']
@@ -359,7 +364,7 @@ class CMayaLookdevRef(CMayaReference):
             assert _se
 
             # Attach geos
-            _LOGGER.debug('   - GEOS %s', _data['geos'])
+            _LOGGER.log(9, '   - GEOS %s', _data['geos'])
             for _item in _data['geos']:
 
                 # Check if node exists in abc
@@ -370,18 +375,18 @@ class CMayaLookdevRef(CMayaReference):
 
                 # Get list of shapes
                 _type = cmds.objectType(_node)
-                _LOGGER.debug('     - GEO %s %s', _node, _type)
+                _LOGGER.log(9, '     - GEO %s %s', _node, _type)
                 if _type == 'transform':
                     _shps = to_shps(str(_node))
                 elif _type == 'mesh':
                     _shps = [_node]
                 else:
                     raise ValueError(_node, _type)
-                _LOGGER.debug('     - SHPS %s', _shps)
+                _LOGGER.log(9, '     - SHPS %s', _shps)
 
                 # Add shapes to shading engine
                 for _shp in _shps:
-                    _LOGGER.debug('     - SHP %s', _shp)
+                    _LOGGER.log(9, '     - SHP %s', _shp)
                     cmds.sets(_shp, edit=True, forceElement=_se)
 
     def _apply_settings(self, settings, ref_):
@@ -466,9 +471,11 @@ class CMayaLookdevRef(CMayaReference):
         Args:
             out (str): output to apply
         """
+        _LOGGER.info('UPDATE %s %s', self, out)
         _result = super(CMayaLookdevRef, self).update(out)
         for _trg in self.find_targets():
-            self.attach_to(_trg)
+            _LOGGER.info(' - ATTACH TO %s', _trg)
+            _result.attach_to(_trg)
         return _result
 
 

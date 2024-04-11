@@ -5,13 +5,31 @@ import logging
 from maya import cmds
 
 from pini import icons
-from .mu_dec import restore_ns, restore_sel
+
+from . import mu_misc, mu_dec
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@restore_sel
-@restore_ns
+def apply_namespace(token, namespace=''):
+    """Apply the given namespace to the given node/attr name.
+
+    Args:
+        token (str): node/asset name (eg. pSphere1, pSphere1.tx)
+        namespace (str): namespace to apply
+
+    Returns:
+        (str): token name with namespace applied
+    """
+    _LOGGER.debug('APPLY NAMESPACE %s %s', token, namespace)
+    _clean = mu_misc.to_clean(token)
+    if not namespace:
+        return _clean
+    return '{}:{}'.format(namespace, _clean)
+
+
+@mu_dec.restore_sel
+@mu_dec.restore_ns
 def del_namespace(namespace, force=False):
     """Delete a namespace.
 
