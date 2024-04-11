@@ -376,7 +376,7 @@ def to_shd(obj):
         _shd = _SurfaceShader(_node)
     elif _type == 'shadingEngine':
         _se = _node
-    elif _type in ['VRayMtl', 'phong']:
+    elif _type in ['VRayMtl', 'VRayCarPaintMtl', 'phong']:
         _shd = _Shader(_node)
     else:
         _shd = None

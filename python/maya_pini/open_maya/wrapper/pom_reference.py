@@ -88,7 +88,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CTransform): top node
         """
-        return self.find_top_node()
+        return self.find_top_node(catch=True)
 
     def add_to_grp(self, grp):
         """Add this reference's top node to the given group.

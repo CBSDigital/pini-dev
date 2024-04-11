@@ -201,15 +201,23 @@ class CMayaReference(_CMayaPipeRef):
                 return None
             raise _exc
 
-    def update(self, out):
+    def update(self, out, reset=False):
         """Apply a new path to this reference.
 
         Args:
             out (str): output to apply
+            reset (bool): make clean copy of reference (loses ref edits)
         """
         _LOGGER.debug('UPDATE %s', self)
         _LOGGER.debug(' - OUTPUT %s', out)
         if out.extn in ['ma', 'mb', 'abc', 'fbx']:
+            if reset:
+                _grp = None
+                if self.ref.top_node:
+                    _grp = self.ref.top_node.to_parent()
+                self.delete(force=True)
+                return dcc.create_ref(
+                    out, namespace=self.namespace, group=_grp)
             self.ref.update(out)
             self._init_path_attrs(out)
             return self
@@ -465,14 +473,17 @@ class CMayaLookdevRef(CMayaReference):
         """
         raise NotImplementedError
 
-    def update(self, out):
+    def update(self, out, reset=True):
         """Apply a new path to this reference.
 
         Args:
             out (str): output to apply
+            reset (bool): make clean copy of reference (loses ref edits which
+                is safer for lookdev as shader assignments can get confused
+                with stale edits)
         """
         _LOGGER.info('UPDATE %s %s', self, out)
-        _result = super(CMayaLookdevRef, self).update(out)
+        _result = super(CMayaLookdevRef, self).update(out, reset=reset)
         for _trg in self.find_targets():
             _LOGGER.info(' - ATTACH TO %s', _trg)
             _result.attach_to(_trg)

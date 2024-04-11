@@ -1,3 +1,14 @@
+## [1.32.1] - Thu 2024-04-11 16:18
+### Summary
+ - Pini Helper:
+    - bugfix some shaders not applied on update lookdev tag (farnold),
+### Updated
+ - pini.dcc.CMayaReference.update added reset arg,
+ - pini.dcc.CMayaLookdevRef.update reset by default,
+ - maya_pini.open_maya.CReference.top_node no error on no top node,
+ - maya_pini.tex.to_shd added VRayCarPaintMtl handling,
+
+
 ## [1.32.0] - Thu 2024-04-11 15:00
 ### Summary
  - Pini Helper:
