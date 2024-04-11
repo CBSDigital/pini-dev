@@ -9,7 +9,7 @@ from pini.utils import (
     File, single, abs_path, cache_property, Seq, passes_filter,
     file_to_seq)
 
-from maya_pini import open_maya as pom, tex
+from maya_pini import open_maya as pom, tex, m_pipe
 from maya_pini.utils import (
     restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace)
 
@@ -321,7 +321,7 @@ class CMayaLookdevRef(CMayaReference):
 
             # Set light enabled/disabled based on whether target exists
             _en = bool(_trg)
-            _type = _light.shp.object_type()
+            _type = m_pipe.to_light_shp(_light).object_type()
             _plug = {'RedshiftPhysicalLight': 'on'}.get(_type, 'enabled')
             _light.set_visible(_en)
             _light.shp.plug[_plug].set_val(_en)
@@ -335,7 +335,7 @@ class CMayaLookdevRef(CMayaReference):
         """
         for _shd, _data in shds.items():
 
-            _LOGGER.debug(' - SHD %s', _shd)
+            _LOGGER.log(9, ' - SHD %s', _shd)
 
             # Obtain shader + shading engine
             if _shd == 'lambert1':
@@ -416,8 +416,12 @@ class CMayaLookdevRef(CMayaReference):
         """
         return single(self.find_targets(), catch=True)
 
-    def find_targets(self):
+    def find_targets(self, from_assignments=False):
         """Find references using this lookdev (eg. abcs).
+
+        Args:
+            from_assignments (bool): try to find targets from shading
+                assignments (can be slow for heavy scenes)
 
         Returns:
             (CReference list): references
@@ -432,18 +436,19 @@ class CMayaLookdevRef(CMayaReference):
                 _refs.add(_trg)
 
         # Find targets based on shader
-        for _se in self.ref.find_nodes(type_='shadingEngine'):
-            _shd = tex.to_shd(_se)
-            _LOGGER.debug(' - SHD %s %s', _se, _shd)
-            for _geo in _shd.to_geo():
-                if not _geo.is_referenced():
-                    continue
-                _ref = pom.CReference(_geo)
-                _ref = dcc.find_pipe_ref(_ref.namespace, catch=True)
-                if not _ref:
-                    continue
-                _LOGGER.debug('   - GEO %s %s', _geo, _ref)
-                _refs.add(_ref)
+        if from_assignments:
+            for _se in self.ref.find_nodes(type_='shadingEngine'):
+                _shd = tex.to_shd(_se)
+                _LOGGER.log(9, ' - SHD %s %s', _se, _shd)
+                for _geo in _shd.to_geo():
+                    if not _geo.is_referenced():
+                        continue
+                    _ref = pom.CReference(_geo)
+                    _ref = dcc.find_pipe_ref(_ref.namespace, catch=True)
+                    if not _ref:
+                        continue
+                    _LOGGER.log(9, '   - GEO %s %s', _geo, _ref)
+                    _refs.add(_ref)
 
         return sorted(_refs)
 
@@ -599,32 +604,32 @@ def _read_reference_pipe_refs(selected=False):
     Returns:
         (CMayaReference list): referenced pipe refs
     """
-    _LOGGER.debug('READ REFERENCE PIPEREFS')
+    _LOGGER.log(9, 'READ REFERENCE PIPEREFS')
 
     _all_refs = pom.find_refs(selected=selected)
 
     _refs = []
     for _ref in _all_refs:
 
-        _LOGGER.debug('TESTING %s', _ref)
+        _LOGGER.log(9, 'TESTING %s', _ref)
 
         # Obtain output
         _out = pipe.to_output(_ref.path, catch=True)
         if not _out:
-            _LOGGER.debug(' - NOT VALID OUTPUT %s', _ref.path)
+            _LOGGER.log(9, ' - NOT VALID OUTPUT %s', _ref.path)
             continue
-        _LOGGER.debug(' - OUT %s', _ref)
+        _LOGGER.log(9, ' - OUT %s', _ref)
 
         # Obtained cache output
         try:
             _out_c = pipe.CACHE.obt_output(_out)
         except ValueError:
-            _LOGGER.debug(' - MISSING FROM CACHE')
+            _LOGGER.log(9, ' - MISSING FROM CACHE')
             continue
 
         # Determine class based on publish type
         _pub_type = _out_c.metadata.get('publish_type')
-        _LOGGER.debug(' - PUB TYPE %s', _pub_type)
+        _LOGGER.log(9, ' - PUB TYPE %s', _pub_type)
         if _pub_type == 'CMayaLookdevPublish':
             _class = CMayaLookdevRef
         else:
@@ -644,7 +649,7 @@ def _read_vdb_pipe_refs(selected=False):
     Returns:
         (CMayaVdb list): vdb refs
     """
-    _LOGGER.debug('READ VDB PIPE REFS')
+    _LOGGER.log(9, 'READ VDB PIPE REFS')
 
     if 'aiVolume' not in cmds.allNodeTypes():
         return []
@@ -654,14 +659,14 @@ def _read_vdb_pipe_refs(selected=False):
         _aivs = []
         for _node in pom.CMDS.ls(selection=True):
             _type = _node.object_type()
-            _LOGGER.debug(' - CHECKING NODE %s %s', _node, _type)
+            _LOGGER.log(9, ' - CHECKING NODE %s %s', _node, _type)
             if _type == 'aiVolume':
                 _aivs.append(_node)
             elif _type == 'transform':
                 _shp = _node.to_shp(catch=True)
                 if _shp:
                     _shp_type = _shp.object_type()
-                    _LOGGER.debug('   - CHECKING SHP %s %s', _shp, _shp_type)
+                    _LOGGER.log(9, '   - CHECKING SHP %s %s', _shp, _shp_type)
                     if _shp_type == 'aiVolume':
                         _aivs.append(_shp)
     else:
@@ -688,7 +693,7 @@ def _read_aistandin_pipe_refs(selected=False):
     Returns:
         (CMayaAiStandIn list): aiStandIn refs
     """
-    _LOGGER.debug('READ AISTANDIN PIPE REFS')
+    _LOGGER.log(9, 'READ AISTANDIN PIPE REFS')
 
     if 'aiStandIn' not in cmds.allNodeTypes():
         return []
@@ -698,31 +703,31 @@ def _read_aistandin_pipe_refs(selected=False):
         _ais_ss = []
         for _node in pom.get_selected(multi=True):
             _type = _node.object_type()
-            _LOGGER.debug(' - CHECKING NODE %s %s', _node, _type)
+            _LOGGER.log(9, ' - CHECKING NODE %s %s', _node, _type)
             if _type == 'aiStandIn':
                 _ais_ss.append(_node)
             elif _type == 'transform':
                 _shp = _node.to_shp(catch=True)
                 if _shp:
                     _shp_type = _shp.object_type()
-                    _LOGGER.debug('   - CHECKING SHP %s %s', _shp, _shp_type)
+                    _LOGGER.log(9, '   - CHECKING SHP %s %s', _shp, _shp_type)
                     if _shp_type == 'aiStandIn':
                         _ais_ss.append(_shp)
     else:
         _ais_ss = pom.CMDS.ls(type='aiStandIn', selection=selected)
-    _LOGGER.debug(' - FOUND %d AISTANDINS %s', len(_ais_ss), _ais_ss)
+    _LOGGER.log(9, ' - FOUND %d AISTANDINS %s', len(_ais_ss), _ais_ss)
 
     # Map to CMayaAiStandIn objects
     _asses = []
     for _ais_s in _ais_ss:
         _ais = _ais_s.to_parent()
-        _LOGGER.debug(' - TESTING %s', _ais)
+        _LOGGER.log(9, ' - TESTING %s', _ais)
         try:
             _ass = CMayaAiStandIn(_ais)
         except ValueError as _exc:
-            _LOGGER.debug('   - REJECTED %s', _exc)
+            _LOGGER.log(9, '   - REJECTED %s', _exc)
             continue
-        _LOGGER.debug('   - ACCEPTED %s', _ass)
+        _LOGGER.log(9, '   - ACCEPTED %s', _ass)
         _asses.append(_ass)
 
     return _asses

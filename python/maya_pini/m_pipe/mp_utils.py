@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import single
+from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
 
@@ -29,12 +29,13 @@ def find_cache_set(catch=True):
         clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
-def read_cache_set(mode='geo', include_referenced=True):
+def read_cache_set(mode='geo', include_referenced=True, filter_=None):
     """Read cache set contents.
 
     Args:
         mode (str): content to find (geo/lights)
         include_referenced (bool): include referenced geometry
+        filter_ (str): apply node name filter
 
     Returns:
         (CNode list): cache set contents
@@ -59,32 +60,52 @@ def read_cache_set(mode='geo', include_referenced=True):
     _results = []
     for _node in sorted(_nodes):
 
+        if filter_ and not passes_filter(str(_node), filter_):
+            continue
+
         _node = pom.cast_node(_node)
         _LOGGER.debug(
-            ' - NODE %s %s refd=%d', _node, type(_node).__name__,
-            _node.is_referenced())
+            ' - NODE %s %s refd=%d shp=%s', _node, type(_node).__name__,
+            _node.is_referenced(), _node.shp)
 
         if not include_referenced and _node.is_referenced():
             continue
 
-        if mode == 'geo':
+        if mode == 'all':
+            pass
+        elif mode == 'geo':
             if not isinstance(_node, pom.CMesh):
                 continue
         elif mode == 'lights':
-            if not _node.shp:
-                continue
-            _type = _node.shp.object_type()
-            _LOGGER.debug('   - TYPE %s', _type)
-            if _type not in [
-                    'VRayLightSphereShape',
-                    'RedshiftPhysicalLight',
-            ]:
+            if not to_light_shp(_node):
                 continue
         else:
             raise NotImplementedError(mode)
 
+        _LOGGER.debug('   - ACCEPTED %s', _node)
         _results.append(_node)
 
     _LOGGER.debug(' - RESULTS %s', _results)
 
     return _results
+
+
+def to_light_shp(node):
+    """Obtain light shape (if any) for the given node.
+
+    In the case of redshift mesh lights, both the light and the mesh shapes
+    are stored under the transform of the geometry. This function provides
+    a single point of entry for obtaining the light shape.
+
+    Args:
+        node (CBaseTransform): transform to read shape from
+
+    Returns:
+        (CNode|None): light shape (if any)
+    """
+    _light_types = {
+        'VRayLightSphereShape',
+        'RedshiftPhysicalLight'}
+    return single([
+        _shp for _shp in node.to_shps()
+        if _shp.object_type() in _light_types], catch=True)

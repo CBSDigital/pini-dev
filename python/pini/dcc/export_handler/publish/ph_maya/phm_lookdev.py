@@ -143,8 +143,8 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _LOGGER.info(' - WROTE SHD YML %s', self.shd_yml)
 
         # Export shaders mb
-        _export_nodes = _find_export_nodes()
-        _flush_scene()
+        _export_nodes = lookdev.find_export_nodes()
+        _flush_scene(keep_nodes=_export_nodes)
         _export_nodes = [  # Empty sets are deleted on import ref (?)
             _node for _node in _export_nodes if cmds.objExists(_node)]
         cmds.select(_export_nodes, noExpand=True)
@@ -227,46 +227,23 @@ def _export_ass(metadata, force):
     return _ass
 
 
-def _find_export_nodes():
-    """Find nodes to export in lookdev mb file.
+def _flush_scene(keep_nodes):
+    """Remove nodes from scene to prepare for lookdev export.
 
-    Returns:
-        (str list): lookdev nodes
+    Args:
+        keep_nodes (list): list of nodes to keep in scene
     """
-    _export_nodes = set()
-
-    # Add shaders
-    for _shd, _data in lookdev.read_shader_assignments().items():
-        _export_nodes.add(_shd)
-        _export_nodes.add(_data['shadingEngine'])
-
-    # Add override sets
-    if cmds.objExists('overrides_SET'):
-        _export_nodes.add('overrides_SET')
-    for _set, _ in lookdev.read_ai_override_sets().items():
-        _export_nodes.add(_set)
-
-    # Add lights
-    _lights = m_pipe.read_cache_set(mode='lights')
-    _export_nodes |= {_light.clean_name for _light in _lights}
-    _export_nodes |= {_light.shp.clean_name for _light in _lights}
-
-    _export_nodes = sorted(_export_nodes)
-    _LOGGER.info(' - EXPORT NODES %s', _export_nodes)
-
-    return sorted(_export_nodes)
-
-
-def _flush_scene():
-    """Remove geo from scene to prepare for lookdev export."""
     _LOGGER.debug('FLUSH SCENE')
 
-    _keep_nodes = list(DEFAULT_NODES)
+    _keep_nodes = set(DEFAULT_NODES)
+    if keep_nodes:
+        _keep_nodes |= set(keep_nodes)
 
     # Remove geos from override sets
     _sets = lookdev.read_ai_override_sets(crop_namespace=False)
     _LOGGER.debug(' - SETS %s', _sets)
     for _set, _geos in _sets.items():
+        _geos = sorted(set(_geos) - _keep_nodes)
         cmds.sets(_geos, remove=_set)
         _LOGGER.debug(' - CLEAN GEO %s set=%s', _geos, _set)
 
@@ -282,12 +259,12 @@ def _flush_scene():
     _LOGGER.debug(' - LIGHTS %s', _lights)
     for _light in _lights:
         _lights_grp = _light.add_to_grp('LIGHTS')
-        _keep_nodes.insert(0, _light)
-        _keep_nodes.insert(0, _light.shp)
+        _keep_nodes.add(_light)
+        _keep_nodes.add(m_pipe.to_light_shp(_light))
     if _lights_grp:
         _lights_grp.parent(world=True)
         _lights_grp.set_outliner_col('Orange')
-        _keep_nodes.insert(0, _lights_grp)
+        _keep_nodes.add(_lights_grp)
 
     # Delete dag/unknown nodes
     _LOGGER.debug(' - KEEP NODES %s', _keep_nodes)

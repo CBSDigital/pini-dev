@@ -6,12 +6,52 @@ import re
 
 from maya import cmds
 
+from pini.utils import passes_filter
+
 from maya_pini import open_maya as pom, tex
 from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
 
 from .. import mp_utils
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def find_export_nodes(filter_=None):
+    """Find nodes to export in lookdev mb file.
+
+    Args:
+        filter_ (str): apply name filter to the list of export names
+
+    Returns:
+        (str list): lookdev nodes
+    """
+    _export_nodes = set()
+
+    # Add shaders
+    for _shd, _data in read_shader_assignments().items():
+        _export_nodes.add(_shd)
+        _export_nodes.add(_data['shadingEngine'])
+
+    # Add override sets
+    if cmds.objExists('overrides_SET'):
+        _export_nodes.add('overrides_SET')
+    for _set, _ in read_ai_override_sets().items():
+        _export_nodes.add(_set)
+
+    # Add lights
+    _lights = mp_utils.read_cache_set(mode='lights')
+    _export_nodes |= {_light.clean_name for _light in _lights}
+    _export_nodes |= {
+        mp_utils.to_light_shp(_light).clean_name for _light in _lights}
+
+    if filter_:
+        _export_nodes = [
+            _node for _node in _export_nodes
+            if passes_filter(str(_node), filter_)]
+    _export_nodes = sorted(_export_nodes)
+    _LOGGER.debug(' - EXPORT NODES %s', _export_nodes)
+
+    return _export_nodes
 
 
 def read_ai_override_sets(crop_namespace=True):

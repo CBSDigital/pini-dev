@@ -1,3 +1,16 @@
+## [1.31.0] - Thu 2024-04-11 11:02
+### Summary
+ - Pini Helper:
+    - bugfix lag on right-click lookdev scene ref in scene with many shaders (farnold),
+### Updated
+ - pini.dcc.CMayaLookdevRef.find_targets added from_assignments flag + disabled,
+ - pini.dcc.CMayaLookdevPublish bugfix not saving rs mesh lights,
+ - pini.qt.CBaseDialog._load_ui added set_parent flag for QMainWindow handling,
+ - maya_pini.m_pipe.lookdev.find_export_nodes moved from dcc,
+ - maya_pini.m_pipe.read_cache_set added filter_ arg + all mode,
+ - maya_pini.m_pipe.to_light_shp added,
+
+
 ## [1.30.1] - Wed 2024-04-10 13:10
 ### Summary
  - Pini Helper:
