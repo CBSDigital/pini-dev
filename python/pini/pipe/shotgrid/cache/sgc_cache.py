@@ -7,8 +7,9 @@ import logging
 import operator
 
 from pini import pipe
+from pini.pipe.cache import pipe_cache_on_obj
 from pini.utils import (
-    single, strftime, basic_repr, cache_on_obj, apply_filter, get_user)
+    single, strftime, basic_repr, apply_filter, get_user)
 
 from . import sgc_job, sgc_utils, sgc_container
 
@@ -427,7 +428,7 @@ class SGDataCache(object):
 
         return _data
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_jobs(self, force=False):
         """Build list of valid jobs on shotgrid.
 
@@ -459,7 +460,7 @@ class SGDataCache(object):
 
         return sorted(_jobs)
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_pub_types(self, force=False):
         """Build list of publish types.
 
@@ -474,7 +475,7 @@ class SGDataCache(object):
         _steps = [sgc_container.SGCPubType(_data) for _data in _steps_data]
         return _steps
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_steps(self, force=False):
         """Build list of pipeline steps.
 
@@ -491,7 +492,7 @@ class SGDataCache(object):
         _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
         return _steps
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_users(self, force=False):
         """Build list of users.
 

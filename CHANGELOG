@@ -1,3 +1,12 @@
+## [1.32.2] - Thu 2024-04-11 17:44
+### Summary
+ - Pini Helper:
+    - bugfix reset pipeline cache not working (farnold),
+### Updated
+ - pini.pipe.cache.pipe_cache_on_obj made public,
+ - pini.pipe.shotgrid.SGC updated to use pipe cache,
+
+
 ## [1.32.1] - Thu 2024-04-11 16:18
 ### Summary
  - Pini Helper:

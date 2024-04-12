@@ -8,8 +8,9 @@ import pprint
 import time
 
 from pini import pipe, qt
+from pini.pipe.cache import pipe_cache_on_obj
 from pini.utils import (
-    single, strftime, to_time_f, check_heart, Path, basic_repr, cache_on_obj,
+    single, strftime, to_time_f, check_heart, Path, basic_repr,
     passes_filter, to_str)
 
 from . import sgc_range, sgc_container, sgc_utils
@@ -504,7 +505,7 @@ class SGCJob(sgc_container.SGCContainer):
             return self._read_create_t()
         return single(_results)['updated_at']
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_assets(self, progress=False, force=False):
         """Build list of assets in this job.
 
@@ -525,7 +526,7 @@ class SGCJob(sgc_container.SGCContainer):
             _assets.append(_asset)
         return _assets
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_pub_files(self, progress=False, force=False):
         """Build list of pub files in this job.
 
@@ -547,7 +548,7 @@ class SGCJob(sgc_container.SGCContainer):
             _pub_files.append(_pub_file)
         return _pub_files
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_shots(self, progress=False, force=False):
         """Build list of shots in this job.
 
@@ -571,7 +572,7 @@ class SGCJob(sgc_container.SGCContainer):
             _shots.append(_shot)
         return _shots
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def _read_tasks(self, progress=False, force=False):
         """Build list of tasks in this job.
 
@@ -596,7 +597,7 @@ class SGCJob(sgc_container.SGCContainer):
             _tasks.append(_task)
         return _tasks
 
-    @cache_on_obj
+    @pipe_cache_on_obj
     def to_cache_dir(self):
         """Obtain shotgrid root cache directory for this job.
 
