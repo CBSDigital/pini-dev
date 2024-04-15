@@ -284,21 +284,30 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.orientConstraint(
             self, target, maintainOffset=maintain_offset)
 
-    def parent_constraint(self, target, maintain_offset=False, name=None):
+    def parent_constraint(
+            self, target, maintain_offset=False, name=None, force=False):
         """Build a parent constraint from this node to the given target.
 
         Args:
             target (CTransform): node to constrain
             maintain_offset (bool): maintain offset
             name (str): name for constraint node
+            force (bool): break connections on target before apply constraint
+                to avoid already connected error
 
         Returns:
             (CTransform): constraint
         """
         from maya_pini import open_maya as pom
+        _trg = pom.CTransform(target)
+        _LOGGER.info('PARENT CONSTRAINT %s -> %s', self, _trg)
         _kwargs = {}
         if name:
             _kwargs['name'] = name
+        if force:
+            for _plug in _trg.to_tfm_plugs(scale=False):
+                _LOGGER.debug(' - BREAK CONNECT %s', _plug)
+                _plug.break_connections()
         return pom.CMDS.parentConstraint(
             self, target, maintainOffset=maintain_offset, **_kwargs)
 

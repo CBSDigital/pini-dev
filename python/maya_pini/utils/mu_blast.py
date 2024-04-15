@@ -9,7 +9,7 @@ import six
 from maya import cmds
 from maya.app.general import createImageFormats
 
-from pini.utils import Seq, str_to_ints, File, TMP, single, safe_zip
+from pini.utils import Seq, str_to_ints, File, TMP, single, safe_zip, Video
 
 from .mu_dec import reset_ns
 from .mu_namespace import del_namespace, set_namespace
@@ -37,7 +37,7 @@ def _build_tmp_blast_cam(cam):
     _LOGGER.debug(' - BUILD TMP BLAST CAM %s', cam)
     from maya_pini import open_maya as pom
 
-    set_namespace(":"+_BLAST_TMP_NS)
+    set_namespace(":"+_BLAST_TMP_NS, clean=True)
 
     # Duplicate camera + move dulplicate to world
     _src = pom.CCamera(cam)
@@ -45,7 +45,7 @@ def _build_tmp_blast_cam(cam):
     for _plug in [_cam.plug[_attr] for _attr in 'trs']+_cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
-    _src.parent_constraint(_cam)
+    _src.parent_constraint(_cam, force=True)
 
     # Fix any image place colspaces - it seems these are not necessarily
     # made to match on duplicate
@@ -148,7 +148,8 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
 
 
 def _exec_blast(
-        seq, range_=None, res=None, camera=None, cleanup=True, settings='Nice'):
+        seq, range_=None, res=None, camera=None, cleanup=True, settings='Nice',
+        use_tmp_cam=True, use_tmp_viewport=True):
     """Execute the blast.
 
     Args:
@@ -158,15 +159,31 @@ def _exec_blast(
         camera (str): blast camera
         cleanup (bool): cleanup tmp window/cam
         settings (str): blast settings mode
+        use_tmp_cam (bool): use tmp camera
+        use_tmp_viewport (bool): use tmp viewport
     """
+    from maya_pini import ui
+
     _LOGGER.debug('BLAST')
     assert isinstance(seq, Seq)
 
     _start, _end = range_
-    _tmp_cam = _build_tmp_blast_cam(camera)
-    _LOGGER.debug(' - BLAST CAM %s %s', camera, _tmp_cam)
-    _tmp_window, _tmp_editor = _build_tmp_viewport_window(
-        res=res, camera=_tmp_cam, show=not cleanup, settings=settings)
+
+    # Setup cam
+    _tmp_cam = None
+    _blast_cam = camera
+    if use_tmp_cam:
+        _tmp_cam = _build_tmp_blast_cam(camera)
+        _blast_cam = _tmp_cam
+    _LOGGER.debug(' - BLAST CAM %s %s', camera, _blast_cam)
+
+    # Setup window
+    _tmp_window = None
+    if use_tmp_viewport:
+        _tmp_window, _blast_editor = _build_tmp_viewport_window(
+            res=res, camera=_blast_cam, show=not cleanup, settings=settings)
+    else:
+        _blast_editor = ui.get_active_model_editor()
 
     # Set image format
     _fmt_mgr = createImageFormats.ImageFormats()
@@ -180,11 +197,13 @@ def _exec_blast(
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True,
-        percent=100, editorPanelName=_tmp_editor)
+        percent=100, editorPanelName=_blast_editor)
     assert seq.to_frames(force=True)
     if cleanup:
-        cmds.deleteUI(_tmp_window)
-        cmds.delete(_tmp_cam)
+        if _tmp_window:
+            cmds.deleteUI(_tmp_window)
+        if _tmp_cam:
+            cmds.delete(_tmp_cam)
         del_namespace(':'+_BLAST_TMP_NS, force=True)
 
     _fmt_mgr.popRenderGlobals()
@@ -297,8 +316,13 @@ def blast(
     """
     from maya_pini import open_maya as pom
 
+    _clip = clip
+    if isinstance(_clip, six.string_types):
+        _class = Seq if '%04d' in _clip else Video
+        _clip = _class(clip)
+
     _cam = camera or pom.active_cam()
-    _is_video = clip.extn in ('mp4', 'mov')
+    _is_video = _clip.extn in ('mp4', 'mov')
     _range = _to_range(range_)
     _res = _to_res(res, is_video=_is_video)
 
@@ -313,9 +337,9 @@ def blast(
         _tmp_seq.delete(force=True)
     else:
         _tmp_seq = None
-    clip.delete(force=force, wording='Replace')
-    clip.test_dir()
-    _seq = _tmp_seq or clip
+    _clip.delete(force=force, wording='Replace')
+    _clip.test_dir()
+    _seq = _tmp_seq or _clip
     _LOGGER.debug(' - SEQ %s', _seq)
     assert isinstance(_seq, Seq)
     assert not _seq.exists()
@@ -332,16 +356,16 @@ def blast(
 
     if _tmp_seq:
         _tmp_seq.to_video(
-            clip, use_scene_audio=use_scene_audio, burnins=burnins, verbose=1)
+            _clip, use_scene_audio=use_scene_audio, burnins=burnins, verbose=1)
         if cleanup:
             if _tmp_seq.to_range() != _range:
                 _LOGGER.debug(' - TMP %s %s', _tmp_seq.to_range(), _tmp_seq)
                 raise RuntimeError('Range mismatch')
             _tmp_seq.delete(force=True)
-    if not clip.exists():
-        raise RuntimeError(clip.path)
+    if not _clip.exists():
+        raise RuntimeError(_clip.path)
     if view:
-        clip.view()
+        _clip.view()
     _LOGGER.debug(' - BLAST COMPLETE IN %.02fs', time.time() - _start)
 
 

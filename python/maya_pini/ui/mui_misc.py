@@ -9,7 +9,7 @@ import shiboken2
 from maya import cmds, mel
 
 from pini.utils import wrap_fn, single, apply_filter, EMPTY
-from maya_pini.utils import to_parent
+from maya_pini.utils import to_parent, to_node
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -174,8 +174,9 @@ def get_active_cam():
     _editor = get_active_model_editor()
     if not _editor:
         return None
-    _cam = cmds.modelEditor(
-        _editor, query=True, camera=True)
+    _cam = cmds.modelEditor(_editor, query=True, camera=True)
+    if not cmds.objExists(_cam):
+        _cam = to_node(_cam)
     if cmds.objectType(_cam) == 'camera':
         _cam = to_parent(_cam)
     return _cam

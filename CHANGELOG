@@ -1,3 +1,17 @@
+## [1.34.0] - Mon 2024-04-15 14:56
+### Summary
+ - Pini Helper:
+    - maya blast bugfix error on blast constrained camera (farnold),
+    - maya blast bugfix no applying use default material setting (farnold),
+### Updated
+ - maya_pini.tools.blast clean BlastTmp ns before create tmp cam,
+ - maya_pini.tools.blast apply force on constrain tmp cam to cam,
+ - maya_pini.tools.blast allow path as str,
+ - maya_pini.open_maya.CBaseTransform.parent_constraint added force,
+ - maya_pini.ui.get_active_cam bugfix superfluouos pipe in model editor cam query,
+ - maya_pini.ui.MODEL_EDITOR_ATTRS bugfix useDefaultMaterial missing,
+
+
 ## [1.33.1] - Mon 2024-04-15 09:42
 ### Summary
  - Sanity Check:

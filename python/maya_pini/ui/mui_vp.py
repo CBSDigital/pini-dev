@@ -55,6 +55,7 @@ MODEL_EDITOR_ATTRS = [
     'shadows',
     'strokes',
     'textures',
+    'useDefaultMaterial',
     'wireframeOnShaded',
     'viewTransformName',
 ]
