@@ -17,7 +17,7 @@
    <iconset>
     <normaloff>P:/pipeline/python/pini-icons/icons/openmoji_13.1/icon.0754.png</normaloff>P:/pipeline/python/pini-icons/icons/openmoji_13.1/icon.0754.png</iconset>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0,0">
+  <layout class="QGridLayout" name="gridLayout_2" rowstretch="1,0,0">
    <item row="0" column="0">
     <widget class="QSplitter" name="MainSplitter">
      <property name="orientation">
@@ -75,6 +75,13 @@
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLabel" name="TaskLabel">
+           <property name="text">
+            <string>Task: NO SET</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">

@@ -91,12 +91,7 @@ class PIInstaller(object):
             _items += [_manager]
 
         # Add SanityCheck
-        _sanity = PITool(
-            name='SanityCheck', command='\n'.join([
-                'from pini.tools import sanity_check',
-                'sanity_check.launch_ui()']),
-            icon=sanity_check.ICON, label='Sanity Check')
-        _items += [_sanity]
+        _items += self._gather_sanity_check_tools()
 
         # Add dcc/site items
         _dcc_items = self._gather_dcc_items()
@@ -127,6 +122,29 @@ class PIInstaller(object):
             ]
         else:
             items += [i_tools.PINI_HELPER_TOOL]
+
+    def _gather_sanity_check_tools(self):
+        """Gather sanity check tools.
+
+        Returns:
+            (PITool list): tools
+        """
+        _sanity = PITool(
+            name='SanityCheck', command='\n'.join([
+                'from pini.tools import sanity_check',
+                'sanity_check.launch_ui()']),
+            icon=sanity_check.ICON, label='Sanity Check')
+
+        for _task in ['model', 'rig', 'lookdev', 'anim', 'lighting']:
+            _sc_task = PITool(
+                name='SanityCheck', command='\n'.join([
+                    'from pini.tools import sanity_check',
+                    'sanity_check.launch_ui(task="{}")'.format(_task)]),
+                label='Launch Sanity Check ({})'.format(_task),
+                icon=sanity_check.ICON)
+            _sanity.add_context(_sc_task)
+
+        return [_sanity]
 
     def _gather_dcc_items(self):
         """Add dcc-specfic items (to be implemented in sub-class)."""

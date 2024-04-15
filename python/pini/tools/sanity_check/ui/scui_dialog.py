@@ -2,7 +2,7 @@
 
 import logging
 
-from pini import qt, dcc, icons
+from pini import qt, dcc, icons, pipe
 from pini.tools import error
 from pini.utils import File, plural, single
 
@@ -37,11 +37,12 @@ class SanityCheckUi(qt.CUiDialog):
         from pini.tools import sanity_check
 
         self.mode = mode
+        self.task = task or pipe.cur_task(fmt='pini')
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
         self.checks = checks or sanity_check.find_checks(
-            filter_=filter_, task=task)
+            filter_=filter_, task=self.task)
 
         super(SanityCheckUi, self).__init__(
             ui_file=UI_FILE, show=False)
@@ -53,6 +54,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.error_ui.close()
 
         self.ui.Checks.redraw()
+        self.ui.TaskLabel.redraw()
 
         _modal = self.mode != 'standalone'
         self.setModal(_modal)
@@ -253,6 +255,12 @@ class SanityCheckUi(qt.CUiDialog):
             'Found {:d} fail{} with {:d} fix{}'.format(
                 len(_fails), plural(_fails),
                 _fixes, plural(_fixes, plural_='es')))
+
+    def _redraw__TaskLabel(self):
+        _label = 'NONE'
+        if self.task:
+            _label = pipe.map_task(self.task).upper()
+        self.ui.TaskLabel.setText(' Task: '+_label)
 
     def _callback__ShowPassed(self):
         self.ui.Checks.redraw()
