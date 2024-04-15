@@ -18,11 +18,7 @@ class PCpntMesh(CMesh):
         Returns:
             (PFace list): faces
         """
-        _faces = []
-        for _f_idx in range(self.n_faces):
-            _face = cpt_face.PFace(idx=_f_idx, mesh=self)
-            _faces.append(_face)
-        return _faces
+        return self.to_faces()
 
     @property
     def vtxs(self):
@@ -44,6 +40,22 @@ class PCpntMesh(CMesh):
         """
         _result = super(PCpntMesh, self).p_to_uv(point)
         return cpt_uv.to_uv(_result)
+
+    def to_faces(self, idxs=None):
+        """Obtain list of faces for this mesh.
+
+        Args:
+            idxs (int list): override face indices
+
+        Returns:
+            (str list): face attributes
+        """
+        _idxs = idxs or range(self.n_faces)
+        _faces = []
+        for _f_idx in _idxs:
+            _face = cpt_face.PFace(idx=_f_idx, mesh=self)
+            _faces.append(_face)
+        return _faces
 
     def to_uv_bbox(self):
         """Obtain UV bounding box for this mesh.

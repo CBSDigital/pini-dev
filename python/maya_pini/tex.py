@@ -309,10 +309,15 @@ def find_shds(default=None, namespace=EMPTY):
         if namespace is not EMPTY and to_namespace(_se) != namespace:
             continue
 
-        _shd = to_shd(_se)
-        if not _shd:
+        _shd_node = _se.plug['surfaceShader'].find_incoming(plugs=False)
+        if not _shd_node:
             _LOGGER.debug('   - NO SHD')
             continue
+        _shd = to_shd(_shd_node)
+        if not _shd:
+            _shd = _Shader(_shd_node)
+        if not _shd:
+            raise RuntimeError(_shd_node)
         _LOGGER.debug('   - SHD %s', _shd)
         _shds.add(_shd)
 
@@ -376,7 +381,7 @@ def to_shd(obj):
         _shd = _SurfaceShader(_node)
     elif _type == 'shadingEngine':
         _se = _node
-    elif _type in ['VRayMtl', 'VRayCarPaintMtl', 'phong']:
+    elif _type in ['VRayMtl', 'VRayCarPaintMtl', 'VRayBlendMtl', 'phong']:
         _shd = _Shader(_node)
     else:
         _shd = None

@@ -259,8 +259,10 @@ class TestDiskPiniHelper(TestHelper):
 
         # Test save/load
         _work = _helper.work
-        _LOGGER.info(' - WORK %s', _work)
+        _LOGGER.info(' - WORK (A) %s', _work)
         _LOGGER.info(' - SEQ NAME %s', _seq_name)
+        _LOGGER.info(' - WORK DIR %s', _helper.work_dir)
+        _LOGGER.info(' - WORK (B) %s', _helper.work)
         assert _work.sequence == _seq_name
         assert len(_helper.ui.WWorks.all_data()) == 1
         _helper._callback__WSave(force=True)

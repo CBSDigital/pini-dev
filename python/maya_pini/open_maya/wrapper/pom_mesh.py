@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 from maya.api import OpenMaya as om
 
-from pini.utils import single
+from pini.utils import single, EMPTY
 from maya_pini.utils import to_parent
 
 from .. import base
@@ -41,6 +41,15 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
             raise ValueError('No shape {}'.format(_node))
         if _shp.object_type() != 'mesh':
             raise ValueError('Bad shape {}'.format(_shp))
+
+    @property
+    def n_edges(self):
+        """Obtain edge count for this mesh.
+
+        Returns:
+            (int): edge count
+        """
+        return self.numEdges
 
     @property
     def n_faces(self):
@@ -181,15 +190,36 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         return [self.to_vtx(_idx) for _idx in range(self.numVertices)]
 
 
-def find_meshes():
+def find_meshes(namespace=EMPTY, referenced=None, class_=None):
     """Find meshes in the current scene.
+
+    Args:
+        namespace (str): apply namespace filter
+        referenced (bool): filter by referenced state
+        class_ (class): override mesh constructor class
 
     Returns:
         (CMesh list): meshes
     """
+    _class = class_ or CMesh
     _meshes = []
-    for _shp in cmds.ls(type='mesh', noIntermediate=True, allPaths=True):
+    for _shp in cmds.ls(
+            type='mesh', noIntermediate=True, allPaths=True, recursive=True):
+
         _tfm = to_parent(_shp)
-        _mesh = CMesh(_tfm)
+        _mesh = _class(_tfm)
+
+        if referenced is not None and referenced != _mesh.is_referenced():
+            continue
+
+        if namespace is not EMPTY:
+            if not namespace:
+                if _mesh.namespace:
+                    continue
+            else:
+                if _mesh.namespace != namespace:
+                    continue
+
         _meshes.append(_mesh)
-    return _meshes
+
+    return sorted(_meshes)

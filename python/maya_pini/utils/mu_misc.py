@@ -165,6 +165,21 @@ def cycle_check():
         cmds.cycleCheck(evaluation=False)
 
 
+def is_attr(token):
+    """Test if the given token is an attibute.
+
+    eg. pSphere1 -> False
+        pSphere1.f[0] -> True
+
+    Args:
+        token (str): token (eg. pSphere1, pSphere1.f[0])
+
+    Returns:
+        (bool): whether token is an attribute
+    """
+    return '.' in token
+
+
 def set_col(node, col, force=False):
     """Set viewport colour of the given node.
 

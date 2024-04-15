@@ -23,7 +23,7 @@ class PyDef(PyElem):
         Returns:
             (any): function result
         """
-        return self.to_func(*args, **kwargs)
+        return self.to_func()(*args, **kwargs)
 
     @property
     def args(self):

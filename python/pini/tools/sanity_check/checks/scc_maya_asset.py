@@ -4,7 +4,7 @@ import os
 import collections
 import logging
 
-from maya import cmds
+from maya import cmds, mel
 
 from pini import pipe, dcc
 from pini.dcc import export_handler
@@ -417,8 +417,9 @@ class CheckGeoNaming(SCMayaCheck):
         """Run this check."""
         _geos = _read_cache_set()
         self.write_log('GEOS %s', _geos)
-        _names = self._check_geos(geos=_geos)
-        self._check_for_duplicates(names=_names)
+        if self._check_for_duplicates(geos=_geos):
+            return
+        self._check_geos(geos=_geos)
 
     def _check_geos(self, geos):
         """Check geometry in cache set.
@@ -434,14 +435,7 @@ class CheckGeoNaming(SCMayaCheck):
         _names = collections.defaultdict(list)
         self._ignore_names = []
         for _geo in geos:
-
             self._check_geo(_geo)
-
-            # Check for duplicate
-            _name = to_clean(_geo)
-            _names[_name].append(_geo)
-
-        return _names
 
     def _check_geo(self, geo):
         """Apply check to the given geo.
@@ -513,13 +507,19 @@ class CheckGeoNaming(SCMayaCheck):
             self.add_fail(_msg, fix=_fix, node=geo)
             return
 
-    def _check_for_duplicates(self, names):
+    def _check_for_duplicates(self, geos):
         """Flag for duplicate nodes in the cache set.
 
         Args:
-            names (dict): name/nodes data
+            geos (str list): geometry
         """
-        for _name, _geos in names.items():
+        _names = collections.defaultdict(list)
+        for _geo in geos:
+            _name = to_clean(_geo)
+            _names[_name].append(_geo)
+
+        _dup_names = False
+        for _name, _geos in _names.items():
             if len(_geos) == 1:
                 continue
             self.write_log('Duplicate names %s', _geos)
@@ -530,6 +530,9 @@ class CheckGeoNaming(SCMayaCheck):
             _fix = wrap_fn(self.fix_duplicate_nodes, _geos)
             _fail.add_action('Fix', _fix)
             self.add_fail(_fail)
+            _dup_names = True
+
+        return _dup_names
 
     def fix_bad_shape(self, shp, name):
         """Fix bad shape name.
@@ -935,3 +938,37 @@ class NoObjectsWithDefaultShader(SCMayaCheck):
                         'default nodes do not appear in references'.format(
                             _geo, _shd, _se))
                     self.add_fail(_msg, node=_geo)
+
+
+class CheckForNgons(SCMayaCheck):
+    """Check for polygons with more than four sides."""
+
+    task_filter = 'model'
+    depends_on = (CheckGeoNaming, )
+    sort = 100
+
+    def run(self):
+        """Run this check."""
+        for _geo in self.update_progress(m_pipe.read_cache_set()):
+            cmds.select(_geo)
+            mel.eval(
+                'polyCleanupArgList 4 { '
+                '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
+                '    "1e-05","0","1e-05","0","-1","0","0" }')
+            if cmds.ls(selection=True):
+                _msg = 'Mesh "{}" contains ngons'.format(_geo)
+                self.add_fail(
+                    _msg, node=_geo, fix=wrap_fn(self.fix_ngons, _geo))
+
+    def fix_ngons(self, geo):
+        """Fix ngons in the given mesh.
+
+        Args:
+            geo (str): mesh to fix
+        """
+        cmds.select(geo)
+        mel.eval(
+            'polyCleanupArgList 4 {'
+            '    "0","1","1","0","1","0","0","0","0","1e-05","0",'
+            '    "1e-05","0","1e-05","0","-1","0","0" }')
+        cmds.select(geo)

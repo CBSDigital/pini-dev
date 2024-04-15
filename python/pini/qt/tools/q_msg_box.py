@@ -205,6 +205,16 @@ def raise_dialog(
     return _box.get_result()
 
 
+def warning(msg, title='Warning'):
+    """Raise a warning dialog.
+
+    Args:
+        msg (str): warning message
+        title (str): warning title
+    """
+    notify(msg=msg, title=title, icon=icons.find('Spider'))
+
+
 def yes_no_cancel(msg, title='Confirm', icon=None, parent=None):
     """Raise yes/no/cancel dialog.
 

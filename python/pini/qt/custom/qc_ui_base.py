@@ -123,8 +123,7 @@ class CUiBase(object):
         sys.QT_DIALOG_STACK[self._dialog_stack_key] = self
 
     def _load_ui(
-            self, ui_file, ui_loader=None, fix_icon_paths=True,
-            set_parent=True):
+            self, ui_file, ui_loader=None, fix_icon_paths=True):
         """Load ui file into ui object.
 
         Args:
@@ -132,22 +131,27 @@ class CUiBase(object):
             ui_loader (QUiLoader): override ui loader
             fix_icon_paths (bool): update icon paths
                 to be relative to current pini_icons module
-            set_parent (bool): set parent of loaded ui to this widget
-                (disable for main window ui loading)
         """
         from pini import qt
 
+        # Load ui
         _ui_file = ui_file
         _LOGGER.debug('LOADING UI FILE %s', _ui_file)
         if fix_icon_paths:
             _ui_file = _fix_icon_paths(_ui_file)
             _LOGGER.debug(' - UPDATED UI FILE %s', _ui_file)
-
         _loader = ui_loader or qt.build_ui_loader()
         self._ui = _loader.load(_ui_file)
-        assert isinstance(self._ui, QtWidgets.QWidget)
-        if set_parent:
+
+        # Link to this instance based on type
+        if isinstance(self._ui, QtWidgets.QMainWindow):
+            assert isinstance(self, QtWidgets.QMainWindow)
+            self.setCentralWidget(self._ui.centralWidget())
+        elif isinstance(self._ui, QtWidgets.QWidget):
+            assert isinstance(self, QtWidgets.QWidget)
             self._ui.setParent(self)
+        else:
+            raise ValueError(self._ui)
         self.adjustSize()
 
         # Connect/store layout

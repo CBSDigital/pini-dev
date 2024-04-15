@@ -4,6 +4,7 @@
 
 import logging
 import pprint
+import os
 
 from pini import qt, pipe, icons, dcc
 from pini.tools import usage
@@ -83,7 +84,13 @@ class CLWorkTab(object):
         Returns:
             (CPWork): selected work
         """
-        return self.ui.WWorks.selected_data()
+        _work = self.ui.WWorks.selected_data()
+        if not self.work_dir:
+            return None
+        if not self.work_dir.contains(_work):
+            self.ui.WWorks.redraw()
+            _work = self.ui.WWorks.selected_data()
+        return _work
 
     def _redraw__WTasks(self):
         _LOGGER.debug('REDRAW TASKS %s (%s)', self.entity, dcc.NAME)
@@ -212,9 +219,13 @@ class CLWorkTab(object):
     def _update_badly_named_files_elements(self):
         """Update elements which warning if badly named files found."""
 
-        # Check for badly named files
-        _n_bad_files = (self.work_dir.badly_named_files if self.work_dir
-                        else 0)
+        # Check whether to show badly named files warning
+        if not os.environ.get('PINI_WARN_ON_BADLY_NAMED_FILES'):
+            _n_bad_files = 0
+        else:
+            # Check for badly named files
+            _n_bad_files = (
+                self.work_dir.badly_named_files if self.work_dir else 0)
 
         # Update element visibility
         for _elem in [self.ui.WWorkBadFilesIconR,

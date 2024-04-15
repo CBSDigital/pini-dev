@@ -1,3 +1,28 @@
+## [1.33.0] - Mon 2024-04-15 08:59
+### Summary
+ - Sanity Check:
+    - added check for ngons (mkim),
+    - check geo naming bugfix error on duplicate nodes with bad shape names (farnold),
+ - Pini Helper:
+    - bugfix switching jobs on reset cache (farnold),
+### Updated
+ - pini.utils.PyDef.execute bugfix not calling function,
+ - pini.qt.CUiMainWindow added,
+ - pini.qt.warning added,
+ - pini.tools.sanity_check.CheckGeoNaming check for duplicates before shape check,
+ - pini.tools.sanity_check.CheckForNgons added,
+ - pini.tools.helper.work bugfix bad value on work tab not selected,
+ - pini.tools.helper hide badly named files warning by default,
+ - pini.tools.helper apply cur work as target on reset cache,
+ - maya_pini.utils.is_attr added,
+ - maya_pini.open_maya.find_meshes added namespace/referenced/class_ args,
+ - maya_pini.open_maya.find_meshes include all namespaces,
+ - maya_pini.open_maya.CMesh.n_edges added,
+ - maya_pini.open_maya.PCpntMesh.to_faces implemented using PFace,
+ - maya_pini.tex.find_shds avoid type filter in to_shd,
+ - maya_pini.tex.to_shd added VRayBlendMtl handling,
+
+
 ## [1.32.2] - Thu 2024-04-11 17:44
 ### Summary
  - Pini Helper:

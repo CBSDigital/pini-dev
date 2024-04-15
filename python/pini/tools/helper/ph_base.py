@@ -659,8 +659,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.jump_to(dcc.cur_file())
 
     def _callback__Refresh(self):
+        self.target = self.work
         pipe.CACHE.reset()
         self.ui.Job.redraw()  # Rebuild ui elements
+        self.target = None
 
     def _context__JobLabel(self, menu):
         if not self.job:
