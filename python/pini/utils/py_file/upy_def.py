@@ -71,16 +71,21 @@ class PyDef(PyElem):
                 _ast_kwargs, self._ast.args.defaults):
             _name = _ast_arg_to_name(_ast_arg)
             _LOGGER.debug(
-                ' - ADDING KWARG %s %s %s', _name, _ast_arg, _ast_default)
+                ' - ADDING KWARG %s %s', _name, _ast_arg)
+            _LOGGER.debug('   - AST DEFAULT %s', _ast_default)
             if isinstance(_ast_default, ast.Num):
                 _default = _ast_default.n
             elif isinstance(_ast_default, ast.Str):
                 _default = _ast_default.s
+            elif isinstance(_ast_default, ast.Constant):  # bool
+                _default = _ast_default.n
             elif isinstance(_ast_default, (ast.Name, ast.Call, _AstNoneType)):
                 _default = None
             else:
                 raise ValueError(_ast_default)
+            _LOGGER.debug('   - DEFAULT %s', _default)
             _arg = PyArg(_name, default=_default)
+            _LOGGER.debug('   - ARG %s type=%s', _arg, _arg.type_)
             _args.append(_arg)
 
         return _args

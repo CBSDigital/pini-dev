@@ -1,3 +1,23 @@
+## [1.36.0] - Wed 2024-04-17 13:16
+### Summary
+ - Pini Helper:
+    - bugfix error on select maya render handler (farnold),
+### Updated
+ - pini.utils.PyElem.to_docs added,
+ - pini.utils.PyArg added handling for bool type,
+ - pini.utils.PyArg.type_ added,
+ - pini.utils.Image.convert apply iec61966_2_1 for exr -> jpg to fix colour,
+ - pini.dcc.CBaseExportHandler.add_spinbox_elem bugfix error due to raw QtWidget,
+ - pini.dcc.CMayaRenderHandler bugfix not calling update layers callback,
+ - pini.dcc.CMayaRenderHandler bugfix not displaying layers if no work,
+ - pini.dcc.CMayaRenderHandler catch error on render if no work,
+ - pini.qt.CSpinBox added,
+ - pini.qt.CListWidget added get_val/set_val/select,
+ - pini.qt.CListWidget.select_row added replace,
+ - pini.tools.helper bugfix error on select render output,
+ - maya_pini.open_maya added create_render_layer/find_render_layer,
+
+
 ## [1.35.0] - Wed 2024-04-17 09:29
 ### Summary
  - Pini Helper:

@@ -256,7 +256,7 @@ class CExportHandler(object):
         Returns:
             (QSpinBox): spinbox element
         """
-        _spinbox = QtWidgets.QSpinBox()
+        _spinbox = qt.CSpinBox()
         _spinbox.setValue(val)
         _spinbox.setMinimum(min_)
         _spinbox.setMaximum(max_)

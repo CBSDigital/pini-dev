@@ -29,7 +29,11 @@ class Image(File):
         if self.extn == _file.extn:
             self.copy_to(_file, force=force)
         elif 'exr' in _fmts:
-            _convert_file_ffmpeg(self, _file, catch=catch, force=force)
+            _colspace = {
+                ('exr', 'jpg'): 'iec61966_2_1',
+            }.get((self.extn, _file.extn))
+            _convert_file_ffmpeg(
+                self, _file, colspace=_colspace, catch=catch, force=force)
         elif not _fmts - set(qt.PIXMAP_EXTNS):
             _convert_file_qt(self, _file, force=force)
         else:
@@ -132,18 +136,23 @@ class Image(File):
         return _pix.width(), _pix.height()
 
 
-def _convert_file_ffmpeg(src, trg, catch=False, force=False):
+def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
     """Convert image file to a different format using ffmpeg.
 
     Args:
         src (File): source file
         trg (File): output file
+        colspace (str): apply colourspace via -apply_trc flag
         catch (bool): no error if conversion fails
         force (bool): replace existing without confirmation
     """
     _ffmpeg = find_exe('ffmpeg')
+    _cmds = [_ffmpeg]
+    if colspace:
+        _cmds += ['-apply_trc', colspace]
+    _cmds += ['-i', src, trg]
+
     trg.delete(force=force, wording='Replace')
-    _cmds = [_ffmpeg, '-i', src, trg]
     assert not trg.exists()
     system(_cmds, verbose=1)
 

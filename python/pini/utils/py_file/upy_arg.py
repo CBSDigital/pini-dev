@@ -15,6 +15,7 @@ class PyArg(object):
         """
         self.name = name
         self.default = default
+        self.type_ = type(default) if default is not EMPTY else None
 
     def __repr__(self):
         return basic_repr(self, self.name)

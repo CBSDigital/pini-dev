@@ -29,7 +29,8 @@ from .pom_joint import CJoint
 from .pom_skeleton import (
     CSkeleton, find_skeletons, find_skeleton, selected_skeleton)
 from .pom_render_layer import (
-    find_render_layers, CRenderLayer, cur_render_layer)
+    find_render_layers, CRenderLayer, cur_render_layer, find_render_layer,
+    create_render_layer)
 
 from .cpnt_mesh import PCpntMesh, to_uv, PUV, to_vtx
 

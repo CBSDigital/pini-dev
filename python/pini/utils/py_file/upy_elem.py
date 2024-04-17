@@ -218,5 +218,13 @@ class PyElem(object):
         """
         return self._ast
 
+    def to_docs(self):
+        """Obtain docstring.
+
+        Returns:
+            (str): docs
+        """
+        return ast.get_docstring(self.to_ast())
+
     def __repr__(self):
         return basic_repr(self, self.name)

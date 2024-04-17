@@ -47,6 +47,30 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         """
         return [_item.text() for _item in self.all_items()]
 
+    def get_val(self):
+        """Get selected text.
+
+        Returns:
+            (str): selected text
+        """
+        return self.currentText()
+
+    def select(self, match, replace=False, emit=True, catch=False):
+        """Select an item in the list by item/text/data.
+
+        Args:
+            match (any): item/text/data to match
+            replace (bool): replace current selection
+            emit (bool): emit changed signals on selection
+            catch (bool): no error if fail to select data
+        """
+        for _idx, _item in enumerate(self.all_items()):
+            if match in (_item, _item.data(), _item.text()):
+                self.select_row(_idx, emit=emit, replace=replace)
+                return
+        if not catch:
+            raise ValueError('failed to select {}'.format(match))
+
     def select_data(self, data, emit=True, catch=False):
         """Select item by its data.
 
@@ -77,15 +101,18 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         if not catch:
             raise ValueError('failed to select {}'.format(item))
 
-    def select_row(self, idx, emit=True):
+    def select_row(self, idx, replace=False, emit=True):
         """Set current row.
 
         Args:
             idx (int): row index to select
+            replace (bool): replace current selection
             emit (bool): emit changed signals on selection
         """
         if not emit:
             self.blockSignals(True)
+        if replace:
+            self.clearSelection()
         self.setCurrentRow(idx)
         if not emit:
             self.blockSignals(False)
@@ -241,6 +268,14 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         self.blockSignals(_blocked)
         if _emit:
             self.itemSelectionChanged.emit()
+
+    def set_val(self, val):
+        """Apply value to this element.
+
+        Args:
+            val (str): text to select
+        """
+        self.select_text(val)
 
     def mouseMoveEvent(self, event):
         """Triggered by mouse move.

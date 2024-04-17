@@ -8,4 +8,4 @@ from .widgets import (
     CTreeWidgetItem, CProgressBar, CLineEdit, CMenu, CLabel, CBaseWidget,
     CHLine, CVLine, CSplitter, CListView, CListViewPixmapItem, CSlider,
     CListViewWidgetItem, CPixmapLabel, CTileWidget, CTileWidgetItem,
-    CCheckBox)
+    CCheckBox, CSpinBox)

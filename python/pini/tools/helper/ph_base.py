@@ -328,16 +328,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             icon=icons.FIND, enabled=bool(_asset))
 
         # Add lookdev opts
-        _lookdev = output.find_lookdev()
-        menu.add_action(
-            'Find lookdev', wrap_fn(self.jump_to, _lookdev),
-            icon=icons.FIND, enabled=bool(_lookdev))
-        _attach = chain_fns(
-            wrap_fn(self._stage_import, _lookdev, attach=ref),
-            self.ui.SSceneRefs.redraw)
-        menu.add_action(
-            'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
-            enabled=bool(_lookdev and ref))
+        if ref:
+            _lookdev = output.find_lookdev()
+            menu.add_action(
+                'Find lookdev', wrap_fn(self.jump_to, _lookdev),
+                icon=icons.FIND, enabled=bool(_lookdev))
+            _attach = chain_fns(
+                wrap_fn(self._stage_import, _lookdev, attach=ref),
+                self.ui.SSceneRefs.redraw)
+            menu.add_action(
+                'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
+                enabled=bool(_lookdev and ref))
 
     def _set_work_thumb(self, clip_):
         """Update current work thumbnail to match the given clip.

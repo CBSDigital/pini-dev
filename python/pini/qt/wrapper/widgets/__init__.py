@@ -16,6 +16,7 @@ from .qw_pixmap_label import CPixmapLabel
 from .qw_progress_bar import CProgressBar
 from .qw_menu import CMenu
 from .qw_slider import CSlider
+from .qw_spin_box import CSpinBox
 from .qw_splitter import CSplitter
 from .qw_tab_widget import CTabWidget
 from .qw_tile_widget import CTileWidget

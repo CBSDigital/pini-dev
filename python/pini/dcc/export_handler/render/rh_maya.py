@@ -4,9 +4,9 @@ import logging
 
 from maya import cmds
 
-from pini import pipe, farm, qt
+from pini import pipe, farm, qt, icons
 from pini.qt import QtWidgets
-from pini.tools import helper
+from pini.tools import helper, error
 from pini.utils import TMP_PATH, strftime, Seq, cache_result, wrap_fn
 
 from maya_pini import open_maya as pom
@@ -16,6 +16,7 @@ from maya_pini.utils import (
 from . import rh_base
 
 _LOGGER = logging.getLogger(__name__)
+_NO_WORK_ICON = icons.find('Red Circle')
 
 
 def _get_current_lyr():
@@ -246,11 +247,14 @@ class CMayaFarmRender(CMayaRenderHandler):
         _select = []
         _fmt = to_render_extn() or 'jpg'
         for _lyr in pom.find_render_layers():
-            if not _work or not _lyr.pass_name:
+            if not _lyr.pass_name:
                 continue
-            _out = _work.to_output(
-                'render', output_name=_lyr.pass_name, extn=_fmt)
-            _icon = helper.output_to_icon(_out)
+            if _work:
+                _out = _work.to_output(
+                    'render', output_name=_lyr.pass_name, extn=_fmt)
+                _icon = helper.output_to_icon(_out)
+            else:
+                _icon = helper.obt_pixmap(_NO_WORK_ICON)
             _item = qt.CListWidgetItem(
                 _lyr.pass_name, data=_lyr, icon=_icon)
             if _lyr.is_renderable():
@@ -264,6 +268,9 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         self.layout.addWidget(self.ui.Layers)
         self.layout.setStretch(self.layout.count()-1, 1)
+
+        _signal = qt.widget_to_signal(self.ui.Layers)
+        _signal.connect(self._callback__Layers)
 
     def _callback__Layers(self):
         _sel_lyrs = self.ui.Layers.selected_datas()
@@ -279,6 +286,9 @@ class CMayaFarmRender(CMayaRenderHandler):
         Args:
             frames (int list): list of frames to render
         """
+        _work = pipe.cur_work()
+        if not _work:
+            raise error.HandledError('No current work')
         _cam = self.ui.Camera.currentText()
         pom.set_render_cam(_cam)
 

@@ -3,6 +3,7 @@
 import logging
 
 from maya import cmds
+from maya.app.renderSetup.model import renderSetup
 
 from pini.utils import single
 
@@ -70,6 +71,20 @@ class CRenderLayer(wrapper.CNode):
         self.plug['renderable'].set_val(renderable)
 
 
+def create_render_layer(name):
+    """Create render layer.
+
+    Args:
+        name (str): render layer name
+
+    Returns:
+        (CRenderLayer): render layer
+    """
+    _rs = renderSetup.instance()
+    _rs.createRenderLayer(name)
+    return find_render_layer(name)
+
+
 def cur_render_layer():
     """Obtain current render layer.
 
@@ -78,6 +93,26 @@ def cur_render_layer():
     """
     _crl = cmds.editRenderLayerGlobals(query=True, currentRenderLayer=True)
     return single(_lyr for _lyr in find_render_layers() if _lyr == _crl)
+
+
+def find_render_layer(match, catch=False):
+    """Find render layer.
+
+    Args:
+        match (str): name to match
+        catch (bool): no error if render layer not found
+
+    Returns:
+        (CRenderLayer): render layer
+    """
+    _lyrs = find_render_layers()
+    _name_match = [
+        _lyr for _lyr in _lyrs if match in (_lyr.name, _lyr.pass_name)]
+    if len(_name_match) == 1:
+        return single(_name_match)
+    if catch:
+        return None
+    raise ValueError(match)
 
 
 def find_render_layers(referenced=False, renderable=None):
