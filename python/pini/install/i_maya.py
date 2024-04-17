@@ -171,10 +171,11 @@ class PIMayaInstaller(i_installer.PIInstaller):
             parent (str): parent shelf/menu name
             launch_helper (bool): launch pini helper on startup
         """
-        _LOGGER.debug('RUN %s', self)
+        _LOGGER.info('RUN %s helper=%d', self, launch_helper)
         self.menu_installer.run(parent=parent)
         self.shelf_installer.run(parent=parent)
         if launch_helper:
+            _LOGGER.info(' - LAUNCHING HELPER %s', helper)
             helper.launch()
 
 

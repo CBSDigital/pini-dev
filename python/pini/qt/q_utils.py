@@ -255,9 +255,9 @@ def to_p(*args, **kwargs):
     _LOGGER.debug('TO P %s', args)
 
     _class = kwargs.pop('class_', None)
+    _LOGGER.debug(' - CLASS %s', _class)
     if kwargs:
         raise TypeError(kwargs)
-    _LOGGER.debug(' - CLASS %s', _class)
 
     _arg = single(args, catch=True)
 
@@ -265,8 +265,10 @@ def to_p(*args, **kwargs):
         _result = _arg
     elif isinstance(_arg, (QtCore.QSize, QtCore.QSizeF)):
         _result = QtCore.QPoint(_arg.width(), _arg.height())
-    elif isinstance(_arg, (tuple, list)):
-        _result = QtCore.QPoint(*_arg)
+    elif (
+            isinstance(_arg, (tuple, list)) and
+            len(_arg) == 2):
+        return to_p(*_arg, class_=_class)
     elif isinstance(_arg, int):
         _result = QtCore.QPoint(_arg, _arg)
     elif (  # Ints tuple

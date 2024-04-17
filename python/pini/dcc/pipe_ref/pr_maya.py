@@ -246,7 +246,10 @@ class CMayaLookdevRef(CMayaReference):
         Returns:
             (dict): shading data
         """
-        _shd_yml = pipe.map_path(self.output.metadata['shd_yml'])
+        _shd_yml = self.output.metadata.get('shd_yml')
+        if not _shd_yml:
+            return None
+        _shd_yml = pipe.map_path(_shd_yml)
         return File(_shd_yml).read_yml()
 
     def attach_to(self, ref_):

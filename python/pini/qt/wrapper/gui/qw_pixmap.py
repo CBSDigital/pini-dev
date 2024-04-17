@@ -152,7 +152,8 @@ class CPixmap(QtGui.QPixmap):
         _pnt.end()
 
     def draw_overlay(
-            self, pix, pos=None, anchor='TL', size=None, rotate=None):
+            self, pix, pos=None, anchor='TL', size=None, rotate=None,
+            opacity=None):
         """Draw an image overlay on this pixmap.
 
         Args:
@@ -161,6 +162,7 @@ class CPixmap(QtGui.QPixmap):
             anchor (str): draw anchor
             size (QSize): apply image resize
             rotate (float): apply rotation in degrees
+            opacity (float): apply opacity to overlay (in range 0-1)
 
         Returns:
             (QRect): draw region
@@ -176,6 +178,8 @@ class CPixmap(QtGui.QPixmap):
 
         _pnt = qt.CPainter()
         _pnt.begin(self)
+        if opacity is not None:
+            _pnt.setOpacity(opacity)
         if rotate is not None:
             _pnt.setRenderHint(_pnt.SmoothPixmapTransform)
             _rect = _pnt.apply_rotate(rect=_rect, rotate=rotate, anchor=anchor)

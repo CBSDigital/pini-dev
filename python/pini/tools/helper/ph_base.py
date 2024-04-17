@@ -360,10 +360,15 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 (eg. apply lookdev to selected scene ref)
             ref (CPipeRef): scene ref associated with this output
         """
-        menu.add_separator()
+
+        # Check for shd yml file
+        _shd_yml = lookdev.metadata.get('shd_yml')
+        if not _shd_yml:
+            return
+        menu.shd_yml = File(pipe.map_path(_shd_yml))
 
         # Store shd yml on menu to avoid garbage collection
-        menu.shd_yml = File(pipe.map_path(lookdev.metadata['shd_yml']))
+        menu.add_separator()
         menu.add_action(
             'Edit shaders yaml', menu.shd_yml.edit, icon=icons.EDIT)
 

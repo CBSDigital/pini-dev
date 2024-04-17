@@ -23,6 +23,12 @@ class TestPipe(unittest.TestCase):
         assert _out.task == 'anim'
         assert _out.output_name == 'blah_2'
 
+        # Check asset pubs can have optional output_type
+        _ety = pipe.CACHE.obt(testing.TEST_ASSET)
+        _work_dir = _ety.find_work_dir(task='model', dcc_=dcc.NAME)
+        assert _work_dir.to_output('publish', output_type=None, extn='ma')
+        assert _work_dir.to_output('publish', output_type='vrmesh', extn='ma')
+
     def test_templates(self):
 
         assert testing.TEST_JOB

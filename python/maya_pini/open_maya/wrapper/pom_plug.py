@@ -203,6 +203,14 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             return []
         return _anim.get_ktvs()
 
+    def get_size(self):
+        """Read number of child elements in array attribute.
+
+        Returns:
+            (int): element count
+        """
+        return self.numElements()
+
     def get_type(self):
         """Get type of this attribute.
 

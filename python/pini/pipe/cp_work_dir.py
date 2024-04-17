@@ -533,13 +533,16 @@ class CPWorkDir(Dir):
             _outs.append(_out)
         return _outs
 
-    def to_output(self, type_, tag=None, output_name=None, ver_n=1, extn=None):
+    def to_output(
+            self, type_, output_type=None, output_name=None, tag=None,
+            ver_n=1, extn=None):
         """Map this work dir to an output.
 
         Args:
-            type_ (str): output type (eg. render/cache)
-            tag (str): output tag
+            type_ (str): template type (eg. render/cache)
+            output_type (str): output type
             output_name (str): output name
+            tag (str): output tag
             ver_n (int): output version number
             extn (str): output extension
 
@@ -547,7 +550,8 @@ class CPWorkDir(Dir):
             (CPOutput): output
         """
         _work = self.to_work(ver_n=ver_n, tag=tag)
-        return _work.to_output(type_, extn=extn, output_name=output_name)
+        return _work.to_output(
+            type_, extn=extn, output_name=output_name, output_type=output_type)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key

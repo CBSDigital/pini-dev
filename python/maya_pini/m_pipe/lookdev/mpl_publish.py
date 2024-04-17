@@ -1,15 +1,18 @@
 """Tools for managing lookdev publishes."""
 
+import copy
 import collections
 import logging
 import re
 
 from maya import cmds
 
-from pini.utils import passes_filter
+from pini import pipe
+from pini.utils import passes_filter, File
 
 from maya_pini import open_maya as pom, tex
-from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
+from maya_pini.utils import (
+    to_clean, to_long, to_namespace, to_parent, save_scene)
 
 from .. import mp_utils
 
@@ -52,6 +55,99 @@ def find_export_nodes(filter_=None):
     _LOGGER.debug(' - EXPORT NODES %s', _export_nodes)
 
     return _export_nodes
+
+
+def _build_vrmesh_proxy(file_, geo, node='PXY', force=False):
+    """Build vrmesh proxy node.
+
+    Saves out a vrmesh proxy to disk from the given geo, and then uses the
+    same script to rebuild the node with shaders. This is useful because
+    it's hard to script attaching the shaders to the proxy node.
+
+    Args:
+        file_ (File): vrmesh file location to save to
+        geo (str list): geometry to save
+        node (str): name for proxy node
+        force (bool): overwrite existing vrmesh file without confirmation
+
+    Returns:
+        (str): proxy node
+    """
+
+    _file = File(file_)
+
+    _node = node
+    if cmds.objExists(_node):
+        _LOGGER.info(' - DELETE EXISTING PROXY NODE %s', _node)
+        cmds.delete(_node)
+
+    _file.delete(force=force)
+    _file.test_dir()
+
+    cmds.loadPlugin('vrayformaya', quiet=True)
+    cmds.select(geo)
+    _LOGGER.info(' - WRITE VRMESH %s', _file.path)
+    cmds.vrayCreateProxy(
+        dir=_file.to_dir().path,
+        makeBackup=True, createProxyNode=True, newProxyNode=True,
+        ignoreHiddenObjects=True, oneVoxelPerMesh=True, exportHierarchy=True,
+        animType=0, exportType=1,
+        facesPerVoxel=20000, fname=_file.filename,
+        node=_node, pointSize=0, previewFaces=10000,
+        previewType='combined', velocityIntervalEnd=0.05,
+        velocityIntervalStart=0)
+    _LOGGER.info(' - BUILT PROXY NODE %s', _node)
+
+    return _node
+
+
+def export_vrmesh_ma(metadata, force=False):
+    """Export vrmesh maya scene.
+
+    Saves a maya scene containing a shaded vrmesh proxy file.
+
+    Args:
+        metadata (dict): publish metadata
+        force (bool): overwrite existing without confirmation
+
+    Returns:
+        (CPOutput): vrmesh maya scene file
+    """
+    _LOGGER.info('EXPORT VRMESH MA')
+
+    # Find export geo
+    _geo = mp_utils.read_cache_set()
+    _LOGGER.info(' - GEO %s', _geo)
+    if not _geo:
+        _LOGGER.info(' - NO GEO FOUND')
+        return None
+
+    # Setup export paths
+    _vrm = pipe.cur_work().to_output(
+        'publish', output_type='vrmesh', extn='vrmesh')
+    _LOGGER.info(' - VRM %s', _vrm)
+    _vrm_ma = pipe.cur_work().to_output(
+        'publish', output_type='vrmesh', extn='ma')
+    _LOGGER.info(' - MA %s', _vrm_ma)
+    for _file in [_vrm, _vrm_ma]:
+        _file.delete(wording='Replace', force=force)
+
+    # Setup metadata
+    _data = copy.copy(metadata)
+    for _key in ['shd_yml']:
+        _data.pop(_key, None)
+    _data['vrmesh'] = _vrm.path
+
+    _pxy = _build_vrmesh_proxy(file_=_vrm, geo=_geo, force=force)
+
+    # Save proxy ma
+    cmds.select(_pxy)
+    assert not _vrm_ma.exists()
+    save_scene(_vrm_ma, selection=True, force=force)
+    cmds.delete(_pxy)
+    _vrm_ma.set_metadata(_data)
+
+    return _vrm_ma
 
 
 def read_ai_override_sets(crop_namespace=True):

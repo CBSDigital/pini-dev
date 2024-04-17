@@ -1,3 +1,22 @@
+## [1.35.0] - Wed 2024-04-17 09:29
+### Summary
+ - Pini Helper:
+    - maya lookdev publish added option to export shaded vrmesh proxy scene (eehemann),
+    - increased logging on maya startup to catch helper not launching (farnold),
+### Updated
+ - pini.dcc.CMayaLookdevRef added handling for no shd yml,
+ - pini.dcc.CMayaLookdevPublish added vrmesh ma export,
+ - pini.pipe.CPWorkDir.to_output added output_type flag,
+ - pini.pipe.shotgrid.SGC added progress on read pub_files/tasks,
+ - pini.qt.CPixmap.draw_overlay added opacity flag,
+ - pini.qt.to_p bugfix not returning QPointF on float list/tuple,
+ - pini.install more logging on maya launch helper,
+ - pini.tools.helper added shaded proxy handling,
+ - maya_pini.utils.save_scene added selection/revert flags,
+ - maya_pini.m_pipe.lookdev.export_vrmesh_ma added,
+ - maya_pini.open_maya.CPlug.get_size added,
+
+
 ## [1.34.0] - Mon 2024-04-15 14:56
 ### Summary
  - Pini Helper:
@@ -8,7 +27,7 @@
  - maya_pini.tools.blast apply force on constrain tmp cam to cam,
  - maya_pini.tools.blast allow path as str,
  - maya_pini.open_maya.CBaseTransform.parent_constraint added force,
- - maya_pini.ui.get_active_cam bugfix superfluouos pipe in model editor cam query,
+ - maya_pini.ui.get_active_cam bugfix superfluous pipe in model editor cam query,
  - maya_pini.ui.MODEL_EDITOR_ATTRS bugfix useDefaultMaterial missing,
 
 

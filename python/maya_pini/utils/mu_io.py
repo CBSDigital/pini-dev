@@ -147,30 +147,42 @@ def _fix_viewport_callbacks():
             cmds.modelEditor(_model_panel, edit=True, editorChanged="")
 
 
-def save_scene(file_=None, force=False):
+def save_scene(file_=None, selection=False, revert=None, force=False):
     """Save scene.
 
     Args:
         file_ (str): save path
+        selection (bool): export selection
+        revert (bool): revert filename
         force (bool): overwrite existing file without warning dialog
     """
     from pini import qt, dcc
 
+    _revert = revert
+    if _revert is None:
+        _revert = selection
+
     # Get file object
-    _path = file_ or dcc.cur_file()
-    if not _path:
+    _cur_file = dcc.cur_file()
+    _file = file_ or _cur_file
+    if not _file:
         raise RuntimeError('Unable to determine save path')
-    _file = File(_path)
+    _file = File(_file)
     _file.test_dir()
 
     _apply_auto_workspace_update(_file)
 
     # Apply save
-    _type = {'ma': 'mayaAscii', 'mb': 'mayaBinary'}[_file.extn]
     if not force and _file.exists():
         qt.ok_cancel('Overwrite existing file?\n\n{}'.format(_file.path))
+    _type = {'ma': 'mayaAscii', 'mb': 'mayaBinary'}[_file.extn]
     cmds.file(rename=_file.path)
-    cmds.file(save=True, type=_type)
+    if selection:
+        cmds.file(exportSelected=True, type=_type)
+    else:
+        cmds.file(save=True, type=_type)
+    if _revert:
+        cmds.file(rename=_cur_file)
 
 
 @mu_dec.hide_img_planes

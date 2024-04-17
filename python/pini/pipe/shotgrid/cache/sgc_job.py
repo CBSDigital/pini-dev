@@ -527,7 +527,7 @@ class SGCJob(sgc_container.SGCContainer):
         return _assets
 
     @pipe_cache_on_obj
-    def _read_pub_files(self, progress=False, force=False):
+    def _read_pub_files(self, progress=True, force=False):
         """Build list of pub files in this job.
 
         Args:
@@ -573,7 +573,7 @@ class SGCJob(sgc_container.SGCContainer):
         return _shots
 
     @pipe_cache_on_obj
-    def _read_tasks(self, progress=False, force=False):
+    def _read_tasks(self, progress=True, force=False):
         """Build list of tasks in this job.
 
         Args:

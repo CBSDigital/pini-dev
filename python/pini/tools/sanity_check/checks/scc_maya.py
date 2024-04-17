@@ -363,7 +363,9 @@ class CheckLookdevAssign(SCMayaCheck):
     def run(self):
         """Run this check."""
         for _lookdev in dcc.find_pipe_refs(task='lookdev'):
-            if not _lookdev.ref:
+            if (
+                    not _lookdev.ref or
+                    not _lookdev.output.metadata.get('shd_yml')):
                 continue
             self.write_log('Checking %s', _lookdev)
             _lookdev_ref = _lookdev.ref
@@ -593,7 +595,9 @@ class CheckCustomAovConnections(SCMayaCheck):
     def run(self):
         """Run this check."""
         for _lookdev in dcc.find_pipe_refs(task='lookdev'):
-            if not _lookdev.ref:
+            if (
+                    not _lookdev.ref or
+                    not _lookdev.output.metadata.get('shd_yml')):
                 continue
             self.write_log('Checking %s', _lookdev)
             _ref = _lookdev.ref

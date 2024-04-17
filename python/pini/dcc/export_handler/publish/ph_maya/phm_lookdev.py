@@ -12,7 +12,7 @@ from pini.utils import single
 from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    restore_sel, DEFAULT_NODES, to_long, to_namespace)
+    restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene)
 
 from . import phm_base
 
@@ -67,6 +67,14 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
                 label="Export geo as ass.gz file")
             self.add_separator_elem()
 
+        # Add export vrmesh opts if vray allowed
+        self.ui.ExportVrmesh = None
+        if 'vray' in dcc.allowed_renderers():
+            self.ui.ExportVrmesh = self.add_checkbox_elem(
+                val=True, name='ExportVrmesh',
+                label="Export geo as shaded vrmesh scene")
+            self.add_separator_elem()
+
         if add_footer:
             self.add_footer_elems()
 
@@ -107,13 +115,12 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _work = work or pipe.CACHE.cur_work
         _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
         _data_dir = _pub.to_dir().to_subdir('data')
-        _outs = []
+        _metadata = self.obtain_metadata(force=force)
+
         self.shd_yml = _pub.to_file(
             dir_=_data_dir,  base=_pub.base+'_shaders', extn='yml')
-
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
 
-        _metadata = self.obtain_metadata(force=force)
         _work.save(reason='lookdev publish', force=True, update_outputs=False)
 
         # Check scene
@@ -127,22 +134,83 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             if to_namespace(_shd):
                 raise RuntimeError('Shader has namespace '+_shd)
 
-        # Export ass
+        # Generate outputs
+        _outs = []
+        _ass = self._handle_export_ass(force=force, metadata=_metadata)
+        if _ass:
+            _outs.append(_ass)
+        _vrm_ma = self._handle_export_vrm_ma(force=force, metadata=_metadata)
+        if _vrm_ma:
+            _outs.append(_vrm_ma)
+        self._handle_export_shaders_scene(
+            output=_pub, force=force, metadata=_metadata)
+        _outs.append(_pub)
+
+        _work.load(force=True)
+        self.post_publish(work=_work, outs=_outs, version_up=version_up)
+
+        return _outs
+
+    def _handle_export_ass(self, metadata, force):
+        """Handle export ass file.
+
+        Args:
+            metadata (dict): publish metadata
+            force (bool): overwrite without confirmation
+
+        Returns:
+            (CPOutput|None): output (if any)
+        """
         if self.ui and self.ui.ExportAss:
             _tgl_export_ass = self.ui.ExportAss.isChecked()
         else:
             _tgl_export_ass = 'arnold' in dcc.allowed_renderers()
+
+        _ass = None
         if _tgl_export_ass:
-            _ass = _export_ass(metadata=_metadata, force=force)
-            if _ass:
-                _outs.append(_ass)
+            _ass = _export_ass(metadata=metadata, force=force)
+
+        return _ass
+
+    def _handle_export_vrm_ma(self, metadata, force):
+        """Handle export vray mesh ma file.
+
+        Args:
+            metadata (dict): publish metadata
+            force (bool): overwrite without confirmation
+
+        Returns:
+            (CPOutput|None): output (if any)
+        """
+        if self.ui and self.ui.ExportVrmesh:
+            _tgl_export_vrm = self.ui.ExportVrmesh.isChecked()
+        else:
+            _tgl_export_vrm = 'vray' in dcc.allowed_renderers()
+
+        _vrm_ma = None
+        if _tgl_export_vrm:
+            _vrm_ma = lookdev.export_vrmesh_ma(metadata=metadata, force=force)
+
+        return _vrm_ma
+
+    def _handle_export_shaders_scene(self, output, metadata, force):
+        """Handle export shaders ma file.
+
+        Args:
+            output (CPOutput): publish file
+            metadata (dict): publish metadata
+            force (bool): overwrite without confirmation
+
+        Returns:
+            (CPOutput|None): output (if any)
+        """
 
         # Read shaders + save to yml
         _shd_data = lookdev.read_publish_metadata()
         self.shd_yml.write_yml(_shd_data, force=True, fix_unicode=True)
         _LOGGER.info(' - WROTE SHD YML %s', self.shd_yml)
 
-        # Export shaders mb
+        # Export shaders scene
         _export_nodes = lookdev.find_export_nodes()
         _flush_scene(keep_nodes=_export_nodes)
         _export_nodes = [  # Empty sets are deleted on import ref (?)
@@ -150,15 +218,8 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         cmds.select(_export_nodes, noExpand=True)
         if not _export_nodes:
             raise RuntimeError('No shaders/sets found to export')
-        _type = {'ma': 'mayaAscii', 'mb': 'mayaBinary'}[_pub.extn]
-        cmds.file(_pub.path, exportSelected=True, type=_type, force=True)
-        _pub.set_metadata(_metadata)
-        _work.load(force=True)
-        _outs.append(_pub)
-
-        self.post_publish(work=_work, outs=_outs, version_up=version_up)
-
-        return _outs
+        save_scene(output.path, selection=True, force=force)
+        output.set_metadata(metadata)
 
 
 def _clean_junk():
