@@ -329,7 +329,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add lookdev opts
         if ref:
-            _lookdev = output.find_lookdev()
+            _lookdev = output.find_lookdev_shaders()
             menu.add_action(
                 'Find lookdev', wrap_fn(self.jump_to, _lookdev),
                 icon=icons.FIND, enabled=bool(_lookdev))

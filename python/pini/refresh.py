@@ -90,6 +90,9 @@ _RELOAD_ORDER = [
     'pini.install.i_installer',
     'pini.install',
 
+    'pini.tools.pyui.cpnt',
+    'pini.tools.pyui',
+
     'pini.tools.release.r_version',
     'pini.tools.sanity_check.core.sc_fail',
     'pini.tools.sanity_check.core.sc_base',

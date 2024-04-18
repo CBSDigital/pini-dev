@@ -131,7 +131,7 @@ class CCPOutput(CPOutput, CCPOutputBase):
         """
         return self._exists
 
-    def find_lookdev(self):
+    def find_lookdev_shaders(self):
         """Find matching lookdev for this output.
 
         This is used to find a lookdev publish to attach to an abc export.
@@ -167,7 +167,9 @@ class CCPOutput(CPOutput, CCPOutputBase):
         _LOGGER.debug(' - ASSET %s', _asset)
 
         # Find lookdevs
-        _lookdevs = _out.entity.find_publishes(publish_type='lookdev')
+        _lookdevs = [
+            _out for _out in _out.entity.find_publishes(publish_type='lookdev')
+            if _out.metadata.get('shd_yml')]
         _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
         if not _lookdevs:
             return None

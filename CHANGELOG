@@ -1,3 +1,19 @@
+## [1.37.0] - Thu 2024-04-18 15:24
+### Summary
+ - Pini Helper:
+    - bugfix error on attach shaders to abc due to matching vrmesh scene (eehemann),
+### Updated
+ - pini.utils.File.read_pkl added catch arg,
+ - pini.utils.Seq.nice_range added,
+ - pini.pipe.cache.CCPOutput renamed find_lookdev -> find_lookdev_shaders,
+ - pini.pipe.cache.CCPOutput.find_lookdev_shaders check for shd_yml in metadata,
+ - pini.qt.file_browser allow mode as None for ExistingFile,
+ - pini.tools.pyui refactor + working ui wip,
+ - pini.icons.CLEAR added,
+ - maya_pini.open_maya create_loc/TIME added,
+ - maya_pini.ui create_option_menu/OptionMenu added,
+
+
 ## [1.36.0] - Wed 2024-04-17 13:16
 ### Summary
  - Pini Helper:

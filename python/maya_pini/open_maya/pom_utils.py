@@ -116,6 +116,19 @@ def _cast_tfm(node):
     return _class
 
 
+def create_loc(name='loc'):
+    """Create locator.
+
+    Args:
+        name (str): override locator name
+
+    Returns:
+        (CTransform): locator
+    """
+    from maya_pini import open_maya as pom
+    return pom.CPoint().to_loc(name=name)
+
+
 def find_connections(
         obj, source=True, destination=True, type_=None, connections=True,
         plugs=True):

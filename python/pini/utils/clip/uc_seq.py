@@ -8,7 +8,7 @@ from . import uc_clip
 
 from ..u_error import DebuggingError
 from ..u_text import plural
-from ..u_misc import single, strftime, EMPTY
+from ..u_misc import single, strftime, EMPTY, ints_to_str
 from ..u_six import six_cmp
 
 from ..cache import cache_method_to_file
@@ -345,6 +345,14 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         from pini.utils import nice_size
         return nice_size(self.size())
+
+    def nice_range(self):
+        """Get this sequence's frame range in a readable form.
+
+        Returns:
+            (str): readable range (eg. 1-100)
+        """
+        return ints_to_str(self.frames)
 
     def owner(self):
         """Obtain owner of this sequence using the middle frame.

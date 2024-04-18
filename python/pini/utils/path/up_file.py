@@ -321,16 +321,26 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """
         return self.read().split('\n')
 
-    def read_pkl(self):
+    def read_pkl(self, catch=False):
         """Read pickle file.
+
+        Args:
+            catch (bool): no error if fail to read (return empty dict)
 
         Returns:
             (any): pickled data
         """
+        if not self.exists():
+            if catch:
+                return {}
+            raise OSError('Missing file '+self.path)
+
         _handle = open(self.path, "rb")
         try:
             _obj = pickle.load(_handle)
         except EOFError as _exc:
+            if catch:
+                return {}
             _handle.close()
             raise EOFError('{} {}'.format(_exc, self.path))
         _handle.close()

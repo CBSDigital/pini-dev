@@ -16,6 +16,10 @@ def file_browser(root='~', mode='ExistingFile', extn=None, title=None):
     Args:
         root (str): directory to start browser in
         mode (str): type of result required
+            ExistingFile - single existing file
+            ExistingDir - single existing directory
+            ExistingSeq - single existing file sequence (select file)
+            SaveFile - path to save to
         extn (str): apply file extension filter
         title (str): override browser window title
 
@@ -28,7 +32,7 @@ def file_browser(root='~', mode='ExistingFile', extn=None, title=None):
     _root = abs_path(to_str(root or '~'))
     _LOGGER.debug(' - ROOT %s', _root)
 
-    if mode == 'ExistingFile':
+    if mode in ('ExistingFile', None):
         _filter = None
         if extn:
             _filter = '*.{}'.format(extn)

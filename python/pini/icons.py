@@ -617,6 +617,7 @@ SKIN_TONES = (
 BROWSER = EMOJI.find('Open File Folder')
 COPY = EMOJI.find('Spiral Notepad')
 CLEAN = EMOJI.find('Sponge')
+CLEAR = EMOJI.find('Cross Mark Button')
 DELETE = EMOJI.find('No Entry')
 DUPLICATE = EMOJI.find('Busts in Silhouette')
 EDIT = EMOJI.find('Pencil')

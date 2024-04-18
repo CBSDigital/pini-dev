@@ -941,7 +941,7 @@ class CLSceneTab(object):
                 _abc_mode = 'aiStandIn' if output.task == 'fx' else 'Reference'
 
             # Add lookdev if available
-            _lookdev = output.find_lookdev()
+            _lookdev = output.find_lookdev_shaders()
             if _lookdev and _abc_mode == 'Reference':
                 _lookdev_ns = _ns+'_shd'
                 _lookdev_ref = _StagedRef(
