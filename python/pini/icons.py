@@ -624,11 +624,13 @@ EDIT = EMOJI.find('Pencil')
 FILTER = EMOJI.find('Oil Drum')
 FIND = EMOJI.find('Magnifying Glass Tilted Right')
 LOAD = EMOJI.find('Outbox Tray')
+LOCKED = EMOJI.find('Locked')
 PRINT = EMOJI.find('Downwards Button')
 REFRESH = EMOJI.find('Counterclockwise Arrows Button')
 RESET = EMOJI.find('Broom')
 SAVE = EMOJI.find('Floppy Disk')
 TEST = EMOJI.find('Alembic')
+UNLOCKED = EMOJI.find('Unlocked')
 
 FRUIT = EMOJI.find_grp('fruit')
 

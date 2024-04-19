@@ -23,7 +23,7 @@ class PUDef(object):
 
     def __init__(
             self, func, py_def=None, icon=None, label=None, clear=(),
-            browser=(), hide=(), choices=None):
+            browser=(), hide=(), choices=None, col=None):
         """Constructor.
 
         Args:
@@ -36,6 +36,7 @@ class PUDef(object):
             browser (tuple|dict): args to apply browser to
             hide (tuple): args to hide from ui
             choices (dict): arg/opts data for option lists
+            col (str|QColor): override def colour
         """
         self.func = func
         self.py_def = py_def
@@ -46,6 +47,7 @@ class PUDef(object):
         self.browser = browser
         self.hide = hide
         self.choices = choices or {}
+        self.col = col
 
         self.name = func.__name__
 
@@ -78,7 +80,8 @@ class PUDef(object):
 
     def __call__(self, *args, **kwargs):
         _func = self.func
-        _func = usage.track(_func)
+        _tracker = usage.get_tracker(args=list(kwargs.keys()))
+        _func = _tracker(_func)
         _func = error.catch(_func)
         return _func(*args, **kwargs)
 

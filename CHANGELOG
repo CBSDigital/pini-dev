@@ -1,3 +1,16 @@
+## [1.38.0] - Fri 2024-04-19 09:45
+### Summary
+ - PYUI:
+    - added tool for generating interfaces from python files,
+### Updated
+ - pini.utils.Seq.to_frame_files added,
+ - pini.qt.to_p bugfix not returning QPointF on float args,
+ - pini.qt.to_size bugfix not returning QSizeF on float args,
+ - pini.tools.pyui working maya ui build,
+ - pini.icons LOCKED/UNLOCKED added,
+ - maya_pini.ui.OptionMenu.set_val added catch by default,
+
+
 ## [1.37.0] - Thu 2024-04-18 15:24
 ### Summary
  - Pini Helper:

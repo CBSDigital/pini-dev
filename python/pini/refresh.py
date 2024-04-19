@@ -91,6 +91,9 @@ _RELOAD_ORDER = [
     'pini.install',
 
     'pini.tools.pyui.cpnt',
+    'pini.tools.pyui.ui.pu_base',
+    'pini.tools.pyui.ui.pu_maya',
+    'pini.tools.pyui.ui',
     'pini.tools.pyui',
 
     'pini.tools.release.r_version',

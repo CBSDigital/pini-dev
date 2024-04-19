@@ -444,6 +444,14 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             _frame = int((_start+_end)/2)
         return File(self[_frame])
 
+    def to_frame_files(self):
+        """Build list of all files in this sequence.
+
+        Returns:
+            (File list): frame files
+        """
+        return [self.to_frame_file(_frame) for _frame in self.frames]
+
     def to_frames(self, force=False):
         """Find frames of this sequence.
 

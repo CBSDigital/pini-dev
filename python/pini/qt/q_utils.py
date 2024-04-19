@@ -263,8 +263,10 @@ def to_p(*args, **kwargs):
 
     if isinstance(_arg, (QtCore.QPoint, QtCore.QPointF)):
         _result = _arg
-    elif isinstance(_arg, (QtCore.QSize, QtCore.QSizeF)):
+    elif isinstance(_arg, QtCore.QSize):
         _result = QtCore.QPoint(_arg.width(), _arg.height())
+    elif isinstance(_arg, QtCore.QSizeF):
+        _result = QtCore.QPointF(_arg.width(), _arg.height())
     elif (
             isinstance(_arg, (tuple, list)) and
             len(_arg) == 2):
@@ -371,7 +373,9 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
         elif isinstance(_size, QtGui.QVector2D):
             _result = QtCore.QSizeF(abs(_size.x()), abs(_size.y()))
         elif isinstance(_size, (tuple, list)):
-            _result = QtCore.QSize(_size[0], _size[1])
+            _class = (QtCore.QSizeF if isinstance(_size[0], float)
+                      else QtCore.QSize)
+            _result = _class(_size[0], _size[1])
         elif isinstance(_size, six.string_types):
             _result = QtCore.QSize(*[
                 int(_token) for _token in _size.split('x')])
@@ -382,7 +386,8 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
         else:
             raise ValueError(args)
     elif len(args) == 2:
-        _result = QtCore.QSize(*args)
+        _class = QtCore.QSizeF if isinstance(args[0], float) else QtCore.QSize
+        _result = _class(*args)
     else:
         raise ValueError(args)
 
