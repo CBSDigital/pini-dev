@@ -1,3 +1,15 @@
+## [1.40.0] - Fri 2024-04-19 16:56
+### Summary
+ - Houdini Install:
+    - added option to install pini shelf,
+### Updated
+ - pini.qt.CTabWidget.find_tabs added,
+ - pini.install.PITool allow no icon,
+ - pini.install houdini replaced INSTALLER with MENU_INSTALLER/SHELF_INSTALLER,
+ - pini.install houdini added install shelf option,
+ - pini.tools.helper bugfix not reapplying submit tab,
+
+
 ## [1.39.0] - Fri 2024-04-19 12:52
 ### Summary
  - Maya Install:

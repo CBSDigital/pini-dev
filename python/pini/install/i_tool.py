@@ -11,7 +11,7 @@ from pini.utils import basic_repr, is_pascal
 class PITool(object):
     """Container class for a pini tool."""
 
-    def __init__(self, name, command, icon, label=None):
+    def __init__(self, name, command, icon=None, label=None):
         """Constructor.
 
         Args:

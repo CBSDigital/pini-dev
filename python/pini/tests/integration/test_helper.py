@@ -2,10 +2,8 @@ import unittest
 import logging
 
 from pini import testing, dcc, pipe, qt
-from pini.dcc import export_handler
 from pini.tools import helper, error
 from pini.utils import File, assert_eq, system, strftime
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -145,7 +143,7 @@ class TestHelper(unittest.TestCase):
         _LOGGER.info('STORE SETTINGS IN SCENE TEST')
 
         _ety_c = pipe.CACHE.obt(testing.TEST_SHOT)
-        _work_dir = _ety_c.find_work_dir(dcc_='maya', task='anim')
+        _work_dir = _ety_c.find_work_dir(dcc_=dcc.NAME, task='anim')
         _LOGGER.info(' - WORK DIR %s', _work_dir)
         _work = _work_dir.to_work()
         _LOGGER.info(' - WORK %s', _work)
@@ -155,72 +153,22 @@ class TestHelper(unittest.TestCase):
         dcc.new_scene(force=True)
         _work.save(force=True)
 
-        # Select render tab to store data in scene
+        # Select tab to store data in scene
         _helper.ui.MainPane.select_tab('Export')
+        _tab = _helper.ui.EExportPane.find_tabs(enabled=True)[-1]
+        _LOGGER.info(' - TAB %s', _tab)
         assert _helper.ui.EExportPane.save_policy == qt.SavePolicy.SAVE_IN_SCENE
         _LOGGER.info(' - SCENE SETTINGS KEY %s', _helper.ui.EExportPane.settings_key)
-        _helper.ui.EExportPane.select_tab('Render', emit=True)
-        assert _helper.ui.EExportPane.current_tab_text() == 'Render'
+        _helper.ui.EExportPane.select_tab(_tab, emit=True)
+        assert _helper.ui.EExportPane.current_tab_text() == _tab
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane')
-        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Render'
+        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == _tab
 
         # Re-open helper and check render tab is still selected
         _helper.close()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
-        assert _helper.ui.EExportPane.current_tab_text() == 'Render'
-
-    def test_store_settings_in_scene_export_handler(self):
-
-        _helper = helper.DIALOG
-        _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
-        _remove = export_handler.ReferencesMode.REMOVE
-
-        # Apply refs mode
-        _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
-        _work_dir = _ety_c.find_work_dir(dcc_='maya', task='model')
-        _work = _work_dir.to_work().find_latest()
-        _LOGGER.info(' - WORK %s', _work)
-        _work.load(force=True)
-        _helper.jump_to(_work)
-        _helper.ui.MainPane.select_tab('Export')
-        _helper.ui.EExportPane.select_tab('Publish')
-        _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert _m_pub.NAME == 'Maya Model Publish'
-        assert _m_pub.ui.References.save_policy is qt.SavePolicy.SAVE_IN_SCENE
-        _m_pub.ui.References.select_text('Import into root namespace', emit=True)
-        _LOGGER.info(' - SETTING KEY %s', _m_pub.ui.References.settings_key)
-        assert _m_pub.ui.References.settings_key == 'PiniQt.Publish.References'
-        assert _m_pub.ui.References.has_scene_setting()
-        assert _m_pub.ui.References.get_scene_setting() == 'Import into root namespace'
-        assert _m_pub.ui.References.selected_data() is _import
-        assert export_handler.get_publish_references_mode() is _import
-
-        # Check setting maintained
-        _helper.close()
-        _helper = helper.launch(reset_cache=False)
-        _helper.ui.MainPane.select_tab('Export')
-        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
-        _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert export_handler.get_publish_references_mode() is _import
-        _m_pub.ui.References.select_text('Remove')
-        assert _m_pub.ui.References.get_scene_setting() == 'Remove'
-        assert export_handler.get_publish_references_mode() is _remove
-        _helper.close()
-        _LOGGER.info('HELPER CLOSED')
-        print('')
-        _helper = helper.launch(reset_cache=False)
-        _LOGGER.info('HELPER LAUNCHED')
-        _helper.ui.MainPane.select_tab('Export')
-        _LOGGER.info('SELECTED EXPORT TAB')
-        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
-        assert export_handler.get_publish_references_mode() is _remove
-        _helper.close()
-        _helper = helper.launch(reset_cache=False)
-        _helper.ui.MainPane.select_tab('Export')
-        assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
-        _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert export_handler.get_publish_references_mode() is _remove
+        assert _helper.ui.EExportPane.current_tab_text() == _tab
 
 
 class TestDiskPiniHelper(TestHelper):

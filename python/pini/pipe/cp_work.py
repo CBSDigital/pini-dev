@@ -767,6 +767,10 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         _missing_keys = [
             _key for _key in _tmpl.keys()
             if _key not in _data or _data[_key] is None]
+        if 'job_prefix' in _missing_keys:
+            _data['job_prefix'] = self.job.to_prefix()
+            _missing_keys.remove('job_prefix')
+            assert _data['job_prefix']
         if _missing_keys:
             raise ValueError('Missing key{} {}'.format(
                 plural(_missing_keys), '/'.join(_missing_keys)))

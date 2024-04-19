@@ -10,7 +10,7 @@ from pini import qt, icons, dcc
 from pini.tools import release
 from pini.utils import cache_result, TMP, File, HOME
 
-from . import i_installer
+from . import i_installer, i_tool
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -144,38 +144,7 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _shelf.setTools(_tools)
 
 
-INSTALLER = PIHouShelfInstaller()
-
-
-def _fix_icon_gamma(icon):
-    """Fix gamma in android icons.
-
-    Android icons have embedded gamma 2.2, making them appear in a bad
-    colourspace in houdini. If they're run through QPixmap then this
-    fixes the issue.
-
-    Args:
-        icon (str): path to icon to check
-
-    Returns:
-        (str): path to use for icon
-    """
-    _LOGGER.log(9, 'FIX ICON GAMMA %s', icon)
-
-    if not icons.ANDROID.contains(icon):
-        return icon
-
-    _cache_dir = HOME.to_subdir('.pini/icons')
-
-    _root = icons.ANDROID.to_dir(levels=2)
-    _LOGGER.log(9, ' - ROOT %s', _root)
-    _rel_path = _root.rel_path(icon)
-    _tmp_path = _cache_dir.to_file(_rel_path)
-    _LOGGER.log(9, ' - TMP %s', _root)
-    if not _tmp_path.exists():
-        _pix = qt.CPixmap(icon)
-        _pix.save_as(_tmp_path)
-    return _tmp_path.path
+SHELF_INSTALLER = PIHouShelfInstaller()
 
 
 class PIHouMenuInstaller(_PIHouBaseInstaller):
@@ -195,6 +164,31 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
             parent (any): item parent
         """
         raise NotImplementedError
+
+    def _gather_refresh_tools(self, items):
+        """Gather refresh tools.
+
+        For shelves, the refresh button is added at the front, but for menus
+        the button is added at the end.
+
+        Args:
+            items (list): items list to append to
+
+        Returns:
+            (list): updated items list
+        """
+        _tool, _items = super(
+            PIHouMenuInstaller, self)._gather_refresh_tools(items)
+
+        _install_shelf = i_tool.PITool(
+            name='InstallShelf',
+            label='Install Pini Shelf',
+            command='\n'.join([
+                'from pini import install',
+                'install.SHELF_INSTALLER.run()']))
+        _items.insert(-1, _install_shelf)
+
+        return _tool, _items
 
     def to_xml(self):
         """Build xml for this installation.
@@ -250,6 +244,40 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
 
         if edit:
             _xml_file.edit()
+
+
+MENU_INSTALLER = PIHouMenuInstaller()
+
+
+def _fix_icon_gamma(icon):
+    """Fix gamma in android icons.
+
+    Android icons have embedded gamma 2.2, making them appear in a bad
+    colourspace in houdini. If they're run through QPixmap then this
+    fixes the issue.
+
+    Args:
+        icon (str): path to icon to check
+
+    Returns:
+        (str): path to use for icon
+    """
+    _LOGGER.log(9, 'FIX ICON GAMMA %s', icon)
+
+    if not icons.ANDROID.contains(icon):
+        return icon
+
+    _cache_dir = HOME.to_subdir('.pini/icons')
+
+    _root = icons.ANDROID.to_dir(levels=2)
+    _LOGGER.log(9, ' - ROOT %s', _root)
+    _rel_path = _root.rel_path(icon)
+    _tmp_path = _cache_dir.to_file(_rel_path)
+    _LOGGER.log(9, ' - TMP %s', _root)
+    if not _tmp_path.exists():
+        _pix = qt.CPixmap(icon)
+        _pix.save_as(_tmp_path)
+    return _tmp_path.path
 
 
 @cache_result

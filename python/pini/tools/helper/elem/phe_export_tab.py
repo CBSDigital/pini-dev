@@ -37,6 +37,8 @@ class CLExportTab(object):
         else:
             self.ui.EExportPane.set_tab_enabled('Cache', False)
 
+        self._init_submit_tab()
+
         # Select default tab
         _tab = None
         if not _tab:  # Use only available tab
@@ -44,7 +46,8 @@ class CLExportTab(object):
             _LOGGER.debug(' - SELECT TAB (A) %s', _tab)
         if self.ui.EExportPane.has_scene_setting():  # Use scene setting
             _scene_tab = self.ui.EExportPane.get_scene_setting()
-            if _scene_tab in _tabs:
+            _LOGGER.debug(' - SCENE TAB %s', _scene_tab)
+            if _scene_tab in self.ui.EExportPane.find_tabs(enabled=True):
                 _tab = _scene_tab
         if not _tab:  # Select default based on cur work
             _work = pipe.cur_work()
@@ -61,7 +64,6 @@ class CLExportTab(object):
             _LOGGER.debug(' - SELECT TAB (Z) %s', _tab)
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
-        self._init_submit_tab()
         self._callback__EExportPane()
 
     def _init_submit_tab(self):

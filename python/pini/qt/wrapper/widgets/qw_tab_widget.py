@@ -9,6 +9,22 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
 
     __repr__ = qw_base_widget.CBaseWidget.__repr__
 
+    def find_tabs(self, enabled=None):
+        """Find tab names.
+
+        Args:
+            enabled (bool): filter by enabled status
+
+        Returns:
+            (str list): matching tab names
+        """
+        _tabs = []
+        for _idx in range(self.count()):
+            if enabled is not None and self.isTabEnabled(_idx) != enabled:
+                continue
+            _tabs.append(self.tabText(_idx))
+        return _tabs
+
     def current_tab_text(self):
         """Read text from current tab.
 

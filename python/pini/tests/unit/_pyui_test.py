@@ -2,8 +2,6 @@
 
 import logging
 
-from maya import cmds
-
 from pini import icons
 from pini.tools import pyui
 
@@ -18,18 +16,21 @@ pyui.set_section('Create', collapse=True)
 
 def create_sphere():
     """Create sphere."""
+    from maya import cmds
     _LOGGER.info("CREATE SPHERE")
     cmds.polySphere()
 
 
 def create_cube():
     """Create cube."""
+    from maya import cmds
     _LOGGER.info("CREATE CUBE")
     cmds.polyCube()
 
 
 def create_cylinder():
     """Create cylinder."""
+    from maya import cmds
     _LOGGER.info("CREATE CYLINDER")
     cmds.polyCylinder()
 

@@ -13,7 +13,9 @@ from .i_tools import (
 INSTALLER = None
 
 if dcc.NAME == 'hou':
-    from .i_hou import PIHouShelfInstaller, PIHouMenuInstaller, INSTALLER
+    from .i_hou import (
+        PIHouShelfInstaller, PIHouMenuInstaller, MENU_INSTALLER,
+        SHELF_INSTALLER)
 
 elif dcc.NAME == 'maya':
     from .i_maya import (
