@@ -1,7 +1,7 @@
 """Module for setting up tool instances."""
 
 from pini import icons, testing, qt
-from pini.tools import error, helper
+from pini.tools import error, helper, sanity_check
 from pini.utils import wrap_fn
 
 from .i_tool import PITool, PIDivider
@@ -124,3 +124,41 @@ def _build_helper_tool():
 
 
 PINI_HELPER_TOOL = _build_helper_tool()
+
+
+def _build_sanity_check():
+    """Build sanity check tool.
+
+    Returns:
+        (PITool): sanity check
+    """
+    _sanity = PITool(
+        name='SanityCheck', command='\n'.join([
+            'from pini.tools import sanity_check',
+            'sanity_check.launch_ui()']),
+        icon=sanity_check.ICON, label='Sanity Check')
+
+    # Add no cache reset
+    _no_reset = PITool(
+        name='SanityCheckNoReset', command='\n'.join([
+            'from pini.tools import sanity_check',
+            'sanity_check.launch_ui(reset_pipe_cache=False)']),
+        icon=sanity_check.ICON, label='Sanity Check (no cache reset)')
+    _sanity.add_context(_no_reset)
+    _sanity.add_divider('SanityCheckDivider')
+
+    # Add task filter modes
+    for _task in ['model', 'rig', 'lookdev', 'anim', 'lighting']:
+        _name = _task.capitalize()
+        _sc_task = PITool(
+            name='SanityCheck'+_name, command='\n'.join([
+                'from pini.tools import sanity_check',
+                'sanity_check.launch_ui(task="{}")'.format(_task)]),
+            label='Launch {} Sanity Check'.format(_name),
+            icon=sanity_check.ICON)
+        _sanity.add_context(_sc_task)
+
+    return _sanity
+
+
+SANITY_CHECK = _build_sanity_check()

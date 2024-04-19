@@ -1,5 +1,7 @@
 """Use to manage function arguments in pyui."""
 
+# pylint: disable=too-many-instance-attributes
+
 from pini.utils import basic_repr
 
 
@@ -28,6 +30,7 @@ class PUArg(object):
             choices (str list): apply options list
         """
         self.name = name
+        self.default = py_arg.default
 
         self.py_arg = py_arg
         self.py_def = py_def

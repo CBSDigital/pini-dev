@@ -31,7 +31,7 @@ _NICE_COLS = [
 INFO_ICON = icons.find('Information')
 
 
-class PyuiBase(object):
+class PUBaseUi(object):
     """Base class for all pyui interfaces."""
 
     label_w = 70
@@ -115,6 +115,10 @@ class PyuiBase(object):
 
     def init_ui(self):
         """Inititiate interface window."""
+        self._build_menu_items()
+
+    def _build_menu_items(self):
+        """Build items in menu bar."""
         _file = self.add_menu('File')
         self.add_menu_item(
             _file, label='Edit',
@@ -128,22 +132,20 @@ class PyuiBase(object):
         _interface = self.add_menu('Interface')
         self.add_menu_item(
             _interface, label='Collapse all',
-            image=icons.CLEAN,
+            image=icons.RESET,
             command=wrap_fn(self.collapse_all))
         self.add_menu_item(
             _interface, label='Rebuild',
             image=icons.find('Hammer'),
             command=wrap_fn(self.rebuild))
-
-        _settings = self.add_menu('Settings')
         self.add_menu_item(
-            _settings, label='Save',
+            _interface, label='Save settings',
             image=icons.SAVE,
             command=wrap_fn(self.save_settings))
         self.add_menu_item(
-            _settings, label='Reset',
+            _interface, label='Reset',
             image=icons.CLEAN,
-            command=wrap_fn(self.reset_settings))  # Wrap to discard args
+            command=wrap_fn(self.reset_settings))
 
     def add_menu(self, name):
         """Add item to menu bar.
@@ -179,7 +181,7 @@ class PyuiBase(object):
 
         _callbacks = {'set': {}, 'get': {}, 'field': {}}
         self.callbacks['defs'][def_.name] = _callbacks
-        for _arg in def_.to_args():
+        for _arg in def_.find_args():
             _get_fn, _set_fn, _field = self.add_arg(_arg)
             _callbacks['set'][_arg.name] = _set_fn
             _callbacks['get'][_arg.name] = _get_fn
@@ -318,9 +320,11 @@ class PyuiBase(object):
 
         # Load defs
         for _def_name, _arg_data in _data.get('defs', {}).items():
+            _set_callbacks = self.callbacks['defs'][_def_name]['set']
             for _arg_name, _arg_val in _arg_data.items():
-                _set_fn = self.callbacks['defs'][_def_name]['set'][_arg_name]
-                _set_fn(_arg_val)
+                _set_fn = _set_callbacks.get(_arg_name)
+                if _set_fn:
+                    _set_fn(_arg_val)
 
         # Load sections (collapse)
         for _sect_name, _sect_val in _data.get('sections', {}).items():

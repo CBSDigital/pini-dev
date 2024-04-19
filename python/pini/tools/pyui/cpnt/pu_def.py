@@ -8,7 +8,7 @@ import logging
 
 from pini import icons
 from pini.tools import usage, error
-from pini.utils import abs_path, str_to_seed, to_nice, basic_repr
+from pini.utils import abs_path, str_to_seed, to_nice, basic_repr, single
 
 from . import pu_arg
 
@@ -53,7 +53,24 @@ class PUDef(object):
 
         functools.update_wrapper(self, func)
 
-    def to_args(self):
+    def find_arg(self, match=None):
+        """Find one of this function's arguments.
+
+        Args:
+            match (str): match by name
+
+        Returns:
+            (PUArg): matching argument
+        """
+        _args = self.find_args()
+        if len(_args) == 1:
+            return single(_args)
+        _match_args = [_arg for _arg in _args if match in (_arg.name, )]
+        if len(_match_args) == 1:
+            return single(_match_args)
+        raise ValueError(match)
+
+    def find_args(self):
         """Read this functions args.
 
         Returns:

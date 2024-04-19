@@ -1,3 +1,21 @@
+## [1.39.0] - Fri 2024-04-19 12:52
+### Summary
+ - Maya Install:
+    - adding sanity check right-click options,
+### Updated
+ - pini.install added sanity check no reset ctx,
+ - pini.tools.pyui.PUArg.default added,
+ - pini.tools.pyui.PUDef.find_arg added,
+ - pini.tools.pyui.PUDef renamed to_args -> find_args,
+ - pini.tools.pyui.PUFile.find_ui_elem updated match arg -> kwarg,
+ - pini.tools.pyui renamed PyuiBase -> PUBaseUi,
+ - pini.tools.pyui renamed PyuiMaya -> PUMayaUi,
+ - pini.tools.pyui moved settings menu items -> interface,
+ - pini.tools.pyui.PUBaseUi.load_settings catch error on arg removed,
+ - pini.tools.pyui.PUMayaUi bugfix checkBox with False default appearing as textField,
+ - pini.tools.pyui.PUMayaUi apply browser added default dirs,
+
+
 ## [1.38.0] - Fri 2024-04-19 09:45
 ### Summary
  - PYUI:

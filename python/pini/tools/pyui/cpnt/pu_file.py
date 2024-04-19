@@ -62,7 +62,7 @@ class PUFile(PyFile):
 
         return _child
 
-    def find_ui_elem(self, match):
+    def find_ui_elem(self, match=None):
         """Find a ui element within in this file.
 
         Args:
@@ -72,8 +72,10 @@ class PUFile(PyFile):
             (PUDef|PUSection): matching element
         """
         _elems = self.find_ui_elems()
+        if len(_elems) == 1:
+            return single(_elems)
         _match_elems = [_elem for _elem in _elems if match in (_elem.name, )]
-        if len(_match_elems):
+        if len(_match_elems) == 1:
             return single(_match_elems)
         raise ValueError(match)
 

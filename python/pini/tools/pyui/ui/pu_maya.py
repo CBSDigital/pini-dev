@@ -7,9 +7,10 @@ import six
 
 from maya import cmds
 
-from pini import icons, qt, refresh
+from pini import icons, qt, refresh, pipe
 from pini.tools import pyui
-from pini.utils import to_nice, wrap_fn, copy_text, chain_fns
+from pini.utils import (
+    to_nice, wrap_fn, copy_text, chain_fns, EMPTY, Path, abs_path)
 
 from maya_pini import ui
 
@@ -18,7 +19,7 @@ from . import pu_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class PyuiMaya(pu_base.PyuiBase):
+class PUMayaUi(pu_base.PUBaseUi):
     """Maya interface built from a python file."""
 
     scroll = None
@@ -48,7 +49,7 @@ class PyuiMaya(pu_base.PyuiBase):
         self.master = self.uid+'_master'
         cmds.columnLayout(self.master, adjustableColumn=1)
 
-        super(PyuiMaya, self).init_ui()
+        super(PUMayaUi, self).init_ui()
 
     def add_menu(self, name):
         """Add menu to interface.
@@ -91,7 +92,9 @@ class PyuiMaya(pu_base.PyuiBase):
         Args:
             arg (PUArg): arg to add
         """
-        _LOGGER.debug(' - ADD ARG %s browser=%s', arg, arg.browser)
+        _LOGGER.debug(
+            ' - ADD ARG %s default=%s browser=%s choices=%s',
+            arg, arg.default, arg.browser, arg.choices)
 
         # Build row layout
         _height = 20
@@ -115,7 +118,9 @@ class PyuiMaya(pu_base.PyuiBase):
 
         # Add arg field
         _set_fn = None
-        _default = arg.py_arg.default or ''
+        _default = arg.default
+        if _default is None or _default is EMPTY:
+            _default = ''
         if arg.choices:
             _opt_menu = ui.create_option_menu(arg.choices)
             _field = _opt_menu.field
@@ -124,13 +129,15 @@ class PyuiMaya(pu_base.PyuiBase):
             _field = cmds.floatField(value=_default)
             _read_fn = wrap_fn(cmds.floatField, _field, query=True, value=True)
         elif isinstance(_default, bool):
+            _LOGGER.debug('   - CREATE CHECKBOX')
             _field = cmds.checkBox(label='', value=_default)
             _read_fn = wrap_fn(cmds.checkBox, _field, query=True, value=True)
         elif isinstance(_default, int):
             _field = cmds.intField(value=_default)
             _read_fn = wrap_fn(cmds.intField, _field, query=True, value=True)
         elif isinstance(_default, six.string_types) or _default is None:
-            _field = cmds.textField(text=_default or '')
+            _LOGGER.debug('   - CREATE TEXTFIELD')
+            _field = cmds.textField(text=_default)
             _read_fn = wrap_fn(cmds.textField, _field, query=True, text=True)
         else:
             raise ValueError(_default)
@@ -165,6 +172,7 @@ class PyuiMaya(pu_base.PyuiBase):
         _size = 35
         _col = qt.to_col(def_.col or self.base_col)
 
+        cmds.text('', height=3)  # Spacer
         cmds.rowLayout(
             numberOfColumns=3, columnWidth3=(_size, 75, _size),
             adjustableColumn=2, columnAlign=(1, 'right'),
@@ -181,9 +189,10 @@ class PyuiMaya(pu_base.PyuiBase):
             backgroundColor=_col.to_tuple(float))
         self._add_execute_ctx(button=_btn, def_=def_, exec_=_exec)
 
-        # Add inco button
+        # Add icon button
         _info = wrap_fn(
-            qt.notify, def_.py_def.to_docs(), icon=def_.icon, title='Info')
+            qt.notify, def_.py_def.to_docs(), icon=def_.icon,
+            title=def_.label)
         cmds.iconTextButton(
             image1=pu_base.INFO_ICON, width=_size, height=_size,
             style='iconOnly', command=_info)
@@ -228,7 +237,7 @@ class PyuiMaya(pu_base.PyuiBase):
         Args:
             section (PUSection): section to apply
         """
-        super(PyuiMaya, self).set_section(section)
+        super(PUMayaUi, self).set_section(section)
 
         _resize = wrap_fn(
             cmds.evalDeferred, self._resize_to_fit_children,
@@ -252,10 +261,15 @@ class PyuiMaya(pu_base.PyuiBase):
             _sect_callbacks['set'](True)
         cmds.evalDeferred(self._resize_to_fit_children)
 
-    def finalize_ui(self):
-        """Finalize building interface."""
+    def finalize_ui(self, show=True):
+        """Finalize building interface.
+
+        Args:
+            show (bool): show interface
+        """
         cmds.setParent('..')
-        cmds.showWindow(self.uid)
+        if show:
+            cmds.showWindow(self.uid)
         self._resize_to_fit_children()
 
     def _resize_to_fit_children(self):
@@ -318,6 +332,22 @@ def _apply_browser(field, mode):
         mode (str): browser mode (eg. ExistingFile)
     """
     _LOGGER.debug('BROWSER %s', mode)
-    _result = qt.file_browser(mode=mode)
+
+    # Determine root
+    _root = None
+    _cur_path = cmds.textField(field, query=True, text=True)
+    if _cur_path:
+        _cur_path = Path(abs_path(_cur_path))
+        _LOGGER.debug(' - CUR PATH %s', _cur_path.path)
+        if _cur_path.exists():
+            if not _cur_path.is_dir():
+                _cur_path = _cur_path.to_dir()
+            _root = _cur_path
+    for _root in [pipe.cur_work_dir(), pipe.cur_entity(), pipe.cur_job()]:
+        if _root:
+            break
+    _LOGGER.info(' - ROOT %s', _root)
+
+    _result = qt.file_browser(mode=mode, root=_root)
     _LOGGER.debug(' - RESULT %s', _result)
     cmds.textField(field, edit=True, text=_result.path)

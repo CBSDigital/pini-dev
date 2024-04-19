@@ -13,11 +13,11 @@ def build(py_file, title=None, base_col=None, load_settings=True):
         load_settings (bool): load settings on launch
 
     Returns:
-        (PyuiBase): interface instance
+        (PUBaseUi): interface instance
     """
     if dcc.NAME == 'maya':
         from . import pu_maya
-        _class = pu_maya.PyuiMaya
+        _class = pu_maya.PUMayaUi
     else:
         raise ValueError(dcc.NAME)
     _pyui = _class(
