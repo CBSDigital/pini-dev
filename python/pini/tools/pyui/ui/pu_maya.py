@@ -98,7 +98,7 @@ class PUMayaUi(pu_base.PUBaseUi):
 
         # Build row layout
         _height = 20
-        _col_width = [(1, self.label_w), (2, 1000)]
+        _col_width = [(1, arg.label_w), (2, 1000)]
         _n_cols = 2
         if arg.clear:
             _n_cols += 1

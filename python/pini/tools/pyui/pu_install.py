@@ -13,7 +13,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def install(
-        label=None, icon=None, clear=(), browser=(), hide=(), choices=None):
+        label=None, icon=None, clear=(), browser=(), hide=(), choices=None,
+        label_w=None):
     """Builds a decorator which allows metadata to be added to a function.
 
     Args:
@@ -23,6 +24,7 @@ def install(
         browser (tuple|dict): args to apply browser to
         hide (tuple): args to hide from ui
         choices (dict): arg/opts data for option lists
+        label_w (int): override label width (in pixels)
 
     Returns:
         (fn): decorator
@@ -30,6 +32,6 @@ def install(
     def _build_pyui_dec(func):
         _dec = cpnt.PUDef(
             func, label=label, icon=icon, clear=clear, browser=browser,
-            hide=hide, choices=choices)
+            hide=hide, choices=choices, label_w=label_w)
         return _dec
     return _build_pyui_dec

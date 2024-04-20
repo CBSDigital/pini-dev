@@ -13,8 +13,8 @@ class PUArg(object):
     """
 
     def __init__(
-            self, name, py_arg, py_def, pyui_file,
-            clear=False, browser=False, choices=None):
+            self, name, py_arg, py_def, pyui_file, clear=False,
+            browser=False, choices=None, label_w=None):
         """Constructor.
 
         Args:
@@ -28,6 +28,7 @@ class PUArg(object):
                 bool - apply ExistingFile mode
                 str - apply this file mode to the browser
             choices (str list): apply options list
+            label_w (int): override label width (in pixels)
         """
         self.name = name
         self.default = py_arg.default
@@ -39,6 +40,7 @@ class PUArg(object):
         self.clear = clear
         self.browser = browser
         self.choices = choices
+        self.label_w = label_w
 
     def __repr__(self):
         return basic_repr(self, self.name)

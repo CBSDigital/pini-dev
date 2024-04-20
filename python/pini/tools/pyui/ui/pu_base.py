@@ -226,7 +226,7 @@ class PUBaseUi(object):
 
         _callbacks = CALLBACKS_CACHE[self.mod.__name__]['defs'][def_.name]
         _kwargs = {}
-        for _arg in def_.to_args():
+        for _arg in def_.find_args():
             _LOGGER.debug('   - ARG %s', _arg)
             _callback = _callbacks['get'][_arg.name]
             _LOGGER.debug('     - CALLBACK %s', _callback)

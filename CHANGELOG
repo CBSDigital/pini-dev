@@ -1,3 +1,13 @@
+## [1.40.1] - Fri 2024-04-19 17:46
+### Summary
+ - PYUI:
+    - bugfix error on execute,
+### Updated
+ - pini.qt.widget_to_signal bugfix error on broken QListView,
+ - pini.tools.pyui.install added label_w arg,
+ - pini.tools.pyui bugfix error on retrieve args,
+
+
 ## [1.40.0] - Fri 2024-04-19 16:56
 ### Summary
  - Houdini Install:

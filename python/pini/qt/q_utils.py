@@ -419,7 +419,7 @@ def widget_to_signal(widget):  # pylint: disable=too-many-branches
     Returns:
         (QSignal): signal
     """
-
+    _signal = None
     if isinstance(widget, QtWidgets.QCheckBox):
         _signal = widget.toggled
     elif isinstance(widget, QtWidgets.QComboBox):
@@ -452,8 +452,7 @@ def widget_to_signal(widget):  # pylint: disable=too-many-branches
                              QtWidgets.QFrame,
                              QtWidgets.QSpacerItem)):
         # These at the end otherwise some other elements get caught (?)
-        return None
-
+        pass
     else:
         raise NotImplementedError(widget)
 

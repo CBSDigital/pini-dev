@@ -23,7 +23,7 @@ class PUDef(object):
 
     def __init__(
             self, func, py_def=None, icon=None, label=None, clear=(),
-            browser=(), hide=(), choices=None, col=None):
+            browser=(), hide=(), choices=None, col=None, label_w=None):
         """Constructor.
 
         Args:
@@ -37,6 +37,7 @@ class PUDef(object):
             hide (tuple): args to hide from ui
             choices (dict): arg/opts data for option lists
             col (str|QColor): override def colour
+            label_w (int): override label width (in pixels)
         """
         self.func = func
         self.py_def = py_def
@@ -48,6 +49,7 @@ class PUDef(object):
         self.hide = hide
         self.choices = choices or {}
         self.col = col
+        self.label_w = label_w
 
         self.name = func.__name__
 
@@ -90,7 +92,7 @@ class PUDef(object):
             _arg = pu_arg.PUArg(
                 _name, py_arg=_py_arg, clear=_name in self.clear,
                 browser=_browser, py_def=self.py_def, pyui_file=self.pyui_file,
-                choices=self.choices.get(_name))
+                choices=self.choices.get(_name), label_w=self.label_w)
             _args.append(_arg)
 
         return _args
