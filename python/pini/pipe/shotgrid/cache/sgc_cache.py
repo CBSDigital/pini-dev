@@ -3,6 +3,8 @@
 This manages global shotgrid requests, eg. jobs, steps, users.
 """
 
+# pylint: disable=too-many-public-methods
+
 import logging
 import operator
 
@@ -328,12 +330,13 @@ class SGDataCache(object):
             department=department, entity=entity, filter_=filter_, task=task,
             step=step)
 
-    def find_user(self, match=None, catch=True):
+    def find_user(self, match=None, catch=True, force=False):
         """Find a user entry.
 
         Args:
             match (str): username/login/email
             catch (bool): no error if no entry found
+            force (bool): force reread from shotgrid
 
         Returns:
             (SGCUser): user entry
@@ -341,7 +344,8 @@ class SGDataCache(object):
         _match = match or get_user()
         _LOGGER.debug('FIND USER %s', _match)
 
-        _users = [_user for _user in self.users if _user.status != 'dis']
+        _users = self.find_users(force=force)
+        _users = [_user for _user in _users if _user.status != 'dis']
 
         _login_matches = [
             _user for _user in _users
@@ -360,6 +364,17 @@ class SGDataCache(object):
         if catch:
             return None
         raise ValueError(match)
+
+    def find_users(self, force=False):
+        """Find users.
+
+        Args:
+            force (bool): force reread from shotgrid
+
+        Returns:
+            (SGCUser list): user entries
+        """
+        return self._read_users(force=force)
 
     def _read_data(self, entity_type, fields, force=False):
         """Read data from shotgrid.
@@ -503,7 +518,7 @@ class SGDataCache(object):
             (SGCUser list): users
         """
         _fields = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
-        _users_data = self._read_data('HumanUser', fields=_fields)
+        _users_data = self._read_data('HumanUser', fields=_fields, force=force)
         _users = [sgc_container.SGCUser(_data) for _data in _users_data]
         return _users
 

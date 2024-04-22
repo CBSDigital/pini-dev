@@ -1,3 +1,12 @@
+## [1.41.0] - Mon 2024-04-22 12:20
+### Summary
+ - Shotgrid Cache:
+    - added mechanism to force rebuild cache,
+### Updated
+ - pini.pipe.shotgrid.SGC.find_user added force flag,
+ - pini.pipe.shotgrid.SGC.find_users added,
+
+
 ## [1.40.1] - Fri 2024-04-19 17:46
 ### Summary
  - PYUI:

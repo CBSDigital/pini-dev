@@ -393,11 +393,11 @@ class CMayaLookdevRef(CMayaReference):
                     _shps = [_node]
                 else:
                     raise ValueError(_node, _type)
-                _LOGGER.log(9, '     - SHPS %s', _shps)
+                _LOGGER.log(9, '       - SHPS %s', _shps)
 
                 # Add shapes to shading engine
                 for _shp in _shps:
-                    _LOGGER.log(9, '     - SHP %s', _shp)
+                    _LOGGER.log(9, '       - SHP %s', _shp)
                     cmds.sets(_shp, edit=True, forceElement=_se)
 
     def _apply_settings(self, settings, ref_):
