@@ -77,7 +77,10 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
         """
         for _idx in range(self.count()):
             if name == self.tabText(_idx):
+                _signals = self.signalsBlocked()
+                self.blockSignals(True)
                 self.setTabEnabled(_idx, enabled)
+                self.blockSignals(_signals)
                 return
         raise RuntimeError(name)
 

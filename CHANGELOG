@@ -1,3 +1,23 @@
+## [1.43.0] - Tue 2024-04-23 14:44
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix not identifying some redshift shaders (eehemann),
+### Updated
+ - pini.utils.to_str added mod handling,
+ - pini.qt.CTabWidget.set_tab_enabled block emit from current changed signal,
+ - pini.tools.pyui.PUDef.uid added,
+ - pini.tools.pyui bugfix label width error if not declared,
+ - pini.tools.pyui bugfix error due to spacer name clash if multiple defs,
+ - pini.tools.pyui.build allow py_file as mod,
+ - pini.tools.helper added vrmesh icon/bg,
+ - pini.tools.helper bugfix missing model/rig/lookdev icons,
+ - pini.tools.helper.output_to_icon return None if no icon (no empty pixmap),
+ - pini.tools.helper export tab minor refactor,
+ - pini.tools.helper scene tab force switch outputs tab if target,
+ - maya_pini.utils.blast added forceOverwrite flag to supress false existing file error,
+ - maya_pini.tex.find_shds find any conncected engines to identify all shader type,
+
+
 ## [1.42.0] - Tue 2024-04-23 10:32
 ### Summary
  - Pini Helper:

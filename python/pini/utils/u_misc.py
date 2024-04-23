@@ -739,7 +739,7 @@ def to_str(obj):
     Returns:
         (str): object as a string
     """
-    from pini.utils import Path, Seq
+    from pini.utils import Path, Seq, abs_path
 
     if obj is None:
         return ''
@@ -749,6 +749,8 @@ def to_str(obj):
         return obj
     if isinstance(obj, (float, int)):
         return str(obj)
+    if isinstance(obj, types.ModuleType):
+        return abs_path(obj.__file__)
 
     raise NotImplementedError(
         '{} ({})'.format(obj, type(obj).__name__))

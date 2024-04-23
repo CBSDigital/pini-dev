@@ -34,6 +34,7 @@ RIG_ICON = icons.find('Bone')
 USD_ICON = icons.find('Milky Way')
 VDB_ICON = icons.find('Cloud')
 VIDEO_ICON = icons.find('Videocassette')
+VRMESH_BG_ICON = icons.find('Blue circle')
 
 EXTN_ICONS = {
     'abc': ABC_ICON,
@@ -114,16 +115,12 @@ def _cache_to_icon(output):
         (str|QPixmap): icon
     """
     _type = output.metadata.get('type')
-    _archive = output.metadata.get('vrmesh')
     _asset_path = output.metadata.get('asset')
     _bg_icon = _EXTN_BG_MAP.get(output.extn) or EXTN_ICONS.get(output.extn)
     _LOGGER.debug(' - BG ICON %s %s', output.extn, _bg_icon)
     _fmt = output.extn
-    if _archive:
-        _fmt = 'archive'
     _fmt_icon = {
         'abc': ABC_ICON,
-        'archive': ARCHIVE_ICON,
         'fbx': FBX_ICON}.get(output.extn)
 
     # Find overlay path
@@ -154,19 +151,26 @@ def _lookdev_to_icon(lookdev):
     Returns:
         (CPixmap): icon
     """
-    _LOGGER.debug('LOOKDEV TO ICON %s', lookdev)
+    _LOGGER.debug(' - LOOKDEV TO ICON %s', lookdev)
     assert lookdev.type_ == 'publish'
 
     # Find rig icon
+    _vrmesh = lookdev.metadata.get('vrmesh')
     _tmpl = lookdev.job.find_template(
         'publish', profile=lookdev.profile,
         want_key={'output_type': False, 'ver': False},
         has_key={'tag': bool(lookdev.tag)})
     _LOGGER.debug(' - TMPL %s', _tmpl)
     _rig_out = lookdev.to_output(task='rig', template=_tmpl)
+    _LOGGER.debug(' - RIG OUT %s', _rig_out.path)
     _asset_icon = output_to_icon(_rig_out)
 
-    _icon = qt.CPixmap(LOOKDEV_BG_ICON)
+    if _vrmesh:
+        _base_icon = VRMESH_BG_ICON
+    else:
+        _base_icon = LOOKDEV_BG_ICON
+
+    _icon = qt.CPixmap(_base_icon)
     _over = qt.CPixmap(_asset_icon)
     _icon.draw_overlay(
         _over, pos=_icon.center(), size=_over.size()*0.6, anchor='C')
@@ -194,6 +198,7 @@ def _output_to_rand_icon(output):
 
     # Determine icon path
     if _icon:
+        _LOGGER.info(' - USING NAME MAP %s %s', _name, _icon)
         _NAME_MAP[_name] = _icon
     else:
         if _ety.profile == 'asset':
@@ -202,6 +207,7 @@ def _output_to_rand_icon(output):
             _uid = output.to_output(ver_n=0).path
         else:
             raise ValueError(_ety)
+        _LOGGER.info(' - UID %s', _uid)
         _rand = str_to_seed(_uid)
         _icon = _rand.choice(_CACHE_ICONS)
 
@@ -307,6 +313,7 @@ def output_to_icon(output, overlay=None, force=False):
     elif output.type_ == 'publish' and (
             output.output_type == 'lookdev' or
             pipe.map_task(output.task) == 'lookdev'):
+        _LOGGER.debug(' - APPLYING LOOKDEV ICON')
         _icon = _lookdev_to_icon(output)
     elif output.type_ in _TYPE_BG_MAP:
         _bg = _TYPE_BG_MAP[output.type_]
@@ -321,8 +328,9 @@ def output_to_icon(output, overlay=None, force=False):
         _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
 
     _LOGGER.debug(' - ICON %s', _icon)
-    _icon = qt.to_pixmap(_icon)
-    assert isinstance(_icon, QtGui.QPixmap)
+    if _icon:
+        _icon = qt.to_pixmap(_icon)
+        assert isinstance(_icon, QtGui.QPixmap)
 
     return _icon
 
@@ -386,8 +394,12 @@ def output_to_type_icon(output):
         return PLATE_ICON
     if output.nice_type == 'blast':
         return BLAST_ICON
+    if 'vrmesh' in output.metadata:
+        return ARCHIVE_ICON
 
-    if output.extn in EXTN_ICONS:
+    if (
+            output.extn not in ('ma', 'mb') and
+            output.extn in EXTN_ICONS):
         return EXTN_ICONS[output.extn]
 
     _task_map = {

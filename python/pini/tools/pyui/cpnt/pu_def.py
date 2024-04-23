@@ -55,6 +55,15 @@ class PUDef(object):
 
         functools.update_wrapper(self, func)
 
+    @property
+    def uid(self):
+        """Obtain uid for this function.
+
+        Returns:
+            (str): uid
+        """
+        return self.py_def.name
+
     def find_arg(self, match=None):
         """Find one of this function's arguments.
 

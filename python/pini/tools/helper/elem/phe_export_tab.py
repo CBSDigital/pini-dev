@@ -25,29 +25,26 @@ class CLExportTab(object):
         _LOGGER.debug('INIT UI')
 
         # Disable tabs if no handlers found
-        _tabs = []
         for _tab in ['Publish', 'Blast', 'Render']:
             _handlers = dcc.find_export_handlers(_tab.lower())
             _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
             self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
-            if _handlers:
-                _tabs.append(_tab)
-        if dcc.NAME == 'maya':
-            _tabs.append('Cache')
-        else:
+            _LOGGER.debug(' - CHECKED TAB %s', _tab)
+        if dcc.NAME != 'maya':
             self.ui.EExportPane.set_tab_enabled('Cache', False)
-
         self._init_submit_tab()
+        _tabs = self.ui.EExportPane.find_tabs(enabled=True)
+        _LOGGER.debug(' - TABS %s', _tabs)
 
         # Select default tab
-        _tab = None
+        _tab = single(_tabs, catch=True)
         if not _tab:  # Use only available tab
             _tab = single(_tabs, catch=True)
             _LOGGER.debug(' - SELECT TAB (A) %s', _tab)
         if self.ui.EExportPane.has_scene_setting():  # Use scene setting
             _scene_tab = self.ui.EExportPane.get_scene_setting()
             _LOGGER.debug(' - SCENE TAB %s', _scene_tab)
-            if _scene_tab in self.ui.EExportPane.find_tabs(enabled=True):
+            if _scene_tab in _tabs:
                 _tab = _scene_tab
         if not _tab:  # Select default based on cur work
             _work = pipe.cur_work()

@@ -1,6 +1,7 @@
 """Tools for managing build pyui interfaces."""
 
 from pini import dcc
+from pini.utils import to_str
 
 
 def build(py_file, title=None, base_col=None, load_settings=True):
@@ -15,11 +16,12 @@ def build(py_file, title=None, base_col=None, load_settings=True):
     Returns:
         (PUBaseUi): interface instance
     """
+    _path = to_str(py_file)
     if dcc.NAME == 'maya':
         from . import pu_maya
         _class = pu_maya.PUMayaUi
     else:
         raise ValueError(dcc.NAME)
     _pyui = _class(
-        py_file, title=title, base_col=base_col, load_settings=load_settings)
+        _path, title=title, base_col=base_col, load_settings=load_settings)
     return _pyui

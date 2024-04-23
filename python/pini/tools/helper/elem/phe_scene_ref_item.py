@@ -136,8 +136,9 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _out = self.ref.to_output(cache=False)
 
         # Draw icon
-        _over = self.icon.resize(21)
-        pix.draw_overlay(_over, (self.margin+3, self.margin+12), anchor='L')
+        if self.icon:
+            _over = self.icon.resize(21)
+            pix.draw_overlay(_over, (self.margin+3, self.margin+12), anchor='L')
 
         # Draw namespace
         _FONT.setPointSize(7.5)

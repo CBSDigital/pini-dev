@@ -383,8 +383,13 @@ def to_shd(obj):
         _se = _node
     elif _type in ['VRayMtl', 'VRayCarPaintMtl', 'VRayBlendMtl', 'phong']:
         _shd = _Shader(_node)
-    else:
-        _shd = None
+
+    # Try finding connected shading engines (eg. new type of shading node)
+    if not _se and not _shd:
+        _ses = _node.find_outgoing(
+            type_='shadingEngine', connections=False, plugs=False)
+        _se = single(_ses, catch=True)
+        _LOGGER.debug(' - ENGINE %s %s', _se, _ses)
 
     # Build shader from shading engine
     if _se:

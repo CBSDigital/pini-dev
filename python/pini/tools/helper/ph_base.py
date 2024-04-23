@@ -199,6 +199,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 _tab = 'Scene'
         if not self.target:
             self.target = pipe.to_entity(path)
+        _LOGGER.debug(' - TARGET tab=%s %s', _tab, self.target)
 
         # Update ui
         if _tab:

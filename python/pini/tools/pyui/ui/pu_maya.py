@@ -105,8 +105,9 @@ class PUMayaUi(pu_base.PUBaseUi):
             arg, arg.default, arg.browser, arg.choices)
 
         # Build row layout
+        _label_w = arg.label_w or self.label_w
         _height = 20
-        _col_width = [(1, arg.label_w), (2, 1000)]
+        _col_width = [(1, _label_w), (2, 1000)]
         _n_cols = 2
         if arg.clear:
             _n_cols += 1
@@ -180,7 +181,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         _size = 35
         _col = qt.to_col(def_.col or self.base_col)
 
-        cmds.text('', height=3)  # Spacer
+        cmds.text(def_.uid+'Spacer', label='', height=3)  # Spacer
         cmds.rowLayout(
             numberOfColumns=3, columnWidth3=(_size, 75, _size),
             adjustableColumn=2, columnAlign=(1, 'right'),

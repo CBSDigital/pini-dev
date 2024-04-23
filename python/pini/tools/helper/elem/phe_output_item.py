@@ -126,9 +126,10 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _left_m = 27
 
         # Draw icon
-        _over = self.icon.resize(self.icon_w+4)
-        pix.draw_overlay(
-            _over, pos=(self.margin+1, self.text_y+1), anchor='L')
+        if self.icon:
+            _over = self.icon.resize(self.icon_w+4)
+            pix.draw_overlay(
+                _over, pos=(self.margin+1, self.text_y+1), anchor='L')
 
         # Draw asset text
         _FONT.setPointSize(7.5)

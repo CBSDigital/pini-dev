@@ -196,7 +196,7 @@ def _exec_blast(
     _LOGGER.debug(' - START/END %d/%d', _start, _end)
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
-        viewer=False, widthHeight=res, offScreen=True,
+        viewer=False, widthHeight=res, offScreen=True, forceOverwrite=True,
         percent=100, editorPanelName=_blast_editor)
     assert seq.to_frames(force=True)
     if cleanup:

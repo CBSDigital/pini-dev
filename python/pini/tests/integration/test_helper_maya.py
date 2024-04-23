@@ -76,6 +76,8 @@ class TestHelper(unittest.TestCase):
         print('')
         _LOGGER.info('LAUNCH HELPER')
         _helper = helper.launch(reset_cache=False)
+        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
+        print('')
         _LOGGER.info('SELECT EXPORT TAB')
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         _helper.ui.MainPane.select_tab('Export')

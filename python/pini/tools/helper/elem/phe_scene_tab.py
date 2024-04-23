@@ -45,25 +45,23 @@ class CLSceneTab(object):
                 (this can be disabled if the tab is being re-initiated
                 internally)
         """
-        _LOGGER.debug('INIT UI')
+        _LOGGER.debug('INIT UI switch=%d', switch_tabs)
 
         # Choose selected tab
         _tab = None
-        if switch_tabs:
-            if self.target and isinstance(self.target, pipe.CPOutputBase):
-                if self.target.nice_type == 'publish':
-                    _tab = 'Asset'
-            if not _tab:
-                _task = pipe.cur_task(fmt='pini')
-                _map = {'anim': 'Asset',
-                        'fx': 'Cache',
-                        'lighting': 'Cache',
-                        'lsc': 'Render',
-                        'comp': 'Render'}
-
-                if self.work and _task in _map:
-                    _tab = _map[_task]
-        _LOGGER.debug(' - SELECT TAG %s', _tab)
+        if self.target and isinstance(self.target, pipe.CPOutputBase):
+            _LOGGER.debug(' - TARGET %s', self.target)
+            if self.target.nice_type == 'publish':
+                _tab = 'Asset'
+        elif switch_tabs:
+            _task = pipe.cur_task(fmt='pini')
+            _map = {'anim': 'Asset',
+                    'fx': 'Cache',
+                    'lighting': 'Cache',
+                    'lsc': 'Render',
+                    'comp': 'Render'}
+            _tab = _map.get(_task)
+        _LOGGER.debug(' - SELECT TAB %s', _tab)
         if _tab:
             self.ui.SOutputsPane.select_tab(_tab)
         else:
