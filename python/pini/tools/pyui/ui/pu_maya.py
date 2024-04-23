@@ -75,6 +75,14 @@ class PUMayaUi(pu_base.PUBaseUi):
             _kwargs['command'] = command
         return cmds.menuItem(parent=parent, label=label, **_kwargs)
 
+    def add_menu_separator(self, parent):
+        """Add a separator item to the given menu bar.
+
+        Args:
+            parent (str): menu to add item to
+        """
+        return cmds.menuItem(parent=parent, divider=True)
+
     def add_separator(self):
         """Add separator."""
         cmds.separator(style='out', height=10, horizontal=True)

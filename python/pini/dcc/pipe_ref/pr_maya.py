@@ -625,7 +625,7 @@ def _read_reference_pipe_refs(selected=False):
     Returns:
         (CMayaReference list): referenced pipe refs
     """
-    _LOGGER.log(9, 'READ REFERENCE PIPEREFS')
+    _LOGGER.log(9, 'READ REFERENCE PIPE REFS')
 
     _all_refs = pom.find_refs(selected=selected)
 

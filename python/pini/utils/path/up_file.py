@@ -487,18 +487,25 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         assert self.extn == 'json'
         self.write(json.dumps(data))
 
-    def write_pkl(self, data, force=False):
+    def write_pkl(self, data, catch=False, force=False):
         """Write data to pickle file.
 
         Args:
             data (any): data to pickle
+            catch (bool): no error if fail to write
             force (bool): replace existing file without confirmation
         """
         up_utils.error_on_file_system_disabled()
         self.test_dir()
         assert self.extn == 'pkl'
-        self.delete(force=force)
-        _handle = open(self.path, "wb")
+
+        try:
+            self.delete(force=force)
+            _handle = open(self.path, "wb")
+        except OSError as _exc:
+            if catch:
+                return
+            raise _exc
         pickle.dump(data, _handle, protocol=0)
         _handle.close()
 

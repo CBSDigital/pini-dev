@@ -24,7 +24,7 @@ from ..cp_entity import cur_entity, to_entity
 from ..cp_asset import cur_asset
 from ..cp_shot import cur_shot
 from ..cp_work_dir import CPWorkDir
-from ..cp_work import CPWork, to_work
+from ..cp_work import CPWork, to_work, cur_work
 from ..cp_output import to_output, CPOutputBase
 
 from . import ccp_job
@@ -545,6 +545,23 @@ class CPCache(object):  # pylint: disable=too-many-public-methods
         """
         _ety_c = self.obt_entity(dir_)
         return _ety_c.obt_output_seq_dir(dir_, force=force)
+
+    def obt_cur_work(self):
+        """Obtain current work file.
+
+        Provided to accomodate for an artist opening a new scene outside pini,
+        leaving the cache out of date.
+
+        Returns:
+            (CPWork|None): current work file if any
+        """
+        if self.cur_work:
+            return self.cur_work
+        if cur_work():
+            self.reset()
+            assert self.cur_work
+            return self.cur_work
+        return None
 
     def reset(self):
         """Reset this cache and reread all contents."""

@@ -219,7 +219,10 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         if not _export_nodes:
             raise RuntimeError('No shaders/sets found to export')
         save_scene(output.path, selection=True, force=force)
-        output.set_metadata(metadata)
+
+        _metadata = copy.deepcopy(metadata)
+        _metadata['shd_yml'] = self.shd_yml.path
+        output.set_metadata(_metadata)
 
 
 def _clean_junk():

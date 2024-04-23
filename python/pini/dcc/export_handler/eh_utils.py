@@ -1,6 +1,5 @@
 """General utilities for export handlers."""
 
-import copy
 import time
 
 from pini import pipe, dcc
@@ -9,7 +8,7 @@ from pini.utils import get_user
 
 def obtain_metadata(
         handler, action=None, work=None, sanity_check_=False,
-        force=False, notes=None, task=None):
+        force=False, notes=None, task=None, source=None):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -20,21 +19,28 @@ def obtain_metadata(
         force (bool): force completion without any confirmations
         notes (str): export notes
         task (str): task to pass to sanity check
+        source (str): path to source file
 
     Returns:
         (dict): metadata
     """
     from pini.tools import sanity_check, release
 
+    _data = {}
+    _data['src'] = source
+
+    # Apply work metadata if available
     _work = work or pipe.cur_work()
-    _data = copy.copy(_work.metadata)
-    _data.pop('size', None)
+    if _work:
+        _data.update(_work.metadata)
+        _data.pop('size', None)
+        if not source:
+            _data['src'] = _work.path
 
     _data['handler'] = handler
     _data['mtime'] = int(time.time())
     _data['owner'] = get_user()
     _data['range'] = dcc.t_range(int)
-    _data['src'] = _work.path
     _data['dcc'] = dcc.NAME
     _data['dcc_version'] = dcc.to_version()
     _data['pini'] = release.cur_ver().to_str()

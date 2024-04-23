@@ -81,8 +81,9 @@ class CSettings(QtCore.QSettings, File):
         """
         from pini import qt
 
-        _LOGGER.debug('APPLY VALUE %s %s (type=%s)', widget, value,
-                      type(value))
+        _LOGGER.debug(
+            'APPLY VALUE %s %s (type=%s)', widget, value, type(value))
+        self._check_save_policy(widget)
 
         # Obtain value
         _val = value
@@ -136,6 +137,27 @@ class CSettings(QtCore.QSettings, File):
 
         if _blocked is not None:
             widget.blockSignals(_blocked)
+
+    def _check_save_policy(self, widget):
+        """Make sure this widget's save policy is correct.
+
+        Args:
+            widget (QWidget): widget being updated
+        """
+        from pini import testing, qt
+
+        # Check for deprecated disable save settings
+        if (
+                testing.dev_mode() and
+                getattr(widget, 'disable_save_settings', False)):
+            raise DeprecationWarning(widget)
+
+        # Make sure save policy is default or save on change
+        _save_policy = getattr(widget, 'save_policy', qt.SavePolicy.DEFAULT)
+        if _save_policy not in (
+                qt.SavePolicy.DEFAULT, qt.SavePolicy.SAVE_ON_CHANGE):
+            _LOGGER.info(' - SAVE POLICY %s %s', widget, _save_policy)
+            raise RuntimeError(widget)
 
     def save_ui(self, ui, filter_=None):
         """Save widgets in the given ui to this settings file.

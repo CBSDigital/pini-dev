@@ -83,7 +83,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.set_window_icon(ICON)
 
         self.ui.Job.redraw()
-        _LOGGER.debug('REDREW JOB %s', self.job)
+        _LOGGER.debug(' - REDREW JOB %s', self.job)
         self._callback__ToggleAdmin(admin=False)
         self._callback__Profile()
         self._callback__MainPane(save=False)
@@ -92,8 +92,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.WWorks.doubleClicked.connect(wrap_fn(self._callback__WLoad))
 
         if load_settings:
-            _LOGGER.debug('LOADING SETTINGS')
+            _LOGGER.debug(' - LOADING SETTINGS')
             self.load_settings()
+            _LOGGER.debug(' - LOADED SETTINGS')
         self.ui.MainPane.select_tab('Work')
         if show:
             self.show()

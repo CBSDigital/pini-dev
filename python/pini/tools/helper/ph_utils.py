@@ -16,6 +16,7 @@ UPDATE_ICON = icons.find('Gear')
 ABC_ICON = icons.find('Input Latin Letters')
 ABC_BG_ICON = icons.find('Blue Square')
 ASS_ICON = icons.find('Peach')
+ARCHIVE_ICON = icons.find('Package')
 BLAST_ICON = icons.find('Collision')
 CAM_ICON = icons.find('Movie Camera')
 CSET_ICON = icons.find('Urn')
@@ -23,8 +24,10 @@ FBX_ICON = icons.find('Worm')
 FBX_BG_ICON = icons.find('Green Square')
 LOOKDEV_BG_ICON = icons.find('Green circle')
 LOOKDEV_ICON = icons.find('Palette')
+MAYA_FILE_ICON = icons.find('Moai')
 MISSING_FROM_CACHE_ICON = icons.find('Adhesive Bandage')
 MODEL_ICON = icons.find('Ice')
+NUKE_FILE_ICON = icons.find('Radioactive')
 PLATE_ICON = icons.find('Plate')
 RENDER_ICON = icons.find('Film Frames')
 RIG_ICON = icons.find('Bone')
@@ -36,8 +39,14 @@ EXTN_ICONS = {
     'abc': ABC_ICON,
     'ass': ASS_ICON,
     'fbx': FBX_ICON,
+    'ma': MAYA_FILE_ICON,
+    'mb': MAYA_FILE_ICON,
+    'nk': NUKE_FILE_ICON,
     'vdb': VDB_ICON,
     'usd': USD_ICON,
+}
+_EXTN_BG_MAP = {
+    'abc': ABC_BG_ICON,
 }
 _TYPE_BG_MAP = {
     'render': icons.find('Red Circle'),
@@ -105,9 +114,17 @@ def _cache_to_icon(output):
         (str|QPixmap): icon
     """
     _type = output.metadata.get('type')
+    _archive = output.metadata.get('vrmesh')
     _asset_path = output.metadata.get('asset')
-    _bg_icon = {'abc': ABC_BG_ICON, 'fbx': FBX_BG_ICON}.get(output.extn)
-    _fmt_icon = {'abc': ABC_ICON, 'fbx': FBX_ICON}.get(output.extn)
+    _bg_icon = _EXTN_BG_MAP.get(output.extn) or EXTN_ICONS.get(output.extn)
+    _LOGGER.debug(' - BG ICON %s %s', output.extn, _bg_icon)
+    _fmt = output.extn
+    if _archive:
+        _fmt = 'archive'
+    _fmt_icon = {
+        'abc': ABC_ICON,
+        'archive': ARCHIVE_ICON,
+        'fbx': FBX_ICON}.get(output.extn)
 
     # Find overlay path
     _over_path = None
@@ -261,21 +278,25 @@ def obt_recent_work(force=False):
 
 
 @cache_result
-def output_to_icon(output, overlay=None):
+def output_to_icon(output, overlay=None, force=False):
     """Obtain an icon for the given output.
 
     Args:
         output (CPOutput): output to find icon for
         overlay (str): name of overlay emoji to apply to bottom left
+        force (bool): force rebuild icon
 
     Returns:
         (CPixmap): icon
     """
+    _LOGGER.debug('OUTPUT TO ICON %s', output)
+    _LOGGER.debug(' - NICE TYPE %s', output.nice_type)
     assert isinstance(output, (pipe.CPOutput, pipe.CPOutputSeq))
 
     # Get base icon
     _bg = None
     if output.nice_type == 'cache':
+        _LOGGER.debug(' - APPLYING CACHE ICON')
         _icon = _cache_to_icon(output)
     elif output.output_type == 'cam':
         _icon = CAM_ICON
@@ -291,6 +312,7 @@ def output_to_icon(output, overlay=None):
         _bg = _TYPE_BG_MAP[output.type_]
         _icon = _output_to_rand_icon(output)
     else:
+        _LOGGER.debug(' - APPLYING RAND ICON')
         _icon = _output_to_rand_icon(output)
 
     if overlay:
@@ -298,6 +320,7 @@ def output_to_icon(output, overlay=None):
     if _bg:
         _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
 
+    _LOGGER.debug(' - ICON %s', _icon)
     _icon = qt.to_pixmap(_icon)
     assert isinstance(_icon, QtGui.QPixmap)
 

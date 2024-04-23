@@ -597,11 +597,13 @@ class CPOutputBase(object):
         """
         raise NotImplementedError
 
-    def to_work(self, dcc_=None, catch=True):
+    def to_work(self, dcc_=None, user=None, tag=None, catch=True):
         """Map this output to a work file.
 
         Args:
             dcc_ (str): override dcc
+            user (str): override user
+            tag (str): override tag
             catch (bool): no error if no valid work file created
 
         Returns:
@@ -609,7 +611,8 @@ class CPOutputBase(object):
         """
         try:
             return self.entity.to_work(
-                dcc_=dcc_, task=self.task, tag=self.tag, ver_n=self.ver_n)
+                dcc_=dcc_, task=self.task, tag=tag or self.tag,
+                ver_n=self.ver_n, user=user)
         except ValueError as _exc:
             if not catch:
                 raise _exc

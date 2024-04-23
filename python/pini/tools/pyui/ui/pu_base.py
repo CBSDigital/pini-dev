@@ -131,13 +131,14 @@ class PUBaseUi(object):
 
         _interface = self.add_menu('Interface')
         self.add_menu_item(
-            _interface, label='Collapse all',
-            image=icons.RESET,
-            command=wrap_fn(self.collapse_all))
-        self.add_menu_item(
             _interface, label='Rebuild',
             image=icons.find('Hammer'),
             command=wrap_fn(self.rebuild))
+        self.add_menu_separator(parent=_interface)
+        self.add_menu_item(
+            _interface, label='Collapse all',
+            image=icons.RESET,
+            command=wrap_fn(self.collapse_all))
         self.add_menu_item(
             _interface, label='Save settings',
             image=icons.SAVE,
@@ -148,10 +149,18 @@ class PUBaseUi(object):
             command=wrap_fn(self.reset_settings))
 
     def add_menu(self, name):
-        """Add item to menu bar.
+        """Add menu bar to the interface.
 
         Args:
             name (str): menu name
+        """
+        raise NotImplementedError
+
+    def add_menu_separator(self, parent):
+        """Add a separator item to the given menu bar.
+
+        Args:
+            parent (str): menu to add item to
         """
         raise NotImplementedError
 

@@ -8,7 +8,7 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini.utils import single, EMPTY, passes_filter
-from maya_pini.utils import to_parent, to_shp, restore_sel
+from maya_pini.utils import to_parent, to_shp, restore_sel, DEFAULT_NODES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -202,7 +202,8 @@ def find_connections(
 
 def find_nodes(
         type_=None, namespace=EMPTY, referenced=None, filter_=None,
-        clean_name=None, selected=False):
+        clean_name=None, selected=False, dag_only=False, top_node=False,
+        default=None):
     """Find nodes in the current scene.
 
     Args:
@@ -212,6 +213,9 @@ def find_nodes(
         filter_ (str): node name filter
         clean_name (str): filter by clean name
         selected (bool): apply selection flag to ls command
+        dag_only (bool): apply dagObject flag to ls command
+        top_node (bool): return only top nodes
+        default (bool): filter by default node status
 
     Returns:
         (CBaseNode list): nodes in scene
@@ -224,6 +228,8 @@ def find_nodes(
         _kwargs['type'] = type_
     if selected:
         _kwargs['selection'] = True
+    if dag_only:
+        _kwargs['dagObjects'] = True
     _results = pom.CMDS.ls(**_kwargs)
 
     _nodes = []
@@ -235,6 +241,10 @@ def find_nodes(
         if referenced is not None and _node.is_referenced() != referenced:
             continue
         if clean_name and _node.clean_name != clean_name:
+            continue
+        if default is not None and (_node in DEFAULT_NODES) != default:
+            continue
+        if top_node and to_parent(_node):
             continue
         _node = cast_node(str(_node))
         _nodes.append(_node)

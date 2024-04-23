@@ -144,7 +144,7 @@ def cache(
     """
     _LOGGER.info('CACHE SCENE %d %s', len(cacheables), cacheables)
 
-    _work = pipe.CACHE.cur_work
+    _work = pipe.CACHE.obt_cur_work()
     _range = range_ or dcc.t_range(int, expand=1)
     _checks_data = checks_data or sanity_check.launch_export_ui(
         'cache', force=force)

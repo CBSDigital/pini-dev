@@ -324,7 +324,7 @@ class SGCJob(sgc_container.SGCContainer):
             _results = self._read_data_from_ranges(
                 entity_type=entity_type, fields=fields, entity_map=entity_map,
                 progress=progress, ver_n=ver_n, force=force > 1)
-            _snapshot.write_pkl(_results, force=True)
+            _snapshot.write_pkl(_results, force=True, catch=True)
 
         return sorted(_results, key=operator.itemgetter('path'))
 

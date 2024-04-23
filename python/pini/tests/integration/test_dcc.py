@@ -121,9 +121,6 @@ class TestPublish(unittest.TestCase):
 
         _handler = dcc.find_export_handler(
             'publish', filter_='basic', catch=True)
-        if not _handler:
-            assert dcc.NAME in ['hou', 'nuke']
-            return
         _handler.ui = None  # Reset any leftover ui elems
 
         # Save basic scene to publish

@@ -1,3 +1,26 @@
+## [1.42.0] - Tue 2024-04-23 10:32
+### Summary
+ - Pini Helper:
+    - added icons for ma/mb/nk/vrmesh files in scene tab,
+    - catch error on publish due to unable to write shotgrid cache (skay),
+    - bugfix lookdev shader publishes failing to attach (farnold),
+    - bugfix error on cache from old maya with scene opened outside pini (eehemann),
+### Updated
+ - pini.utils.File.write_pkl added catch,
+ - pini.dcc.CMayaLookdevPublish bugfix shaders publish metadata missing shd_yml key,
+ - pini.dcc.export_handler.obtain_metadata allow now current work + added source flag,
+ - pini.pipe.CPOutput.to_work added user/tag override flags,
+ - pini.pipe.CACHE.obt_cur_work added,
+ - pini.pipe.shotgrid added catch on write snapshot,
+ - pini.qt.CSettings.apply_to_widget added check save policy,
+ - pini.tools.pyui rebuild to top of interface menu,
+ - pini.tools.pyui.PUBaseUi.add_menu_separator added,
+ - pini.tools.helper added ma/mb/nk/vrmesh icons,
+ - pini.tools.helper.output_to_icon added force flag,
+ - maya_pini.m_pipe.cache use pipe.CACHE.obt_cur_work,
+ - maya_pini.open_maya.find_nodes added dag_only/top_node/default flags,
+
+
 ## [1.41.0] - Mon 2024-04-22 12:20
 ### Summary
  - Shotgrid Cache:
