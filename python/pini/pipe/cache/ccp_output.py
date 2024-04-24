@@ -55,6 +55,90 @@ class CCPOutputBase(CPOutputBase):
         super(CCPOutputBase, self).set_metadata(data, mode=mode, force=force)
         self.get_metadata(force=True)
 
+    def find_rep(self, task=None, extn=None):
+        """Find alternative representations of this output.
+
+        Args:
+            task (str): filter by task
+            extn (str): filter by extension
+
+        Returns:
+            (CPOutput): alternative representation
+        """
+        return single(self.find_reps(task=task, extn=extn))
+
+    def find_reps(self, task=None, extn=None):
+        """Find different representation of this reference.
+
+        eg. model ma publish <=> lookdev ass.gz standin
+
+        These are other outputs which this output can be swapped with.
+
+        Args:
+            task (str): filter by task
+            extn (str): filter by extension
+
+        Returns:
+            (CPOutput list): representations
+        """
+        _reps = []
+        for _rep in self._read_reps():
+            if extn and _rep.extn != extn:
+                continue
+            if task and _rep.task != task:
+                continue
+            _reps.append(_rep)
+        return _reps
+
+    def _read_reps(self):
+        """Find different representations of this outputs.
+
+        eg. model ma publish <=> lookdev ass.gz standin
+
+        These are other outputs which this output can be swapped with.
+
+        Returns:
+            (CPOutput list): representations
+        """
+        from pini import pipe
+        _LOGGER.debug('FIND REPS %s', self)
+        _LOGGER.debug(' - TASK %s', self.task)
+        _LOGGER.debug(' - EXTN %s', self.extn)
+
+        _reps = []
+
+        # Add model/rig publishes
+        if self.extn in ('ma', 'mb', 'gz'):
+            _LOGGER.debug(' - LOOKING FOR PUBLISHES')
+            for _task in ['model', 'rig']:
+                if _task in (self.task, self.pini_task):
+                    continue
+                _pub = self.entity.find_publish(
+                    ver_n='latest', tag=self.tag, versionless=False,
+                    task=_task, catch=True)
+                _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub)
+                if _pub:
+                    _reps.append(_pub)
+
+        # Add ass.gz for model refs
+        if pipe.map_task(self.task) in ('model', 'rig'):
+            _ass = self.entity.find_output(
+                type_='ass_gz', ver_n='latest', tag=self.tag, catch=True)
+            if _ass:
+                _reps.append(_ass)
+
+        # Add vremsh
+        if pipe.map_task(self.task) in ('model', ):
+            _vrmesh = single([
+                _pub for _pub in self.entity.find_outputs(
+                    extn='ma', tag=self.tag, type_='publish', ver_n='latest')
+                if 'vrmesh' in _pub.metadata], catch=True)
+            if _vrmesh:
+                _LOGGER.debug(' - FOUND VRMESH %s', _vrmesh)
+                _reps.append(_vrmesh)
+
+        return _reps
+
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.
 

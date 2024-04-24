@@ -21,6 +21,28 @@ _LOGGER = logging.getLogger(__name__)
 class _CMayaPipeRef(pr_base.CPipeRef):
     """Base class for any pipelined maya reference."""
 
+    top_node = None
+
+    def _to_mtx(self):
+        """Obtains top node transform matrix.
+
+        Returns:
+            (CMatrix): matrix
+        """
+        if self.top_node:
+            return self.top_node.to_m()
+        return None
+
+    def _to_parent(self):
+        """Obtain parent group.
+
+        Returns:
+            (CTransform): parent
+        """
+        if self.top_node:
+            return self.top_node.to_parent()
+        return None
+
     def delete(self, force=False):
         """Delete this reference.
 
@@ -30,7 +52,7 @@ class _CMayaPipeRef(pr_base.CPipeRef):
         raise NotImplementedError(self)
 
 
-class CMayaReference(_CMayaPipeRef):
+class CMayaRef(_CMayaPipeRef):
     """Pipelined maya file reference."""
 
     def __init__(self, ref_):
@@ -40,7 +62,7 @@ class CMayaReference(_CMayaPipeRef):
             ref_ (FileRef): reference
         """
         self.ref = ref_
-        super(CMayaReference, self).__init__(
+        super(CMayaRef, self).__init__(
             path=ref_.path, namespace=ref_.namespace)
 
     @property
@@ -57,7 +79,7 @@ class CMayaReference(_CMayaPipeRef):
         """Obtain lookdev reference for this abc.
 
         Returns:
-            (CMayaLookdevRef|None): lookdev ref (if any)
+            (CMayaShadersRef|None): lookdev ref (if any)
         """
         return dcc.find_pipe_ref(self.namespace+'_shd', catch=True)
 
@@ -82,19 +104,19 @@ class CMayaReference(_CMayaPipeRef):
         return self.ref.top_node
 
     @restore_sel
-    def attach_lookdev(self, lookdev=None, mode='Reference'):
+    def attach_shaders(self, lookdev=None, mode='Reference'):
         """Attach lookdev shaders to this abc.
 
         Args:
-            lookdev (CPOutput|CMayaLookdevRef): lookdev to attach
+            lookdev (CPOutput|CMayaShadersRef): lookdev to attach
             mode (str): attach mode
              > Reference - reference nodes using <namespace>_shd namespace
              > Import - import nodes into root namespace
         """
-        _LOGGER.info('ATTACH LOOKDEV %s', self)
+        _LOGGER.info('ATTACH SHADERS %s', self)
 
         # Find lookdev ref
-        if isinstance(lookdev, CMayaLookdevRef):
+        if isinstance(lookdev, CMayaShadersRef):
             _look_ref = lookdev
         elif lookdev is None or isinstance(lookdev, pipe.CPOutput):
             _look_out = lookdev or self.output.find_lookdev_shaders()
@@ -164,6 +186,20 @@ class CMayaReference(_CMayaPipeRef):
         self.ref.delete(force=force)
         del_namespace(self.namespace, force=True)
 
+    def find_shaders_ref(self):
+        """Find shaders reference linked to this one.
+
+        Returns:
+            (CMayaShadersRef|None): shaders ref (if any)
+        """
+        _shd_refs = [
+            _ref for _ref in find_pipe_refs()
+            if isinstance(_ref, CMayaShadersRef)]
+        for _shd_ref in _shd_refs:
+            if self in _shd_ref.find_targets():
+                return _shd_ref
+        return None
+
     def rename(self, namespace):
         """Update this reference's namespace.
 
@@ -182,6 +218,22 @@ class CMayaReference(_CMayaPipeRef):
         Args:
             output (CPOutput): representation to swap to
         """
+        _LOGGER.info('SWAP REP %s', self)
+        _LOGGER.info(' - TARGET %s', output)
+
+        # Update to vrmesh ma rep
+        if 'vrmesh' in output.metadata:
+            _LOGGER.info(' - SWAP TO VRMESH MA')
+            _shds_ref = self.find_shaders_ref()
+            _LOGGER.info(' - SHDS %s', _shds_ref)
+            if _shds_ref:
+                assert isinstance(_shds_ref, CMayaShadersRef)
+            _ref = self.update(output)
+            if _shds_ref:
+                _LOGGER.info(' - DELETE SHADERS %s', _shds_ref)
+                _shds_ref.delete(force=True)
+            return _ref
+
         raise NotImplementedError
 
     def to_node(self, node, catch=False):
@@ -208,8 +260,9 @@ class CMayaReference(_CMayaPipeRef):
             out (str): output to apply
             reset (bool): make clean copy of reference (loses ref edits)
         """
-        _LOGGER.debug('UPDATE %s', self)
-        _LOGGER.debug(' - OUTPUT %s', out)
+        _LOGGER.debug(' - UPDATE %s', self)
+        _LOGGER.debug('   - OUTPUT %s', out)
+
         if out.extn in ['ma', 'mb', 'abc', 'fbx']:
             if reset:
                 _grp = None
@@ -236,7 +289,7 @@ class CMayaReference(_CMayaPipeRef):
         raise NotImplementedError(out)
 
 
-class CMayaLookdevRef(CMayaReference):
+class CMayaShadersRef(CMayaRef):
     """Represents a referenced maya lookdev publish."""
 
     @cache_property
@@ -252,37 +305,42 @@ class CMayaLookdevRef(CMayaReference):
         _shd_yml = pipe.map_path(_shd_yml)
         return File(_shd_yml).read_yml()
 
-    def attach_to(self, ref_):
+    def attach_to(self, target):
         """Attach this lookdev to the given abc.
 
         Args:
-            ref_ (CMayaReference): ref_ to attach shaders to
+            target (CMayaRef): ref to attach shaders to
         """
-        _LOGGER.debug('ATTACH %s -> %s', self, ref_)
+        _LOGGER.debug('ATTACH %s -> %s', self, target)
         _LOGGER.debug(' - OUTPUT %s', self.output)
-        assert isinstance(ref_, pr_base.CPipeRef)
+        assert isinstance(target, pr_base.CPipeRef)
 
         # Read data from yml
         _shd_yml = pipe.map_path(self.output.metadata['shd_yml'])
         _LOGGER.debug(' - SHD YML %s', _shd_yml)
         _data = File(_shd_yml).read_yml()
-        _LOGGER.debug(' - PINI %s', self.output.pini_ver)
+        _LOGGER.log(9, ' - PINI %s', self.output.pini_ver)
         _shd_data = self.shd_data['shds']
         _settings = self.shd_data['settings']
 
-        self._apply_shaders(shds=_shd_data, ref_=ref_)
-        self._apply_settings(settings=_settings, ref_=ref_)
-        self._apply_ai_override_sets(ref_=ref_)
+        self._apply_shaders(shds=_shd_data, target=target)
+        self._apply_settings(settings=_settings, target=target)
+        self._apply_ai_override_sets(target=target)
         if _data.get('lights'):
-            self._apply_lights(ref_)
+            self._apply_lights(target)
 
-    def _apply_ai_override_sets(self, ref_):
+        # Connect to target
+        _LOGGER.info(' - CONNECT TOP NODE %s', target.top_node)
+        if target.top_node:
+            target.top_node.add_attr('shaders', self.ref.ref_node, force=True)
+
+    def _apply_ai_override_sets(self, target):
         """Add abc geometry to ai override sets.
 
         Args:
-            ref_ (CPipeRef): reference to get geometry from
+            target (CPipeRef): reference to get geometry from
         """
-        _LOGGER.debug('APPLY AI OVERRIDE SETS ref=%s', ref_)
+        _LOGGER.debug('APPLY AI OVERRIDE SETS ref=%s', target)
         _sets = self.shd_data.get('ai_override_sets', {})  # pylint: disable=no-member
 
         for _set, _clean_geos in _sets.items():
@@ -298,7 +356,7 @@ class CMayaLookdevRef(CMayaReference):
             # Find geos
             _geos = []
             for _geo in _clean_geos:
-                _geo = ref_.to_node(_geo)
+                _geo = target.to_node(_geo)
                 if not cmds.objExists(_geo):
                     _LOGGER.debug('   - MISSING GEO %s', _geo)
                     continue
@@ -310,11 +368,11 @@ class CMayaLookdevRef(CMayaReference):
                 cmds.sets(_geos, addElement=_set)
 
     @restore_ns
-    def _apply_lights(self, ref_):
+    def _apply_lights(self, target):
         """Apply lookdev lights to the given cache.
 
         Args:
-            ref_ (CReference):  reference to apply cache to
+            target (CReference):  reference to apply cache to
         """
         set_namespace(':'+self.namespace)
         _lights = self.to_node('LIGHTS').find_children()
@@ -322,7 +380,7 @@ class CMayaLookdevRef(CMayaReference):
         for _light in _lights:
 
             _LOGGER.debug(' - LIGHT %s', _light)
-            _trg = ref_.to_node(_light, catch=True)
+            _trg = target.to_node(_light, catch=True)
             _LOGGER.debug('   - TRG %s', _trg)
             if _trg:
 
@@ -342,12 +400,12 @@ class CMayaLookdevRef(CMayaReference):
             _light.set_visible(_en)
             _light.shp.plug[_plug].set_val(_en)
 
-    def _apply_shaders(self, shds, ref_):
+    def _apply_shaders(self, shds, target):
         """Apply shaders to target ref.
 
         Args:
             shds (dict): shaders data
-            ref_ (CMayaReference): ref_ to attach shaders to
+            target (CMayaRef): ref to attach shaders to
         """
         for _shd, _data in shds.items():
 
@@ -371,7 +429,7 @@ class CMayaLookdevRef(CMayaReference):
                     name=_name, renderable=True, noSurfaceShader=True,
                     empty=True)
                 cmds.connectAttr(_shd+'.outColor', _se+'.surfaceShader')
-            _LOGGER.debug('   - SE %s', _se)
+            _LOGGER.log(9, '   - SE %s', _se)
             assert _se
 
             # Attach geos
@@ -379,7 +437,7 @@ class CMayaLookdevRef(CMayaReference):
             for _item in _data['geos']:
 
                 # Check if node exists in abc
-                _node = ref_.ref.to_node(_item, catch=True)
+                _node = target.ref.to_node(_item, catch=True)
                 if not _node:
                     _LOGGER.info('   - MISSING NODE %s', _item)
                     continue
@@ -400,14 +458,14 @@ class CMayaLookdevRef(CMayaReference):
                     _LOGGER.log(9, '       - SHP %s', _shp)
                     cmds.sets(_shp, edit=True, forceElement=_se)
 
-    def _apply_settings(self, settings, ref_):
+    def _apply_settings(self, settings, target):
         """Apply lookdev settings to target ref.
 
         Args:
             settings (dict): settings data
-            ref_ (CMayaReference): ref_ to attach shaders to
+            target (CMayaRef): ref to attach shaders to
         """
-        _ref = ref_.ref
+        _ref = target.ref
         _to_apply = []
         for _key, _data in settings.items():
 
@@ -428,28 +486,42 @@ class CMayaLookdevRef(CMayaReference):
         """Find this lookdev's target.
 
         Returns:
-            (CMayaReference): lookdev target
+            (CMayaRef): lookdev target
         """
         return single(self.find_targets(), catch=True)
 
-    def find_targets(self, from_assignments=False):
+    def find_targets(self, from_top_node=False, from_assignments=False):
         """Find references using this lookdev (eg. abcs).
 
         Args:
+            from_top_node (bool): check top node shaders attribute for
+                linked shaders reference
             from_assignments (bool): try to find targets from shading
                 assignments (can be slow for heavy scenes)
 
         Returns:
-            (CReference list): references
+            (CMayaPipeRef list): references
         """
-        _refs = set()
+        _LOGGER.log(9, 'FIND TARGETS %s', self)
+        _trgs = set()
 
         # Find target by name
         if self.namespace.endswith('_shd'):
-            _trg = dcc.find_pipe_ref(
-                namespace=self.namespace[:-4], catch=True)
+            _name_match = self.namespace[:-4]
+            _trg = dcc.find_pipe_ref(namespace=_name_match, catch=True)
+            _LOGGER.log(9, ' - NAME MATCH %s %s', _name_match, _trg)
             if _trg:
-                _refs.add(_trg)
+                _trgs.add(_trg)
+        _LOGGER.log(9, ' - TRGS (A) %s', sorted(_trgs))
+
+        # Find by shaders link
+        if from_top_node:
+            for _ref in find_pipe_refs():
+                if _ref in [self] + sorted(_trgs):
+                    continue
+                if self._ref_has_top_node_link(_ref):
+                    _trgs.add(_ref)
+            _LOGGER.log(9, ' - TRGS (B) %s', sorted(_trgs))
 
         # Find targets based on shader
         if from_assignments:
@@ -464,9 +536,38 @@ class CMayaLookdevRef(CMayaReference):
                     if not _ref:
                         continue
                     _LOGGER.log(9, '   - GEO %s %s', _geo, _ref)
-                    _refs.add(_ref)
+                    _trgs.add(_ref)
+            _LOGGER.log(9, ' - TRGS (C) %s', sorted(_trgs))
 
-        return sorted(_refs)
+        return sorted(_trgs)
+
+    def _ref_has_top_node_link(self, ref_):
+        """Check with the given reference's top node is linked to this.
+
+        Args:
+            ref_ (CMayaRef): reference to check
+
+        Returns:
+            (bool): whether linked
+        """
+        if not ref_.top_node:
+            return False
+
+        # Find attached reference
+        if not ref_.top_node.has_attr('shaders'):
+            return False
+        _LOGGER.log(9, ' - CHECK REF %s', ref_)
+        _shd_plug = ref_.top_node.plug['shaders']
+        _shd_rn = _shd_plug.find_incoming(plugs=False)
+        if not _shd_rn:
+            return False
+
+        # Compare attached ref namespace
+        _LOGGER.log(9, '   - SHD PLUG %s %s', _shd_plug, _shd_rn)
+        _shd_ref = pom.CReference(_shd_rn)
+        _LOGGER.log(9, '   - SHD %s', _shd_ref)
+
+        return _shd_ref.namespace == self.namespace
 
     def swap_rep(self, output):
         """Swap this reference for a different representation.
@@ -486,11 +587,34 @@ class CMayaLookdevRef(CMayaReference):
                 with stale edits)
         """
         _LOGGER.info('UPDATE %s %s', self, out)
-        _result = super(CMayaLookdevRef, self).update(out, reset=reset)
+        _result = super(CMayaShadersRef, self).update(out, reset=reset)
         for _trg in self.find_targets():
             _LOGGER.info(' - ATTACH TO %s', _trg)
             _result.attach_to(_trg)
         return _result
+
+
+class CMayaVrmeshMaRef(CMayaRef):
+    """Represents a referenced shaded vrmesh maya scene."""
+
+    def swap_rep(self, output):
+        """Swap this reference for a different representation.
+
+        Args:
+            output (CPOutput): representation to swap to
+        """
+        _LOGGER.info('SWAP REP %s', self)
+        _LOGGER.info(' - TARGET %s', output)
+
+        _shds_out = output.find_lookdev_shaders()
+        _LOGGER.info(' - SHDS OUT %s', _shds_out)
+
+        _ref = self.update(output)
+        _LOGGER.info(' - REF %s', _ref)
+        if _shds_out:
+            _ref.attach_shaders(_shds_out)
+
+        return _ref
 
 
 class CMayaVdb(_CMayaPipeRef):
@@ -509,6 +633,7 @@ class CMayaVdb(_CMayaPipeRef):
                 to be hacked so a valid vdb ref can be built on create
         """
         self.node = node
+        self.top_node = node
         assert isinstance(self.node, pom.CTransform)
         assert self.node.shp.object_type() == 'aiVolume'
         _path = self.node.shp.plug['filename'].get_val() or ''
@@ -561,6 +686,7 @@ class CMayaAiStandIn(_CMayaPipeRef):
         """
         _LOGGER.debug('INIT CMayaAiStandIn %s %s', node, path)
         self.node = node
+        self.top_node = node
         assert isinstance(self.node, pom.CTransform)
         assert self.node.shp.object_type() == 'aiStandIn'
 
@@ -600,19 +726,23 @@ class CMayaAiStandIn(_CMayaPipeRef):
         Args:
             out (CPOutput|CPOutputSeq): new standin to apply
         """
-        _LOGGER.debug('UPDATE %s %s', self, out)
+        _LOGGER.debug(' - UPDATE %s -> %s', self, out)
+
+        _mtx = self._to_mtx()
+        _grp = self._to_parent()
+
         if out.extn in ['ass', 'abc', 'usd', 'gz']:
             _path = out.path.replace('.%04d.', '.####.')
             self.node.shp.plug['dso'].set_val(_path)
             return CMayaAiStandIn(self.node)
+
         if out.extn in ('ma', 'mb'):
-            _grp = self.node.to_parent()
             _ns = self.namespace
-            _mtx = self.node.to_m()
             self.delete(force=True)
             _ref = dcc.create_ref(out, namespace=_ns, group=_grp)
             _mtx.apply_to(_ref.ref.top_node)
             return _ref
+
         raise NotImplementedError(out)
 
 
@@ -623,7 +753,7 @@ def _read_reference_pipe_refs(selected=False):
         selected (bool): only find selected refs
 
     Returns:
-        (CMayaReference list): referenced pipe refs
+        (CMayaRef list): referenced pipe refs
     """
     _LOGGER.log(9, 'READ REFERENCE PIPE REFS')
 
@@ -649,12 +779,12 @@ def _read_reference_pipe_refs(selected=False):
             continue
 
         # Determine class based on publish type
-        _pub_type = _out_c.metadata.get('publish_type')
-        _LOGGER.log(9, ' - PUB TYPE %s', _pub_type)
-        if _pub_type == 'CMayaLookdevPublish':
-            _class = CMayaLookdevRef
+        if _out_c.metadata.get('shd_yml'):
+            _class = CMayaShadersRef
+        elif _out_c.metadata.get('vrmesh'):
+            _class = CMayaVrmeshMaRef
         else:
-            _class = CMayaReference
+            _class = CMayaRef
         _ref = _class(_ref)
         _refs.append(_ref)
 

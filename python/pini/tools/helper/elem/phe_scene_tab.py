@@ -288,7 +288,7 @@ class CLSceneTab(object):
         _filter = self.ui.SOutputsFilter.text()
         _outs = self.ui.SOutputFormat.selected_data() or []
         _scene_outs = sorted({
-            _ref.to_output(cache=False) for _ref in dcc.find_pipe_refs()})
+            _ref.to_output(use_cache=False) for _ref in dcc.find_pipe_refs()})
         _version_mode = self.ui.SOutputVers.currentText()
 
         # Get list of outputs
@@ -413,7 +413,7 @@ class CLSceneTab(object):
                 _status = 'delete'
             elif not _ref.output:
                 _status = 'missing from cache'
-                _output = _ref.to_output(cache=False)
+                _output = _ref.to_output(use_cache=False)
             else:
                 _status = None
             _LOGGER.debug(' - ADDING REF %s status=%s', _ref, _status)
@@ -442,12 +442,12 @@ class CLSceneTab(object):
         _filter = self.ui.SSceneRefsFilter.text()
         _show_models = self.ui.SSceneRefsShowModels.isChecked()
         _show_rigs = self.ui.SSceneRefsShowRigs.isChecked()
-        _show_lookdevs = self.ui.SSceneRefsShowLookdevs.isChecked()
+        _show_shaders = self.ui.SSceneRefsShowLookdevs.isChecked()
         _show_abcs = self.ui.SSceneRefsShowAbcs.isChecked()
         _type_filter = any([
             _show_models,
             _show_rigs,
-            _show_lookdevs,
+            _show_shaders,
             _show_abcs,
         ])
         _LOGGER.debug(
@@ -459,11 +459,11 @@ class CLSceneTab(object):
             if not passes_filter(_ref.namespace, _filter):
                 continue
             if _type_filter:
-                if _show_models and _ref.task == 'model':
+                if _show_models and pipe.map_task(_ref.task) == 'model':
                     pass
-                elif _show_rigs and _ref.task == 'rig':
+                elif _show_rigs and pipe.map_task(_ref.task) == 'rig':
                     pass
-                elif _show_lookdevs and _ref.task == 'lookdev':
+                elif _show_shaders and _ref.output.metadata.get('shd_yml'):
                     pass
                 elif _show_abcs and _ref.extn == 'abc':
                     pass
@@ -651,7 +651,7 @@ class CLSceneTab(object):
                     build_plates=_build_plates, abc_mode=_abc_mode)
             elif _ref.attach:
                 _import_fn = wrap_fn(
-                    _ref.attach.attach_lookdev, lookdev=_ref.output)
+                    _ref.attach.attach_shaders, lookdev=_ref.output)
             else:
                 _import_fn = wrap_fn(
                     dcc.create_ref, namespace=_ref.namespace, path=_ref.output)
@@ -718,7 +718,7 @@ class CLSceneTab(object):
             menu (QMenu): menu to add items to
             ref (CPipeRef): selected reference
         """
-        _out = ref.to_output(cache=False)
+        _out = ref.to_output(use_cache=False)
         _base, _ = split_base_index(ref.namespace)
 
         menu.add_label('Ref: '+ref.namespace)

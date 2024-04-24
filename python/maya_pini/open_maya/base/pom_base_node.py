@@ -121,15 +121,15 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             (CPlug): new attribute
         """
         _LOGGER.debug('ADD ATTR %s %s', name, value)
+        _kwargs, _action = self._add_attr_build_kwargs(
+            value=value, min_val=min_val, max_val=max_val)
 
         # Handle exists
         if self.has_attr(name):
             return self._add_attr_update_existing(
-                name, value=value, force=force)
+                name, value=value, action=_action, force=force)
 
         # Create attr
-        _kwargs, _action = self._add_attr_build_kwargs(
-            value=value, min_val=min_val, max_val=max_val)
         _LOGGER.debug(' - KWARGS %s', _kwargs)
         cmds.addAttr(
             self, shortName=name, longName=name, keyable=keyable,
@@ -148,31 +148,41 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
 
         return _plug
 
-    def _add_attr_update_existing(self, name, value, force):
+    def _add_attr_update_existing(self, name, value, action, force):
         """Update existing attribute.
 
         Args:
             name (str): attribute name
             value (any): attribute value
+            action (str): update action (set/connect)
             force (bool): force apply value
 
         Returns:
             (CPlug): new attribute
         """
         _plug = self.plug[name]
-        _val = _plug.get_val()
 
-        # Check type
-        _cur_type = type(_val)
-        if _cur_type != str and _cur_type in six.string_types:
-            _cur_type = str
-        if _cur_type != type(value):  # pylint: disable=unidiomatic-typecheck
-            raise NotImplementedError(
-                'Type mismatch {}/{}'.format(_cur_type, type(value)))
+        if action == 'connect':
+            value.plug['message'].connect(_plug)
 
-        # Update val
-        if force and value != _val:
-            _plug.set_val(value)
+        elif action == 'set':
+
+            _val = _plug.get_val()
+
+            # Check type
+            _cur_type = type(_val)
+            if _cur_type != str and _cur_type in six.string_types:
+                _cur_type = str
+            if _cur_type != type(value):  # pylint: disable=unidiomatic-typecheck
+                raise NotImplementedError(
+                    'Type mismatch {}/{}'.format(_cur_type, type(value)))
+
+            # Update val
+            if force and value != _val:
+                _plug.set_val(value)
+
+        else:
+            raise ValueError(action)
 
         return _plug
 

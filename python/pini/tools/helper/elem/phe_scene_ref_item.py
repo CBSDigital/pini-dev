@@ -133,7 +133,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             pix (CPixmap): pixmap to draw on
         """
         _left_m = 30
-        _out = self.ref.to_output(cache=False)
+        _out = self.ref.to_output(use_cache=False)
 
         # Draw icon
         if self.icon:
@@ -174,7 +174,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             pix (CPixmap): pixmap to draw on
         """
         _right_m = pix.width() - self.margin*3
-        _out = self.output or self.ref.to_output(cache=False)
+        _out = self.output or self.ref.to_output(use_cache=False)
 
         # Draw type icon
         _icon = output_to_type_icon(_out)

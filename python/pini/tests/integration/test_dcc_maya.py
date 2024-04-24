@@ -56,7 +56,7 @@ class TestDCC(unittest.TestCase):
         _ref = dcc.create_ref(_model, namespace='test', group='BLAH')
         pom.CPoint(0, 4, 0).apply_to(_ref.node)
         assert _ref.output == _model
-        assert isinstance(_ref, pipe_ref.CMayaReference)
+        assert isinstance(_ref, pipe_ref.CMayaRef)
         assert _ref.node.ty.get_val() == 4
         assert _ref.node.to_parent().name() == 'BLAH'
         assert not cmds.objExists('CHAR')
@@ -77,7 +77,7 @@ class TestDCC(unittest.TestCase):
         assert _rig
         _ref = _ref.update(_rig)
         assert _ref.output == _rig
-        assert isinstance(_ref, pipe_ref.CMayaReference)
+        assert isinstance(_ref, pipe_ref.CMayaRef)
         assert _ref.node.ty.get_val() == 4
         assert _ref.node.to_parent().name() == 'BLAH'
         assert not cmds.objExists('CHAR')

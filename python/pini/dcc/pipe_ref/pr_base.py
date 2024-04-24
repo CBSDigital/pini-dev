@@ -3,6 +3,7 @@
 import functools
 
 from pini import pipe
+from pini.pipe import cache
 from pini.utils import six_cmp, File, split_base_index
 
 
@@ -107,7 +108,7 @@ class CPipeRef(object):
         """
         raise NotImplementedError(self)
 
-    @functools.wraps(pipe.CPOutputBase.find_rep)
+    @functools.wraps(cache.CCPOutputBase.find_rep)
     def find_rep(self, **kwargs):
         """Find an alternative representation of this reference.
 
@@ -116,7 +117,7 @@ class CPipeRef(object):
         """
         return self.output.find_rep(**kwargs)
 
-    @functools.wraps(pipe.CPOutputBase.find_reps)
+    @functools.wraps(cache.CCPOutputBase.find_reps)
     def find_reps(self, **kwargs):
         """Find alternative representations of this reference.
 
@@ -167,7 +168,7 @@ class CPipeRef(object):
         """
         raise NotImplementedError
 
-    def to_output(self, cache=True):
+    def to_output(self, use_cache=True):
         """Obtain this pipe ref's output.
 
         Normally we want the output from the pipeline cache, but to accommodate
@@ -175,12 +176,12 @@ class CPipeRef(object):
         currently in the cache, we can also request the uncached output.
 
         Args:
-            cache (bool): disable to retrieve the uncached output
+            use_cache (bool): disable to retrieve the uncached output
 
         Returns:
             (CPOutput): associated pipeline output
         """
-        return self._out_c if cache else self._out
+        return self._out_c if use_cache else self._out
 
     def update(self, out):
         """Apply a new out to this reference.

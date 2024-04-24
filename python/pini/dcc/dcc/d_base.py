@@ -164,10 +164,15 @@ class BaseDCC(object):
         _refs = self.find_pipe_refs(
             extn=extn, namespace=namespace, selected=selected, filter_=filter_,
             task=task)
-        _error = 'Failed to match reference'
+        _zero_error = _multi_error = _error = None
         if selected:
-            _error = 'Multiple references selected'
-        return single(_refs, catch=catch, error=_error)
+            _zero_error = 'No references selected'
+            _multi_error = 'Multiple references selected'
+        else:
+            _error = 'Failed to match reference'
+        return single(
+            _refs, catch=catch, error=_error, multi_error=_multi_error,
+            zero_error=_zero_error)
 
     def find_pipe_refs(
             self, filter_=None, selected=False, extn=None,

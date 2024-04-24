@@ -386,8 +386,8 @@ class CheckLookdevAssign(SCMayaCheck):
         """Check assignments for the given lookdev.
 
         Args:
-            lookdev_ref (CMayaLookdevRef): lookdev ref
-            geo_ref (CMayaReference): geometery ref
+            lookdev_ref (CMayaShadersRef): lookdev ref
+            geo_ref (CMayaRef): geometery ref
             sg (str): shading group to check
             geos (str list): geos using this shader
         """
@@ -744,7 +744,7 @@ def _ref_needs_cache_set(ref_):
     """Test whether the given reference should have a cache set.
 
     Args:
-        ref_ (CMayaReference): reference
+        ref_ (CMayaRef): reference
 
     Returns:
         (bool): whether cache set required

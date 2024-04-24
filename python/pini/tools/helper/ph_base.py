@@ -172,7 +172,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             if _cur_out:
                 _src = _cur_out.metadata.get('src')
                 if _src:
-                    self.target = pipe.to_output(_src)
+                    self.target = pipe.to_output(_src, catch=True)
         if not self.target:
             _recent = obt_recent_work()
             if _recent:
@@ -417,7 +417,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             if ref:  # Attach existing ref
                 _funcs = []
                 for _ref in _refs:
-                    _funcs += [wrap_fn(_ref.attach_lookdev, ref)]
+                    _funcs += [wrap_fn(_ref.attach_shaders, ref)]
                 _func = chain_fns(*_funcs)
                 menu.add_action(
                     'Assign to {} selection'.format(_label), _func,
@@ -835,7 +835,7 @@ def _apply_lookdev_opts(output, ref):
     if output.metadata.get('publish_type') != 'CMayaLookdevPublish':
         return False
 
-    if ref and not isinstance(ref, pipe_ref.CMayaLookdevRef):
+    if ref and not isinstance(ref, pipe_ref.CMayaShadersRef):
         return False
 
     return True

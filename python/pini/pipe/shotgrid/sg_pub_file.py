@@ -41,7 +41,7 @@ def create_pub_file(
         if not force:
             return to_pub_file_data(output)
 
-    _LOGGER.info('CREATE PUBLISHED FILE %s', output.path)
+    _LOGGER.debug(' - CREATE PUBLISHED FILE %s', output.path)
     _notes = output.metadata.get('notes')
 
     _sg_type = shotgrid.SGC.find_pub_type(

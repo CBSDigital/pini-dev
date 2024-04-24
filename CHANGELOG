@@ -1,3 +1,30 @@
+## [1.44.0] - Wed 2024-04-24 10:46
+### Summary
+ - Pini Helper:
+    - scene tab different icons for vrmesh and shaders outputs,
+    - allow swap rep between model/rig and vrmesh references,
+    - bugfix scene type filter buttons,
+### Updated
+ - pini.dcc.find_pipe_ref better error on bad selection,
+ - pini.dcc.pipe_ref.CPipeRef.to_output updated arg cache -> use_cache,
+ - pini.dcc.pipe_ref renamed CMayaReference -> CMayaRef,
+ - pini.dcc.pipe_ref renamed CMayaLookdevRef -> CMayaShadersRef,
+ - pini.dcc.pipe_ref._CMayaPipeRef added _to_mtx/_to_parent,
+ - pini.dcc.pipe_ref._CMayaPipeRef.top_node added,
+ - pini.dcc.pipe_ref.CMayaRef renamed attach_lookdev -> attach_shaders,
+ - pini.dcc.pipe_ref.CMayaRef.find_shaders_ref added,
+ - pini.dcc.pipe_ref.CMayaRef.swap_rep added vrmesh handling,
+ - pini.dcc.pipe_ref.CMayaShaderRef.attach_to connect top node attr on target,
+ - pini.dcc.pipe_ref.CMayaShaderRef.find_targets added from_top_node (disabled),
+ - pini.dcc.pipe_ref.CMayaVrmeshMaRef added,
+ - pini.dcc.pipe_ref.find_pipe_ref maya bugfix vrmesh refs marked as shaders,
+ - pini.pipe find_rep/find_reps/_read_reps moved CPOutput -> CCPOutput,
+ - pini.tools.helper added vrmesh/archive icons,
+ - pini.tools.helper.output_to_icon bugfix icon/name caching,
+ - pini.tools.helper scene type filters use mapped task,
+ - maya_pini.open_maya.CPlug.add_attr bugfix force existing message connection,
+
+
 ## [1.43.0] - Tue 2024-04-23 14:44
 ### Summary
  - Pini Helper:

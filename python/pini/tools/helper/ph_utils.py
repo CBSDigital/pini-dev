@@ -16,7 +16,7 @@ UPDATE_ICON = icons.find('Gear')
 ABC_ICON = icons.find('Input Latin Letters')
 ABC_BG_ICON = icons.find('Blue Square')
 ASS_ICON = icons.find('Peach')
-ARCHIVE_ICON = icons.find('Package')
+ARCHIVE_ICON = icons.find('Red Paper Lantern')
 BLAST_ICON = icons.find('Collision')
 CAM_ICON = icons.find('Movie Camera')
 CSET_ICON = icons.find('Urn')
@@ -34,7 +34,7 @@ RIG_ICON = icons.find('Bone')
 USD_ICON = icons.find('Milky Way')
 VDB_ICON = icons.find('Cloud')
 VIDEO_ICON = icons.find('Videocassette')
-VRMESH_BG_ICON = icons.find('Blue circle')
+VRMESH_BG_ICON = icons.find('Orange circle')
 
 EXTN_ICONS = {
     'abc': ABC_ICON,
@@ -90,6 +90,7 @@ _NAME_MAP = {
     'whiteclouds': 'Cloud',
     'xmastrees': 'Christmas Tree',
 }
+_ICON_CACHE = {}
 
 
 def is_active():
@@ -163,7 +164,7 @@ def _lookdev_to_icon(lookdev):
     _LOGGER.debug(' - TMPL %s', _tmpl)
     _rig_out = lookdev.to_output(task='rig', template=_tmpl)
     _LOGGER.debug(' - RIG OUT %s', _rig_out.path)
-    _asset_icon = output_to_icon(_rig_out)
+    _asset_icon = _output_to_entity_icon(_rig_out)
 
     if _vrmesh:
         _base_icon = VRMESH_BG_ICON
@@ -178,7 +179,7 @@ def _lookdev_to_icon(lookdev):
     return _icon
 
 
-def _output_to_rand_icon(output):
+def _output_to_entity_icon(output):
     """Map output to a random icon.
 
     Args:
@@ -190,26 +191,36 @@ def _output_to_rand_icon(output):
 
     # Try to match with mapped icon
     _ety = output.entity
+    _LOGGER.debug(' - ETY %s', _ety)
     _ety_name = output.entity.name
     while _ety_name and _ety_name[-1].isdigit():
         _ety_name = _ety_name[:-1]
-    _name = _NAME_MAP.get(_ety_name.lower(), _ety_name)
-    _icon = icons.find(_name, catch=True)
+    _ety_name = _ety_name.lower()
+    _name = _NAME_MAP.get(_ety_name, _ety_name)
+    _LOGGER.debug(' - ETY NAME %s %s', _ety_name, _name)
 
-    # Determine icon path
-    if _icon:
-        _LOGGER.info(' - USING NAME MAP %s %s', _name, _icon)
-        _NAME_MAP[_name] = _icon
-    else:
+    # Find icon
+    _icon = None
+    if _name in _ICON_CACHE:
+        _icon = _ICON_CACHE[_name]
+        _LOGGER.debug(' - USE NAME CACHE %s', _icon)
+    elif _name:
+        _icon = icons.find(_name, catch=True)
+        _LOGGER.debug(' - FIND ICON BY NAME %s %s', _name, _icon)
+    if not _icon:
         if _ety.profile == 'asset':
             _uid = _ety.path
         elif _ety.profile == 'shot':
             _uid = output.to_output(ver_n=0).path
         else:
             raise ValueError(_ety)
-        _LOGGER.info(' - UID %s', _uid)
+        _LOGGER.debug(' - USING RAND UID %s', _uid)
         _rand = str_to_seed(_uid)
         _icon = _rand.choice(_CACHE_ICONS)
+
+    # Cache result
+    if _name:
+        _ICON_CACHE[_name] = _icon
 
     return _icon
 
@@ -317,10 +328,10 @@ def output_to_icon(output, overlay=None, force=False):
         _icon = _lookdev_to_icon(output)
     elif output.type_ in _TYPE_BG_MAP:
         _bg = _TYPE_BG_MAP[output.type_]
-        _icon = _output_to_rand_icon(output)
+        _icon = _output_to_entity_icon(output)
     else:
-        _LOGGER.debug(' - APPLYING RAND ICON')
-        _icon = _output_to_rand_icon(output)
+        _LOGGER.debug(' - APPLYING ENTITY ICON')
+        _icon = _output_to_entity_icon(output)
 
     if overlay:
         _icon = _add_icon_overlay(icon=_icon, overlay=overlay)
