@@ -1,3 +1,14 @@
+## [1.45.1] - Thu 2024-04-25 10:55
+### Summary
+ - Pyui:
+    - bugfix load settings on new/renamed tool,
+### Updated
+ - pini.utils.File.find_bkps added depth=1 for efficiency,
+ - pini.utils.find apply tail filter to base not filename,
+ - pini.qt.warning added icon flag,
+ - pini.tools.pyui catch error on load settings for new/renamed def,
+
+
 ## [1.45.0] - Thu 2024-04-25 09:33
 ### Summary
  - Pyui:

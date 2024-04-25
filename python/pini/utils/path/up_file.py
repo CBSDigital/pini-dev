@@ -69,6 +69,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         # Check for unchanged
         _bkps = self.find_bkps()
+        _LOGGER.debug(' - FOUND %d BKPS', len(_bkps))
         if _bkps:
             _latest = _bkps[-1]
             _LOGGER.debug(' - LATEST BKP %s', _latest)
@@ -211,7 +212,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         _bkps = _dir.find(
             head=_head, tail=_tail, class_=True, type_='f', extn=self.extn,
-            hidden=True, catch_missing=True)
+            hidden=True, catch_missing=True, depth=1)
+        _LOGGER.debug(' - FOUND %d BKPS', len(_bkps))
         return _bkps
 
     def find_and_replace_text(self, find, replace, force=False, diff=False):

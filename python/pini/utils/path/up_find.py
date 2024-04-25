@@ -196,9 +196,9 @@ def _result_is_filtered(  # pylint: disable=too-many-return-statements
         return True
     if extns and _path_obj.extn not in extns:
         return True
-    if head and not _path_obj.filename.startswith(head):
+    if head and not _path_obj.base.startswith(head):
         return True
-    if tail and not _path_obj.filename.endswith(tail):
+    if tail and not _path_obj.base.endswith(tail):
         return True
     if filename and _path_obj.filename != filename:
         return True

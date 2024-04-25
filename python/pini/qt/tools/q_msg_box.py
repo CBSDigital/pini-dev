@@ -205,14 +205,15 @@ def raise_dialog(
     return _box.get_result()
 
 
-def warning(msg, title='Warning'):
+def warning(msg, title='Warning', icon=None):
     """Raise a warning dialog.
 
     Args:
         msg (str): warning message
         title (str): warning title
+        icon (str): override icon to apply
     """
-    notify(msg=msg, title=title, icon=icons.find('Spider'))
+    notify(msg=msg, title=title, icon=icon or icons.find('Spider'))
 
 
 def yes_no_cancel(msg, title='Confirm', icon=None, parent=None):

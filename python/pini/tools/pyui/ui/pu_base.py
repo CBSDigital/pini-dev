@@ -332,7 +332,10 @@ class PUBaseUi(object):
 
         # Load defs
         for _def_name, _arg_data in _data.get('defs', {}).items():
-            _set_callbacks = self.callbacks['defs'][_def_name]['set']
+            _def_callbacks = self.callbacks['defs'].get(_def_name)
+            if not _def_callbacks:
+                continue
+            _set_callbacks = _def_callbacks['set']
             for _arg_name, _arg_val in _arg_data.items():
                 _set_fn = _set_callbacks.get(_arg_name)
                 if _set_fn:
