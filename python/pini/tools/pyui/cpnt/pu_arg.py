@@ -14,7 +14,8 @@ class PUArg(object):
 
     def __init__(
             self, name, py_arg, py_def, pyui_file, clear=False,
-            browser=False, choices=None, label_w=None):
+            browser=False, choices=None, selection=False, label_w=None,
+            docs=None):
         """Constructor.
 
         Args:
@@ -28,7 +29,11 @@ class PUArg(object):
                 bool - apply ExistingFile mode
                 str - apply this file mode to the browser
             choices (str list): apply options list
+            selection (bool|str): apply get selected node button
+                bool - any selected node
+                str - apply node type filter
             label_w (int): override label width (in pixels)
+            docs (str): arg documentation
         """
         self.name = name
         self.default = py_arg.default
@@ -40,6 +45,9 @@ class PUArg(object):
         self.clear = clear
         self.browser = browser
         self.choices = choices
+        self.selection = selection
+
+        self.docs = docs
         self.label_w = label_w
 
     def __repr__(self):

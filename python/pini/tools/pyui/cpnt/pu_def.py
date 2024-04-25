@@ -23,7 +23,8 @@ class PUDef(object):
 
     def __init__(
             self, func, py_def=None, icon=None, label=None, clear=(),
-            browser=(), hide=(), choices=None, col=None, label_w=None):
+            browser=(), hide=(), selection=(), choices=None, col=None,
+            label_w=None):
         """Constructor.
 
         Args:
@@ -35,6 +36,7 @@ class PUDef(object):
             clear (tuple): args to apply clear button to
             browser (tuple|dict): args to apply browser to
             hide (tuple): args to hide from ui
+            selection (tuple|dict): arg to apply get selected node to
             choices (dict): arg/opts data for option lists
             col (str|QColor): override def colour
             label_w (int): override label width (in pixels)
@@ -46,8 +48,10 @@ class PUDef(object):
 
         self.clear = clear
         self.browser = browser
+        self.selection = selection
         self.hide = hide
         self.choices = choices or {}
+
         self.col = col
         self.label_w = label_w
 
@@ -89,19 +93,37 @@ class PUDef(object):
         """
         _args = []
         for _py_arg in self.py_def.find_args():
+
             _name = _py_arg.name
+
+            _docs = _py_arg.to_docs('SingleLine') or ''
+            _docs = _docs.capitalize()
+
+            # Determine browser setting
             if _name not in self.browser:
                 _browser = False
             elif isinstance(self.browser, dict):
                 _browser = self.browser.get(_name, False)
             else:
                 _browser = _name in self.browser
+
+            # Determine selection setting
+            if _name not in self.selection:
+                _selection = False
+            elif isinstance(self.selection, dict):
+                _selection = self.selection.get(_name, False)
+            else:
+                _selection = _name in self.selection
+
             if _name in self.hide:
                 continue
+
+            # Build arg
             _arg = pu_arg.PUArg(
                 _name, py_arg=_py_arg, clear=_name in self.clear,
                 browser=_browser, py_def=self.py_def, pyui_file=self.pyui_file,
-                choices=self.choices.get(_name), label_w=self.label_w)
+                choices=self.choices.get(_name), label_w=self.label_w,
+                selection=_selection, docs=_docs)
             _args.append(_arg)
 
         return _args

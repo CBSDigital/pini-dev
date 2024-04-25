@@ -99,7 +99,7 @@ class PIInstaller(object):
             _div = PIDivider('DccToolsDivider')
             _items += [_div] + _dcc_items
         _site_items = self._gather_site_items()
-        _LOGGER.info(' - ADD SITE ITEMS %s', _site_items)
+        _LOGGER.debug(' - ADD SITE ITEMS %s', _site_items)
         if _site_items:
             _div = PIDivider('SiteToolsDivider')
             _items += [_div] + _site_items

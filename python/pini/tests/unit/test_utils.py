@@ -538,8 +538,69 @@ class TestPyFile(unittest.TestCase):
         assert _def.find_arg('myexpr').default is None
         assert _def.find_arg('myglobal').default is None
 
+    def test_py_docs(self):
+
+        _py = PyFile(__file__)
+
+        # Test def docs
+        _def = _py.find_def('_py_docs_test')
+        _docs = _def.to_docs()
+        _LOGGER.info(' - RAW %s', _docs.to_str('Raw').split('\n'))
+        assert _docs.to_str('Raw') == _def.to_docstring()
+        _match = '\n'.join([
+            'Some docs.',
+            '',
+            'New line.'])
+        assert _docs.header == _match
+        assert _docs.title == 'Some docs.'
+        assert _docs.to_str('Header') == _match
+        assert _def.to_docs('Header') == _match
+        assert _docs.to_str('SingleLine') == 'Some docs. New line.'
+
+        # Test arg docs
+        _test_arg = _def.find_arg('test_arg')
+        assert _test_arg.to_docs().to_str() == 'arg docs'
+        _long_arg = _def.find_arg('long_arg')
+        assert _long_arg.name == 'long_arg'
+        _long_arg_d = _long_arg.to_docs()
+        assert _long_arg_d.name == 'long_arg'
+        assert _long_arg_d.type_ == 'str'
+        _match = '\n'.join([
+            'here are',
+            '    - long',
+            '    - docs'])
+        assert _long_arg_d.body == _match
+        _LOGGER.info(' - LONG ARG (A) %s', _match.split('\n'))
+        assert _long_arg_d.to_str() == _match
+        assert _long_arg_d.to_str('Body') == _match
+        _LOGGER.info(' - LONG ARG (B) "%s"', _long_arg_d.to_str('SingleLine'))
+        assert _long_arg_d.to_str('SingleLine') == 'here are - long - docs'
+        assert _long_arg.to_docs('SingleLine') == 'here are - long - docs'
+
+        # Check no docs
+        _def = _py.find_def('_test')
+        assert not _def.to_docstring()
+        assert not _def.to_docs().find_args()
+
 
 def _test(
         myarg, myint=1, myfloat=0.1, mystr='a', mynone=None,
         myexpr=range(10), myglobal=_LOGGER):
     raise NotImplementedError
+
+
+def _py_docs_test(test_arg=None, long_arg=None):
+    """Some docs.
+
+    New line.
+
+    Args:
+        test_arg (str): arg docs
+        long_arg (str): here are
+            - long
+            - docs
+
+    Result:
+        (int): exit code
+    """
+    return 1

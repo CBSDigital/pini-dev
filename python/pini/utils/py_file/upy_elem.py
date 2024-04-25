@@ -218,7 +218,7 @@ class PyElem(object):
         """
         return self._ast
 
-    def to_docs(self):
+    def to_docstring(self):
         """Obtain docstring.
 
         Returns:

@@ -1,3 +1,19 @@
+## [1.45.0] - Thu 2024-04-25 09:33
+### Summary
+ - Pyui:
+    - added status bar documentation to arg/execute fields,
+### Updated
+ - pini.utils.PyElem renamed to_docs -> to_docstring,
+ - pini.utils added PyDefDocs/PyArgDocs,
+ - pini.utils PyDef/PyArg to_docs added to provide PyDefDocs/PyArgDocs,
+ - pini.utils.PyArg includes parent ref,
+ - pini.install added helper ctx no cache reset option,
+ - pini.tools.pyui.install added selection arg,
+ - pini.tools.pyui maya include docs in status bar message,
+ - pini.tools.release.run_tests no progress bar for single test,
+ - pini.icons.SELECT added,
+
+
 ## [1.44.0] - Wed 2024-04-24 10:46
 ### Summary
  - Pini Helper:

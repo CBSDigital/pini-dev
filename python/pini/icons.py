@@ -629,6 +629,7 @@ PRINT = EMOJI.find('Downwards Button')
 REFRESH = EMOJI.find('Counterclockwise Arrows Button')
 RESET = EMOJI.find('Broom')
 SAVE = EMOJI.find('Floppy Disk')
+SELECT = EMOJI.find('Down-Left Arrow')
 TEST = EMOJI.find('Alembic')
 UNLOCKED = EMOJI.find('Unlocked')
 

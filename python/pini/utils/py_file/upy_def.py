@@ -5,7 +5,7 @@ import logging
 import sys
 
 from ..u_misc import safe_zip, single
-from .upy_elem import PyElem
+from . import upy_elem, upy_docs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ if sys.version_info.major == 3:
     _AstNoneType = ast.NameConstant
 
 
-class PyDef(PyElem):
+class PyDef(upy_elem.PyElem):
     """Represents a python definition."""
 
     def execute(self, *args, **kwargs):
@@ -63,7 +63,7 @@ class PyDef(PyElem):
 
         # Add args
         for _ast_arg in _ast_args:
-            _arg = PyArg(_ast_arg_to_name(_ast_arg))
+            _arg = PyArg(_ast_arg_to_name(_ast_arg), parent=self)
             _args.append(_arg)
 
         # Add kwargs
@@ -84,7 +84,7 @@ class PyDef(PyElem):
             else:
                 raise ValueError(_ast_default)
             _LOGGER.debug('   - DEFAULT %s', _default)
-            _arg = PyArg(_name, default=_default)
+            _arg = PyArg(_name, default=_default, parent=self)
             _LOGGER.debug('   - ARG %s type=%s', _arg, _arg.type_)
             _args.append(_arg)
 
@@ -101,6 +101,32 @@ class PyDef(PyElem):
         """
         _mod = self.py_file.to_module()
         return getattr(_mod, self.name)
+
+    def to_docs(self, mode='Object'):
+        """Obtain documentation for this function.
+
+        Args:
+            mode (str): type of data to retrive
+                Object - docs object containing all data
+                Header - docs as string exculding args/results
+                Title - first line of docs
+
+        Returns:
+            (PyDefDocs|str): docs
+        """
+        _docs = upy_docs.PyDefDocs(
+            docstring=self.to_docstring(), def_=self)
+        if mode == 'Object':
+            _result = _docs
+        elif mode == 'Header':
+            if _docs:
+                _result = _docs.header
+        elif mode == 'Title':
+            if _docs:
+                _result = _docs.title
+        else:
+            raise ValueError(mode)
+        return _result
 
 
 def _ast_arg_to_name(arg):

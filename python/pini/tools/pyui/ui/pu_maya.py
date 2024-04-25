@@ -103,27 +103,14 @@ class PUMayaUi(pu_base.PUBaseUi):
         _LOGGER.debug(
             ' - ADD ARG %s default=%s browser=%s choices=%s',
             arg, arg.default, arg.browser, arg.choices)
+        _height = 20
 
         # Build row layout
-        _label_w = arg.label_w or self.label_w
-        _height = 20
-        _col_width = [(1, _label_w), (2, 1000)]
-        _n_cols = 2
-        if arg.clear:
-            _n_cols += 1
-            _col_width.append((_n_cols, _height))
-        if arg.browser:
-            _n_cols += 1
-            _col_width.append((_n_cols, _height))
-        _row = cmds.rowLayout(
-            numberOfColumns=_n_cols,
-            columnWidth=_col_width,
-            width=100,
-            adjustableColumn=2)
+        _row = self._add_arg_lyt(arg, height=_height)
 
         # Add label
         _label = to_nice(arg.name).capitalize()
-        cmds.text(_label, align='left')
+        cmds.text(_label, align='left', statusBarMessage=arg.docs)
 
         # Add arg field
         _set_fn = None
@@ -157,17 +144,48 @@ class PUMayaUi(pu_base.PUBaseUi):
             _mode = None if arg.browser is True else arg.browser
             cmds.iconTextButton(
                 image1=icons.BROWSER, width=_height, height=_height,
-                style='iconOnly',
+                style='iconOnly', statusBarMessage='Launch browser',
                 command=wrap_fn(_apply_browser, mode=_mode, field=_field))
         if arg.clear:
             cmds.iconTextButton(
                 image1=icons.CLEAR, width=_height, height=_height,
-                style='iconOnly',
+                style='iconOnly', statusBarMessage='Clear text',
                 command=wrap_fn(cmds.textField, _field, edit=True, text=''))
+        if arg.selection:
+            _type = None
+            _tooltip = 'Get selection'
+            if isinstance(arg.selection, six.string_types):
+                _type = arg.selection
+                _tooltip = 'Get selected '+_type
+            cmds.iconTextButton(
+                image1=icons.SELECT, width=_height, height=_height,
+                style='iconOnly', statusBarMessage=_tooltip,
+                command=wrap_fn(_apply_selection, field=_field, type_=_type))
 
         cmds.setParent('..')
 
         return _read_fn, _set_fn, _field
+
+    def _add_arg_lyt(self, arg, height):
+        """Add build row layout for the given arg.
+
+        Args:
+            arg (PUArg): arg to add
+            height (int): field height in pixels
+
+        Returns:
+            (str): row layout field
+        """
+        _label_w = arg.label_w or self.label_w
+        _col_width = [(1, _label_w), (2, 1000)]
+        _n_cols = 2
+        for _tgl in [arg.clear, arg.browser, arg.selection]:
+            if _tgl:
+                _n_cols += 1
+                _col_width.append((_n_cols, height))
+        return cmds.rowLayout(
+            numberOfColumns=_n_cols, columnWidth=_col_width,
+            width=100, adjustableColumn=2)
 
     def finalize_def(self, def_):
         """Finalize function.
@@ -192,15 +210,16 @@ class PUMayaUi(pu_base.PUBaseUi):
             style='iconOnly', command=def_.py_def.edit)
 
         # Add execute button
+        _docs = def_.py_def.to_docs('Title')
         _exec = wrap_fn(self._execute_def, def_)
         _btn = cmds.button(
             label=def_.label, command=_exec, height=_size,
-            backgroundColor=_col.to_tuple(float))
+            backgroundColor=_col.to_tuple(float), statusBarMessage=_docs)
         self._add_execute_ctx(button=_btn, def_=def_, exec_=_exec)
 
         # Add icon button
         _info = wrap_fn(
-            qt.notify, def_.py_def.to_docs(), icon=def_.icon,
+            qt.notify, def_.py_def.to_docstring(), icon=def_.icon,
             title=def_.label)
         cmds.iconTextButton(
             image1=pu_base.INFO_ICON, width=_size, height=_size,
@@ -360,3 +379,16 @@ def _apply_browser(field, mode):
     _result = qt.file_browser(mode=mode, root=_root)
     _LOGGER.debug(' - RESULT %s', _result)
     cmds.textField(field, edit=True, text=_result.path)
+
+
+def _apply_selection(field, type_):
+    """Apply get current selection.
+
+    Args:
+        field (str): field to apply to
+        type_ (str): apply node type filter
+    """
+    _LOGGER.info('APPLY SELECTION %s', type_)
+    _sel = ' '.join(cmds.ls(selection=True, type=type_))
+    _LOGGER.info(' - SEL %s', _sel)
+    cmds.textField(field, edit=True, text=_sel)

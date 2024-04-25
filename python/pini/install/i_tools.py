@@ -74,10 +74,17 @@ REVERT_SCENE_TOOL = PITool(
 
 PINI_HELPER_BASIC_TOOL = PITool(
     name='PiniHelperBasic',
-    label='Launch basic {}'.format(helper.TITLE),
+    label='Launch {} (non-docking)'.format(helper.TITLE),
     icon=helper.ICON, command='\n'.join([
         'from pini.tools import helper',
         'helper.launch(use_basic=True)']))
+
+PINI_HELPER_NO_RESET = PITool(
+    name='PiniHelperBasic',
+    label='Launch {} (no cache reset)'.format(helper.TITLE),
+    icon=helper.ICON, command='\n'.join([
+        'from pini.tools import helper',
+        'helper.launch(reset_cache=False)']))
 
 
 def _build_helper_tool():
@@ -110,6 +117,7 @@ def _build_helper_tool():
 
     _ctx_items = [
         PINI_HELPER_BASIC_TOOL,
+        PINI_HELPER_NO_RESET,
         PIDivider('HelperDiv1'),
         VERSION_UP_TOOL,
         LOAD_RECENT_TOOL,

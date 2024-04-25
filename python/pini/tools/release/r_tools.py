@@ -100,7 +100,7 @@ def run_tests(mode='all', tests=None, safe=True, force=False):
 
     for _idx, _test in qt.progress_bar(
             enumerate(_tests, start=1), 'Running {:d} test{}',
-            stack_key='RunTests'):
+            stack_key='RunTests', show=len(_tests) > 1):
         _LOGGER.info('(%d/%d) RUNNING TEST %s', _idx, len(_tests), _test)
         _test.execute()
         _LOGGER.info(' - COMPLETED TEST %s', _test)

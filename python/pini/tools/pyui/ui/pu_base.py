@@ -101,11 +101,14 @@ class PUBaseUi(object):
         for _last, _item in last(self.py_file.find_ui_elems()):
             if isinstance(_item, cpnt.PUDef):
                 self.add_def(_item)
+                _sep = not _last
             elif isinstance(_item, cpnt.PUSection):
                 self.set_section(_item)
+                _sep = False
             else:
                 raise ValueError(_item)
-            if not _last:
+            _LOGGER.debug('   - ADD ELEM %s sep=%d', _item, _sep)
+            if _sep:
                 self.add_separator()
 
         if load_settings:
