@@ -5,7 +5,8 @@ from pini import dcc
 from .pr_base import CPipeRef, to_cmp_str
 
 if dcc.NAME == 'maya':
-    from .pr_maya import CMayaAiStandIn, CMayaRef, CMayaShadersRef
+    from .pr_maya import (
+        CMayaAiStandIn, CMayaRef, CMayaShadersRef, lock_cams, CMayaVdb)
 elif dcc.NAME == 'nuke':
     from .pr_nuke import CNukeReadRef
 elif dcc.NAME == 'hou':

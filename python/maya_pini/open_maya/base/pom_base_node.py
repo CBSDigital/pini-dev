@@ -397,8 +397,15 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _kwargs = {}
         if keyable is not None:
             _kwargs['keyable'] = keyable
-        _results = cmds.listAttr(self, **_kwargs)
-        return [self.plug[_attr] for _attr in _results]
+        _plugs = []
+        for _attr in sorted(cmds.listAttr(self, **_kwargs)):
+            try:
+                _plug = self.plug[_attr]
+            except RuntimeError:
+                _LOGGER.info(' - FAILED TO BUILD PLUG %s.%s', self, _attr)
+                continue
+            _plugs.append(_plug)
+        return _plugs
 
     def object_type(self):
         """Read this node's object type.

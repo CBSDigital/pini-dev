@@ -136,7 +136,7 @@ class MayaDCC(BaseDCC):
         """
         from pini import pipe
         from maya_pini import open_maya as pom
-        from ..pipe_ref import pr_maya
+        from .. import pipe_ref
 
         _LOGGER.debug('CREATE REF %s', namespace)
         _LOGGER.debug(' - PATH %s', path)
@@ -152,7 +152,7 @@ class MayaDCC(BaseDCC):
             _tfm = _shp.to_parent().rename(namespace)
             _ns = str(_tfm)
             _shp.plug['useFrameExtension'].set_val(True)
-            _ref = pr_maya.CMayaVdb(_tfm, path=_seq.path)
+            _ref = pipe_ref.CMayaVdb(_tfm, path=_seq.path)
             _top_node = _ref.node
 
         elif path.extn in ('ass', 'usd', 'gz'):
@@ -165,6 +165,8 @@ class MayaDCC(BaseDCC):
             _ns = _ref.namespace
             _ref = self.find_pipe_ref(_ns)
             _top_node = _ref.ref.find_top_node(catch=True)
+            pipe_ref.lock_cams(_ref.ref)
+
         _LOGGER.debug(' - REF %s', _ref)
 
         # Organise into group

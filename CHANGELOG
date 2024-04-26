@@ -1,3 +1,13 @@
+## [1.47.0] - Fri 2024-04-26 12:02
+### Summary
+ - Pini Helper:
+    - lock camera channel box chans in references (mkim),
+### Updated
+ - pini.dcc.MayaDCC.create_ref lock cam chans on create ref,
+ - pini.dcc.pipe_ref.lock_cams added,
+ - maya_pini.open_maya.CBaseNode.list_attr catch fail to cast attr to plug,
+
+
 ## [1.46.0] - Fri 2024-04-26 10:21
 ### Summary
  - Pini Helper:

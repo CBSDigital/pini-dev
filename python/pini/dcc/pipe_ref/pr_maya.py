@@ -907,3 +907,17 @@ def find_pipe_refs(filter_=None, selected=False, extn=None):
                  if passes_filter(_ref.namespace, filter_)]
 
     return _refs
+
+
+def lock_cams(ref_):
+    """Lock all camera channel box chans in the given reference.
+
+    Args:
+        ref_ (CReference): reference to find cameras in
+    """
+    _LOGGER.debug('LOCK CAMS %s', ref_)
+    for _cam in ref_.find_nodes(type_='camera'):
+        _LOGGER.debug(' - CAM %s', _cam)
+        for _node in [_cam, _cam.shp]:
+            for _plug in _node.list_attr(keyable=True):
+                _plug.lock()
