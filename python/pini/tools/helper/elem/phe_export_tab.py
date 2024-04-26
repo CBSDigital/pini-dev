@@ -24,6 +24,8 @@ class CLExportTab(object):
         """Inititate this tab's interface - triggered by selecting this tab."""
         _LOGGER.debug('INIT UI')
 
+        self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
+
         # Disable tabs if no handlers found
         for _tab in ['Publish', 'Blast', 'Render']:
             _handlers = dcc.find_export_handlers(_tab.lower())
@@ -118,12 +120,10 @@ class CLExportTab(object):
         self.ui.ECacheRefs.set_items([], emit=False)
 
     def _redraw__ERenderHandler(self):
-        _val = self.settings.value('widgets/ERenderHandler')
-        _LOGGER.debug('REDRAW ERenderHandler %s', _val)
-        _handlers = dcc.find_export_handlers('render')
+        _handlers = sorted(dcc.find_export_handlers('render'))
         self.ui.ERenderHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers, select=_val)
+            data=_handlers)
         _LOGGER.debug(
             ' - BUILD RENDER HANDLERS %s',
             self.ui.ERenderHandler.selected_data())
@@ -276,7 +276,6 @@ class CLExportTab(object):
             self._callback__ECacheRangeReset()
         elif _tab == 'Render':
             self.ui.ERenderHandler.redraw()
-            self.load_setting(self.ui.ERenderHandler)
             self.ui.ERenderFrames.redraw()
             self.ui.ERenderFramesLabel.redraw()
             self.ui.ERender.redraw()

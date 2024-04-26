@@ -26,7 +26,7 @@ class _CDMayaJob(d_job.CDJob):
     def __init__(
             self, stime, work, output, name=None, camera=None, priority=50,
             machine_limit=0, comment=None, frames=None, error_limit=None,
-            group=None, chunk_size=1):
+            group=None, chunk_size=1, limit_groups=None):
         """Constructor.
 
         Args:
@@ -42,6 +42,8 @@ class _CDMayaJob(d_job.CDJob):
             error_limit (int): job error limit
             group (str): submission group
             chunk_size (int): apply job chunk size
+            limit_groups (str): comma separated limit groups
+                (eg. maya-2023,vray)
         """
         self.output = output
         self.camera = camera
@@ -52,7 +54,7 @@ class _CDMayaJob(d_job.CDJob):
             stime=stime, comment=comment, priority=priority, name=_name,
             machine_limit=machine_limit, work=work, frames=frames, group=group,
             error_limit=error_limit, batch_name=self.work.base,
-            chunk_size=chunk_size)
+            chunk_size=chunk_size, limit_groups=limit_groups)
 
     def _build_info_data(self, output_filename=None):
         """Build info data for this job.
@@ -88,8 +90,6 @@ class _CDMayaJob(d_job.CDJob):
             'ExtraInfoKeyValue8': 'SubmitQuickDraft={}'.format(self.draft),
             'Frames': str(self.frames).strip('[]').replace(' ', ''),
             'Group': self.group,
-            'LimitGroups': '',
-            'MachineLimit': str(self.machine_limit),
             'MinRenderTimeMinutes': '0',
             'Name': self.name,
             'OnJobComplete': 'Nothing',
@@ -185,7 +185,8 @@ class CDMayaRenderJob(_CDMayaJob):
 
     def __init__(
             self, layer, stime, work, camera=None, priority=50, machine_limit=0,
-            comment=None, frames=None, group=None, chunk_size=1):
+            comment=None, frames=None, group=None, chunk_size=1,
+            limit_groups=None):
         """Constructor.
 
         Args:
@@ -199,6 +200,8 @@ class CDMayaRenderJob(_CDMayaJob):
             frames (int list): job frame list
             group (str): submission group
             chunk_size (int): apply job chunk size
+            limit_groups (str): comma separated limit groups
+                (eg. maya-2023,vray)
         """
         self.layer = layer
         assert camera
@@ -212,7 +215,7 @@ class CDMayaRenderJob(_CDMayaJob):
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
             frames=frames or dcc.t_frames(), name=_name, group=group,
-            chunk_size=chunk_size)
+            chunk_size=chunk_size, limit_groups=limit_groups)
 
         assert self.batch_name
 

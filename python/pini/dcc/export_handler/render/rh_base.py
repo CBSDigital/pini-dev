@@ -16,7 +16,17 @@ class CRenderHandler(eh_base.CExportHandler):
 
     NAME = None
     ACTION = 'render'
-    LABEL_WIDTH = 60
+
+    def __init__(self, priority=50, label_w=60):
+        """Constructor.
+
+        Args:
+            priority (int): sort priority (higher priority handlers
+                are sorted to top of option lists)
+            label_w (int): label width in ui
+        """
+        super(CRenderHandler, self).__init__(
+            label_w=label_w, priority=priority)
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.

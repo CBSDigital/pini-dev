@@ -17,7 +17,14 @@ class CMayaPlayblast(bh_base.CBlastHandler):
 
     NAME = 'Playblast Tool'
     LABEL = 'Playblasts the current scene'
-    LABEL_WIDTH = 80
+
+    def __init__(self, label_w=80):
+        """Constructor.
+
+        Args:
+            label_w (int): label width in ui
+        """
+        super(CMayaPlayblast, self).__init__(label_w=label_w)
 
     def build_ui(self, parent=None, layout=None):
         """Build ui elements for this handler.

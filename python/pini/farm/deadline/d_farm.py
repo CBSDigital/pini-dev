@@ -28,6 +28,16 @@ class CDFarm(base.CFarm):
         """
         return system([find_exe('deadlinecommand'), '-Groups']).split()
 
+    @cache_result
+    def find_limit_groups(self):
+        """Find avaliable submission groups.
+
+        Returns:
+            (str list): groups
+        """
+        _cmds = [find_exe('deadlinecommand'), '-GetLimitGroupNames']
+        return system(_cmds).split()
+
     def submit_job(self, job):
         """Submit a job to the farm.
 
@@ -158,7 +168,7 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, group=None, chunk_size=1, version_up=False,
-            force=False):
+            limit_groups=None, force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -170,6 +180,8 @@ class CDFarm(base.CFarm):
             group (str): submission group
             chunk_size (int): apply job chunk size
             version_up (bool): version up on render
+            limit_groups (str): comma separated limit groups
+                (eg. maya-2023,vray)
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -179,6 +191,7 @@ class CDFarm(base.CFarm):
         from pini.dcc import export_handler
         from . import d_maya_job
 
+        _cam = camera or pom.find_render_cam()
         _stime = time.time()
         _work = pipe.CACHE.cur_work
         _batch = _work.base
@@ -196,8 +209,9 @@ class CDFarm(base.CFarm):
         for _lyr in _lyrs:
             _job = d_maya_job.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
-                work=_work, frames=frames, camera=camera, comment=comment,
-                machine_limit=machine_limit, group=group, chunk_size=chunk_size)
+                work=_work, frames=frames, camera=_cam, comment=comment,
+                machine_limit=machine_limit, group=group, chunk_size=chunk_size,
+                limit_groups=limit_groups)
             _render_jobs.append(_job)
         assert not _render_jobs[0].jid
         self.submit_jobs(_render_jobs, name='render')

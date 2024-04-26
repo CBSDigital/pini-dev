@@ -91,6 +91,15 @@ class CBaseWidget(object):
                 _val = _settings.value(_key)
         return _val
 
+    def set_save_policy(self, policy):
+        """Apply save policy to this widget.
+
+        Args:
+            policy (SavePolicy): save policy to apply
+        """
+        assert isinstance(policy, q_utils.SavePolicy)
+        self.save_policy = policy
+
     def set_settings_key(self, key):
         """Override the default scene settings key for this widget.
 

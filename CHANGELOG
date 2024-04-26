@@ -1,3 +1,24 @@
+## [1.46.0] - Fri 2024-04-26 10:21
+### Summary
+ - Pini Helper:
+    - maya deadline submit added machine limit + limit groups (eehemann/farnold),
+### Updated
+ - pini.dcc.CExportHandler added label_w/priority args,
+ - pini.dcc.CExportHandler.__lt__ added,
+ - pini.dcc.CExportHandler.LABEL_WIDGET deprecated,
+ - pini.dcc.CExportHandler renamed args label_width -> label_w,
+ - pini.dcc.CExportHandler.add_linedit_elem added add_elems arg,
+ - pini.dcc.CExportHandler.add_spinbox_elem set align centre + font size 7,
+ - pini.dcc.CMayaFarmRender added machine limit + limit groups opts,
+ - pini.qt.CBaseWidget.set_save_policy added,
+ - pini.qt.CListWidget.selected_texts added,
+ - pini.qt.multi_select added,
+ - pini.farm.CDFarm.find_limit_groups added,
+ - pini.farm.CDFarm.submit_maya_render added limit_groups arg,
+ - pini.farm.CDJob added limit_groups arg,
+ - pini.tools.helper.ui.ERenderHandler set save policy to save in scene,
+
+
 ## [1.45.1] - Thu 2024-04-25 10:55
 ### Summary
  - Pyui:

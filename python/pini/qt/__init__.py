@@ -28,7 +28,7 @@ from .q_utils import (
 
 from .tools import (
     file_browser, input_dialog, raise_dialog, ok_cancel, yes_no_cancel,
-    notify, progress_bar, progress_dialog, warning)
+    notify, progress_bar, progress_dialog, warning, multi_select)
 
 if dcc.NAME == 'maya':
     from .custom import CUiDockableMixin, CDockableMixin

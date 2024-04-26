@@ -206,6 +206,14 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             return None
         return single(_sel).text()
 
+    def selected_texts(self):
+        """Get list of text from selected items.
+
+        Returns:
+            (str list): text from selected items
+        """
+        return [_item.text() for _item in self.selectedItems()]
+
     def set_items(self, items, select=None, emit=None, use_empty_marker=True):
         """Clear the contents and apply a new list of items.
 

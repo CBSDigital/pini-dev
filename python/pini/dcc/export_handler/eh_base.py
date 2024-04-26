@@ -7,7 +7,7 @@ publishing) to pipeline by a dcc.
 import logging
 
 from pini import qt, icons, pipe
-from pini.qt import QtWidgets
+from pini.qt import QtWidgets, QtGui, Qt
 from pini.utils import to_nice, cache_result, str_to_seed, wrap_fn
 
 from . import eh_utils
@@ -20,7 +20,6 @@ class CExportHandler(object):
 
     NAME = None
     ACTION = None
-    LABEL_WIDTH = 70
     ICON = None
 
     description = None
@@ -30,9 +29,17 @@ class CExportHandler(object):
     parent = None
     layout = None
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, priority=50, label_w=70):
+        """Constructor.
+
+        Args:
+            priority (int): sort priority (higher priority handlers
+                are sorted to top of option lists)
+            label_w (int): label width in ui
+        """
         self.ui = None
+        self.priority = priority
+        self.label_w = label_w
         assert self.ACTION
         _name = self.NAME or type(self).__name__
         _name = _name.lower().replace(' ', '_')
@@ -76,16 +83,16 @@ class CExportHandler(object):
         _signal.connect(_apply_save_policy)
 
     def _add_elem_lyt(
-            self, name, elem, label=None, label_width=None, tooltip=None,
+            self, name, elem, label=None, label_w=None, tooltip=None,
             disable_save_settings=False, save_policy=None, settings_key=None,
-            stretch=True):
+            stretch=True, add_elems=()):
         """Add a layout containing the given element.
 
         Args:
             name (str): name base for elements
             elem (QWidget): active element in layout
             label (str): layout label
-            label_width (int): override default label width
+            label_w (int): override default label width
             tooltip (str): add tooltip to element
             disable_save_settings (bool): apply disable save settings to element
             save_policy (SavePolicy): save policy to apply
@@ -93,6 +100,7 @@ class CExportHandler(object):
             settings_key (str): override settings key for element
             stretch (bool): apply stretch to element to fill available
                 horizontal space
+            add_elems (list): widgets to add to this layout
         """
         _label = label or to_nice(name).capitalize()
         _LOGGER.debug('ADD ELEM LAYOUT')
@@ -110,7 +118,7 @@ class CExportHandler(object):
         _label_e = QtWidgets.QLabel(self.parent)
         _label_e.setText(_label)
         _label_e.setObjectName(_label_name)
-        _label_e.setFixedWidth(label_width or self.LABEL_WIDTH)
+        _label_e.setFixedWidth(label_w or self.label_w)
         if tooltip:
             _label_e.setToolTip(tooltip)
         setattr(self.ui, _label_name, _label_e)
@@ -121,6 +129,9 @@ class CExportHandler(object):
         if stretch:
             _h_lyt.addStretch()
         self.layout.addLayout(_h_lyt)
+
+        for _elem in add_elems:
+            _h_lyt.addWidget(_elem)
 
         self._add_elem(
             elem, disable_save_settings=disable_save_settings, name=name,
@@ -159,7 +170,7 @@ class CExportHandler(object):
 
     def add_combobox_elem(
             self, name, items, data=None, val=None, width=None, label=None,
-            label_width=None, tooltip=None, disable_save_settings=False,
+            label_w=None, tooltip=None, disable_save_settings=False,
             save_policy=None, settings_key=None):
         """Add a combobox element.
 
@@ -170,7 +181,7 @@ class CExportHandler(object):
             val (str): item to select
             width (int): override element width
             label (str): element label
-            label_width (int): override default label width
+            label_w (int): override default label width
             tooltip (str): add tooltip to element
             disable_save_settings (bool): apply disable save settings to element
             save_policy (SavePolicy): save policy to apply
@@ -191,7 +202,7 @@ class CExportHandler(object):
 
         self._add_elem_lyt(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
-            label_width=label_width, save_policy=save_policy,
+            label_w=label_w, save_policy=save_policy,
             disable_save_settings=disable_save_settings,
             settings_key=settings_key)
         if val:
@@ -203,7 +214,7 @@ class CExportHandler(object):
 
     def add_lineedit_elem(
             self, name, val=None, label=None, tooltip=None,
-            disable_save_settings=False):
+            disable_save_settings=False, add_elems=()):
         """Add QLineEdit element to this handler's interface.
 
         Args:
@@ -212,6 +223,7 @@ class CExportHandler(object):
             label (str): element label
             tooltip (str): apply tooltip
             disable_save_settings (bool): apply disable save settings to element
+            add_elems (list): widgets to add to this layout
 
         Returns:
             (QListEdit): line edit element
@@ -222,9 +234,12 @@ class CExportHandler(object):
         _lineedit.setSizePolicy(
             QtWidgets.QSizePolicy.MinimumExpanding,
             QtWidgets.QSizePolicy.Fixed)
+
         self._add_elem_lyt(
             name=name, elem=_lineedit, label=label, tooltip=tooltip,
-            disable_save_settings=disable_save_settings, stretch=False)
+            disable_save_settings=disable_save_settings, stretch=False,
+            add_elems=add_elems)
+
         return _lineedit
 
     def add_separator_elem(self, name=None):
@@ -239,7 +254,7 @@ class CExportHandler(object):
         self.layout.addWidget(_sep)
 
     def add_spinbox_elem(
-            self, name, val, min_=0, max_=10000, label=None, label_width=None,
+            self, name, val, min_=0, max_=10000, label=None, label_w=None,
             tooltip=None, disable_save_settings=False):
         """Build a QSpinBox element in this handler's interface.
 
@@ -249,7 +264,7 @@ class CExportHandler(object):
             min_ (int): element minimum
             max_ (int): element maximum
             label (str): element label
-            label_width (int): element label width
+            label_w (int): element label width
             tooltip (str): apply tooltip
             disable_save_settings (bool): disable save settings to disk
 
@@ -261,11 +276,16 @@ class CExportHandler(object):
         _spinbox.setMinimum(min_)
         _spinbox.setMaximum(max_)
         _spinbox.setFixedWidth(45)
+        _spinbox.setAlignment(Qt.AlignCenter)
+
+        _font = QtGui.QFont()
+        _font.setPointSize(7)
+        _spinbox.setFont(_font)
 
         self._add_elem_lyt(
             name=name, elem=_spinbox, label=label, tooltip=tooltip,
             disable_save_settings=disable_save_settings,
-            label_width=label_width)
+            label_w=label_w)
 
         return _spinbox
 
@@ -387,6 +407,9 @@ class CExportHandler(object):
             raise RuntimeError
         if _version_up:
             pipe.version_up()
+
+    def __lt__(self, other):
+        return -self.priority < -other.priority
 
     def __repr__(self):
         return '<{}>'.format(type(self).__name__.strip('_'))

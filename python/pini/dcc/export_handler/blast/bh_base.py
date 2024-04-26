@@ -18,8 +18,15 @@ class CBlastHandler(eh_base.CExportHandler):
     LABEL = 'Playblasts the current scene'
     ACTION = 'blast'
 
-    LABEL_WIDTH = 52
     _manual_range_elems = None
+
+    def __init__(self, label_w=60):
+        """Constructor.
+
+        Args:
+            label_w (int): label width in ui
+        """
+        super(CBlastHandler, self).__init__(label_w=label_w)
 
     def _build_range_elems(self):
         """Build range elements.

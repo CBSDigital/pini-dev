@@ -34,7 +34,7 @@ class CDJob(object):
     def __init__(
             self, name, work, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
-            dependencies=(), group=None, chunk_size=1):
+            dependencies=(), group=None, chunk_size=1, limit_groups=None):
         """Constructor.
 
         Args:
@@ -50,11 +50,14 @@ class CDJob(object):
             dependencies (CDJob list): jobs to depend on
             group (str): submission group
             chunk_size (int): apply chunk size
+            limit_groups (str): comma separated limit groups
+                (eg. maya-2023,vray)
         """
         self.stime = stime or time.time()
         self.comment = comment
         self.priority = priority
         self.machine_limit = machine_limit
+        self.limit_groups = limit_groups or ()
         self.name = name
         self.work = work
         self.error_limit = error_limit
@@ -153,7 +156,7 @@ class CDJob(object):
             'LimitConcurrentTasksToNumberOfCpus': 'True',
             'MachineLimit': str(self.machine_limit),
             'Whitelist': '',
-            'LimitGroups': '',
+            'LimitGroups': ','.join(self.limit_groups),
             'JobDependencies': _dep_str,
             'OnJobComplete': 'Nothing',
             'InitialStatus': 'Active',
@@ -161,6 +164,8 @@ class CDJob(object):
             'ChunkSize': str(self.chunk_size),
             'ExtraInfo0': self.job.name,
         }
+        _LOGGER.info(
+            ' - LIMIT GROUPS %s %s', self.limit_groups, _data['LimitGroups'])
 
         if self.batch_name:
             _data['BatchName'] = self.batch_name

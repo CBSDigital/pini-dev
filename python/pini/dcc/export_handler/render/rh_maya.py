@@ -57,7 +57,7 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
             _cam = _cams[0]
         _LOGGER.debug(' - CAM %s %s', _cam, _cam)
         self.ui.Camera = self.add_combobox_elem(
-            name='Camera', items=_cams, val=_cam,
+            name='Camera', items=_cams, val=_cam, label_w=60,
             disable_save_settings=True)
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
         self.add_separator_elem()
@@ -200,6 +200,17 @@ class CMayaFarmRender(CMayaRenderHandler):
     description = 'Renders the current scene to {}.'.format(
         farm.NAME)
 
+    def __init__(self, priority=60, label_w=80):
+        """Constructor.
+
+        Args:
+            priority (int): sort priority (higher priority handlers
+                are sorted to top of option lists)
+            label_w (int): label width in ui
+        """
+        super(CMayaFarmRender, self).__init__(
+            priority=priority, label_w=label_w)
+
     def build_ui(self, parent=None, layout=None):
         """Build basic render interface into the given layout.
 
@@ -216,9 +227,12 @@ class CMayaFarmRender(CMayaRenderHandler):
             name='Priority', val=50)
         self.ui.ChunkSize = self.add_spinbox_elem(
             name='ChunkSize', val=1, min_=1)
+        self.ui.MachineLimit = self.add_spinbox_elem(
+            name='MachineLimit', val=15)
+        self._build_limit_groups_elems()
         self.add_separator_elem()
 
-        self._build_layers_elem()
+        self._build_layers_elems()
 
         self.ui.HideImgPlanes = self.add_checkbox_elem(
             name='HideImgPlanes', val=False,
@@ -230,8 +244,23 @@ class CMayaFarmRender(CMayaRenderHandler):
             tooltip='Version up scene file after render submitted')
         self.add_separator_elem()
 
-    def _build_layers_elem(self):
-        """Build render layer selection element."""
+    def _build_limit_groups_elems(self):
+        """Build limit groups elements."""
+        _btn = QtWidgets.QPushButton(self.parent)
+        _btn.setFixedWidth(20)
+        _btn.setFixedHeight(20)
+        _btn.setIconSize(qt.to_size(20))
+        _btn.setIcon(qt.to_icon(icons.SELECT))
+        _btn.setFlat(True)
+        _btn.clicked.connect(self._callback__LimitGroupsSelect)
+        self.ui.LimitGroupsSelect = _btn
+
+        self.ui.LimitGroups = self.add_lineedit_elem(
+            name='LimitGroups', add_elems=[_btn])
+        self.ui.LimitGroups.setEnabled(False)
+
+    def _build_layers_elems(self):
+        """Build render layer selection elements."""
         _work = pipe.cur_work()
 
         # Build layers section
@@ -271,6 +300,15 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         _signal = qt.widget_to_signal(self.ui.Layers)
         _signal.connect(self._callback__Layers)
+
+    def _callback__LimitGroupsSelect(self):
+        _LOGGER.info('CALLBACK LIMIT GROUPS SELECT')
+        _cur_grps = self.ui.LimitGroups.text().split(',')
+        _grps = qt.multi_select(
+            items=farm.find_limit_groups(),
+            select=_cur_grps, multi=True,
+            msg='Select limit groups:', title='Select groups')
+        self.ui.LimitGroups.setText(','.join(_grps))
 
     def _callback__Layers(self):
         _sel_lyrs = self.ui.Layers.selected_datas()
@@ -312,6 +350,8 @@ class CMayaFarmRender(CMayaRenderHandler):
             chunk_size=self.ui.ChunkSize.value(),
             comment=self.ui.Comment.text(),
             priority=self.ui.Priority.value(),
+            machine_limit=self.ui.MachineLimit.value(),
+            limit_groups=self.ui.LimitGroups.text().split(','),
             version_up=self.ui.VersionUp.isChecked())
 
         for _revert in _reverts:
