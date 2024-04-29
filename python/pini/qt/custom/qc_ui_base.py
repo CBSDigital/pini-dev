@@ -53,7 +53,7 @@ class CUiBase(object):
         self._ui_file = abs_path(ui_file)
         self.name = type(self).__name__
 
-        self._shortcuts = {
+        self.shortcuts = {
             'q': (self.deleteLater, 'Quit'),
             Qt.Key_Escape: (self.deleteLater, 'Quit'),
         }
@@ -177,7 +177,7 @@ class CUiBase(object):
             action (fn): shortcut action
             label (str): shortcut label
         """
-        self._shortcuts[key] = action, label
+        self.shortcuts[key] = action, label
 
     def start_timer(self, fps):
         """Start timer at the given frame rate.
@@ -556,7 +556,7 @@ class CUiBase(object):
             event (QEvent): key press event
         """
         _LOGGER.info('KEY PRESS EVENT %s', event.text())
-        for _key, (_action, _label) in self._shortcuts.items():
+        for _key, (_action, _label) in self.shortcuts.items():
             if event.text() == _key or event.key() == _key:
                 _LOGGER.info(' - APPLYING SHORTCUT %s', _label)
                 _action()  # pylint: disable=not-callable

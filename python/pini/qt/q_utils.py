@@ -367,10 +367,12 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
     Returns:
         (QSize): size
     """
+    _LOGGER.debug('TO SIZE %s %s', args, kwargs)
 
     # Calculate result
     if len(args) == 1:
         _size = single(args)
+        _LOGGER.debug(' - SIZE %s', _size)
         if isinstance(_size, QtCore.QSize):
             _result = _size
         elif isinstance(_size, QtCore.QSizeF):
@@ -381,7 +383,7 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
             _result = QtCore.QSizeF(_size.x(), _size.y())
         elif isinstance(_size, QtGui.QVector2D):
             _result = QtCore.QSizeF(abs(_size.x()), abs(_size.y()))
-        elif isinstance(_size, (tuple, list)):
+        elif isinstance(_size, (tuple, list)) and len(_size) == 2:
             _class = (QtCore.QSizeF if isinstance(_size[0], float)
                       else QtCore.QSize)
             _result = _class(_size[0], _size[1])
@@ -408,11 +410,11 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
                 isinstance(_result, QtCore.QSize)):
             _result = _class(int(_result.width()), int(_result.height()))
         elif (
-                issubclass(_class, QtCore.QSize) and
-                isinstance(_result, QtCore.QSizeF)):
+                issubclass(_class, (QtCore.QSize, QtCore.QSizeF)) and
+                isinstance(_result, (QtCore.QSize, QtCore.QSizeF))):
             _result = _class(int(_result.width()), int(_result.height()))
         else:
-            raise NotImplementedError
+            raise NotImplementedError(_class)
 
     return _result
 

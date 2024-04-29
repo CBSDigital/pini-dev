@@ -1,3 +1,18 @@
+## [1.49.0] - Mon 2024-04-29 15:51
+### Summary
+ - Pini Helper:
+    - bugfix switch shaders tag switching to vrmesh output (blutge),,
+ - Sanity Check:
+    - check shaders flag shaders not applied to referenced geometry,
+### Updated
+ - pini.pipe.CPWorkDir.find_outputs for latest use tag/output_type for uid,
+ - pini.qt.CUiDialog.shortcuts made public,
+ - pini.qt.to_size better QSizeF handling,
+ - pini.tools.sanity_check maya asset moved helper funcs to utils submodule,
+ - pini.tools.sanity_check.CheckShaders flag shaders no applied to ref geo,
+ - pini.tools.helper bugfix update tag not maintaining output_type,
+
+
 ## [1.48.2] - Mon 2024-04-29 11:55
 ### Summary
  - Pini Helper:

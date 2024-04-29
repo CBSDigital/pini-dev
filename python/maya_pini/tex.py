@@ -200,7 +200,7 @@ class _Shader(pom.CNode):
             node (str): only remove the given geometry node
         """
         _engine = self.to_se()
-        _assigns = cmds.sets(_engine, query=True)
+        _assigns = self.to_assignments()
         _LOGGER.info('UNAPPLY %s', _assigns)
         for _assign in _assigns:
             if node and node != to_node(_assign):

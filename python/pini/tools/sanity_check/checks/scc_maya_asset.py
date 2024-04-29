@@ -14,98 +14,11 @@ from pini.utils import single, wrap_fn, check_heart, plural
 from maya_pini import ref, open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, to_unique, add_to_set, to_node,
-    to_long)
+    DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_node, to_long)
 
-from ..core import SCFail, SCMayaCheck
+from ..core import SCFail, SCMayaCheck, sc_utils_maya
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _read_cache_set():
-    """Read cache_SET contents.
-
-    Based on publish references mode, this can contain different values,
-    namely whether to include referenced nodes.
-
-    Returns:
-        (CBaseTransform list): cache set nodes
-    """
-    _refs_mode = export_handler.get_publish_references_mode()
-    _include_referenced = _refs_mode in (
-        export_handler.ReferencesMode.LEAVE_INTACT,
-        export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE)
-    return m_pipe.read_cache_set(
-        mode='geo', include_referenced=_include_referenced)
-
-
-def _fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
-    """Provide fix for node suffix fail.
-
-    Args:
-        node (str): node with bad suffix
-        suffix (str): required suffix (eg. _GEO)
-        type_ (str): node type (for fail message - eg. geo)
-        alts (tuple): possible altertives values to strip (eg. _Geo, _geo)
-        ignore (tuple): suggestions to ignore
-        base (str): apply name base/prefix
-
-    Returns:
-        (str, fn, str): fail message, fix, name suggestion
-    """
-    _LOGGER.debug("FIX NODE SUFFIX %s", node)
-
-    _node = pom.cast_node(str(node))
-    if _node.is_referenced():
-        _msg = ('Referenced {} {} does not have "{}" '
-                'suffix'.format(type_, _node, suffix))
-        return _msg, None, None
-
-    # Determine base
-    _base = base
-    if not _base:
-        _splitters = [suffix] + list(alts)
-        _LOGGER.debug(' - SPLITTERS %s', _splitters)
-        for _splitter in _splitters:
-            if _splitter in str(_node):
-                _new_base = str(_node).rsplit(_splitter, 1)[0]
-                if _new_base:
-                    _base = _new_base
-                    _LOGGER.debug(' - UPDATED BASE %s', _base)
-                    break
-        else:
-            _base = str(_node)
-        while _base[-1].isdigit():
-            _base = _base[:-1]
-    _LOGGER.debug(' - BASE %s', _base)
-
-    # Build suggestion
-    _suggestion = to_unique(base=_base, suffix=suffix, ignore=ignore)
-    _LOGGER.debug(' - SUGGESTION %s', _suggestion)
-    _msg = (
-        '{} "{}" does not have "{}" suffix (suggestion: '
-        '"{}")'.format(type_.capitalize(), node, suffix, _suggestion))
-    _fix = wrap_fn(_node.rename, _suggestion)
-
-    return _msg, _fix, _suggestion
-
-
-def _is_display_points(node):
-    """Test whether the given node is a display points node.
-
-    These nodes are listed as dag nodes but do not appear in outliner
-    or have parents.
-
-    Args:
-        node (str): node to test
-
-    Returns:
-        (bool): whether display points
-    """
-    _node = pom.CTransform(node)
-    if not _node.shp:
-        return False
-    return _node.shp.object_type() == 'displayPoints'
 
 
 class CheckTopNode(SCMayaCheck):
@@ -125,7 +38,7 @@ class CheckTopNode(SCMayaCheck):
             if _node.count('|') == 1 and
             not _node.strip('|') in DEFAULT_NODES and
             not cmds.referenceQuery(_node, isNodeReferenced=True) and
-            not _is_display_points(_node)]
+            not sc_utils_maya.is_display_points(_node)]
         if 'JUNK' in _top_nodes:
             _top_nodes.remove('JUNK')
         self.write_log('TOP NODES %s', _top_nodes)
@@ -165,11 +78,11 @@ class CheckCacheSet(SCMayaCheck):
             return
 
         # Check set geos
-        _geos = _read_cache_set()
+        _geos = sc_utils_maya.read_cache_set_geo()
         self.write_log('Geos %s', _geos)
         if not _geos:
             _fix = None
-            _top_node = single(_find_top_level_nodes(), catch=True)
+            _top_node = single(sc_utils_maya.find_top_level_nodes(), catch=True)
             if _top_node:
                 _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
             _fail = self.add_fail('Empty cache set', fix=_fix)
@@ -187,20 +100,6 @@ class CheckCacheSet(SCMayaCheck):
                     'abcs with multiple top nodes - cache_SET contains {:d} '
                     'top nodes').format(len(_top_nodes))
             self.add_fail(_msg)
-
-
-def _find_top_level_nodes():
-    """Find non-default dag nodes with no parents.
-
-    Returns:
-        (str list): top nodes
-    """
-    _all_nodes = cmds.ls(dagObjects=True, long=True, defaultNodes=False)
-    _nodes = [
-        to_node(_node) for _node in _all_nodes
-        if _node.count('|') == 1 and
-        to_node(_node) not in DEFAULT_NODES]
-    return _nodes
 
 
 class CheckRenderStats(SCMayaCheck):
@@ -248,6 +147,37 @@ class CheckRenderStats(SCMayaCheck):
                 self.add_fail(_msg, fix=_fix, node=geo)
 
 
+class CheckForEmptyNamespaces(SCMayaCheck):
+    """Check scene for empty namespaces."""
+
+    profile_filter = 'asset'
+
+    def run(self):
+        """Run this check."""
+        _refs = ref.find_refs()
+        _ref_nss = [_ref.namespace for _ref in _refs]
+        _all_nss = cmds.namespaceInfo(
+            listOnlyNamespaces=True, recurse=True) or []
+        _nss = sorted({
+            str(_ns.split(':')[0])
+            for _ns in _all_nss})
+        self.write_log('Found %s namespaces %s', len(_nss), _nss)
+        for _ns in _nss:
+            if _ns in _ref_nss:
+                self.write_log('Allowed ref namespace %s', _ns)
+                continue
+            if _ns in ['shared', 'UI']:
+                self.write_log('Allowed standard namespace %s', _ns)
+                continue
+            _nodes = cmds.namespaceInfo(_ns, listNamespace=True)
+            if _nodes:
+                self.write_log('Allowed namespace with nodes %s', _ns)
+                continue
+            _fix = wrap_fn(del_namespace, _ns)
+            self.write_log('Found empty namespace %s', _ns)
+            self.add_fail('Empty namespace {}'.format(_ns), fix=_fix)
+
+
 class CheckUVs(SCMayaCheck):
     """Check UVs on current scene geo."""
 
@@ -292,12 +222,12 @@ class CheckUVs(SCMayaCheck):
             if 'map1' in _sets:
                 _msg = 'Geo {} is not using uv set map1 (set is {})'.format(
                     geo, _set)
-                _fix = wrap_fn(_fix_uvs, geo)
+                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = ('Geo {} does not have uv set map1 (set is '
                         '{})'.format(geo, _set))
-                _fix = wrap_fn(_fix_uvs, geo)
+                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             return
 
@@ -311,7 +241,7 @@ class CheckUVs(SCMayaCheck):
                 _msg = (
                     'Geo {} is using empty uv set map1 (should use '
                     '{})'.format(geo, _set))
-                _fix = wrap_fn(_fix_uvs, geo)
+                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = 'Geo {} is using has empty uv set map1'.format(geo)
@@ -323,65 +253,8 @@ class CheckUVs(SCMayaCheck):
             _unused = sorted(set(_sets) - set(['map1']))
             _msg = 'Geo {} has unused uv set{}: {}'.format(
                 geo, plural(_sets[1:]), ', '.join(_unused))
-            _fix = wrap_fn(_fix_uvs, geo)
+            _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
             self.add_fail(_msg, node=geo, fix=_fix)
-
-
-def _fix_uvs(geo):
-    """Clean up sets.
-
-    All unused uvs sets are deleted and the current one is renamed to map1.
-
-    Args:
-        geo (str): geometry to clean
-    """
-    _LOGGER.debug('FIX UVS %s', geo)
-
-    _cur = single(cmds.polyUVSet(geo, query=True, currentUVSet=True))
-    _LOGGER.debug(' - CUR %s', _cur)
-
-    # Make sure current is map1
-    if _cur != 'map1':
-        _LOGGER.debug(' - COPY CURRENT SET %s -> map1', _cur)
-        cmds.polyUVSet(geo, uvSet=_cur, newUVSet='map1', copy=True)
-        cmds.polyUVSet(geo, uvSet='map1', currentUVSet=True)
-        _cur = single(cmds.polyUVSet(geo, query=True, currentUVSet=True))
-    assert _cur == 'map1'
-
-    _sets = cmds.polyUVSet(geo, query=True, allUVSets=True)
-    _LOGGER.debug(' - SETS %s', _sets)
-
-    # Make sure current set has values (area)
-    if not cmds.polyEvaluate(geo, uvArea=True, uvSetName='map1'):
-        _set = single([
-            _set for _set in _sets
-            if cmds.polyEvaluate(geo, uvArea=True, uvSetName=_set)],
-            catch=True)
-        if _set:
-            _LOGGER.debug(' - SET map1 HAS NO AREA -> USING %s', _set)
-            cmds.polyUVSet(geo, uvSet=_set, newUVSet='map1', copy=True)
-
-    # Make sure default (first) set is map1
-    if len(_sets) > 1 and not _sets[0] == 'map1':
-        cmds.polyUVSet(geo, reorder=True, uvSet='map1', newUVSet=_sets[0])
-        _sets = cmds.polyUVSet(geo, query=True, allUVSets=True)
-        _LOGGER.debug(' - REORDERED %s', _sets)
-    assert _sets[0] == 'map1'
-
-    # Remove unused
-    if len(_sets) > 1:
-        for _set in _sets:
-            if _set == 'map1':
-                continue
-            _LOGGER.debug(' - REMOVE UNUSED %s', _set)
-            try:
-                cmds.polyUVSet(geo, delete=True, uvSet=_set)
-            except RuntimeError as _exc:
-                _LOGGER.error(
-                    ' - FAILED TO REMOVE %s (error=%s)', _set,
-                    str(_exc).strip())
-        _sets = cmds.polyUVSet(geo, query=True, allUVSets=True)
-        _LOGGER.debug(' - REMOVED UNUSED remaining=%s', _sets)
 
 
 class CheckModelGeo(SCMayaCheck):
@@ -415,7 +288,7 @@ class CheckGeoNaming(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = _read_cache_set()
+        _geos = sc_utils_maya.read_cache_set_geo()
         self.write_log('GEOS %s', _geos)
         if self._check_for_duplicates(geos=_geos):
             return
@@ -462,7 +335,7 @@ class CheckGeoNaming(SCMayaCheck):
             if (
                     not _grp.endswith('_GRP') and
                     to_clean(_grp) not in ['GEO', 'RIG', 'MDL', 'LYT']):
-                _msg, _fix, _suggestion = _fix_node_suffix(
+                _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
                     node=_grp, suffix='_GRP',
                     alts=['_Grp', '_gr'], type_='group',
                     ignore=self._ignore_names)
@@ -486,7 +359,7 @@ class CheckGeoNaming(SCMayaCheck):
         _name = to_clean(geo)
         _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
         if not (_name.endswith('_'+_geo_suffix) or _name == _geo_suffix):
-            _msg, _fix, _suggestion = _fix_node_suffix(
+            _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
                 node=geo, suffix='_'+_geo_suffix,
                 alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
                 ignore=self._ignore_names)
@@ -577,6 +450,40 @@ class CheckGeoNaming(SCMayaCheck):
             cmds.rename(_node, _new_name)
 
 
+class CheckForNgons(SCMayaCheck):
+    """Check for polygons with more than four sides."""
+
+    task_filter = 'model'
+    depends_on = (CheckGeoNaming, )
+    sort = 100
+
+    def run(self):
+        """Run this check."""
+        for _geo in self.update_progress(m_pipe.read_cache_set()):
+            cmds.select(_geo)
+            mel.eval(
+                'polyCleanupArgList 4 { '
+                '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
+                '    "1e-05","0","1e-05","0","-1","0","0" }')
+            if cmds.ls(selection=True):
+                _msg = 'Mesh "{}" contains ngons'.format(_geo)
+                self.add_fail(
+                    _msg, node=_geo, fix=wrap_fn(self.fix_ngons, _geo))
+
+    def fix_ngons(self, geo):
+        """Fix ngons in the given mesh.
+
+        Args:
+            geo (str): mesh to fix
+        """
+        cmds.select(geo)
+        mel.eval(
+            'polyCleanupArgList 4 {'
+            '    "0","1","1","0","1","0","0","0","0","1e-05","0",'
+            '    "1e-05","0","1e-05","0","-1","0","0" }')
+        cmds.select(geo)
+
+
 class FindUnneccessarySkinClusters(SCMayaCheck):
     """Find skin clusters which are not needed.
 
@@ -594,7 +501,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        _geos = _read_cache_set()
+        _geos = sc_utils_maya.read_cache_set_geo()
         if not _geos:
             self.add_fail('No geo found')
 
@@ -627,218 +534,6 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
                 'input joint - this can cause bloat in abcs and cause '
                 'memory issues'.format(_geo.shp))
             self.add_fail(_msg, node=_geo.shp)
-
-
-class CheckForEmptyNamespaces(SCMayaCheck):
-    """Check scene for empty namespaces."""
-
-    profile_filter = 'asset'
-
-    def run(self):
-        """Run this check."""
-        _refs = ref.find_refs()
-        _ref_nss = [_ref.namespace for _ref in _refs]
-        _all_nss = cmds.namespaceInfo(
-            listOnlyNamespaces=True, recurse=True) or []
-        _nss = sorted({
-            str(_ns.split(':')[0])
-            for _ns in _all_nss})
-        self.write_log('Found %s namespaces %s', len(_nss), _nss)
-        for _ns in _nss:
-            if _ns in _ref_nss:
-                self.write_log('Allowed ref namespace %s', _ns)
-                continue
-            if _ns in ['shared', 'UI']:
-                self.write_log('Allowed standard namespace %s', _ns)
-                continue
-            _nodes = cmds.namespaceInfo(_ns, listNamespace=True)
-            if _nodes:
-                self.write_log('Allowed namespace with nodes %s', _ns)
-                continue
-            _fix = wrap_fn(del_namespace, _ns)
-            self.write_log('Found empty namespace %s', _ns)
-            self.add_fail('Empty namespace {}'.format(_ns), fix=_fix)
-
-
-def _shd_is_arnold(shd, engine, type_):
-    """Test whether the given shader is arnold.
-
-    Args:
-        shd (str): shader
-        engine (str): shading engine
-        type_ (str): shader type
-
-    Returns:
-        (bool): whether arnold
-    """
-    _ai_ss_plug = pom.CNode(engine).plug['aiSurfaceShader']
-    _ai_ss = _ai_ss_plug.find_incoming(plugs=False)
-    if _ai_ss:
-        return False
-    return not type_.startswith('ai')
-
-
-def _import_referenced_shader(shd):
-    """Import referenced shader and apply the imported shader to the geometry.
-
-    Args:
-        shd (Shader): shader to import
-    """
-    _LOGGER.debug('IMPORT SHADER %s', shd)
-    _dup = shd.duplicate()
-    _LOGGER.debug(' - DUPLICATE SHADER %s', _dup)
-    _geos = shd.to_geo()
-    _LOGGER.debug(' - APPLY TO %s', _geos)
-    _dup.assign_to(_geos)
-
-
-class CheckShaders(SCMayaCheck):
-    """Check the shader name matches the shading engine.
-
-    eg. myShader -> myShaderSE
-    """
-
-    sort = 100
-    task_filter = 'lookdev model rig'
-
-    def run(self, check_ai_shd=True):
-        """Run this check.
-
-        Args:
-            check_ai_shd (bool): check any attached arnold shader override
-        """
-
-        # Check for referenced shaders
-        for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
-            self.add_fail(
-                'Shader "{}" is referenced - this must be imported into the '
-                'current scene'.format(str(_shd)),
-                node=_shd, fix=wrap_fn(_import_referenced_shader, _shd))
-
-        _shds = lookdev.read_shader_assignments(
-            catch=True, allow_face_assign=True, referenced=False)
-        self.write_log('Found %d shaders: %s', len(_shds), _shds)
-        if not _shds:
-            self.add_fail(
-                'No shader assignments found - this publish saves out shading '
-                'assignments so you need to apply shaders to your geometry')
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-        _ignore_names = set()
-        for _shd, _data in _shds.items():
-
-            self.write_log('Checking shader %s', _shd)
-
-            if _shd == 'lambert1':
-                continue
-
-            _se = _data['shadingEngine']
-            self.write_log(' - shading engine %s', _se)
-            _type = cmds.objectType(_shd)
-            _select_shd = wrap_fn(cmds.select, _shd)
-
-            # Flag namespace
-            if _shd != to_clean(_shd):
-                _msg = 'Shader {} is using a namespace'.format(_shd)
-                _fix = wrap_fn(cmds.rename, _shd, to_clean(_shd))
-                self.add_fail(_msg, fix=_fix, node=_shd)
-                continue
-
-            # Flag missing MTL suffix
-            if not _shd.endswith('_MTL'):
-                _msg, _fix, _suggestion = _fix_node_suffix(
-                    _shd, suffix='_MTL', alts=['_shd', '_mtl', '_SHD', '_Mat'],
-                    type_='shader', ignore=_ignore_names)
-                _ignore_names.add(_suggestion)
-                self.add_fail(_msg, fix=_fix, node=_shd)
-                continue
-            _base = _shd[:-4]
-            self._check_engine_name(shd=_shd, engine=_se)
-
-            self._flag_assigned_to_intermediate_node(engine=_se, shader=_shd)
-
-            if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
-
-                # Flag non-arnold shader
-                if _shd_is_arnold(shd=_shd, engine=_se, type_=_type):
-                    _msg = 'Shader {} ({}) is not arnold shader'.format(
-                        _shd, _type)
-                    self.add_fail(_msg, node=_shd)
-                    continue
-
-                # Check ai shader suffix
-                _ai_shd = _data.get('ai_shd')
-                if check_ai_shd and _ai_shd:
-                    if not _ai_shd.endswith('_AIS'):
-                        _msg, _fix, _suggestion = _fix_node_suffix(
-                            _ai_shd, suffix='_AIS',
-                            alts=['_shd', '_mtl', '_SHD'],
-                            type_='ai shader', base=_base, ignore=_ignore_names)
-                        _ignore_names.add(_suggestion)
-                        self.add_fail(_msg, fix=_fix, node=_ai_shd)
-
-    def _flag_assigned_to_intermediate_node(self, engine, shader):
-        """Flag geo assigned to intermediate nodes.
-
-        Args:
-            engine (str): shading engine
-            shader (str): shader
-        """
-        _geos = sorted({
-            to_node(_geo) for _geo in cmds.sets(engine, query=True)})
-        self.write_log(' - geos %s', _geos)
-
-        for _geo in _geos:
-            _geo = pom.cast_node(_geo, maintain_shapes=True)
-            self.write_log(' - check geo %s %s', _geo, _geo.object_type())
-            if _geo.object_type() != 'mesh':
-                continue
-            self.write_log('   - is mesh')
-            if not _geo.plug['intermediateObject'].get_val():
-                continue
-            _msg = (
-                'Shader "{}" is assigned to intermediate object "{}" '
-                'which is not renderable. This assigment has no effect '
-                'and may bloat the publish file.'.format(
-                    shader, _geo))
-            _fix = wrap_fn(
-                self._unassign_shader, engine=engine, geo=_geo)
-            _fail = SCFail(_msg, node=_geo)
-            _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
-            _fail.add_action('Fix', _fix, is_fix=True)
-            self.add_fail(_fail)
-
-    def _unassign_shader(self, engine, geo):
-        """Unassign a shader from the given geometry.
-
-        Args:
-            engine (str): shading engine (set)
-            geo (str): geometry to detatch
-        """
-        cmds.sets(geo, edit=True, remove=engine)
-
-    def _check_engine_name(self, shd, engine):
-        """Check shading group matches shader.
-
-        Args:
-            shd (str): shader to check
-            engine (str): shading engine
-        """
-        if shd == 'lambert1':
-            return
-        if cmds.referenceQuery(shd, isNodeReferenced=True):
-            return
-
-        self.write_log('Checking shd %s', shd)
-        assert shd.endswith('_MTL')
-        _good_name = shd[:-4]+'_SG'
-        if _good_name == engine:
-            self.write_log(' - shading engine %s is good', engine)
-            return
-
-        _msg = ('Shading engine {} name does not match shader {} (should '
-                'be {})'.format(engine, shd, _good_name))
-        _fix = wrap_fn(cmds.rename, engine, _good_name)
-        self.add_fail(_msg, fix=_fix, node=shd)
 
 
 class CheckForFaceAssignments(SCMayaCheck):
@@ -903,6 +598,207 @@ class CheckForFaceAssignments(SCMayaCheck):
         shader.assign_to(geo)
 
 
+class CheckShaders(SCMayaCheck):
+    """Check the shader name matches the shading engine.
+
+    eg. myShader -> myShaderSE
+    """
+
+    sort = 100
+    task_filter = 'lookdev model rig'
+    depends_on = (CheckForFaceAssignments, )
+
+    def run(self, check_ai_shd=True):
+        """Run this check.
+
+        Args:
+            check_ai_shd (bool): check any attached arnold shader override
+        """
+
+        # Check for referenced shaders
+        for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
+            _fix = wrap_fn(sc_utils_maya.import_referenced_shader, _shd)
+            self.add_fail(
+                'Shader "{}" is referenced - this must be imported into the '
+                'current scene'.format(str(_shd)),
+                node=_shd, fix=_fix)
+
+        _shds = lookdev.read_shader_assignments(
+            catch=True, allow_face_assign=True, referenced=False)
+        self.write_log('Found %d shaders: %s', len(_shds), _shds)
+        if not _shds:
+            self.add_fail(
+                'No shader assignments found - this publish saves out shading '
+                'assignments so you need to apply shaders to your geometry')
+        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+        _ignore_names = set()
+        for _shd, _data in _shds.items():
+
+            self.write_log('Checking shader %s', _shd)
+
+            if _shd == 'lambert1':
+                continue
+
+            _se = _data['shadingEngine']
+            self.write_log(' - shading engine %s', _se)
+            _type = cmds.objectType(_shd)
+            _select_shd = wrap_fn(cmds.select, _shd)
+
+            # Flag namespace
+            if _shd != to_clean(_shd):
+                _msg = 'Shader {} is using a namespace'.format(_shd)
+                _fix = wrap_fn(cmds.rename, _shd, to_clean(_shd))
+                self.add_fail(_msg, fix=_fix, node=_shd)
+                continue
+
+            # Flag missing MTL suffix
+            if not _shd.endswith('_MTL'):
+                _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+                    _shd, suffix='_MTL', alts=['_shd', '_mtl', '_SHD', '_Mat'],
+                    type_='shader', ignore=_ignore_names)
+                _ignore_names.add(_suggestion)
+                self.add_fail(_msg, fix=_fix, node=_shd)
+                continue
+
+            self._check_engine_name(shd=_shd, engine=_se)
+            self._flag_assigned_to_intermediate_node(engine=_se, shader=_shd)
+            self._check_for_unreferenced_geo(_shd)
+
+            if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
+
+                # Flag non-arnold shader
+                if sc_utils_maya.shd_is_arnold(engine=_se, type_=_type):
+                    _msg = 'Shader {} ({}) is not arnold shader'.format(
+                        _shd, _type)
+                    self.add_fail(_msg, node=_shd)
+                    continue
+
+                # Check ai shader suffix
+                _ai_shd = _data.get('ai_shd')
+                _base = _shd[:-4]
+                if check_ai_shd and _ai_shd:
+                    if not _ai_shd.endswith('_AIS'):
+                        _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+                            _ai_shd, suffix='_AIS',
+                            alts=['_shd', '_mtl', '_SHD'],
+                            type_='ai shader', base=_base, ignore=_ignore_names)
+                        _ignore_names.add(_suggestion)
+                        self.add_fail(_msg, fix=_fix, node=_ai_shd)
+
+    def _flag_assigned_to_intermediate_node(self, engine, shader):
+        """Flag geo assigned to intermediate nodes.
+
+        Args:
+            engine (str): shading engine
+            shader (str): shader
+        """
+        _shd = tex.to_shd(shader)
+        _assigns = _shd.to_assignments()
+        self.write_log(' - assigns %s', _assigns)
+
+        for _assign in _assigns:
+
+            # Check for face assigns
+            if '.f[' in _assign:
+                _fail = SCFail(
+                    'Shader "{}" is face assignment "{}".'.format(
+                        shader, _assign),
+                    node=_assign)
+                _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
+                self.add_fail(_fail)
+                return
+
+            # Catch duplicate node
+            if '|' in _assign:
+                _fail = SCFail(
+                    'Shader "{}" is assigned to duplicate node "{}".'.format(
+                        shader, _assign),
+                    node=_assign)
+                _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
+                self.add_fail(_fail)
+                return
+
+            _geo = pom.cast_node(_assign, maintain_shapes=True)
+            self.write_log(' - check geo %s %s', _geo, _geo.object_type())
+            if _geo.object_type() != 'mesh':
+                continue
+            self.write_log('   - is mesh')
+            if not _geo.plug['intermediateObject'].get_val():
+                continue
+            _msg = (
+                'Shader "{}" is assigned to intermediate object "{}" '
+                'which is not renderable. This assigment has no effect '
+                'and may bloat the publish file.'.format(
+                    shader, _geo))
+            _fix = wrap_fn(
+                self._unassign_shader, engine=engine, geo=_geo)
+            _fail = SCFail(_msg, node=_geo)
+            _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
+            _fail.add_action('Fix', _fix, is_fix=True)
+            self.add_fail(_fail)
+
+    def _unassign_shader(self, engine, geo):
+        """Unassign a shader from the given geometry.
+
+        Args:
+            engine (str): shading engine (set)
+            geo (str): geometry to detatch
+        """
+        cmds.sets(geo, edit=True, remove=engine)
+
+    def _check_engine_name(self, shd, engine):
+        """Check shading group matches shader.
+
+        Args:
+            shd (str): shader to check
+            engine (str): shading engine
+        """
+        if shd == 'lambert1':
+            return
+        if cmds.referenceQuery(shd, isNodeReferenced=True):
+            return
+
+        self.write_log('Checking shd %s', shd)
+        assert shd.endswith('_MTL')
+        _good_name = shd[:-4]+'_SG'
+        if _good_name == engine:
+            self.write_log(' - shading engine %s is good', engine)
+            return
+
+        _msg = ('Shading engine {} name does not match shader {} (should '
+                'be {})'.format(engine, shd, _good_name))
+        _fix = wrap_fn(cmds.rename, engine, _good_name)
+        self.add_fail(_msg, fix=_fix, node=shd)
+
+    def _check_for_unreferenced_geo(self, shd):
+        """Check for shaders which are not applied to referenced geometry.
+
+        Args:
+            shd (str): shader node
+        """
+        _shd = tex.to_shd(shd)
+        _ref = None
+        _assigns = _shd.to_assignments()
+        for _assign in _assigns:
+            try:
+                _node = pom.cast_node(_assign)
+            except ValueError:
+                continue
+            if not _node.is_referenced():
+                continue
+            _ref = pom.find_ref(_node.namespace)
+            break
+        if not _ref:
+            _fail = SCFail(
+                'Shader "{}" is not assigned to referenced geometry, which '
+                'can lead to a mismatch between the geometry names in the '
+                'model/rig and the assignment - this could cause shaders to '
+                'fail to attach.'.format(shd))
+            _fail.add_action('Select shader', wrap_fn(cmds.select, shd))
+            _fail.add_action('Select nodes', wrap_fn(cmds.select, _assigns))
+            self.add_fail(_fail)
+
+
 class NoObjectsWithDefaultShader(SCMayaCheck):
     """Lookdev check to make sure no geos have default shader assigned."""
 
@@ -938,37 +834,3 @@ class NoObjectsWithDefaultShader(SCMayaCheck):
                         'default nodes do not appear in references'.format(
                             _geo, _shd, _se))
                     self.add_fail(_msg, node=_geo)
-
-
-class CheckForNgons(SCMayaCheck):
-    """Check for polygons with more than four sides."""
-
-    task_filter = 'model'
-    depends_on = (CheckGeoNaming, )
-    sort = 100
-
-    def run(self):
-        """Run this check."""
-        for _geo in self.update_progress(m_pipe.read_cache_set()):
-            cmds.select(_geo)
-            mel.eval(
-                'polyCleanupArgList 4 { '
-                '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
-                '    "1e-05","0","1e-05","0","-1","0","0" }')
-            if cmds.ls(selection=True):
-                _msg = 'Mesh "{}" contains ngons'.format(_geo)
-                self.add_fail(
-                    _msg, node=_geo, fix=wrap_fn(self.fix_ngons, _geo))
-
-    def fix_ngons(self, geo):
-        """Fix ngons in the given mesh.
-
-        Args:
-            geo (str): mesh to fix
-        """
-        cmds.select(geo)
-        mel.eval(
-            'polyCleanupArgList 4 {'
-            '    "0","1","1","0","1","0","0","0","0","1e-05","0",'
-            '    "1e-05","0","1e-05","0","-1","0","0" }')
-        cmds.select(geo)
