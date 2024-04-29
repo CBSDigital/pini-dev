@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import to_camel
+from pini.utils import to_camel, cache_result
 
 from . import mui_misc
 
@@ -13,7 +13,7 @@ from . import mui_misc
 _LOGGER = logging.getLogger(__name__)
 
 
-MODEL_EDITOR_ATTRS = [
+_MODEL_EDITOR_ATTRS = [
     'bluePencil',
     'cameras',
     'controlVertices',
@@ -59,6 +59,27 @@ MODEL_EDITOR_ATTRS = [
     'wireframeOnShaded',
     'viewTransformName',
 ]
+
+
+@cache_result
+def to_model_editor_attrs():
+    """Obtain list of model editor attributes.
+
+    Some maya 2023 instances seem to report
+
+    Returns:
+        (str list): model editor attributes
+    """
+    _attrs = []
+    _ed = mui_misc.get_active_model_editor()
+    for _attr in _MODEL_EDITOR_ATTRS:
+        try:
+            cmds.modelEditor(_ed, query=True, **{_attr: True})
+        except TypeError:
+            _LOGGER.warning('Missing model editor attr: %s', _attr)
+            continue
+        _attrs.append(_attr)
+    return _attrs
 
 
 def set_vp(

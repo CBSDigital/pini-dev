@@ -50,5 +50,14 @@ class PUArg(object):
         self.docs = docs
         self.label_w = label_w
 
+    @property
+    def uid(self):
+        """Obtain uid for this arg.
+
+        Returns:
+            (str): uid
+        """
+        return '.'.join([self.pyui_file.uid, self.py_def.name, self.name])
+
     def __repr__(self):
         return basic_repr(self, self.name)

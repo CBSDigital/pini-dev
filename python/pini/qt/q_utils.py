@@ -311,20 +311,22 @@ def to_pixmap(arg):
     return qt.CPixmap(arg)
 
 
-def to_rect(pos=(0, 0), size=(640, 640), anchor='TL'):
+def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: disable=too-many-branches
     """Build a QRect object based on the args provided.
 
     Args:
         pos (QPoint): position
         size (QSize): size
         anchor (str): anchor position
+        class_ (class): override rect class
 
     Returns:
-        (QRect): region
+        (QRect|QRectF): region
     """
     _size = to_size(size)
     _pos = to_p(pos)
 
+    # Determine root position (top left) of result
     if anchor == 'C':
         _root = _pos - to_p(_size)/2
     elif anchor == 'L':
@@ -346,10 +348,17 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL'):
     else:
         raise ValueError(anchor)
 
-    if isinstance(_root, QtCore.QPointF) or isinstance(_size, QtCore.QSizeF):
-        return QtCore.QRectF(_root, _size)
+    # Determine class of result
+    _class = class_
+    if not _class:
+        if (
+                isinstance(_root, QtCore.QPointF) or
+                isinstance(_size, QtCore.QSizeF)):
+            _class = QtCore.QRectF
+        else:
+            _class = QtCore.QRect
 
-    return QtCore.QRect(_root, _size)
+    return _class(_root, _size)
 
 
 def to_size(*args, **kwargs):  # pylint: disable=too-many-branches

@@ -95,7 +95,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     # Read settings from active viewport to mimic
     _editor_tmpl = ui.get_active_model_editor()
     _editor_attrs = {}
-    for _attr in ui.MODEL_EDITOR_ATTRS:
+    for _attr in ui.to_model_editor_attrs():
         _editor_attrs[_attr] = cmds.modelEditor(
             _editor_tmpl, query=True, **{_attr: True})
     _LOGGER.debug(' - COPIED EDITOR SETTINGS  %s', _editor_attrs)

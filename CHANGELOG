@@ -1,3 +1,16 @@
+## [1.48.0] - Mon 2024-04-29 09:35
+### Summary
+ - Pini Helper:
+    - bugfix error on cache/blast due to anomalous missing viewport flags (skay),
+### Updated
+ - pini.pipe.shotgrid.SGC.find_job bugfix error on match by id,
+ - pini.qt.to_rect added class_ arg,
+ - pini.tools.pyui.PUArg.uid added,
+ - pini.tools.pyui bugfix error on py path w/o python folder (use scripts),
+ - pini.tools.pyui catch error on fail to apply value to field,
+ - maya_pini.ui replaced MODEL_EDITOR_ATTRS -> to_model_editor_attrs to fix bluePencil flag unavailable,
+
+
 ## [1.47.0] - Fri 2024-04-26 12:02
 ### Summary
  - Pini Helper:

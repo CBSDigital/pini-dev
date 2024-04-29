@@ -347,7 +347,7 @@ def _build_apply_fn(field):
         elif cmds.frameLayout(field, query=True, exists=True):
             cmds.frameLayout(field, edit=True, collapse=val)
         else:
-            raise ValueError(val, field)
+            _LOGGER.warning('FAILED TO APPLY VALUE %s %s', val, field)
 
     return _apply_val
 

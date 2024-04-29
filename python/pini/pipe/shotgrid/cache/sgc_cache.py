@@ -116,7 +116,7 @@ class SGDataCache(object):
             return single(_match_jobs)
 
         _filter_jobs = apply_filter(
-            self.jobs, _match, key=operator.attrgetter('name'))
+            self.jobs, str(_match), key=operator.attrgetter('name'))
         if len(_filter_jobs) == 1:
             return single(_filter_jobs)
 
@@ -462,11 +462,14 @@ class SGDataCache(object):
 
         _jobs = []
         for _result in _jobs_data:
+            _LOGGER.debug('RESULT %d %s', _result['id'], _result)
             if not _result['tank_name']:
+                _LOGGER.debug(' - REJECT NO TANK NAME')
                 continue
             _job_root = pipe.JOBS_ROOT.to_subdir(_result['tank_name'])
             _cfg = _job_root.to_file('.pini/config.yml')
             if not _cfg.exists():
+                _LOGGER.debug(' - REJECT NO CFG')
                 continue
             _result['path'] = _job_root.path
             _job = pipe.CPJob(_job_root)

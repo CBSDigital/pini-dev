@@ -150,7 +150,12 @@ def _func_to_icon(func):
     """
     _path = abs_path(inspect.getfile(func))
     _LOGGER.debug(' - FUNC TO ICON %s', _path)
-    _, _rel_path = _path.rsplit('/python/', 1)
+    for _splitter in ['/python/', '/scripts/']:
+        if _splitter in _path:
+            _, _rel_path = _path.rsplit(_splitter, 1)
+            break
+    else:
+        raise RuntimeError(func, _path)
     _uid = '{}.{}'.format(_rel_path, func.__name__)
     _rand = str_to_seed(_uid)
     return _rand.choice(icons.FRUIT)
