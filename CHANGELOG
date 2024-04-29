@@ -1,3 +1,11 @@
+## [1.48.2] - Mon 2024-04-29 11:55
+### Summary
+ - Pini Helper:
+    - maya blast better error on unable to blast due to file open in rv (eehemann),
+### Updated
+ - maya_pini.m_pipe.blast raise handled error on unable to replace existing,
+
+
 ## [1.48.1] - Mon 2024-04-29 09:59
 ### Summary
  - Pini Helper:

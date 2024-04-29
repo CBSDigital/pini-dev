@@ -314,6 +314,7 @@ def blast(
         frame_to_thumb (File): copy a frame of the blast to this path
         force (bool): overwrite existing without confirmation
     """
+    from pini.tools import error
     from maya_pini import open_maya as pom
 
     _clip = clip
@@ -337,7 +338,13 @@ def blast(
         _tmp_seq.delete(force=True)
     else:
         _tmp_seq = None
-    _clip.delete(force=force, wording='Replace')
+    try:
+        _clip.delete(force=force, wording='Replace')
+    except OSError:
+        raise error.HandledError(
+            'Unable to delete existing file:\n\n{}\n\n'
+            'This could be caused by having the file open already in a '
+            'viewing application (eg. rv).'.format(_clip.path))
     _clip.test_dir()
     _seq = _tmp_seq or _clip
     _LOGGER.debug(' - SEQ %s', _seq)
