@@ -1,3 +1,11 @@
+## [1.48.1] - Mon 2024-04-29 09:59
+### Summary
+ - Pini Helper:
+    - bugfix error on lookdev publish if mtoa plugin not loaded (eehemann),
+### Updated
+ - maya_pini.m_pipe.lookdev catch errors due to mtoa not loaded,
+
+
 ## [1.48.0] - Mon 2024-04-29 09:35
 ### Summary
  - Pini Helper:

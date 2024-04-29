@@ -216,6 +216,9 @@ def _read_custom_aovs(sgs):
     Returns:
         (tuple list): plug/name list
     """
+    if not cmds.pluginInfo('mtoa', query=True, loaded=True):
+        return []
+
     _LOGGER.debug('READ CUSTOM AOVS')
     _custom_aovs = []
     for _sg in sgs:
@@ -229,6 +232,7 @@ def _read_custom_aovs(sgs):
             _name = _sg.attr['aiCustomAOVs[{:d}].aovName'.format(_idx)]
             _aov = str(cmds.getAttr(_name))
             _custom_aovs.append((str(_src), str(_aov)))
+
     return _custom_aovs
 
 
@@ -263,6 +267,8 @@ def _read_geo_settings():
                 'aiSubdivIterations',
                 'aiSubdivType',
         ]:
+            if not _geo.shp.has_attr(_attr):
+                continue
             _plug = _geo.shp.plug[_attr]
             _def = _plug.get_default()
             _val = _plug.get_val()
@@ -368,8 +374,10 @@ def read_shader_assignments(
         _shd_data['geos'] = _geos
 
         # Read ai surface shader
-        _ai_ss = _se.plug['aiSurfaceShader'].find_incoming(plugs=False)
-        _shd_data['ai_shd'] = str(_ai_ss) if _ai_ss else None
+        if _se.has_attr('aiSurfaceShader'):
+            _ai_ss = _se.plug['aiSurfaceShader'].find_incoming(plugs=False)
+            if _ai_ss:
+                _shd_data['ai_shd'] = str(_ai_ss)
 
         _shds.append(tex.to_shd(_shd))
         _data[str(_shd)] = _shd_data
