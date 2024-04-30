@@ -8,7 +8,7 @@ from maya import cmds, mel
 
 from pini import pipe, dcc
 from pini.dcc import export_handler
-from pini.tools import sanity_check, error
+from pini.tools import error
 from pini.utils import single, wrap_fn, check_heart, plural
 
 from maya_pini import ref, open_maya as pom, m_pipe, tex
@@ -187,7 +187,7 @@ class CheckUVs(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = sanity_check.read_cache_set('geo')
+        _geos = sc_utils_maya.read_cache_set_geo()
         if not _geos:
             self.add_fail('No geo found')
         for _geo in _geos:

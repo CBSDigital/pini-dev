@@ -6,6 +6,6 @@ from .core import find_checks, SCCheck, find_check, read_checks
 from .ui import launch_ui, UI_FILE, ICON, launch_export_ui
 
 if dcc.NAME == 'maya':
-    from .core.sc_utils_maya import read_cache_set, SCMayaCheck
+    from .core.sc_utils_maya import SCMayaCheck
 
 DIALOG = None
