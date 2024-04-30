@@ -634,28 +634,7 @@ class CLSceneTab(object):
             _ref = self._staged_deletes.pop()
             _delete_fn = wrap_fn(_ref.delete, force=True)
             _updates.append(_delete_fn)
-        while self._staged_imports:
-            _ref = self._staged_imports.pop()
-            if _ref.ignore_on_apply:
-                continue
-            _lookdev = self.ui.SLookdev.currentText()
-            _abc_mode = self.ui.SAbcMode.currentText()
-            _build_plates = self.ui.SBuildPlates.isChecked()
-            if (
-                    dcc.NAME == 'maya' and
-                    _ref.output.extn == 'abc' and
-                    _lookdev != 'None'):
-                _import_fn = wrap_fn(
-                    dcc.create_cache_ref, namespace=_ref.namespace,
-                    cache=_ref.output, attach_mode=_lookdev,
-                    build_plates=_build_plates, abc_mode=_abc_mode)
-            elif _ref.attach:
-                _import_fn = wrap_fn(
-                    _ref.attach.attach_shaders, lookdev=_ref.output)
-            else:
-                _import_fn = wrap_fn(
-                    dcc.create_ref, namespace=_ref.namespace, path=_ref.output)
-            _updates.append(_import_fn)
+        _updates += self._build_import_updates()
         while self._staged_updates:
             _ref = list(self._staged_updates.keys())[0]
             _out = self._staged_updates.pop(_ref)
@@ -678,6 +657,46 @@ class CLSceneTab(object):
 
         self.ui.SOutputs.redraw()
         self.ui.SSceneRefs.redraw()
+
+    def _build_import_updates(self):
+        """Build import updates from staged import list.
+
+        NOTE: lookdev updates need to be run after any parent ref imports,
+        but it should be find to just sort by namespace.
+
+        Returns:
+            (func list): list of import action functions
+        """
+        _updates = []
+        self._staged_imports.sort(key=operator.attrgetter('namespace'))
+        while self._staged_imports:
+
+            _ref = self._staged_imports.pop(0)
+            if _ref.ignore_on_apply:
+                continue
+
+            _lookdev = self.ui.SLookdev.currentText()
+            _abc_mode = self.ui.SAbcMode.currentText()
+            _build_plates = self.ui.SBuildPlates.isChecked()
+
+            _LOGGER.info(' - BUILDING IMPORT UPDATE %s', _ref)
+            if (
+                    dcc.NAME == 'maya' and
+                    _ref.output.extn == 'abc' and
+                    _lookdev != 'None'):
+                _import_fn = wrap_fn(
+                    dcc.create_cache_ref, namespace=_ref.namespace,
+                    cache=_ref.output, attach_mode=_lookdev,
+                    build_plates=_build_plates, abc_mode=_abc_mode)
+            elif _ref.attach:
+                _import_fn = wrap_fn(
+                    _apply_lookdev, ref=_ref.attach, lookdev=_ref.output)
+            else:
+                _import_fn = wrap_fn(
+                    dcc.create_ref, namespace=_ref.namespace, path=_ref.output)
+            _updates.append(_import_fn)
+
+        return _updates
 
     def _context__SOutputs(self, menu):
 
@@ -1026,6 +1045,22 @@ class CLSceneTab(object):
         _LOGGER.info('DOUBLE CLICK %s', _out)
         if _out:
             self._callback__SAdd(outs=[_out])
+
+
+def _apply_lookdev(ref, lookdev):
+    """Apply lookdev to the given reference.
+
+    NOTE: the parent reference (to apply lookdev to) could be a staged
+    reference, but we can assume that if it is then it's already been
+    imported.
+
+    Args:
+        ref (CPipeRef|StagedRef): reference to apply
+        lookdev (CPOutput): lookdev to apply
+    """
+    _LOGGER.info('APPLY LOOKDEV %s %s', ref, lookdev)
+    _ref = dcc.find_pipe_ref(ref.namespace)
+    _ref.attach_shaders(lookdev=lookdev)
 
 
 def _sort_asset_type(type_):

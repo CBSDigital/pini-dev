@@ -309,10 +309,22 @@ def to_render_extn():
             _fmt = cmds.getAttr('defaultArnoldDriver.aiTranslator')
             if _fmt == 'jpeg':
                 _fmt = 'jpg'
+
     elif _ren == 'vray':
         if cmds.objExists('vraySettings'):
             _fmt = cmds.getAttr("vraySettings.imageFormatStr")
+
+    elif _ren == 'mayaSoftware':
+        if cmds.objExists('defaultRenderGlobals'):
+            _fmt = cmds.getAttr(
+                'defaultRenderGlobals.imageFormat', asString=True)
+            _fmt = _fmt.lower()
+
     else:
         _LOGGER.warning('Renderer not implemented %s', _ren)
+
+    # Fix description in attr name (eg. "exr (multichannel)")
+    if _fmt:
+        _fmt = _fmt.split()[0]
 
     return _fmt

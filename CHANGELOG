@@ -1,3 +1,22 @@
+## [1.50.0] - Tue 2024-04-30 13:11
+### Summary
+ - Pini Helper,
+    - maya deadline render bugfix update cache fail on multi-channel exrs (farnold),
+    - bugfix error apply lookdev to staged ref (blutge),
+### Updated
+ - pini.utils.PyElem.find_child renamed arg name -> match,
+ - pini.utils.PyElem.find_children bugfix recursive + internal flags,
+ - pini.qt.CPointF.to_tuple added,
+ - pini.qt.CUiBase.ui_file made public,
+ - pini.qt.CUiBase Q/Esc shortcuts call close not deleteLater to run closeEvent,
+ - pini.qt.CUiBase.deleteLater added,
+ - pini.qt.CUiMainWindow added closeEvent/deleteLater,
+ - pini.farm.deadline.submit_maya_render bugfix updating sg cache multiple times,
+ - pini.tools.helper bugfix error on apply lookdev to staged ref,
+ - maya_pini.utils.to_render_extn added mayaSoftware handling to avoid startup error,
+ - maya_pini.utils.to_render_extn bugfix multichannel suffix include for vray exrs,
+
+
 ## [1.49.1] - Mon 2024-04-29 17:36
 ### Summary
  - Pini Install,

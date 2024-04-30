@@ -3,7 +3,7 @@ import unittest
 from maya import cmds
 
 from pini.tools import sanity_check
-from pini.tools.sanity_check.checks import scc_maya_asset
+from pini.tools.sanity_check.core import sc_utils_maya
 from pini.utils import single
 
 from maya_pini import open_maya as pom
@@ -28,6 +28,6 @@ class TestSanityCheck(unittest.TestCase):
         # Apply check
         assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) != 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) != 1
-        scc_maya_asset._fix_uvs(_cube.node)
+        sc_utils_maya.fix_uvs(_cube.node)
         assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) == 1

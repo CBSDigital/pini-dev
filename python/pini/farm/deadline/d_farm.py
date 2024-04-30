@@ -331,7 +331,10 @@ def _build_update_job_py(outputs, metadata, work):
     Returns:
         (str): python to update outputs
     """
-    _lines = ['from pini import pipe', '']
+    _lines = [
+        'from pini import pipe',
+        'from pini.utils import last',
+        '']
 
     if outputs:
 
@@ -348,8 +351,9 @@ def _build_update_job_py(outputs, metadata, work):
             _lines += [
                 '# Register outputs in shotgrid',
                 'from pini.pipe import shotgrid',
-                'for _out in _outs:',
-                '    shotgrid.create_pub_file(_out, force=True)',
+                'for _last, _out in last(_outs):',
+                '    shotgrid.create_pub_file('
+                '        _out, force=True, update_cache=_last)',
                 '']
 
         # Apply metadata

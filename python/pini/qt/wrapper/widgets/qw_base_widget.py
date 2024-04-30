@@ -44,9 +44,9 @@ class CBaseWidget(object):
             _LOGGER.debug('APPLY SAVE ON CHANGE %s %s', self, settings)
             settings.save_widget(self)
         elif self.save_policy == q_utils.SavePolicy.SAVE_IN_SCENE:
-            _LOGGER.info('APPLY SAVE IN SCENE %s', self)
+            _LOGGER.debug('APPLY SAVE IN SCENE %s', self)
             _val = self.get_val()
-            _LOGGER.info(' - SET SCENE DATA %s %s', self.settings_key, _val)
+            _LOGGER.debug(' - SET SCENE DATA %s %s', self.settings_key, _val)
             dcc.set_scene_data(self.settings_key, _val)
 
     def get_scene_setting(self):

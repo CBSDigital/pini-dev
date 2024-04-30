@@ -39,6 +39,14 @@ class CPointF(QtCore.QPointF):
         """
         return (self.x()**2 + self.y()**2)**0.5
 
+    def to_tuple(self):
+        """Obtain this point's values.
+
+        Returns:
+            (tuple): x/y values
+        """
+        return self.x(), self.y()
+
     def __add__(self, other):
         return CPointF(self.x() + other.x(), self.y() + other.y())
 

@@ -81,11 +81,11 @@ class PyElem(object):
         """Edit the element's definition in a text editor."""
         self.py_file.edit(line_n=self._ast.lineno)
 
-    def find_child(self, name, recursive=False):
+    def find_child(self, match, recursive=False):
         """Find a child of this element.
 
         Args:
-            name (str): name to search for
+            match (str): name to match
             recursive (bool): include children of children
 
         Returns:
@@ -93,7 +93,7 @@ class PyElem(object):
         """
         return single([
             _child for _child in self.find_children(recursive=recursive)
-            if _child.name == name])
+            if match in (_child.name, _child.clean_name)])
 
     def find_children(self, recursive=False, internal=None, filter_=None):
         """Find children of this element.
@@ -124,16 +124,17 @@ class PyElem(object):
                 _LOGGER.debug('   - FAILED TO MAP')
                 continue
 
-            if internal is not None and _child.internal != internal:
-                _LOGGER.debug('   - INTERNAL FILTERED')
-                continue
-
             if passes_filter(_child.name, filter_):
                 _children.append(_child)
                 _LOGGER.debug('   - ADDED %s', _child)
 
             if recursive:
-                _children += _child.find_children(internal=internal)
+                _children += _child.find_children(recursive=recursive)
+
+        if internal is not None:
+            _children = [
+                _child for _child in _children
+                if _child.internal != internal]
 
         return _children
 

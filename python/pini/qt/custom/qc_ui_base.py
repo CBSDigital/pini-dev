@@ -50,12 +50,12 @@ class CUiBase(object):
 
         # Setup basic vars
         self._successful_load = False
-        self._ui_file = abs_path(ui_file)
+        self.ui_file = abs_path(ui_file)
         self.name = type(self).__name__
 
         self.shortcuts = {
-            'q': (self.deleteLater, 'Quit'),
-            Qt.Key_Escape: (self.deleteLater, 'Quit'),
+            'q': (self.close, 'Quit'),
+            Qt.Key_Escape: (self.close, 'Quit'),
         }
 
         # Init settings
@@ -66,7 +66,7 @@ class CUiBase(object):
         self._save_settings = load_settings
 
         # Setup dialog stack
-        self._dialog_stack_key = stack_key or self._ui_file
+        self._dialog_stack_key = stack_key or self.ui_file
         self._register_in_dialog_stack()
 
         # Set up error catcher
@@ -95,7 +95,7 @@ class CUiBase(object):
 
         # Setup QHBoxLayout size policies cache to fix bad transfer
         # from designer to nuke
-        _file = File(self._ui_file)
+        _file = File(self.ui_file)
         self._hbox_size_policies_yml = _file.to_file(
             base=_file.base+'_hsp', extn='yml', hidden=True)
         if dcc.NAME == 'nuke':
@@ -549,6 +549,14 @@ class CUiBase(object):
         _LOGGER.debug('CLOSE EVENT')
         self.save_settings(pos=True)
 
+    def deleteLater(self):
+        """Remove this interface.
+
+        Make sure close event is run.
+        """
+        _LOGGER.debug('DELETE LATER')
+        self.closeEvent(event=None)
+
     def keyPressEvent(self, event):
         """Executed on key press.
 
@@ -558,7 +566,7 @@ class CUiBase(object):
         _LOGGER.info('KEY PRESS EVENT %s', event.text())
         for _key, (_action, _label) in self.shortcuts.items():
             if event.text() == _key or event.key() == _key:
-                _LOGGER.info(' - APPLYING SHORTCUT %s', _label)
+                _LOGGER.info(' - APPLYING SHORTCUT %s %s', _label, _action)
                 _action()  # pylint: disable=not-callable
 
     def timerEvent(self, event):
