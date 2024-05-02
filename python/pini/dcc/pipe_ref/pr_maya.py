@@ -7,7 +7,7 @@ from maya import cmds
 from pini import pipe, dcc
 from pini.utils import (
     File, single, abs_path, cache_property, Seq, passes_filter,
-    file_to_seq)
+    file_to_seq, EMPTY)
 
 from maya_pini import open_maya as pom, tex, m_pipe
 from maya_pini.utils import (
@@ -744,6 +744,39 @@ class CMayaAiStandIn(_CMayaPipeRef):
             return _ref
 
         raise NotImplementedError(out)
+
+
+def apply_grouping(top_node, output, group=EMPTY):
+    """Apply organising references into groups.
+
+    Args:
+        top_node (CTransform): top node
+        output (CPOutput): reference output
+        group (str): group name (if any)
+    """
+    _LOGGER.debug(' - OUT %s', output)
+
+    # Determine group to add
+    _grp = group
+    if output and _grp is EMPTY:
+        if output.entity.name == 'camera':
+            _grp = 'CAM'
+        elif pipe.map_task(output.task) == 'LOOKDEV':
+            _grp = 'LOOKDEV'
+        elif output.asset_type:
+            _grp = output.asset_type.upper()
+        elif output.output_type:
+            _grp = output.output_type.upper()
+        elif output.nice_type == 'cache':
+            _grp = 'CACHE'
+        else:
+            _grp = None
+    _LOGGER.debug(' - GROUP %s -> %s', group, _grp)
+
+    if _grp:
+        _LOGGER.debug(' - ADD TO GROUP %s %s', top_node, _grp)
+        _grp = top_node.add_to_grp(_grp)
+        _grp.solidify()
 
 
 def _read_reference_pipe_refs(selected=False):

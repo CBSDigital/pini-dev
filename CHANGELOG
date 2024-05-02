@@ -1,3 +1,34 @@
+## [1.51.0] - Thu 2024-05-02 15:40
+### Summary
+ - Pini Helper,
+    - bugfix error on reference publish with duplicate nodes (farnold),
+    - bugfix bad render path for deadline asset renders (eehemann),
+    - bugfix error on render with scene created outside pini (eehemann),
+### Updated
+ - pini.utils.Video _read_dur/_read_ffprobe better error on missing file,
+ - pini.dcc added terragen,
+ - pini.dcc.MayaDCC.create_ref allow path as str,
+ - pini.dcc.MayaDCC.create_ref apply grouping moved to pipe_ref,
+ - pini.dcc.pipe_ref.apply_grouping added,
+ - pini.dcc.CMayaPublish force save references mode to scene on publish for sanity_check,
+ - pini.pipe.CPEntity.find_work_dir first kwarg is match + smarter matching,
+ - pini.pipe.CPEntity.to_output pass step to work_dir creation,
+ - pini.pipe.CPEntity.to_work pass dcc to work creation,
+ - pini.pipe.to_output use abs_path,
+ - pini.pipe.cache.CCPOutput.find_lookdev_shaders block for cam/shaders outputs,
+ - pini.pipe.shotgrid.SGC ignore omitted results,
+ - pini.qt.set_maya_palette deprecated,
+ - pini.qt.set_dark_style added mode with helper friendly default,
+ - pini.farm.deadline.submit_maya_render use pipe.CACHE.obt_cur_work,
+ - pini.farm.deadline.submit_maya_render bugfix bad asset render path,
+ - pini.farm.deadline.submit_maya_render added layer token for redshift globals,
+ - pini.tools.error implemented FileError handling,
+ - pini.tools.sanity_check.read_cache_set_geo made public,
+ - maya_pini.utils.to_render_extn added redshift handling,
+ - maya_pini.ref.FileRef.find_nodes use dag_path flag for unique path,
+ - maya_pini.open_maya.create_attr bugfix error on existing message attr already connected,
+
+
 ## [1.50.0] - Tue 2024-04-30 13:11
 ### Summary
  - Pini Helper,

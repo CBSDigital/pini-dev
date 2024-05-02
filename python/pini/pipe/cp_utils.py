@@ -21,6 +21,7 @@ EXTN_TO_DCC = {
     'nknc': 'nuke',
     'ma': 'maya',
     'mb': 'maya',
+    'tgd': 'terragen',
 }
 
 

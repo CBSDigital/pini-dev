@@ -106,6 +106,11 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         """
         _LOGGER.info('PUBLISH force=%d', force)
 
+        # Force refs mode to write scene data for sanity check
+        if self.ui:
+            self.ui.References.currentTextChanged.emit(
+                self.ui.References.currentText())
+
         # Read options/outputs
         _work = work or pipe.CACHE.cur_work
         _metadata = metadata or self.obtain_metadata(

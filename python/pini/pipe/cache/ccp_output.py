@@ -233,12 +233,20 @@ class CCPOutput(CPOutput, CCPOutputBase):
         from pini import pipe
         _LOGGER.debug('FIND LOOKDEV %s', self)
 
+        # Ignore ouputs without lookdev
+        _pub_type = self.metadata.get('publish_type')
+        _LOGGER.debug(' - PUB TYPE %s', _pub_type)
+        if _pub_type in ('CMayaLookdevPublish', ):
+            return None
+        _out_type = self.metadata.get('type')
+        if _out_type in ('CPCacheableCam', ):
+            return None
+
         # Find asset
         _asset = _out = None
         if self.profile == 'asset':
-            if self.metadata.get('publish_type') != 'CMayaLookdevPublish':
-                _out = self
-                _asset = self.entity
+            _out = self
+            _asset = self.entity
         if not _asset:
             _asset_path = pipe.map_path(self.metadata.get('asset'))
             if _asset_path:

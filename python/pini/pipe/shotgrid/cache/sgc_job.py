@@ -402,6 +402,7 @@ class SGCJob(sgc_container.SGCContainer):
             filters=[
                 self.filter_,
                 ('updated_at', 'between', range_.to_tuple()),
+                ('sg_status_list', 'is_not', 'omt'),
             ],
             order=[{'field_name': 'updated_at', 'direction': 'asc'}],
             fields=fields)

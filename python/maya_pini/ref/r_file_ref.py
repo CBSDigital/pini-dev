@@ -159,7 +159,8 @@ class FileRef(r_path_ref.PathRef):
         _LOGGER.debug('FIND NODES %s type=%s', self, type_)
 
         _all_nodes = cmds.referenceQuery(
-            self.ref_node, nodes=True, dagPath=dag_only or full_path) or []
+            self.ref_node, nodes=True,
+            dagPath=True, showFullPath=full_path) or []
         _LOGGER.debug(' - FOUND %d NODES', len(_all_nodes))
 
         _nodes = []

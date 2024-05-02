@@ -175,12 +175,15 @@ def set_application_icon(icon, name=None):
         icon (str): path to icon to apply
         name (str): override application name
     """
+    _LOGGER.info('SET APPLICATION ICON %s', icon)
     _icon = to_icon(icon)
+    _LOGGER.info(' - ICON %s', _icon)
 
     _app = get_application()
     if os.name == 'nt':
         import ctypes
         _name = name or str(id(_app))
+        _LOGGER.info(' - NAME %s', _name)
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(_name)
     _app.setWindowIcon(_icon)
 

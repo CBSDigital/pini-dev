@@ -5,9 +5,12 @@
 import inspect
 import logging
 
+import six
+
 from maya import cmds
 
-from pini.utils import single, wrap_fn, Seq, EMPTY
+from pini.utils import single, wrap_fn, Seq, EMPTY, Path, abs_path
+
 from maya_pini import ui, ref
 from maya_pini.utils import (
     cur_file, load_scene, save_scene, render, to_clean, to_audio)
@@ -134,18 +137,21 @@ class MayaDCC(BaseDCC):
         Returns:
             (CMayaPipeRef): reference
         """
-        from pini import pipe
         from maya_pini import open_maya as pom
         from .. import pipe_ref
 
         _LOGGER.debug('CREATE REF %s', namespace)
+
+        _path = path
+        if isinstance(_path, six.string_types):
+            _path = Path(abs_path(_path))
         _LOGGER.debug(' - PATH %s', path)
 
         # Bring in reference
-        if path.extn == 'vdb':
-            assert isinstance(path, Seq)
+        if _path.extn == 'vdb':
+            assert isinstance(_path, Seq)
             cmds.loadPlugin('mtoa', quiet=True)
-            _seq = path
+            _seq = _path
             _shp = pom.CMDS.createNode('aiVolume', name=namespace+'Shape')
             _path = _seq[_seq.frames[0]]
             _shp.plug['filename'].set_val(_path)
@@ -155,42 +161,24 @@ class MayaDCC(BaseDCC):
             _ref = pipe_ref.CMayaVdb(_tfm, path=_seq.path)
             _top_node = _ref.node
 
-        elif path.extn in ('ass', 'usd', 'gz'):
+        elif _path.extn in ('ass', 'usd', 'gz'):
             _ref = self._create_aistandin_ref(
-                path=path, namespace=namespace)
+                path=_path, namespace=namespace)
             _top_node = _ref.node
 
         else:
-            _ref = ref.create_ref(path, namespace=namespace, force=force)
-            _ns = _ref.namespace
-            _ref = self.find_pipe_ref(_ns)
-            _top_node = _ref.ref.find_top_node(catch=True)
-            pipe_ref.lock_cams(_ref.ref)
+            _pom_ref = pom.create_ref(_path, namespace=namespace, force=force)
+            _ns = _pom_ref.namespace
+            _ref = self.find_pipe_ref(_ns, catch=True)
+            _top_node = _pom_ref.find_top_node(catch=True)
+            pipe_ref.lock_cams(_pom_ref)
 
         _LOGGER.debug(' - REF %s', _ref)
 
         # Organise into group
-        _out = _ref.output
-        _LOGGER.debug(' - OUT %s', _out)
-        _grp = group
-        if _out and _grp is EMPTY:
-            if _out.entity.name == 'camera':
-                _grp = 'CAM'
-            elif pipe.map_task(_out.task) == 'LOOKDEV':
-                _grp = 'LOOKDEV'
-            elif _out.asset_type:
-                _grp = _ref.output.asset_type.upper()
-            elif _out.output_type:
-                _grp = _ref.output.output_type.upper()
-            elif _out.nice_type == 'cache':
-                _grp = 'CACHE'
-            else:
-                _grp = None
-        _LOGGER.debug(' - GROUP %s -> %s', group, _grp)
-        if _grp and _top_node:
-            _LOGGER.debug(' - ADD TO GROUP %s %s', _top_node, _grp)
-            _grp = _top_node.add_to_grp(_grp)
-            _grp.solidify()
+        if _top_node:
+            pipe_ref.apply_grouping(
+                top_node=_top_node, output=_ref.output, group=group)
 
         return _ref
 
@@ -520,7 +508,7 @@ class MayaDCC(BaseDCC):
         return super(MayaDCC, self).t_frames()
 
     def t_start(self, class_=float):
-        """Get start frame.
+        """Get timeline start frame.
 
         Args:
             class_ (class): override result type
@@ -531,7 +519,7 @@ class MayaDCC(BaseDCC):
         return class_(cmds.playbackOptions(query=True, minTime=True))
 
     def t_end(self, class_=float):
-        """Get end frame.
+        """Get timeline end frame.
 
         Args:
             class_ (class): override result type

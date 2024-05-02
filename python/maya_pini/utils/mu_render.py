@@ -314,6 +314,10 @@ def to_render_extn():
         if cmds.objExists('vraySettings'):
             _fmt = cmds.getAttr("vraySettings.imageFormatStr")
 
+    elif _ren == 'redshift':
+        _image = single(cmds.renderSettings(firstImageName=True))
+        _fmt = File(_image).extn
+
     elif _ren == 'mayaSoftware':
         if cmds.objExists('defaultRenderGlobals'):
             _fmt = cmds.getAttr(

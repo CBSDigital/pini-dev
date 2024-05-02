@@ -345,22 +345,26 @@ def _determine_img_prefix(work=None):
     Returns:
         (str): render image prefix
     """
+    _LOGGER.debug('DETERMINE IMAGE PREFIX')
     _work = work or pipe.cur_work()
+    _LOGGER.debug(' - WORK %s', _work.path)
     _imgs = cmds.workspace(fileRuleEntry='images')
+    _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
+    _LOGGER.debug(' - IMGS %s %s', _imgs, _imgs_dir.path)
 
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
     if _ren == 'arnold':
         _token = '<RenderLayer>'
     elif _ren == 'vray':
         _token = '<layer>'
+    elif _ren == 'redshift':
+        _token = '<Layer>'
+    else:
+        raise ValueError(_ren)
 
-    _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
-    _tmpl = _work.find_template('render').apply_data(
-        entity_path=_work.entity.path, task=_work.task, step=_work.step,
-        work_dir=_work.work_dir.path, user=_work.user,
-        entity=_work.entity.name, tag=_work.tag, ver=_work.ver)
+    _out = _work.to_output('render', output_name='TOKEN')
+    _out_path = _out.path.replace('TOKEN', _token)
 
-    _img_prefix, _ = _imgs_dir.rel_path(_tmpl.pattern).replace(
-        '{output_name}', _token).split('.%04d.', 1)
+    _img_prefix, _ = _imgs_dir.rel_path(_out_path).split('.%04d.', 1)
 
     return _img_prefix

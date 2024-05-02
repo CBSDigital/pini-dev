@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 
+from pini.utils import File
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -50,6 +52,12 @@ def get_catcher(parent=None, qt_safe=False):
                 _title = _exc.title or 'Error'
                 qt.notify(str(_exc), title=_title,
                           icon=icons.find('Hot Pepper'))
+                if qt_safe or dcc.NAME != 'maya':
+                    raise _exc
+                sys.exit()
+            except error.FileError as _exc:
+                _LOGGER.info(' - FILE ERROR %s', _exc)
+                File(_exc.file_).edit(line_n=_exc.line_n)
                 if qt_safe or dcc.NAME != 'maya':
                     raise _exc
                 sys.exit()

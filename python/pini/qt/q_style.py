@@ -2,7 +2,7 @@
 
 import os
 
-from .q_mgr import QtGui, QtWidgets
+from .q_mgr import QtGui, QtWidgets, Qt
 
 HIGHLIGHT_COLOR = QtGui.QColor(103, 141, 178)
 BRIGHTNESS_SPREAD = 2.5
@@ -24,7 +24,50 @@ SPREAD = 100 * BRIGHTNESS_SPREAD
 HIGHLIGHTEDTEXT_COLOR = BASE_COLOR.lighter(int(SPREAD*2))
 
 
-def set_dark_style():
+def set_dark_style(mode='helper'):
+    """Set qt to dark style.
+
+    Args:
+        mode (str): how to apply dark style
+            helper - use pini helper palette (works for CListView)
+            qdarkstyle - use qdarkstyle module
+            maya - use maya palette (missing some colours)
+    """
+    if mode == 'helper':
+        _apply_helper_palette()
+    elif mode == 'qdarkstyle':
+        _apply_qdarkstyle_ss()
+    elif mode == 'maya':
+        _apply_maya_palette()
+    else:
+        raise ValueError(mode)
+
+
+def _apply_helper_palette():
+    """Apply pini helper palette."""
+    from pini import qt
+
+    _app = qt.get_application()
+    _app.setStyle("Fusion")
+
+    _pal = QtGui.QPalette()
+    _pal.setColor(QtGui.QPalette.Window, QtGui.QColor(53, 53, 53))
+    _pal.setColor(QtGui.QPalette.WindowText, Qt.white)
+    _pal.setColor(QtGui.QPalette.Base, QtGui.QColor(25, 25, 25))
+    _pal.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
+    _pal.setColor(QtGui.QPalette.ToolTipBase, Qt.black)
+    _pal.setColor(QtGui.QPalette.ToolTipText, Qt.white)
+    _pal.setColor(QtGui.QPalette.Text, Qt.white)
+    _pal.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
+    _pal.setColor(QtGui.QPalette.ButtonText, Qt.white)
+    _pal.setColor(QtGui.QPalette.BrightText, Qt.red)
+    _pal.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))
+    _pal.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))
+    _pal.setColor(QtGui.QPalette.HighlightedText, Qt.black)
+    _app.setPalette(_pal)
+
+
+def _apply_qdarkstyle_ss():
     """Set dark style stylesheet."""
     from pini import qt
 
@@ -39,7 +82,7 @@ def set_dark_style():
     _app.setStyleSheet(qdarkstyle.load_stylesheet())
 
 
-def set_maya_palette():
+def _apply_maya_palette():
     """Apply maya palette.
 
     This allows interfaces outside maya to use the same colouring.

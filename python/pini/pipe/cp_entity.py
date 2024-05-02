@@ -112,11 +112,14 @@ class CPEntity(cp_settings.CPSettingsLevel):
                 _work_dir = self.to_work_dir(task=_task, dcc_=_dcc)
                 _work_dir.mkdir()
 
-    def find_work_dir(self, task=None, dcc_=None, catch=False):
+    def find_work_dir(
+            self, match=None, task=None, step=None, dcc_=None, catch=False):
         """Find a work dir in this entity.
 
         Args:
+            match (str): token to match (task/step)
             task (str): match by task
+            step (str): match by step
             dcc_ (str): match by dcc
             catch (bool): no error if no work dir found
 
@@ -126,7 +129,31 @@ class CPEntity(cp_settings.CPSettingsLevel):
         Raises:
             (ValueError): if exactly one work dir was not found
         """
-        return single(self.find_work_dirs(task=task, dcc_=dcc_), catch=catch)
+        from pini import pipe
+
+        _LOGGER.debug('FIND WORK DIR')
+        _work_dirs = self.find_work_dirs(step=step, task=task, dcc_=dcc_)
+        _LOGGER.debug(' - FOUND %d WORK DIRS', len(_work_dirs))
+        if len(_work_dirs) == 1:
+            return single(_work_dirs)
+
+        _task_matches = [
+            _work_dir for _work_dir in _work_dirs
+            if match in (_work_dir.task, _work_dir.pini_task)]
+        _LOGGER.debug(' - FOUND %d TASK MATCHES', len(_task_matches))
+        if len(_task_matches) == 1:
+            return single(_task_matches)
+
+        _map_task_matches = [
+            _work_dir for _work_dir in _work_dirs
+            if match == pipe.map_task(_work_dir.task)]
+        _LOGGER.debug(' - FOUND %d MAP TASK MATCHES', len(_map_task_matches))
+        if len(_map_task_matches) == 1:
+            return single(_map_task_matches)
+
+        if catch:
+            return None
+        raise ValueError(match, task, step, dcc_)
 
     def find_work_dirs(self, task=None, step=None, dcc_=None):
         """Find work dirs within this entity.
@@ -304,6 +331,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         Returns:
             (CPWorkDir): work dir object
         """
+        _LOGGER.debug('TO WORK DIR %s', task)
         from pini import pipe
 
         _class = class_ or pipe.CPWorkDir
@@ -886,7 +914,8 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _data['output_type'] = output_type
         _data['extn'] = _extn
         if 'work_dir' in _tmpl.keys():
-            _work_dir = self.to_work_dir(task=task)
+            _LOGGER.debug(' - TO WORK DIR %s %s', step, task)
+            _work_dir = self.to_work_dir(step=step, task=task)
             _data['work_dir'] = _work_dir.path
         if 'job_prefix' in _tmpl.keys():
             _data['job_prefix'] = self.job.to_prefix()
@@ -926,7 +955,7 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _work_dir = self.to_work_dir(task=task, dcc_=dcc_, step=step)
         return _work_dir.to_work(
             tag=tag, ver_n=ver_n, extn=extn, catch=catch, class_=class_,
-            user=user)
+            user=user, dcc_=dcc_)
 
 
 def _tmpl_in_seq_dir(tmpl, seq_dir_tmpls):

@@ -62,6 +62,9 @@ class Video(path.MetadataFile, uc_clip.Clip):
             _line for _line in _ffprobe
             if _line.strip().startswith('Duration: ')], catch=True)
         _LOGGER.debug(' - DUR LINE %s', _dur_line)
+        if not _dur_line:
+            _LOGGER.error('FFPROBE %s', _ffprobe)
+            raise RuntimeError(self.path)
         _dur_token, _ = _dur_line.split(', ', 1)
         _LOGGER.debug(' - DUR TOKEN %s', _dur_token)
         _, _dur_str = _dur_token.split()
@@ -81,6 +84,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
         Returns:
             (str): ffprobe reading
         """
+        assert self.exists()
         return uc_ffmpeg.read_ffprobe(self)
 
     def _read_fps(self, ffprobe=None):

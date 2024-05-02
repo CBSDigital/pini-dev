@@ -163,7 +163,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _plug = self.plug[name]
 
         if action == 'connect':
-            value.plug['message'].connect(_plug)
+            value.plug['message'].connect(_plug, force=True)
 
         elif action == 'set':
 

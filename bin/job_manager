@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-"""Standalone launcher for shot manager."""
+"""Standalone launcher for job manager."""
 
 from pini import qt
-from pini.tools import shot_manager
+from pini.tools import job_manager
 
 if __name__ == '__main__':
 
     print('LAUNCH SHOT MANAGER')
     _app = qt.get_application()
-    qt.set_maya_palette()
-    _dialog = shot_manager.launch()
+    qt.set_dark_style()
+    _dialog = job_manager.launch()
     _app.exec_()
     _dialog.save_settings()
     print('SHOT MANAGER COMPLETE')

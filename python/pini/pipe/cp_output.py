@@ -13,7 +13,7 @@ import six
 from pini import dcc, icons
 from pini.utils import (
     File, Seq, register_custom_yaml_handler, str_to_ints, ints_to_str,
-    clip, Dir, EMPTY, Image, find_exe, single)
+    clip, Dir, EMPTY, Image, find_exe, single, abs_path)
 
 from .cp_entity import to_entity
 from .cp_utils import validate_tokens
@@ -890,7 +890,8 @@ def to_output(
     if not path:
         raise ValueError('Empty path')
 
-    _file = File(path)
+    _path = abs_path(path)
+    _file = File(_path)
     _LOGGER.log(9, ' - PATH %s', _file.path)
     if '%' in _file.path:
         _class = CPOutputSeq
@@ -899,7 +900,7 @@ def to_output(
     else:
         _class = CPOutput
     return _class(
-        path, job=job, entity=entity, template=template, work_dir=work_dir)
+        _path, job=job, entity=entity, template=template, work_dir=work_dir)
 
 
 def ver_sort(out):

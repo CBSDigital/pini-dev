@@ -51,7 +51,7 @@ class TestHelper(unittest.TestCase):
 
         # Apply refs mode
         _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
-        _work_dir = _ety_c.find_work_dir(dcc_='maya', task='model')
+        _work_dir = _ety_c.find_work_dir('model', dcc_='maya')
         _work = _work_dir.to_work().find_latest()
         _LOGGER.info(' - WORK %s', _work)
         _work.load(force=True)

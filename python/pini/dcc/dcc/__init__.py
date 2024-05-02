@@ -5,13 +5,18 @@ api across all dccs.
 """
 
 import logging
+import os
 
 _LOGGER = logging.getLogger(__name__)
 
 DCC = None
-DCCS = ['maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal']
+DCCS = ['maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal', 'terragen']
 
 _LOGGER.debug('IMPORT DCC')
+
+if not DCC and os.environ.get('PINI_DCC') == 'terragen':
+    from .d_terragen import TerragenDCC
+    DCC = TerragenDCC()
 
 if not DCC:
     try:

@@ -193,7 +193,7 @@ class CDFarm(base.CFarm):
 
         _cam = camera or pom.find_render_cam()
         _stime = time.time()
-        _work = pipe.CACHE.cur_work
+        _work = pipe.CACHE.obt_cur_work()
         _batch = _work.base
         _lyrs = pom.find_render_layers(renderable=True)
 

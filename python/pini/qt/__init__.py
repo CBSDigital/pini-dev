@@ -15,7 +15,7 @@ from .wrapper import (
 from .q_const import BOLD_COLS, PASTEL_COLS
 from .q_layout import find_layout_widgets, delete_layout, flush_layout
 from .q_mgr import QtGui, QtWidgets, QtCore, Qt, QtUiTools, LIB
-from .q_style import set_maya_palette, set_dark_style
+from .q_style import set_dark_style
 from .q_ui_container import CUiContainer
 from .q_ui_loader import build_ui_loader
 
