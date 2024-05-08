@@ -11,7 +11,7 @@ import operator
 from pini import pipe
 from pini.pipe.cache import pipe_cache_on_obj
 from pini.utils import (
-    single, strftime, basic_repr, apply_filter, get_user)
+    single, strftime, basic_repr, apply_filter, get_user, passes_filter)
 
 from . import sgc_job, sgc_utils, sgc_container
 
@@ -122,16 +122,22 @@ class SGDataCache(object):
 
         raise ValueError(match)
 
-    def find_jobs(self, force=False):
+    def find_jobs(self, filter_=None, force=False):
         """Search for valid jobs.
 
         Args:
+            filter_ (str): apply job name filter
             force (bool): force rebuild cache
 
         Returns:
             (SGCJob list): jobs
         """
-        return self._read_jobs(force=force)
+        _jobs = []
+        for _job in self._read_jobs(force=force):
+            if filter_ and not passes_filter(_job.name, filter_):
+                continue
+            _jobs.append(_job)
+        return _jobs
 
     def find_pub_file(self, path=None, job=None):
         """Find a pub file in the cache.

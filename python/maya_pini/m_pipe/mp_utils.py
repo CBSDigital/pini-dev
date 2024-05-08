@@ -29,19 +29,21 @@ def find_cache_set(catch=True):
         clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
-def read_cache_set(mode='geo', include_referenced=True, filter_=None):
+def read_cache_set(
+        mode='geo', include_referenced=True, filter_=None, set_=None):
     """Read cache set contents.
 
     Args:
         mode (str): content to find (geo/lights)
         include_referenced (bool): include referenced geometry
         filter_ (str): apply node name filter
+        set_ (str): override set name
 
     Returns:
         (CNode list): cache set contents
     """
     _LOGGER.debug('READ CACHE SET')
-    _set = find_cache_set()
+    _set = set_ or find_cache_set()
     _LOGGER.debug(' - SET %s', _set)
 
     # Read contents
@@ -49,6 +51,8 @@ def read_cache_set(mode='geo', include_referenced=True, filter_=None):
     if _set:
         for _root in cmds.sets(_set, query=True) or []:
             _nodes.add(_root)
+            if mode == 'top':
+                continue
             _children = cmds.listRelatives(
                 _root, allDescendents=True, type='transform', path=True) or []
             _nodes |= set(_children)
@@ -71,7 +75,7 @@ def read_cache_set(mode='geo', include_referenced=True, filter_=None):
         if not include_referenced and _node.is_referenced():
             continue
 
-        if mode == 'all':
+        if mode in ('all', 'top'):
             pass
         elif mode == 'geo':
             if not isinstance(_node, pom.CMesh):

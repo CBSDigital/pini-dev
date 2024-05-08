@@ -159,19 +159,20 @@ class CPJob(cp_settings.CPSettingsLevel):
         return cp_template.build_job_templates(job=self, catch=catch)
 
     def find_template(
-            self, type_, profile=None, dcc_=None, catch=False,
-            has_key=None, want_key=None):
+            self, type_, profile=None, dcc_=None, alt=EMPTY,
+            has_key=None, want_key=None, catch=False):
         """Find a single template within this job's templates.
 
         Args:
             type_ (str): template type (eg. shot_entity_path/work)
             profile (str): template profile (ie. asset/shot)
             dcc_ (str): template dcc (eg. nuke/maya)
-            catch (bool): no error if no matching template found
+            alt (int): filter by alt version of template
             has_key (dict): dict of keys and whether that key should
                 be present in the template
             want_key (list): list of keys which are preferred
                 but not necessary
+            catch (bool): no error if no matching template found
 
         Returns:
             (CPTemplate): matching template
@@ -181,7 +182,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         # Find matching templates
         _tmpls = self.find_templates(
             type_=type_, profile=profile, dcc_=dcc_, has_key=has_key,
-            want_key=want_key)
+            want_key=want_key, alt=alt)
         if len(_tmpls) == 1:
             return single(_tmpls)
         _LOGGER.debug(' - FOUND %s TEMPLATES', len(_tmpls))
@@ -218,7 +219,7 @@ class CPJob(cp_settings.CPSettingsLevel):
         return _tmpl
 
     def find_templates(
-            self, type_=None, profile=None, dcc_=None, has_key=None,
+            self, type_=None, profile=None, dcc_=None, alt=EMPTY, has_key=None,
             want_key=None, pattern=None):
         """Find templates in this job.
 
@@ -230,6 +231,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             type_ (str): template type (eg. work_dir/work/entity_path)
             profile (str): filter by profile (ie. asset/shot)
             dcc_ (str): filter by dcc
+            alt (int): filter by alt version of template
             has_key (dict): dict of keys and whether that key should
                 be present in the template
             want_key (dict): dict of keys which are preferred
@@ -251,6 +253,8 @@ class CPJob(cp_settings.CPSettingsLevel):
             if profile and _tmpl.profile not in (None, profile):
                 continue
             if pattern and _tmpl.pattern != pattern:
+                continue
+            if alt is not EMPTY and _tmpl.alt != alt:
                 continue
             _tmpls.append(_tmpl)
 

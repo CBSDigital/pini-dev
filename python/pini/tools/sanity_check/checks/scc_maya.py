@@ -14,7 +14,7 @@ from pini.utils import (
     abs_path, Dir, is_camel, to_camel)
 
 from maya_pini import ref, open_maya as pom, m_pipe
-from maya_pini.utils import DEFAULT_NODES, to_clean
+from maya_pini.utils import DEFAULT_NODES, to_clean, to_long, to_node
 
 from ..core import SCFail, SCMayaCheck
 
@@ -794,6 +794,33 @@ class CheckCacheables(SCMayaCheck):
         Args:
             cset (CPCacheableSet): CSET to check
         """
+
+        _set = cset.node
+
+        _top_nodes = m_pipe.read_cache_set(set_=_set, mode='top')
+
+        # Flag multiple top nodes
+        if len(_top_nodes) > 1:
+            self.add_fail(
+                'Cache set "{}" contains multiple top nodes - this will '
+                'in an abc with multiple top nodes, which is messy in the '
+                'outtliner'.format(_set), node=_set)
+
+        # Flag overlapping nodes
+        _longs = sorted([to_long(_node) for _node in _top_nodes])
+        _overlaps = []
+        self.write_log(' - longs %s', _longs)
+        for _idx, _long in enumerate(_longs[1:], start=1):
+            for _o_long in _longs[:_idx]:
+                if _long.startswith(_o_long):
+                    _overlaps.append((_long, _o_long))
+        for _node, _parent in _overlaps:
+            _fix = wrap_fn(cmds.sets, _node, remove=_set)
+            self.add_fail(
+                'In cset "{}" the top node "{}" is inside top node "{}" '
+                'which will cause abc export to error'.format(
+                    _set, to_node(_node), to_node(_parent)),
+                node=_node, fix=_fix)
 
         # Check shapes
         for _geo in cset.to_geo():

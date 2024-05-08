@@ -155,8 +155,11 @@ def safe_timer_event(func):
         except TypeError as _exc:
             _stop = True
 
+        _LOGGER.debug('SAFE TIMER EVENT %d vis=%d', _stop, self.isVisible())
+
         _stop = _stop or not self.isVisible()
         if _stop:
+            _LOGGER.debug(' - APPLY DELETE')
             self.delete()
             return None
 

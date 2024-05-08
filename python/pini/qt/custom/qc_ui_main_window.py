@@ -17,17 +17,18 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBase):
 
     keyPressEvent = qc_ui_base.CUiBase.keyPressEvent
 
-    def __init__(self, ui_file, ui_loader=None, title=None):
+    def __init__(self, ui_file, ui_loader=None, title=None, fps=None):
         """Constructor.
 
         Args:
             ui_file (str): path to ui file
             ui_loader (QUiLoader): override ui loader
             title (str): override window title
+            fps (float): start timer at the given frame rate
         """
         super(CUiMainWindow, self).__init__()  # pylint: disable=no-value-for-parameter
         qc_ui_base.CUiBase.__init__(
-            self, ui_file=ui_file, ui_loader=ui_loader, title=title)
+            self, ui_file=ui_file, ui_loader=ui_loader, title=title, fps=fps)
 
     def closeEvent(self, event=None):
         """Triggered by closing dialog.
@@ -41,5 +42,6 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBase):
 
     def deleteLater(self):
         """Delete this dialog."""
-        _LOGGER.info('DELETE LATER %s', self)
+        _name = str(self)
+        _LOGGER.info('DELETE LATER %s', _name)
         super(CUiMainWindow, self).deleteLater()
