@@ -222,13 +222,14 @@ def find_nodes(
     """
     from maya_pini import open_maya as pom
 
-    # Read outputs
+    # Read nodes
     _kwargs = {}
     if type_:
         _kwargs['type'] = type_
     if selected:
         _kwargs['selection'] = True
-    if dag_only:
+    _dag_only = dag_only or top_node
+    if _dag_only:
         _kwargs['dagObjects'] = True
     _results = pom.CMDS.ls(**_kwargs)
 

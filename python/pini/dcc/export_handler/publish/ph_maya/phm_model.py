@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 
 from pini import pipe, qt
-from maya_pini import open_maya as pom
+from maya_pini import open_maya as pom, m_pipe
 
 from . import phm_basic
 
@@ -107,7 +107,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             _LOGGER.info(' - NO cache_SET FOUND')
             return
 
-        _tfms = pom.set_to_tfms('cache_SET')
+        _tfms = m_pipe.read_cache_set(mode='transforms')
         _LOGGER.info(' - TFMS %s', _tfms)
         for _tfm in _tfms:
             if delete_history:

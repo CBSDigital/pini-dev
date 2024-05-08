@@ -201,7 +201,7 @@ def to_col(*args):
     Returns:
         (QColor): colour
     """
-    _LOGGER.debug('TO COL %s', args)
+    _LOGGER.log(9, 'TO COL %s', args)
     from pini import qt
     _args = args
     _arg = single(_args, catch=True)
@@ -258,10 +258,10 @@ def to_p(*args, **kwargs):
     Returns:
         (QPoint): point
     """
-    _LOGGER.debug('TO P %s', args)
+    _LOGGER.log(9, 'TO P %s', args)
 
     _class = kwargs.pop('class_', None)
-    _LOGGER.debug(' - CLASS %s', _class)
+    _LOGGER.log(9, ' - CLASS %s', _class)
     if kwargs:
         raise TypeError(kwargs)
 
@@ -373,12 +373,12 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
     Returns:
         (QSize): size
     """
-    _LOGGER.debug('TO SIZE %s %s', args, kwargs)
+    _LOGGER.log(9, 'TO SIZE %s %s', args, kwargs)
 
     # Calculate result
     if len(args) == 1:
         _size = single(args)
-        _LOGGER.debug(' - SIZE %s', _size)
+        _LOGGER.log(9, ' - SIZE %s', _size)
         if isinstance(_size, QtCore.QSize):
             _result = _size
         elif isinstance(_size, QtCore.QSizeF):

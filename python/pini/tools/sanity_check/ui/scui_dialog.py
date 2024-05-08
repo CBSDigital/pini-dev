@@ -350,7 +350,7 @@ class SanityCheckUi(qt.CUiDialog):
                 self.check and
                 not self.check.fails and
                 not self.ui.ShowPassed.isChecked()):
-            self.ui.Checks.redraw()
+            self.ui.Checks.redraw(autorun=True)
 
         self._check_for_success()
 

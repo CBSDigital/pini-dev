@@ -1,3 +1,22 @@
+## [1.53.0] - Wed 2024-05-08 15:23
+### Summary
+ - Sanity Check,
+    - check uvs fix error on invalid mesh in scene (eehemann),
+    - check cache set bugfix auto-allocate single top node,
+### Updated
+ - pini.dcc.CMayaModelPublish use m_pipe.read_cache_set to ignore bad mesh nodes,
+ - pini.qt.CPixmap draw_rect/draw_rounded added default pos (0, 0),
+ - pini.qt.CPixmap.draw_rounded_overlay added,
+ - pini.qt.CPixmap.draw_rounded_rect allow col as pixmap,
+ - pini.install added sanity check paused ctx opt,
+ - pini.tools.sanity_check.find_top_level_nodes use pom to ignore JUNK,
+ - pini.tools.sanity_check.CheckShaders only run on lookdev,
+ - pini.tools.sanity_check bugfix autorun on fix parent dependency,
+ - maya_pini.m_pipe.read_cache_set added transforms mode,
+ - maya_pini.open_maya.find_nodes top_nodes implies dag_only,
+ - maya_pini.open_maya.CBaseTransform made public,
+
+
 ## [1.52.0] - Wed 2024-05-08 09:28
 ### Summary
  - Sanity Check,

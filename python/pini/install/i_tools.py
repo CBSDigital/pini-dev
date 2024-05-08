@@ -153,6 +153,15 @@ def _build_sanity_check():
             'sanity_check.launch_ui(reset_pipe_cache=False)']),
         icon=sanity_check.ICON, label='Sanity Check (no cache reset)')
     _sanity.add_context(_no_reset)
+
+    # Add paused
+    _paused = PITool(
+        name='SanityCheckPaused', command='\n'.join([
+            'from pini.tools import sanity_check',
+            'sanity_check.launch_ui(run=False)']),
+        icon=sanity_check.ICON, label='Sanity Check (paused)')
+    _sanity.add_context(_paused)
+
     _sanity.add_divider('SanityCheckDivider')
 
     # Add task filter modes

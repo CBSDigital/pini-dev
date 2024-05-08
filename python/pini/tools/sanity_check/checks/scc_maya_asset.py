@@ -83,11 +83,13 @@ class CheckCacheSet(SCMayaCheck):
         if not _geos:
             _fix = None
             _top_node = single(sc_utils_maya.find_top_level_nodes(), catch=True)
+            self.write_log('Top node %s', _top_node)
             if _top_node:
                 _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
             _fail = self.add_fail('Empty cache set', fix=_fix)
             return
         self.write_log('GEOS %s', _geos)
+
         self._check_for_single_top_node()
 
     def _check_for_single_top_node(self):
@@ -605,7 +607,7 @@ class CheckShaders(SCMayaCheck):
     """
 
     sort = 100
-    task_filter = 'lookdev model rig'
+    task_filter = 'lookdev'
     depends_on = (CheckForFaceAssignments, )
 
     def run(self, check_ai_shd=True):

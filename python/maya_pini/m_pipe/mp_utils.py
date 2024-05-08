@@ -29,20 +29,16 @@ def find_cache_set(catch=True):
         clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
-def read_cache_set(
-        mode='geo', include_referenced=True, filter_=None, set_=None):
+def _read_cache_set_nodes(set_, mode):
     """Read cache set contents.
 
     Args:
-        mode (str): content to find (geo/lights)
-        include_referenced (bool): include referenced geometry
-        filter_ (str): apply node name filter
         set_ (str): override set name
+        mode (str): content to find
 
     Returns:
-        (CNode list): cache set contents
+        (str list): set contents node names
     """
-    _LOGGER.debug('READ CACHE SET')
     _set = set_ or find_cache_set()
     _LOGGER.debug(' - SET %s', _set)
 
@@ -57,17 +53,45 @@ def read_cache_set(
                 _root, allDescendents=True, type='transform', path=True) or []
             _nodes |= set(_children)
             _LOGGER.debug(' - ROOT %s %s', _root, _children)
+
     _LOGGER.debug(' - NODES %s', _nodes)
+
+    return sorted(_nodes)
+
+
+def read_cache_set(
+        mode='geo', include_referenced=True, filter_=None, set_=None):
+    """Read cache set contents.
+
+    Args:
+        mode (str): content to find
+            all - all nodes
+            top - top nodes only
+            geo - only geometry nodes
+            lights - only lights
+            transforms - only transforms
+        include_referenced (bool): include referenced geometry
+        filter_ (str): apply node name filter
+        set_ (str): override set name
+
+    Returns:
+        (CNode list): cache set contents
+    """
+    _LOGGER.debug('READ CACHE SET')
 
     # Apply mode filter
     _LOGGER.debug(' - APPLYING FILTERS refs=%d', include_referenced)
     _results = []
-    for _node in sorted(_nodes):
+    for _node in _read_cache_set_nodes(set_=set_, mode=mode):
 
         if filter_ and not passes_filter(str(_node), filter_):
             continue
 
-        _node = pom.cast_node(_node)
+        try:
+            _node = pom.cast_node(_node)
+        except ValueError:
+            _LOGGER.error('FAILED TO CAST NODE %s', _node)
+            continue
         _LOGGER.debug(
             ' - NODE %s %s refd=%d shp=%s', _node, type(_node).__name__,
             _node.is_referenced(), _node.shp)
@@ -82,6 +106,9 @@ def read_cache_set(
                 continue
         elif mode == 'lights':
             if not to_light_shp(_node):
+                continue
+        elif mode == 'transforms':
+            if not isinstance(_node, pom.CBaseTransform):
                 continue
         else:
             raise NotImplementedError(mode)

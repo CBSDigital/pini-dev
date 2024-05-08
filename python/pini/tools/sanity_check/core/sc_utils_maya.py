@@ -9,7 +9,7 @@ from pini.utils import single, wrap_fn
 
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import (
-    to_shps, to_clean, to_node, DEFAULT_NODES, to_unique)
+    to_shps, to_clean, to_unique)
 
 from . import sc_check
 
@@ -65,12 +65,7 @@ def find_top_level_nodes():
     Returns:
         (str list): top nodes
     """
-    _all_nodes = cmds.ls(dagObjects=True, long=True, defaultNodes=False)
-    _nodes = [
-        to_node(_node) for _node in _all_nodes
-        if _node.count('|') == 1 and
-        to_node(_node) not in DEFAULT_NODES]
-    return _nodes
+    return pom.find_nodes(top_node=True, default=False, filter_='-JUNK')
 
 
 def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):

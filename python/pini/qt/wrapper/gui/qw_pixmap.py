@@ -273,7 +273,7 @@ class CPixmap(QtGui.QPixmap):
         return _poly.boundingRect()
 
     def draw_rect(
-            self, pos=None, size=None, col='White', outline='Black',
+            self, pos=(0, 0), size=None, col='White', outline='Black',
             anchor='TL', rect=None, operation=None):
         """Draw rectangle on this pixmap.
 
@@ -291,12 +291,13 @@ class CPixmap(QtGui.QPixmap):
         """
         from pini import qt
 
+        _pos = qt.to_p(pos)
         _col = qt.to_col(col)
         _brush = QtGui.QBrush(_col)
         if rect:
             _rect = rect
         else:
-            _rect = qt.to_rect(pos=pos, size=size, anchor=anchor)
+            _rect = qt.to_rect(pos=_pos, size=size, anchor=anchor)
 
         # Set outline
         if outline:
@@ -317,15 +318,34 @@ class CPixmap(QtGui.QPixmap):
 
         return _rect
 
+    def draw_rounded_overlay(self, pix, pos=(0, 0), bevel=5):
+        """Draw an overlay with rounded corners.
+
+        Args:
+            pix (QPixmap|str): pixmap or path to overlay import
+            pos (QPoint): position
+            bevel (int): rounding radius in pixels
+        """
+        _base = pix
+
+        _over = CPixmap(_base.size())
+        _over.fill('Transparent')
+        _over.draw_rounded_rect(
+            col=_base, outline=None, size=_base.size(), bevel=bevel)
+
+        self.draw_overlay(_over, pos=pos)
+
     def draw_rounded_rect(
-            self, pos=None, size=None, col='White', outline='Black',
+            self, pos=(0, 0), size=None, col='White', outline='Black',
             anchor='TL', rect=None, bevel=5, brush=None):
         """Draw rectangle on this pixmap.
 
         Args:
             pos (QPoint): rect position
             size (QSize): rect size
-            col (QColor): rect fill colour
+            col (QColor|QPixmap): rect fill colour/pixmap - if a pixmap
+                is passed then drawing starts at the origin, which can
+                be undesirable
             outline (QColor): rect outline colour
             anchor (str): rect anchor
             rect (QRect): rect region (overrides pos/size args)
@@ -337,12 +357,18 @@ class CPixmap(QtGui.QPixmap):
         """
         from pini import qt
 
-        _col = qt.to_col(col)
-        _brush = brush or QtGui.QBrush(_col)
+        # Determine rect
+        _pos = qt.to_p(pos)
         if rect:
             _rect = rect
         else:
-            _rect = qt.to_rect(pos=pos, size=size, anchor=anchor)
+            _rect = qt.to_rect(pos=_pos, size=size, anchor=anchor)
+
+        # Determine colour
+        _col = col
+        if not isinstance(_col, QtGui.QPixmap):
+            _col = qt.to_col(_col)
+        _brush = brush or QtGui.QBrush(_col)
 
         # Set outline
         if outline:

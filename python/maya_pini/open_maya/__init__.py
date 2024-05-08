@@ -10,7 +10,7 @@ Issues:
    ie. cmds.objectType(_node) does not work so that _node['tx'] works
 """
 
-from .base import CBaseNode, CArray3
+from .base import CBaseNode, CArray3, CBaseTransform
 from .wrapper import (
     CCamera, CMesh, CNode, CPlug, CTransform, CPoint, CNurbsCurve,
     CVector, X_AXIS, Y_AXIS, Z_AXIS, ORIGIN, CBoundingBox, to_bbox,
