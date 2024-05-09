@@ -12,10 +12,10 @@ from pini.utils import File, abs_path, check_heart, lprint
 
 from .d_base import BaseDCC
 
-_LOGGER = logging.getLogger(__name__)
-
 if not hou.__file__:
     raise ImportError('Bad hou module')
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class HouDCC(BaseDCC):

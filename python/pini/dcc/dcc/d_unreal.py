@@ -1,6 +1,6 @@
 """Tools for managing unreal interaction via the pini.dcc module."""
 
-# pylint: disable=import-error,abstract-method
+# pylint: disable=import-error,abstract-method,c-extension-no-member
 
 import logging
 
@@ -9,6 +9,9 @@ import unreal
 from pini.utils import abs_path
 
 from .d_base import BaseDCC
+
+if not unreal.__file__:
+    raise ImportError('Bad unreal module')
 
 _LOGGER = logging.getLogger(__name__)
 

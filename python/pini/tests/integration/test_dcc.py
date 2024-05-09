@@ -1,4 +1,5 @@
 import logging
+import pprint
 import unittest
 
 from pini import dcc, pipe, testing
@@ -117,6 +118,7 @@ class TestPublish(unittest.TestCase):
         testing.TMP_ASSET.flush(force=True)
         pipe.CACHE.reset()
         _ety_c = pipe.CACHE.obt(testing.TMP_ASSET)
+        pprint.pprint(_ety_c.outputs)
         assert not _ety_c.find_outputs()
 
         _handler = dcc.find_export_handler(

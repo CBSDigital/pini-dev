@@ -1,3 +1,20 @@
+## [1.54.0] - Thu 2024-05-09 16:42
+### Summary
+ - Pyui:
+    - bugfix error on run decorated function,
+### Updated
+ - pini.dcc.UnrealDCC catch frozen module causing false import,
+ - pini.dcc.CMayaBasicPublish use ui_is_active to catch garbage collected ui error,
+ - pini.pipe.shotgrid.SGC.find_job added force flag,
+ - pini.tools.pyui.PUDef.edit added to use fresh copy of py_file in case code changed,
+ - pini.tools.pyui.PUDef.__call__ removed decorators,
+ - pini.tools.pyui.PUDef execute/execute_with_success added,
+ - pini.tools.pyui supress handler error on exception,
+ - pini.tools.error.get_catcher added supress_error arg,
+ - pini.tools.error added SyntaxError handling,
+ - maya_pini.open_maya.find_cam added catch flag,
+
+
 ## [1.53.0] - Wed 2024-05-08 15:23
 ### Summary
  - Sanity Check,

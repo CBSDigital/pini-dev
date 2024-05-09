@@ -207,7 +207,7 @@ class PUMayaUi(pu_base.PUBaseUi):
 
         cmds.iconTextButton(
             image1=def_.icon, width=_size, height=_size,
-            style='iconOnly', command=def_.py_def.edit)
+            style='iconOnly', command=def_.edit)
 
         # Add execute button
         _docs = def_.py_def.to_docs('Title')

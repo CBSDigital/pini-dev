@@ -98,11 +98,12 @@ class SGDataCache(object):
         _job = pipe.to_job(match)
         return self.find_job(_job).find_entity(match)
 
-    def find_job(self, match=None):
+    def find_job(self, match=None, force=False):
         """Find a job.
 
         Args:
             match (str|int): job name/prefix/id
+            force (bool): force rebuild cache
 
         Returns:
             (SGCJob): matching job
@@ -110,7 +111,7 @@ class SGDataCache(object):
         _match = match or pipe.cur_job()
 
         _match_jobs = [
-            _job for _job in self.jobs
+            _job for _job in self.find_jobs(force=force)
             if _match in (_job.name, _job.id_, _job.prefix, _job.job)]
         if len(_match_jobs) == 1:
             return single(_match_jobs)

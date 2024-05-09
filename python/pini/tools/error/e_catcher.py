@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from pini.utils import File
+from pini.utils import File, abs_path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,12 +19,13 @@ def _is_disabled():
     return os.environ.get('PINI_DISABLE_ERROR_CATCHER') == '1'
 
 
-def get_catcher(parent=None, qt_safe=False):
+def get_catcher(parent=None, qt_safe=False, supress_error=False):
     """Build error catcher decorator.
 
     Args:
         parent (QDialog): override parent dialog
         qt_safe (bool): make catcher safe to run in qt thread
+        supress_error (bool): supress error on exception
 
     Returns:
         (fn): error catcher decorator
@@ -35,8 +36,7 @@ def get_catcher(parent=None, qt_safe=False):
         @functools.wraps(func)
         def _catch_error_func(*args, **kwargs):
 
-            from pini import qt, dcc, icons
-            from pini.tools import error
+            from pini import dcc
 
             if _is_disabled() or dcc.batch_mode():
                 return func(*args, **kwargs)
@@ -44,32 +44,11 @@ def get_catcher(parent=None, qt_safe=False):
             # Run the function and catch any errors
             try:
                 _result = func(*args, **kwargs)
-            except qt.DialogCancelled as _exc:
-                if qt_safe or dcc.NAME != 'maya':
-                    raise _exc
-                sys.exit()
-            except error.HandledError as _exc:
-                _title = _exc.title or 'Error'
-                qt.notify(str(_exc), title=_title,
-                          icon=icons.find('Hot Pepper'))
-                if qt_safe or dcc.NAME != 'maya':
-                    raise _exc
-                sys.exit()
-            except error.FileError as _exc:
-                _LOGGER.info(' - FILE ERROR %s', _exc)
-                File(_exc.file_).edit(line_n=_exc.line_n)
-                if qt_safe or dcc.NAME != 'maya':
-                    raise _exc
-                sys.exit()
             except Exception as _exc:  # pylint: disable=broad-exception-caught
-                from . import e_error, e_dialog
-                error.TRIGGERED = True
-                _error = e_error.PEError()
-                e_dialog.launch_ui(_error, parent=parent)
-                if qt_safe or dcc.NAME != 'maya':
-                    raise _exc
-                print(_error.to_text())
-                sys.exit()
+                return _handle_exception(
+                    _exc, parent=parent, qt_safe=qt_safe,
+                    supress_error=supress_error)
+
             return _result
 
         return _catch_error_func
@@ -77,16 +56,81 @@ def get_catcher(parent=None, qt_safe=False):
     return _catch_decorator
 
 
-def catch(func):
+def _handle_exception(exc, parent, qt_safe, supress_error):
+    """Handle an exception raised inside the error catcher.
+
+    Args:
+        exc (Exception): exception that was raised
+        parent (QDialog): override parent dialog
+        qt_safe (bool): make catcher safe to run in qt thread
+        supress_error (bool): supress error on exception
+    """
+    from pini import qt, icons
+    from pini.tools import error
+
+    from . import e_error, e_dialog
+
+    if isinstance(exc, qt.DialogCancelled):
+        _LOGGER.info('DIALOG CANCELLED')
+
+    elif isinstance(exc, error.HandledError):
+        _title = exc.title or 'Error'
+        qt.notify(
+            str(exc), title=_title, icon=icons.find('Hot Pepper'),
+            parent=parent)
+
+    elif isinstance(exc, error.FileError):
+        _LOGGER.info(' - FILE ERROR %s', exc)
+        File(exc.file_).edit(line_n=exc.line_n)
+
+    elif isinstance(exc, SyntaxError):
+        _LOGGER.info('SYNTAX ERROR %s', exc)
+        _file = File(abs_path(exc.filename))
+        _line_n = int(str(exc).split()[-1].strip(')'))
+        _LOGGER.info(' - LINE N %d', _line_n)
+        _file.edit(line_n=_line_n)
+
+    else:
+        error.TRIGGERED = True
+        _error = e_error.PEError()
+        e_dialog.launch_ui(_error, parent=parent)
+
+    _finalise_error(
+        exc=exc, qt_safe=qt_safe, error=_error, supress_error=supress_error)
+
+
+def _finalise_error(exc, qt_safe, error=None, supress_error=False):
+    """Complete error handling.
+
+    Args:
+        exc (Exception): exception that was raised
+        qt_safe (bool): make catcher safe to run in qt thread
+        error (PEError): error that was raised
+        supress_error (bool): supress error on exception
+    """
+    from pini import dcc
+
+    if error:
+        print(error.to_text())
+
+    if supress_error:
+        return
+    if qt_safe or dcc.NAME != 'maya':
+        raise exc
+    sys.exit()
+
+
+def catch(func, supress_error=False):
     """Basic error catcher decorator.
 
     Args:
         func (fn): function to decorate
+        supress_error (bool): supress error on exception
 
     Returns:
         (fn): decorated function
     """
-    return get_catcher()(func)
+    return get_catcher(supress_error=supress_error)(func)
 
 
 def toggle(enabled=None):

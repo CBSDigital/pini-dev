@@ -107,7 +107,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _LOGGER.info('PUBLISH force=%d', force)
 
         # Force refs mode to write scene data for sanity check
-        if self.ui:
+        if self.ui_is_active():
             self.ui.References.currentTextChanged.emit(
                 self.ui.References.currentText())
 
@@ -119,7 +119,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _pub = _work.to_output('publish', output_type=None, extn='ma')
         _LOGGER.info(' - OUTPUT %s', _pub.path)
 
-        if self.ui:
+        if self.ui_is_active():
             self.ui.save_settings()
         _pub.delete(wording='Replace', force=force)
         _work.save(reason='publish', force=True, update_outputs=False)
@@ -139,7 +139,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
 
         # Export abc
         _export_abc = export_abc
-        if _export_abc is None and self.ui:
+        if _export_abc is None and self.ui_is_active():
             _export_abc = self.ui.ExportAbc.isChecked()
         if _export_abc is None:
             _export_abc = True
@@ -150,7 +150,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
 
         # Export fbx
         _export_fbx = export_fbx
-        if _export_fbx is None and self.ui:
+        if _export_fbx is None and self.ui_is_active():
             _export_fbx = self.ui.ExportFbx.isChecked()
         if _export_fbx:
             _fbx = _exec_export_fbx(work=_work, metadata=_metadata, force=force)

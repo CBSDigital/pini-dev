@@ -5,12 +5,12 @@
 import inspect
 import logging
 import sys
+import time
 
 from pini import icons, qt
 from pini.tools import error
 from pini.utils import (
-    PyFile, str_to_seed, wrap_fn, six_reload, abs_path, last,
-    copy_text, HOME)
+    PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime)
 
 from .. import cpnt
 
@@ -232,10 +232,11 @@ class PUBaseUi(object):
         Args:
             def_ (PUDef): function being execute
         """
-        _LOGGER.debug('EXEC DEF %s', def_)
+        _h_print('Execute {}'.format(def_.name))
 
         self.save_settings()
 
+        # Obtain args
         _callbacks = CALLBACKS_CACHE[self.mod.__name__]['defs'][def_.name]
         _kwargs = {}
         for _arg in def_.find_args():
@@ -245,10 +246,15 @@ class PUBaseUi(object):
             _kwargs[_arg.name] = _callback()
         _LOGGER.debug(' - KWARGS %s', _kwargs)
 
-        # Execute fresh copy of def
-        six_reload(self.mod)
-        _LOGGER.debug(' - MOD %s', self.mod)
-        def_.py_def.execute(**_kwargs)
+        # Execute def
+        _start = time.time()
+        assert def_.py_def
+        _success = def_.execute_with_success(**_kwargs)
+        if not _success:
+            return
+        _dur = time.time() - _start
+
+        _h_print('Completed {} ({:.01f}s)'.format(def_.name, _dur))
 
     def set_section(self, section):
         """Set current collapsable section.
@@ -379,3 +385,17 @@ class PUBaseUi(object):
         """Called when interface is closed."""
         _LOGGER.debug('CLOSE EVENT %s', self)
         self.save_settings()
+
+
+def _h_print(msg, length=55):
+    """Print the given message with time and hash padding.
+
+    Args:
+        msg (str): message to print
+        length (int): required length of padding
+    """
+    _time = strftime('[%H:%M:%S]')
+    _h_count = length - len(msg) - len(_time) - 3
+    _h_start_n = int((_h_count)/2)
+    _h_end_n = _h_count - _h_start_n
+    print(' '.join([_time, '#'*_h_start_n, msg, '#'*_h_end_n]))

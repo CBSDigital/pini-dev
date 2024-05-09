@@ -82,20 +82,21 @@ def active_cam():
     return CCamera(_name)
 
 
-def find_cam(default=False, orthographic=False, filter_=None):
+def find_cam(default=False, orthographic=False, filter_=None, catch=False):
     """Find matching camera in this scene.
 
     Args:
         default (bool): include default cameras
         orthographic (bool): include orthographic cameras
         filter_ (str): apply name filter
+        catch (bool): no error if fail to find camera
 
     Returns:
         (CCamera): camera
     """
     _cams = find_cams(
         default=default, orthographic=orthographic, filter_=filter_)
-    return single(_cams)
+    return single(_cams, catch=catch)
 
 
 def find_cams(

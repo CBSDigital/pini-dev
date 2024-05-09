@@ -8,7 +8,8 @@ import logging
 
 from pini import icons
 from pini.tools import usage, error
-from pini.utils import abs_path, str_to_seed, to_nice, basic_repr, single
+from pini.utils import (
+    abs_path, str_to_seed, to_nice, basic_repr, single, PyFile, six_reload)
 
 from . import pu_arg
 
@@ -67,6 +68,13 @@ class PUDef(object):
             (str): uid
         """
         return self.py_def.name
+
+    def edit(self):
+        """Open this function def in an editor."""
+        _LOGGER.info('EDIT %s', self)
+        _py = PyFile(self.py_def.py_file)
+        _def = _py.find_def(self.py_def.name)
+        _def.edit()
 
     def find_arg(self, match=None):
         """Find one of this function's arguments.
@@ -128,12 +136,64 @@ class PUDef(object):
 
         return _args
 
-    def __call__(self, *args, **kwargs):
-        _func = self.func
+    def execute(self, **kwargs):
+        """Execute this function.
+
+        This is used by the ui builder to execute the function. It obtains
+        a fresh copy of the function and adds tracking and error catching
+        decorators.
+
+        Returns:
+            (any): function result
+        """
+        _LOGGER.debug('EXEC DEF %s', self)
+
+        # Obtain fresh copy of func
+        _file = abs_path(inspect.getfile(self.func))
+        _LOGGER.debug(' - FILE %s', _file)
+        # _LOGGER.debug(' - PY DEF %s', self.py_def)
+        # assert self.py_def
+        _py = PyFile(_file)
+        _LOGGER.debug(' - PY %s', _py)
+        _mod = _py.to_module()
+        six_reload(_mod)
+        _LOGGER.debug(' - RELOADED MODULE')
+        # _LOGGER.debug(' - MOD %s', _mod)
+        _func = getattr(_mod, self.py_def.name)
+        _LOGGER.debug(' - FUNC %s', _func)
+        if isinstance(_func, PUDef):
+            _func = _func.func
+            _LOGGER.debug(' - FUNC %s', _func)
+
+        # Add usage tracking + error catcher
         _tracker = usage.get_tracker(args=list(kwargs.keys()))
         _func = _tracker(_func)
-        _func = error.catch(_func)
-        return _func(*args, **kwargs)
+        _catcher = error.get_catcher()
+        _func = _catcher(_func)
+
+        return _func(**kwargs)
+
+    def execute_with_success(self, *args, **kwargs):
+        """Execute function and return success status.
+
+        Any error raised is supressed.
+
+        Returns:
+            (bool): whether function executed without erroring
+        """
+        try:
+            self.execute(*args, **kwargs)
+        except SystemExit:
+            return False
+        return True
+
+    def __call__(self, *args, **kwargs):
+        """Execute this function in the most basic form.
+
+        This is needed so that in the case of a decorated function being
+        executed as normal code, the function still works.
+        """
+        return self.func(*args, **kwargs)
 
     def __repr__(self):
         return basic_repr(self, self.name)
