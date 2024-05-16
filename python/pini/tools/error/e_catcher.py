@@ -65,10 +65,13 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
         qt_safe (bool): make catcher safe to run in qt thread
         supress_error (bool): supress error on exception
     """
-    from pini import qt, icons
+    from pini import qt, icons, dcc
     from pini.tools import error
 
     from . import e_error, e_dialog
+
+    _error = e_error.PEError()
+    _show_traceback = False
 
     if isinstance(exc, qt.DialogCancelled):
         _LOGGER.info('DIALOG CANCELLED')
@@ -92,27 +95,13 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     else:
         error.TRIGGERED = True
-        _error = e_error.PEError()
         e_dialog.launch_ui(_error, parent=parent)
+        _show_traceback = True
 
-    _finalise_error(
-        exc=exc, qt_safe=qt_safe, error=_error, supress_error=supress_error)
+    if _show_traceback:
+        print(_error.to_text())
 
-
-def _finalise_error(exc, qt_safe, error=None, supress_error=False):
-    """Complete error handling.
-
-    Args:
-        exc (Exception): exception that was raised
-        qt_safe (bool): make catcher safe to run in qt thread
-        error (PEError): error that was raised
-        supress_error (bool): supress error on exception
-    """
-    from pini import dcc
-
-    if error:
-        print(error.to_text())
-
+    # Finalise error
     if supress_error:
         return
     if qt_safe or dcc.NAME != 'maya':

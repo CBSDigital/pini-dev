@@ -25,7 +25,7 @@ class PUDef(object):
     def __init__(
             self, func, py_def=None, icon=None, label=None, clear=(),
             browser=(), hide=(), selection=(), choices=None, col=None,
-            label_w=None):
+            label_w=None, block_reload=False):
         """Constructor.
 
         Args:
@@ -41,11 +41,14 @@ class PUDef(object):
             choices (dict): arg/opts data for option lists
             col (str|QColor): override def colour
             label_w (int): override label width (in pixels)
+            block_reload (bool): do not reload module when executing this
+                function through the interface
         """
         self.func = func
         self.py_def = py_def
         self.icon = icon or _func_to_icon(func)
         self.label = label or to_nice(func.__name__).capitalize()
+        self.block_reload = block_reload
 
         self.clear = clear
         self.browser = browser
@@ -151,14 +154,12 @@ class PUDef(object):
         # Obtain fresh copy of func
         _file = abs_path(inspect.getfile(self.func))
         _LOGGER.debug(' - FILE %s', _file)
-        # _LOGGER.debug(' - PY DEF %s', self.py_def)
-        # assert self.py_def
         _py = PyFile(_file)
         _LOGGER.debug(' - PY %s', _py)
         _mod = _py.to_module()
-        six_reload(_mod)
+        if not self.block_reload:
+            six_reload(_mod)
         _LOGGER.debug(' - RELOADED MODULE')
-        # _LOGGER.debug(' - MOD %s', _mod)
         _func = getattr(_mod, self.py_def.name)
         _LOGGER.debug(' - FUNC %s', _func)
         if isinstance(_func, PUDef):
@@ -210,7 +211,11 @@ def _func_to_icon(func):
     """
     _path = abs_path(inspect.getfile(func))
     _LOGGER.debug(' - FUNC TO ICON %s', _path)
-    for _splitter in ['/python/', '/scripts/']:
+    for _splitter in [
+            '/python/',
+            '/scripts/',
+            '/system32/',  # for pyinstaller modules
+    ]:
         if _splitter in _path:
             _, _rel_path = _path.rsplit(_splitter, 1)
             break

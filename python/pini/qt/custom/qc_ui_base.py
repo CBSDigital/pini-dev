@@ -548,6 +548,8 @@ class CUiBase(object):
         del event  # For linter
         _LOGGER.debug('CLOSE EVENT')
         self.save_settings(pos=True)
+        if self.timer:
+            self.killTimer(self.timer)
 
     def deleteLater(self):
         """Remove this interface.

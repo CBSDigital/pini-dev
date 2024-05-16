@@ -610,7 +610,7 @@ def str_to_ints(string, chunk_sep=",", rng_sep="-", end=None, inc=1):
     return _ints
 
 
-def str_to_seed(string, offset=0):
+def str_to_seed(string='', offset=0):
     """Build a Random object with seed based on the given string.
 
     Args:

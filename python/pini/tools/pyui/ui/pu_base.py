@@ -348,8 +348,12 @@ class PUBaseUi(object):
                     _set_fn(_arg_val)
 
         # Load sections (collapse)
+
         for _sect_name, _sect_val in _data.get('sections', {}).items():
-            _set_fn = self.callbacks['sections'][_sect_name]['set']
+            _sect_callbacks = self.callbacks['sections'].get(_sect_name, {})
+            if not _sect_callbacks:
+                continue
+            _set_fn = _sect_callbacks['set']
             _set_fn(_sect_val)
 
         _LOGGER.debug(' - LOAD SETTINGS COMPLETE')
@@ -387,7 +391,7 @@ class PUBaseUi(object):
         self.save_settings()
 
 
-def _h_print(msg, length=55):
+def _h_print(msg, length=80):
     """Print the given message with time and hash padding.
 
     Args:

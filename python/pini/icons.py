@@ -187,7 +187,7 @@ class _EmojiSet(Seq):
             _name = to_snake(name)
         _name = '_'+_name.upper()
         _names = globals()[_name]
-        return [self.find(_name) for _name in _names]
+        return tuple(self.find(_name) for _name in _names)
 
     @cache_property
     def _emojis(self):
@@ -204,7 +204,7 @@ class _EmojiSet(Seq):
             _emoji = _Emoji(file_=self[_idx], name=_name, url=_url)
             _emojis.append(_emoji)
 
-        return _emojis
+        return tuple(_emojis)
 
     @cache_property
     def _html_parser(self):

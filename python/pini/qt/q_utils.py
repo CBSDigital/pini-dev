@@ -136,6 +136,22 @@ def get_application(force=False):
     return _app
 
 
+@cache_result
+def obt_pixmap(file_):
+    """Obtain a cached version of the given pixmap.
+
+    ie. the image is only read from disk once
+
+    Args:
+        file_ (str): image to read
+
+    Returns:
+        (CPixmap): pixmap
+    """
+    assert isinstance(file_, six.string_types)
+    return to_pixmap(file_)
+
+
 def safe_timer_event(func):
     """Decorator to catch timer event errors caused by reloading.
 
@@ -266,36 +282,57 @@ def to_p(*args, **kwargs):
         raise TypeError(kwargs)
 
     _arg = single(args, catch=True)
+    _LOGGER.log(9, ' - ARG %s (%s) %d', _arg, args, len(args))
 
-    if isinstance(_arg, (QtCore.QPoint, QtCore.QPointF)):
-        _result = _arg
-    elif isinstance(_arg, QtCore.QSize):
-        _result = QtCore.QPoint(_arg.width(), _arg.height())
-    elif isinstance(_arg, QtCore.QSizeF):
-        _result = QtCore.QPointF(_arg.width(), _arg.height())
-    elif (
-            isinstance(_arg, (tuple, list)) and
-            len(_arg) == 2):
-        return to_p(*_arg, class_=_class)
-    elif isinstance(_arg, int):
-        _result = QtCore.QPoint(_arg, _arg)
-    elif (  # Ints tuple
-            len(args) == 2 and
-            isinstance(args[0], int) and
-            isinstance(args[1], int)):
-        _result = QtCore.QPoint(*args)
-    elif (  # Floats tuple
-            len(args) == 2 and
-            isinstance(args[0], float) and
-            isinstance(args[1], float)):
-        _result = QtCore.QPointF(*args)
-    elif isinstance(_arg, QtGui.QVector2D):
-        _result = QtCore.QPointF(_arg.x(), _arg.y())
+    # Handle arg
+    if _arg is not None:
+        _result = _arg_to_p(_arg)
     else:
-        _result = QtCore.QPoint(*args)
+        _LOGGER.log(9, ' - ARGS %s', args)
+        if (  # Floats tuple
+                len(args) == 2 and (
+                    isinstance(args[0], float) or
+                    isinstance(args[1], float))):
+            _result = QtCore.QPointF(*args)
+        elif (  # Ints tuple
+                len(args) == 2 and
+                isinstance(args[0], int) and
+                isinstance(args[1], int)):
+            _result = QtCore.QPoint(*args)
+        else:
+            raise ValueError(args)
 
     if _class:
+        _LOGGER.log(9, ' - CASTING RESULT %s', _result)
         _result = _class(_result)
+        _LOGGER.log(9, ' - RESULT %s', _result)
+
+    return _result
+
+
+def _arg_to_p(arg):
+    """Obtain point from single arg.
+
+    Args:
+        arg (any): arg to convert
+
+    Returns:
+        (QPoint|QPointF): point
+    """
+    if isinstance(arg, (QtCore.QPoint, QtCore.QPointF)):
+        _result = arg
+    elif isinstance(arg, QtCore.QSize):
+        _result = QtCore.QPoint(arg.width(), arg.height())
+    elif isinstance(arg, QtCore.QSizeF):
+        _result = QtCore.QPointF(arg.width(), arg.height())
+    elif isinstance(arg, (tuple, list)) and len(arg) == 2:
+        _result = to_p(*arg)
+    elif isinstance(arg, int):
+        _result = QtCore.QPoint(arg, arg)
+    elif isinstance(arg, QtGui.QVector2D):
+        _result = QtCore.QPointF(arg.x(), arg.y())
+    else:
+        raise ValueError(arg)
 
     return _result
 
@@ -336,9 +373,9 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
     if anchor == 'C':
         _root = _pos - to_p(_size)/2
     elif anchor == 'L':
-        _root = _pos - to_p(0, _size.height()/2)
+        _root = _pos - to_p(0, int(_size.height()/2))
     elif anchor == 'R':
-        _root = _pos - to_p(_size.width(), _size.height()/2)
+        _root = _pos - to_p(_size.width(), int(_size.height()/2))
     elif anchor == 'T':
         _root = _pos - to_p(_size.width()/2, 0)
     elif anchor == 'TL':
@@ -411,14 +448,15 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
     # Apply typecasting
     _class = kwargs.get('class_')
     if _class:
+        _LOGGER.log(9, ' - APPLY TYPECASTING %s %s', _class, _result)
         if (
                 issubclass(_class, QtCore.QSize) and
                 isinstance(_result, QtCore.QSize)):
-            _result = _class(int(_result.width()), int(_result.height()))
+            _result = _class(round(_result.width()), round(_result.height()))
         elif (
                 issubclass(_class, (QtCore.QSize, QtCore.QSizeF)) and
                 isinstance(_result, (QtCore.QSize, QtCore.QSizeF))):
-            _result = _class(int(_result.width()), int(_result.height()))
+            _result = _class(_result.width(), _result.height())
         else:
             raise NotImplementedError(_class)
 

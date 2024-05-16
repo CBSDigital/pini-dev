@@ -87,7 +87,7 @@ class CLWorkTab(object):
         _work = self.ui.WWorks.selected_data()
         if not self.work_dir:
             return None
-        if not self.work_dir.contains(_work):
+        if _work and not self.work_dir.contains(_work):
             self.ui.WWorks.redraw()
             _work = self.ui.WWorks.selected_data()
         return _work

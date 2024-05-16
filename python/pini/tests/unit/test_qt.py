@@ -105,3 +105,9 @@ class TestQt(unittest.TestCase):
         assert isinstance(_pt, QtCore.QPoint)
         _pt = qt.to_p(100, 100, class_=qt.CPoint)
         assert isinstance(_pt, qt.CPoint)
+
+    def test_to_size(self):
+
+        _size = qt.to_size(0.35, class_=qt.CSizeF)
+        assert _size.width() == 0.35
+        assert _size.height() == 0.35

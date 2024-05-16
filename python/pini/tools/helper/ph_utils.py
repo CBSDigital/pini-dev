@@ -433,6 +433,6 @@ def work_to_icon(work):
     """
     if work.ver_n == 8:
         return _8_BALL_ICON
-    _icons = _WORK_ICONS[:]
+    _icons = list(_WORK_ICONS)
     str_to_seed(work.work_dir.path+str(work.tag)).shuffle(_icons)
     return _icons[work.ver_n % len(_icons)]

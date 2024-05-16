@@ -71,7 +71,7 @@ class CDFarm(base.CFarm):
                 '', '-Job',
                 _job.info_file.path,
                 _job.job_file.path,
-                _job.work.path]
+                _job.scene.path]
         _sub_text = '\n'.join(_sub_lines)
         assert not _sub_file.exists()
         _sub_file.write(_sub_text)
@@ -197,7 +197,8 @@ class CDFarm(base.CFarm):
         _batch = _work.base
         _lyrs = pom.find_render_layers(renderable=True)
 
-        _work.save(force=True, reason='deadline render')
+        _render_scene = _work.save(
+            force=True, reason='deadline render', result='bkp')
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')
@@ -211,8 +212,10 @@ class CDFarm(base.CFarm):
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=_cam, comment=comment,
                 machine_limit=machine_limit, group=group, chunk_size=chunk_size,
-                limit_groups=limit_groups)
+                limit_groups=limit_groups, scene=_render_scene)
             _render_jobs.append(_job)
+            _LOGGER.info(' - SCENE %s', _job.scene)
+            assert _job.scene == _render_scene
         assert not _render_jobs[0].jid
         self.submit_jobs(_render_jobs, name='render')
         assert _render_jobs[0].jid

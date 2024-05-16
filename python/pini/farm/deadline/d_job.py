@@ -34,7 +34,8 @@ class CDJob(object):
     def __init__(
             self, name, work, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
-            dependencies=(), group=None, chunk_size=1, limit_groups=None):
+            dependencies=(), group=None, chunk_size=1, limit_groups=None,
+            scene=None):
         """Constructor.
 
         Args:
@@ -52,6 +53,7 @@ class CDJob(object):
             chunk_size (int): apply chunk size
             limit_groups (str): comma separated limit groups
                 (eg. maya-2023,vray)
+            scene (File): render scene (if not work file)
         """
         self.stime = stime or time.time()
         self.comment = comment
@@ -62,6 +64,8 @@ class CDJob(object):
         self.work = work
         self.error_limit = error_limit
         self.batch_name = batch_name
+        self.scene = scene or self.work
+
         self.chunk_size = chunk_size
 
         if frames:

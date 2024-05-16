@@ -1,3 +1,29 @@
+## [1.55.0] - Thu 2024-05-16 16:11
+### Summary
+ - Pini Helper:
+    - lookdev publish match all light types (mkim),
+### Updated
+ - pini.utils.str_to_seed allow str to kwarg,
+ - pini.qt.CSizeF.__mul__ added,
+ - pini.qt.CPainter.draw_text use QFont.setPointSizeF not QFont.setPointSize,
+ - pini.qt.CPixmap.draw_rounded_overlay added anchor arg,
+ - pini.qt.CUiBase.closeEvent kill timer if applicable,
+ - pini.qt.obt_pixmap added,
+ - pini.qt.to_p use QPointF if either arg is float,
+ - pini.qt.to_rect force int height for L/R anchor,
+ - pini.qt.to_size use round not int for QSize,
+ - pini.qt.to_size bugfix use int for QSizeF,
+ - pini.farm.deadline.submit_maya_render use bkp as render scene,
+ - pini.farm.deadline.CDJob added scene arg,
+ - pini.tools.pyui.install added block_reload arg,
+ - pini.tools.pyui added pyinstaller handling,
+ - pini.tools.pyui.PUSection collapse by default,
+ - pini.tools.pyui bugfix error on not sections in settings,
+ - pini.icons find_grp/emojis returns tuple,
+ - pini.refresh.find_mods added,
+ - maya_pini.m_pipe.to_light_shp match all arnold/vray/redshift lights,
+
+
 ## [1.54.0] - Thu 2024-05-09 16:42
 ### Summary
  - Pyui:

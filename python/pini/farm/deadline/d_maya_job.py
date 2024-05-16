@@ -24,15 +24,16 @@ class _CDMayaJob(d_job.CDJob):
     """Base class for all deadline maya jobs."""
 
     def __init__(
-            self, stime, work, output, name=None, camera=None, priority=50,
-            machine_limit=0, comment=None, frames=None, error_limit=None,
-            group=None, chunk_size=1, limit_groups=None):
+            self, stime, work, output, scene=None, name=None, camera=None,
+            priority=50, machine_limit=0, comment=None, frames=None,
+            error_limit=None, group=None, chunk_size=1, limit_groups=None):
         """Constructor.
 
         Args:
             stime (float): job submission time
             work (CPWork): work file
             output (CPOutput): output file
+            scene (File): render scene (if not work file)
             name (str): job name
             camera (CCamera): job camera
             priority (int): job priority (0-100)
@@ -53,7 +54,7 @@ class _CDMayaJob(d_job.CDJob):
         super(_CDMayaJob, self).__init__(
             stime=stime, comment=comment, priority=priority, name=_name,
             machine_limit=machine_limit, work=work, frames=frames, group=group,
-            error_limit=error_limit, batch_name=self.work.base,
+            error_limit=error_limit, batch_name=self.work.base, scene=scene,
             chunk_size=chunk_size, limit_groups=limit_groups)
 
     def _build_info_data(self, output_filename=None):
@@ -102,10 +103,6 @@ class _CDMayaJob(d_job.CDJob):
         })
         if output_filename:
             _data['OutputFilename0'] = output_filename
-
-        # if dependencies:
-        #     _data['JobDependencies'] = dependencies
-        #     raise NotImplementedError
 
         # Gather asset paths
         _paths = set()
@@ -184,15 +181,16 @@ class CDMayaRenderJob(_CDMayaJob):
     plugin = 'MayaRender'
 
     def __init__(
-            self, layer, stime, work, camera=None, priority=50, machine_limit=0,
-            comment=None, frames=None, group=None, chunk_size=1,
-            limit_groups=None):
+            self, layer, stime, work, scene=None, camera=None, priority=50,
+            machine_limit=0, comment=None, frames=None, group=None,
+            chunk_size=1, limit_groups=None):
         """Constructor.
 
         Args:
             layer (str): name of layer being rendered
             stime (float): job submission time
             work (CPWork): work file
+            scene (File): render scene (if not work file)
             camera (CCamera): job camera
             priority (int): job priority (0-100)
             machine_limit (int): job machine limit
@@ -215,7 +213,7 @@ class CDMayaRenderJob(_CDMayaJob):
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
             frames=frames or dcc.t_frames(), name=_name, group=group,
-            chunk_size=chunk_size, limit_groups=limit_groups)
+            scene=scene, chunk_size=chunk_size, limit_groups=limit_groups)
 
         assert self.batch_name
 

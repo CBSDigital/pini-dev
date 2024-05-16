@@ -98,7 +98,7 @@ class CPainter(QtGui.QPainter):
         # Setup font
         _font = font or QtGui.QFont()
         if size:
-            _font.setPointSize(size)
+            _font.setPointSizeF(size)
         self.setFont(_font)
 
         # Apply rotation

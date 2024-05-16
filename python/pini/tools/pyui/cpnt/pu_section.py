@@ -30,7 +30,7 @@ def set_section(name, collapse=False):
 class PUSection(object):
     """Used to tell the ui builder that a section has been declared."""
 
-    def __init__(self, name, collapse=False):
+    def __init__(self, name, collapse=True):
         """Constructor.
 
         Args:

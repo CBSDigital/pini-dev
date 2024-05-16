@@ -318,22 +318,26 @@ class CPixmap(QtGui.QPixmap):
 
         return _rect
 
-    def draw_rounded_overlay(self, pix, pos=(0, 0), bevel=5):
+    def draw_rounded_overlay(self, pix, pos=(0, 0), bevel=5, anchor='TL'):
         """Draw an overlay with rounded corners.
 
         Args:
             pix (QPixmap|str): pixmap or path to overlay import
             pos (QPoint): position
             bevel (int): rounding radius in pixels
+            anchor (str): anchor for overlay
         """
+        from pini import qt
         _base = pix
+        _pos = qt.to_p(pos)
 
+        # Prepare overlay - needs to be drawn at origin
         _over = CPixmap(_base.size())
         _over.fill('Transparent')
         _over.draw_rounded_rect(
             col=_base, outline=None, size=_base.size(), bevel=bevel)
 
-        self.draw_overlay(_over, pos=pos)
+        self.draw_overlay(_over, pos=pos, anchor=anchor)
 
     def draw_rounded_rect(
             self, pos=(0, 0), size=None, col='White', outline='Black',

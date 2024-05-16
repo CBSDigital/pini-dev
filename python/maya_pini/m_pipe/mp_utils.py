@@ -135,8 +135,16 @@ def to_light_shp(node):
         (CNode|None): light shape (if any)
     """
     _light_types = {
+        'aiLightPortal',
+        'VRayLightDomeShape',
+        'VRayLightIESShape',
+        'VRayLightRectShape',
         'VRayLightSphereShape',
-        'RedshiftPhysicalLight'}
-    return single([
-        _shp for _shp in node.to_shps()
-        if _shp.object_type() in _light_types], catch=True)
+        'VRaySunTarget',
+    }
+    _light_shps = []
+    for _shp in node.to_shps():
+        _type = _shp.object_type()
+        if _type in _light_types or _type.endswith('Light'):
+            _light_shps.append(_shp)
+    return single(_light_shps, catch=True)

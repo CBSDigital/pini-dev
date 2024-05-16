@@ -7,8 +7,9 @@ environments where qt is not availabe (eg. C4D).
 import logging
 import os
 import sys
-import traceback
 import time
+import traceback
+import types
 
 from pini.utils import (
     apply_filter, six_reload, lprint, abs_path, check_heart)
@@ -148,7 +149,32 @@ if _RELOAD_ORDER_APPEND:
     _RELOAD_ORDER += _RELOAD_ORDER_APPEND.split(',')
 
 
-def _find_mods(sort=None, filter_=None, mod_names=None):
+def find_mods(base=None):
+    """Find modules.
+
+    Modules without __file__ attribute are ignored.
+
+    Args:
+        base (str): match by module base (eg. pini)
+
+    Returns:
+        (mod list): matching modules
+    """
+    _mods = []
+    for _name, _mod in sorted(sys.modules.items()):
+        if (
+                not _mod or
+                not hasattr(_mod, '__file__') or
+                not _mod.__file__):
+            continue
+        if base and not _name.startswith(base):
+            continue
+        _mods.append(_mod)
+
+    return _mods
+
+
+def _find_pini_mods(sort=None, filter_=None, mod_names=None):
     """Find modules to reload.
 
     Args:
@@ -194,42 +220,46 @@ def get_mod_sort(order=None):
 
     def _mod_sort(name):
 
-        _LOGGER.log(9, 'SORT MOD %s', name)
+        _name = name
+        if isinstance(_name, types.ModuleType):
+            _name = _name.__name__
+
+        _LOGGER.log(9, 'SORT MOD %s', _name)
 
         # Apply default sort
         _val = 10.0
-        if 'utils' in name:
+        if 'utils' in _name:
             _val -= 0.03
-        if 'base' in name:
+        if 'base' in _name:
             _val -= 0.02
-        if 'misc' in name:
+        if 'misc' in _name:
             _val -= 0.01
-        if 'tools' in name:
+        if 'tools' in _name:
             _val += 0.01
-        if name.endswith('_ui'):
+        if _name.endswith('_ui'):
             _val += 0.02
-        if 'tests' in name:
+        if 'tests' in _name:
             _val += 0.03
-        if 'launch' in name:
+        if 'launch' in _name:
             _val += 0.04
-        _val -= name.count('.')*0.1
+        _val -= _name.count('.')*0.1
         _LOGGER.log(9, ' - VAL A %f', _val)
 
         # Apply ordering
         _idx = 0
-        _tokens = name.split('.')
+        _tokens = _name.split('.')
         _LOGGER.log(9, ' - TOKENS %s', _tokens)
-        for _idx in range(name.count('.')+1):
-            _n_tokens = name.count('.') + 1 - _idx
-            _name = '.'.join(_tokens[:_n_tokens])
-            _LOGGER.log(9, ' - TESTING %s %d', _name, _n_tokens)
-            if _name in _RELOAD_ORDER:
-                _LOGGER.log(9, ' - MATCH %s %d', _name, _idx)
-                _order_idx = _RELOAD_ORDER.index(_name)
+        for _idx in range(_name.count('.')+1):
+            _n_tokens = _name.count('.') + 1 - _idx
+            _r_name = '.'.join(_tokens[:_n_tokens])
+            _LOGGER.log(9, ' - TESTING %s %d', _r_name, _n_tokens)
+            if _r_name in _order:
+                _LOGGER.log(9, ' - MATCH %s %d', _r_name, _idx)
+                _order_idx = _order.index(_r_name)
                 break
         else:
-            _order_idx = len(_RELOAD_ORDER)
-            _LOGGER.log(9, ' - NO MATCH %s %d', name, _idx)
+            _order_idx = len(_order)
+            _LOGGER.log(9, ' - NO MATCH %s %d', _name, _idx)
         _val += _order_idx*10
         _LOGGER.log(9, ' - VAL B %f', _val)
 
@@ -290,6 +320,7 @@ def reload_libs(
         verbose (int): print process data
     """
     _LOGGER.debug('RELOAD LIBS')
+
     if close_interfaces:
         from pini import qt
         _LOGGER.debug(' - CLOSING INTERFACES')
@@ -297,7 +328,8 @@ def reload_libs(
 
     # Get list of modules to reload
     _sort = sort or get_mod_sort(order=_RELOAD_ORDER)
-    _mods = mods or _find_mods(sort=_sort, filter_=filter_, mod_names=mod_names)
+    _mods = mods or _find_pini_mods(
+        sort=_sort, filter_=filter_, mod_names=mod_names)
 
     # Reload the modules
     _count = 0
@@ -326,7 +358,7 @@ def _count_root_match_fails(root, mods):
     Returns:
         (int): number of modules which not inside root
     """
-    _mods = mods or _find_mods()
+    _mods = mods or _find_pini_mods()
     _root = abs_path(root)
     _LOGGER.debug('CHECK ROOT %s', _root)
 
@@ -358,7 +390,7 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
     _LOGGER.info('UPDATE LIBS root=%s', _root)
 
     # Find modules to reload
-    _mods = _find_mods(filter_=filter_)
+    _mods = _find_pini_mods(filter_=filter_)
     _LOGGER.info(
         ' - FOUND %d MODS %s', len(_mods), _mods if verbose > 1 else '')
     assert _mods

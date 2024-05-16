@@ -17,3 +17,13 @@ class CSizeF(QtCore.QSizeF):
             (tuple): width/height values
         """
         return self.width(), self.height()
+
+    def __mul__(self, other):
+
+        if isinstance(other, (float, int)):
+            return CSizeF(self.width()*other, self.height()*other)
+        if isinstance(other, (QtCore.QSize, QtCore.QSizeF)):
+            return CSizeF(
+                self.width()*other.width(), self.height()*other.height())
+
+        raise NotImplementedError(other)
