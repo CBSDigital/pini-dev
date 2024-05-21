@@ -6,7 +6,7 @@ import pathlib
 import time
 
 from . import up_utils
-from ..u_misc import bytes_to_str, nice_id, strftime
+from ..u_misc import nice_size, nice_id, strftime
 from ..u_six import six_cmp
 
 _LOGGER = logging.getLogger(__name__)
@@ -146,7 +146,7 @@ class Path(object):
             if catch:
                 return '-'
             raise _exc
-        return bytes_to_str(_size)
+        return nice_size(_size)
 
     def owner(self):
         """Get file owner.

@@ -36,6 +36,7 @@ class TestHelper(unittest.TestCase):
         _helper.ui.EExportPane.select_tab('Render')
         _helper.ui.ERenderHandler.select_data(_farm_rh)
 
+        _farm_rh._build_layers_elems()
         _farm_rh.ui.Layers.select(_blah_lyr, replace=True)
         assert not _default_lyr.is_renderable()
         assert _blah_lyr.is_renderable()

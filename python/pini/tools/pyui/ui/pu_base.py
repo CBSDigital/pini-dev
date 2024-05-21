@@ -122,6 +122,8 @@ class PUBaseUi(object):
 
     def _build_menu_items(self):
         """Build items in menu bar."""
+
+        # Build file menu
         _file = self.add_menu('File')
         self.add_menu_item(
             _file, label='Edit',
@@ -131,7 +133,11 @@ class PUBaseUi(object):
             _file, label='Copy path',
             image=icons.COPY,
             command=wrap_fn(copy_text, self.py_file.path))
+        self.add_menu_item(
+            _file, label='Browse', image=icons.BROWSER,
+            command=wrap_fn(self.py_file.browser))
 
+        # Build interface menu
         _interface = self.add_menu('Interface')
         self.add_menu_item(
             _interface, label='Rebuild',

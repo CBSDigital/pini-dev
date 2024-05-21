@@ -361,20 +361,26 @@ def _apply_browser(field, mode):
     """
     _LOGGER.debug('BROWSER %s', mode)
 
-    # Determine root
     _root = None
+
+    # Try to determine root from current path
     _cur_path = cmds.textField(field, query=True, text=True)
     if _cur_path:
         _cur_path = Path(abs_path(_cur_path))
-        _LOGGER.debug(' - CUR PATH %s', _cur_path.path)
+        _LOGGER.debug(
+            ' - CUR PATH %s exists=%d', _cur_path.path, _cur_path.exists())
         if _cur_path.exists():
             if not _cur_path.is_dir():
                 _cur_path = _cur_path.to_dir()
             _root = _cur_path
-    for _root in [pipe.cur_work_dir(), pipe.cur_entity(), pipe.cur_job()]:
-        if _root:
-            break
-    _LOGGER.info(' - ROOT %s', _root)
+        _LOGGER.info(' - ROOT FROM CUR PATH %s', _root)
+
+    # Try and use current pipe dirs
+    if not _root:
+        for _root in [pipe.cur_work_dir(), pipe.cur_entity(), pipe.cur_job()]:
+            if _root:
+                break
+        _LOGGER.info(' - ROOT FROM PIPE %s', _root)
 
     _result = qt.file_browser(mode=mode, root=_root)
     _LOGGER.debug(' - RESULT %s', _result)

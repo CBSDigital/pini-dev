@@ -7,7 +7,9 @@ extracting ui data.
 import ast
 import logging
 
-from pini.utils import PyFile, PyDef, single
+from pini import icons, install
+from pini.utils import (
+    PyFile, PyDef, single, str_to_seed, abs_path, to_nice, to_pascal)
 
 from . import pu_section
 
@@ -33,6 +35,35 @@ def _ast_item_is_set_section(item):
 
 class PUFile(PyFile):
     """Represents a python file to be built into a ui."""
+
+    @property
+    def icon(self):
+        """Obtain icon for this file's interface.
+
+        Returns:
+            (str): path to icon
+        """
+        _mod = self.to_module()
+        if hasattr(_mod, 'ICON'):
+            return _mod.ICON
+        _path = abs_path(self.path)
+        _rand = str_to_seed(_path)
+        return _rand.choice(icons.FRUIT)
+
+    @property
+    def title(self):
+        """Obtain title for this file's interface.
+
+        Returns:
+            (str): title
+        """
+        _mod = self.to_module()
+        if hasattr(_mod, 'PYUI_TITLE'):
+            return _mod.PYUI_TITLE
+        _tokens = _mod.__name__.split('.')
+        if _tokens[-1] == '__init__':
+            _tokens.pop()
+        return to_nice(_tokens[-1]).title()
 
     def _map_ast_item_to_child(self, item, parent):
         """Map an ast item to child object.
@@ -118,3 +149,63 @@ class PUFile(PyFile):
             _elems.append(_elem)
 
         return _elems
+
+    def to_tool(self, prefix=''):
+        """Build this interface into a pini install tool.
+
+        Args:
+            prefix (str): add prefix to object names
+
+        Returns:
+            (PITool): interface as a tool
+        """
+        from pini.tools import pyui
+
+        _LOGGER.debug(' - ADD TOOLKIT %s', self.path)
+        _LOGGER.debug('   - TITLE %s', self.title)
+
+        _name = prefix+to_pascal(self.title)
+        _path = abs_path(self.path)
+
+        _tool = install.PITool(
+            _name, label=self.title,
+            command='\n'.join([
+                'from pini.tools import pyui',
+                'pyui.build("{}")'.format(_path)]),
+            icon=self.icon)
+
+        # Add standard options
+        _copy = install.PITool(
+            _name+'Copy', label='Copy path',
+            command='\n'.join([
+                'from pini.utils import copy_text',
+                'copy_text("{}")'.format(_path)]),
+            icon=icons.COPY)
+        _tool.add_context(_copy)
+        _edit = install.PITool(
+            _name+'Edit', label='Edit file',
+            command='\n'.join([
+                'from pini.utils import File',
+                'File("{}").edit()'.format(_path)]),
+            icon=icons.EDIT)
+        _tool.add_context(_edit)
+
+        # Add contents as context options
+        _div_count = 0
+        for _elem in self.find_ui_elems():
+            if isinstance(_elem, pyui.PUDef):
+                if not _div_count:
+                    _tool.add_divider(_name+str(_div_count))
+                    _div_count += 1
+                _ctx = install.PITool(
+                    name=_name+to_pascal(_elem.label),
+                    label=_elem.label, icon=_elem.icon,
+                    command=_elem.to_execute_py())
+                _tool.add_context(_ctx)
+            elif isinstance(_elem, pyui.PUSection):
+                _tool.add_divider(_name+str(_div_count))
+                _div_count += 1
+            else:
+                raise ValueError(_elem)
+
+        return _tool

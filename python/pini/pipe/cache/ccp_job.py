@@ -507,7 +507,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         _work_dirs = list(self.work_dirs)
 
         _outs = []
-        for _sg_pub in shotgrid.SGC.find_pub_files(job=self):
+        for _sg_pub in shotgrid.SGC.find_pub_files(job=self, force=force):
 
             _LOGGER.debug('PUB %s', _sg_pub)
             if _sg_pub.status in ('omt', ):

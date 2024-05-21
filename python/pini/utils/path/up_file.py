@@ -125,7 +125,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _trg.test_dir()
         shutil.copyfile(self.path, _trg.path)
 
-    def delete(self, wording='Delete', execute=True, icon=None, force=False):
+    def delete(
+            self, wording='Delete', execute=True, icon=None, force=False,
+            verbose=True):
         """Delete this file.
 
         Args:
@@ -134,6 +136,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 if deletion will occur later but the warning is useful)
             icon (str): path to icon for confirmation dialog
             force (bool): delete without warning dialog
+            verbose (int): print out contents of confirmation dialog
         """
         up_utils.error_on_file_system_disabled()
         if not self.exists():
@@ -144,7 +147,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             qt.ok_cancel(
                 title='Confirm {}'.format(wording.capitalize()),
                 icon=_icon, msg='{} existing file?\n\n{}'.format(
-                    wording, self.path))
+                    wording, self.path),
+                verbose=verbose)
         if execute:
             os.remove(self.path)
 

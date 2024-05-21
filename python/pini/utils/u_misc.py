@@ -101,6 +101,8 @@ def bytes_to_str(bytes_):
     Returns:
         (str): bytes as readable string
     """
+    from pini.tools import release
+    release.apply_deprecation('17/05/24', 'Use nice_size')
     _size = float(bytes_)
     _labels = ["B", "K", "M", "G", "T", "P"]
     _factor = 0

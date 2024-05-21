@@ -22,7 +22,7 @@ class PITool(object):
         """
         self.name = name
         if not is_pascal(self.name):
-            raise ValueError(self.name)
+            raise ValueError('Name not pascal '+self.name)
         self.command = command
         self.icon = icon
         self.label = label or self.name

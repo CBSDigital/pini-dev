@@ -1,3 +1,21 @@
+## [1.56.0] - Tue 2024-05-21 12:28
+### Summary
+ - Pini Install:
+    - added tools for converting a python file into menu items,
+### Updated
+ - pini.utils.bytes_to_str deprecated,
+ - pini.utils.Path.nice_size uses nice_size,
+ - pini.utils.File.delete added verbose flag,
+ - pini.pipe.CACHE.CCPJob._read_outputs_sg pass force to SGC,
+ - pini.qt.CUiMainWindow added settings file arg,
+ - pini.install.PITool better error on non-pascal,
+ - pini.tools.pyui.PUDef.to_execute_py added,
+ - pini.tools.pyui.PUFile added icon/title properties,
+ - pini.tools.pyui.PUFile.to_tool added,
+ - pini.tools.pyui.PUBaseUi added File/Browser menu opt,
+ - pini.tools.pyui.PUMayaUi bugfix apply browser use existing,
+
+
 ## [1.55.0] - Thu 2024-05-16 16:11
 ### Summary
  - Pini Helper:
