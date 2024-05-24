@@ -353,9 +353,10 @@ def _build_update_job_py(outputs, metadata, work):
         if pipe.MASTER == 'shotgrid':
             _lines += [
                 '# Register outputs in shotgrid',
+                '_LOGGER.info("REGISTER OUTPUTS")',
                 'from pini.pipe import shotgrid',
                 'for _last, _out in last(_outs):',
-                '    shotgrid.create_pub_file('
+                '    shotgrid.create_pub_file(',
                 '        _out, force=True, update_cache=_last)',
                 '']
 
@@ -363,6 +364,7 @@ def _build_update_job_py(outputs, metadata, work):
         if metadata:
             _lines += [
                 '# Update metadata',
+                '_LOGGER.info("UPDATE METADATA")',
                 '_metadata = {}'.format(metadata),
                 'for _out in _outs:',
                 '    if not _out.exists():',
@@ -373,8 +375,11 @@ def _build_update_job_py(outputs, metadata, work):
     # Update workfile output cache
     _lines += [
         '# Update work outputs cache',
+        '_LOGGER.info("UPDATE CACHE")',
         '_work_c = pipe.CACHE.obt_work("{}")'.format(work.path),
         '_work_c.find_outputs(force=True)',
+        '',
+        '_LOGGER.info("UPDATE CACHE COMPLETE")',
         '']
 
     return '\n'.join(_lines)

@@ -241,7 +241,7 @@ def _exec_local_cache(
         for _last, _out in qt.progress_bar(
                 last(outputs), 'Registering {:d} output{} in shotgrid'):
             shotgrid.create_pub_file(
-                _out, thumb=_thumb, update_cache=_last)
+                _out, thumb=_thumb, update_cache=_last, force=True)
 
 
 @hide_img_planes

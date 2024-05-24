@@ -1,3 +1,13 @@
+## [1.57.1] - Fri 2024-05-24 09:22
+### Summary
+ - Pini Helper:
+    - deadline render submit better logging,
+### Updated
+ - pini.farm.deadline update py better logging,
+ - pini.testing.setup_logging added flush arg,
+ - maya_pini.cache apply force of shotgrid register,
+
+
 ## [1.57.0] - Fri 2024-05-24 08:02
 ### Summary
  - Pini Helper:

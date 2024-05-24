@@ -284,9 +284,11 @@ class CCPWork(CPWork):
                 show new outputs
         """
         from pini.tools import helper
+        _LOGGER.info('UPDATE OUTPUTS %s image=%d', self, self.image.exists())
 
         self._read_outputs(force=True)
         if self.image.exists():
+            _LOGGER.info(' - REREADING IMAGE %s', self.image)
             helper.obt_pixmap(self.image, force=True)
 
         # Update helper

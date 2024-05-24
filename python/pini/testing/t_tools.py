@@ -54,17 +54,22 @@ def set_dev_mode(value):
         del os.environ['PINI_DEV']
 
 
-def setup_logging():
-    """Setup logging with a generic handler."""
+def setup_logging(flush=True):
+    """Setup logging with a generic handler.
+
+    Args:
+        flush (bool): remove existing handlers
+    """
     _logger = logging.getLogger()
     _logger.setLevel(logging.INFO)
 
     # Flush existing handlers
-    while _logger.handlers:
-        check_heart()
-        _handler = _logger.handlers[0]
-        _LOGGER.debug(' - REMOVE HANDLER %s', _handler)
-        _logger.removeHandler(_handler)
+    if flush:
+        while _logger.handlers:
+            check_heart()
+            _handler = _logger.handlers[0]
+            _LOGGER.debug(' - REMOVE HANDLER %s', _handler)
+            _logger.removeHandler(_handler)
 
     # Create default handler
     _handler = logging.StreamHandler(sys.stdout)
