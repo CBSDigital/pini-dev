@@ -50,7 +50,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
-        _LOGGER.info('BUILD UI %s', self)
+        _LOGGER.debug('BUILD UI %s', self)
         super(CMayaBasicPublish, self).build_ui(
             parent=parent, layout=layout, add_footer=False)
 
@@ -81,7 +81,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         if add_footer:
             self.add_footer_elems()
 
-        _LOGGER.info(' - COMPLETED BUILD UI %s', self)
+        _LOGGER.debug(' - COMPLETED BUILD UI %s', self)
 
     @restore_sel
     def publish(

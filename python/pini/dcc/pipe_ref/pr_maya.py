@@ -212,30 +212,6 @@ class CMayaRef(_CMayaPipeRef):
         """Select this reference in the current scene."""
         cmds.select(self.ref.find_top_nodes())
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        _LOGGER.info('SWAP REP %s', self)
-        _LOGGER.info(' - TARGET %s', output)
-
-        # Update to vrmesh ma rep
-        if 'vrmesh' in output.metadata:
-            _LOGGER.info(' - SWAP TO VRMESH MA')
-            _shds_ref = self.find_shaders_ref()
-            _LOGGER.info(' - SHDS %s', _shds_ref)
-            if _shds_ref:
-                assert isinstance(_shds_ref, CMayaShadersRef)
-            _ref = self.update(output)
-            if _shds_ref:
-                _LOGGER.info(' - DELETE SHADERS %s', _shds_ref)
-                _shds_ref.delete(force=True)
-            return _ref
-
-        raise NotImplementedError
-
     def to_node(self, node, catch=False):
         """Obtain a node with this reference's namespace applied.
 
@@ -264,6 +240,11 @@ class CMayaRef(_CMayaPipeRef):
         _LOGGER.debug('   - OUTPUT %s', out)
 
         if out.extn in ['ma', 'mb', 'abc', 'fbx']:
+
+            # Determine grp/tfm
+            _orig_out = self.output
+            _mtx = self._to_mtx()
+            _grp = self._to_parent()
             if reset:
                 _grp = None
                 if self.ref.top_node:
@@ -271,8 +252,28 @@ class CMayaRef(_CMayaPipeRef):
                 self.delete(force=True)
                 return dcc.create_ref(
                     out, namespace=self.namespace, group=_grp)
+
+            # Apply update
             self.ref.update(out)
             self._init_path_attrs(out)
+            if _mtx and self.top_node:
+                _mtx.apply_to(self.top_node)
+            if _grp and self.top_node:
+                self.top_node.add_to_grp(_grp)
+
+            # Apply type dependent updates
+            if out.content_type == 'VrmeshMa':
+                _shds = self.find_shaders_ref()
+                _LOGGER.info(' - FIND SHADERS %s', _shds)
+                if _shds:
+                    _shds.delete(force=True)
+            elif out.content_type == 'ModelMa':
+                if _orig_out.content_type == 'VrmeshMa':
+                    _LOGGER.info(' - FIND SHADERS %s', _orig_out)
+                    _shds = _orig_out.find_rep(content_type='ShadersMa')
+                    _LOGGER.info(' - SHADERS %s', _shds)
+                    self.attach_shaders(_shds)
+
             return self
 
         if out.type_ == 'ass_gz':
@@ -569,14 +570,6 @@ class CMayaShadersRef(CMayaRef):
 
         return _shd_ref.namespace == self.namespace
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
-
     def update(self, out, reset=True):
         """Apply a new path to this reference.
 
@@ -592,29 +585,6 @@ class CMayaShadersRef(CMayaRef):
             _LOGGER.info(' - ATTACH TO %s', _trg)
             _result.attach_to(_trg)
         return _result
-
-
-class CMayaVrmeshMaRef(CMayaRef):
-    """Represents a referenced shaded vrmesh maya scene."""
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        _LOGGER.info('SWAP REP %s', self)
-        _LOGGER.info(' - TARGET %s', output)
-
-        _shds_out = output.find_lookdev_shaders()
-        _LOGGER.info(' - SHDS OUT %s', _shds_out)
-
-        _ref = self.update(output)
-        _LOGGER.info(' - REF %s', _ref)
-        if _shds_out:
-            _ref.attach_shaders(_shds_out)
-
-        return _ref
 
 
 class CMayaVdb(_CMayaPipeRef):
@@ -652,14 +622,6 @@ class CMayaVdb(_CMayaPipeRef):
         if not force:
             raise NotImplementedError
         cmds.delete(self.node)
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
 
     def update(self, out):
         """Update this node to a new output.
@@ -711,14 +673,6 @@ class CMayaAiStandIn(_CMayaPipeRef):
         if not force:
             raise NotImplementedError
         cmds.delete(self.node)
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
 
     def update(self, out):
         """Update this node to a new output.
@@ -812,10 +766,8 @@ def _read_reference_pipe_refs(selected=False):
             continue
 
         # Determine class based on publish type
-        if _out_c.metadata.get('shd_yml'):
+        if _out_c.content_type == 'ShadersMa':
             _class = CMayaShadersRef
-        elif _out_c.metadata.get('vrmesh'):
-            _class = CMayaVrmeshMaRef
         else:
             _class = CMayaRef
         _ref = _class(_ref)

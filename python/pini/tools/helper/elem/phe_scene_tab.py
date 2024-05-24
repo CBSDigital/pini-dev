@@ -10,7 +10,7 @@ from pini.dcc import pipe_ref
 from pini.tools import usage
 from pini.utils import (
     wrap_fn, plural, chain_fns, strftime, clip, passes_filter, safe_zip,
-    apply_filter, single, split_base_index)
+    apply_filter, single, split_base_index, to_nice)
 
 from .phe_output_item import PHOutputItem
 from .phe_scene_ref_item import PHSceneRefItem
@@ -872,12 +872,7 @@ class CLSceneTab(object):
         _reps = _out.find_reps()
         _reps_menu = menu.add_menu('Update rep', enabled=bool(_reps))
         for _rep in _reps:
-            if _rep.type_ == 'ass_gz':
-                _label = 'lookdev ass.gz'
-            elif _rep.type_ == 'publish':
-                _label = _rep.task
-            else:
-                raise ValueError(_rep)
+            _label = to_nice(_rep.content_type)
             _fns = []
             for _ref in refs:
                 _fn = wrap_fn(self._stage_update, ref=_ref, output=_rep)

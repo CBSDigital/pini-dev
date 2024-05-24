@@ -160,14 +160,6 @@ class CPipeRef(object):
         from pini import dcc
         dcc.select_node(self.node)
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
-
     def to_output(self, use_cache=True):
         """Obtain this pipe ref's output.
 

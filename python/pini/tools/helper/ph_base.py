@@ -88,8 +88,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self._callback__Profile()
         self._callback__MainPane(save=False)
 
-        self.ui.WTags.doubleClicked.connect(wrap_fn(self._callback__WLoad))
-        self.ui.WWorks.doubleClicked.connect(wrap_fn(self._callback__WLoad))
+        self.ui.WTags.doubleClicked.connect(
+            wrap_fn(self._load_latest_tag_version))
+        self.ui.WWorks.doubleClicked.connect(
+            wrap_fn(self._callback__WLoad))
 
         if load_settings:
             _LOGGER.debug(' - LOADING SETTINGS')

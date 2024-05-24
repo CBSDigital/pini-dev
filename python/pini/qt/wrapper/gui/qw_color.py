@@ -18,6 +18,8 @@ class CColor(QtGui.QColor):
     def __init__(self, *args, **kwargs):
         """Constructor."""
 
+        _alpha = kwargs.pop('alpha', None)
+
         # Apply extended colour names
         _args = args
         _arg = single(_args, catch=True)
@@ -26,6 +28,8 @@ class CColor(QtGui.QColor):
             _args = _EXTENDED_COLS.get(_name, _args)
 
         super(CColor, self).__init__(*_args, **kwargs)
+        if _alpha:
+            self.setAlphaF(_alpha)
 
     @staticmethod
     def col_names():

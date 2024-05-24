@@ -41,7 +41,9 @@ def create_pub_file(
         if not force:
             return to_pub_file_data(output)
 
-    _LOGGER.debug(' - CREATE PUBLISHED FILE %s', output.path)
+    _LOGGER.debug(
+        ' - CREATE PUBLISHED FILE %s update_cache=%d', output.path,
+        update_cache)
     _notes = output.metadata.get('notes')
 
     _sg_type = shotgrid.SGC.find_pub_type(
@@ -81,12 +83,12 @@ def create_pub_file(
 
     # Update cache
     if update_cache:
-        _sg_job.find_pub_files(force=True, progress=True)
-        assert _sg_job.find_pub_file(output)
+        _LOGGER.info(' - UPDATING CACHE')
         _job_c = pipe.CACHE.obt(output.job)
         _job_c.find_outputs(force=True)
         _out_c = pipe.CACHE.obt(output)
         assert _out_c
+        _LOGGER.info(' - UPDATED CACHE')
 
     # Apply thumb
     _thumb = thumb

@@ -38,14 +38,6 @@ class CHouAbcGeometryRef(pr_base.CPipeRef):
         assert len(_parent.children()) == 2
         _parent.destroy()
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
-
     def update(self, out):
         """Update this abc to another path.
 
@@ -81,14 +73,6 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         if not force:
             raise NotImplementedError
         self.node.destroy()
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
 
     def update(self, out):
         """Update this abc to another path.

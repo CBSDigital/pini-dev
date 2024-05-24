@@ -32,20 +32,28 @@ class CheckTopNode(SCMayaCheck):
         _task = pipe.cur_task(fmt='pini')
         _name = {'model': 'MDL', 'rig': 'RIG'}.get(_task)
 
-        # Read top nodes
         _top_nodes = [
-            str(_node.strip('|')) for _node in cmds.ls(dag=True, long=True)
-            if _node.count('|') == 1 and
-            not _node.strip('|') in DEFAULT_NODES and
-            not cmds.referenceQuery(_node, isNodeReferenced=True) and
-            not sc_utils_maya.is_display_points(_node)]
-        if 'JUNK' in _top_nodes:
-            _top_nodes.remove('JUNK')
-        self.write_log('TOP NODES %s', _top_nodes)
+            _node for _node in pom.find_nodes(top_node=True, default=False)
+            if _node != 'JUNK']
+        self.write_log(' - top nodes %s', _top_nodes)
 
+        # Fix no groups at top level
+        _top_tfms = [
+            _node for _node in _top_nodes
+            if isinstance(_node, pom.CTransform)]
+        self.write_log(' - top tfms %s', _top_tfms)
+        if _top_nodes and not _top_tfms:
+            _fix = wrap_fn(
+                _create_top_level_group, name=_name, nodes=_top_nodes)
+            self.add_fail('No top level {} group'.format(_name), fix=_fix)
+            return
+
+        # Fix top nodes not in group
         _top_node = single(_top_nodes, catch=True)
         if not _top_node:
-            self.add_fail('No single top node')
+            _fix = wrap_fn(
+                _create_top_level_group, name=_name, nodes=_top_nodes)
+            self.add_fail('No top level {} group'.format(_name), fix=_fix)
             return
         self.write_log('Top node %s', _top_node)
         if _name and _top_node != _name:
@@ -53,6 +61,17 @@ class CheckTopNode(SCMayaCheck):
             _msg = 'Badly named top node {} (should be {})'.format(
                 _top_node, _name)
             self.add_fail(_msg, fix=_fix, node=_top_node)
+
+
+def _create_top_level_group(name, nodes):
+    """Create top level group containing the given nodes.
+
+    Args:
+        name (str): group name
+        nodes (CBaseTransform list): nodes to add to group
+    """
+    for _node in nodes:
+        _node.add_to_grp(name)
 
 
 class CheckCacheSet(SCMayaCheck):
@@ -69,11 +88,12 @@ class CheckCacheSet(SCMayaCheck):
         """Run this check."""
 
         # Check set
-        if not cmds.objExists('cache_SET'):
+        _set = sc_utils_maya.find_cache_set()
+        if not _set:
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)
             return
-        if not cmds.objectType('cache_SET') == 'objectSet':
+        if _set.object_type() != 'objectSet':
             self.add_fail('Bad cache set type')
             return
 

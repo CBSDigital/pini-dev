@@ -59,6 +59,27 @@ class SCMayaCheck(sc_check.SCCheck):
             self.add_fail(_msg, fix=_fix, node=node)
 
 
+def find_cache_set():
+    """Find cache set in the current scene.
+
+    If reference mode is set to "import references into root namespace" then a
+    referenced cache set is valid.
+
+    Returns:
+        (CNode|None): cache set (if any)
+    """
+    if cmds.objExists('cache_SET'):
+        return pom.CNode('cache_SET')
+    _refs_mode = export_handler.get_publish_references_mode()
+    if _refs_mode is export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE:
+        _sets = pom.find_nodes(
+            type_='objectSet', default=False, clean_name='cache_SET')
+        _set = single(_sets, catch=True)
+        if _set:
+            return _set
+    return None
+
+
 def find_top_level_nodes():
     """Find non-default dag nodes with no parents.
 
@@ -217,12 +238,13 @@ def read_cache_set_geo():
     Returns:
         (CBaseTransform list): cache set nodes
     """
+    _set = find_cache_set()
     _refs_mode = export_handler.get_publish_references_mode()
     _include_referenced = _refs_mode in (
         export_handler.ReferencesMode.LEAVE_INTACT,
         export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE)
     return m_pipe.read_cache_set(
-        mode='geo', include_referenced=_include_referenced)
+        mode='geo', include_referenced=_include_referenced, set_=_set)
 
 
 def shd_is_arnold(engine, type_):

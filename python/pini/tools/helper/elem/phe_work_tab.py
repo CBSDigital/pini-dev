@@ -621,6 +621,12 @@ class CLWorkTab(object):
 
         menu.add_separator()
 
+    def _load_latest_tag_version(self):
+        """Load latest version of currently selected tag."""
+        _latest = self.work.find_latest()
+        self.jump_to(_latest)
+        self._callback__WLoad()
+
     def _load_scene_version_up(self, work=None):
         """Load the current work and version up.
 

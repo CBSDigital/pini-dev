@@ -72,16 +72,20 @@ def find_attr_refs(types=()):
     Returns:
         (AttrRef list): attribute references
     """
-    _a_refs = []
 
-    # Check files
-    for _type, _attr in [
+    # Build list of types to check
+    _types = [
             ('file', 'fileTextureName'),
             ('imagePlane', 'imageName'),
+            ('audio', 'filename')]
+    if cmds.pluginInfo('mtoa', query=True, loaded=True):
+        _types += [
             ('aiImage', 'filename'),
-            ('aiStandIn', 'dso'),
-            ('audio', 'filename'),
-    ]:
+            ('aiStandIn', 'dso')]
+
+    # Check files
+    _a_refs = []
+    for _type, _attr in _types:
         if types and _type not in types:
             continue
         for _node in cmds.ls(type=_type):

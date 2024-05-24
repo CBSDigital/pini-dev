@@ -3,7 +3,8 @@
 import logging
 import sys
 
-from pini.utils import single, register_custom_yaml_handler, Seq
+from pini.utils import (
+    single, register_custom_yaml_handler, Seq, is_pascal)
 
 from .ccp_utils import pipe_cache_to_file, pipe_cache_on_obj
 from ..cp_output import (
@@ -44,6 +45,45 @@ class CCPOutputBase(CPOutputBase):
         _LOGGER.log(9, 'GET METADATA %s', self)
         return data or super(CCPOutputBase, self).get_metadata()
 
+    @property
+    def content_type(self):  # pylint: disable=too-many-branches
+        """Obtain content type for this output (eg. ShadersMa, RigMa, Video).
+
+        (NOTE: content type should be pascal)
+
+        Returns:
+            (str): content type name
+        """
+        _pub_type = self.metadata.get('publish_type')
+        if self.extn == 'ma':
+            if 'vrmesh' in self.metadata:
+                _c_type = 'VrmeshMa'
+            elif 'shd_yml' in self.metadata:
+                _c_type = 'ShadersMa'
+            elif _pub_type == 'CMayaModelPublish':
+                _c_type = 'ModelMa'
+            elif _pub_type == 'CMayaBasicPublish' and self.pini_task == 'rig':
+                _c_type = 'RigMa'
+            else:
+                _c_type = 'BasicMa'
+        elif self.extn == 'mb':
+            _c_type = 'BasicMb'
+        elif isinstance(self, Seq):
+            if self.extn == 'obj':
+                _c_type = 'ObjSeq'
+            elif self.nice_type == 'blast':
+                _c_type = 'Blast'
+            elif self.nice_type == 'render':
+                _c_type = 'Render'
+            else:
+                raise ValueError(self.path, _pub_type, self.nice_type)
+        elif self.extn in ('mov', 'mp4'):
+            _c_type = 'Video'
+        else:
+            _c_type = self.extn.capitalize()
+        assert is_pascal(_c_type) or _c_type[0].isdigit()
+        return _c_type
+
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.
 
@@ -55,19 +95,22 @@ class CCPOutputBase(CPOutputBase):
         super(CCPOutputBase, self).set_metadata(data, mode=mode, force=force)
         self.get_metadata(force=True)
 
-    def find_rep(self, task=None, extn=None):
+    def find_rep(self, task=None, content_type=None, extn=None, catch=True):
         """Find alternative representations of this output.
 
         Args:
             task (str): filter by task
+            content_type (str): filter by content type
             extn (str): filter by extension
+            catch (bool): no error if fail to match a single rep
 
         Returns:
             (CPOutput): alternative representation
         """
-        return single(self.find_reps(task=task, extn=extn))
+        _reps = self.find_reps(task=task, extn=extn, content_type=content_type)
+        return single(_reps, catch=catch)
 
-    def find_reps(self, task=None, extn=None):
+    def find_reps(self, task=None, content_type=None, extn=None):
         """Find different representation of this reference.
 
         eg. model ma publish <=> lookdev ass.gz standin
@@ -76,6 +119,7 @@ class CCPOutputBase(CPOutputBase):
 
         Args:
             task (str): filter by task
+            content_type (str): filter by content type
             extn (str): filter by extension
 
         Returns:
@@ -85,7 +129,9 @@ class CCPOutputBase(CPOutputBase):
         for _rep in self._read_reps():
             if extn and _rep.extn != extn:
                 continue
-            if task and _rep.task != task:
+            if task and task not in (_rep.task, _rep.pini_task):
+                continue
+            if content_type and _rep.content_type != content_type:
                 continue
             _reps.append(_rep)
         return _reps
@@ -100,7 +146,6 @@ class CCPOutputBase(CPOutputBase):
         Returns:
             (CPOutput list): representations
         """
-        from pini import pipe
         _LOGGER.debug('FIND REPS %s', self)
         _LOGGER.debug(' - TASK %s', self.task)
         _LOGGER.debug(' - EXTN %s', self.extn)
@@ -121,21 +166,27 @@ class CCPOutputBase(CPOutputBase):
                     _reps.append(_pub)
 
         # Add ass.gz for model refs
-        if pipe.map_task(self.task) in ('model', 'rig'):
+        if self.pini_task in ('model', 'rig'):
             _ass = self.entity.find_output(
                 type_='ass_gz', ver_n='latest', tag=self.tag, catch=True)
             if _ass:
                 _reps.append(_ass)
 
-        # Add vremsh
-        if pipe.map_task(self.task) in ('model', ):
-            _vrmesh = single([
-                _pub for _pub in self.entity.find_outputs(
-                    extn='ma', tag=self.tag, type_='publish', ver_n='latest')
-                if 'vrmesh' in _pub.metadata], catch=True)
-            if _vrmesh:
-                _LOGGER.debug(' - FOUND VRMESH %s', _vrmesh)
-                _reps.append(_vrmesh)
+        # Add vrmesh
+        if self.pini_task in ('model', ):
+            _vrm = self.entity.find_output(
+                extn='ma', tag=self.tag, type_='publish', ver_n='latest',
+                content_type='VrmeshMa', catch=True)
+            if _vrm:
+                _LOGGER.debug(' - FOUND VRMESH %s', _vrm)
+                _reps.append(_vrm)
+
+        if self.content_type == 'VrmeshMa':
+            _shds = self.entity.find_output(
+                extn='ma', tag=self.tag, type_='publish', ver_n=self.ver_n,
+                content_type='ShadersMa', catch=True)
+            if _shds:
+                _reps.append(_shds)
 
         return _reps
 

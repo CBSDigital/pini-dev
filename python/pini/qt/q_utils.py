@@ -169,6 +169,7 @@ def safe_timer_event(func):
         try:
             _result = func(self, *args, **kwargs)
         except TypeError as _exc:
+            _LOGGER.info(' - TIMER FAILED %s', _exc)
             _stop = True
 
         _LOGGER.debug('SAFE TIMER EVENT %d vis=%d', _stop, self.isVisible())

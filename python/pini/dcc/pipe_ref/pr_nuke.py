@@ -38,25 +38,9 @@ class _CNukePipeRef(pr_base.CPipeRef):
             raise NotImplementedError
         nuke.delete(self.node)
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
-
 
 class CNukeAbcRef(_CNukePipeRef):
     """Represents an abc reference in a ReadGeo node."""
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
 
     def update(self, out):
         """Update this node to a new path.
@@ -76,14 +60,6 @@ class CNukeCamAbcRef(CNukeAbcRef):
         """Constructor."""
         super(CNukeCamAbcRef, self).__init__(*args, **kwargs)
 
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
-
     def update(self, out):
         """Update this node to a new path.
 
@@ -97,14 +73,6 @@ class CNukeCamAbcRef(CNukeAbcRef):
 
 class CNukeReadRef(_CNukePipeRef):
     """Pipelined nuke read node."""
-
-    def swap_rep(self, output):
-        """Swap this reference for a different representation.
-
-        Args:
-            output (CPOutput): representation to swap to
-        """
-        raise NotImplementedError
 
     def update(self, out):
         """Update this node to a new path.

@@ -490,11 +490,15 @@ def single(
     Raises:
         (ValueError): if there was not exactly one item in the list
     """
+    from pini.utils import SixIterable
     _LOGGER.debug('SINGLE type=%s %s', type(items), items)
 
     # Obtain item list
     _items = items
-    if isinstance(_items, (set, types.GeneratorType)):
+    _iterables = SixIterable
+    if (
+            not isinstance(_items, (list, tuple)) and
+            isinstance(_items, SixIterable)):
         _items = tuple(_items)
 
     # Handle fail

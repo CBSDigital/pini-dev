@@ -1,4 +1,4 @@
-"""Tools for managing PiniHelper interface."""
+"""Tools for managing basic standalone PiniHelper interface."""
 
 # pylint: disable=abstract-method
 

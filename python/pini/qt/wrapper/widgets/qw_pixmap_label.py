@@ -1,6 +1,7 @@
 """Tools for managing the CPixmapLabel widget."""
 
 import logging
+import time
 
 import six
 
@@ -36,6 +37,7 @@ class CPixmapLabel(QtWidgets.QLabel):
         self.text = text  # Hidden to avoid clash with text method
         self.margin = margin
         self.draw_pixmap_func = draw_pixmap_func
+        self.update_t = None
 
         self.setAlignment(Qt.AlignCenter)
         self.setMinimumSize(1, 1)
@@ -80,6 +82,7 @@ class CPixmapLabel(QtWidgets.QLabel):
         _draw_pixmap_func = self.draw_pixmap_func or self.draw_pixmap
         _draw_pixmap_func(_pix)
         self.setPixmap(_pix)
+        self.update_t = time.time()
         return _pix
 
     def resizeEvent(self, event):

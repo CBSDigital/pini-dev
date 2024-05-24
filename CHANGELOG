@@ -1,3 +1,34 @@
+## [1.57.0] - Fri 2024-05-24 08:02
+### Summary
+ - Pini Helper:
+    - bugfix double click tag not loading latest version in some cases,
+    - swap VrmeshMa -> ModelMa attaches shaders,
+    - swap ModelMa -> VrmeshMa removes shaders,
+ - Sanity Check:
+    - check cache set recognises referenced cache set,
+### Updated
+ - pini.utils.single bugfix error on pass filter in py2,
+ - pini.dcc CPipeRef.swap_rep/CMayaVrmeshMaRef deprecated,
+ - pini.dcc.CMayaRef.update maintain top node transform,
+ - pini.dcc.CMayaRef.update ModelMa -> VrmeshMa strips shaders,
+ - pini.dcc.CMayaRef.update VrmeshMa -> ModelMa attaches shaders,
+ - pini.dcc.CBasicPublish.post_publish fix multiple cache rebuilds,
+ - pini.pipe.CACHE.CCPOutput.content_type added property,
+ - pini.pipe.CACHE.CCPOutput find_rep/find_reps added content type filter,
+ - pini.pipe.CACHE.CCPOutput find_rep/find_reps task matches pini task,
+ - pini.pipe.CACHE.CCPEntity.find_outputs added content type filter,
+ - pini.pipe.shotgrid.create_pub_file bugfix multiple cache rebuilds,
+ - pini.qt.CPixmapLabel.update_t added,
+ - pini.qt.CColor.__init__ added alpha kwarg,
+ - pini.tools.pyui.PUFile.build_ui read elems + reload before reset ui to avoid destory ui on failed reload,
+ - pini.tools.sanity_check.find_cache_set added for import refs mode,
+ - pini.tools.sanity_check.CheckTopNode catch mesh as top node,
+ - pini.tools.sanity_check.CheckCacheSet added handling for referenced cache set,
+ - pini.tools.helper scene refs ctx swap reps use content type for label,
+ - pini.tools.helper bugfix double click tag not loading latest,
+ - maya_pini.ref.find_attr refs ignore mtoa types if plugin not loaded,
+
+
 ## [1.56.0] - Tue 2024-05-21 12:28
 ### Summary
  - Pini Install:

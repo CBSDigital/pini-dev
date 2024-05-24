@@ -243,11 +243,15 @@ class CCPEntity(CPEntity):
             return _out
         raise NotImplementedError
 
-    def find_outputs(self, type_=None, force=False, **kwargs):
+    def find_outputs(  # pylint: disable=arguments-differ
+            self, type_=None, content_type=None, force=False, **kwargs):
         """Find outputs in this entity (stored at entity level).
 
         Args:
-            type_ (str): filter by type (eg. cache/render)
+            type_ (str): filter by type (eg. cache/render) - it is declared here
+                to promote it to the first arg
+            content_type (str): filter by content type (this attr is unique to
+                cache outputs)
             force (bool): force reread from disk
 
         Returns:
@@ -269,7 +273,12 @@ class CCPEntity(CPEntity):
                 self.job.find_outputs(force=True)
             else:
                 raise NotImplementedError(pipe.MASTER)
-        return super(CCPEntity, self).find_outputs(type_=type_, **kwargs)
+        _outs = []
+        for _out in super(CCPEntity, self).find_outputs(type_=type_, **kwargs):
+            if content_type and _out.content_type != content_type:
+                continue
+            _outs.append(_out)
+        return _outs
 
     def obt_output_seq_dir(self, dir_, force=False):
         """Obtain an output sequence directory from this entity.

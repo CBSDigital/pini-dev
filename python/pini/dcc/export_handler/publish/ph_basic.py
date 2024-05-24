@@ -121,13 +121,6 @@ class CBasicPublish(eh_base.CExportHandler):
         _LOGGER.info('POST PUBLISH %s', work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
 
-        # Update entity cache
-        _ety_c = work.entity
-        if not isinstance(work.entity, cache.CCPEntity):
-            _ety_c = pipe.CACHE.obt_entity(_ety_c)
-        _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
-        _ety_c.find_publishes(force=True)
-
         self._apply_snapshot(work=work)
 
         # Register in shotgrid
@@ -135,8 +128,7 @@ class CBasicPublish(eh_base.CExportHandler):
             from pini.pipe import shotgrid
             _thumb = work.image if work.image.exists() else None
             for _last, _out in last(outs):
-                if _out.asset_type == 'test':
-                    continue
+                _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
                 try:
                     shotgrid.create_pub_file(
                         _out, thumb=_thumb, force=True, update_cache=_last)
@@ -146,9 +138,19 @@ class CBasicPublish(eh_base.CExportHandler):
                             _out.path),
                         title='Shotgrid Register Failed', icon=shotgrid.ICON)
 
-        # Update work outputs cache
-        _work = pipe.CACHE.obt_work(work)  # Has been rebuilt
-        _work.find_outputs(force=True)
+        # Update cache
+        _LOGGER.info(' - UPDATING CACHE')
+        if pipe.MASTER == 'disk':
+            _ety_c = work.entity
+            if not isinstance(work.entity, cache.CCPEntity):
+                _ety_c = pipe.CACHE.obt_entity(_ety_c)
+            _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
+            _ety_c.find_publishes(force=True)
+        _work_c = pipe.CACHE.obt_work(work)  # Has been rebuilt
+        _work_c.find_outputs(force=True)
+        for _out in outs:
+            assert _out in _work_c.outputs
+        _LOGGER.info(' - UPDATED CACHE')
 
         self._apply_version_up(version_up=version_up)
 

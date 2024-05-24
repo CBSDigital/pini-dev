@@ -93,12 +93,14 @@ class PUBaseUi(object):
         """
         _LOGGER.debug(' - BUILD UI')
 
-        self.init_ui()
+        # Read elems before start building ui in case reload fails
+        _elems = self.py_file.find_ui_elems()
 
         _LOGGER.debug('   - RESET CALLBACKS')
         CALLBACKS_CACHE[self.mod.__name__] = self.callbacks  # pylint: disable=no-member
+        self.init_ui()
 
-        for _last, _item in last(self.py_file.find_ui_elems()):
+        for _last, _item in last(_elems):
             if isinstance(_item, cpnt.PUDef):
                 self.add_def(_item)
                 _sep = not _last
