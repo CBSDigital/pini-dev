@@ -257,8 +257,9 @@ def wrap_py(py, name, work=None, maya=False):
             '']
     _lines += [
         '    # Setup loggging',
-        '    from pini import testing, dcc',
+        '    from pini import testing, dcc, qt',
         '    testing.setup_logging()',
+        '    qt.get_application()',
         '    _LOGGER.info("RUNNING {} %s", _FILE)'.format(name),
         '']
     if maya and work:

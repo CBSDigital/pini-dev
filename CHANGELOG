@@ -1,3 +1,20 @@
+## [1.58.0] - Tue 2024-05-28 10:43
+### Summary
+ - Sanity Check:
+    - fix error on fix bad shapes due to camera in cset (nle),
+ - Pini Helper:
+    - deadline render bugfix error on update cache,
+    - bugfix error on houdini flipbook,
+### Updated
+ - pini.utils.to_time_f bugfix error on datetime in py2,
+ - pini.farm.deadline bugfix error on build thumbnail due to no QApplication,
+ - pini.farm.deadline raise error on missing output,
+ - pini.tools.sanity_check.SCMayaCheck track checked shapes to avoid duplicate fails,
+ - pini.testing.setup_logging only flush pini handlers,
+ - maya_pini.open_maya.find_render_cam use non-default cam even if not renderable,
+ - hou_pini.m_pipe.flipbook added save flag + mov fmt handling,
+
+
 ## [1.57.1] - Fri 2024-05-24 09:22
 ### Summary
  - Pini Helper:

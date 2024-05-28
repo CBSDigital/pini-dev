@@ -356,6 +356,7 @@ def _build_update_job_py(outputs, metadata, work):
                 '_LOGGER.info("REGISTER OUTPUTS")',
                 'from pini.pipe import shotgrid',
                 'for _last, _out in last(_outs):',
+                '    assert _out.exists()',
                 '    shotgrid.create_pub_file(',
                 '        _out, force=True, update_cache=_last)',
                 '']

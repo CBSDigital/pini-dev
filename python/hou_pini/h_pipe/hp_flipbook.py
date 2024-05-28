@@ -30,7 +30,7 @@ def _prepare_output_path(format_, force):
         raise error.HandledError('No current work file found.')
 
     _to_video = False
-    if format_ in ['mp4']:
+    if format_ in ['mp4', 'mov']:
         _seq = TMP.to_seq('pini/houBlast/tmp.%04d.jpg')
         _seq.delete(force=True)
         _out = _work.to_output(
@@ -55,7 +55,8 @@ def _prepare_output_path(format_, force):
 @usage.get_tracker('HouFlipbook')
 @error.catch
 def flipbook(
-        format_='mp4', view=True, range_=None, burnins=False, force=False):
+        format_='mp4', view=True, range_=None, burnins=False, save=True,
+        force=False):
     """Execute flipbook.
 
     Args:
@@ -63,6 +64,7 @@ def flipbook(
         view (bool): view flipbook on completion
         range_ (tuple): override flipbook range start/end
         burnins (bool): apply burnins
+        save (bool): save scene on flipbook
         force (bool): replace existing without confirmation
     """
     _LOGGER.info('FLIPBOOK')
@@ -78,6 +80,8 @@ def flipbook(
     _seq, _out, _to_video, _viewer = _prepare_output_path(
         format_=format_, force=force)
 
+    if save:
+        _work.save(reason='blast')
     u_flipbook(_seq, force=True, view=False, range_=range_)
 
     # Post processing

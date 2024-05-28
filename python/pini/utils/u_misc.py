@@ -12,6 +12,7 @@ import random
 import subprocess
 import time
 import types
+import sys
 
 import six
 
@@ -728,7 +729,11 @@ def to_time_f(val):
     if isinstance(val, time.struct_time):
         return time.mktime(val)
     if isinstance(val, datetime.datetime):
-        return val.timestamp()
+        if sys.version_info.major == 3:
+            return val.timestamp()
+        if sys.version_info.major == 2:
+            return time.mktime(val.timetuple()) + val.microsecond / 1e6
+        raise NotImplementedError(sys.version_info.major)
     raise NotImplementedError('Failed to map {} - {}'.format(
         type(val).__name__, val))
 

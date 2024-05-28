@@ -23,9 +23,11 @@ class SCMayaCheck(sc_check.SCCheck):
     across muliple checks.
     """
 
+    _checked_shps = None
+
     def run(self):
         """Execute this check."""
-        raise NotImplementedError
+        self._checked_shps = set()
 
     def _check_shp(self, node):
         """Check node shapes.
@@ -47,8 +49,12 @@ class SCMayaCheck(sc_check.SCCheck):
             self.add_fail(_msg, node=node)
             return
 
-        # Check shape name
         _shp = single(_shps)
+        if _shp in self._checked_shps:
+            return
+        self._checked_shps.add(_shp)
+
+        # Check shape name
         _cur_shp = to_clean(_shp)
         _correct_shp = to_clean(node)+'Shape'
         if _cur_shp != _correct_shp:

@@ -142,12 +142,13 @@ def find_render_cam(catch=True):
     """
     _LOGGER.debug('FIND RENDER CAM')
 
-    _ren_cams = find_cams(default=None, renderable=True)
-    _LOGGER.debug(' - RENDERABLE %d %s', len(_ren_cams), _ren_cams)
-    if len(_ren_cams) == 1:
-        return single(_ren_cams)
+    _non_def_ren = find_cams(default=False, renderable=True)
+    _LOGGER.debug(
+        ' - NON-DEFAULT RENDERABLE %d %s', len(_non_def_ren), _non_def_ren)
+    if len(_non_def_ren) == 1:
+        return single(_non_def_ren)
 
-    _non_def = find_cams(default=False, renderable=True)
+    _non_def = find_cams(default=False)
     _LOGGER.debug(' - NON-DEFAULT %d %s', len(_non_def), _non_def)
     if len(_non_def) == 1:
         return single(_non_def)
@@ -156,6 +157,16 @@ def find_render_cam(catch=True):
     _LOGGER.debug(' - ACTIVE %s', _active)
     if _active and _active.renderable.get_val():
         return _active
+
+    _ren = find_cams(renderable=True)
+    _LOGGER.debug(' - RENDERABLE %d %s', len(_ren), _ren)
+    if len(_ren) == 1:
+        return single(_ren)
+
+    _cams = find_cams(renderable=True)
+    _LOGGER.debug(' - CAMS %d %s', len(_cams), _cams)
+    if len(_cams) == 1:
+        return single(_cams)
 
     if catch:
         return None

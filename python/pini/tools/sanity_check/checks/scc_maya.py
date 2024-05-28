@@ -774,6 +774,7 @@ class CheckCacheables(SCMayaCheck):
 
     def run(self):
         """Run this check."""
+        super(CheckCacheables, self).run()
         for _cacheable in self.update_progress(m_pipe.find_cacheables()):
             if isinstance(_cacheable, m_pipe.CPCacheableCam):
                 self._check_cam(_cacheable)
@@ -823,7 +824,9 @@ class CheckCacheables(SCMayaCheck):
                 node=_node, fix=_fix)
 
         # Check shapes
+        self.write_log('Checking shapes %s', cset)
         for _geo in cset.to_geo():
+            self.write_log(' - geo %s', _geo)
             self._check_shp(_geo)
 
         # Check for duplicate nodes

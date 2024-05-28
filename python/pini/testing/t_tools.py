@@ -54,7 +54,14 @@ def set_dev_mode(value):
         del os.environ['PINI_DEV']
 
 
-def setup_logging(flush=True):
+class _PiniHandler(logging.StreamHandler):
+    """Logging handler for pini.
+
+    Defined here to allow it to be distinguished from other handlers.
+    """
+
+
+def setup_logging(flush='pini'):
     """Setup logging with a generic handler.
 
     Args:
@@ -64,15 +71,28 @@ def setup_logging(flush=True):
     _logger.setLevel(logging.INFO)
 
     # Flush existing handlers
-    if flush:
+    if flush in (True, 'all'):
         while _logger.handlers:
             check_heart()
             _handler = _logger.handlers[0]
-            _LOGGER.debug(' - REMOVE HANDLER %s', _handler)
+            _name = type(_handler).__name__
+            _LOGGER.debug(
+                ' - REMOVE HANDLER %s %d %s', _handler,
+                isinstance(_handler, _PiniHandler), _name)
             _logger.removeHandler(_handler)
+    elif flush == 'pini':
+        for _handler in list(_logger.handlers):
+            _name = type(_handler).__name__
+            if _name == _PiniHandler.__name__:
+                _LOGGER.info(' - REMOVE HANDLER %s', _handler)
+                _logger.removeHandler(_handler)
+    elif flush is False:
+        pass
+    else:
+        raise ValueError(flush)
 
     # Create default handler
-    _handler = logging.StreamHandler(sys.stdout)
+    _handler = _PiniHandler(sys.stdout)
     _formatter = logging.Formatter(
         '- %(name)s: %(message)s')
     _handler.setFormatter(_formatter)
