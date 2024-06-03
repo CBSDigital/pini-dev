@@ -14,7 +14,7 @@ from pini.utils import (
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
     merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, EMPTY,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image, TMP)
+    Image, TMP, search_dict_for_key)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -105,6 +105,18 @@ class TestUtils(unittest.TestCase):
     def test_nice_age(self):
         assert nice_age(60*60+1, pad=2) == '01h00m'
         assert nice_age(24*60*60+1, pad=2, depth=2) == '01d00h'
+
+    def test_search_dict_for_keys(self):
+        _data = {'test': {
+            'a': [
+                {'blah': 1},
+                {'text': [1, 2, {'blah': 1}]},
+            ]}}
+        _result = search_dict_for_key(key='blah', dict_=_data)
+        assert _result == {
+            ('test', 'a', 0, 'blah'): 1,
+            ('test', 'a', 1, 'text', 2, 'blah'): 1}
+        pprint.pprint(_result)
 
     def test_strftime(self):
         assert strftime('%d/%m/%y %D', 1663021730) in [

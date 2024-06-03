@@ -36,7 +36,7 @@ class PUV(object):
         self.u, self.v = uv
 
     def __repr__(self):
-        return basic_repr(self, '({:.02f}, {:.02f})'.format(self.u, self.v))
+        return basic_repr(self, '({:.04f}, {:.04f})'.format(self.u, self.v))
 
 
 class PUVBBox(object):
@@ -61,6 +61,24 @@ class PUVBBox(object):
             if _uv.v < self.min.v:
                 self.min.v = _uv.v
 
+    @property
+    def height(self):
+        """Obtain height of this bbox (v-axis).
+
+        Returns:
+            (float): bbox height
+        """
+        return self.max.v - self.min.v
+
+    @property
+    def width(self):
+        """Obtain width of this bbox (u-axis).
+
+        Returns:
+            (float): bbox width
+        """
+        return self.max.u - self.min.u
+
     def contains(self, uv):
         """Test whether the given UV point is contained in this bbox.
 
@@ -76,7 +94,16 @@ class PUVBBox(object):
             uv.v >= self.min.v and
             uv.v <= self.max.v)
 
+    def expand(self, dist):
+        """Expand this bbox by the given distance.
+
+        Args:
+            dist (float): distance to expand by
+        """
+        self.min = to_uv([self.min.u-dist, self.min.v-dist])
+        self.max = to_uv([self.max.u+dist, self.max.v+dist])
+
     def __repr__(self):
-        _label = '({:.02f}, {:.02f}) -> ({:.02f}, {:.02f})'.format(
+        _label = '({:.04f}, {:.04f}) -> ({:.04f}, {:.04f})'.format(
             self.min.u, self.min.v, self.max.u, self.max.v)
         return basic_repr(self, _label)

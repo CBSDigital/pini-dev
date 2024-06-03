@@ -314,7 +314,8 @@ def read_publish_metadata():
 
 
 def read_shader_assignments(
-        fmt='dict', allow_face_assign=False, referenced=None, catch=True):
+        fmt='dict', allow_face_assign=False, referenced=None, filter_=None,
+        catch=True):
     """Read shader assignments data.
 
     This data relates to the current scene. Namespaces are removed
@@ -327,64 +328,31 @@ def read_shader_assignments(
         allow_face_assign (bool): do not ignore face assignments (eg. for
             speed tree assets)
         referenced (bool): filter by shader referenced status
+        filter_ (str): apply name filter
         catch (bool): no error if no shaders found
 
     Returns:
         (dict/list): shader assignments
     """
     _LOGGER.debug('READ SHD ASSIGNMENTS')
+
+    # Read shading data
     _data = {}
     _ses = pom.find_nodes(type_='shadingEngine')
     _shds = []
     for _se in _ses:
-
-        _LOGGER.debug('SHADING ENGINE %s', _se)
-        _shd_data = {'shadingEngine': str(_se)}
-
-        # Read shader
-        _shd = _se.plug['surfaceShader'].find_incoming(plugs=False)
-        _LOGGER.debug(' - SHD %s %d', _shd, bool(_shd))
+        _shd, _shd_data = _read_se(
+            engine=_se, referenced=referenced,
+            allow_face_assign=allow_face_assign, filter_=filter_)
         if not _shd:
-            _LOGGER.debug(' - NO SHADER')
             continue
-
-        # Apply referenced filter
-        if referenced is not None:
-            _LOGGER.debug(' - IS REFERENCED %d', _shd.is_referenced())
-            if _shd.is_referenced() != referenced:
-                _LOGGER.debug(' - FILTERED')
-                continue
-
-        # Find geos
-        _geo_ss = cmds.sets(_se, query=True) or []
-        _LOGGER.debug(' - GEO SHPS (A) %d %s', len(_geo_ss), _geo_ss)
-        _geo_ss = sorted(set(
-            _geo_s for _geo_s in _geo_ss
-            if not to_namespace(_geo_s) == 'lookdevRig' and  # Ignore lookdev
-            not to_long(_geo_s).startswith('|JUNK|')  # Ignore junk
-        ))
-        _LOGGER.debug(' - GEO SHPS (B) %d %s', len(_geo_ss), _geo_ss)
-        if not allow_face_assign:
-            _geo_ss = [_geo_s for _geo_s in _geo_ss if '.' not in _geo_s]
-            _LOGGER.debug(' - GEO SHPS (C) %d %s', len(_geo_ss), _geo_ss)
-        _geos = [to_parent(_geo_s) for _geo_s in _geo_ss]
-        _LOGGER.debug(' - GEOS (X) %s', _geos)
-        if not _geos:
-            continue
-        _shd_data['geos'] = _geos
-
-        # Read ai surface shader
-        if _se.has_attr('aiSurfaceShader'):
-            _ai_ss = _se.plug['aiSurfaceShader'].find_incoming(plugs=False)
-            if _ai_ss:
-                _shd_data['ai_shd'] = str(_ai_ss)
-
-        _shds.append(tex.to_shd(_shd))
+        _shds.append(_shd)
         _data[str(_shd)] = _shd_data
 
     if not catch and not _data:
         raise RuntimeError('No shader assignments found')
 
+    # Build result
     if fmt == 'dict':
         _result = _data
     elif fmt == 'shd':
@@ -392,3 +360,63 @@ def read_shader_assignments(
     else:
         raise NotImplementedError(fmt)
     return _result
+
+
+def _read_se(engine, referenced, allow_face_assign, filter_):
+    """Read shading engine.
+
+    Args:
+        engine (CNode): shading engine
+        referenced (bool): filter by shader referenced status
+        allow_face_assign (bool): do not ignore face assignments
+        filter_ (str): apply name filter
+
+    Returns:
+        (Shader, dict): shader, shading data
+    """
+
+    _LOGGER.debug('SHADING ENGINE %s', engine)
+    _shd_data = {'shadingEngine': str(engine)}
+
+    # Read shader
+    _shd = engine.plug['surfaceShader'].find_incoming(plugs=False)
+    if filter_ and not passes_filter(str(_shd), filter_):
+        return None, None
+    _LOGGER.debug(' - SHD %s %d', _shd, bool(_shd))
+    if not _shd:
+        _LOGGER.debug(' - NO SHADER')
+        return None, None
+    _shd = tex.to_shd(_shd)
+
+    # Apply referenced filter
+    if referenced is not None:
+        _LOGGER.debug(' - IS REFERENCED %d', _shd.is_referenced())
+        if _shd.is_referenced() != referenced:
+            _LOGGER.debug(' - FILTERED')
+            return None, None
+
+    # Find geos
+    _geo_ss = _shd.to_assignments()
+    _LOGGER.debug(' - GEO SHPS (A) %d %s', len(_geo_ss), _geo_ss)
+    _geo_ss = sorted(set(
+        _geo_s for _geo_s in _geo_ss
+        if not to_namespace(_geo_s) == 'lookdevRig' and  # Ignore lookdev
+        not to_long(_geo_s).startswith('|JUNK|')  # Ignore junk
+    ))
+    _LOGGER.debug(' - GEO SHPS (B) %d %s', len(_geo_ss), _geo_ss)
+    if not allow_face_assign:
+        _geo_ss = [_geo_s for _geo_s in _geo_ss if '.' not in _geo_s]
+        _LOGGER.debug(' - GEO SHPS (C) %d %s', len(_geo_ss), _geo_ss)
+    _geos = [to_parent(_geo_s) for _geo_s in _geo_ss]
+    _LOGGER.debug(' - GEOS (X) %s', _geos)
+    if not _geos:
+        return None, None
+    _shd_data['geos'] = _geos
+
+    # Read ai surface shader
+    if engine.has_attr('aiSurfaceShader'):
+        _ai_ss = engine.plug['aiSurfaceShader'].find_incoming(plugs=False)
+        if _ai_ss:
+            _shd_data['ai_shd'] = str(_ai_ss)
+
+    return _shd, _shd_data

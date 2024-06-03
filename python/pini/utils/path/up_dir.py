@@ -210,18 +210,22 @@ class Dir(up_path.Path):
         _LOGGER.debug(' - TO OTHER %s', _to_other)
         return '{}{}'.format('../' * (_to_this.count('/')+1), _to_other)
 
-    def _read_size(self):
+    def _read_size(self, catch=False):
         """Read size of this directory.
 
         This seems to require each file size to be read individually - the
         os.path.getsize funtion doesn't seem to work for dirs.
+
+        Args:
+            catch (bool): no error on permissions fail
 
         Returns:
             (int): size in bytes
         """
         from pini.utils import check_heart
         _size = 0
-        for _file in self.find(type_='f', hidden=True, class_=True):
+        for _file in self.find(
+                type_='f', hidden=True, class_=True, catch_access_error=catch):
             check_heart()
             _size += _file.size()
         return _size

@@ -23,7 +23,7 @@ from .pom_cmds import CMDS
 from .pom_utils import (
     to_mobject, get_selected, set_loc_scale, to_node, to_mesh, to_m, to_tfm,
     to_p, set_to_geos, set_to_tfms, cast_node, add_anim_offs, find_nodes,
-    selected_node, create_loc)
+    selected_node, create_loc, create_square)
 
 from .pom_joint import CJoint
 from .pom_skeleton import (
@@ -32,6 +32,6 @@ from .pom_render_layer import (
     find_render_layers, CRenderLayer, cur_render_layer, find_render_layer,
     create_render_layer)
 
-from .cpnt_mesh import PCpntMesh, to_uv, PUV, to_vtx
+from .cpnt_mesh import PCpntMesh, to_uv, PUV, to_vtx, PUVBBox
 
 LOC_SCALE = 1.0

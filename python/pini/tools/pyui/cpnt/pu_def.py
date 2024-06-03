@@ -152,11 +152,13 @@ class PUDef(object):
         _LOGGER.debug('EXEC DEF %s', self)
 
         # Obtain fresh copy of func
-        _file = abs_path(inspect.getfile(self.func))
+        # _file = abs_path(inspect.getfile(self.func))
+        _file = self.py_def.py_file.path
         _LOGGER.debug(' - FILE %s', _file)
         _py = PyFile(_file)
         _LOGGER.debug(' - PY %s', _py)
         _mod = _py.to_module()
+        _LOGGER.debug(' - MOD %s', _mod)
         if not self.block_reload:
             six_reload(_mod)
         _LOGGER.debug(' - RELOADED MODULE')

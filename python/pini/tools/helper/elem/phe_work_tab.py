@@ -9,7 +9,7 @@ import os
 from pini import qt, pipe, icons, dcc
 from pini.tools import usage
 from pini.utils import (
-    strftime, copy_text, str_to_seed, plural, ints_to_str, EMPTY,
+    strftime, copy_text, str_to_seed, plural, ints_to_str, EMPTY, to_nice,
     wrap_fn, get_user)
 
 from .. import ph_utils
@@ -653,18 +653,7 @@ class CLWorkTab(object):
             out.type_.capitalize(), out.filename)
         _label = '{} - {}'.format(out.nice_type.capitalize(), out.filename)
         if out.type_ == 'publish':
-            _vrmesh = out.metadata.get('vrmesh')
-            if _vrmesh:
-                _label = 'Shaded Proxy'
-            else:
-                _p_type = out.metadata.get('publish_type')
-                _map = {
-                    'CMayaBasicPublish': 'Publish',
-                    'CMayaModelPublish': 'Model Publish',
-                    'CMayaLookdevPublish': 'Lookdev Publish',
-                }
-                _label = _map.get(_p_type, 'Publish')
-            _label += ' ({})'.format(out.extn)
+            _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
             _label = 'Cache - {} ({})'.format(out.output_name, out.extn)

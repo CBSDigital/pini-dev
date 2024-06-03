@@ -50,7 +50,6 @@ class TestPublish(unittest.TestCase):
             _ety_c.create(force=True)
         _ety_c.flush(force=True)
         _LOGGER.info('ETY C (A) %s', _ety_c)
-        pipe.CACHE.reset()
         assert not _ety_c.find_outputs()
 
         # Rebuild job/shot after reset

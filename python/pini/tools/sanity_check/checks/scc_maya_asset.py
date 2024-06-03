@@ -50,10 +50,11 @@ class CheckTopNode(SCMayaCheck):
 
         # Fix top nodes not in group
         _top_node = single(_top_nodes, catch=True)
-        if not _top_node:
+        if _top_nodes and not _top_node:
             _fix = wrap_fn(
                 _create_top_level_group, name=_name, nodes=_top_nodes)
-            self.add_fail('No top level {} group'.format(_name), fix=_fix)
+            self.add_fail(
+                'No single top level {} group'.format(_name), fix=_fix)
             return
         self.write_log('Top node %s', _top_node)
         if _name and _top_node != _name:
@@ -71,6 +72,8 @@ def _create_top_level_group(name, nodes):
         nodes (CBaseTransform list): nodes to add to group
     """
     for _node in nodes:
+        if _node == name:
+            continue
         _node.add_to_grp(name)
 
 

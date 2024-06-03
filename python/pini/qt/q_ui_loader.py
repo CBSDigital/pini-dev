@@ -12,6 +12,7 @@ def build_ui_loader():
 
     _loader = QtUiTools.QUiLoader()
     _loader.registerCustomWidget(qt.CComboBox)
+    _loader.registerCustomWidget(qt.CGraphSpace)
     _loader.registerCustomWidget(qt.CLabel)
     _loader.registerCustomWidget(qt.CPixmapLabel)
     _loader.registerCustomWidget(qt.CLineEdit)

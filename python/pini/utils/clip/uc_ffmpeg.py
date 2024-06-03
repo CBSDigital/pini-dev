@@ -11,6 +11,18 @@ from ..u_misc import system, nice_age, to_str
 _LOGGER = logging.getLogger(__name__)
 
 
+def play_sound(file_):
+    """Play the given sound.
+
+    Args:
+        file_ (File): wav file to play
+    """
+    _file = File(abs_path(file_))
+    _ffplay = find_exe('ffplay')
+    assert _file.exists()
+    system([_ffplay, _file, '-autoexit'], result=False)
+
+
 def _build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
     """Add audio flags for ffmpeg.
 

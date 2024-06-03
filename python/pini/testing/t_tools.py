@@ -61,7 +61,7 @@ class _PiniHandler(logging.StreamHandler):
     """
 
 
-def setup_logging(flush='pini'):
+def setup_logging(flush='all'):
     """Setup logging with a generic handler.
 
     Args:

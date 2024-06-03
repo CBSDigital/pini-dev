@@ -13,7 +13,7 @@ from .u_text import (
     is_pascal, is_camel, to_pascal, to_snake, to_ord, to_camel, copy_text,
     to_nice, plural, add_indent, split_base_index)
 from .u_misc import (
-    lprint, single, to_time_t, strftime, to_time_f,
+    lprint, single, to_time_t, strftime, to_time_f, search_dict_for_key,
     str_to_seed, dprint, system, str_to_ints, val_map, safe_zip,
     nice_age, get_user, last, ints_to_str, basic_repr, nice_id,
     fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size, merge_dicts,
@@ -39,6 +39,7 @@ from .cache import (
     get_method_to_file_cacher, get_result_cacher, cache_on_obj,
     build_cache_fmt, flush_caches)
 from .clip import (
-    Seq, CacheSeq, find_seqs, Video, find_viewers, find_viewer, file_to_seq)
+    Seq, CacheSeq, find_seqs, Video, find_viewers, find_viewer, file_to_seq,
+    play_sound)
 
 from .py_file import PyFile, to_py_file, PyDef, PyClass, PyArg, PyElem

@@ -30,21 +30,6 @@ class CCPOutputBase(CPOutputBase):
         return '{dir}/.pini/{base}_{extn}_{{func}}.yml'.format(
             dir=self.dir, base=self.base, extn=self.extn)
 
-    @pipe_cache_on_obj
-    def get_metadata(self, force=False, data=None):
-        """Get metadata for this output.
-
-        Args:
-            force (bool): force reread from disk
-            data (dict): force apply metadata
-                (update cache with this data)
-
-        Returns:
-            (dict): metadata
-        """
-        _LOGGER.log(9, 'GET METADATA %s', self)
-        return data or super(CCPOutputBase, self).get_metadata()
-
     @property
     def content_type(self):  # pylint: disable=too-many-branches
         """Obtain content type for this output (eg. ShadersMa, RigMa, Video).
@@ -68,6 +53,8 @@ class CCPOutputBase(CPOutputBase):
                 _c_type = 'BasicMa'
         elif self.extn == 'mb':
             _c_type = 'BasicMb'
+        elif self.extn == 'rs':
+            _c_type = 'RedshiftProxy'
         elif isinstance(self, Seq):
             if self.extn == 'obj':
                 _c_type = 'ObjSeq'
@@ -83,6 +70,21 @@ class CCPOutputBase(CPOutputBase):
             _c_type = self.extn.capitalize()
         assert is_pascal(_c_type) or _c_type[0].isdigit()
         return _c_type
+
+    @pipe_cache_on_obj
+    def get_metadata(self, force=False, data=None):
+        """Get metadata for this output.
+
+        Args:
+            force (bool): force reread from disk
+            data (dict): force apply metadata
+                (update cache with this data)
+
+        Returns:
+            (dict): metadata
+        """
+        _LOGGER.log(9, 'GET METADATA %s', self)
+        return data or super(CCPOutputBase, self).get_metadata()
 
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.

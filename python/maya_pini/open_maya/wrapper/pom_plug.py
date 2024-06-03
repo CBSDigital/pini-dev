@@ -32,7 +32,7 @@ def _to_mplug(node, attr):
     _LOGGER.debug('TO MPLUG %s %s', node, attr)
 
     # Find nested attrs (eg. node.attr[0].attr[0].attr)
-    if attr.count('.') > 1:
+    if '.' in attr:
 
         # Find root plug
         _head, _tail = attr.split('.', 1)
@@ -42,43 +42,17 @@ def _to_mplug(node, attr):
 
         # Find children one by one
         while _tail:
-
             check_heart()
-
-            # Break into head (to find in this iter) + tail (to pass to next)
-            if '.' in _tail:
-                _head, _tail = _tail.split('.', 1)
-            else:
-                _head, _tail = _tail, None
-            _LOGGER.debug(' - HEAD/TAIL %s %s', _head, _tail)
-
-            # Check whether this is indexed
-            if '[' in _head:
-                _attr, _idx, _ = re.split(r'[\[\]]', _head)
-                _idx = int(_idx)
-            else:
-                _attr, _idx = _head, None
-            _LOGGER.debug(' - ATTR/IDX %s %s', _attr, _idx)
-
-            # Find this attr on parent plug
-            _LOGGER.debug(' - CHECKING %s FOR %s', _parent.name(), _attr)
-            for _jdx in range(_parent.numChildren()):
-                _child = _parent.child(_jdx)
-                if _child.name().endswith('.'+_attr):
-                    break
-            else:
-                raise RuntimeError
-            if _idx is not None:
-                _child = _child.elementByLogicalIndex(_idx)
-
-            _LOGGER.debug(' - FOUND CHILD %s', _child.name())
-            _parent = _child  # Pass to next iter
+            _head, _tail, _parent = _to_child_mplug(
+                head=_head, tail=_tail, parent=_parent)
 
         _plug = _parent
 
     # Find indexed plugs (eg. node.attr[0])
     elif '[' in attr:  # handle indexed attrs
         _attr, _idx, _ = re.split(r'[\[\]]', attr)
+        _idx = int(_idx)
+        _LOGGER.debug(' - ATTR/IDX %s %d', _attr, _idx)
         _idx = int(_idx)
         _parent = node.findPlug(_attr, False)
         _plug = _parent.elementByLogicalIndex(_idx)
@@ -88,6 +62,58 @@ def _to_mplug(node, attr):
         _plug = node.findPlug(attr, False)
 
     return _plug
+
+
+def _to_child_mplug(head, tail, parent):
+    """Obtain a nested child attribute plug.
+
+    eg. colorEntryList[0].color
+
+    Args:
+        head (str): name of attribute to read (eg. colorEntryList[0])
+        tail (str): name of subsequent child attrs (eg. color)
+        parent (CPlug): parent attibute
+
+    Returns:
+        (CPlug): child plug
+    """
+    _head = head
+    _tail = tail
+
+    # Break into head (to find in this iter) + tail (to pass to next)
+    if '.' in _tail:
+        _head, _tail = _tail.split('.', 1)
+    else:
+        _head, _tail = _tail, None
+    _LOGGER.debug(' - HEAD/TAIL %s %s', _head, _tail)
+
+    # Check whether this is indexed
+    if '[' in _head:
+        _attr, _idx, _ = re.split(r'[\[\]]', _head)
+        _idx = int(_idx)
+    else:
+        _attr, _idx = _head, None
+    _LOGGER.debug(' - ATTR/IDX %s %s', _attr, _idx)
+
+    # Find this attr on parent plug
+    _LOGGER.debug(' - CHECKING %s FOR %s', parent.name(), _attr)
+    for _jdx in range(parent.numChildren()):
+        try:
+            _child = parent.child(_jdx)
+        except RuntimeError:
+            _LOGGER.debug('   - FAILED TO READ CHILD %d', _jdx)
+            continue
+        _LOGGER.debug('   - TESTING CHILD %d %s', _jdx, _child.name())
+        if _child.name().endswith('.'+_attr):
+            break
+    else:
+        raise RuntimeError
+    if _idx is not None:
+        _child = _child.elementByLogicalIndex(_idx)
+
+    _LOGGER.debug(' - FOUND CHILD %s', _child.name())
+
+    return _head, _tail, _child
 
 
 class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
@@ -113,7 +139,11 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         except RuntimeError as _exc:
             if verbose:
                 _LOGGER.info(' - ERROR %s', _exc)
-            raise RuntimeError('Attribute not found {}'.format(_name))
+            if not cmds.objExists(name):
+                _err = 'Attribute not found {}'.format(_name)
+            else:
+                _err = 'Failed to build mplug {}'.format(_name)
+            raise RuntimeError(_err)
 
         super(CPlug, self).__init__(_plug)
 

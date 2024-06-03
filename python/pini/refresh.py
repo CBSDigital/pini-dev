@@ -76,6 +76,14 @@ _RELOAD_ORDER = [
     'pini.qt.q_ui_container',
     'pini.qt.custom.qc_mixin',
     'pini.qt.custom',
+
+    'pini.qt.graph.c_graph_elem',
+    'pini.qt.graph.elem.cg_basic_elem',
+    'pini.qt.graph.elem.cg_pixmap_elem',
+    'pini.qt.graph.elem.cg_move_elem',
+    'pini.qt.graph.elem',
+    'pini.qt.graph',
+
     'pini.qt.q_ui_loader',
     'pini.qt',
 

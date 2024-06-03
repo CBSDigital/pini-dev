@@ -6,7 +6,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import single
+from pini.utils import single, passes_filter
 
 from . import pom_base_node
 
@@ -169,7 +169,8 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """
         return self.plug['visibility']
 
-    def find_children(self, type_=None, recursive=False, class_=None):
+    def find_children(
+            self, type_=None, recursive=False, class_=None, filter_=None):
         """Find children of this node.
 
         Args:
@@ -177,6 +178,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             recursive (bool): recurve into children's children
             class_ (class): cast results to this node type, ignoring
                 any which fail to cast
+            filter_ (str): filter by child name
 
         Returns:
             (CNode list): children
@@ -192,6 +194,9 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
                 children=True, path=True, **_kwargs):
 
             _LOGGER.debug(' - CHILD %s', _child)
+
+            if filter_ and not passes_filter(_child, filter_):
+                continue
 
             # Test if this result should be added
             _result = _child

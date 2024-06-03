@@ -169,6 +169,7 @@ def save_scene(file_=None, selection=False, revert=None, force=False):
         raise RuntimeError('Unable to determine save path')
     _file = File(_file)
     _file.test_dir()
+    _file.delete(wording='Replace', force=force)
 
     _apply_auto_workspace_update(_file)
 
@@ -432,3 +433,23 @@ def save_obj(file_, selection=True, materials=True, force=False):
     cmds.file(
         _file.path, force=True, options=_opts, type="OBJexport",
         exportSelected=True)
+
+
+def save_redshift_proxy(file_, selection=True):
+    """Save redshift proxy.
+
+    Args:
+        file_ (File): path to save to
+        selection (bool): export selection
+
+    Returns:
+        (File): path to proxy
+    """
+    _file = File(file_)
+    _file.delete(wording='Replace')
+    cmds.file(
+         _file.path, force=True, preserveReferences=True,
+         exportSelected=selection, type="Redshift Proxy",
+         options="exportConnectivity=0;enableCompression=0;keepUnused=0;")
+    assert _file.exists()
+    return _file

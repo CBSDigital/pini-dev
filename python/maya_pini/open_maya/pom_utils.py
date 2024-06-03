@@ -8,7 +8,8 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini.utils import single, EMPTY, passes_filter
-from maya_pini.utils import to_parent, to_shp, restore_sel, DEFAULT_NODES
+from maya_pini.utils import (
+    to_parent, to_shp, restore_sel, DEFAULT_NODES, to_unique)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -129,6 +130,32 @@ def create_loc(name='loc'):
     return pom.CPoint().to_loc(name=name)
 
 
+def create_square(name='square', width=1.0, col=None):
+    """Build a square nurbs curve.
+
+    Args:
+        name (str): name for node
+        width (float): size of square
+        col (str): viewport colour
+
+    Returns:
+        (CNurbsCurve): square curve
+    """
+    from maya_pini import open_maya as pom
+    _pts = [(1, 1, 0), (-1, 1, 0), (-1, -1, 0), (1, -1, 0), (1, 1, 0)]
+    _square = pom.CMDS.curve(
+        point=_pts, periodic=True, knot=range(5),
+        degree=1, name=to_unique(name))
+    cmds.rotate(90, 0, 0)
+    _scale = width/2
+    cmds.scale(_scale, _scale, _scale)
+    _square.flush()
+    if col:
+        _square.set_col(col)
+
+    return _square
+
+
 def find_connections(
         obj, source=True, destination=True, type_=None, connections=True,
         plugs=True):
@@ -170,7 +197,11 @@ def find_connections(
             destination=_dest, **_kwargs)
         _conns = _conns or []
         if plugs:
-            _conns = [pom.CPlug(_conn) for _conn in _conns]
+            _p_conns = []
+            for _conn in _conns:
+                _plug = pom.CPlug(_conn)
+                _p_conns.append(_plug)
+            _conns = _p_conns
         else:
             _conns = [pom.to_node(_conn) for _conn in _conns]
         _LOGGER.debug(' - %s %s %s', 'SRC' if _src else 'DST',

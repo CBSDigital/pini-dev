@@ -74,7 +74,8 @@ def build_cache_fmt(
         (str): cache format
     """
     from pini import dcc
-    from pini.utils import TMP_PATH, is_pascal, Path, abs_path, HOME_PATH
+    from pini.utils import (
+        TMP_PATH, is_pascal, Path, abs_path, HOME_PATH, to_str)
 
     assert is_pascal(tool)
 
@@ -87,7 +88,10 @@ def build_cache_fmt(
         raise ValueError(mode)
 
     # Build format
-    _path = Path(path)
+    _path = to_str(path)
+    _path = _path.replace('{', '_')
+    _path = _path.replace('}', '_')
+    _path = Path(_path)
     _fmt = (
         '{root}/{namespace}/{tool}/{dir}/'
         '{base}{py_ver}{dcc}{platform}_{{func}}.{extn}'.format(

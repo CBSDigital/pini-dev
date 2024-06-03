@@ -723,7 +723,7 @@ class CheckReferences(SCMayaCheck):
             # Check models/rigs have cache sets
             if (
                     _ref_needs_cache_set(_ref) and
-                    not cmds.objExists(_ref.to_node('cache_SET'))):
+                    not cmds.objExists(_ref.to_node('cache_SET', fmt='str'))):
                 _msg = (
                     'Reference "{}" is a {} but it has no cache_SET'.format(
                         _ref.namespace, _out.task))

@@ -294,7 +294,12 @@ class CUiBase(object):
         # Make connections
         if _signal:
             if disconnect:
-                _signal.disconnect()
+                _LOGGER.debug(' - DISCONNECT CALLBACK %s %s', _widget, _signal)
+                try:
+                    _signal.disconnect()
+                except RuntimeError:
+                    _LOGGER.info(
+                        ' - DISCONNECT CALLBACK FAILED %s %s', _widget, _signal)
             _signal.connect(_callback)
 
             # Apply save on change save policy

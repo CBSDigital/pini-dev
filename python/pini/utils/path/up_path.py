@@ -185,15 +185,13 @@ class Path(object):
             (int): size in bytes
         """
         up_utils.error_on_file_system_disabled(self.path)
-        try:
-            return self._read_size()
-        except OSError as _exc:
-            if catch:
-                return None
-            raise _exc
+        return self._read_size(catch=catch)
 
-    def _read_size(self):
+    def _read_size(self, catch=False):
         """Read size of this path.
+
+        Args:
+            catch (bool): no error on permissions fail
 
         Returns:
             (int): size in bytes

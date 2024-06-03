@@ -422,7 +422,7 @@ def read_func_kwargs(func, args, kwargs):
     _args = list(_spec.args)
     _LOGGER.debug(' - ARGS %s', _args)
 
-    _kwargs = {}
+    _kwargs = kwargs
     for _idx, _arg_name in enumerate(_args):
         _LOGGER.debug('ARG %s %s', _arg_name, _idx)
         _arg_idx = _idx - len(_args)
@@ -466,6 +466,56 @@ def safe_zip(*lists):
                 '({:d})'.format(_idx+2, len(_list), len(lists[0])))
 
     return zip(*lists)
+
+
+def search_dict_for_key(dict_, key):
+    """Search a dictionary for instances of the given key.
+
+    Args:
+        dict_ (dict): dict to search
+        key (str): key to check for
+
+    Returns:
+        (dict): instances of the given key (path tuple: value)
+    """
+    _LOGGER.debug('CHECKING DICT %s', dict_)
+    return _check_item_for_keys(item=dict_, key=key)
+
+
+def _check_item_for_keys(item, key):
+    """Check the given item for instances of the given key.
+
+    Args:
+        item (any): item to check
+        key (str): key to check for
+
+    Returns:
+        (dict): instances of the given key (path tuple: value)
+    """
+    _results = {}
+
+    _check_children = []
+    if isinstance(item, dict):
+        for _key, _item in item.items():
+            if _key == key:
+                _results[(_key, )] = _item
+            _check_children.append((_item, _key))
+    elif isinstance(item, (list, tuple)):
+        for _idx, _item in enumerate(item):
+            _check_children.append((_item, _idx))
+
+    # Add results from children
+    for _child, _key in _check_children:
+        _child_results = _check_item_for_keys(item=_child, key=key)
+        _LOGGER.debug(' - VAL RESULTS %s', _child_results)
+        _full_results = {
+            tuple([_key]+list(_r_key)): _r_val
+            for _r_key, _r_val in _child_results.items()}
+        _results.update(_full_results)
+
+    _LOGGER.debug(' - ITEM RESULTS %s %s', item, _results)
+
+    return _results
 
 
 def single(

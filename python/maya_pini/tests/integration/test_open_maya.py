@@ -9,6 +9,8 @@ from pini.utils import single
 from maya_pini import open_maya as pom
 from maya_pini.utils import use_tmp_ns
 
+from maya_pini.open_maya.wrapper import pom_plug
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -191,6 +193,23 @@ class TestOpenMaya(unittest.TestCase):
         _c = _node.add_attr('C', 0)
         pom.minus_plug(_a, _b, output=_c)
         assert _c.get_val() == 1
+
+        # Test complex attrs
+        _cube = pom.CMDS.polyCube()
+        _ramp = pom.CMDS.shadingNode('ramp', asShader=True)
+        _LOGGER.info(' - NODES %s %s', _cube, _ramp)
+        for _attr in [
+                _cube.shp.to_attr('uvSize'),
+                _cube.shp.to_attr('vertexNormal'),
+                _ramp.to_attr('colorEntryList'),
+                _ramp.to_attr('colorEntryList[0].color'),
+                _cube.to_attr('tx'),
+        ]:
+            _LOGGER.info('ATTR %s', _attr)
+            _node, _plug = _attr.split('.', 1)
+            _node = pom.CNode(_node)
+            pom_plug._to_mplug(node=_node, attr=_plug)
+            pom.CPlug(_attr)
 
     @use_tmp_ns
     def test_read_cache_set_test(self):

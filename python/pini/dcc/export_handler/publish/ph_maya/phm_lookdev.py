@@ -12,7 +12,8 @@ from pini.utils import single
 from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene)
+    restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
+    save_redshift_proxy)
 
 from . import phm_base
 
@@ -64,15 +65,21 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         if 'arnold' in dcc.allowed_renderers():
             self.ui.ExportAss = self.add_checkbox_elem(
                 val=True, name='ExportAss',
-                label="Export geo as ass.gz file")
+                label="Export ass.gz of geo")
             self.add_separator_elem()
 
-        # Add export vrmesh opts if vray allowed
+        # Add export proxy opts
         self.ui.ExportVrmesh = None
         if 'vray' in dcc.allowed_renderers():
             self.ui.ExportVrmesh = self.add_checkbox_elem(
                 val=True, name='ExportVrmesh',
-                label="Export geo as shaded vrmesh scene")
+                label="Export shaded vrmesh scene of geo")
+        self.ui.ExportRedshiftProxy = None
+        if 'redshift' in dcc.allowed_renderers():
+            self.ui.ExportRedshiftProxy = self.add_checkbox_elem(
+                val=True, name='ExportRedshiftProxy',
+                label="Export redshift proxy of geo")
+        if self.ui.ExportVrmesh or self.ui.ExportRedshiftProxy:
             self.add_separator_elem()
 
         if add_footer:
@@ -142,6 +149,9 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _vrm_ma = self._handle_export_vrm_ma(force=force, metadata=_metadata)
         if _vrm_ma:
             _outs.append(_vrm_ma)
+        _rs_pxy = self._handle_export_rs_pxy(force=force, work=_work)
+        if _rs_pxy:
+            _outs.append(_rs_pxy)
         self._handle_export_shaders_scene(
             output=_pub, force=force, metadata=_metadata)
         _outs.append(_pub)
@@ -192,6 +202,30 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             _vrm_ma = lookdev.export_vrmesh_ma(metadata=metadata, force=force)
 
         return _vrm_ma
+
+    def _handle_export_rs_pxy(self, work, force):
+        """Handle export redshift proxy file.
+
+        Args:
+            work (CPWork): publish work file
+            force (bool): overwrite without confirmation
+
+        Returns:
+            (CPOutput|None): output (if any)
+        """
+        if self.ui and self.ui.ExportVrmesh:
+            _tgl_export_rs_pxy = self.ui.ExportRedshiftProxy.isChecked()
+        else:
+            _tgl_export_rs_pxy = 'redshift' in dcc.allowed_renderers()
+
+        _rs_pxy = None
+        if _tgl_export_rs_pxy:
+            _rs_pxy = work.to_output(
+                'publish', output_type='redshiftProxy', extn='rs')
+            cmds.select(m_pipe.find_cache_set())
+            save_redshift_proxy(_rs_pxy, selection=True)
+
+        return _rs_pxy
 
     def _handle_export_shaders_scene(self, output, metadata, force):
         """Handle export shaders ma file.

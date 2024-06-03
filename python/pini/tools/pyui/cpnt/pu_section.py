@@ -7,7 +7,7 @@ from pini.utils import basic_repr
 _LOGGER = logging.getLogger(__name__)
 
 
-def set_section(name, collapse=False):
+def set_section(name, collapse=True):
     """Set section within a file.
 
     This means that all functions below this statement will be included

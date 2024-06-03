@@ -177,27 +177,31 @@ class SGDataCache(object):
         return self.find_job(_job).find_pub_files(
             entity=entity, work_dir=work_dir, force=force)
 
-    def find_pub_type(self, match, type_='File'):
+    def find_pub_type(self, match, type_='File', force=False):
         """Find published file type.
 
         Args:
             match (str): token to match
             type_ (str): path type (File/Sequence)
+            force (bool): force rebuild cache
 
         Returns:
             (SGCPubType): published file type
         """
+        _types = self.find_pub_types(force=force)
+        _match_s = str(match)
 
-        # Try matching code
-        _code_matches = [
-            _type for _type in self.find_pub_types() if _type.code == match]
-        if len(_code_matches) == 1:
-            return single(_code_matches)
+        # Try simple field match
+        _matches = [
+            _type for _type in _types
+            if match in (_type.code, _type.id_)]
+        if len(_matches) == 1:
+            return single(_matches)
 
         # Try using type suffix
         _file_matches = [
-            _type for _type in self.find_pub_types()
-            if _type.code == '{} {}'.format(match.capitalize(), type_)]
+            _type for _type in _types
+            if _type.code == '{} {}'.format(_match_s.capitalize(), type_)]
         if len(_file_matches) == 1:
             return single(_file_matches)
 
@@ -205,9 +209,10 @@ class SGDataCache(object):
         _map = {
             'mp4': 'Movie',
             'mov': 'Movie',
+            'rs': 'Redshift Proxy',
         }
         _map_matches = [
-            _type for _type in self.find_pub_types()
+            _type for _type in _types
             if _type.code == _map.get(match)]
         if len(_map_matches) == 1:
             return single(_map_matches)
@@ -217,13 +222,16 @@ class SGDataCache(object):
 
         raise ValueError(match)
 
-    def find_pub_types(self):
+    def find_pub_types(self, force=False):
         """Find published file types.
+
+        Args:
+            force (bool): force rebuild cache
 
         Returns:
             (SGCPubType list): published file types
         """
-        return self._read_pub_types()
+        return self._read_pub_types(force=force)
 
     def find_shot(self, match):
         """Find a shot in the cache.
@@ -496,9 +504,10 @@ class SGDataCache(object):
             (SGCPubType list): steps
         """
         _fields = ('code', )
-        _steps_data = self._read_data('PublishedFileType', fields=_fields)
-        _steps = [sgc_container.SGCPubType(_data) for _data in _steps_data]
-        return _steps
+        _types_data = self._read_data(
+            'PublishedFileType', fields=_fields, force=force)
+        _types = [sgc_container.SGCPubType(_data) for _data in _types_data]
+        return _types
 
     @pipe_cache_on_obj
     def _read_steps(self, force=False):
