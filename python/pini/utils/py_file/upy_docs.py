@@ -34,21 +34,40 @@ class PyDefDocs(object):
 
         self.title = self.header.split('\n')[0]
 
-    def find_arg(self, name):
+    def find_arg(self, name, catch=False):
         """Find an argument of this docstring.
 
         Args:
             name (str): match by name
+            catch (bool): no error if arg doc missing
 
         Returns:
             (PyArgDoc): arg docs
         """
+        _args = self.find_args(catch=catch)
         return single(
-            [_arg for _arg in self.find_args() if _arg.name == name],
-            catch=True)
+            [_arg for _arg in _args if _arg.name == name], catch=True)
 
-    def find_args(self):
+    def find_args(self, catch=False):
         """Find argument definitions in this docstring.
+
+        Args:
+            catch (bool): no error if fail to find args
+
+        Returns:
+            (PyArgDoc list): arg list
+        """
+        _LOGGER.debug('FIND ARGS %s', self)
+        try:
+            _args = self._read_args()
+        except ValueError as _exc:
+            if catch:
+                return []
+            raise _exc
+        return _args
+
+    def _read_args(self):
+        """Read args documentation from these docs.
 
         Returns:
             (PyArgDoc list): arg list
@@ -67,7 +86,9 @@ class PyDefDocs(object):
         for _line in _body.split('\n'):
             _LOGGER.log(9, 'LINE %s', _line)
             if not _line.startswith(' '*8):
-                assert _line.startswith(' '*4)
+                if not _line.startswith(' '*4):
+                    _LOGGER.info(' - FAILED TO READ ARGS %s', self)
+                    raise ValueError
                 _arg_strs.append(_line.strip())
             else:
                 _arg_strs[-1] += '\n' + _line[4:]

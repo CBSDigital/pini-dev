@@ -7,6 +7,7 @@ import six
 
 from maya import cmds, mel
 
+from pini import qt
 from pini.utils import (
     basic_repr, single, abs_path, File, cache_result)
 from maya_pini.utils import (
@@ -121,7 +122,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             (CPlug): new attribute
         """
         _LOGGER.debug('ADD ATTR %s %s', name, value)
-        _kwargs, _action = self._add_attr_build_kwargs(
+        _kwargs, _action, _children = self._add_attr_build_kwargs(
             value=value, min_val=min_val, max_val=max_val)
 
         # Handle exists
@@ -134,6 +135,12 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         cmds.addAttr(
             self, shortName=name, longName=name, keyable=keyable,
             **_kwargs)
+        for _child in _children:
+            _c_name = name+_child
+            _LOGGER.info(' - ADDING CHILD %s %s', _child, _c_name)
+            cmds.addAttr(
+                self, shortName=_c_name, longName=_c_name, parent=name,
+                attributeType='float')
 
         # Apply value
         _plug = self.plug[name]
@@ -200,6 +207,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _kwargs = {}
 
         _action = 'set'
+        _children = []
         if isinstance(value, float):
             _kwargs['attributeType'] = 'float'
         elif isinstance(value, bool):
@@ -211,6 +219,10 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         elif isinstance(value, CBaseNode):
             _kwargs['attributeType'] = 'message'
             _action = 'connect'
+        elif isinstance(value, qt.CColor):
+            _kwargs['attributeType'] = 'float3'
+            _kwargs['usedAsColor'] = True
+            _children = 'RGB'
         else:
             raise ValueError(value)
 
@@ -219,7 +231,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         if max_val is not None:
             _kwargs['maxValue'] = max_val
 
-        return _kwargs, _action
+        return _kwargs, _action, _children
 
     def add_enum(self, name, opts, value=None):
         """Create an enum attribute.

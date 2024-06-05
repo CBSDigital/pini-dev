@@ -33,6 +33,7 @@ _RELOAD_ORDER = [
 
     'pini.dcc.dcc.d_base',
     'pini.dcc.dcc',
+    'pini.dcc.pipe_ref.pr_base',
     'pini.dcc.pipe_ref',
     'pini.dcc.export_handler.eh_base',
     'pini.dcc.export_handler.publish.ph_basic',

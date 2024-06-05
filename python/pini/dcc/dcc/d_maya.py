@@ -9,7 +9,7 @@ import six
 
 from maya import cmds
 
-from pini.utils import single, wrap_fn, Seq, EMPTY, Path, abs_path
+from pini.utils import single, wrap_fn, EMPTY, Path, abs_path
 
 from maya_pini import ui, ref
 from maya_pini.utils import (
@@ -34,7 +34,7 @@ class MayaDCC(BaseDCC):
     DEFAULT_EXTN = 'ma'
     DEFAULT_ALLOWED_RENDERERS = 'arnold'
     VALID_EXTNS = ('ma', 'mb', 'abc', 'fbx')
-    REF_EXTNS = ('ma', 'mb', 'abc', 'fbx', 'vdb', 'ass', 'usd', 'gz')
+    REF_EXTNS = ('ma', 'mb', 'abc', 'fbx', 'vdb', 'ass', 'usd', 'gz', 'rs')
 
     def add_menu_divider(self, parent, name):
         """Add menu divider to maya ui.
@@ -95,6 +95,7 @@ class MayaDCC(BaseDCC):
             force (bool): replace existing without confirmation
         """
         from pini import pipe
+        from pini.dcc import pipe_ref
         _LOGGER.debug('CREATE CACHE REF')
 
         # Determine abc mode
@@ -109,7 +110,7 @@ class MayaDCC(BaseDCC):
             _ref = self.create_ref(cache, namespace=namespace, force=force)
             _ref.attach_shaders(lookdev=lookdev, mode=attach_mode)
         elif _abc_mode == 'aiStandIn':
-            _ref = self._create_aistandin_ref(path=cache, namespace=namespace)
+            _ref = pipe_ref.create_aistandin(path=cache, namespace=namespace)
         else:
             raise ValueError(abc_mode)
         _LOGGER.debug(' - REF %s', _ref)
@@ -149,70 +150,24 @@ class MayaDCC(BaseDCC):
 
         # Bring in reference
         if _path.extn == 'vdb':
-            assert isinstance(_path, Seq)
-            cmds.loadPlugin('mtoa', quiet=True)
-            _seq = _path
-            _shp = pom.CMDS.createNode('aiVolume', name=namespace+'Shape')
-            _path = _seq[_seq.frames[0]]
-            _shp.plug['filename'].set_val(_path)
-            _tfm = _shp.to_parent().rename(namespace)
-            _ns = str(_tfm)
-            _shp.plug['useFrameExtension'].set_val(True)
-            _ref = pipe_ref.CMayaVdb(_tfm, path=_seq.path)
-            _top_node = _ref.node
-
+            _ref = pipe_ref.create_vdb(_path, namespace=namespace)
         elif _path.extn in ('ass', 'usd', 'gz'):
-            _ref = self._create_aistandin_ref(
+            _ref = pipe_ref.create_aistandin(
                 path=_path, namespace=namespace)
-            _top_node = _ref.node
-
+        elif _path.extn in ('rs', ):
+            _ref = pipe_ref.create_rs_pxy(_path, namespace=namespace)
         else:
             _pom_ref = pom.create_ref(_path, namespace=namespace, force=force)
             _ns = _pom_ref.namespace
             _ref = self.find_pipe_ref(_ns, catch=True)
-            _top_node = _pom_ref.find_top_node(catch=True)
             pipe_ref.lock_cams(_pom_ref)
 
         _LOGGER.debug(' - REF %s', _ref)
 
         # Organise into group
-        if _top_node:
+        if _ref.top_node:
             pipe_ref.apply_grouping(
-                top_node=_top_node, output=_ref.output, group=group)
-
-        return _ref
-
-    def _create_aistandin_ref(self, path, namespace):
-        """Create aiStandIn reference from the given path.
-
-        Args:
-            path (File|Seq): path to apply
-            namespace (str): namespace to use
-
-        Returns:
-            (CMayaAiStandIn): reference
-        """
-        from maya_pini import open_maya as pom
-        from ..pipe_ref import pr_maya
-
-        cmds.loadPlugin('mtoa', quiet=True)
-        _shp = pom.CMDS.createNode('aiStandIn', name=namespace+'Shape')
-        _is_seq = isinstance(path, Seq)
-        if _is_seq:
-            _path = path[path.frames[0]]
-        else:
-            _path = path.path
-        _shp.plug['dso'].set_val(_path)
-        _tfm = _shp.to_parent().rename(namespace)
-        _ns = str(_tfm)
-        _shp.plug['useFrameExtension'].set_val(_is_seq or path.extn == 'abc')
-        _ref = pr_maya.CMayaAiStandIn(_tfm, path=path)
-
-        # Force expression update - still doesn't work for more than
-        # one standin node
-        if _is_seq:
-            ui.raise_attribute_editor()
-            cmds.refresh()
+                top_node=_ref.top_node, output=_ref.output, group=group)
 
         return _ref
 
@@ -409,8 +364,8 @@ class MayaDCC(BaseDCC):
             (CPipeRef list): references
         """
         _LOGGER.debug('FIND PIPE REFS')
-        from ..pipe_ref import pr_maya  # pylint: disable=no-name-in-module
-        return pr_maya.find_pipe_refs(selected=selected)
+        from .. import pipe_ref
+        return pipe_ref.find_pipe_refs(selected=selected)
 
     def refresh(self):
         """Refresh the ui."""

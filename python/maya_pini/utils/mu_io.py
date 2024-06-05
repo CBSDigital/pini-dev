@@ -147,6 +147,40 @@ def _fix_viewport_callbacks():
             cmds.modelEditor(_model_panel, edit=True, editorChanged="")
 
 
+def load_redshift_proxy(file_, name='proxy'):
+    """Load a redshift proxy file.
+
+    Args:
+        file_ (str): path to proxy file
+        name (str): node name
+
+    Returns:
+        (CMesh): proxy mesh
+    """
+    from maya_pini import open_maya as pom
+
+    _file = File(file_)
+    assert _file.exists()
+
+    cmds.loadPlugin('redshift4maya', quiet=True)
+    cmds.select(clear=True)
+
+    _cmd = 'redshiftProxyDoCreate("proxy", "mesh", "{}", "tfm_PXY")'.format(
+        _file.path)
+    _LOGGER.debug(' - CMD %s', _cmd)
+    _pxy, _shp = mel.eval(_cmd)
+    _LOGGER.debug(' - PXY %s', _pxy)
+    _mesh = pom.CMesh(mu_misc.to_parent(_shp))
+    _mesh = _mesh.rename(name)
+    _LOGGER.debug(' - MESH %s', _mesh)
+    _mesh.proxy = pom.CNode(_pxy)
+    assert hasattr(_mesh, 'proxy')
+    _mesh.set_outliner_col('Coral')
+    assert isinstance(_mesh, pom.CMesh)
+
+    return _mesh
+
+
 def save_scene(file_=None, selection=False, revert=None, force=False):
     """Save scene.
 

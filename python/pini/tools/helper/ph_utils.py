@@ -31,6 +31,8 @@ NUKE_FILE_ICON = icons.find('Radioactive')
 PLATE_ICON = icons.find('Plate')
 RENDER_ICON = icons.find('Film Frames')
 RIG_ICON = icons.find('Bone')
+RS_ICON = icons.find('Police Car Light')
+RS_BG_ICON = icons.find('Red Circle')
 USD_ICON = icons.find('Milky Way')
 VDB_ICON = icons.find('Cloud')
 VIDEO_ICON = icons.find('Videocassette')
@@ -156,7 +158,6 @@ def _lookdev_to_icon(lookdev):
     assert lookdev.type_ == 'publish'
 
     # Find rig icon
-    _vrmesh = lookdev.metadata.get('vrmesh')
     _tmpl = lookdev.job.find_template(
         'publish', profile=lookdev.profile,
         want_key={'output_type': False, 'ver': False},
@@ -166,10 +167,14 @@ def _lookdev_to_icon(lookdev):
     _LOGGER.debug(' - RIG OUT %s', _rig_out.path)
     _asset_icon = _output_to_entity_icon(_rig_out)
 
-    if _vrmesh:
+    if lookdev.content_type == 'VrmeshMa':
         _base_icon = VRMESH_BG_ICON
-    else:
+    elif lookdev.content_type == 'RedshiftProxy':
+        _base_icon = RS_BG_ICON
+    elif lookdev.content_type == 'ShadersMa':
         _base_icon = LOOKDEV_BG_ICON
+    else:
+        raise ValueError(lookdev, lookdev.content_type)
 
     _icon = qt.CPixmap(_base_icon)
     _over = qt.CPixmap(_asset_icon)
@@ -321,9 +326,10 @@ def output_to_icon(output, overlay=None, force=False):
         _icon = CAM_ICON
     elif output.asset_type == 'utl' and output.asset == 'lookdev':
         _icon = LOOKDEV_ICON
-    elif output.type_ == 'publish' and (
-            output.output_type == 'lookdev' or
-            pipe.map_task(output.task) == 'lookdev'):
+    elif (
+            output.type_ == 'publish' and
+            output.pini_task == 'lookdev' and
+            output.content_type in ('ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
         _LOGGER.debug(' - APPLYING LOOKDEV ICON')
         _icon = _lookdev_to_icon(output)
     elif output.type_ in _TYPE_BG_MAP:
@@ -390,7 +396,7 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
     return _ns
 
 
-def output_to_type_icon(output):
+def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     """Obtain type icon for the given output.
 
     Args:
@@ -405,8 +411,10 @@ def output_to_type_icon(output):
         return PLATE_ICON
     if output.nice_type == 'blast':
         return BLAST_ICON
-    if 'vrmesh' in output.metadata:
+    if output.content_type == 'VrmeshMa':
         return ARCHIVE_ICON
+    if output.content_type == 'RedshiftProxy':
+        return RS_ICON
 
     if (
             output.extn not in ('ma', 'mb') and

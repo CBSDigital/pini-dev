@@ -69,6 +69,19 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         """
         return self.numVertices
 
+    def closest_n(self, point):
+        """Get the normal on this mesh closest to the given point.
+
+        Args:
+            point (CPoint): point to test
+
+        Returns:
+            (CVector): closest mesh normal
+        """
+        from maya_pini import open_maya as pom
+        _pt, _ = self.getClosestNormal(point, pom.WORLD_SPACE)
+        return pom.CVector(_pt)
+
     def closest_p(self, point):
         """Get the closest point on this mesh to the given point.
 
@@ -80,8 +93,22 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         """
         from maya_pini import open_maya as pom
         _pt, _ = self.getClosestPoint(point, pom.WORLD_SPACE)
-        # print _pt
         return pom.CPoint(_pt)
+
+    def rename(self, name):
+        """Rename this mesh.
+
+        (NOTE: also renames the shape node)
+
+        Args:
+            name (str): new node name
+
+        Returns:
+            (CMesh): updated mesh object
+        """
+        _new = super(CMesh, self).rename(name)
+        _new.shp.rename(name+'Shape')
+        return CMesh(_new)
 
     def p_to_uv(self, point):
         """Get the UV position of the given point on this mesh.

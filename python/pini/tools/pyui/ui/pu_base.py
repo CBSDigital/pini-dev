@@ -109,7 +109,7 @@ class PUBaseUi(object):
                 _sep = False
             else:
                 raise ValueError(_item)
-            _LOGGER.debug('   - ADD ELEM %s sep=%d', _item, _sep)
+            _LOGGER.log(9, '   - ADD ELEM %s sep=%d', _item, _sep)
             if _sep:
                 self.add_separator()
 
@@ -196,7 +196,7 @@ class PUBaseUi(object):
         Args:
             def_ (PUDef): function to add
         """
-        _LOGGER.debug('ADD DEF %s', def_)
+        _LOGGER.log(9, 'ADD DEF %s', def_)
         self.init_def(def_)
 
         _callbacks = {'set': {}, 'get': {}, 'field': {}}
@@ -288,8 +288,6 @@ class PUBaseUi(object):
         """
         _LOGGER.debug('REBUILD')
 
-        self.close()
-
         # Obtain fresh copy of class to survive reload
         _type = type(self)
         _file = abs_path(inspect.getfile(_type))
@@ -299,6 +297,8 @@ class PUBaseUi(object):
         _class = getattr(_mod, _type.__name__)
         _LOGGER.debug(' - CLASS %s', _class)
 
+        # self.save_settings()
+        self.close()
         _launch = wrap_fn(
             _class, self.py_file.path, title=self.title, base_col=self.base_col,
             load_settings=load_settings)

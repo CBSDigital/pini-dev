@@ -30,7 +30,9 @@ class PyArg(object):
         Returns:
             (PyArgDocs|str): docs
         """
-        _docs = self.parent.to_docs().find_arg(self.name)
+        _docs = self.parent.to_docs().find_arg(self.name, catch=True)
+        if not _docs:
+            return None
         _result = None
         if mode == 'Object':
             _result = _docs

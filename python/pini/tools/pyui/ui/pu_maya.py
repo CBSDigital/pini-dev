@@ -10,11 +10,12 @@ from maya import cmds
 from pini import icons, qt, refresh, pipe
 from pini.tools import pyui
 from pini.utils import (
-    to_nice, wrap_fn, copy_text, chain_fns, EMPTY, Path, abs_path)
+    to_nice, wrap_fn, copy_text, chain_fns, EMPTY, Path, abs_path, SixIterable)
 
 from maya_pini import ui
 
 from . import pu_base
+from ..cpnt import pu_choice_mgr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -113,33 +114,15 @@ class PUMayaUi(pu_base.PUBaseUi):
         cmds.text(_label, align='left', statusBarMessage=arg.docs)
 
         # Add arg field
-        _set_fn = None
-        _default = arg.default
-        if _default is None or _default is EMPTY:
-            _default = ''
-        if arg.choices:
-            _opt_menu = ui.create_option_menu(arg.choices)
-            _field = _opt_menu.field
-            _read_fn = _opt_menu.get_val
-        elif isinstance(_default, float):
-            _field = cmds.floatField(value=_default)
-            _read_fn = wrap_fn(cmds.floatField, _field, query=True, value=True)
-        elif isinstance(_default, bool):
-            _LOGGER.debug('   - CREATE CHECKBOX')
-            _field = cmds.checkBox(label='', value=_default)
-            _read_fn = wrap_fn(cmds.checkBox, _field, query=True, value=True)
-        elif isinstance(_default, int):
-            _field = cmds.intField(value=_default)
-            _read_fn = wrap_fn(cmds.intField, _field, query=True, value=True)
-        elif isinstance(_default, six.string_types) or _default is None:
-            _LOGGER.debug('   - CREATE TEXTFIELD')
-            _field = cmds.textField(text=_default)
-            _read_fn = wrap_fn(cmds.textField, _field, query=True, text=True)
-        else:
-            raise ValueError(_default)
-        _set_fn = _build_apply_fn(field=_field)
+        _read_fn, _set_fn, _field = self._add_arg_field(arg)
 
         # Add extras
+        if isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
+            cmds.iconTextButton(
+                image1=icons.REFRESH, width=_height, height=_height,
+                style='iconOnly', statusBarMessage='Reread options',
+                command=wrap_fn(
+                    _apply_update_opt_menu, mgr=arg.choices, field=_field))
         if arg.browser:
             _mode = None if arg.browser is True else arg.browser
             cmds.iconTextButton(
@@ -179,13 +162,63 @@ class PUMayaUi(pu_base.PUBaseUi):
         _label_w = arg.label_w or self.label_w
         _col_width = [(1, _label_w), (2, 1000)]
         _n_cols = 2
-        for _tgl in [arg.clear, arg.browser, arg.selection]:
+        for _tgl in [
+                arg.clear, arg.browser, arg.selection,
+                isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr),
+        ]:
             if _tgl:
                 _n_cols += 1
                 _col_width.append((_n_cols, height))
+
         return cmds.rowLayout(
             numberOfColumns=_n_cols, columnWidth=_col_width,
             width=100, adjustableColumn=2)
+
+    def _add_arg_field(self, arg):
+        """Build an arg field.
+
+        Args:
+            arg (PUArg): arg to add
+
+        Returns:
+            (tuple): read func, set func, field name
+        """
+        _set_fn = None
+        _default = arg.default
+        if _default is None or _default is EMPTY:
+            _default = ''
+        if arg.choices:
+            if isinstance(arg.choices, (tuple, list, set, SixIterable)):
+                _choices = arg.choices
+                _select = _default
+            elif isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
+                _choices = arg.choices.choices
+                _select = arg.choices.default
+            else:
+                raise ValueError(arg.choices)
+            _LOGGER.debug(' - CHOICES %s %s', _select, _choices)
+            _opt_menu = ui.create_option_menu(options=_choices, select=_select)
+            _field = _opt_menu.field
+            _read_fn = _opt_menu.get_val
+        elif isinstance(_default, float):
+            _field = cmds.floatField(value=_default)
+            _read_fn = wrap_fn(cmds.floatField, _field, query=True, value=True)
+        elif isinstance(_default, bool):
+            _LOGGER.debug('   - CREATE CHECKBOX')
+            _field = cmds.checkBox(label='', value=_default)
+            _read_fn = wrap_fn(cmds.checkBox, _field, query=True, value=True)
+        elif isinstance(_default, int):
+            _field = cmds.intField(value=_default)
+            _read_fn = wrap_fn(cmds.intField, _field, query=True, value=True)
+        elif isinstance(_default, six.string_types) or _default is None:
+            _LOGGER.debug('   - CREATE TEXTFIELD')
+            _field = cmds.textField(text=_default)
+            _read_fn = wrap_fn(cmds.textField, _field, query=True, text=True)
+        else:
+            raise ValueError(_default)
+        _set_fn = _build_apply_fn(field=_field)
+
+        return _read_fn, _set_fn, _field
 
     def finalize_def(self, def_):
         """Finalize function.
@@ -395,6 +428,22 @@ def _apply_selection(field, type_):
         type_ (str): apply node type filter
     """
     _LOGGER.info('APPLY SELECTION %s', type_)
-    _sel = ' '.join(cmds.ls(selection=True, type=type_))
+    _kwargs = {}
+    if type_:
+        _kwargs['type'] = type_
+    _sel = ' '.join(cmds.ls(selection=True, **_kwargs))
     _LOGGER.info(' - SEL %s', _sel)
     cmds.textField(field, edit=True, text=_sel)
+
+
+def _apply_update_opt_menu(mgr, field):
+    """Apply option menu update.
+
+    Args:
+        mgr (PUChoiceMgr): choice manager
+        field (str): field to update
+    """
+    _LOGGER.info('APPLY OPT MENU UPDATE %s %s', mgr.choices, mgr.default)
+    _menu = ui.OptionMenu(field)
+    _menu.set_opts(mgr.choices)
+    _menu.set_val(mgr.default)

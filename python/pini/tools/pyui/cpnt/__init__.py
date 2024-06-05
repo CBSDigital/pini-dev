@@ -3,3 +3,4 @@
 from .pu_file import PUFile
 from .pu_section import set_section, PUSection
 from .pu_def import PUDef
+from .pu_choice_mgr import PUChoiceMgr

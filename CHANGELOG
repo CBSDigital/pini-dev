@@ -1,3 +1,27 @@
+## [1.60.0] - Wed 2024-06-05 09:31
+### Summary
+ - Pini Helper:
+    - added redshift proxy reference handling (eehemann),
+### Updated
+ - pini.utils.py_file.PyArg.to_docs catch error on badly formed docs,
+ - pini.dcc.MayaDCC added rs file handling,
+ - pini.dcc.MayaDCC.create_ref moved functionality to pipe_ref submodule,
+ - pini.dcc.pipe_ref.maya broke maya code into submodules,
+ - pini.dcc.pipe_ref maya added find_pipe_refs/create_aistandin/create_vdb/create_rs_pxy,
+ - pini.tools.pyui.PUChoiceMgr added,
+ - pini.tools.pyui implemented choice/default callbacks,
+ - pini.tools.helper added rs pxy handling,
+ - maya_pini.utils.load_redshift_proxy added,
+ - maya_pini.utils.pause_viewport use try/finally to avoid stay paused on error,
+ - maya_pini.open_maya.to_m pos + local axes allow ly as None,
+ - maya_pini.open_maya.CPlug.add_attr allow create colour swatch attr,
+ - maya_pini.open_maya.CPlug.get_col added,
+ - maya_pini.open_maya.CMesh.closest_n added,
+ - maya_pini.open_maya.CMesh.rename renames shape,
+ - maya_pini.ui.create_option_menu added select option,
+ - maya_pini.ui.OptionMenu.set_opts added,
+
+
 ## [1.59.0] - Mon 2024-06-03 12:35
 ### Summary
  - Pini Helper:

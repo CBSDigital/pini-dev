@@ -199,6 +199,15 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         _out.node.plug['operation'].set_enum('Divide')
         return _out
 
+    def get_col(self):
+        """Read this plug as a colour.
+
+        Returns:
+            (CColor): colour
+        """
+        _val = single(self.get_val())
+        return qt.to_col(_val)
+
     def get_default(self):
         """Get default value for this plug.
 

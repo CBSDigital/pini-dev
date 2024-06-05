@@ -5,9 +5,10 @@ from pini import dcc
 from .pr_base import CPipeRef, to_cmp_str
 
 if dcc.NAME == 'maya':
-    from .pr_maya import (
+    from .maya import (
         CMayaAiStandIn, CMayaRef, CMayaShadersRef, lock_cams, CMayaVdb,
-        apply_grouping)
+        apply_grouping, find_pipe_refs, create_aistandin, create_rs_pxy,
+        create_vdb)
 elif dcc.NAME == 'nuke':
     from .pr_nuke import CNukeReadRef
 elif dcc.NAME == 'hou':

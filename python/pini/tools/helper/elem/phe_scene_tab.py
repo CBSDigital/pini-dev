@@ -88,7 +88,7 @@ class CLSceneTab(object):
 
         _outs = []
         if _tab == 'Asset':
-            _outs = self.job.find_publishes(extns=dcc.VALID_EXTNS)
+            _outs = self.job.find_publishes(extns=dcc.REF_EXTNS)
         elif _tab == 'Cache':
             if self.entity:
                 _outs += self.entity.find_outputs('cache')

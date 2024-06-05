@@ -1,58 +1,26 @@
-"""Tools for managing pipelined references in maya."""
+"""Tools for managing referenced pipeline files in maya.
+
+NOTE: specifically maya references.
+"""
 
 import logging
 
 from maya import cmds
 
 from pini import pipe, dcc
-from pini.utils import (
-    File, single, abs_path, cache_property, Seq, passes_filter,
-    file_to_seq, EMPTY)
+from pini.utils import File, single, abs_path, cache_property
 
 from maya_pini import open_maya as pom, tex, m_pipe
 from maya_pini.utils import (
     restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace)
 
-from . import pr_base
+from . import prm_base
+from .. import pr_base
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class _CMayaPipeRef(pr_base.CPipeRef):
-    """Base class for any pipelined maya reference."""
-
-    top_node = None
-
-    def _to_mtx(self):
-        """Obtains top node transform matrix.
-
-        Returns:
-            (CMatrix): matrix
-        """
-        if self.top_node:
-            return self.top_node.to_m()
-        return None
-
-    def _to_parent(self):
-        """Obtain parent group.
-
-        Returns:
-            (CTransform): parent
-        """
-        if self.top_node:
-            return self.top_node.to_parent()
-        return None
-
-    def delete(self, force=False):
-        """Delete this reference.
-
-        Args:
-            force (bool): delete without confirmation
-        """
-        raise NotImplementedError(self)
-
-
-class CMayaRef(_CMayaPipeRef):
+class CMayaRef(prm_base.CMayaPipeRef):
     """Pipelined maya file reference."""
 
     def __init__(self, ref_):
@@ -193,7 +161,7 @@ class CMayaRef(_CMayaPipeRef):
             (CMayaShadersRef|None): shaders ref (if any)
         """
         _shd_refs = [
-            _ref for _ref in find_pipe_refs()
+            _ref for _ref in dcc.find_pipe_refs()
             if isinstance(_ref, CMayaShadersRef)]
         for _shd_ref in _shd_refs:
             if self in _shd_ref.find_targets():
@@ -517,7 +485,7 @@ class CMayaShadersRef(CMayaRef):
 
         # Find by shaders link
         if from_top_node:
-            for _ref in find_pipe_refs():
+            for _ref in dcc.find_pipe_refs():
                 if _ref in [self] + sorted(_trgs):
                     continue
                 if self._ref_has_top_node_link(_ref):
@@ -587,153 +555,7 @@ class CMayaShadersRef(CMayaRef):
         return _result
 
 
-class CMayaVdb(_CMayaPipeRef):
-    """Represents a pipeline vdb reference in an aiVolume node."""
-
-    ref = None
-
-    def __init__(self, node, path=None):
-        """Constructor.
-
-        Args:
-            node (CTransform): aiVolume transform
-            path (str): override path - maya seems to only read the
-                vdb if useFileSequence is disabled but then it seems
-                to update it in a deferred thread; this allows the path
-                to be hacked so a valid vdb ref can be built on create
-        """
-        self.node = node
-        self.top_node = node
-        assert isinstance(self.node, pom.CTransform)
-        assert self.node.shp.object_type() == 'aiVolume'
-        _path = self.node.shp.plug['filename'].get_val() or ''
-        _path = _path.replace('.####.', '.%04d.')
-        if not _path:
-            raise ValueError('Empty path')
-
-        super(CMayaVdb, self).__init__(path or _path, namespace=str(self.node))
-
-    def delete(self, force=False):
-        """Delete this node.
-
-        Args:
-            force (bool): delete without confirmation
-        """
-        if not force:
-            raise NotImplementedError
-        cmds.delete(self.node)
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutputSeq): new volume to apply
-        """
-        assert isinstance(out, Seq)
-        _path = out.path.replace('.%04d.', '.####.')
-        self.node.shp.plug['filename'].set_val(_path)
-
-
-class CMayaAiStandIn(_CMayaPipeRef):
-    """Represents a pipeline ass/usd reference in an aiStandIn node."""
-
-    ref = None
-
-    def __init__(self, node, path=None):
-        """Constructor.
-
-        Args:
-            node (CTransform): aiStandIn node
-            path (str): override path - to accommodate arnold delayed update
-        """
-        _LOGGER.debug('INIT CMayaAiStandIn %s %s', node, path)
-        self.node = node
-        self.top_node = node
-        assert isinstance(self.node, pom.CTransform)
-        assert self.node.shp.object_type() == 'aiStandIn'
-
-        # Update path to %04d format
-        _path = self.node.shp.plug['dso'].get_val()
-        _path = _path.replace('.####.', '.%04d.')
-        if '.%04d.' not in _path:
-            _seq = file_to_seq(_path, catch=True)
-            if _seq:
-                _path = _seq.path
-
-        _LOGGER.debug(' - PATH %s', _path)
-        super(CMayaAiStandIn, self).__init__(
-            path or _path, namespace=str(self.node))
-
-    def delete(self, force=False):
-        """Delete this node.
-
-        Args:
-            force (bool): delete without confirmation
-        """
-        if not force:
-            raise NotImplementedError
-        cmds.delete(self.node)
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutput|CPOutputSeq): new standin to apply
-        """
-        _LOGGER.debug(' - UPDATE %s -> %s', self, out)
-
-        _mtx = self._to_mtx()
-        _grp = self._to_parent()
-
-        if out.extn in ['ass', 'abc', 'usd', 'gz']:
-            _path = out.path.replace('.%04d.', '.####.')
-            self.node.shp.plug['dso'].set_val(_path)
-            return CMayaAiStandIn(self.node)
-
-        if out.extn in ('ma', 'mb'):
-            _ns = self.namespace
-            self.delete(force=True)
-            _ref = dcc.create_ref(out, namespace=_ns, group=_grp)
-            _mtx.apply_to(_ref.ref.top_node)
-            return _ref
-
-        raise NotImplementedError(out)
-
-
-def apply_grouping(top_node, output, group=EMPTY):
-    """Apply organising references into groups.
-
-    Args:
-        top_node (CTransform): top node
-        output (CPOutput): reference output
-        group (str): group name (if any)
-    """
-    _LOGGER.debug(' - OUT %s', output)
-
-    # Determine group to add
-    _grp = group
-    if output and _grp is EMPTY:
-        if output.entity.name == 'camera':
-            _grp = 'CAM'
-        elif pipe.map_task(output.task) == 'LOOKDEV':
-            _grp = 'LOOKDEV'
-        elif output.asset_type:
-            _grp = output.asset_type.upper()
-        elif output.output_type:
-            _grp = output.output_type.upper()
-        elif output.nice_type == 'cache':
-            _grp = 'CACHE'
-        else:
-            _grp = None
-    _LOGGER.debug(' - GROUP %s -> %s', group, _grp)
-
-    if _grp:
-        _LOGGER.debug(' - ADD TO GROUP %s %s', top_node, _grp)
-        _grp = top_node.add_to_grp(_grp)
-        _grp.solidify()
-
-
-def _read_reference_pipe_refs(selected=False):
+def read_reference_pipe_refs(selected=False):
     """Read pipeline refs in references.
 
     Args:
@@ -774,135 +596,3 @@ def _read_reference_pipe_refs(selected=False):
         _refs.append(_ref)
 
     return _refs
-
-
-def _read_vdb_pipe_refs(selected=False):
-    """Read pipeline vdb refs.
-
-    Args:
-        selected (bool): only find selected refs
-
-    Returns:
-        (CMayaVdb list): vdb refs
-    """
-    _LOGGER.log(9, 'READ VDB PIPE REFS')
-
-    if 'aiVolume' not in cmds.allNodeTypes():
-        return []
-
-    # Get list of aiVolume nodes
-    if selected:
-        _aivs = []
-        for _node in pom.CMDS.ls(selection=True):
-            _type = _node.object_type()
-            _LOGGER.log(9, ' - CHECKING NODE %s %s', _node, _type)
-            if _type == 'aiVolume':
-                _aivs.append(_node)
-            elif _type == 'transform':
-                _shp = _node.to_shp(catch=True)
-                if _shp:
-                    _shp_type = _shp.object_type()
-                    _LOGGER.log(9, '   - CHECKING SHP %s %s', _shp, _shp_type)
-                    if _shp_type == 'aiVolume':
-                        _aivs.append(_shp)
-    else:
-        _aivs = pom.CMDS.ls(type='aiVolume')
-
-    # Map to CMayaVdb objects
-    _vdbs = []
-    for _aiv_s in _aivs:
-        _aiv = _aiv_s.to_parent()
-        try:
-            _vdb = CMayaVdb(_aiv)
-        except ValueError:
-            continue
-        _vdbs.append(_vdb)
-    return _vdbs
-
-
-def _read_aistandin_pipe_refs(selected=False):
-    """Find pipelined aiStandIn references in the current scene.
-
-    Args:
-        selected (bool): return selected only
-
-    Returns:
-        (CMayaAiStandIn list): aiStandIn refs
-    """
-    _LOGGER.log(9, 'READ AISTANDIN PIPE REFS')
-
-    if 'aiStandIn' not in cmds.allNodeTypes():
-        return []
-
-    # Get list of aiStandIn nodes
-    if selected:
-        _ais_ss = []
-        for _node in pom.get_selected(multi=True):
-            _type = _node.object_type()
-            _LOGGER.log(9, ' - CHECKING NODE %s %s', _node, _type)
-            if _type == 'aiStandIn':
-                _ais_ss.append(_node)
-            elif _type == 'transform':
-                _shp = _node.to_shp(catch=True)
-                if _shp:
-                    _shp_type = _shp.object_type()
-                    _LOGGER.log(9, '   - CHECKING SHP %s %s', _shp, _shp_type)
-                    if _shp_type == 'aiStandIn':
-                        _ais_ss.append(_shp)
-    else:
-        _ais_ss = pom.CMDS.ls(type='aiStandIn', selection=selected)
-    _LOGGER.log(9, ' - FOUND %d AISTANDINS %s', len(_ais_ss), _ais_ss)
-
-    # Map to CMayaAiStandIn objects
-    _asses = []
-    for _ais_s in _ais_ss:
-        _ais = _ais_s.to_parent()
-        _LOGGER.log(9, ' - TESTING %s', _ais)
-        try:
-            _ass = CMayaAiStandIn(_ais)
-        except ValueError as _exc:
-            _LOGGER.log(9, '   - REJECTED %s', _exc)
-            continue
-        _LOGGER.log(9, '   - ACCEPTED %s', _ass)
-        _asses.append(_ass)
-
-    return _asses
-
-
-def find_pipe_refs(filter_=None, selected=False, extn=None):
-    """Find pipelined references in the current scene.
-
-    Args:
-        filter_ (str): filter list by namespace
-        selected (bool): only find selected refs
-        extn (str): filter by reference extension
-
-    Returns:
-        (CMayaPipeRef list): pipelined references
-    """
-    _refs = []
-    _refs += _read_reference_pipe_refs(selected=selected)
-    _refs += _read_vdb_pipe_refs(selected=selected)
-    _refs += _read_aistandin_pipe_refs(selected=selected)
-
-    if extn:
-        _refs = [_ref for _ref in _refs if _ref.extn == extn]
-    if filter_:
-        _refs = [_ref for _ref in _refs
-                 if passes_filter(_ref.namespace, filter_)]
-
-    return _refs
-
-
-def lock_cams(ref_):
-    """Lock all camera channel box chans in the given reference.
-
-    Args:
-        ref_ (CReference): reference to find cameras in
-    """
-    _LOGGER.debug('LOCK CAMS %s', ref_)
-    for _cam in ref_.find_nodes(type_='camera'):
-        _LOGGER.debug(' - CAM %s', _cam)
-        for _node in [_cam, _cam.shp]:
-            for _plug in _node.list_attr(keyable=True):
-                _plug.lock()

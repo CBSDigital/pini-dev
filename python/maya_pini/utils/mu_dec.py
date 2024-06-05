@@ -89,10 +89,11 @@ def pause_viewport(func):
         _paused = cmds.ogs(query=True, pause=True)
         if not _paused:
             cmds.ogs(pause=True)
-        _result = func(*args, **kwargs)
-        if not _paused:
-            cmds.ogs(pause=True)
-        return _result
+        try:
+            return func(*args, **kwargs)
+        finally:
+            if not _paused:
+                cmds.ogs(pause=True)
 
     return _pause_viewport_func
 

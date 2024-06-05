@@ -474,7 +474,7 @@ def to_mdagpath(node):
     return _sel.getDagPath(0)
 
 
-def _local_axes_to_m(pos, lx, ly, lz=None):
+def _local_axes_to_m(pos, lx, ly=None, lz=None):
     """Build a matrix from the given position and local axes.
 
     Args:
@@ -487,12 +487,15 @@ def _local_axes_to_m(pos, lx, ly, lz=None):
         (CMatrix): transformation matrix
     """
     from maya_pini import open_maya as pom
+    _ly = ly
+    if not _ly:
+        _ly = (lz ^ lx).normalize()
     _lz = lz
     if not _lz:
-        _lz = (lx ^ ly).normalize()
+        _lz = (lx ^ _ly).normalize()
     return pom.CMatrix([
         lx[0],    lx[1],   lx[2],  0,
-        ly[0],    ly[1],   ly[2],  0,
+        _ly[0],  _ly[1],  _ly[2],  0,
         _lz[0],  _lz[1],  _lz[2],  0,
         pos[0],  pos[1],  pos[2],  1])
 
