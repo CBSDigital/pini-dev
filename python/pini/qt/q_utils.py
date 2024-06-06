@@ -9,7 +9,7 @@ import six
 
 from pini.utils import (
     cache_result, single, HOME_PATH, passes_filter, check_heart, SixIntEnum,
-    basic_repr, File)
+    basic_repr, File, build_cache_fmt)
 
 from .q_mgr import QtWidgets, QtCore, QtGui
 
@@ -35,6 +35,51 @@ class SavePolicy(SixIntEnum):
     NO_SAVE = 2
     SAVE_ON_CHANGE = 3
     SAVE_IN_SCENE = 4
+
+
+def build_tmp_icon(file_, base, overlay, base_scale=None):
+    """Build tmp icon.
+
+    This allows an icon to be built on the fly (eg. for maya shelf) by
+    overlaying an existing icon over another one. The path is automatically
+    assigned using a file path as the uid.
+
+    Args:
+        file_ (str): file to use as uid for tmp path - generally this is
+            the path to the module which the icon belongs to
+        base (str): base icon (name or path)
+        overlay (str): overlay icon (name or path)
+        base_scale (float): apply scaling to base icon
+
+    Returns:
+        (str): path to tmp icon
+    """
+    from pini import qt
+    _LOGGER.info('BUILD TMP ICON')
+
+    # Get base pixmap
+    _pix = to_pixmap(base)
+    if base_scale:
+        _base = _pix
+        _pix = qt.CPixmap(_base.size())
+        _pix.fill('Transparent')
+        _pix.draw_overlay(
+            _base, pos=_pix.center(), size=_base.size()*base_scale,
+            anchor='C')
+
+    # Add overlay
+    _over = to_pixmap(overlay)
+    _pix.draw_overlay(_over, pos=_pix.size(), anchor='BR', size=65)
+
+    # Save to tmp
+    _tmp_fmt = build_cache_fmt(
+        file_, tool='TmpIcons', extn='png', mode='home')
+    _LOGGER.info(' - TMP FMT %s', _tmp_fmt)
+    _tmp_path = _tmp_fmt.format(func='icon')
+    _LOGGER.info(' - TMP PATH %s', _tmp_path)
+    _pix.save_as(_tmp_path, force=True)
+
+    return _tmp_path
 
 
 def close_all_interfaces(filter_=None):

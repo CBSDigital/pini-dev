@@ -372,9 +372,8 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
     _mode = 'asset'
     if base:
         _base = base
-    elif output.type_ in ['publish']:
+    elif output.type_ in ('publish', 'publish_seq'):
         _base = output.entity.name
-
     elif output.type_ == 'cache' and output.output_type == 'cam':
         _mode = 'cache'
         _base = '{}_{}'.format(output.entity.name, output.output_name)
@@ -383,7 +382,6 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
     elif output.type_ in ['cache', 'cache_seq', 'ass_gz']:
         _mode = 'cache'
         _base = output.output_name or output.entity.name
-
     elif isinstance(output, (Seq, Video)):
         _ver = 'v{:03d}'.format(output.ver_n)
         _base = output.base.replace(_ver, '').strip('_')

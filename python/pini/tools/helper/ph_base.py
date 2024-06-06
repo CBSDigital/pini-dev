@@ -666,7 +666,14 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.jump_to(_ety.path)
 
     def _callback__JumpToCurrent(self):
-        self.jump_to(dcc.cur_file())
+        _file = dcc.cur_file()
+        if not _file:
+            qt.notify(
+                'Unable to jump to current scene.\n\nThis scene has not been '
+                'saved yet.', title='Warning', icon=icons.find('Magnet'),
+                parent=self)
+            return
+        self.jump_to(_file)
 
     def _callback__Refresh(self):
         self.target = self.work

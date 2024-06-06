@@ -20,8 +20,8 @@ from .cp_work import (
     CPWork, cur_work, add_recent_work, install_set_work_callback,
     recent_work, load_recent, to_work)
 from .cp_output import (
-    CPOutput, CPOutputSeq, OUTPUT_TEMPLATE_TYPES, OUTPUT_SEQ_TEMPLATE_TYPES,
-    to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TEMPLATE_TYPES,
+    CPOutput, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
+    to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
     CPOutputBase, cur_output, CPOutputSeqDir)
 
 from .cp_template import CPTemplate, glob_templates, glob_template

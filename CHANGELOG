@@ -1,3 +1,26 @@
+## [2.0.0] - Thu 2024-06-06 09:49
+### Summary
+ - Pini Helper:
+    - maya lookdev publish added option for animated vray/redshift proxies (eehemann),
+    - added handling for reference animated redshift proxies,
+    - added warning for jump to current scene with no current scene (nle),
+### Updated
+ - pini.dcc.CMayaRedshiftProxyRef added seq handling,
+ - pini.dcc.CMayaLookdevPublish added animation option for vrmesh/rs proxy generation,
+ - pini.pipe added publish_seq handling,
+ - pini.pipe renamed OUTPUT_TEMPLATE_TYPES -> OUTPUT_FILE_TYPES,
+ - pini.pipe renamed OUTPUT_VIDEO_TEMPLATE_TYPES -> OUTPUT_VIDEO_TYPES,
+ - pini.pipe renamed OUTPUT_SEQ_TEMPLATE_TYPES -> OUTPUT_SEQ_TYPES,
+ - pini.qt.build_tmp_icon added,
+ - pini.qt.CGraphSpace.load_settings apply settings in sorted elem order,
+ - pini.qt.CGraphSpace.get_settings only save elems with settings,
+ - pini.tools.helper added publish_seq handling,
+ - pini.tools.helper warning on jump to current scene w/o current scene,
+ - maya_pini.utils.load_redshift_proxy added seq handling,
+ - maya_pini.utils.save_redshift_proxy added animation flag,
+ - maya_pini.m_pipe.export_vrmesh_ma adde animation flag,
+
+
 ## [1.60.0] - Wed 2024-06-05 09:31
 ### Summary
  - Pini Helper:

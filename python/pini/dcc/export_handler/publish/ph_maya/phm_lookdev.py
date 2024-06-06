@@ -59,31 +59,42 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             parent=parent, layout=layout, add_footer=False)
 
         self.add_separator_elem()
+        self._build_pxy_opts()
+        if add_footer:
+            self.add_footer_elems()
 
-        # Add export ass opts if arnold allowed
+    def _build_pxy_opts(self):
+        """Build proxy publish options."""
+        _ass = 'arnold' in dcc.allowed_renderers()
+        _vrm = 'vray' in dcc.allowed_renderers()
+        _rs = 'redshift' in dcc.allowed_renderers()
+
         self.ui.ExportAss = None
-        if 'arnold' in dcc.allowed_renderers():
+        self.ui.ExportVrmesh = None
+        self.ui.ExportRedshiftProxy = None
+
+        if not (_ass or _vrm or _rs):
+            return
+
+        if _ass:
             self.ui.ExportAss = self.add_checkbox_elem(
                 val=True, name='ExportAss',
                 label="Export ass.gz of geo")
-            self.add_separator_elem()
-
-        # Add export proxy opts
-        self.ui.ExportVrmesh = None
-        if 'vray' in dcc.allowed_renderers():
+        if _vrm:
             self.ui.ExportVrmesh = self.add_checkbox_elem(
                 val=True, name='ExportVrmesh',
                 label="Export shaded vrmesh scene of geo")
-        self.ui.ExportRedshiftProxy = None
-        if 'redshift' in dcc.allowed_renderers():
+        if _rs:
             self.ui.ExportRedshiftProxy = self.add_checkbox_elem(
                 val=True, name='ExportRedshiftProxy',
                 label="Export redshift proxy of geo")
-        if self.ui.ExportVrmesh or self.ui.ExportRedshiftProxy:
-            self.add_separator_elem()
 
-        if add_footer:
-            self.add_footer_elems()
+        if _vrm or _rs:
+            self.ui.ProxyAnim = self.add_checkbox_elem(
+                val=False, name='ProxyAnim',
+                label='Include animation in proxies')
+
+        self.add_separator_elem()
 
     def obtain_metadata(
             self, work=None, sanity_check_=True, task='lookdev', force=False):
@@ -146,10 +157,12 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _ass = self._handle_export_ass(force=force, metadata=_metadata)
         if _ass:
             _outs.append(_ass)
-        _vrm_ma = self._handle_export_vrm_ma(force=force, metadata=_metadata)
+        _vrm_ma = self._handle_export_vrm_ma(
+            force=force, metadata=_metadata)
         if _vrm_ma:
             _outs.append(_vrm_ma)
-        _rs_pxy = self._handle_export_rs_pxy(force=force, work=_work)
+        _rs_pxy = self._handle_export_rs_pxy(
+            force=force, metadata=_metadata, work=_work)
         if _rs_pxy:
             _outs.append(_rs_pxy)
         self._handle_export_shaders_scene(
@@ -194,20 +207,26 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         """
         if self.ui and self.ui.ExportVrmesh:
             _tgl_export_vrm = self.ui.ExportVrmesh.isChecked()
+            _anim = self.ui.ProxyAnim.isChecked()
         else:
             _tgl_export_vrm = 'vray' in dcc.allowed_renderers()
+            _anim = False
 
         _vrm_ma = None
         if _tgl_export_vrm:
-            _vrm_ma = lookdev.export_vrmesh_ma(metadata=metadata, force=force)
+            _metadata = copy.deepcopy(metadata)
+            _metadata['animated'] = _anim
+            _vrm_ma = lookdev.export_vrmesh_ma(
+                metadata=_metadata, force=force, animation=_anim)
 
         return _vrm_ma
 
-    def _handle_export_rs_pxy(self, work, force):
+    def _handle_export_rs_pxy(self, work, metadata,  force):
         """Handle export redshift proxy file.
 
         Args:
             work (CPWork): publish work file
+            metadata (dict): publish metadata
             force (bool): overwrite without confirmation
 
         Returns:
@@ -215,15 +234,22 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         """
         if self.ui and self.ui.ExportVrmesh:
             _tgl_export_rs_pxy = self.ui.ExportRedshiftProxy.isChecked()
+            _anim = self.ui.ProxyAnim.isChecked()
         else:
             _tgl_export_rs_pxy = 'redshift' in dcc.allowed_renderers()
+            _anim = False
 
         _rs_pxy = None
         if _tgl_export_rs_pxy:
+            _tmpl = 'publish' if not _anim else 'publish_seq'
             _rs_pxy = work.to_output(
-                'publish', output_type='redshiftProxy', extn='rs')
+                _tmpl, output_type='redshiftProxy', extn='rs')
+            _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
             cmds.select(m_pipe.find_cache_set())
-            save_redshift_proxy(_rs_pxy, selection=True)
+            save_redshift_proxy(_rs_pxy, selection=True, animation=_anim)
+            _metadata = copy.deepcopy(metadata)
+            _metadata['animated'] = _anim
+            _rs_pxy.set_metadata(_metadata)
 
         return _rs_pxy
 

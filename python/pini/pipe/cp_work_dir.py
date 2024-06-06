@@ -15,7 +15,7 @@ from pini.utils import (
 from . import cp_utils
 from .cp_entity import to_entity
 from .cp_utils import extract_template_dir_data, EXTN_TO_DCC
-from .cp_output import OUTPUT_TEMPLATE_TYPES
+from .cp_output import OUTPUT_FILE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 _TASK_MAP = {
@@ -460,7 +460,7 @@ class CPWorkDir(Dir):
 
         # Find templates
         _tmpls = []
-        for _type in OUTPUT_TEMPLATE_TYPES:
+        for _type in OUTPUT_FILE_TYPES:
             _tmpls += self.job.find_templates(type_=_type, profile=self.profile)
         _tmpls = [_tmpl for _tmpl in _tmpls
                   if _tmpl.pattern.startswith('{work_dir}')]

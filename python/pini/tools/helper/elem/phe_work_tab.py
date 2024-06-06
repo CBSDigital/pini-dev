@@ -652,7 +652,7 @@ class CLWorkTab(object):
         _header = '{}: {}'.format(
             out.type_.capitalize(), out.filename)
         _label = '{} - {}'.format(out.nice_type.capitalize(), out.filename)
-        if out.type_ == 'publish':
+        if out.type_ in ('publish', 'publish_seq'):
             _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':

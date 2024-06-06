@@ -6,7 +6,7 @@ import os
 from maya import cmds, mel
 
 from pini import icons
-from pini.utils import File, wrap_fn
+from pini.utils import File, wrap_fn, Seq
 
 from . import mu_dec, mu_misc
 
@@ -147,29 +147,46 @@ def _fix_viewport_callbacks():
             cmds.modelEditor(_model_panel, edit=True, editorChanged="")
 
 
-def load_redshift_proxy(file_, name='proxy'):
+def load_redshift_proxy(path, name='proxy'):
     """Load a redshift proxy file.
 
     Args:
-        file_ (str): path to proxy file
+        path (str): path to proxy file
         name (str): node name
 
     Returns:
         (CMesh): proxy mesh
     """
-    from maya_pini import open_maya as pom
+    _LOGGER.info('LOAD REDSHIFT PROXY %s', path)
+    from maya_pini import open_maya as pom, ui
 
-    _file = File(file_)
-    assert _file.exists()
+    _name = mu_misc.to_unique(name)
+    _pxy_name = mu_misc.to_unique(name+'Proxy')
+    _shp_name = mu_misc.to_unique(name+'Shape')
 
+    # Check path
+    if isinstance(path, Seq):
+        _path = path
+        _anim = True
+    else:
+        _path = File(path)
+        _anim = False
+    _LOGGER.info(' - PATH %s', _path)
+    assert _path.exists()
+
+    # Create proxy node
     cmds.loadPlugin('redshift4maya', quiet=True)
     cmds.select(clear=True)
-
-    _cmd = 'redshiftProxyDoCreate("proxy", "mesh", "{}", "tfm_PXY")'.format(
-        _file.path)
+    _cmd = (
+        'redshiftProxyDoCreate("{proxy}", "{shape}", "{path}", '
+        '"{transform}")'.format(
+            path=_path.path.replace('.%04d.', '.####.'),
+            transform=_name, proxy=_pxy_name, shape=_shp_name))
     _LOGGER.debug(' - CMD %s', _cmd)
     _pxy, _shp = mel.eval(_cmd)
     _LOGGER.debug(' - PXY %s', _pxy)
+
+    # Clean up
     _mesh = pom.CMesh(mu_misc.to_parent(_shp))
     _mesh = _mesh.rename(name)
     _LOGGER.debug(' - MESH %s', _mesh)
@@ -177,6 +194,13 @@ def load_redshift_proxy(file_, name='proxy'):
     assert hasattr(_mesh, 'proxy')
     _mesh.set_outliner_col('Coral')
     assert isinstance(_mesh, pom.CMesh)
+
+    # Setup anim
+    if _anim:
+        _mesh.proxy.plug['useFrameExtension'].set_val(True)
+        cmds.select(_mesh.proxy)
+        ui.raise_attribute_editor()  # force callback
+        cmds.refresh()
 
     return _mesh
 
@@ -469,21 +493,43 @@ def save_obj(file_, selection=True, materials=True, force=False):
         exportSelected=True)
 
 
-def save_redshift_proxy(file_, selection=True):
+def save_redshift_proxy(path, selection=True, animation=False):
     """Save redshift proxy.
 
     Args:
-        file_ (File): path to save to
+        path (File|Seq): path to save to
         selection (bool): export selection
+        animation (bool): export animation
 
     Returns:
         (File): path to proxy
     """
-    _file = File(file_)
-    _file.delete(wording='Replace')
+    _LOGGER.info('SAVE REDSHIFT PROXY %s anim=%d', path, animation)
+    from pini import dcc
+
+    _opts = "exportConnectivity=0;enableCompression=0;keepUnused=0;"
+    if not animation:
+        _path = File(path)
+        _export_path = _path.path
+    else:
+        _opts += "startFrame={start:d};endFrame={end:d};frameStep=1".format(
+            start=dcc.t_start(int), end=dcc.t_end(int))
+        _path = Seq(path)
+        assert isinstance(_path, Seq)
+        _export_path = '{}/{}.{}'.format(_path.dir, _path.base, _path.extn)
+        _export_path = '{}/{}'.format(_path.dir, _path.base)
+        _export_path = '{}/{}.####.{}'.format(_path.dir, _path.base, _path.extn)
+    _LOGGER.info(' - EXPORT PATH %s', _export_path)
+
+    _path.delete(wording='Replace')
+    _path.test_dir()
+    assert not _path.exists()
+    assert _path.to_dir().exists()
     cmds.file(
-         _file.path, force=True, preserveReferences=True,
-         exportSelected=selection, type="Redshift Proxy",
-         options="exportConnectivity=0;enableCompression=0;keepUnused=0;")
-    assert _file.exists()
-    return _file
+         _export_path, force=True, preserveReferences=True, options=_opts,
+         exportSelected=selection, type="Redshift Proxy")
+    if animation:
+        _path.to_frames(force=True)
+    _LOGGER.info(' - PATH %s', _path)
+    assert _path.exists()
+    return _path

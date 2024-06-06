@@ -57,7 +57,7 @@ def find_export_nodes(filter_=None):
     return _export_nodes
 
 
-def _build_vrmesh_proxy(file_, geo, node='PXY', force=False):
+def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
     """Build vrmesh proxy node.
 
     Saves out a vrmesh proxy to disk from the given geo, and then uses the
@@ -68,6 +68,7 @@ def _build_vrmesh_proxy(file_, geo, node='PXY', force=False):
         file_ (File): vrmesh file location to save to
         geo (str list): geometry to save
         node (str): name for proxy node
+        animation (bool): export animation
         force (bool): overwrite existing vrmesh file without confirmation
 
     Returns:
@@ -87,27 +88,34 @@ def _build_vrmesh_proxy(file_, geo, node='PXY', force=False):
     cmds.loadPlugin('vrayformaya', quiet=True)
     cmds.select(geo)
     _LOGGER.info(' - WRITE VRMESH %s', _file.path)
+    _kwargs = {}
+    if animation:
+        _kwargs['animOn'] = True
+        _kwargs['animType'] = 1  # Playback range
+    else:
+        _kwargs['animType'] = 0
+
     cmds.vrayCreateProxy(
         dir=_file.to_dir().path,
         makeBackup=True, createProxyNode=True, newProxyNode=True,
         ignoreHiddenObjects=True, oneVoxelPerMesh=True, exportHierarchy=True,
-        animType=0, exportType=1,
-        facesPerVoxel=20000, fname=_file.filename,
+        exportType=1, facesPerVoxel=20000, fname=_file.filename,
         node=_node, pointSize=0, previewFaces=10000,
         previewType='combined', velocityIntervalEnd=0.05,
-        velocityIntervalStart=0)
+        velocityIntervalStart=0, **_kwargs)
     _LOGGER.info(' - BUILT PROXY NODE %s', _node)
 
     return _node
 
 
-def export_vrmesh_ma(metadata, force=False):
+def export_vrmesh_ma(metadata, animation=False, force=False):
     """Export vrmesh maya scene.
 
     Saves a maya scene containing a shaded vrmesh proxy file.
 
     Args:
         metadata (dict): publish metadata
+        animation (bool): export animation
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -138,7 +146,8 @@ def export_vrmesh_ma(metadata, force=False):
         _data.pop(_key, None)
     _data['vrmesh'] = _vrm.path
 
-    _pxy = _build_vrmesh_proxy(file_=_vrm, geo=_geo, force=force)
+    _pxy = _build_vrmesh_proxy(
+        file_=_vrm, geo=_geo, animation=animation, force=force)
 
     # Save proxy ma
     cmds.select(_pxy)

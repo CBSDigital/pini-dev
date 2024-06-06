@@ -501,6 +501,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             (CCPOutput list): outputs
         """
         _LOGGER.debug('READ OUTPUTS SG %s', self)
+        from pini import pipe
         from pini.pipe import cache, shotgrid
 
         _etys = list(self.entities)
@@ -527,11 +528,11 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             _LOGGER.debug(' - WORK DIR %s', _work_dir)
 
             # Determine output class
-            if _sg_pub.template_type in ('publish', 'cache'):
+            if _sg_pub.template_type in pipe.OUTPUT_FILE_TYPES:
                 _class = cache.CCPOutput
-            elif _sg_pub.template_type in ('blast_mov', 'mov'):
+            elif _sg_pub.template_type in pipe.OUTPUT_VIDEO_TYPES:
                 _class = cache.CCPOutputVideo
-            elif _sg_pub.template_type in ('blast', 'render', 'cache_seq'):
+            elif _sg_pub.template_type in pipe.OUTPUT_SEQ_TYPES:
                 _class = cache.CCPOutputSeq
             else:
                 raise ValueError(_sg_pub.template_type)

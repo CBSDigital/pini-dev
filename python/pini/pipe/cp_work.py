@@ -753,11 +753,11 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
             template=template, want_key=want_key, has_key=has_key,
             dcc_=_dcc, data=_data)
         _LOGGER.debug(' - TEMPLATE %s', _tmpl)
-        if _tmpl.type_ in pipe.OUTPUT_TEMPLATE_TYPES:
+        if _tmpl.type_ in pipe.OUTPUT_FILE_TYPES:
             _class = pipe.CPOutput
-        elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TEMPLATE_TYPES:
+        elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TYPES:
             _class = pipe.CPOutputVideo
-        elif _tmpl.type_ in pipe.OUTPUT_SEQ_TEMPLATE_TYPES:
+        elif _tmpl.type_ in pipe.OUTPUT_SEQ_TYPES:
             _class = pipe.CPOutputSeq
         else:
             raise ValueError(_tmpl.name)

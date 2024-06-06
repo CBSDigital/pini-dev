@@ -326,10 +326,12 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
 
     def load_settings(self):
         """Load settings to elements in this space."""
+        _LOGGER.info('LOAD SETTINGS %s', self.settings_file.path)
         _settings = self.settings_file.read_yml(catch=True)
 
         # Apply element settings
         _elem_settings = _settings.get('elements', {})
+        _to_apply = []
         for _name, _setting in _elem_settings.items():
             _elem = self.find_elem(_name)
             if not _elem:
@@ -337,6 +339,9 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 continue
             if not _elem.saveable:
                 continue
+            _to_apply.append((_elem, _setting))
+        for _elem, _setting in sorted(_to_apply):
+            _LOGGER.info(' - APPLY SETTING %s %s', _elem, _setting)
             _elem.set_settings(_setting)
 
         # Apply window settings
@@ -353,6 +358,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 _elem.selected = True
 
         self.redraw()
+        _LOGGER.info(' - LOAD SETTINGS COMPLETE')
 
     def get_settings(self):
         """Obtain graph setting settings.
@@ -370,14 +376,19 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             'zoom': self.zoom}
 
         # Get element settings
-        _elem_settings = {}
+        _elems_settings = {}
         for _elem in self.find_elems(saveable=True):
-            _elem_settings[_elem.full_name] = _elem.get_settings()
-            _LOGGER.info(' - SAVE %s %s', _elem.full_name, _elem.get_settings())
+            _elem_settings = _elem.get_settings()
+            if not _elem_settings:
+                continue
+            _elems_settings[_elem.full_name] = _elem_settings
+            _LOGGER.debug(
+                ' - READ SETTING %s %s %d', _elem.full_name, _elem_settings,
+                bool(_elem_settings))
 
         _settings = {
             'global': _glob_settings,
-            'elements': _elem_settings}
+            'elements': _elems_settings}
 
         return _settings
 

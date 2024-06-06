@@ -193,7 +193,7 @@ class CMayaRedshiftProxyRef(_CMayaNodeRef):
         _mesh = pom.CMesh(_tfm)
 
         self.top_node = _mesh
-        _path = self.node.plug['fileName'].get_val()
+        _path = self.node.plug['fileName'].get_val().replace('.####.', '.%04d.')
         _LOGGER.debug(' - PATH %s', _path)
         super(CMayaRedshiftProxyRef, self).__init__(
             path=_path, namespace=str(self.top_node))

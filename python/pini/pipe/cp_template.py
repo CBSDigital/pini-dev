@@ -618,7 +618,7 @@ def _build_seq_dir_tmpls(tmpls, job):
     """
     from pini import pipe
     _seq_dirs = set()
-    for _type in pipe.OUTPUT_SEQ_TEMPLATE_TYPES:
+    for _type in pipe.OUTPUT_SEQ_TYPES:
         for _tmpl in tmpls[_type]:
             _seq_dir = File(_tmpl.pattern).to_dir().path
             if _seq_dir in _seq_dirs:

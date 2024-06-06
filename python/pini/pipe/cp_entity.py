@@ -516,8 +516,8 @@ class CPEntity(cp_settings.CPSettingsLevel):
         _LOGGER.debug('FIND ROOT OUTPUT TMPLS %s', self)
 
         # Find templates
-        _types = ['seq_dir'] + (pipe.OUTPUT_TEMPLATE_TYPES +
-                                pipe.OUTPUT_VIDEO_TEMPLATE_TYPES)
+        _types = ['seq_dir'] + (pipe.OUTPUT_FILE_TYPES +
+                                pipe.OUTPUT_VIDEO_TYPES)
         _LOGGER.debug(' - TMPL TYPES %s', _types)
         _all_tmpls = sorted(sum([
             self.find_templates(_type) for _type in _types], []))
@@ -654,9 +654,9 @@ class CPEntity(cp_settings.CPSettingsLevel):
                 continue
 
             # Determine output file class
-            if _tmpl.type_ in pipe.OUTPUT_TEMPLATE_TYPES:
+            if _tmpl.type_ in pipe.OUTPUT_FILE_TYPES:
                 _class = _file_class
-            elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TEMPLATE_TYPES:
+            elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TYPES:
                 _class = _video_class
             else:
                 raise ValueError(_tmpl)

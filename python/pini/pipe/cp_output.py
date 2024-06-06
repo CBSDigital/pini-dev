@@ -21,9 +21,9 @@ from .cp_utils import validate_tokens
 _LOGGER = logging.getLogger(__name__)
 
 RENDER_CALLBACK = None
-OUTPUT_TEMPLATE_TYPES = ['publish', 'cache', 'ass_gz']
-OUTPUT_VIDEO_TEMPLATE_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
-OUTPUT_SEQ_TEMPLATE_TYPES = ['render', 'plate', 'blast', 'cache_seq']
+OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz']
+OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
+OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
 
 
 class CPOutputBase(object):
@@ -99,7 +99,7 @@ class CPOutputBase(object):
             self.task = self._work_dir.task
 
         self._init_extract_data_from_templates(
-            types=types or OUTPUT_TEMPLATE_TYPES,
+            types=types or OUTPUT_FILE_TYPES,
             templates=templates, template=template)
 
     def _init_extract_data_from_templates(
@@ -574,7 +574,7 @@ class CPOutput(File, CPOutputBase):
         CPOutputBase.__init__(
             self, job=job, entity=entity, work_dir=work_dir,
             template=template, templates=templates,
-            types=types or OUTPUT_TEMPLATE_TYPES)
+            types=types or OUTPUT_FILE_TYPES)
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -631,7 +631,7 @@ class CPOutputVideo(CPOutput, clip.Video):
         super(CPOutputVideo, self).__init__(
             path, job=job, entity=entity, work_dir=work_dir,
             template=template, templates=templates,
-            types=types or OUTPUT_VIDEO_TEMPLATE_TYPES)
+            types=types or OUTPUT_VIDEO_TYPES)
 
     @classmethod
     def to_yaml(cls, dumper, data):
@@ -754,7 +754,7 @@ class CPOutputSeq(Seq, CPOutputBase):
         CPOutputBase.__init__(
             self, job=job, entity=entity, work_dir=work_dir,
             template=template, templates=templates,
-            types=types or OUTPUT_SEQ_TEMPLATE_TYPES)
+            types=types or OUTPUT_SEQ_TYPES)
         self._dir = dir_
         self._thumb = File('{}/.pini/{}_thumb.jpg'.format(self.dir, self.base))
 
