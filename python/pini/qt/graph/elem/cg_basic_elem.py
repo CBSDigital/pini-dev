@@ -101,6 +101,8 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         self._apply_parent(parent=parent, level=level)
         self._apply_tfm(pos=pos, size=size, space=space)
 
+        self.cmp_token = -self.level, self.name
+
     def _apply_parent(self, parent, level):
         """Apply parenting.
 
@@ -464,6 +466,9 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
             event (QResizeEvent): triggered event
         """
         return event
+
+    def __lt__(self, other):
+        return self.cmp_token < other.cmp_token
 
     def __repr__(self):
         return basic_repr(self, self.full_name)

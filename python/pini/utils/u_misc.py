@@ -589,8 +589,14 @@ def strftime(fmt=None, time_=None):
     """
     from pini.utils import to_ord
 
+    if fmt == 'nice':
+        _fmt = '%d/%m/%y %H:%M:%S'
+    elif fmt in (None, 'default', 'path'):
+        _fmt = '%y%m%d_%H%M%S'
+    else:
+        _fmt = fmt
+
     _time = time_ or time.time()
-    _fmt = fmt or '%y%m%d_%H%M%S'
     if '%D' in _fmt:
         _day = int(time.strftime('%d', to_time_t(_time)))
         _nice_day = '{:d}{}'.format(_day, to_ord(_day))
@@ -598,6 +604,7 @@ def strftime(fmt=None, time_=None):
     if '%P' in _fmt:
         _token = strftime('%p', time_).lower()
         _fmt = _fmt.replace('%P', _token)
+
     return time.strftime(_fmt, to_time_t(_time))
 
 

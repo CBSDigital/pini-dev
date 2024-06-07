@@ -302,21 +302,25 @@ class SGCJob(sgc_container.SGCContainer):
             (dict list): shotgrid results
         """
         _LOGGER.debug('FIND %s IN %s', entity_type, self.name)
-
-        _last_t = self._read_last_t(entity_type=entity_type)
-        _last_rng = sgc_range.SGCRange(_last_t, period='D')
-        _snapshot = sgc_utils.to_cache_file(
-            entity_type=entity_type, job=self, fields=fields,
-            range_=_last_rng, ver_n=ver_n)
-        _LOGGER.debug(' - SNAPSHOT %s', _snapshot)
-
         _results = None
-        if use_snapshots and not force and _snapshot.exists():
-            try:
-                _results = _snapshot.read_pkl()
-            except EOFError:
-                _LOGGER.info(' - FAILED TO READ SNAPSHOT %s', self.path)
 
+        # Try to use snapshot
+        if use_snapshots:
+            _last_t = self._read_last_t(entity_type=entity_type)
+            _LOGGER.debug(' - LAST T %s', strftime(fmt='nice', time_=_last_t))
+            _last_rng = sgc_range.SGCRange(_last_t, period='D')
+            _snapshot = sgc_utils.to_cache_file(
+                entity_type=entity_type, job=self, fields=fields,
+                range_=_last_rng, ver_n=ver_n)
+            _LOGGER.debug(' - SNAPSHOT %s', _snapshot)
+            if not force and _snapshot.exists():
+                try:
+                    _results = _snapshot.read_pkl()
+                    _LOGGER.debug(' - READ SNAPSHOT')
+                except EOFError:
+                    _LOGGER.info(' - FAILED TO READ SNAPSHOT %s', self.path)
+
+        # Otherwise read data from ranges
         if _results is None:
             _LOGGER.info(
                 ' - BUILDING CACHE %d %s %s %s',
@@ -324,9 +328,16 @@ class SGCJob(sgc_container.SGCContainer):
             _results = self._read_data_from_ranges(
                 entity_type=entity_type, fields=fields, entity_map=entity_map,
                 progress=progress, ver_n=ver_n, force=force > 1)
-            _snapshot.write_pkl(_results, force=True, catch=True)
+            if use_snapshots:
+                _snapshot.write_pkl(_results, force=True, catch=True)
 
-        return sorted(_results, key=operator.itemgetter('path'))
+        # Process data
+        _results = [
+            _result for _result in _results
+            if _result['sg_status_list'] != 'omt']
+        _results.sort(key=operator.itemgetter('path'))
+
+        return _results
 
     def _read_data_from_ranges(
             self, entity_type, fields, entity_map=None, ver_n=None,
@@ -356,7 +367,7 @@ class SGCJob(sgc_container.SGCContainer):
                 '[SGC] Checking {} {}'.format(self.name, entity_type),
                 stack_key='SGCReadRanges', show=progress, col='Orange'):
 
-            _LOGGER.debug(_rng.label)
+            _LOGGER.log(9, ' - READ RANGE %s', _rng.label)
             _cache_file = sgc_utils.to_cache_file(
                 entity_type=entity_type, fields=fields, job=self, range_=_rng,
                 ver_n=ver_n)
@@ -402,7 +413,6 @@ class SGCJob(sgc_container.SGCContainer):
             filters=[
                 self.filter_,
                 ('updated_at', 'between', range_.to_tuple()),
-                ('sg_status_list', 'is_not', 'omt'),
             ],
             order=[{'field_name': 'updated_at', 'direction': 'asc'}],
             fields=fields)
@@ -593,8 +603,6 @@ class SGCJob(sgc_container.SGCContainer):
         _tasks = []
         for _item in _data:
             _task = sgc_container.SGCTask(_item)
-            if _task.status in ('omt', ):
-                continue
             _tasks.append(_task)
         return _tasks
 

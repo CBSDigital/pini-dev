@@ -55,7 +55,7 @@ def build_tmp_icon(file_, base, overlay, base_scale=None):
         (str): path to tmp icon
     """
     from pini import qt
-    _LOGGER.info('BUILD TMP ICON')
+    _LOGGER.debug('BUILD TMP ICON')
 
     # Get base pixmap
     _pix = to_pixmap(base)
@@ -74,10 +74,10 @@ def build_tmp_icon(file_, base, overlay, base_scale=None):
     # Save to tmp
     _tmp_fmt = build_cache_fmt(
         file_, tool='TmpIcons', extn='png', mode='home')
-    _LOGGER.info(' - TMP FMT %s', _tmp_fmt)
+    _LOGGER.debug(' - TMP FMT %s', _tmp_fmt)
     _tmp_path = _tmp_fmt.format(func='icon')
-    _LOGGER.info(' - TMP PATH %s', _tmp_path)
-    _pix.save_as(_tmp_path, force=True)
+    _LOGGER.debug(' - TMP PATH %s', _tmp_path)
+    _pix.save_as(_tmp_path, force=True, verbose=0)
 
     return _tmp_path
 

@@ -961,9 +961,12 @@ class CPJob(cp_settings.CPSettingsLevel):
             assert not output_name
             assert not versionless
             assert extn is EMPTY
-            _pubs = self.find_outputs(
-                type_='publish', entity=entity, task=task, tag=tag, ver_n=ver_n,
-                extns=extns, profile='asset')
+            _pubs = []
+            for _type in ['publish', 'publish_seq']:
+                _pubs += self.find_outputs(
+                    type_=_type, entity=entity, task=task, tag=tag, ver_n=ver_n,
+                    extns=extns, profile='asset')
+            _pubs.sort()
         else:
             raise ValueError(pipe.MASTER)
 

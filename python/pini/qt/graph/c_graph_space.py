@@ -292,6 +292,16 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         for _elem in self.find_elems():
             _elem.selected = False
 
+    def select_elem(self, elem):
+        """Select the given element.
+
+        Args:
+            elem (CGBasicElem): element to select
+        """
+        self.clear_selection()
+        elem.selected = True
+        self.redraw()
+
     def reset_selected_elems(self):
         """Reset selected elements."""
         _elems = self.find_elems(selected=True)
@@ -341,7 +351,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 continue
             _to_apply.append((_elem, _setting))
         for _elem, _setting in sorted(_to_apply):
-            _LOGGER.info(' - APPLY SETTING %s %s', _elem, _setting)
+            _LOGGER.debug(' - APPLY SETTING %s %s', _elem, _setting)
             _elem.set_settings(_setting)
 
         # Apply window settings
@@ -493,7 +503,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             event (QMouseEvent): triggered event
         """
-        _LOGGER.debug('MOUSE RELEASE %s %s', event, strftime('%H%M%S'))
+        _LOGGER.info('MOUSE RELEASE %s %s', event, strftime('%H%M%S'))
 
         self.offset_anchor_p = self.offset_target_p = None
         if self.drag_elem:

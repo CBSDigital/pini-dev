@@ -36,14 +36,17 @@ class CGraphElemBase(object):
         _class = class_ or elem.CGBasicElem
         return _class(parent=self, **kwargs)
 
-    def add_icon_elem(self, **kwargs):
+    def add_icon_elem(self, icon, **kwargs):
         """Add icon element to the graph.
+
+        Args:
+            icon (str/CPixmap): icon to display
 
         Returns:
             (CGIconElem): icon element
         """
         from . import elem
-        return elem.CGIconElem(parent=self, **kwargs)
+        return elem.CGIconElem(icon, parent=self, **kwargs)
 
     def add_move_elem(self, **kwargs):
         """Add move element to the graph.

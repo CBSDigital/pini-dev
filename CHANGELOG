@@ -1,3 +1,23 @@
+## [2.1.0] - Fri 2024-06-07 15:01
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click animated redshift proxy,
+    - fix icon for animated redshift proxy,
+### Updated
+ - pini.utils.strftime added nice fmt preset,
+ - pini.utils.Seq.copy_to added stack_key to progress bar,
+ - pini.pipe.CPJob.find_publishes include publish_seq type,
+ - pini.pipe.CPEntity.flush sg update description on emit to force update updated_at field,
+ - pini.pipe.shotgrid.SGC include omitted results in range caches to overwrite previous non-omitted entries - apply omission on gather,
+ - pini.qt.CGraphElem.add_icon_elem added icon as arg,
+ - pini.qt.CGraphSpace.select_elem added,
+ - pini.qt.CGBasicElem.__lt__ added,
+ - pini.tools.pyui reset def settings uses fresh copy of def to survive reload,
+ - pini.tools.helper bugfix icon + ctx for redshift seq,
+ - pini.tools.helper.output_to_type_icon made public,
+ - maya_pini.ref.find_attr_refs added redshift proxy handling,
+
+
 ## [2.0.0] - Thu 2024-06-06 09:49
 ### Summary
  - Pini Helper:

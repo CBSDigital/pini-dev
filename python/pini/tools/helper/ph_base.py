@@ -322,7 +322,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         # Add find asset
         if (
                 not _asset and
-                output.nice_type == 'publish' and
+                output.nice_type in ('publish', 'publish_seq') and
                 output.profile == 'asset'):
             _asset = output
             _asset = pipe.map_path(_asset)
@@ -332,7 +332,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             icon=icons.FIND, enabled=bool(_asset))
 
         # Add lookdev opts
-        if ref:
+        if ref and isinstance(output, pipe.CPOutput):
             _lookdev = output.find_lookdev_shaders()
             menu.add_action(
                 'Find lookdev', wrap_fn(self.jump_to, _lookdev),

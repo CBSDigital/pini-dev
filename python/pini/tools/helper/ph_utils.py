@@ -155,7 +155,7 @@ def _lookdev_to_icon(lookdev):
         (CPixmap): icon
     """
     _LOGGER.debug(' - LOOKDEV TO ICON %s', lookdev)
-    assert lookdev.type_ == 'publish'
+    assert lookdev.type_ in ('publish', 'publish_seq')
 
     # Find rig icon
     _tmpl = lookdev.job.find_template(
@@ -327,7 +327,7 @@ def output_to_icon(output, overlay=None, force=False):
     elif output.asset_type == 'utl' and output.asset == 'lookdev':
         _icon = LOOKDEV_ICON
     elif (
-            output.type_ == 'publish' and
+            output.type_ in ('publish', 'publish_seq') and
             output.pini_task == 'lookdev' and
             output.content_type in ('ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
         _LOGGER.debug(' - APPLYING LOOKDEV ICON')

@@ -187,7 +187,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                     min(_frames), max(_frames), target.path))
             target.delete(frames=_frames, force=True)
         for _frame in qt.progress_bar(
-                _frames, 'Copying {:d} frame{}'):
+                _frames, 'Copying {:d} frame{}', stack_key='CopyFrames'):
             File(self[_frame]).copy_to(target[_frame])
             target.add_frame(_frame)
 

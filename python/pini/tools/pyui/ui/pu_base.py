@@ -318,19 +318,25 @@ class PUBaseUi(object):
     def reset_settings(self, def_=None):
         """Reset interface settings.
 
+        NOTE: should function after reload
+
         Args:
             def_ (PUDef): only reset settings on this function
         """
+        from pini.tools import pyui
+
         _LOGGER.debug('RESET SETTINGS')
+
         if def_:
-            _elem = self.py_file.find_ui_elem(def_.name)
-            _LOGGER.debug(' - ELEM %s', _elem)
+            _py_file = pyui.PUFile(self.py_file.path)
+            _def = _py_file.find_ui_elem(def_.name)
+            _LOGGER.debug(' - DEF %s', _def)
             _def_settings = {}
-            for _arg in _elem.to_args():
+            for _arg in _def.find_args():
                 _default = _arg.py_arg.default
                 _LOGGER.debug(' - ARG %s %s', _arg, _default)
                 _def_settings[_arg.name] = _default
-            _settings = {'defs': {_elem.name: _def_settings}}
+            _settings = {'defs': {_def.name: _def_settings}}
             self.load_settings(settings=_settings)
         else:
             self.rebuild(load_settings=False)

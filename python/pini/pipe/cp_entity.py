@@ -11,7 +11,8 @@ import six
 
 from pini import dcc
 from pini.utils import (
-    Dir, single, cache_result, File, EMPTY, passes_filter, to_str)
+    Dir, single, cache_result, File, EMPTY, passes_filter, to_str,
+    strftime)
 
 from . import cp_template, cp_settings
 from .cp_utils import task_sort, map_path
@@ -839,8 +840,12 @@ class CPEntity(cp_settings.CPSettingsLevel):
             from pini.pipe import shotgrid
             _sg_job = shotgrid.SGC.find_job(self.job)
             _sg_pubs = _sg_job.find_pub_files(entity=self)
-            for _sg_pub in qt.progress_bar(_sg_pubs, 'Updating {:d} output{}'):
-                _data = {'sg_status_list': 'omt'}
+            for _sg_pub in qt.progress_bar(_sg_pubs), 'Updating {:d} output{}':
+                _LOGGER.info(' - OMIT ENTITY %d %s', _sg_pub.id_, _sg_pub)
+                _data = {
+                    'sg_status_list': 'omt',
+                    'description': strftime('Omitted %d/%m/%y %H:%M:%S'),
+                }
                 shotgrid.update('PublishedFile', _sg_pub.id_, _data)
             _sg_job.find_pub_files(force=True)
 
