@@ -104,17 +104,23 @@ class SGCJob(sgc_container.SGCContainer):
             _asset for _asset in self.assets
             if match in (_asset.name, _asset.path)])
 
-    def find_assets(self, progress=False, force=False):
+    def find_assets(self, filter_=None, progress=False, force=False):
         """Search assets within this job.
 
         Args:
+            filter_ (str): apply path filter
             progress (bool): show read progress
             force (bool): force reread data
 
         Returns:
             (SGCAsset list): assets
         """
-        return self._read_assets(progress=progress, force=force)
+        _assets = []
+        for _asset in self._read_assets(progress=progress, force=force):
+            if filter_ and not passes_filter(_asset.path, filter_):
+                continue
+            _assets.append(_asset)
+        return _assets
 
     def find_entity(self, match):
         """Find entity within this job.

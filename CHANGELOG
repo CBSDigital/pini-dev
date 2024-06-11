@@ -1,3 +1,12 @@
+## [2.2.1] - Tue 2024-06-11 13:58
+### Summary
+ - Pini Helper:
+    - bugfix assets not sorted alphabetically (eehemann),
+### Updated
+ - pini.utils.Path.__lt__ use lower for alphabetical sorting,
+ - pini.pipe.shotgrid.SGC.SGCJob.find_assets added filter_ arg,
+
+
 ## [2.2.0] - Tue 2024-06-11 10:57
 ### Summary
  - Pini Helper:

@@ -271,8 +271,8 @@ class Path(object):
     def __lt__(self, other):
         from pini.utils import Seq
         if not isinstance(other, (Path, Seq)):
-            return self.path < other
-        return self.path < other.path
+            return self.path.lower() < other.lower()
+        return self.path.lower() < other.path.lower()
 
     def __repr__(self):
         _tag = ''
@@ -291,7 +291,6 @@ def _get_owner_nt(path):
     Returns:
         (str): file owner
     """
-
     import ctypes
     from ctypes import wintypes
 
