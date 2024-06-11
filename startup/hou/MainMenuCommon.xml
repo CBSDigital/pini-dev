@@ -70,6 +70,16 @@ h_pipe.flipbook()
 
       <separatorItem/>
 
+      <!--Add Install Pini Shelf-->
+      <scriptItem id="PI_InstallShelf">
+        <label>Install Pini Shelf</label>
+          <scriptCode><![CDATA[
+from pini import install
+install.SHELF_INSTALLER.run()
+]]>
+         </scriptCode>
+      </scriptItem>
+
       <!--Add Reload tools-->
       <scriptItem id="PI_Refresh">
         <label>Reload tools</label>

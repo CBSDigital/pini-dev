@@ -414,7 +414,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         for _label, _refs in _to_add:
 
             _refs = [_ref for _ref in _refs
-                     if _ref.output.task != 'lookdev']
+                     if _ref.output.pini_task != 'lookdev']
 
             if ref:  # Attach existing ref
                 _funcs = []

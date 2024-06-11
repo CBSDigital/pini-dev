@@ -123,6 +123,10 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 continue
             _elem.draw(pix=pix)
 
+        # Execute draw callbacks
+        for _callback in self.draw_callbacks:
+            _callback(pix)
+
         # Draw overlays
         if markers:
             self._draw_markers(pix)
@@ -133,10 +137,6 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
 
         if self.legend:
             pix.draw_text(self.legend, (10, 10))
-
-        # Execute draw callbacks
-        for _callback in self.draw_callbacks:
-            _callback(pix)
 
     def _draw_markers(self, pix):
         """Draw offset/zoom markers.

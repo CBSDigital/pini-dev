@@ -25,9 +25,9 @@ class TestPipe(unittest.TestCase):
 
         # Check asset pubs can have optional output_type
         _ety = pipe.CACHE.obt(testing.TEST_ASSET)
-        _work_dir = _ety.find_work_dir('model', dcc_='maya')
-        assert _work_dir.to_output('publish', output_type=None, extn='ma')
-        assert _work_dir.to_output('publish', output_type='vrmesh', extn='ma')
+        _work_dir = _ety.find_work_dir('model', dcc_=dcc.NAME)
+        assert _work_dir.to_output('publish', output_type=None, extn=dcc.DEFAULT_EXTN)
+        assert _work_dir.to_output('publish', output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
 
     def test_templates(self):
 

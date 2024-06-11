@@ -506,6 +506,7 @@ def save_redshift_proxy(path, selection=True, animation=False):
     """
     _LOGGER.info('SAVE REDSHIFT PROXY %s anim=%d', path, animation)
     from pini import dcc
+    cmds.loadPlugin('redshift4maya', quiet=True)
 
     _opts = "exportConnectivity=0;enableCompression=0;keepUnused=0;"
     if not animation:

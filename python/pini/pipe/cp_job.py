@@ -53,7 +53,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             path (str): path within the job
             jobs_root (str): override jobs root
         """
-        _path = abs_path(path)
+        _path = abs_path(to_str(path))
         _root = Dir(jobs_root or JOBS_ROOT)
         _rel_path = _root.rel_path(_path)
         _path = _root.to_subdir(_rel_path.split('/')[0])

@@ -1,3 +1,18 @@
+## [2.2.0] - Tue 2024-06-11 10:57
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on export redshift proxy without plugin loaded,
+    - scene tab bugfix error on right-click redshift archive reference,
+### Updated
+ - startup/hou/MainMenuCommon.xml added install pini shelf item,
+ - pini.pipe.CPJob allow init from Seq,
+ - pini.pipe.shotgrid.SGC.SGCContainer.set_status added,
+ - pini.qt.graph.CGBasicElem.move_to added,
+ - pini.qt.graph.CGraphSpace.draw_pixmap exec draw callbacks before overlays,
+ - pini.tools.helper scene ref ctx apply lookdev use pini_task to ignore lookdev assets,
+ - maya_pini.utils.save_redshift_proxy,
+
+
 ## [2.1.0] - Fri 2024-06-07 15:01
 ### Summary
  - Pini Helper:

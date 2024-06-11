@@ -362,7 +362,7 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
             bevel=self.graph.g2p(self.bevel_g))
 
     def move(self, vector):
-        """Move this control.
+        """Move this control the given translation.
 
         Args:
             vector (CPointF): relative move to apply
@@ -373,6 +373,30 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         self.local_pos_g += _vect
         self.mouseMoveEvent(event=None)
         self.graph.redraw()
+
+    def move_to(self, pos, space='graph', redraw=True):
+        """Move this control to the given position.
+
+        Args:
+            pos (CPointF): position to apply
+            space (str): space of move
+            redraw (bool): redraw graph after applying move
+        """
+        _LOGGER.info('MOVE TO')
+        if space == 'graph':
+            _pos_g = pos
+        elif space == 'pixmap':
+            _pos_g = self.graph.p2g(pos)
+            _LOGGER.info(' - APPLY MOVE TO %s %s -> %s', space, pos, _pos_g)
+        else:
+            raise NotImplementedError(space)
+        self.mousePressEvent(event=None)
+        self.local_pos_g = _pos_g
+        _LOGGER.info(' - UPDATED %s', self.local_pos_g)
+        if redraw:
+            self.mouseMoveEvent(event=None)
+            self.graph.redraw()
+        _LOGGER.info(' - COMPLETED MOVE TO %s', self.local_pos_g)
 
     def mousePressEvent(self, event):
         """Triggered by mouse press.

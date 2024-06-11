@@ -3,7 +3,7 @@
 These are simple classes for storing shotgrid results.
 """
 
-from pini.utils import basic_repr
+from pini.utils import basic_repr, strftime
 
 
 class SGCContainer(object):
@@ -19,6 +19,24 @@ class SGCContainer(object):
         self.id_ = data['id']
         self.updated_at = data['updated_at']
         self.type_ = data['type']
+
+    def set_status(self, status):
+        """Update status of this entry.
+
+        NOTE: to force the update_at field to update, it seems like you need
+        to also update a field other than sg_status_list, so the description
+        is updated with a date-stamped status.
+
+        Args:
+            status (str): status to apply
+        """
+        from pini.pipe import shotgrid
+        if status == 'omt':
+            _desc = strftime('Omitted %d/%m/%y %H:%M:%S')
+        else:
+            raise NotImplementedError(status)
+        _data = {'sg_status_list': status, 'description': _desc}
+        shotgrid.update('PublishedFile', self.id_, _data)
 
     def to_entry(self):
         """Build shotgrid uid dict for this data entry.
