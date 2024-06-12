@@ -14,8 +14,8 @@ from . import c_graph_elem
 
 _LOGGER = logging.getLogger(__name__)
 
-_GRAPH_LINE_COL = wrapper.CColor('Grey')
-_GRAPH_LINE_COL.setAlphaF(0.5)
+_MAJ_GRAPH_LINE_COL = wrapper.CColor('Grey', alpha=0.25)
+_MIN_GRAPH_LINE_COL = wrapper.CColor('Grey', alpha=0.75)
 
 
 class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
@@ -191,31 +191,34 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             pix (CPixmap): pixmap to draw on
         """
+        _step = 100 if self.zoom > 0.1 else 1000
         _rect_p = pix.rect()
         _rect_g = self.p2g(_rect_p)
         _LOGGER.log(9, 'DRAW GRID %s', _rect_g)
 
         # Draw vertical lines
-        _x_plot_g = int(_rect_g.x()/100)*100 - 100
+        _x_plot_g = int(_rect_g.x()/_step)*_step - _step
         _LOGGER.log(9, ' - X PLOT START %f', _x_plot_g)
-        while _x_plot_g < _rect_g.right() + 100:
+        while _x_plot_g < _rect_g.right() + _step:
             check_heart()
             _top_g = q_utils.to_p(_x_plot_g, _rect_g.top())
             _bot_g = q_utils.to_p(_x_plot_g, _rect_g.bottom())
-            pix.draw_line(
-                self.g2p(_top_g), self.g2p(_bot_g), col=_GRAPH_LINE_COL)
-            _x_plot_g += 100
+            _col = (_MAJ_GRAPH_LINE_COL if _x_plot_g % 1000
+                    else _MIN_GRAPH_LINE_COL)
+            pix.draw_line(self.g2p(_top_g), self.g2p(_bot_g), col=_col)
+            _x_plot_g += _step
 
         # Draw horizontal lines
-        _y_plot_g = int(_rect_g.y()/100)*100 - 100
+        _y_plot_g = int(_rect_g.y()/_step)*_step - _step
         _LOGGER.log(9, ' - Y PLOT START %f', _y_plot_g)
-        while _y_plot_g < _rect_g.bottom() + 100:
+        while _y_plot_g < _rect_g.bottom() + _step:
             check_heart()
             _left_g = q_utils.to_p(_rect_g.left(), _y_plot_g)
             _right_g = q_utils.to_p(_rect_g.right(), _y_plot_g)
-            pix.draw_line(
-                self.g2p(_left_g), self.g2p(_right_g), col=_GRAPH_LINE_COL)
-            _y_plot_g += 100
+            _col = (_MAJ_GRAPH_LINE_COL if _y_plot_g % 1000
+                    else _MIN_GRAPH_LINE_COL)
+            pix.draw_line(self.g2p(_left_g), self.g2p(_right_g), col=_col)
+            _y_plot_g += _step
 
     def frame_elems(self, margin=20, draw_region=False, elems=None, anchor='C'):
         """Frame elements contained in this space.
@@ -365,7 +368,8 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             self.clear_selection()
             for _name in _glob_settings['selected']:
                 _elem = self.find_elem(_name)
-                _elem.selected = True
+                if _elem:
+                    _elem.selected = True
 
         self.redraw()
         _LOGGER.info(' - LOAD SETTINGS COMPLETE')

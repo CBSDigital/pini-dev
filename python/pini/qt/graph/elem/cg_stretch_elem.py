@@ -303,7 +303,21 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (dict): saveable settings
         """
         _settings = super(CGStretchElem, self).get_settings()
-        _settings['size'] = list(self.size_g.to_tuple())
+
+        # Get size
+        _size = list(self.size_g.to_tuple())
+        if self.lock == 'V':
+            _size[1] = None
+        elif self.lock == 'H':
+            _size[0] = None
+        elif self.lock is True:
+            _size = None
+        elif self.lock is False:
+            pass
+        else:
+            raise NotImplementedError(self.lock)
+        _settings['size'] = _size
+
         return _settings
 
     def reset(self):

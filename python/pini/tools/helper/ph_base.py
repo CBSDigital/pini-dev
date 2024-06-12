@@ -8,12 +8,12 @@ import pprint
 
 import six
 
-from pini import pipe, icons, dcc, qt
+from pini import pipe, icons, dcc, qt, testing
 from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, wrap_fn, chain_fns, copied_path, clip,
+    File, wrap_fn, chain_fns, copied_path, clip, str_to_seed,
     get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
@@ -107,6 +107,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def init_ui(self):
         """Build ui elements."""
+        self.ui.JobIcon.draw_pixmap_func = self._update_job_icon
 
         # Disable save settings on pipe elements
         for _elem in [
@@ -441,6 +442,39 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _select = pipe.to_job(self.target) if self.target else None
         self.ui.Job.set_items(_names, data=pipe.CACHE.jobs, select=_select)
 
+    def _update_job_icon(self, pix):
+        """Update job icon pixmap.
+
+        Args:
+            pix (CPixmap): pixmap to draw on
+        """
+        _LOGGER.info('UPDATE JOB ICON %s', self.job)
+        _rand = str_to_seed(self.job.name)
+        pix.fill('Transparent')
+
+        # Add backgroup
+        _margin = 5
+        if self.job.settings['col']:
+            _col = self.job.settings['col']
+        else:
+            _col = _rand.choice(qt.BOLD_COLS)
+        pix.draw_rounded_rect(
+            pos=(_margin, _margin), col=_col, outline=None,
+            size=pix.size()-qt.to_size(_margin*2))
+
+        # Add icon
+        if self.job.settings['icon']:
+            _icon = icons.find(self.job.settings['icon'])
+        elif self.job == testing.TEST_JOB:
+            _icon = icons.find('Alembic')
+        elif 'Library' in self.job.name:
+            _icon = icons.find('Books')
+        else:
+            _icon = _rand.choice(icons.FRUIT)
+        pix.draw_overlay(
+            _icon, anchor='C', pos=pix.center(),
+            size=0.5*pix.width())
+
     def _redraw__EntityType(self):
 
         _job = self.ui.Job.selected_data()
@@ -575,6 +609,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 _LOGGER.debug('APPLY TARGET PROFILE %s', _profile)
                 self.ui.Profile.select_text(_profile)
 
+        self.ui.JobIcon.redraw()
         self._redraw__EntityType()
 
     def _callback__ProfileLabel(self):

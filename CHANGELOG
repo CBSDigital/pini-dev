@@ -1,3 +1,17 @@
+## [2.3.0] - Wed 2024-06-12 12:04
+### Summary
+ - Pini Helper:
+    - implemented job icon,
+### Updated
+ - pini.utils.play_sound added start/end/verbose flags,
+ - pini.pipe.CPSettingsLevel added icon/col to default settings,
+ - pini.qt.to_rect force QPointF if QSizeF,
+ - pini.qt.CGraphSpace._draw_grid fade 90% of lines + hide if zoomed out,
+ - pini.qt.CGBasicElem.set_settings allow pos/size cpnt as None for locked axes,
+ - pini.qt CGMoveElem/CGStretchElem get_settings pos/size as None for locked axes,
+ - pini.tools.helper implelemted job icon,
+
+
 ## [2.2.1] - Tue 2024-06-11 13:58
 ### Summary
  - Pini Helper:

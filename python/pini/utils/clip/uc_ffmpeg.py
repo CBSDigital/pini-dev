@@ -11,16 +11,28 @@ from ..u_misc import system, nice_age, to_str
 _LOGGER = logging.getLogger(__name__)
 
 
-def play_sound(file_):
+def play_sound(file_, start=None, end=None, verbose=0):
     """Play the given sound.
 
     Args:
         file_ (File): wav file to play
+        start (float): start point (in secs)
+        end (float): end point (in secs)
+        verbose (int): print process data
     """
     _file = File(abs_path(file_))
     _ffplay = find_exe('ffplay')
-    assert _file.exists()
-    system([_ffplay, _file, '-autoexit'], result=False)
+    if not _file.exists():
+        raise OSError(_file.path)
+    _cmds = [_ffplay, _file, '-autoexit']
+    if start:
+        _cmds += ['-ss', start]
+    if end:
+        _start = start or 0
+        _dur = end - _start
+        _cmds += ['-t', _dur]
+
+    system(_cmds, result=False, verbose=verbose)
 
 
 def _build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):

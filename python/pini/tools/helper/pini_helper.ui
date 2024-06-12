@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>448</width>
-    <height>884</height>
+    <height>841</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -3196,17 +3196,11 @@ Range: 1-10</string>
         <number>4</number>
        </property>
        <item>
-        <widget class="QPushButton" name="JobIcon">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
+        <widget class="CPixmapLabel" name="JobIcon">
          <property name="minimumSize">
           <size>
-           <width>68</width>
-           <height>68</height>
+           <width>0</width>
+           <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -3216,9 +3210,29 @@ Range: 1-10</string>
           </size>
          </property>
          <property name="text">
-          <string>Job Icon</string>
+          <string>job
+icon</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_9" stretch="0,0,0">
@@ -3333,6 +3347,11 @@ Range: 1-10</string>
    <class>CListView</class>
    <extends>QListView</extends>
    <header>clistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CPixmapLabel</class>
+   <extends>QLabel</extends>
+   <header>cpixmaplabel.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

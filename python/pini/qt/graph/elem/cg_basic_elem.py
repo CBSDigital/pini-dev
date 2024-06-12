@@ -248,12 +248,29 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
             settings (dict): settings to apply
         """
         _pos = _size = None
+
+        # Apply pos
         if 'pos' in settings:
-            _pos = wrapper.CPointF(*settings['pos'])
+            _pos = settings['pos']
+            assert isinstance(_pos, list)
+            if _pos[0] is None:
+                _pos[0] = self.local_pos_g.x()
+            if _pos[1] is None:
+                _pos[1] = self.local_pos_g.y()
+            _pos = wrapper.CPointF(*_pos)
             self.local_pos_g = _pos
+
+        # Apply size
         if 'size' in settings:
-            _size = wrapper.CSizeF(*settings['size'])
+            _size = settings['size']
+            assert isinstance(_size, list)
+            if _size[0] is None:
+                _size[0] = self.size_g.width()
+            if _size[1] is None:
+                _size[1] = self.size_g.height()
+            _size = wrapper.CSizeF(*_size)
             self.size_g = _size
+
         _LOGGER.debug(' - LOAD SETTING %s %s %s', self, _pos, _size)
         self.resizeEvent()
 

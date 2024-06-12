@@ -19,10 +19,9 @@ _DEFAULT_SETTINGS = {
         'only_3d': False},
     'sanity_check': {
         'ExampleCheck': {
-            'enabled': True,
-        },
-    },
-}
+            'enabled': True}},
+    'icon': None,
+    'col': None}
 
 
 @cache_result

@@ -412,8 +412,14 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
     Returns:
         (QRect|QRectF): region
     """
+    from pini import qt
+
+    _LOGGER.debug('TO RECT %s %s', pos, size)
     _size = to_size(size)
-    _pos = to_p(pos)
+    _LOGGER.debug(' - SIZE %s', _size)
+    _class = qt.CPointF if isinstance(_size, QtCore.QSizeF) else None
+    _pos = to_p(pos, class_=_class)
+    _LOGGER.debug(' - POS %s', _pos)
 
     # Determine root position (top left) of result
     if anchor == 'C':

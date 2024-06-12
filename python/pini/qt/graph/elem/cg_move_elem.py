@@ -52,7 +52,21 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
             (dict): saveable settings
         """
         _settings = super(CGMoveElem, self).get_settings()
-        _settings['pos'] = list(self.local_pos_g.to_tuple())
+
+        # Get pos
+        _pos = list(self.local_pos_g.to_tuple())
+        if self.lock == 'V':
+            _pos[1] = None
+        elif self.lock == 'H':
+            _pos[0] = None
+        elif self.lock is True:
+            _pos = None
+        elif self.lock is False:
+            pass
+        else:
+            raise NotImplementedError(self.lock)
+        _settings['pos'] = _pos
+
         return _settings
 
     def reset(self):
