@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-public-methods,disable=too-many-lines
 
+import copy
 import logging
 import operator
 import os
@@ -461,11 +462,12 @@ class CPJob(cp_settings.CPSettingsLevel):
             return None
         raise ValueError(match)
 
-    def find_assets(self, asset_type=None):
+    def find_assets(self, asset_type=None, filter_=None):
         """Find assets in this job.
 
         Args:
             asset_type (str): filter by type
+            filter_ (str): apply path filter
 
         Returns:
             (CPAsset list): matching assets
@@ -507,10 +509,13 @@ class CPJob(cp_settings.CPSettingsLevel):
                     _assets += self.read_type_assets(asset_type=_type)
 
         elif pipe.MASTER == 'shotgrid':
-            _assets = self._read_assets_sg()
-            if asset_type:
-                _assets = [_asset for _asset in _assets
-                           if _asset.type_ == asset_type]
+            _assets = []
+            for _asset in self._read_assets_sg():
+                if asset_type and _asset.type_ != asset_type:
+                    continue
+                if filter_ and not passes_filter(_asset.path, filter_):
+                    continue
+                _assets.append(_asset)
 
         else:
             raise ValueError
@@ -973,16 +978,19 @@ class CPJob(cp_settings.CPSettingsLevel):
         return _pubs
 
     def find_outputs(
-            self, type_=None, profile=None, entity=None, task=None, tag=EMPTY,
-            ver_n=None, extns=None, progress=False):
+            self, type_=None, filter_=None, profile=None, entity=None,
+            step=None, task=None, tag=EMPTY, ver_n=None, extns=None,
+            progress=False):
         """Find outputs in this job.
 
         (Only applicable to shotgrid jobs)
 
         Args:
             type_ (str): filter by output type
+            filter_ (str): apply path filter
             profile (str): filter by entity profile (asset/shot)
             entity (CPEntity): filter by entity
+            step (str): apply step filter
             task (str): filter by task
             tag (str): filter by tag
             ver_n (int): filter by version number
@@ -998,16 +1006,24 @@ class CPJob(cp_settings.CPSettingsLevel):
         if not (entity is None or isinstance(entity, pipe.ENTITY_TYPES)):
             raise TypeError(entity)
 
+        _all_outs = self._read_outputs_sg(progress=progress)
+        _all_outs, _ver_n = self._apply_latest_output_version_filter(
+            ver_n=ver_n, outputs=_all_outs)
+
         _outs = []
-        for _out in self._read_outputs_sg(progress=progress):
+        for _out in _all_outs:
             _LOGGER.debug(' - TESTING %s', _out)
+            if filter_ and not passes_filter(_out.path, filter_):
+                continue
             if type_ and _out.type_ != type_:
+                continue
+            if step and _out.step != step:
                 continue
             if task and task not in (_out.task, _out.pini_task):
                 continue
             if tag is not EMPTY and _out.tag != tag:
                 continue
-            if ver_n and _out.ver_n != ver_n:
+            if _ver_n and _out.ver_n != _ver_n:
                 continue
             if profile and _out.entity.profile != profile:
                 continue
@@ -1020,6 +1036,34 @@ class CPJob(cp_settings.CPSettingsLevel):
 
         _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
         return _outs
+
+    def _apply_latest_output_version_filter(self, outputs, ver_n):
+        """Apply "latest" version filter.
+
+        If the ver_n filter is "latest" then remove all non-latest
+        versions from the list.
+
+        Args:
+            outputs (CPOutput list): outputs
+            ver_n (int|str|None): version filter
+
+        Returns:
+            (tuple): outputs list, updated version filter
+        """
+        _outs = outputs
+        _ver_n = ver_n
+        if _ver_n == 'latest':
+            _ver_n = None
+            _n_outs = len(_outs)
+            _outs = sorted({
+                _to_out_stream_uid(_out): _out
+                for _out in _outs}.values())
+            _LOGGER.debug(
+                ' - APPLY LATEST %d -> %d OUTS', _n_outs, len(_outs))
+        else:
+            assert _ver_n in (None, EMPTY) or isinstance(_ver_n, int)
+
+        return _outs, _ver_n
 
     def _read_outputs_sg(self, progress=False):
         """Read outputs in this job from shotgrid.
@@ -1349,3 +1393,23 @@ def to_job(name, catch=False):
     _LOGGER.debug(' - JOB %s', _job)
 
     return _job
+
+
+def _to_out_stream_uid(output):
+    """Build a hashable uid for the given output's version stream.
+
+    ie. build an uid that identifies all versions of an output stream.
+
+    This could be achieved by using CPOutput.to_work(ver_n=0) but that is
+    slow. Instead, the data dict with the version key removed is converted
+    to a tuple.
+
+    Args:
+        output (CPOutput): output to read
+
+    Returns:
+        (tuple): uid
+    """
+    _data = copy.copy(output.data)
+    _data.pop('ver')
+    return tuple(_data.items())

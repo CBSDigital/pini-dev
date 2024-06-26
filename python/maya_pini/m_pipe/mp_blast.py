@@ -101,7 +101,7 @@ def _obt_metadata(range_, bkp, camera, res, save_disabled):
     Returns:
         (dict): metadata
     """
-    _data = export_handler.obtain_metadata(handler='Blast')
+    _data = export_handler.build_metadata(handler='Blast')
     _data['range'] = range_
     _data['camera'] = str(camera)
     _data['res'] = res

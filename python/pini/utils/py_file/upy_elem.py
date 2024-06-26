@@ -2,8 +2,9 @@
 
 import ast
 import logging
+import operator
 
-from ..u_filter import passes_filter
+from ..u_filter import passes_filter, apply_filter
 from ..u_misc import basic_repr, single
 
 _LOGGER = logging.getLogger(__name__)
@@ -180,17 +181,27 @@ class PyElem(object):
         return [_elem for _elem in self.find_children()
                 if isinstance(_elem, PyClass)]
 
-    def find_def(self, name):
+    def find_def(self, match):
         """Find a child def of this object.
 
         Args:
-            name (str): def name
+            match (str): def name
 
         Returns:
             (PyDef): child def
         """
-        return single([_def for _def in self.find_defs()
-                       if _def.name == name])
+        _defs = self.find_defs()
+
+        _name_matches = [_def for _def in _defs if _def.name == match]
+        if len(_name_matches) == 1:
+            return single(_name_matches)
+
+        _filter_matches = apply_filter(
+            _defs, match, key=operator.attrgetter('name'))
+        if len(_filter_matches) == 1:
+            return single(_filter_matches)
+
+        raise ValueError(match)
 
     def find_defs(self, internal=None, filter_=None, recursive=False):
         """Find child defs of this object.

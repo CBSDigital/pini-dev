@@ -96,7 +96,8 @@ class SGDataCache(object):
             (SGCAsset|SGCShot): matching entity
         """
         _job = pipe.to_job(match)
-        return self.find_job(_job).find_entity(match)
+        _sg_job = self.find_job(_job)
+        return _sg_job.find_entity(match)
 
     def find_job(self, match=None, force=False):
         """Find a job.
@@ -140,18 +141,20 @@ class SGDataCache(object):
             _jobs.append(_job)
         return _jobs
 
-    def find_pub_file(self, path=None, job=None):
+    def find_pub_file(self, path=None, job=None, catch=False):
         """Find a pub file in the cache.
 
         Args:
             path (str): match by path
             job (CPJob): job to search
+            catch (bool): no error if fail to find matching pub file
 
         Returns:
             (SGCPubFile): matching pub file
         """
         _job = job or pipe.CPJob(path)
-        return self.find_job(_job).find_pub_file(path=path)
+        _sg_job = self.find_job(_job)
+        return _sg_job.find_pub_file(path=path, catch=catch)
 
     def find_pub_files(
             self, job=None, entity=None, work_dir=None, force=False):
@@ -390,6 +393,21 @@ class SGDataCache(object):
             (SGCUser list): user entries
         """
         return self._read_users(force=force)
+
+    def find_ver(self, match, catch=False, force=False):
+        """Find version.
+
+        Args:
+            match (str): match by path/id
+            catch (bool): no error if fail to match exactly one pub file
+            force (bool): force rebuild cache
+
+        Returns:
+            (SGVersion): matching version
+        """
+        _job = pipe.CPJob(match)
+        _sg_job = self.find_job(_job)
+        return _sg_job.find_ver(match, catch=catch, force=force)
 
     def _read_data(self, entity_type, fields, force=False):
         """Read data from shotgrid.

@@ -71,7 +71,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
                 title='Warning', parent=self.parent)
             return None
 
-        _data = metadata or self.obtain_metadata(
+        _data = metadata or self.build_metadata(
             work=work, force=force, sanity_check_=sanity_check_, task='model')
 
         _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True

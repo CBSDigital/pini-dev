@@ -3,19 +3,22 @@
 from maya import cmds
 from maya.api import OpenMaya as om
 
+from pini.utils import basic_repr
+
 from maya_pini.utils import to_unique
 
 
 class CMatrix(om.MMatrix):
     """Represents a transformation matrix."""
 
-    def apply_to(self, node):
+    def apply_to(self, node, world_space=True):
         """Apply this transformtion to the given node.
 
         Args:
             node (CTransform): node to apply transformation to
+            world_space (bool): apply matrix in world or local space
         """
-        cmds.xform(node, matrix=self, worldSpace=True)
+        cmds.xform(node, matrix=self, worldSpace=world_space)
 
     def to_loc(self, name='matrix', scale=None, col=None):
         """Build a locator and apply this matrix to it.
@@ -102,6 +105,11 @@ class CMatrix(om.MMatrix):
             (float tuple): 16 values
         """
         return tuple(self[_idx] for _idx in range(16))
+
+    def __repr__(self):
+        _label = '({})'.format(
+            ', '.join('{:.04f}'.format(_item) for _item in self.to_tuple()))
+        return basic_repr(self, _label)
 
 
 IDENTITY = CMatrix()

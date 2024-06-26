@@ -9,7 +9,8 @@ from .mu_dec import (
 from .mu_io import (
     load_scene, save_scene, save_abc, save_ass, save_fbx, save_obj,
     save_redshift_proxy, load_redshift_proxy)
-from .mu_render import render, render_frame, to_render_extn
+from .mu_render import (
+    render, render_frame, to_render_extn, set_render_extn)
 from .mu_blast import blast, blast_frame
 
 from .mu_misc import (

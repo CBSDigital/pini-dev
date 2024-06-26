@@ -6,9 +6,9 @@ from pini import pipe, dcc
 from pini.utils import get_user
 
 
-def obtain_metadata(
+def build_metadata(
         handler, action=None, work=None, sanity_check_=False,
-        force=False, notes=None, task=None, source=None):
+        force=False, notes=None, task=None, source=None, content_type=None):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -20,6 +20,7 @@ def obtain_metadata(
         notes (str): export notes
         task (str): task to pass to sanity check
         source (str): path to source file
+        content_type (str): apply content type data (eg. ShadersMa/VrmeshMa)
 
     Returns:
         (dict): metadata
@@ -47,6 +48,8 @@ def obtain_metadata(
     _data['submitted'] = False
     if notes:
         _data['notes'] = notes
+    if content_type:
+        _data['content_type'] = content_type
 
     if sanity_check_:
         _action = action or handler

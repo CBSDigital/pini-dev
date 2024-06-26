@@ -55,11 +55,12 @@ class CDJob(object):
                 (eg. maya-2023,vray)
             scene (File): render scene (if not work file)
         """
+        from pini import farm
+
         self.stime = stime or time.time()
         self.comment = comment
         self.priority = priority
         self.machine_limit = machine_limit
-        self.limit_groups = limit_groups or ()
         self.name = name
         self.work = work
         self.error_limit = error_limit
@@ -73,7 +74,17 @@ class CDJob(object):
         self.dependencies = dependencies
         assert isinstance(self.dependencies, (list, tuple))
 
-        self.group = group or os.environ.get('PINI_DEADLINE_GROUP')
+        _group = group or os.environ.get('PINI_DEADLINE_GROUP')
+        if _group not in farm.find_groups():
+            raise RuntimeError('Bad group {}'.format(_group))
+        self.group = _group
+        if limit_groups:
+            if not isinstance(limit_groups, (list, tuple)):
+                raise RuntimeError(limit_groups)
+            for _group in limit_groups:
+                if _group not in farm.find_limit_groups():
+                    raise RuntimeError('Bad limit group '+_group)
+        self.limit_groups = limit_groups or ()
 
         assert self.stype
         assert self.name

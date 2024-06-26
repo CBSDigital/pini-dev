@@ -79,6 +79,7 @@ def to_fields_key(fields):
         'sg_frame_rate': 'Fr',
         'sg_has_3d': '3d',
         'sg_head_in': 'Hi',
+        'sg_path_to_movie': 'Mp',
         'sg_sequence': 'Se',
         'sg_short_name': 'Sn',
         'sg_status_list': 'Sl',

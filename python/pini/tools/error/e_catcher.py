@@ -75,6 +75,8 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     if isinstance(exc, qt.DialogCancelled):
         _LOGGER.info('DIALOG CANCELLED')
+    elif isinstance(exc, StopIteration):
+        _LOGGER.info('STOP ITERATION')
 
     elif isinstance(exc, error.HandledError):
         _title = exc.title or 'Error'

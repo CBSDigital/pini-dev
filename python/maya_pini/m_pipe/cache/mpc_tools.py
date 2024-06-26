@@ -108,7 +108,7 @@ def _write_metadata(outputs, cacheables, range_, step, checks_data):
     """
     for _out, _cbl in safe_zip(outputs, cacheables):
         assert _out.exists()
-        _data = _cbl.obtain_metadata()
+        _data = _cbl.build_metadata()
         _data['range'] = range_
         _data['step'] = step
         _data['checks'] = checks_data

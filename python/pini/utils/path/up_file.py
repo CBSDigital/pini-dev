@@ -258,6 +258,14 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         for _bkp in _to_flush:
             _bkp.delete(force=True)
 
+    def is_editable(self):
+        """Test whether this file can be opened in a text editor.
+
+        Returns:
+            (bool): editable
+        """
+        return self.extn in ['py', 'ma', 'nk', 'txt', 'atom']
+
     def matches(self, other):
         """Test if this file matches another one.
 

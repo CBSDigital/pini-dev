@@ -1,5 +1,7 @@
 """Tools for managing the OpenMaya.MFnAnimCurve wrapper."""
 
+import logging
+
 from maya import cmds
 from maya.api import OpenMayaAnim as oma
 
@@ -7,6 +9,8 @@ from pini.utils import single
 
 from .. import base
 from ..pom_utils import to_mobject
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
@@ -59,6 +63,29 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             force (bool): replace any existing conections
         """
         self.output.connect(plug, force=force)
+
+    def delete_keys(self, range_):
+        """Delete keys in the given frame range.
+
+        Args:
+            range_ (tuple): start/end frames
+        """
+        _LOGGER.debug('DELETE KEYS %s', self)
+        cmds.cutKey(self, time=range_)
+
+    def fix_name(self):
+        """Fix name to match target channel.
+
+        Returns:
+            (CAnimCurve): updated node
+        """
+        _name = str(self.target).replace('.', '_')
+        _LOGGER.debug('FIX NAME %s %s', self, _name)
+        _node = self
+        if self != _name:
+            _node = self.rename(_name)
+            _LOGGER.debug(' - FIXED NAME %s', _node)
+        return _node
 
     def get_ktvs(self):
         """Read keyframe time/value list from this curve.

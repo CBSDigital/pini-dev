@@ -75,7 +75,7 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
         _class = pom.CMesh
         _shp = _node
         _node = to_parent(_shp)
-    elif _type == 'transform':
+    elif _type in ('transform', 'hikIKEffector'):
         _class = _cast_tfm(_node)
     elif _type.startswith('animCurve'):
         _class = pom.CAnimCurve
@@ -266,6 +266,8 @@ def find_nodes(
 
     _nodes = []
     for _node in _results:
+
+        # Apply filters
         if filter_ and not passes_filter(str(_node), filter_):
             continue
         if namespace is not EMPTY and _node.namespace != namespace:
@@ -278,8 +280,15 @@ def find_nodes(
             continue
         if top_node and to_parent(_node):
             continue
-        _node = cast_node(str(_node))
+
+        # Build node object
+        try:
+            _node = cast_node(str(_node))
+        except ValueError as _exc:
+            _LOGGER.warning(' - FAILED TO CAST NODE %s: %s', _node, _exc)
+            continue
         _nodes.append(_node)
+
     return _nodes
 
 
@@ -518,6 +527,8 @@ def to_m(*args, **kwargs):
     Returns:
         (CMatrix): matrix
     """
+    from maya_pini import open_maya as pom
+
     if len(args) == 1:
         _tfm = to_tfm(single(args))
         return _tfm.to_m()
@@ -525,7 +536,10 @@ def to_m(*args, **kwargs):
     if 'pos' in kwargs and len(kwargs) in (3, 4):
         return _local_axes_to_m(**kwargs)
 
-    raise ValueError
+    if len(args) == 16 and not kwargs:
+        return pom.CMatrix(args)
+
+    raise ValueError(args, kwargs)
 
 
 def to_node(obj):

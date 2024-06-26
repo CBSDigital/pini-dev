@@ -6,7 +6,7 @@ from .sg_utils import ICON, output_to_work
 
 from .sg_handler import (
     to_handler, find, find_fields, find_one, update, create, find_all_data,
-    upload_filmstrip_thumbnail)
+    upload_filmstrip_thumbnail, upload_thumbnail, upload)
 
 from .sg_job import (
     to_job_data, to_job_filter, create_job, to_job_id, find_jobs, find_job)
@@ -29,4 +29,6 @@ from .sg_tools import update_work_task
 from .sg_submit import submit, set_submitter, CPSubmitter, SUBMITTER
 
 from . import cache
+from .cache import SGCPubFile
+
 SGC = cache.SGDataCache()

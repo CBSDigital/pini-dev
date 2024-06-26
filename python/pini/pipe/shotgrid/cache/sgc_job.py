@@ -91,17 +91,22 @@ class SGCJob(sgc_container.SGCContainer):
         """
         return self._read_tasks()
 
-    def find_asset(self, match):
+    def find_asset(self, match=None, filter_=None):
         """Find asset within this job.
 
         Args:
             match (str): asset name/path
+            filter_ (str): apply path filter
 
         Returns:
             (SGCAsset): matching asset
         """
+        _assets = self.find_assets(filter_=filter_)
+        if len(_assets) == 1:
+            return single(_assets)
+
         return single([
-            _asset for _asset in self.assets
+            _asset for _asset in _assets
             if match in (_asset.name, _asset.path)])
 
     def find_assets(self, filter_=None, progress=False, force=False):
@@ -132,23 +137,41 @@ class SGCJob(sgc_container.SGCContainer):
             (SGCAsset|SGCShot): matching entity
         """
         _match_s = to_str(match)
-        return single([
-            _ety for _ety in self.entities
-            if _match_s in (_ety.name, _ety.path)])
 
-    def find_pub_file(self, path=None):
+        _match_etys = [
+            _ety for _ety in self.entities
+            if _match_s in (_ety.name, _ety.path)]
+        if len(_match_etys) == 1:
+            return single(_match_etys)
+
+        _contains_etys = [
+            _ety for _ety in self.entities
+            if _match_s.startswith(_ety.path)]
+        if len(_contains_etys) == 1:
+            return single(_contains_etys)
+
+        raise ValueError(match)
+
+    def find_pub_file(self, match=None, path=None, catch=False, force=False):
         """Find a pub file in this job.
 
         Args:
+            match (str): match by path/id
             path (str): match by path
+            catch (bool): no error if fail to match exactly one pub file
+            force (bool): force rebuild cache
 
         Returns:
             (SGCPubFile): matching pub file
         """
         _path = to_str(path)
-        for _pub_file in self.pub_files:
+        for _pub_file in self.find_pub_files(force=force):
+            if match in (_pub_file.id_, _pub_file.id_):
+                return _pub_file
             if _pub_file.path == _path:
                 return _pub_file
+        if catch:
+            return None
         raise ValueError(path)
 
     def find_pub_files(
@@ -232,8 +255,9 @@ class SGCJob(sgc_container.SGCContainer):
         _tasks = self.find_tasks(entity=entity, task=task, step=step)
         if len(_tasks) == 1:
             return single(_tasks)
+        _path = to_str(path)
         for _task in _tasks:
-            if _task.path == path:
+            if _task.path == _path or _path.startswith(_task.path):
                 return _task
         raise ValueError(path, entity, task, step)
 
@@ -284,6 +308,64 @@ class SGCJob(sgc_container.SGCContainer):
 
             _tasks.append(_task)
         return _tasks
+
+    def find_ver(
+            self, match=None, id_=None, filter_=None, catch=False, force=False):
+        """Find a version.
+
+        Args:
+            match (str/int): match by path/id
+            id_ (int): match by id
+            filter_ (str): apply path filter
+            catch (bool): no error of exactly one version was not found
+            force (bool): force reread data
+                1 - rebuild cache from date ranges
+                2 - reread all data from shotgrid
+
+        Returns:
+            (SGVersion): matching version
+        """
+        _LOGGER.debug('FIND VER')
+        _vers = self.find_vers(
+            id_=id_, filter_=filter_, force=force)
+        _LOGGER.debug(' - FOUND %d VERS', len(_vers))
+        if len(_vers) == 1:
+            return single(_vers)
+
+        _match_s = to_str(match)
+        _match_vers = [
+            _ver for _ver in _vers
+            if _match_s in (_ver.path, ) or
+            match in (_ver.id_, )]
+        if len(_match_vers) == 1:
+            return single(_match_vers)
+
+        if catch:
+            return None
+        raise ValueError(match)
+
+    def find_vers(self, id_=None, filter_=None, progress=False, force=False):
+        """Find version entities within this job.
+
+        Args:
+            id_ (int): filter by id
+            filter_ (str): filter by path
+            progress (bool): show read progress
+            force (bool): force reread data
+                1 - rebuild cache from date ranges
+                2 - reread all data from shotgrid
+
+        Returns:
+            (SGVersion list): matching versions
+        """
+        _vers = []
+        for _ver in self._read_vers(progress=progress, force=force):
+            if filter_ and not passes_filter(_ver.path, filter_):
+                continue
+            if id_ is not None and _ver.id_ != id_:
+                continue
+            _vers.append(_ver)
+        return _vers
 
     def _read_data(
             self, entity_type, fields, entity_map=None, ver_n=None,
@@ -414,6 +496,7 @@ class SGCJob(sgc_container.SGCContainer):
             (dict list): shotgrid results
         """
         _r_results = []
+        _fields = sorted(set(fields) | {'sg_status_list', 'updated_at'})
         _sg_results = self.sg.find(
             entity_type,
             filters=[
@@ -421,7 +504,7 @@ class SGCJob(sgc_container.SGCContainer):
                 ('updated_at', 'between', range_.to_tuple()),
             ],
             order=[{'field_name': 'updated_at', 'direction': 'asc'}],
-            fields=fields)
+            fields=_fields)
 
         for _result in qt.progress_bar(
                 _sg_results,
@@ -539,7 +622,7 @@ class SGCJob(sgc_container.SGCContainer):
             force=force)
         _assets = []
         for _item in _data:
-            _asset = sgc_container.SGCAsset(_item)
+            _asset = sgc_container.SGCAsset(_item, job=self)
             _assets.append(_asset)
         return _assets
 
@@ -554,14 +637,13 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCPubFile list): pub files
         """
-        _fields = [
-            'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by']
         _data = self._read_data(
-            entity_type='PublishedFile', fields=_fields, progress=progress,
+            entity_type='PublishedFile',
+            fields=sgc_container.SGCPubFile.FIELDS, progress=progress,
             ver_n=2, force=force)
         _pub_files = []
         for _item in _data:
-            _pub_file = sgc_container.SGCPubFile(_item)
+            _pub_file = sgc_container.SGCPubFile(_item, job=self)
             _pub_files.append(_pub_file)
         return _pub_files
 
@@ -576,16 +658,13 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCShot list): shots
         """
-        _fields = [
-            'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
-            'updated_at', 'sg_has_3d']
         _data = self._read_data(
             entity_type='Shot',
-            fields=_fields,
+            fields=sgc_container.SGCShot.FIELDS,
             progress=progress, force=force)
         _shots = []
         for _item in _data:
-            _shot = sgc_container.SGCShot(_item)
+            _shot = sgc_container.SGCShot(_item, job=self)
             _shots.append(_shot)
         return _shots
 
@@ -600,17 +679,38 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCTask list): tasks
         """
-        _fields = [
-            'step', 'sg_short_name', 'entity', 'sg_status_list', 'updated_at']
         _ety_map = {(_ety.type_, _ety.id_): _ety for _ety in self.entities}
         _data = self._read_data(
-            entity_type='Task', entity_map=_ety_map, fields=_fields,
+            entity_type='Task', entity_map=_ety_map,
+            fields=sgc_container.SGCTask.FIELDS,
             progress=progress, force=force)
         _tasks = []
         for _item in _data:
-            _task = sgc_container.SGCTask(_item)
+            _task = sgc_container.SGCTask(_item, job=self)
             _tasks.append(_task)
         return _tasks
+
+    @pipe_cache_on_obj
+    def _read_vers(self, progress=True, force=False):
+        """Read versions in this job.
+
+        Args:
+            progress (bool): show read progress
+            force (bool): force rebuild cache
+
+        Returns:
+            (SGCVersion list): versions
+        """
+        _fields = ['sg_path_to_movie']
+        _ety_map = {(_ety.type_, _ety.id_): _ety for _ety in self.entities}
+        _data = self._read_data(
+            entity_type='Version', entity_map=_ety_map, fields=_fields,
+            progress=progress, force=force)
+        _vers = []
+        for _item in _data:
+            _ver = sgc_container.SGCVersion(_item, job=self)
+            _vers.append(_ver)
+        return _vers
 
     @pipe_cache_on_obj
     def to_cache_dir(self):
@@ -628,7 +728,7 @@ class SGCJob(sgc_container.SGCContainer):
         return basic_repr(self, self.name)
 
 
-def _path_from_result(result, entity_type, job, step=None, entity_map=None):
+def _path_from_result(result, entity_type, job, step=None, entity_map=None):  # pylint: disable=too-many-return-statements
     """Build a pipe path object from the given shotgrid result.
 
     Args:
@@ -666,12 +766,18 @@ def _path_from_result(result, entity_type, job, step=None, entity_map=None):
             result, step=step, entity_map=entity_map, job=job)
 
     if entity_type == 'PublishedFile':
-        return _output_from_result(
-            result, job=job)
+        return _output_from_result(result, job=job)
+
+    if entity_type == 'Version':
+        _mov_path = result['sg_path_to_movie']
+        if not _mov_path:
+            return None
+        _LOGGER.debug(' - MOV PATH %s', _mov_path)
+        return pipe.to_output(_mov_path, catch=True)
 
     _LOGGER.info('VALIDATE %s %s', entity_type, result)
     pprint.pprint(result)
-    raise NotImplementedError
+    raise NotImplementedError(entity_type)
 
 
 def _output_from_result(result, job):

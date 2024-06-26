@@ -150,11 +150,15 @@ class PUFile(PyFile):
 
         return _elems
 
-    def to_tool(self, prefix=''):
+    def to_tool(self, prefix='', title=None, label=None):
         """Build this interface into a pini install tool.
 
         Args:
             prefix (str): add prefix to object names
+            title (str): override tool title (ie. the name of
+                any iterface it creates)
+            label (str): override tool label (ie. how it will
+                appear in a menu)
 
         Returns:
             (PITool): interface as a tool
@@ -167,11 +171,13 @@ class PUFile(PyFile):
         _name = prefix+to_pascal(self.title)
         _path = abs_path(self.path)
 
+        _title = title or self.title
+        _label = label or _title
         _tool = install.PITool(
-            _name, label=self.title,
+            _name, label=_label,
             command='\n'.join([
                 'from pini.tools import pyui',
-                'pyui.build("{}")'.format(_path)]),
+                'pyui.build("{}", title="{}")'.format(_path, _title)]),
             icon=self.icon)
 
         # Add standard options
@@ -203,7 +209,7 @@ class PUFile(PyFile):
                     command=_elem.to_execute_py())
                 _tool.add_context(_ctx)
             elif isinstance(_elem, pyui.PUSection):
-                _tool.add_divider(_name+str(_div_count))
+                _tool.add_divider(_name+str(_div_count), label=_elem.name)
                 _div_count += 1
             else:
                 raise ValueError(_elem)

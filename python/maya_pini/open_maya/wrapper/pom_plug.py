@@ -372,6 +372,15 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             cmds.attributeQuery(self.attr, node=self.node, listEnum=True)))
         return _data.split(':')
 
+    def loop(self, offset=False):
+        """Loop this plug's animation curve.
+
+        Args:
+            offset (bool): apply cycle with offset
+        """
+        _mode = 'cycle' if not offset else 'cycleRelative'
+        self.set_infinity(_mode)
+
     def lock(self, hide=False):
         """Unlock this plug.
 

@@ -7,7 +7,7 @@ be embedded in PiniHelper.
 from pini import dcc
 
 from .eh_base import CExportHandler
-from .eh_utils import obtain_metadata
+from .eh_utils import build_metadata
 from .render import CRenderHandler
 from .publish import CBasicPublish
 

@@ -590,7 +590,7 @@ class CLWorkTab(object):
         menu.add_separator()
 
         menu.add_action('Print metadata', icon=icons.PRINT,
-                        func=wrap_fn(pprint.pprint, _work.metadata))
+                        func=wrap_fn(pprint.pprint, _work.metadata, width=200))
         menu.add_separator()
 
         # Add backups

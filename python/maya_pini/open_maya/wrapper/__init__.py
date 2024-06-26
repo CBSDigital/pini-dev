@@ -21,3 +21,4 @@ from .pom_reference import (
     CReference, find_ref, find_refs, create_ref, obtain_ref, selected_ref)
 
 WORLD_SPACE = om.MSpace.kWorld
+OBJECT_SPACE = om.MSpace.kObject

@@ -16,28 +16,35 @@ class Clip(object):
 
     path = None
 
-    def build_thumbnail(self, file_, width=100, force=False):
-        """Build thumbnail for this clip.
+    def build_thumbnail(self, file_, width=100, frame=None, force=False):
+        """Build thumbnail for this video.
 
         Args:
             file_ (str): thumbnail path
             width (int): thumbnail width in pixels
+            frame (int): select frame to export (default is middle frame)
             force (bool): overwrite existing without confirmation
         """
         raise NotImplementedError
 
-    def _to_thumb_res(self, width):
+    def _to_thumb_res(self, width, catch=False):
         """Calculate thumbnail res.
 
         Args:
             width (int): required width
+            catch (bool): no error if fail to read res
 
         Returns:
             (tuple): thumbnail width/height
         """
         _cur_res = self.to_res()
         if not _cur_res:
+            _LOGGER.warning(' - FAILED TO READ RES %s', self.path)
+            if catch:
+                return None
             raise RuntimeError(self)
+        if width is None:
+            return _cur_res
         _aspect = 1.0 * _cur_res[0] / _cur_res[1]
         _thumb_res = width, int(width/_aspect)
         _LOGGER.info(' - RES %s -> %s', _cur_res, _thumb_res)

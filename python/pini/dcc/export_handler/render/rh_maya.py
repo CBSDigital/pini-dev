@@ -112,7 +112,7 @@ class CMayaLocalRender(CMayaRenderHandler):
         Args:
             frames (int list): list of frames to render
         """
-        _data = self.obtain_metadata()
+        _data = self.build_metadata()
         _cam = self.ui.Camera.currentText()
         _mov = self.ui.Mov.isChecked()
         _cleanup = self.ui.Cleanup.isChecked()

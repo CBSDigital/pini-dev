@@ -410,7 +410,8 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         if keyable is not None:
             _kwargs['keyable'] = keyable
         _plugs = []
-        for _attr in sorted(cmds.listAttr(self, **_kwargs)):
+        _attrs = cmds.listAttr(self, **_kwargs) or []
+        for _attr in sorted(_attrs):
             try:
                 _plug = self.plug[_attr]
             except RuntimeError:
@@ -529,14 +530,18 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         """
         return to_long(self.node)
 
-    def to_m(self):
+    def to_m(self, world_space=True):
         """Get transformation matrix for this node.
+
+        Args:
+            world_space (bool): read matrix in world or local space
 
         Returns:
             (CMatrix): matrix
         """
         from maya_pini import open_maya as pom
-        _data = cmds.xform(self, query=True, matrix=True, worldSpace=True)
+        _data = cmds.xform(
+            self, query=True, matrix=True, worldSpace=world_space)
         return pom.CMatrix(_data)
 
     def to_p(self):

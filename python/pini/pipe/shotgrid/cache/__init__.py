@@ -5,3 +5,4 @@ improve performance.
 """
 
 from .sgc_cache import SGDataCache
+from .sgc_container import SGCPubFile

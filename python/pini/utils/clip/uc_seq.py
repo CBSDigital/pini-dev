@@ -112,12 +112,13 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """Open a browser in this seq's parent directory."""
         Dir(self.dir).browser()
 
-    def build_thumbnail(self, file_, width=100, force=False):
-        """Build thumbnail for this image sequence.
+    def build_thumbnail(self, file_, width=100, frame=None, force=False):
+        """Build thumbnail for this video.
 
         Args:
             file_ (str): thumbnail path
             width (int): thumbnail width in pixels
+            frame (int): select frame to export (default is middle frame)
             force (bool): overwrite existing without confirmation
         """
         from pini import qt
@@ -126,10 +127,13 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _LOGGER.info('BUILD THUMB %s', self.path)
         _thumb = File(file_)
         assert _thumb.extn == 'jpg'
-        _res = self._to_thumb_res(width)
+        _res = self._to_thumb_res(width, catch=True)
+        if not _res:
+            _LOGGER.error(' - FAILED TO READ RES %s', self.path)
+            return
 
         # Build pixmap
-        _frame = self.to_frame_file()
+        _frame = self.to_frame_file(frame=frame)
         if _frame.extn in qt.PIXMAP_EXTNS:
             _pix = qt.CPixmap(_frame)
         elif _frame.extn in ('exr', ):

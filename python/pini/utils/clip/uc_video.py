@@ -118,16 +118,17 @@ class Video(path.MetadataFile, uc_clip.Clip):
 
         return _fps
 
-    def build_thumbnail(self, file_, width=100, force=False):
+    def build_thumbnail(self, file_, width=100, frame=None, force=False):
         """Build thumbnail for this video.
 
         Args:
             file_ (str): thumbnail path
             width (int): thumbnail width in pixels
+            frame (int): select frame to export (default is middle frame)
             force (bool): overwrite existing without confirmation
         """
         _res = self._to_thumb_res(width)
-        self.to_frame(file_, force=force, res=_res)
+        self.to_frame(file_, frame=frame, force=force, res=_res)
 
     def to_fps(self):
         """Obtain fps of this video.
@@ -145,19 +146,20 @@ class Video(path.MetadataFile, uc_clip.Clip):
         """
         return self._read_dur()
 
-    def to_frame(self, file_, res=None, force=False):
+    def to_frame(self, file_, res=None, frame=None, force=False):
         """Extract a frame of this video to image file.
 
         Args:
             file_ (File): path to write to
             res (tuple): covert resolution
+            frame (int): select frame to export (default is middle frame)
             force (bool): overwrite existing without confirmation
 
         Returns:
             (File): output image
         """
         return uc_ffmpeg.video_to_frame(
-            video=self, file_=file_, force=force, res=res)
+            video=self, file_=file_, force=force, res=res, frame=frame)
 
     def to_seq(self, seq, fps=None, res=None, force=False, verbose=0):  # pylint: disable=unused-argument
         """Extract frames from this video.

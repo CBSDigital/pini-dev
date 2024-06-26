@@ -14,19 +14,21 @@ from maya_pini.utils import to_parent, to_node
 _LOGGER = logging.getLogger(__name__)
 
 
-def add_menu_divider(parent, name=None, insert_after=None):
+def add_menu_divider(parent=None, name=None, insert_after=EMPTY, label=None):
     """Add a menu divider item.
 
     Args:
         parent (str): parent menu (if not current)
         name (str): ui element name - replaces any existing
         insert_after (str): insert after the given existing element
+        label (str): label for divider
 
     Returns:
         (str): ui element id
     """
     return _build_menu_item(
-        parent=parent, insert_after=insert_after, name=name, divider=True)
+        parent=parent, insert_after=insert_after, name=name, divider=True,
+        label=label)
 
 
 def add_menu_item(
@@ -78,7 +80,10 @@ def _build_menu_item(
     # Build kwargs (items which can't be None)
     _kwargs = {}
     if parent:
-        _parent = ui.obtain_menu(parent)
+        if cmds.shelfButton(parent, query=True, exists=True):
+            _parent = parent
+        else:
+            _parent = ui.obtain_menu(parent)
         _kwargs['parent'] = _parent
     if insert_after is not EMPTY:
         _kwargs['insertAfter'] = insert_after or ''

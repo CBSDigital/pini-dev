@@ -96,7 +96,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
 
         self.add_separator_elem()
 
-    def obtain_metadata(
+    def build_metadata(
             self, work=None, sanity_check_=True, task='lookdev', force=False):
         """Obtain publish metadata.
 
@@ -109,7 +109,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         Returns:
             (dict): metadata
         """
-        _data = super(CMayaLookdevPublish, self).obtain_metadata(
+        _data = super(CMayaLookdevPublish, self).build_metadata(
             work=work, sanity_check_=sanity_check_, task=task, force=force)
         del _data['range']
         if self.shd_yml:
@@ -133,7 +133,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _work = work or pipe.CACHE.cur_work
         _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
         _data_dir = _pub.to_dir().to_subdir('data')
-        _metadata = self.obtain_metadata(force=force)
+        _metadata = self.build_metadata(force=force)
 
         self.shd_yml = _pub.to_file(
             dir_=_data_dir,  base=_pub.base+'_shaders', extn='yml')

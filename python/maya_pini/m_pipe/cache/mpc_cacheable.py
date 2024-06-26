@@ -21,7 +21,7 @@ class CPCacheable(object):
     output_name = None
     attrs = ()
 
-    def obtain_metadata(self):
+    def build_metadata(self):
         """Obtain metadata for this cacheable.
 
         Returns:

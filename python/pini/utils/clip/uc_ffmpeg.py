@@ -293,13 +293,14 @@ def _handle_conversion_fail(seq, video, err):
     raise RuntimeError('Conversion failed '+seq.path)
 
 
-def video_to_frame(video, file_, res=None, force=False):
+def video_to_frame(video, file_, res=None, frame=None, force=False):
     """Extract a frame from a video.
 
     Args:
         video (Video): source video
         file_ (File): output file path
         res (tuple): apply width/height
+        frame (int): select frame to export (default is middle frame)
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -310,7 +311,10 @@ def video_to_frame(video, file_, res=None, force=False):
     _img.delete(force=force)
     _img.test_dir()
 
-    _time = video.to_dur()/2
+    if frame is not None:
+        _time = frame / video.to_fps()
+    else:
+        _time = video.to_dur()/2
     _LOGGER.info(' - TIME %f', _time)
 
     # Build ffmpeg commands

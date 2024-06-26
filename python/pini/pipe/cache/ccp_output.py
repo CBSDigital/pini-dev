@@ -1,6 +1,7 @@
 """Tools for managing cacheable output objects."""
 
 import logging
+import operator
 import sys
 
 from pini.utils import (
@@ -39,6 +40,10 @@ class CCPOutputBase(CPOutputBase):
         Returns:
             (str): content type name
         """
+        _content_type = self.metadata.get('content_type')
+        if _content_type:
+            return _content_type
+
         _pub_type = self.metadata.get('publish_type')
         if self.extn == 'ma':
             if 'vrmesh' in self.metadata:
@@ -312,9 +317,8 @@ class CCPOutput(CPOutput, CCPOutputBase):
         _LOGGER.debug(' - ASSET %s', _asset)
 
         # Find lookdevs
-        _lookdevs = [
-            _out for _out in _out.entity.find_publishes(publish_type='lookdev')
-            if _out.metadata.get('shd_yml')]
+        _lookdevs = _out.entity.find_publishes(
+            content_type='ShadersMa', ver_n='latest')
         _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
         if not _lookdevs:
             return None
@@ -329,10 +333,19 @@ class CCPOutput(CPOutput, CCPOutputBase):
             _tag = _default_tag
         else:
             _tag = _tags[0]
-        _LOGGER.debug(' - TAG %s %s', _tag, _tags)
+        _LOGGER.debug(' - APPLY TAG FILTER %s %s', _tag, _tags)
         _lookdevs = [_lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
+        _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
+        if len(_lookdevs) == 1:
+            return single(_lookdevs)
 
-        return _lookdevs[-1]
+        # Return most recent
+        _LOGGER.debug(' - APPLYING DATE SORT')
+        _lookdevs.sort(key=operator.methodcaller('mtime'))
+        _recent = _lookdevs[-1]
+        _LOGGER.debug(' - RECENT %s', _recent)
+
+        return _recent
 
 
 class CCPOutputVideo(CPOutputVideo, CCPOutput):  # pylint: disable=too-many-ancestors
@@ -433,11 +446,20 @@ class CCPOutputSeq(CPOutputSeq, CCPOutputBase):
         Args:
             force (bool): delete files without confirmation
         """
+        from pini import pipe
         from .. import cache
         super(CCPOutputSeq, self).delete(force=force)
-        self.to_dir().find_seqs(force=True)
-        assert isinstance(self.entity, cache.CCPEntity)
-        self.entity.find_outputs(force=True)
+        if pipe.MASTER == 'disk':
+            self.to_dir().find_seqs(force=True)
+            assert isinstance(self.entity, cache.CCPEntity)
+            self.entity.find_outputs(force=True)
+        elif pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            _pub_file = shotgrid.SGC.find_pub_file(self)
+            _pub_file.omit()
+            self.job.find_outputs(force=True)
+        else:
+            raise ValueError(pipe.MASTER)
 
     @pipe_cache_on_obj
     def mtime(self):

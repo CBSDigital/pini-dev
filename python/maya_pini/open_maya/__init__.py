@@ -17,7 +17,7 @@ from .wrapper import (
     CAnimCurve, CMatrix, WORLD_SPACE, find_meshes, plus_plug, minus_plug,
     CReference, find_ref, find_refs, create_ref, active_cam, obtain_ref,
     selected_plugs, to_plug, find_cams, set_render_cam, find_render_cam,
-    find_cam, selected_plug, IDENTITY, selected_ref, TIME)
+    find_cam, selected_plug, IDENTITY, selected_ref, TIME, OBJECT_SPACE)
 
 from .pom_cmds import CMDS
 from .pom_utils import (

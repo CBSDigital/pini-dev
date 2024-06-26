@@ -57,7 +57,7 @@ class _MultiSelect(custom.CUiDialog):
 
 
 def multi_select(
-        items, msg='Select items:', multi=False, title='Multi select',
+        items, msg='Select items:', multi=True, title='Multi select',
         select=None):
     """Launch multi select dialog.
 

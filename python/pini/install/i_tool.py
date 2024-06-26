@@ -37,13 +37,14 @@ class PITool(object):
         """
         self.context_items.append(item)
 
-    def add_divider(self, name=None):
+    def add_divider(self, name=None, label=None):
         """Add context menu divider.
 
         Args:
             name (str): ui element uid
+            label (str): label for divider (not supported in all contexts)
         """
-        self.add_context(PIDivider(name))
+        self.add_context(PIDivider(name=name, label=label))
 
     def duplicate(self, command=None):
         """Duplicate this tool.
@@ -77,15 +78,28 @@ class PITool(object):
 class PIDivider(object):
     """Used to represent a divider/separator."""
 
-    def __init__(self, name):
+    def __init__(self, name, label=None):
         """Constructor.
 
         Args:
             name (str): divider name/uid
+            label (str): label for divider (not supported in all contexts)
         """
         self.name = name
         if not is_pascal(self.name):
             raise ValueError(self.name)
+        self.label = label
+
+    def to_uid(self, prefix):
+        """Obtain uid for this divider, used to replace any existing instances.
+
+        Args:
+            prefix (str): shelf/menu prefix
+
+        Returns:
+            (str): divider uid (eg. PI_Divider1)
+        """
+        return prefix+'_'+self.name
 
     def __repr__(self):
         return basic_repr(self, self.name)

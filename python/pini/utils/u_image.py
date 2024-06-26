@@ -101,6 +101,7 @@ class Image(File):
             _line.strip() for _line in _ffprobe
             if _line.strip().startswith('Stream ')], catch=True)
         if not _stream:
+            _LOGGER.warning(' - FAILED TO PARSE FFPROBE %s', self.path)
             if catch:
                 return None
             raise RuntimeError('Invalid image {}'.format(self.path))

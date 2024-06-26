@@ -458,6 +458,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             _col = self.job.settings['col']
         else:
             _col = _rand.choice(qt.BOLD_COLS)
+            _col = qt.CColor(_col)
+            _col = _col.whiten(0.2)
         pix.draw_rounded_rect(
             pos=(_margin, _margin), col=_col, outline=None,
             size=pix.size()-qt.to_size(_margin*2))

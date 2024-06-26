@@ -212,7 +212,7 @@ def create_ref(file_, namespace, force=False):
 
 def find_ref(
         match=None, namespace=None, selected=False, unloaded=False, task=None,
-        catch=True):
+        filter_=None, catch=True):
     """Find a reference in the current scene.
 
     Args:
@@ -222,6 +222,7 @@ def find_ref(
         unloaded (bool): filter by loaded status (only loaded reference
             are returned by default)
         task (str): filter by task
+        filter_ (str): apply namespace filter
         catch (bool): no error if no matching reference found
 
     Returns:
@@ -229,7 +230,7 @@ def find_ref(
     """
     _refs = find_refs(
         selected=selected, namespace=namespace, unloaded=unloaded,
-        task=task)
+        task=task, filter_=filter_)
 
     # Try match as filter
     if match and len(_refs) > 1:
@@ -249,7 +250,7 @@ def find_ref(
 
 def find_refs(
         namespace=None, selected=False, unloaded=False, task=None,
-        allow_no_namespace=False):
+        allow_no_namespace=False, filter_=None):
     """Find references in the current scene.
 
     Args:
@@ -259,6 +260,7 @@ def find_refs(
             are returned by default)
         task (str): filter by task
         allow_no_namespace (bool): include references with no namespace
+        filter_ (str): apply namespace filter
 
     Returns:
         (CReference list): references
@@ -280,6 +282,8 @@ def find_refs(
         except ValueError:
             continue
         if namespace and _ref.namespace != namespace:
+            continue
+        if filter_ and not passes_filter(_ref.namespace, filter_):
             continue
 
         if task:

@@ -416,7 +416,7 @@ def _search_file_contents(file_, body, text, filter_, edit):
             _printed_path = True
             if edit:
                 File(file_).edit(line_n=_idx+1)
-                return False
+                raise StopIteration
 
     if _printed_path:
         lprint()

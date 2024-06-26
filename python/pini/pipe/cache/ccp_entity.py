@@ -381,21 +381,25 @@ class CCPEntity(CPEntity):
             video_class=video_class or cache.CCPOutputVideo)
 
     @functools.wraps(CPEntity.find_publishes)
-    def find_publishes(self, force=False, publish_type=None, **kwargs):
+    def find_publishes(  # pylint: disable=arguments-differ
+            self, publish_type=None, content_type=None, force=False, **kwargs):
         """Find publishes within this entity.
 
         Publishes are cached to disk a entity level, so a force flag
         is added here.
 
         Args:
-            force (bool): force reread from disk
             publish_type (str): apply publish type filter (eg. lookdev)
+            content_type (str): apply content type filter (eg. ShadersMa)
+            force (bool): force reread from disk
 
         Returns:
             (CCPOutput list): publishes
         """
         from pini import pipe
+        from pini.tools import release
 
+        # Apply recache
         if force:
             if pipe.MASTER == 'disk':
                 self._read_work_dirs_disk(force=True)
@@ -405,15 +409,19 @@ class CCPEntity(CPEntity):
             else:
                 raise NotImplementedError(pipe.MASTER)
 
-        _pubs = super(CCPEntity, self).find_publishes(**kwargs)
-
-        # Apply publish type filter
-        if publish_type:
-            _map = {'lookdev': 'CMayaLookdevPublish'}
-            _match = _map.get(publish_type, publish_type)
-            _pubs = [
-                _pub for _pub in _pubs
-                if _pub.metadata.get('publish_type') == _match]
+        # Apply filters to publishes
+        _pubs = []
+        for _pub in super(CCPEntity, self).find_publishes(**kwargs):
+            if publish_type:
+                release.apply_deprecation('26/06/24', 'Use content_type filter')
+                _pub_type = _pub.metadata.get('publish_type')
+                _map = {'lookdev': 'CMayaLookdevPublish'}
+                _match = _map.get(_pub_type, _pub_type)
+                if _pub_type != _match:
+                    continue
+            if content_type and _pub.content_type != content_type:
+                continue
+            _pubs.append(_pub)
 
         return _pubs
 

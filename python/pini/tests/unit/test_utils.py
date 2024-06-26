@@ -4,6 +4,7 @@ import logging
 import pprint
 import platform
 import random
+import sys
 import unittest
 
 from pini import testing, icons
@@ -289,6 +290,14 @@ class TestPath(unittest.TestCase):
         assert not Dir('/test/blah').contains('/test/blah')
         assert Dir('/test/blah').contains('/test/blah/blah')
         assert not Dir('/test/blah').contains('/test/blahblah')
+
+        if sys.platform == 'win32':
+            assert Dir('/TMP').contains('/tmp/test.txt')
+            assert Dir('/TMP').rel_path('/tmp/test.txt') == 'test.txt'
+            assert Dir('S:/Projects/model_library').contains(
+                'S:/Projects/model_library/characters/people/RescueWorker/tasks')
+        else:
+            raise NotImplementedError(sys.platform)
 
     def test_find(self):
 

@@ -5,6 +5,7 @@ import logging
 import os
 import platform
 import shutil
+import sys
 
 from .. u_misc import EMPTY
 from . import up_path, up_utils, up_find
@@ -65,8 +66,15 @@ class Dir(up_path.Path):
         Returns:
             (bool): whether this dir is a parent of the given path
         """
+        _LOGGER.debug('CONTAINS')
+        _this = up_utils.abs_path(self.path).rstrip('/')
         _path = up_utils.abs_path(path)
-        return _path.startswith(self.path+'/')
+        if sys.platform == 'win32':
+            _path = _path.lower()
+            _this = _this.lower()
+        _LOGGER.debug(' - THIS %s', _this)
+        _LOGGER.debug(' - PATH %s', _path)
+        return _path.startswith(_this+'/')
 
     def copy_to(self, trg, force=False):
         """Copy this dir and its contents to another location.
@@ -178,7 +186,7 @@ class Dir(up_path.Path):
         _LOGGER.debug(' - ROOT %s', self.path)
         _path = up_utils.norm_path(path)
 
-        _outside = not _path.startswith(self.path)
+        _outside = not self.contains(path)
         if _outside and not allow_outside:
             raise ValueError('Not in {} dir - {}'.format(
                 self.path, _path))

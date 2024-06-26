@@ -409,9 +409,11 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
         if isinstance(match, pipe.CPWorkDir):
             if pipe.MASTER == 'shotgrid':
                 _work_dirs = self._read_work_dirs_sg()
-                _result = single([
+                _matches = [
                     _work_dir for _work_dir in _work_dirs
-                    if _work_dir == match])
+                    if _work_dir == match]
+                _result = single(
+                    _matches, error='Failed to match {}'.format(match))
             else:
                 raise NotImplementedError(pipe.MASTER)
             return _result
@@ -472,22 +474,35 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
 
         return _work_dirs
 
-    def find_outputs(self, type_=None, force=False, progress=False, **kwargs):
+    def find_outputs(  # pylint: disable=arguments-differ
+            self, type_=None, content_type=None, force=False, progress=False,
+            **kwargs):
         """Find outputs in this job.
 
         Args:
             type_ (str): filter by output type
+            content_type (str): filter by content type (eg. ShadersMa, Render)
             force (bool): force reread outputs
             progress (bool): show progress dialog
 
         Returns:
             (CPOutput list): outputs
         """
+        from pini import qt
         _LOGGER.debug(
             'FIND OUTPUTS type=%s force=%d progress=%d', type_, force, progress)
+
         if force:
             self._read_outputs_sg(force=True, progress=progress)
-        return super(CCPJob, self).find_outputs(type_=type_, **kwargs)
+
+        _outs = []
+        _all_outs = super(CCPJob, self).find_outputs(type_=type_, **kwargs)
+        for _out in qt.progress_bar(
+                _all_outs, 'Checking {:d} output{}', show=progress):
+            if content_type and _out.content_type != content_type:
+                continue
+            _outs.append(_out)
+        return _outs
 
     @pipe_cache_result
     def _read_outputs_sg(self, progress=False, force=False):

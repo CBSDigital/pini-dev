@@ -27,8 +27,10 @@ def get_ns_cleaner(namespace, delete=False):
         def _ns_clean_fn(*args, **kwargs):
             from .mu_namespace import set_namespace, del_namespace
             set_namespace(namespace, clean=True)
-            _result = func(*args, **kwargs)
-            set_namespace(":")
+            try:
+                _result = func(*args, **kwargs)
+            finally:
+                set_namespace(":")
             if delete:
                 del_namespace(namespace, force=True)
             return _result

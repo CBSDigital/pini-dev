@@ -296,6 +296,19 @@ def render(
         seq.view()
 
 
+def set_render_extn(extn):
+    """Set render format for the current renderer.
+
+    Args:
+        extn (str): format to apply
+    """
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren == 'vray':
+        cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
+        return
+    raise NotImplementedError(_ren)
+
+
 def to_render_extn():
     """Read render extension based on current renderer.
 

@@ -54,10 +54,12 @@ def add_shelf_button(
     _kwargs = {}
     if width:
         _kwargs['width'] = width
-    cmds.shelfButton(
+    _btn = cmds.shelfButton(
         name, command=command, image=_image.path, parent=parent,
         annotation=annotation, label=annotation, sourceType=source_type,
         enable=enable, **_kwargs)
+
+    return _btn
 
 
 @cache_result

@@ -10,7 +10,8 @@ import time
 import shotgun_api3
 
 from pini import pipe
-from pini.utils import plural, basic_repr, error_on_file_system_disabled
+from pini.utils import (
+    plural, basic_repr, error_on_file_system_disabled, Video)
 
 from . import sg_utils
 
@@ -157,7 +158,7 @@ def create(entity_type, data):
     return to_handler().create(entity_type, data)
 
 
-def find(entity_type, filters=(), fields=(), fmt='list', job=None):
+def find(entity_type, filters=(), fields=(), fmt='list', job=None, id_=None):
     """Wrapper for Shotgrid.find command.
 
     Args:
@@ -168,6 +169,7 @@ def find(entity_type, filters=(), fields=(), fmt='list', job=None):
             list - default results list
             dict - sort results into dict with id as key
         job (CPJob): apply job filter
+        id_ (int): apply id filter
 
     Returns:
         (dict list): results
@@ -177,6 +179,8 @@ def find(entity_type, filters=(), fields=(), fmt='list', job=None):
     _filters = list(filters) if filters else []
     if job:
         _filters.append(shotgrid.to_job_filter(job))
+    if id_ is not None:
+        _filters.append(('id', 'is', id_))
     _results = to_handler().find(
         entity_type, filters=_filters, fields=fields)
 
@@ -275,6 +279,25 @@ def update(entity_type, entity_id, data):
         entity_type=entity_type, entity_id=entity_id, data=data)
 
 
+def upload(entity_type, entity_id, path, field_name='sg_uploaded_movie'):
+    """Upload a file to the specified entity.
+
+    Args:
+        entity_type (str): entity type (eg. Shot/Asset)
+        entity_id (int): entity id
+        path (Path): path to apply
+        field_name (str): field to apply data to
+    """
+    if field_name == 'sg_uploaded_movie':
+        _video = Video(path)
+        _path = _video.path
+    else:
+        raise NotImplementedError
+    to_handler().upload(
+        entity_type=entity_type, entity_id=entity_id, path=_path,
+        field_name=field_name)
+
+
 def upload_filmstrip_thumbnail(entity_type, entity_id, path):
     """Upload filmstrip thumbnail for the given entry.
 
@@ -287,4 +310,16 @@ def upload_filmstrip_thumbnail(entity_type, entity_id, path):
         path (str): path to filmstrip
     """
     to_handler().upload_filmstrip_thumbnail(
+        entity_type=entity_type, entity_id=entity_id, path=path)
+
+
+def upload_thumbnail(entity_type, entity_id, path):
+    """Upload  thumbnail for the given entry.
+
+    Args:
+        entity_type (str): entity type (eg. Shot/Asset)
+        entity_id (int): entity id
+        path (str): path to thumbnail
+    """
+    to_handler().upload_thumbnail(
         entity_type=entity_type, entity_id=entity_id, path=path)

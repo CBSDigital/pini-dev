@@ -50,13 +50,13 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         self._tmp_cam = '{}:CAM'.format(self._tmp_ns)
         self._img_plane_data = {}
 
-    def obtain_metadata(self):
+    def build_metadata(self):
         """Obtain metadata dict for this cacheable.
 
         Returns:
             (dict): metadata
         """
-        _data = super(CPCacheableCam, self).obtain_metadata()
+        _data = super(CPCacheableCam, self).build_metadata()
         _data['res'] = dcc.get_res()
         _data['img_plane'] = self._img_plane_data
         return _data

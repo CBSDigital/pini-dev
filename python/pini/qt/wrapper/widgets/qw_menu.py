@@ -81,7 +81,7 @@ class CMenu(QtWidgets.QMenu):
             self.add_action(
                 'Delete', _delete_fn, icon=icons.DELETE)
 
-        if edit and _file.extn in ['py', 'ma', 'nk']:
+        if edit and _file.is_editable():
             self.add_action(
                 'Edit file', _file.edit, icon=icons.EDIT, enabled=_exists)
         if _file.extn in dcc.VALID_EXTNS:

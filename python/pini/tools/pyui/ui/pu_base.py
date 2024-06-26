@@ -392,6 +392,10 @@ class PUBaseUi(object):
             _val = _sect_callbacks['get']()
             _data['sections'][_sect_name] = _val
 
+        _LOGGER.debug(' - DEFS %s', _data['defs'])
+        if not _data['defs']:
+            _LOGGER.debug(' - BLOCKING EMPTY SAVE')
+            return
         self.settings_file.write_pkl(_data, force=True)
         _LOGGER.debug(' - WROTE SETTINGS %s', self.settings_file)
 

@@ -26,7 +26,10 @@ class TerragenDCC(BaseDCC):
         Returns:
             (str): current file
         """
-        return abs_path(tg.project_filepath())
+        try:
+            return abs_path(tg.project_filepath())
+        except ConnectionRefusedError:
+            return None
 
     def get_scene_data(self, key):
         """Retrieve data stored with this scene.

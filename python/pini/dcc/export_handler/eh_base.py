@@ -323,7 +323,7 @@ class CExportHandler(object):
         """
         _LOGGER.debug('BUILD UI %s %s', parent, layout)
 
-    def obtain_metadata(
+    def build_metadata(
             self, work=None, sanity_check_=False, task=None, force=False):
         """Obtain metadata to apply to a generated export.
 
@@ -343,7 +343,7 @@ class CExportHandler(object):
             _notes = None
 
         _LOGGER.debug('NOTES %s', _notes)
-        _data = eh_utils.obtain_metadata(
+        _data = eh_utils.build_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,
             force=force, handler=self.NAME, task=task, notes=_notes)
         return _data

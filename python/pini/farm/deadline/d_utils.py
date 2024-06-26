@@ -37,7 +37,7 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
         count (int): leave a maximum of this many submissions
         force (bool): remove submissions without confirmation
     """
-    _LOGGER.info("FLUSH OLD SUBMISSIONS")
+    _LOGGER.debug("FLUSH OLD SUBMISSIONS")
 
     _max_age = _age_from_nice(max_age)
     _root = job.to_subdir('.pini/Deadline/'+get_user())
@@ -45,14 +45,14 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
     # Find submissions
     _subs = _root.find(type_='d', class_=True, catch_missing=True, depth=1)
     _subs.reverse()
-    _LOGGER.info('FOUND %d SUBS', len(_subs))
+    _LOGGER.debug(' - OUND %d SUBS', len(_subs))
     _subs = _subs[count:]
-    _LOGGER.info('CHECKING %d OLD SUBS', len(_subs))
+    _LOGGER.debug(' - CHECKING %d OLD SUBS', len(_subs))
 
     # Check remaining for older that max age
     _to_delete = []
     for _sub in _subs:
-        _LOGGER.info(' - SUB %s', _sub.filename)
+        _LOGGER.debug(' - SUB %s', _sub.filename)
         _time_f = to_time_f(time.strptime(_sub.filename, '%y%m%d_%H%M%S'))
         _age = time.time() - _time_f
         if _age > _max_age:
@@ -60,7 +60,7 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
             _to_delete.append(_sub)
 
     if not _to_delete:
-        _LOGGER.info('NOTHING TO FLUSH')
+        _LOGGER.debug(' - NOTHING TO FLUSH')
     else:
         if not force:
             qt.ok_cancel(
@@ -318,4 +318,5 @@ def write_deadline_data(file_, data, sort=None):
     for _key in sorted(data.keys(), key=sort):
         _val = data[_key]
         _text += '{}={}\n'.format(_key, _val)
-    file_.write(_text)
+        _LOGGER.info(' - WRITE TEXT %s', _text)
+    file_.write(_text, encoding='utf8')

@@ -6,7 +6,7 @@ import time
 
 from pini import pipe
 from pini.tools import release
-from pini.utils import abs_path, passes_filter, Seq
+from pini.utils import abs_path, passes_filter, Seq, Video, TMP
 
 from . import sg_handler, sg_job, sg_task, sg_entity, sg_utils
 
@@ -34,10 +34,10 @@ def create_pub_file(
     _LOGGER.info('CREATE PUB FILE %s', output)
 
     # Catch already exists
-    _existing_id = to_pub_file_id(output)
-    if _existing_id:
+    _sg_pub = shotgrid.SGC.find_pub_file(output, catch=True)
+    if _sg_pub:
         _LOGGER.info(' - ALREADY REGISTERED IN SHOTGRID %d %s',
-                     _existing_id, output.path)
+                     _sg_pub.id_, output.path)
         if not force:
             return to_pub_file_data(output)
 
@@ -71,15 +71,15 @@ def create_pub_file(
     }
 
     # Apply to shotgrid
-    if not _existing_id:
-        _result = sg_handler.create('PublishedFile', _data)
+    if not _sg_pub:
+        _result = shotgrid.create('PublishedFile', _data)
         _LOGGER.debug(' - RESULT %s', _result)
         _id = _result['id']
     else:
         for _field in ['created_by', 'updated_by']:
             _data.pop(_field)
-        sg_handler.update('PublishedFile', _existing_id, _data)
-        _id = _existing_id
+        sg_handler.update('PublishedFile', _sg_pub, _data)
+        _id = _sg_pub.id_
 
     # Update cache
     if update_cache:
@@ -89,18 +89,23 @@ def create_pub_file(
         _out_c = pipe.CACHE.obt(output)
         assert _out_c
         _LOGGER.info(' - UPDATED CACHE')
+        _sg_pub = shotgrid.SGC.find_pub_file(output)
 
     # Apply thumb
     _thumb = thumb
-    if not _thumb and isinstance(output, Seq):
-        _thumb = output.to_frame_file()
+    if not _thumb:
+        if isinstance(output, Seq):
+            _thumb = output.to_frame_file()
+        elif isinstance(output, Video):
+            _thumb = TMP.to_file('PiniTmp/thumb_tmp.jpg')
+            output.build_thumbnail(_thumb, width=None, force=True)
     if _thumb:
         _LOGGER.debug(' - APPLY THUMB %s', _thumb)
         assert _thumb.exists()
-        sg_handler.to_handler().upload_thumbnail(
+        shotgrid.upload_thumbnail(
             'PublishedFile', _id, _thumb.path)
 
-    return _data
+    return _sg_pub
 
 
 def _build_filters(
@@ -325,5 +330,6 @@ def to_pub_file_id(output):
     Returns:
         (int): id
     """
+    release.apply_deprecation('20/06/24', 'Use shotgrid.SGC')
     _data = to_pub_file_data(output)
     return _data['id'] if _data else None
