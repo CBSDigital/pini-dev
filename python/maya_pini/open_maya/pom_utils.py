@@ -69,13 +69,13 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
         _shp = _node
         _node = to_parent(_shp)
         _kwargs['shp'] = _shp
-    elif _type == 'joint':
+    elif _type in ('joint', 'hikFKJoint'):
         _class = pom.CJoint
     elif not maintain_shapes and _type == 'mesh':
         _class = pom.CMesh
         _shp = _node
         _node = to_parent(_shp)
-    elif _type in ('transform', 'hikIKEffector'):
+    elif _type in ('transform', 'hikIKEffector', 'locator'):
         _class = _cast_tfm(_node)
     elif _type.startswith('animCurve'):
         _class = pom.CAnimCurve
@@ -85,6 +85,7 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
     _LOGGER.debug(' - CLASS %s', _class)
     _result = _class(_node, **_kwargs)
     _LOGGER.debug(' - RESULT %s type=%s', _result, type(_result))
+
     return _result
 
 

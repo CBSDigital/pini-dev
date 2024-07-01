@@ -60,6 +60,10 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             val=True, name='RemoveJunk', label='Remove JUNK group')
         self.ui.RemoveSets = self.add_checkbox_elem(
             val=True, name='RemoveSets', label='Remove unused sets')
+        self.ui.RemoveDLayers = self.add_checkbox_elem(
+            val=True, name='RemoveDLayers', label='Remove display layers')
+        self.add_separator_elem()
+
         self.ui.ExportAbc = self.add_checkbox_elem(
             val=True, name='ExportAbc',
             label="Export abc of cache_SET geo")
@@ -174,6 +178,8 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             self.ui.RemoveJunk.isChecked() if self.ui_is_active() else True)
         _remove_sets = (
             self.ui.RemoveSets.isChecked() if self.ui_is_active() else True)
+        _remove_dlayers = (
+            self.ui.RemoveDLayers.isChecked() if self.ui_is_active() else True)
 
         # Apply reference option
         _refs = references
@@ -197,19 +203,28 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         else:
             raise ValueError(_refs)
 
+        # Remove JUNK
         if _remove_junk and cmds.objExists('JUNK'):
             cmds.delete('JUNK')
 
+        # Remove unused sets
         if _remove_sets:
             _sets = _find_dag_sets()
+            _keep_sets = ('cache_SET', 'ctrls_SET')
             _to_delete = [
                 _set for _set in _sets
-                if _set not in ('cache_SET', ) and
+                if _set not in _keep_sets and
                 not cmds.referenceQuery(_set, isNodeReferenced=True) and
                 _set not in DEFAULT_NODES]
             _LOGGER.info(' - CLEAN SETS %s', _to_delete)
             if _to_delete:
                 cmds.delete(_to_delete)
+
+        # Flush display layers
+        if _remove_dlayers:
+            _lyrs = pom.find_nodes(
+                type_='displayLayer', referenced=False, default=False)
+            cmds.delete(_lyrs)
 
 
 def _exec_export_abc(work, metadata, force=False):

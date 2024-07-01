@@ -1,13 +1,16 @@
 """Tools for managing the MFnReference object wrapper."""
 
 import logging
+import time
 
 from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini import pipe
 from pini.utils import basic_repr, single, check_heart, passes_filter
+
 from maya_pini import ref
+from maya_pini.utils import to_namespace, to_clean, bake_results
 
 from . import pom_node, pom_transform
 from .. import pom_utils
@@ -25,7 +28,7 @@ class CReference(om.MFnReference, ref.FileRef):
             node (str): reference node or node in a reference
             allow_no_namespace (bool): no error if ref has no namespace
         """
-        _LOGGER.debug('CReference INIT %s', node)
+        _LOGGER.log(9, 'CReference INIT %s', node)
         super(CReference, self).__init__()  # pylint: disable=no-value-for-parameter
 
         # Apply node's reference to this object
@@ -38,11 +41,11 @@ class CReference(om.MFnReference, ref.FileRef):
             self.setObject(_ref_node)
 
             # Try setting this MFnReference to this ref
-            _LOGGER.debug(
-                ' - TESTING REF NODE %s isNull=%d', _ref_node,
+            _LOGGER.log(
+                9, ' - TESTING REF NODE %s isNull=%d', _ref_node,
                 _ref_node.isNull())
             if _ref_node == _m_obj:
-                _LOGGER.debug(' - MATCHED REF NODE')
+                _LOGGER.log(9, ' - MATCHED REF NODE')
                 break
 
             # Check if this ref contains the given node
@@ -51,17 +54,30 @@ class CReference(om.MFnReference, ref.FileRef):
             except RuntimeError:
                 _contained = False
             if _contained:
-                _LOGGER.debug(' - REF MATCHED CONTAINED NODE')
+                _LOGGER.log(9, ' - REF MATCHED CONTAINED NODE')
                 break
             _iter.next()
 
         else:
             raise ValueError('Failed to match reference {}'.format(node))
-        _LOGGER.debug(' - LOCATED REF')
+        _LOGGER.log(9, ' - LOCATED REF')
 
         _ref_node = pom_node.CNode(self.name())
         ref.FileRef.__init__(
             self, _ref_node, allow_no_namespace=allow_no_namespace)
+
+    @property
+    def ctrls(self):
+        """Obtain list of controls on this reference (from ctrls_SET).
+
+        Returns:
+            (CNode list): controls
+        """
+        from maya_pini import open_maya as pom
+        _set = self.to_node('ctrls_SET')
+        return [
+            pom.cast_node(_node)
+            for _node in cmds.sets(_set, query=True)]
 
     @property
     def namespace(self):
@@ -71,6 +87,16 @@ class CReference(om.MFnReference, ref.FileRef):
             (str): namespace
         """
         return str(self.associatedNamespace(shortName=True))
+
+    @property
+    def plugs(self):
+        """Obtain list of animatable plugs on this rig (from ctrls_SET).
+
+        Returns:
+            (CPlug list): plugs
+        """
+        return sum(
+            (_ctrl.list_attr(keyable=True) for _ctrl in self.ctrls), [])
 
     @property
     def skel(self):
@@ -99,6 +125,24 @@ class CReference(om.MFnReference, ref.FileRef):
             grp (str): name of group
         """
         self.top_node.add_to_grp(grp)
+
+    def bake(self, range_=None, simulation=True, add_offs=None):
+        """Bake animation onto this reference.
+
+        Args:
+            range_ (tuple): override start/end frames
+            simulation (bool): bake as simulation (slow but normally required)
+            add_offs (CNode): node to add anim offset/mult chans to
+        """
+        from pini import dcc
+        _LOGGER.debug('BAKE RESULTS')
+        _rng = range_ or dcc.t_range()
+        _LOGGER.debug(' - RNG %s', _rng)
+        _start = time.time()
+        _LOGGER.debug(' - PLUGS %s', self.plugs)
+        bake_results(self.plugs, range_=_rng, euler_filter=True,
+                     simulation=simulation, add_offs=add_offs)
+        _LOGGER.debug(' - BAKED RESULTS IN %.01fs', time.time() - _start)
 
     def find_node(self, type_=None):
         """Find a node in this reference.
@@ -188,6 +232,25 @@ class CReference(om.MFnReference, ref.FileRef):
 
         return _node
 
+    def to_plug(self, plug):
+        """Map a plug name to this reference.
+
+        eg. blah.tx -> thisRef:blah.tx
+
+        Args:
+            plug (str): plug to convert
+
+        Returns:
+            (str): plug with namespace added
+        """
+        from maya_pini import open_maya as pom
+        _LOGGER.debug('TO PLUG %s', plug)
+        _plug = plug
+        if isinstance(_plug, pom.CPlug):
+            _plug = str(_plug)
+        assert '.' in _plug
+        return pom.CPlug('{}:{}'.format(self.namespace, to_clean(_plug)))
+
     def __str__(self):
         return str(self.ref_node)
 
@@ -232,20 +295,24 @@ def find_ref(
         selected=selected, namespace=namespace, unloaded=unloaded,
         task=task, filter_=filter_)
 
-    # Try match as filter
-    if match and len(_refs) > 1:
-        _filter_refs = [_ref for _ref in _refs
-                        if passes_filter(_ref.namespace, match)]
-        if _filter_refs:
-            _refs = _filter_refs
+    if len(_refs) == 1:
+        return single(_refs)
 
-    # Try namespace match
-    if match and len(_refs) > 1:
-        _ns_refs = [_ref for _ref in _refs if _ref.namespace == match]
-        if _ns_refs:
-            _refs = _ns_refs
+    _match_refs = [
+        _ref for _ref in _refs
+        if _ref.namespace in (match, to_namespace(match))]
+    if len(_match_refs) == 1:
+        return single(_match_refs)
 
-    return single(_refs, catch=catch)
+    _filter_refs = [
+        _ref for _ref in _refs
+        if passes_filter(_ref.namespace, match)]
+    if len(_filter_refs) == 1:
+        return single(_filter_refs)
+
+    if catch:
+        return None
+    raise ValueError(match)
 
 
 def find_refs(
@@ -266,35 +333,45 @@ def find_refs(
         (CReference list): references
     """
     _LOGGER.debug('FIND REFS')
+
+    # Get full list of refs using non-OpenMaya ref module
     if selected:
         _refs = ref.get_selected(multi=True)
     else:
         _refs = ref.find_refs(
             unloaded=unloaded, allow_no_namespace=allow_no_namespace)
     _LOGGER.debug(' - REFS %s', _refs)
-    _c_refs = []
+
+    # Convert to
+    _p_refs = []
     for _ref in _refs:
 
-        _LOGGER.debug(' - ADDING %s', _ref)
-        try:
-            _c_ref = CReference(
-                _ref.ref_node, allow_no_namespace=allow_no_namespace)
-        except ValueError:
-            continue
+        _LOGGER.debug(' - CHECKING %s', _ref)
+
+        # Apply filters
         if namespace and _ref.namespace != namespace:
+            _LOGGER.debug('   - BAD NAMESPACE')
             continue
         if filter_ and not passes_filter(_ref.namespace, filter_):
+            _LOGGER.debug('   - FAILS FILTER')
             continue
-
         if task:
             _out = pipe.to_output(_ref.path)
             if not _out or _out.task != task:
+                _LOGGER.debug('   - FAILS TASK FILTER %s', _out)
                 continue
 
-        _c_refs.append(_c_ref)
-        _LOGGER.debug('   - CREATED %s', _c_ref)
+        # Build pom ref
+        try:
+            _p_ref = CReference(
+                _ref.ref_node, allow_no_namespace=allow_no_namespace)
+        except ValueError:
+            _LOGGER.debug('   - FAILED TO BUILD pom NODE')
+            continue
+        _p_refs.append(_p_ref)
+        _LOGGER.debug('   - ADDED %s', _p_ref)
 
-    return _c_refs
+    return _p_refs
 
 
 def obtain_ref(file_, namespace):

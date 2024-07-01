@@ -92,9 +92,19 @@ class PyElem(object):
         Returns:
             (PyElem): matching child element
         """
-        return single([
-            _child for _child in self.find_children(recursive=recursive)
-            if match in (_child.name, _child.clean_name)])
+        _children = self.find_children(recursive=recursive)
+
+        _exact_matches = [
+            _child for _child in _children if match == _child.name]
+        if len(_exact_matches) == 1:
+            return single(_exact_matches)
+
+        _clean_matches = [
+            _child for _child in _children if match == _child.clean_name]
+        if len(_clean_matches) == 1:
+            return single(_clean_matches)
+
+        raise ValueError(match)
 
     def find_children(self, recursive=False, internal=None, filter_=None):
         """Find children of this element.
@@ -130,7 +140,8 @@ class PyElem(object):
                 _LOGGER.debug('   - ADDED %s', _child)
 
             if recursive:
-                _children += _child.find_children(recursive=recursive)
+                _children += _child.find_children(
+                    recursive=recursive, filter_=filter_)
 
         if internal is not None:
             _children = [

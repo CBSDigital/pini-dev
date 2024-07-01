@@ -117,6 +117,11 @@ def find_cams(
     from maya_pini import open_maya as pom
     _cams = []
     for _cam in pom.find_nodes(type_='camera'):
+
+        # Hack to ignore tmp light cameras
+        if not isinstance(_cam, CCamera):
+            continue
+
         if filter_ and not passes_filter(str(_cam), filter_):
             continue
         if default is not None and str(_cam) in DEFAULT_NODES:

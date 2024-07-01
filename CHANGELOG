@@ -1,3 +1,27 @@
+## [3.1.0] - Mon 2024-07-01 09:40
+### Summary
+ - Pini Helper:
+    - basic maya publish remove unused sets ignores ctrls_SET,
+    - basic maya publish added option to remove display layers,
+### Updated
+ - pini.utils.PyFile.find_child try exact match then clean name match,
+ - pini.utils.PyFile.find_children bugfix not passing filter through recursive,
+ - pini.dcc.export_handler.CMayaBasicPublish added ctrls_SET to allowed sets,
+ - pini.dcc.export_handler.CMayaBasicPublish added remove display layers flag,
+ - pini.dcc.export_handler.build_metadata added fps,
+ - pini.farm.deadline apply priority to update cache job,
+ - maya_pini.utils.DEFAULT_NODES added defaultLayer,
+ - maya_pini.open_maya.cast_node added hikFKJoint handling,
+ - maya_pini.open_maya.CAnimCurve.fix_name bugfix warning on namespace,
+ - maya_pini.open_maya.find_cams ignore tmp light cams,
+ - maya_pini.open_maya.CPlug.node added as property using cast_node,
+ - maya_pini.open_maya.CPlug added _node_s/_node_n/to_node,
+ - maya_pini.open_maya.CReference added ctrls/plugs properties,
+ - maya_pini.open_maya.CReference bake/to_plug added methods,
+ - maya_pini.open_maya.find_ref better matching - node + namespace + filter,
+ - maya_pini.open_maya.find_refs apply filters before cast node,
+
+
 ## [3.0.0] - Wed 2024-06-26 16:00
 ### Summary
  - Pini Helper:

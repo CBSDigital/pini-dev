@@ -23,6 +23,7 @@ DEFAULT_NODES = [
     'defaultLightSet',
     'defaultObjectSet',
     'defaultRenderLayer',
+    'defaultLayer',
     'initialParticleSE',
     'initialShadingGroup',
     'lambert1',

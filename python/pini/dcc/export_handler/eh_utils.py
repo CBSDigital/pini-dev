@@ -43,6 +43,7 @@ def build_metadata(
     _data['owner'] = get_user()
     _data['range'] = dcc.t_range(int)
     _data['dcc'] = dcc.NAME
+    _data['fps'] = dcc.get_fps()
     _data['dcc_version'] = dcc.to_version()
     _data['pini'] = release.cur_ver().to_str()
     _data['submitted'] = False

@@ -107,7 +107,7 @@ class CDFarm(base.CFarm):
         Args:
             cacheables (CPCacheable list): cacheables to submit
             comment (str): job comment
-            priority (int): job priority (0-100)
+            priority (int): job priority (0 [low] - 100 [high])
             machine_limit (int): job machine limit
             save (bool): save scene on submit
             checks_data (dict): sanity check data
@@ -174,7 +174,7 @@ class CDFarm(base.CFarm):
         Args:
             camera (CCamera): render cam
             comment (str): job comment
-            priority (int): job priority (0-100)
+            priority (int): job priority (0 [low] - 100 [high])
             machine_limit (int): job machine limit
             frames (int list): frames to render
             group (str): submission group
@@ -225,6 +225,7 @@ class CDFarm(base.CFarm):
         _update_job = self._submit_update_job(
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
+            priority=priority,
             outputs=[_job.output for _job in _render_jobs])
         _progress.set_pc(100)
         _progress.close()
@@ -249,7 +250,7 @@ class CDFarm(base.CFarm):
             name (str): job name
             py (str): python to execute
             comment (str): job comment
-            priority (int): job priority (0-100)
+            priority (int): job priority (0 [low] - 100 [high])
             machine_limit (int): job machine limit
             error_limit (int): job error limit
             edit_py (bool): edit tmp python file on submit
@@ -275,7 +276,7 @@ class CDFarm(base.CFarm):
             name (str): job name
             py (str): python to execute
             comment (str): job comment
-            priority (int): job priority (0-100)
+            priority (int): job priority (0 [low] - 100 [high])
             machine_limit (int): job machine limit
             error_limit (int): job error limit
             edit_py (bool): edit py file on save to disk
@@ -293,7 +294,7 @@ class CDFarm(base.CFarm):
 
     def _submit_update_job(
             self, work, dependencies, comment, batch_name, stime,
-            metadata=None, outputs=None):
+            priority=50, metadata=None, outputs=None):
         """Submit job which updates work file output cache.
 
         Args:
@@ -302,6 +303,7 @@ class CDFarm(base.CFarm):
             comment (str): job comment
             batch_name (str): job batch name
             stime (float): submission time
+            priority (int): job priority (0 [low] - 100 [high])
             metadata (dict): metadata to apply to outputs
             outputs (CPOutput list): outputs to apply metadata to
 
@@ -315,7 +317,7 @@ class CDFarm(base.CFarm):
         _update_job = d_job.CDPyJob(
             name='{} [update cache]'.format(work.base), comment=comment,
             py=_py, batch_name=batch_name, dependencies=dependencies,
-            stime=stime)
+            stime=stime, priority=priority)
         assert not _update_job.jid
         _update_job.submit(name='update')
         assert _update_job.jid

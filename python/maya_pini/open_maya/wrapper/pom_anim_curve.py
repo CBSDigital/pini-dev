@@ -6,6 +6,7 @@ from maya import cmds
 from maya.api import OpenMayaAnim as oma
 
 from pini.utils import single
+from maya_pini.utils import to_clean
 
 from .. import base
 from ..pom_utils import to_mobject
@@ -79,7 +80,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (CAnimCurve): updated node
         """
-        _name = str(self.target).replace('.', '_')
+        _name = to_clean(self.target).replace('.', '_')
         _LOGGER.debug('FIX NAME %s %s', self, _name)
         _node = self
         if self != _name:

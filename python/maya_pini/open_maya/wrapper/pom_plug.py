@@ -131,11 +131,13 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         if isinstance(_name, CPlug):
             _name = str(_name)
         self.name = _name
-        _node, self.attr = _name.split('.', 1)
-        self.node = pom_node.CNode(_node)
+
+        self._node_s, self.attr = _name.split('.', 1)
+        self._node_n = pom_node.CNode(self._node_s)
+        self._node = None  # Container for property
 
         try:
-            _plug = _to_mplug(self.node, self.attr)
+            _plug = _to_mplug(self._node_n, self.attr)
         except RuntimeError as _exc:
             if verbose:
                 _LOGGER.info(' - ERROR %s', _exc)
@@ -155,6 +157,17 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             (CAnimCurve|None): animation curve (if any)
         """
         return self.to_anim()
+
+    @property
+    def node(self):
+        """Obtain this plug's node.
+
+        Returns:
+            (CBaseNode): node
+        """
+        if not self._node:
+            self._node = self.to_node()
+        return self._node
 
     def break_connections(self):
         """Break any incoming connection to this plug."""
@@ -622,6 +635,15 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         from maya_pini import open_maya as pom
         return single(pom.CMDS.listConnections(self, type='animCurve'),
                       catch=True)
+
+    def to_node(self):
+        """Obtain this plug's node.
+
+        Returns:
+            (CBaseNode): node
+        """
+        from maya_pini import open_maya as pom
+        return pom.cast_node(self._node_s)
 
     def to_long(self):
         """Obtain this attribute's long name.
