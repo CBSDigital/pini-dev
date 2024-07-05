@@ -7,7 +7,7 @@ import re
 
 from maya import cmds
 
-from pini import pipe
+from pini import pipe, dcc
 from pini.utils import passes_filter, File
 
 from maya_pini import open_maya as pom, tex
@@ -270,12 +270,15 @@ def _read_geo_settings():
         if not _geo.shp:
             continue
 
-        # Read non-default settings
-        for _attr in [
+        _attrs = []
+        if 'arnold' in dcc.allowed_renderers():
+            _attrs += [
                 'aiOpaque',
                 'aiSubdivIterations',
-                'aiSubdivType',
-        ]:
+                'aiSubdivType']
+
+        # Read non-default settings
+        for _attr in _attrs:
             if not _geo.shp.has_attr(_attr):
                 continue
             _plug = _geo.shp.plug[_attr]

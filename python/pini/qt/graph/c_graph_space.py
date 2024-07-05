@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-public-methods,too-many-instance-attributes
 
+import collections
 import logging
 import operator
 
@@ -83,9 +84,18 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         self.window.add_shortcut(
             's', self.save_settings, 'Save settings')
         self.window.add_shortcut(
-            'f', self.frame_elems, 'Frame selected elements')
+            'f', self.frame_elems, 'Frame elements')
         self.window.add_shortcut(
             'r', self.reset_selected_elems, 'Reset selected elements')
+
+    def set_window(self, window):
+        """Set parent window.
+
+        Args:
+            window (QDialog): window
+        """
+        _LOGGER.info('SET WINDOW %s', window)
+        self._window = window
 
     def add_draw_callback(self, callback):
         """Add a draw callback to this space.
@@ -116,12 +126,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             self._draw_grid(pix)
 
         # Draw elements
-        _rect_p = pix.rect()
-        _rect_g = self.p2g(_rect_p)
-        for _elem in self.elems:
-            if not _rect_g.intersects(_elem.rect_g):
-                continue
-            _elem.draw(pix=pix)
+        self._draw_elems(pix=pix)
 
         # Execute draw callbacks
         for _callback in self.draw_callbacks:
@@ -137,6 +142,24 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
 
         if self.legend:
             pix.draw_text(self.legend, (10, 10))
+
+    def _draw_elems(self, pix):
+        """Draw elements on this graph's pixmap.
+
+        Args:
+            pix (CPixmap): pixmap to draw on
+        """
+        _rect_p = pix.rect()
+        _rect_g = self.p2g(_rect_p)
+        _n_elems_drawn = 0
+        for _elem in self.elems:
+            if not _rect_g.intersects(_elem.rect_g):
+                continue
+            if _elem.is_tiny():
+                continue
+            _elem.draw(pix=pix)
+            _n_elems_drawn += 1
+        _LOGGER.debug(' - DREW %d ELEMS', _n_elems_drawn)
 
     def _draw_markers(self, pix):
         """Draw offset/zoom markers.
@@ -175,12 +198,25 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _text = 'shortcuts:'
-        _map = {Qt.Key_Escape: 'Esc'}
-        for _key, (_, _label) in sorted(
+        _text = '[shortcuts]'
+
+        # Organise into actions
+        _key_map = {
+            Qt.Key_Escape: 'Esc',
+            ' ': 'Space'}
+        _actions = collections.defaultdict(list)
+        for _key, (_, _action) in sorted(
                 self.window.shortcuts.items(), key=str):
-            _key = _map.get(_key, _key).capitalize()
-            _text += '\n{}: {}'.format(_key, _label)
+            _key = _key_map.get(_key, _key).capitalize()
+            _actions[_action].append(_key)
+
+        # Build actions into text
+        _keys_actions = [
+            (tuple(_keys), _action) for _action, _keys in _actions.items()]
+        _keys_actions.sort()
+        for _keys, _action in sorted(_keys_actions):
+            _text += '\n{}: {}'.format('/'.join(_keys), _action)
+
         pix.draw_text(
             _text, pix.rect().bottomRight() - q_utils.to_p(10, 10),
             anchor='BR')
@@ -220,11 +256,13 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             pix.draw_line(self.g2p(_left_g), self.g2p(_right_g), col=_col)
             _y_plot_g += _step
 
-    def frame_elems(self, margin=20, draw_region=False, elems=None, anchor='C'):
+    def frame_elems(
+            self, margin_fr=0.05, draw_region=False, elems=None, anchor='C'):
         """Frame elements contained in this space.
 
         Args:
-            margin (int): add margin (in game space)
+            margin_fr (float): fraction of the element area to add to framing
+                (0 would frame the elements perfectly with no margin)
             draw_region (bool): draw framing region overlay (for debugging)
             elems (CGBasicElem list): override elements to frame
             anchor (str): how to anchor framing
@@ -239,7 +277,10 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 _f_rect_g = QtCore.QRectF(_elem.rect_g)
             else:
                 _f_rect_g |= _elem.rect_g
-        _f_rect_g = _f_rect_g.adjusted(-margin, -margin, margin, margin)
+        _margin_w = _f_rect_g.width() * margin_fr
+        _margin_h = _f_rect_g.height() * margin_fr
+        _f_rect_g = _f_rect_g.adjusted(
+            -_margin_w, -_margin_h, _margin_w, _margin_h)
         _LOGGER.debug(' - FRAME RECT G %s', _f_rect_g)
         _f_rect_p = self.g2p(_f_rect_g)
         _LOGGER.debug(' - FRAME RECT P %s', _f_rect_p)
@@ -449,10 +490,12 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         # Check for elems accepting event - if the event isn't passed from a
         # higher level element, elements underneath don't recieve event
         self.drag_elem = None
-        _click_elems = [
-            _elem for _elem in self.find_elems()
-            if _elem.visible and _elem.contains(_pos_g)]
-        _click_elems.sort(key=operator.attrgetter('level'), reverse=True)
+        _click_elems = []
+        if event.button() == Qt.LeftButton:
+            _click_elems = [
+                _elem for _elem in self.find_elems()
+                if _elem.visible and _elem.contains(_pos_g)]
+            _click_elems.sort(key=operator.attrgetter('level'), reverse=True)
 
         # Pass click down through elements until one blocks it
         for _elem in _click_elems:

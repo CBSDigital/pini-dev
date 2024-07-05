@@ -227,13 +227,17 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (any): default value
         """
-        _def = single(cmds.attributeQuery(
-            self.attr, node=self.node, listDefault=True))
+        _LOGGER.info('GET DEFAULT %s', self)
+        _defs = cmds.attributeQuery(
+            self.attr, node=self.node, listDefault=True)
+        _LOGGER.info(' - DEFAULTS %s', _defs)
+        _def = single(_defs)
         _type = self.get_type()
         _map = {'bool': bool,
                 'byte': int}
         if _type in _map:
             _def = _map[_type](_def)
+        _LOGGER.info(' - TYPE %s', _type)
         return _def
 
     def get_enum(self):

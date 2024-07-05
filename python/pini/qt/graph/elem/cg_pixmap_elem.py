@@ -141,6 +141,35 @@ class CGPixmapElem(cg_basic_elem.CGBasicElem):
         pix.draw_overlay(
             over, pos=_pos_p, size=_size_p, anchor=anchor)
 
+    def _draw_rect(
+            self, pix, pos, size, col, anchor='TL', space='graph'):
+        """Draw a rounded rectangle on this element's pixmap.
+
+        All drawing is in local space.
+
+        Args:
+            pix (CPixmap): pixmap to draw on
+            pos (QPointF): draw position (in local space)
+            size (QSizeF): draw size (in local space)
+            col (str): rectangle colour
+            anchor (str): rectangle anchor
+            space (str): draw space (graph/fr)
+        """
+        _LOGGER.debug('DRAW ROUNDED RECT %s %s', pos, size)
+        _pos = q_utils.to_p(pos, class_=wrapper.CPointF)
+        _size = q_utils.to_size(size, class_=wrapper.CSizeF)
+        if space == 'graph':
+            _pos_g = _pos
+            _size_g = _size
+        else:
+            raise ValueError(space)
+        _LOGGER.debug(' - POS/SIZE %s %s', _pos_g, _size_g)
+
+        _pos_p = self.g2p(_pos_g)
+        _size_p = self.g2p(_size_g)
+        pix.draw_rect(
+            pos=_pos_p, size=_size_p, col=col, outline=None, anchor=anchor)
+
     def _draw_rounded_rect(
             self, pix, pos, size, col, bevel=None, anchor='TL', space='graph'):
         """Draw a rounded rectangle on this element's pixmap.

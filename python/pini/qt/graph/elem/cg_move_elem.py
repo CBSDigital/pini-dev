@@ -61,7 +61,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
             _pos[0] = None
         elif self.lock is True:
             _pos = None
-        elif self.lock is False:
+        elif self.lock in (False, None):
             pass
         else:
             raise NotImplementedError(self.lock)

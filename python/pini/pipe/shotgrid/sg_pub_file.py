@@ -13,6 +13,7 @@ from . import sg_handler, sg_job, sg_task, sg_entity, sg_utils
 _LOGGER = logging.getLogger(__name__)
 _PUB_FILE_FIELDS = [
     'path', 'published_file_type', 'name', 'path_cache', 'id']
+_TMP_THUMB = TMP.to_file('PiniTmp/thumb_tmp.jpg')
 
 
 def create_pub_file(
@@ -96,9 +97,12 @@ def create_pub_file(
     if not _thumb:
         if isinstance(output, Seq):
             _thumb = output.to_frame_file()
+            if _thumb.extn not in ('png', 'jpg'):
+                _thumb.convert(_TMP_THUMB, force=True)
+                _thumb = _TMP_THUMB
         elif isinstance(output, Video):
-            _thumb = TMP.to_file('PiniTmp/thumb_tmp.jpg')
-            output.build_thumbnail(_thumb, width=None, force=True)
+            output.build_thumbnail(_TMP_THUMB, width=None, force=True)
+            _thumb = _TMP_THUMB
     if _thumb:
         _LOGGER.debug(' - APPLY THUMB %s', _thumb)
         assert _thumb.exists()

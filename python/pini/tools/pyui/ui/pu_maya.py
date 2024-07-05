@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import types
 
 import six
 
@@ -194,6 +195,9 @@ class PUMayaUi(pu_base.PUBaseUi):
             elif isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
                 _choices = arg.choices.choices
                 _select = arg.choices.default
+            elif isinstance(arg.choices, types.FunctionType):
+                _choices = arg.choices()
+                _select = _default
             else:
                 raise ValueError(arg.choices)
             _LOGGER.debug(' - CHOICES %s %s', _select, _choices)

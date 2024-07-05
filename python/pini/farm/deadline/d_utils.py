@@ -56,7 +56,7 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
         _time_f = to_time_f(time.strptime(_sub.filename, '%y%m%d_%H%M%S'))
         _age = time.time() - _time_f
         if _age > _max_age:
-            _LOGGER.info('   - OLD')
+            _LOGGER.debug('   - OLD')
             _to_delete.append(_sub)
 
     if not _to_delete:
@@ -318,5 +318,5 @@ def write_deadline_data(file_, data, sort=None):
     for _key in sorted(data.keys(), key=sort):
         _val = data[_key]
         _text += '{}={}\n'.format(_key, _val)
-        _LOGGER.info(' - WRITE TEXT %s', _text)
+        _LOGGER.debug(' - WRITE TEXT %s', _text)
     file_.write(_text, encoding='utf8')

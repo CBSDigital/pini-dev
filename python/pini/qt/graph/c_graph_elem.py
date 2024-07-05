@@ -14,7 +14,8 @@ class CGraphElemBase(object):
         Args:
             elem (CGraphElem): element to adde
         """
-        assert elem.name not in (_elem.name for _elem in self.elems)
+        if elem.name in (_elem.name for _elem in self.elems):
+            raise RuntimeError('Name clash '+elem.name)
 
         # Set graph link
         elem.graph = self

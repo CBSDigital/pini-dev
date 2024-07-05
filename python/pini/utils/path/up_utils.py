@@ -118,6 +118,7 @@ def abs_path(path, win=False, root=None):
         (str): absolute path
     """
     from .up_path import Path
+
     check_logging_level()
 
     # Get/check path string

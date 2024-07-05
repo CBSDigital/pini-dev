@@ -1,3 +1,26 @@
+## [3.2.0] - Fri 2024-07-05 11:34
+### Summary
+ - Pini Helper:
+    - bugfix error on lookdev publish (mkim),
+### Updated
+ - pini.pipe.CACHE.CCPOutput.exists added force flag,
+ - pini.pipe.shotgrid.create_pub_file convert non png/jpg thumbs,
+ - pini.qt.graph block draw on tiny elements,
+ - pini.qt.graph.CGraphElemBase.append_child_elem better error on name clash,
+ - pini.qt.graph.CBasicElem select/is_tiny added,
+ - pini.qt.graph.CPixmapElem._draw_rect added,
+ - pini.qt.graph.CMoveElem.get_settings added lock as None handling,
+ - pini.qt.graph.CStretchElem added ctrl_offs/ctrl_bevel args,
+ - pini.qt.graph.CStretchElem ctrl_w as 0 if axis locked,
+ - pini.qt.graph.CGraphSpace only pan on middle mouse drag,
+ - pini.qt.graph.CGraphSpace.set_window added,
+ - pini.qt.graph.CGraphSpace._draw_elems moved to separate method,
+ - pini.qt.graph.CGraphSpace._draw_shortcuts combine matching funcs,
+ - pini.qt.graph.CGraphSpace.frame_elems use fraction as margin not hard val,
+ - pini.tools.pyui allow choices as func,
+ - maya_pini.m_pipe.lookdev read geo settings ignore arnold attrs in arnold not in allowed renderers,
+
+
 ## [3.1.0] - Mon 2024-07-01 09:40
 ### Summary
  - Pini Helper:

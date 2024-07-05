@@ -5,7 +5,7 @@ import operator
 import sys
 
 from pini.utils import (
-    single, register_custom_yaml_handler, Seq, is_pascal)
+    single, register_custom_yaml_handler, Seq, is_pascal, File)
 
 from .ccp_utils import pipe_cache_to_file, pipe_cache_on_obj
 from ..cp_output import (
@@ -265,12 +265,17 @@ class CCPOutput(CPOutput, CCPOutputBase):
         _parent.find_outputs(force=True)
         self._exists = False
 
-    def exists(self):  # pylint: disable=arguments-differ
+    def exists(self, force=False):  # pylint: disable=arguments-differ
         """Test whether this output exists.
+
+        Args:
+            force (bool): force read exists from disk
 
         Returns:
             (bool): whether exists
         """
+        if force:
+            self._exists = File(self).exists()
         return self._exists
 
     def find_lookdev_shaders(self):

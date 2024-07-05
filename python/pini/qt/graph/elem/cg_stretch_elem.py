@@ -15,7 +15,9 @@ _LOGGER = logging.getLogger(__name__)
 class CGStretchElem(cg_move_elem.CGMoveElem):
     """An element with built in stretch controls."""
 
-    def __init__(self, ctrl_w=10, lock=None, **kwargs):
+    def __init__(
+            self, ctrl_w=10, ctrl_offs=None, ctrl_bevel=None, lock=None,
+            **kwargs):
         """Constructor.
 
         NOTES:
@@ -24,7 +26,9 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
          - stretch controls are in world space and are not children of this
 
         Args:
-            ctrl_w (int): control width
+            ctrl_w (float): controls width (in graph space pixels)
+            ctrl_offs (float): controls inset from edge of element
+            ctrl_bevel (float): bevel for controls
             lock (str): axis lock (H/V)
         """
         super(CGStretchElem, self).__init__(lock=lock, **kwargs)
@@ -33,8 +37,23 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
 
         _col = wrapper.CColor("Transparent")
         self.left_ctrl_col = self.right_ctrl_col = None
-        self.ctrl_w = ctrl_w
 
+        # Apply ctrls draw settings
+        self.ctrl_w = ctrl_w
+        self.ctrl_offs = ctrl_offs
+        if self.ctrl_offs is None:
+            if lock in ['H', 'V']:
+                self.ctrl_offs = 0
+            else:
+                self.ctrl_offs = self.ctrl_w*1.5
+        self.ctrl_bevel = ctrl_bevel
+        if self.ctrl_bevel is None:
+            if lock in ['H', 'V']:
+                self.ctrl_bevel = 0
+            else:
+                self.ctrl_bevel = self.bevel_g
+
+        # Setup ctrls elements
         if lock != 'H':
             self.left_ctrl = self._build_left_ctrl(col=_col)
             self.right_ctrl = self._build_right_ctrl(col=_col)
@@ -46,7 +65,6 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             self.bottom_ctrl = self._build_bottom_ctrl(col=_col)
         else:
             self.top_ctrl = self.bottom_ctrl = None
-
         self.ctrls = tuple(filter(bool, [
             self.top_ctrl, self.bottom_ctrl, self.left_ctrl, self.right_ctrl]))
 
@@ -133,7 +151,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (CPointF): position
         """
         return wrapper.CPointF(
-            self.rect_g.bottomLeft()+q_utils.to_p(self.ctrl_w*1.5, 0))
+            self.rect_g.bottomLeft() + q_utils.to_p(self.ctrl_offs, 0))
 
     def _to_left_ctrl_pos(self):
         """Obtain left control position.
@@ -142,7 +160,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (CPointF): position
         """
         return wrapper.CPointF(
-            self.rect_g.topLeft()+q_utils.to_p(0, self.ctrl_w*1.5))
+            self.rect_g.topLeft() + q_utils.to_p(0, self.ctrl_offs))
 
     def _to_right_ctrl_pos(self):
         """Obtain right control position.
@@ -151,7 +169,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (CPointF): position
         """
         return wrapper.CPointF(
-            self.rect_g.topRight()+q_utils.to_p(0, self.ctrl_w*1.5))
+            self.rect_g.topRight() + q_utils.to_p(0, self.ctrl_offs))
 
     def _to_top_ctrl_pos(self):
         """Obtain top control position.
@@ -160,7 +178,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (CPointF): position
         """
         return wrapper.CPointF(
-            self.rect_g.topLeft()+q_utils.to_p(self.ctrl_w*1.5, 0))
+            self.rect_g.topLeft() + q_utils.to_p(self.ctrl_offs, 0))
 
     def _to_horiz_ctrl_size(self):
         """Obtain size for horizontal controls.
@@ -168,7 +186,9 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         Returns:
             (QSizeF): size
         """
-        return wrapper.CSizeF(self.ctrl_w, self.rect_g.height()-self.ctrl_w*3)
+        return wrapper.CSizeF(
+            self.ctrl_w,
+            self.rect_g.height() - self.ctrl_offs*2)
 
     def _to_vert_ctrl_size(self):
         """Obtain size for vertical controls.
@@ -176,7 +196,9 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         Returns:
             (QSizeF): size
         """
-        return wrapper.CSizeF(self.rect_g.width()-self.ctrl_w*3, self.ctrl_w)
+        return wrapper.CSizeF(
+            self.rect_g.width() - self.ctrl_offs*2,
+            self.ctrl_w)
 
     def apply_stretch_update(self, ctrl=None):
         """Apply a pos/size update.
@@ -253,28 +275,28 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             pix (CPixmap): pixmap to draw on
         """
         _col = self.ctrl_col
-        if self.left_ctrl:
+        if self.left_ctrl and not self.left_ctrl.is_tiny():
             _pos_g = self.left_ctrl.rect_g.topRight() - self.rect_g.topLeft()
             self._draw_rounded_rect(
-                pix=pix, pos=_pos_g,
+                pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
                 size=self._to_horiz_ctrl_size()*wrapper.CSizeF(2, 1),
                 col=self.left_ctrl_col or _col, anchor='TR')
-        if self.right_ctrl:
+        if self.right_ctrl and not self.right_ctrl.is_tiny():
             _pos_g = self.right_ctrl.rect_g.topLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
-                pix=pix, pos=_pos_g,
+                pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
                 size=self._to_horiz_ctrl_size()*wrapper.CSizeF(2, 1),
                 col=self.right_ctrl_col or _col, anchor='TL')
-        if self.top_ctrl:
+        if self.top_ctrl and not self.top_ctrl.is_tiny():
             _pos_g = self.top_ctrl.rect_g.bottomLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
-                pix=pix, pos=_pos_g,
+                pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
                 size=self._to_vert_ctrl_size()*wrapper.CSizeF(1, 2),
                 col=_col, anchor='BL')
-        if self.bottom_ctrl:
+        if self.bottom_ctrl and not self.bottom_ctrl.is_tiny():
             _pos_g = self.bottom_ctrl.rect_g.topLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
-                pix=pix, pos=_pos_g,
+                pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
                 size=self._to_vert_ctrl_size()*wrapper.CSizeF(1, 2),
                 col=_col, anchor='TL')
 
@@ -312,7 +334,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             _size[0] = None
         elif self.lock is True:
             _size = None
-        elif self.lock is False:
+        elif self.lock in (False, None):
             pass
         else:
             raise NotImplementedError(self.lock)

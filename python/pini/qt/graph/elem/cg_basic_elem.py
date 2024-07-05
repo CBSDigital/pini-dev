@@ -1,6 +1,8 @@
 """Tools for managing graph space elements."""
 
-# pylint: disable=assignment-from-none,too-many-instance-attributes
+# pylint: disable=assignment-from-none
+# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes
 
 import logging
 
@@ -293,6 +295,10 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         for _child in self.elems:
             _child.reset()
 
+    def select(self):
+        """Select this element."""
+        self.graph.select_elem(self)
+
     def set_enabled(self, enabled=True):
         """Set enabled status of this element.
 
@@ -377,6 +383,15 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
             col=_SEL_COL, outline=_SEL_PEN,
             pos=_rect_p.topLeft(), size=_rect_p.size(), anchor='TL',
             bevel=self.graph.g2p(self.bevel_g))
+
+    def is_tiny(self):
+        """Check whether this element is too small to display.
+
+        Returns:
+            (bool): whether tiny
+        """
+        _LOGGER.debug(' - IS TINY %s', self.size_p)
+        return min(self.size_p.to_tuple()) < 5
 
     def move(self, vector):
         """Move this control the given translation.
