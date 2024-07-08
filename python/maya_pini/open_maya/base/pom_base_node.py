@@ -397,20 +397,19 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         """
         return self.isFromReferencedFile  # pylint: disable=no-member
 
-    def list_attr(self, keyable=None):
+    def list_attr(self, keyable=False, user_defined=False):
         """Apply listAttr command to this node.
 
         Args:
-            keyable (bool): apply keyable filter
+            keyable (bool): return only keyable attributes
+            user_defined (bool): return only user defined attributes
 
         Returns:
             (CPlug list): matching plugs
         """
-        _kwargs = {}
-        if keyable is not None:
-            _kwargs['keyable'] = keyable
         _plugs = []
-        _attrs = cmds.listAttr(self, **_kwargs) or []
+        _attrs = cmds.listAttr(
+            self, keyable=keyable, userDefined=user_defined) or []
         for _attr in sorted(_attrs):
             try:
                 _plug = self.plug[_attr]
@@ -448,8 +447,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         if world is not None:
             _kwargs['world'] = world
 
-        _LOGGER.info('PARENT %s %s', _args, _kwargs)
-        # print 'PARENT', _args, _kwargs
+        _LOGGER.debug('PARENT %s %s', _args, _kwargs)
         cmds.parent(*_args, **_kwargs)
 
     def rename(self, name):

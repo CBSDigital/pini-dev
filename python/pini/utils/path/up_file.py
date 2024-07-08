@@ -53,10 +53,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _path = '{}/{}.{}'.format(self.dir, self.base, extn)
         return File(_path)
 
-    def bkp(self, verbose=1):
+    def bkp(self, force=True, verbose=1):
         """Backup this file.
 
         Args:
+            force (bool): overwrite existing without confirmation
             verbose (int): print process data
 
         Returns:
@@ -78,7 +79,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 return _latest
 
         _bkp = self.to_bkp()
-        self.copy_to(_bkp)
+        self.copy_to(_bkp, force=force)
         if verbose:
             _LOGGER.info(
                 'SAVED BKP %s (%.01fs)', _bkp.path, time.time() - _start)

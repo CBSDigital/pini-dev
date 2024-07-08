@@ -1035,7 +1035,7 @@ class CPJob(cp_settings.CPSettingsLevel):
             _outs.append(_out)
 
         _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
-        return _outs
+        return sorted(_outs)
 
     def _apply_latest_output_version_filter(self, outputs, ver_n):
         """Apply "latest" version filter.

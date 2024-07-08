@@ -245,8 +245,13 @@ class CPOutputBase(object):
         Returns:
             (tuple): sort key
         """
-        _tag = self.tag or ''  # Use empty string otherwise py3 sorting breaks
-        return self.dir, _tag, self.filename
+        from pini import pipe
+        return (
+            self.entity.path,
+            pipe.task_sort(self.pini_task),
+            self.dir,
+            pipe.tag_sort(self.tag),
+            self.filename)
 
     @property
     def metadata(self):

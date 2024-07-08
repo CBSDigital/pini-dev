@@ -63,7 +63,7 @@ class CUiBase(object):
         if settings_suffix:
             self._settings_name += settings_suffix
         self._settings_file = settings_file
-        self._save_settings = load_settings
+        self.store_settings = load_settings
 
         # Setup dialog stack
         self._dialog_stack_key = stack_key or self.ui_file
@@ -81,7 +81,7 @@ class CUiBase(object):
         self.init_ui()
 
         # Initiate interface
-        if self._save_settings:
+        if self.store_settings:
             self.load_settings()
         if not modal and show:
             self.show()
@@ -524,8 +524,8 @@ class CUiBase(object):
         # Save settings
         _LOGGER.debug(
             ' - SAVE SETTINGS successful_load=%d save_settings=%d',
-            self._successful_load, self._save_settings)
-        if self._successful_load and self._save_settings:
+            self._successful_load, self.store_settings)
+        if self._successful_load and self.store_settings:
             try:
                 self.save_settings()
             except RuntimeError as _exc:

@@ -41,6 +41,11 @@ def find_export_nodes(filter_=None):
     for _set, _ in read_ai_override_sets().items():
         _export_nodes.add(_set)
 
+    # Add top node if map attrs
+    if _read_map_top_node_attrs():
+        _dummy = _build_dummy_top_node()
+        _export_nodes.add(_dummy)
+
     # Add lights
     _lights = mp_utils.read_cache_set(mode='lights')
     _export_nodes |= {_light.clean_name for _light in _lights}
@@ -55,6 +60,35 @@ def find_export_nodes(filter_=None):
     _LOGGER.debug(' - EXPORT NODES %s', _export_nodes)
 
     return _export_nodes
+
+
+def _build_dummy_top_node():
+    """Build dummy top node to store top node attributes on.
+
+    eg. colour switch on top node - the switch is stored on a dummy network
+    node called DummyTopNode, and then transferred onto the target reference
+    top node on attach.
+
+    Returns:
+        (CNode): dummy top node
+    """
+    _top_node = mp_utils.find_top_node()
+    assert _top_node
+    if cmds.objExists('DummyTopNode'):
+        cmds.delete('DummyTopNode')
+    _dummy = pom.CMDS.createNode('network', name='DummyTopNode')
+    _LOGGER.info(' - DUMMY TOP NODE')
+    for _attr in _read_map_top_node_attrs():
+        _top_attr = _top_node.plug[_attr]
+        _dummy_attr = _dummy.add_attr(
+            _attr, _top_attr.get_val(), min_val=_top_attr.get_min(),
+            max_val=_top_attr.get_max())
+        _LOGGER.info(' - MAP %s -> %s', _top_node, _dummy_attr)
+        _conns = _top_attr.find_outgoing()
+        _LOGGER.info('   - CONNS %s', _conns)
+        for _trg in _conns:
+            _dummy_attr.connect(_trg, force=True)
+    return str(_dummy)
 
 
 def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
@@ -303,6 +337,25 @@ def _read_lights():
     return bool(mp_utils.read_cache_set(mode='lights'))
 
 
+def _read_map_top_node_attrs():
+    """Read any user defined top node attributes with outgoing connections.
+
+    These are attributes are stored on a dummy top node, and then rebuild
+    on the shaders target reference top node at on attach.
+
+    Returns:
+        (list): top node attributes to map
+    """
+    _attrs = []
+    _top_node = mp_utils.find_top_node()
+    if _top_node:
+        for _plug in _top_node.list_attr(user_defined=True):
+            if not _plug.find_outgoing():
+                continue
+            _attrs.append(_plug.attr)
+    return _attrs
+
+
 def read_publish_metadata():
     """Read all shading data to save to yml file.
 
@@ -321,6 +374,7 @@ def read_publish_metadata():
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
     _data['ai_override_sets'] = read_ai_override_sets()
     _data['lights'] = _read_lights()
+    _data['top_node_attrs'] = _read_map_top_node_attrs()
 
     return _data
 

@@ -29,6 +29,15 @@ def find_cache_set(catch=True):
         clean_name='cache_SET', type_='objectSet'), catch=catch)
 
 
+def find_top_node():
+    """Find geometry top node in the current scene.
+
+    Returns:
+        (CTransform): top node
+    """
+    return single(read_cache_set(mode='top'))
+
+
 def _read_cache_set_nodes(set_, mode):
     """Read cache set contents.
 

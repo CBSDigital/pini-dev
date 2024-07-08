@@ -169,6 +169,14 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             self._node = self.to_node()
         return self._node
 
+    def attribute_query(self, **kwargs):
+        """Apply maya.cmds attributeQuery to this node.
+
+        Returns:
+            (str list): attibute query result
+        """
+        return cmds.attributeQuery(self.attr, node=self.node, **kwargs)
+
     def break_connections(self):
         """Break any incoming connection to this plug."""
         _LOGGER.debug('BREAK CONNECTIONS %s', self)
@@ -227,17 +235,17 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (any): default value
         """
-        _LOGGER.info('GET DEFAULT %s', self)
-        _defs = cmds.attributeQuery(
-            self.attr, node=self.node, listDefault=True)
-        _LOGGER.info(' - DEFAULTS %s', _defs)
+        _LOGGER.debug(
+            'GET DEFAULT %s attr=%s node=%s', self, self.attr, self.node)
+        _defs = self.attribute_query(listDefault=True)
+        _LOGGER.debug(' - DEFAULTS %s', _defs)
         _def = single(_defs)
         _type = self.get_type()
         _map = {'bool': bool,
                 'byte': int}
         if _type in _map:
             _def = _map[_type](_def)
-        _LOGGER.info(' - TYPE %s', _type)
+        _LOGGER.debug(' - TYPE %s', _type)
         return _def
 
     def get_enum(self):
@@ -259,6 +267,22 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             return []
         return _anim.get_ktvs()
 
+    def get_max(self):
+        """Get maximum value for this plug (if any).
+
+        Returns:
+            (float|None): maximum
+        """
+        return single(self.attribute_query(maximum=True), catch=True)
+
+    def get_min(self):
+        """Get minimum value for this plug (if any).
+
+        Returns:
+            (float|None): minimum
+        """
+        return single(self.attribute_query(minimum=True), catch=True)
+
     def get_size(self):
         """Read number of child elements in array attribute.
 
@@ -273,8 +297,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (str): type name
         """
-        return cmds.attributeQuery(
-            self.attr, node=self.node, attributeType=True)
+        return self.attribute_query(attributeType=True)
 
     def get_val(self, as_string=False, frame=None, class_=None):
         """Get current value of this plug.
@@ -647,7 +670,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             (CBaseNode): node
         """
         from maya_pini import open_maya as pom
-        return pom.cast_node(self._node_s)
+        return pom.cast_node(self._node_s, maintain_shapes=True)
 
     def to_long(self):
         """Obtain this attribute's long name.

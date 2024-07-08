@@ -5,7 +5,7 @@ import operator
 import sys
 
 from pini.utils import (
-    single, register_custom_yaml_handler, Seq, is_pascal, File)
+    single, register_custom_yaml_handler, Seq, is_pascal, File, EMPTY)
 
 from .ccp_utils import pipe_cache_to_file, pipe_cache_on_obj
 from ..cp_output import (
@@ -278,7 +278,7 @@ class CCPOutput(CPOutput, CCPOutputBase):
             self._exists = File(self).exists()
         return self._exists
 
-    def find_lookdev_shaders(self):
+    def find_lookdev_shaders(self, tag=EMPTY):
         """Find matching lookdev for this output.
 
         This is used to find a lookdev publish to attach to an abc export.
@@ -289,6 +289,9 @@ class CCPOutput(CPOutput, CCPOutputBase):
          - matching tag
          - default tag
          - any tag
+
+        Args:
+            tag (str): force tag to attach
 
         Returns:
             (CPOutput): matching lookdev
@@ -323,7 +326,7 @@ class CCPOutput(CPOutput, CCPOutputBase):
 
         # Find lookdevs
         _lookdevs = _out.entity.find_publishes(
-            content_type='ShadersMa', ver_n='latest')
+            content_type='ShadersMa', tag=tag, ver_n='latest')
         _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
         if not _lookdevs:
             return None

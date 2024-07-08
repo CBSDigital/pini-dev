@@ -99,12 +99,22 @@ class _Shader(pom.CNode):
             _col = qt.to_col(col)
             self.col.set_val(_col)
         elif isinstance(col, File):
-            _file = self.to_file(create=True)
-            _file.plug['fileTextureName'].set_val(col.path)
-            if colspace:
-                _file.plug['colorSpace'].set_val(colspace)
+            self.set_ftn(col, colspace=colspace)
         else:
             raise ValueError(col)
+
+    def set_ftn(self, file_, colspace=None):
+        """Apply the given file texture name to this shader (ie. apply file).
+
+        Args:
+            file_ (File): texture to apply
+            colspace (str): apply colour space
+        """
+        _ftn = File(file_)
+        _file = self.to_file(create=True)
+        _file.plug['fileTextureName'].set_val(_ftn.path)
+        if colspace:
+            _file.plug['colorSpace'].set_val(colspace)
 
     def to_assignments(self):
         """Read this shader's list of assignments.

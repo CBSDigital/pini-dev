@@ -79,7 +79,7 @@ def create_pub_file(
     else:
         for _field in ['created_by', 'updated_by']:
             _data.pop(_field)
-        sg_handler.update('PublishedFile', _sg_pub, _data)
+        sg_handler.update('PublishedFile', _sg_pub.id_, _data)
         _id = _sg_pub.id_
 
     # Update cache

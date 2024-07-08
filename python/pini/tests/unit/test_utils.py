@@ -274,6 +274,7 @@ class TestPath(unittest.TestCase):
 
         assert abs_path('P:pipeline') == 'P:/pipeline'
         assert abs_path('file:///mnt/jobs') == '/mnt/jobs'
+        assert abs_path('file:///C:/Users/test.yml') == 'C:/Users/test.yml'
 
     def test_bkp_file(self):
 

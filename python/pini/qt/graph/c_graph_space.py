@@ -256,6 +256,10 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             pix.draw_line(self.g2p(_left_g), self.g2p(_right_g), col=_col)
             _y_plot_g += _step
 
+    def flush_elems(self):
+        """Flush all elements and empty the graph."""
+        self.elems = []
+
     def frame_elems(
             self, margin_fr=0.05, draw_region=False, elems=None, anchor='C'):
         """Frame elements contained in this space.
@@ -478,6 +482,8 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             event (QMouseEvent): triggered event
         """
+        self.setFocus()
+
         _event = event
         _pos_g = self.p2g(_event.pos())
         _LOGGER.info('MOUSE PRESS %s %s', event, strftime('%H%M%S'))

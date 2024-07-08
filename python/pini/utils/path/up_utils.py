@@ -136,7 +136,9 @@ def abs_path(path, win=False, root=None):
     elif _path.startswith('~/'):
         _path = HOME_PATH+_path[1:]
     elif _path.startswith('file:///'):
-        _path = _path.replace('file:///', '/', 1)
+        _path = _path.replace('file:///', '', 1)
+        if len(_path) > 2 and _path[1] != ':':  # Fix linux style
+            _path = '/'+_path
     _path = norm_path(_path)
 
     # Apply allowed root
@@ -149,15 +151,7 @@ def abs_path(path, win=False, root=None):
         _LOGGER.debug(' - APPLY ALLOWED ROOT %s', _root)
         return _root + norm_path(_path[len(_root):])
 
-    # Apply map root
-    _env = os.environ.get('PINI_ABS_PATH_REPLACE_ROOTS', '')
-    _replace_roots = [_item.split('>>>') for _item in _env.split(';') if _item]
-    _LOGGER.debug(' - REPLACE ROOTS %s', _replace_roots)
-    for _find, _replace in _replace_roots:
-        if _path.startswith(_find):
-            _LOGGER.debug(' - REPLACE ROOT %s -> %s', _find, _replace)
-            _path = _replace + _path[len(_find):]
-            _LOGGER.debug(' - UPDATE %s', _path)
+    _path = _apply_replace_root(_path)
 
     # Fix non-abs paths
     _LOGGER.debug(' - IS ABS %d %s', is_abs(_path), _path)
@@ -175,6 +169,40 @@ def abs_path(path, win=False, root=None):
     _LOGGER.debug(' - NORMALISED %s', _path)
     if win:
         _path = _path.replace('/', '\\')
+
+    return _path
+
+
+def _apply_replace_root(path):
+    """Apply $PINI_ABS_PATH_REPLACE_ROOTS root replacement.
+
+    This can be used to apply an OS change or to unify alternative mounts.
+
+    eg. os.environ['PINI_ABS_PATH_REPLACE_ROOTS'] = ';'.join([
+        'S:/Projects>>>/mnt/projects',
+        'T:/Pipeline>>>/mnt/pipeline'])
+
+    Any paths within the left hand root will be updated to use the right
+    hand root.
+
+    Args:
+        path (str): path to update
+
+    Returns:
+        (str): updated path
+    """
+    _path = path
+    _env = os.environ.get('PINI_ABS_PATH_REPLACE_ROOTS')
+    if not _env:
+        return _path
+
+    _replace_roots = [_item.split('>>>') for _item in _env.split(';') if _item]
+    _LOGGER.debug(' - REPLACE ROOTS %s', _replace_roots)
+    for _find, _replace in _replace_roots:
+        if _path.startswith(_find):
+            _LOGGER.debug(' - REPLACE ROOT %s -> %s', _find, _replace)
+            _path = _replace + _path[len(_find):]
+            _LOGGER.debug(' - UPDATE %s', _path)
 
     return _path
 

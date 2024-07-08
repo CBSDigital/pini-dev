@@ -1,3 +1,31 @@
+## [3.3.0] - Mon 2024-07-08 14:22
+### Summary
+ - Pini Helper:
+    - maya shaders publish implemented top node attribute linking (eehemann),
+    - maya cache bugfix shotgrid error on overwrite existing cache (nle),
+ - Pyui:
+    - allow drag file paths from window explorer,
+### Updated
+ - pini.utils.abs_path fix bad path on file:///C:/etc style paths,
+ - pini.utils.File.bkp added force flag,
+ - pini.dcc.CMayaRef.attach_shaders added force/tag args,
+ - pini.dcc.CMayaShadersRef.attach_to added top node attr handling,
+ - pini.pipe.CPOutput apply task sort,
+ - pini.pipe.CACHE.CCPOutput.find_lookdev_shaders added tag arg,
+ - pini.pipe.shotgrid.create_pub_file bugfix update existing,
+ - pini.qt.CUiBase renamed _save_settings -> store_settings,
+ - pini.qt.CGraphSpace.flush_elems added,
+ - pini.qt.CGraphSpace.mousePressEvent apply set focus to this widget,
+ - pini.tools.helper scene tab outputs list default version filter is latest,
+ - pini.tools.helper scene tab outputs list use default sorting,
+ - maya_pini.m_pipe.lookdev store linked top node attrs,
+ - maya_pini.m_pipe.find_top_node added,
+ - maya_pini.open_maya.CNode.list_attr added user_defined arg,
+ - maya_pini.open_maya.CPlug added attribute_query/get_min/get_max,
+ - maya_pini.open_maya.CPlug bugfix error on get_default due to miscast node,
+ - maya_pini.tex.Shader.set_ftn added,
+
+
 ## [3.2.0] - Fri 2024-07-05 11:34
 ### Summary
  - Pini Helper:

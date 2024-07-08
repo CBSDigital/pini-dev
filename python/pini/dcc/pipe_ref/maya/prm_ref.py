@@ -8,7 +8,7 @@ import logging
 from maya import cmds
 
 from pini import pipe, dcc
-from pini.utils import File, single, abs_path, cache_property
+from pini.utils import File, single, abs_path, cache_property, EMPTY
 
 from maya_pini import open_maya as pom, tex, m_pipe
 from maya_pini.utils import (
@@ -72,7 +72,8 @@ class CMayaRef(prm_base.CMayaPipeRef):
         return self.ref.top_node
 
     @restore_sel
-    def attach_shaders(self, lookdev=None, mode='Reference'):
+    def attach_shaders(
+            self, lookdev=None, mode='Reference', tag=EMPTY, force=False):
         """Attach lookdev shaders to this abc.
 
         Args:
@@ -80,6 +81,8 @@ class CMayaRef(prm_base.CMayaPipeRef):
             mode (str): attach mode
              > Reference - reference nodes using <namespace>_shd namespace
              > Import - import nodes into root namespace
+            tag (str): tag to apply
+            force (bool): replace existing ref without confirmation
         """
         _LOGGER.info('ATTACH SHADERS %s', self)
 
@@ -87,13 +90,13 @@ class CMayaRef(prm_base.CMayaPipeRef):
         if isinstance(lookdev, CMayaShadersRef):
             _look_ref = lookdev
         elif lookdev is None or isinstance(lookdev, pipe.CPOutput):
-            _look_out = lookdev or self.output.find_lookdev_shaders()
+            _look_out = lookdev or self.output.find_lookdev_shaders(tag=tag)
             if not _look_out:
                 _LOGGER.info('NO LOOKDEV FOUND TO ATTACH %s', self)
                 return
             _LOGGER.info(' - LOOKDEV OUT %s', _look_out)
             _look_ref = dcc.create_ref(
-                _look_out, namespace=self.namespace+'_shd')
+                _look_out, namespace=self.namespace+'_shd', force=force)
             _look_ref = dcc.find_pipe_ref(_look_ref.namespace)
         else:
             raise ValueError(lookdev)
@@ -297,6 +300,8 @@ class CMayaShadersRef(CMayaRef):
         self._apply_ai_override_sets(target=target)
         if _data.get('lights'):
             self._apply_lights(target)
+        if _data.get('top_node_attrs'):
+            self._apply_top_node_attrs(target)
 
         # Connect to target
         _LOGGER.info(' - CONNECT TOP NODE %s', target.top_node)
@@ -450,6 +455,26 @@ class CMayaShadersRef(CMayaRef):
                     _plug = _shp.plug[_attr]
                     _LOGGER.debug('   - APPLY VALUE %s %s', _plug, _val)
                     _plug.set_val(_val)
+
+    def _apply_top_node_attrs(self, target):
+        """Apply top node attributes.
+
+        eg. colour switch on top node.
+
+        Args:
+            target (CMayaRef): ref to attach shaders to
+        """
+        _attrs = self.shd_data['top_node_attrs']
+        _LOGGER.info('APPLY TOP NODE ATTRS %s', _attrs)
+        _dummy = self.to_node('DummyTopNode')
+        _LOGGER.info(' - DUMMY %s', _dummy)
+        for _attr in _attrs:
+            _dummy_plug = _dummy.plug[_attr]
+            _LOGGER.info(' - ATTR %s', _dummy_plug)
+            _new_plug = target.top_node.add_attr(
+                _attr, _dummy_plug.get_val(), min_val=_dummy_plug.get_min(),
+                max_val=_dummy_plug.get_max())
+            _new_plug.connect(_dummy_plug)
 
     def find_target(self):
         """Find this lookdev's target.

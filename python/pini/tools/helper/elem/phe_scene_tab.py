@@ -277,7 +277,7 @@ class CLSceneTab(object):
         _opts.append("latest")
         _opts.append("all")
 
-        _sel = _cur if _cur in _opts else _opts[0]
+        _sel = _cur if _cur in _opts else "latest"
         self.ui.SOutputVers.set_items(_opts, select=_sel, emit=True)
         self.ui.SOutputVers.setEnabled(bool(_outs))
 
@@ -314,7 +314,7 @@ class CLSceneTab(object):
 
         # Build items
         _items = []
-        for _out in sorted(_outs, key=_sort_outputs):
+        for _out in sorted(_outs):
             _item = PHOutputItem(
                 helper=self, output=_out, list_view=self.ui.SOutputs,
                 highlight=_out in _scene_outs)
