@@ -1,3 +1,14 @@
+## [3.5.0] - Wed 2024-07-10 14:58
+### Summary
+ - Pini Helper:
+    - maya shaders publish store redshift mesh parameter sets (cstewart),
+### Updated
+ - pini.dcc.pipe_ref CMayaShadersRef._apply_override_sets deprecated token ai_override_sets -> override_sets,
+ - maya_pini.m_pipe.lookdev renamed read_ai_override_sets -> read_override_sets,
+ - maya_pini.m_pipe.lookdev.read_override_sets deprecated token ai_override_sets -> override_sets,
+ - maya_pini.m_pipe.lookdev.read_override_sets added RedshiftMeshParameters handling,
+
+
 ## [3.4.0] - Wed 2024-07-10 12:33
 ### Summary
  - Pini Helper:

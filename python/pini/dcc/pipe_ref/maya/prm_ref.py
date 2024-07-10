@@ -3,6 +3,8 @@
 NOTE: specifically maya references.
 """
 
+# pylint: disable=no-member
+
 import logging
 
 from maya import cmds
@@ -298,7 +300,7 @@ class CMayaShadersRef(CMayaRef):
 
         self._apply_shaders(shds=_shd_data, target=target)
         self._apply_settings(settings=_settings, target=target)
-        self._apply_ai_override_sets(target=target)
+        self._apply_override_sets(target=target)
         if _data.get('lights'):
             self._apply_lights(target)
         if _data.get('top_node_attrs'):
@@ -309,15 +311,21 @@ class CMayaShadersRef(CMayaRef):
         if target.top_node:
             target.top_node.add_attr('shaders', self.ref.ref_node, force=True)
 
-    def _apply_ai_override_sets(self, target):
+    def _apply_override_sets(self, target):
         """Add abc geometry to ai override sets.
 
         Args:
             target (CPipeRef): reference to get geometry from
         """
         _LOGGER.debug('APPLY AI OVERRIDE SETS ref=%s', target)
-        _sets = self.shd_data.get('ai_override_sets', {})  # pylint: disable=no-member
 
+        # Obtain override sets from shd data
+        _sets = self.shd_data.get('override_sets', {})
+        if not _sets:
+            # Legacy format - deprecated 10/07/24
+            _sets = self.shd_data.get('ai_override_sets', {})
+
+        # Rebuild sets with geo from this ref
         for _set, _clean_geos in _sets.items():
 
             _LOGGER.debug(' - APPLYING SET %s %s', _set, _clean_geos)

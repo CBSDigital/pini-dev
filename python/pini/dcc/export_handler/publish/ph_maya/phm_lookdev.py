@@ -364,7 +364,7 @@ def _flush_scene(keep_nodes):
         _keep_nodes |= set(keep_nodes)
 
     # Remove geos from override sets
-    _sets = lookdev.read_ai_override_sets(crop_namespace=False)
+    _sets = lookdev.read_override_sets(crop_namespace=False)
     _LOGGER.debug(' - SETS %s', _sets)
     for _set, _geos in _sets.items():
         _geos = sorted(set(_geos) - _keep_nodes)

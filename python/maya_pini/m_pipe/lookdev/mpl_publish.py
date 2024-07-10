@@ -36,7 +36,7 @@ def find_export_nodes(filter_=None):
     # Add override sets
     if cmds.objExists('overrides_SET'):
         _export_nodes.add('overrides_SET')
-    for _set, _ in read_ai_override_sets().items():
+    for _set, _ in read_override_sets().items():
         _export_nodes.add(_set)
 
     # Add top node if map attrs
@@ -89,10 +89,11 @@ def _build_dummy_top_node():
     return str(_dummy)
 
 
-def read_ai_override_sets(crop_namespace=True):
-    """Read ai override sets.
+def read_override_sets(crop_namespace=True):
+    """Read override sets.
 
-    This is any set contained in override_SET.
+    This is any set contained in override_SET, or any RedshiftMeshParameters
+    nodes if redshift is enabled.
 
     Args:
         crop_namespace (bool): remove namespace from geos
@@ -100,25 +101,28 @@ def read_ai_override_sets(crop_namespace=True):
     Returns:
         (dict): set/geos
     """
-    _data = {}
 
+    # Build list of sets to check
+    _sets = set()
     if cmds.objExists('overrides_SET'):
-
-        # Read sets to export
         _over_set = pom.CNode('overrides_SET')
-        _sets = [_over_set]
+        _sets.add(_over_set)
         for _item in pom.CMDS.sets(_over_set, query=True):
             if _item.object_type() == 'objectSet':
-                _sets.append(_item)
+                _sets.add(_item)
+    if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
+        _sets |= set(pom.find_nodes(type_='RedshiftMeshParameters'))
 
-        for _set in _sets:
-            _geos = set()
-            for _item in pom.CMDS.sets(_set, query=True):
-                if _item.object_type() != 'objectSet':
-                    _geos.add(_item.clean_name if crop_namespace else _item)
-            if not _geos:
-                continue
-            _data[str(_set)] = sorted(_geos)
+    # Read contents of sets
+    _data = {}
+    for _set in _sets:
+        _geos = set()
+        for _item in pom.CMDS.sets(_set, query=True):
+            if _item.object_type() != 'objectSet':
+                _geos.add(_item.clean_name if crop_namespace else _item)
+        if not _geos:
+            continue
+        _data[str(_set)] = sorted(_geos)
 
     return _data
 
@@ -275,7 +279,7 @@ def read_publish_metadata():
     _data['shds'] = _shds
     _data['settings'] = _read_geo_settings()
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
-    _data['ai_override_sets'] = read_ai_override_sets()
+    _data['override_sets'] = read_override_sets()
     _data['lights'] = _read_lights()
     _data['top_node_attrs'] = _read_map_top_node_attrs()
 
