@@ -9,7 +9,7 @@ from maya import cmds, mel
 
 from pini import qt
 from pini.utils import (
-    basic_repr, single, abs_path, File, cache_result)
+    basic_repr, single, abs_path, File, cache_result, passes_filter)
 from maya_pini.utils import (
     to_namespace, to_clean, to_shps, set_col, add_to_grp, to_long,
     add_to_set, add_to_dlayer)
@@ -368,6 +368,26 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         """
         return self.find_connections(
             source=False, type_=type_, connections=connections, plugs=plugs)
+
+    def find_plugs(self, user_defined=False, head=None, filter_=None):
+        """Find plugs on this node.
+
+        Args:
+            user_defined (bool): return only user defined attributes
+            head (str): filter by start of attribute name (eg. vray/ai)
+            filter_ (str): apply attibute name filter
+
+        Returns:
+            (CPlug list): matching plugs
+        """
+        _plugs = []
+        for _plug in self.list_attr(user_defined=user_defined):
+            if head and not _plug.attr.startswith(head):
+                continue
+            if filter_ and not passes_filter(str(_plug.attr), filter_):
+                continue
+            _plugs.append(_plug)
+        return _plugs
 
     def has_attr(self, attr):
         """Check whether this node has the given attribute.

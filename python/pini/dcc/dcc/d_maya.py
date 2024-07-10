@@ -108,7 +108,7 @@ class MayaDCC(BaseDCC):
         # Create reference
         if _abc_mode == 'Reference':
             _ref = self.create_ref(cache, namespace=namespace, force=force)
-            _ref.attach_shaders(lookdev=lookdev, mode=attach_mode)
+            _ref.attach_shaders(lookdev, mode=attach_mode)
         elif _abc_mode == 'aiStandIn':
             _ref = pipe_ref.create_aistandin(path=cache, namespace=namespace)
         else:

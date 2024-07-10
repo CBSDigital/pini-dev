@@ -160,7 +160,7 @@ def find_render_cam(catch=True):
 
     _active = active_cam()
     _LOGGER.debug(' - ACTIVE %s', _active)
-    if _active and _active.renderable.get_val():
+    if _active:
         return _active
 
     _ren = find_cams(renderable=True)

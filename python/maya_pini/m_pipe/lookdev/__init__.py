@@ -2,4 +2,5 @@
 
 from .mpl_publish import (
     read_publish_metadata, read_shader_assignments, read_ai_override_sets,
-    find_export_nodes, export_vrmesh_ma)
+    find_export_nodes)
+from .mpl_vray import export_vrmesh_ma, check_vray_mesh_setting

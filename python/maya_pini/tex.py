@@ -270,9 +270,12 @@ def create_file(ftn=None, colspace='sRGB', name='file'):
     Returns:
         (CNode): file node
     """
+    _LOGGER.debug('CREATE FILE')
     _file = pom.CMDS.shadingNode('file', asUtility=True, name=name)
+    _LOGGER.debug(' - FILE %s', _file)
     if ftn:
         _file.plug['fileTextureName'].set_val(ftn.path)
+        _LOGGER.debug(' - APPLY FTN %s', ftn.path)
     _file.plug['colorSpace'].set_val(colspace)
     return _file
 

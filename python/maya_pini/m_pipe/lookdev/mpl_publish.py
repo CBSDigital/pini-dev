@@ -1,18 +1,16 @@
 """Tools for managing lookdev publishes."""
 
-import copy
 import collections
 import logging
 import re
 
 from maya import cmds
 
-from pini import pipe, dcc
-from pini.utils import passes_filter, File
+from pini import dcc
+from pini.utils import passes_filter
 
 from maya_pini import open_maya as pom, tex
-from maya_pini.utils import (
-    to_clean, to_long, to_namespace, to_parent, save_scene)
+from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
 
 from .. import mp_utils
 
@@ -89,108 +87,6 @@ def _build_dummy_top_node():
         for _trg in _conns:
             _dummy_attr.connect(_trg, force=True)
     return str(_dummy)
-
-
-def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
-    """Build vrmesh proxy node.
-
-    Saves out a vrmesh proxy to disk from the given geo, and then uses the
-    same script to rebuild the node with shaders. This is useful because
-    it's hard to script attaching the shaders to the proxy node.
-
-    Args:
-        file_ (File): vrmesh file location to save to
-        geo (str list): geometry to save
-        node (str): name for proxy node
-        animation (bool): export animation
-        force (bool): overwrite existing vrmesh file without confirmation
-
-    Returns:
-        (str): proxy node
-    """
-
-    _file = File(file_)
-
-    _node = node
-    if cmds.objExists(_node):
-        _LOGGER.info(' - DELETE EXISTING PROXY NODE %s', _node)
-        cmds.delete(_node)
-
-    _file.delete(force=force)
-    _file.test_dir()
-
-    cmds.loadPlugin('vrayformaya', quiet=True)
-    cmds.select(geo)
-    _LOGGER.info(' - WRITE VRMESH %s', _file.path)
-    _kwargs = {}
-    if animation:
-        _kwargs['animOn'] = True
-        _kwargs['animType'] = 1  # Playback range
-    else:
-        _kwargs['animType'] = 0
-
-    cmds.vrayCreateProxy(
-        dir=_file.to_dir().path,
-        makeBackup=True, createProxyNode=True, newProxyNode=True,
-        ignoreHiddenObjects=True, oneVoxelPerMesh=True, exportHierarchy=True,
-        exportType=1, facesPerVoxel=20000, fname=_file.filename,
-        node=_node, pointSize=0, previewFaces=10000,
-        previewType='combined', velocityIntervalEnd=0.05,
-        velocityIntervalStart=0, **_kwargs)
-    _LOGGER.info(' - BUILT PROXY NODE %s', _node)
-
-    return _node
-
-
-def export_vrmesh_ma(metadata, animation=False, force=False):
-    """Export vrmesh maya scene.
-
-    Saves a maya scene containing a shaded vrmesh proxy file.
-
-    Args:
-        metadata (dict): publish metadata
-        animation (bool): export animation
-        force (bool): overwrite existing without confirmation
-
-    Returns:
-        (CPOutput): vrmesh maya scene file
-    """
-    _LOGGER.info('EXPORT VRMESH MA')
-
-    # Find export geo
-    _geo = mp_utils.read_cache_set()
-    _LOGGER.info(' - GEO %s', _geo)
-    if not _geo:
-        _LOGGER.info(' - NO GEO FOUND')
-        return None
-
-    # Setup export paths
-    _vrm = pipe.cur_work().to_output(
-        'publish', output_type='vrmesh', extn='vrmesh')
-    _LOGGER.info(' - VRM %s', _vrm)
-    _vrm_ma = pipe.cur_work().to_output(
-        'publish', output_type='vrmesh', extn='ma')
-    _LOGGER.info(' - MA %s', _vrm_ma)
-    for _file in [_vrm, _vrm_ma]:
-        _file.delete(wording='Replace', force=force)
-
-    # Setup metadata
-    _data = copy.copy(metadata)
-    for _key in ['shd_yml']:
-        _data.pop(_key, None)
-    _data['vrmesh'] = _vrm.path
-
-    _pxy = _build_vrmesh_proxy(
-        file_=_vrm, geo=_geo, animation=animation, force=force)
-
-    # Save proxy ma
-    cmds.select(_pxy)
-    assert not _vrm_ma.exists()
-    save_scene(_vrm_ma, selection=True, force=force)
-    cmds.delete(_pxy)
-    _vrm_ma.set_metadata(_data)
-
-    return _vrm_ma
 
 
 def read_ai_override_sets(crop_namespace=True):
@@ -310,14 +206,21 @@ def _read_geo_settings():
                 'aiOpaque',
                 'aiSubdivIterations',
                 'aiSubdivType']
+        if 'vray' in dcc.allowed_renderers():
+            _attrs += [
+                _attr for _attr in cmds.listAttr(_geo.shp, userDefined=True)
+                if _attr.startswith('vray')]
 
         # Read non-default settings
         for _attr in _attrs:
             if not _geo.shp.has_attr(_attr):
                 continue
             _plug = _geo.shp.plug[_attr]
-            _def = _plug.get_default()
+            _type = _plug.get_type()
+            if _type in ('typed', ):
+                continue
             _val = _plug.get_val()
+            _def = _plug.get_default()
             if _val != _def:
                 _settings[str(_geo)][_attr] = _val
 

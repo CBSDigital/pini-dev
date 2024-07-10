@@ -1055,7 +1055,7 @@ def _apply_lookdev(ref, lookdev):
     """
     _LOGGER.info('APPLY LOOKDEV %s %s', ref, lookdev)
     _ref = dcc.find_pipe_ref(ref.namespace)
-    _ref.attach_shaders(lookdev=lookdev)
+    _ref.attach_shaders(lookdev)
 
 
 def _sort_asset_type(type_):

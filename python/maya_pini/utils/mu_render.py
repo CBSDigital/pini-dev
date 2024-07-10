@@ -90,7 +90,7 @@ def render_frame(
     # Get camera
     _cam = camera
     if not _cam:
-        _cam = single(pom.find_cams(default=None, renderable=True))
+        _cam = pom.find_render_cam()
     _LOGGER.debug(' - CAM %s', _cam)
 
     # Prepare output path

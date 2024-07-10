@@ -11,6 +11,7 @@ from pini import pipe, dcc
 from pini.utils import File, single, abs_path, cache_property, EMPTY
 
 from maya_pini import open_maya as pom, tex, m_pipe
+from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace)
 
@@ -73,11 +74,11 @@ class CMayaRef(prm_base.CMayaPipeRef):
 
     @restore_sel
     def attach_shaders(
-            self, lookdev=None, mode='Reference', tag=EMPTY, force=False):
+            self, lookdev_=None, mode='Reference', tag=EMPTY, force=False):
         """Attach lookdev shaders to this abc.
 
         Args:
-            lookdev (CPOutput|CMayaShadersRef): lookdev to attach
+            lookdev_ (CPOutput|CMayaShadersRef): lookdev to attach
             mode (str): attach mode
              > Reference - reference nodes using <namespace>_shd namespace
              > Import - import nodes into root namespace
@@ -87,10 +88,10 @@ class CMayaRef(prm_base.CMayaPipeRef):
         _LOGGER.info('ATTACH SHADERS %s', self)
 
         # Find lookdev ref
-        if isinstance(lookdev, CMayaShadersRef):
-            _look_ref = lookdev
-        elif lookdev is None or isinstance(lookdev, pipe.CPOutput):
-            _look_out = lookdev or self.output.find_lookdev_shaders(tag=tag)
+        if isinstance(lookdev_, CMayaShadersRef):
+            _look_ref = lookdev_
+        elif lookdev_ is None or isinstance(lookdev_, pipe.CPOutput):
+            _look_out = lookdev_ or self.output.find_lookdev_shaders(tag=tag)
             if not _look_out:
                 _LOGGER.info('NO LOOKDEV FOUND TO ATTACH %s', self)
                 return
@@ -99,7 +100,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
                 _look_out, namespace=self.namespace+'_shd', force=force)
             _look_ref = dcc.find_pipe_ref(_look_ref.namespace)
         else:
-            raise ValueError(lookdev)
+            raise ValueError(lookdev_)
         _LOGGER.info(' - LOOKDEV REF %s', _look_ref)
 
         # Attach
@@ -452,6 +453,8 @@ class CMayaShadersRef(CMayaRef):
                 continue
             for _shp in _tfm.to_shps():
                 for _attr, _val in _settings.items():
+                    if _attr.startswith('vray'):
+                        lookdev.check_vray_mesh_setting(mesh=_shp, attr=_attr)
                     _plug = _shp.plug[_attr]
                     _LOGGER.debug('   - APPLY VALUE %s %s', _plug, _val)
                     _plug.set_val(_val)

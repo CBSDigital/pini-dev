@@ -238,6 +238,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         _LOGGER.debug(
             'GET DEFAULT %s attr=%s node=%s', self, self.attr, self.node)
         _defs = self.attribute_query(listDefault=True)
+        if not _defs:
+            return None
         _LOGGER.debug(' - DEFAULTS %s', _defs)
         _def = single(_defs)
         _type = self.get_type()
@@ -683,6 +685,9 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
     def unlock(self):
         """Unlock this plug."""
         self.isLocked = False  # pylint: disable=invalid-name,attribute-defined-outside-init
+
+    def __hash__(self):
+        return hash(str(self))
 
     def __lt__(self, other):
         return str(self) < str(other)

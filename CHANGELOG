@@ -1,3 +1,22 @@
+## [3.4.0] - Wed 2024-07-10 12:33
+### Summary
+ - Pini Helper:
+    - maya shaders publish transfer vray mesh attributes (eehemann),
+### Updated
+ - pini.dcc.CMayaRef.attach_shaders renamed arg lookdev -> lookdev_ to avoid name clash,
+ - pini.dcc.CMayaShadersRef._apply_settings added vray mesh settings handling,
+ - pini.tools.pyui reload mod before rebuild to avoid losing existing ui,
+ - maya_pini.utils.render_frame using pom.find_render_cam if no cam passed,
+ - maya_pini.m_pipe.lookdev check_vray_mesh_setting added,
+ - maya_pini.m_pipe.lookdev added mpl vray submodule,
+ - maya_pini.m_pipe.lookdev read/save vray settings to shd_yml,
+ - maya_pini.open_maya.CNode.find_plugs added,
+ - maya_pini.open_maya.CPlug.get_default catch typed attrs w/o default,
+ - maya_pini.open_maya.CPlug.__hash__ added,
+ - maya_pini.open_maya.find_render_cam use active cam even if not renderable,
+ - startup/menu.py run pini install in try/except to avoid blocking startup,
+
+
 ## [3.3.0] - Mon 2024-07-08 14:22
 ### Summary
  - Pini Helper:
