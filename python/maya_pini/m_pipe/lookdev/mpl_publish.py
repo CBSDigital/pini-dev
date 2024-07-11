@@ -211,8 +211,9 @@ def _read_geo_settings():
                 'aiSubdivIterations',
                 'aiSubdivType']
         if 'vray' in dcc.allowed_renderers():
+            _user_attrs = cmds.listAttr(_geo.shp, userDefined=True) or []
             _attrs += [
-                _attr for _attr in cmds.listAttr(_geo.shp, userDefined=True)
+                _attr for _attr in _user_attrs
                 if _attr.startswith('vray')]
 
         # Read non-default settings

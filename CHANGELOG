@@ -1,3 +1,11 @@
+## [3.5.2] - Thu 2024-07-11 14:43
+### Summary
+ - Pini Helper:
+    - lookdev publish bugfix error on publish with no user-defined settings on mesh,
+### Updated
+ - maya_pini.m_pipe.lookdev bugfix error on publish w/o user settings,
+
+
 ## [3.5.1] - Thu 2024-07-11 14:33
 ### Summary
  - Sanity Check:
