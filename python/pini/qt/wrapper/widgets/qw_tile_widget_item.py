@@ -91,7 +91,10 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
             _strip_tile_w = _strip_tile_h
             _LOGGER.debug(
                 ' - STRIP TILE SIZE %dx%d', _strip_tile_w, _strip_tile_h)
-            _strip_tile_n = self._filmstrip_pix.width() / _strip_tile_w
+            if _strip_tile_w:
+                _strip_tile_n = self._filmstrip_pix.width() / _strip_tile_w
+            else:
+                _strip_tile_n = 0
             _strip_scroll = min(
                 _strip_tile_n - 1,
                 int(math.floor(self.t_fr * _strip_tile_n)))

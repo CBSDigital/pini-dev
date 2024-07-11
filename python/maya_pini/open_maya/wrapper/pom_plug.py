@@ -477,19 +477,21 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         return _mod_out
 
-    def multiply(self, input_, output=None, force=False):
+    def multiply(self, input_, output=None, name='multiply', force=False):
         """Build a multiply node with this plug as first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
+            name (str): override node name
             force (bool): replace any existing connection on the output
 
         Returns:
             (CPlug): output connection
         """
         from maya_pini import open_maya as pom
-        _mult = pom.CMDS.createNode('multiplyDivide')
+
+        _mult = pom.CMDS.createNode('multiplyDivide', name=name)
         cmds.connectAttr(self, _mult.plug['input1X'])
 
         # Set/connect input
@@ -505,18 +507,19 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         return _out
 
-    def plus(self, input_, output=None, force=False):
+    def plus(self, input_, output=None, name='plus', force=False):
         """Build a plus node in with this plug as the first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
+            name (str): override node name
             force (bool): replace any existing output connection
 
         Returns:
             (CPlug): output plug on add node
         """
-        return plus_plug(self, input_, output=output, force=force)
+        return plus_plug(self, input_, output=output, name=name, force=force)
 
     def reverse(self):
         """Build a reverse node and connect it to this node.
@@ -699,20 +702,21 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         return basic_repr(self, self.name, separator='|')
 
 
-def plus_plug(input1, input2, output=None, force=False):
+def plus_plug(input1, input2, output=None, name='plus', force=False):
     """Build a plus node in with the given values as inputs.
 
     Args:
         input1 (CPlug|float): first/left value
         input2 (CPlug|float): second/right value
         output (CPlug): output
+        name (str): override node name
         force (bool): replace any existing output connection
 
     Returns:
         (CPlug): output plug on add node
     """
     _LOGGER.debug('PLUG PLUG')
-    _add = cmds.createNode('plusMinusAverage', name='plus')
+    _add = cmds.createNode('plusMinusAverage', name=name)
     _connect_types = tuple(list(six.string_types)+[CPlug])
 
     # Determine attr size

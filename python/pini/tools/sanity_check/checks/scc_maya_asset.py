@@ -269,7 +269,7 @@ class CheckUVs(SCMayaCheck):
                 _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
-                _msg = 'Geo {} is using has empty uv set map1'.format(geo)
+                _msg = 'Geo "{}" empty uv set "map1"'.format(geo)
                 self.add_fail(_msg, node=geo)
             return
 

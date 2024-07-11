@@ -5,7 +5,8 @@ import logging
 from maya import cmds
 from maya.api import OpenMaya as om
 
-from pini.utils import single, passes_filter
+from pini.utils import single, passes_filter, EMPTY
+
 from maya_pini import ui
 from maya_pini.utils import to_shp, DEFAULT_NODES, to_node
 
@@ -101,7 +102,7 @@ def find_cam(default=False, orthographic=False, filter_=None, catch=False):
 
 def find_cams(
         default=None, referenced=None, renderable=None, orthographic=False,
-        filter_=None):
+        namespace=EMPTY, filter_=None):
     """Find cameras in the current scene.
 
     Args:
@@ -109,6 +110,7 @@ def find_cams(
         referenced (bool): filter by camera referenced state
         renderable (bool): filter by renderable state
         orthographic (bool): filter by orthographic state
+        namespace (str): apply namespace filter
         filter_ (str): apply name filter
 
     Returns:
@@ -121,6 +123,15 @@ def find_cams(
         # Hack to ignore tmp light cameras
         if not isinstance(_cam, CCamera):
             continue
+
+        # Apply namespace filter
+        if namespace is not EMPTY:
+            if not namespace:
+                if _cam.namespace:
+                    continue
+            else:
+                if _cam.namespace != namespace:
+                    continue
 
         if filter_ and not passes_filter(str(_cam), filter_):
             continue

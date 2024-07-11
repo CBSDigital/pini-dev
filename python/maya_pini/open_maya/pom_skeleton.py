@@ -12,8 +12,8 @@ from maya import cmds
 
 from pini import dcc, qt
 from pini.utils import (
-    single, cache_property, basic_repr, apply_filter, passes_filter, File,
-    cache_result, EMPTY)
+    single, cache_property, basic_repr, passes_filter, File, cache_result,
+    EMPTY)
 
 from maya_pini.utils import to_clean, bake_results, to_namespace, to_node
 
@@ -429,20 +429,26 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
     """
     _skels = find_skeletons(namespace=namespace, referenced=referenced)
 
-    # Try match as namespace
-    if match and len(_skels) > 1:
-        _ns_matches = [_skel for _skel in _skels if _skel.namespace == match]
-        if _ns_matches:
-            _skels = _ns_matches
+    if len(_skels) == 1:
+        return single(_skels)
+
+    _ns_matches = [_skel for _skel in _skels if _skel.namespace == match]
+    if len(_ns_matches) == 1:
+        return single(_ns_matches)
+
+    _root_matches = [_skel for _skel in _skels if _skel.root == match]
+    if len(_root_matches) == 1:
+        return single(_root_matches)
 
     # Try match as namespace filter
-    if match and len(_skels) > 1:
-        _filter_matches = apply_filter(
-            _skels, filter_=match, key=operator.attrgetter('namespace'))
-        if _filter_matches:
-            _skels = _filter_matches
+    _ns_filter_matches = [
+        _skel for _skel in _skels
+        if _skel.namespace and
+        passes_filter(_skel.namespace, match)]
+    if len(_ns_filter_matches) == 1:
+        return single(_ns_filter_matches)
 
-    return single(_skels, items_label='skeletons')
+    raise ValueError('Failed to find skeleton {}'.format(match or namespace))
 
 
 def find_skeletons(namespace=EMPTY, filter_=None, referenced=None):

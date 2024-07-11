@@ -1,3 +1,15 @@
+## [3.5.1] - Thu 2024-07-11 14:33
+### Summary
+ - Sanity Check:
+    - check uvs fix bad message on empty map,
+### Updated
+ - pini.qt.QTileWidgetItem added handing for no filmstrip,
+ - pini.tools.sanity_check.CheckUVs bugfix typo on empty map,
+ - maya_pini.open_maya.find_cams added namespace filter,
+ - maya_pini.open_maya.find_skeleton match by root,
+ - maya_pini.open_maya.CPlug plus/multiple added name args,
+
+
 ## [3.5.0] - Wed 2024-07-10 14:58
 ### Summary
  - Pini Helper:
