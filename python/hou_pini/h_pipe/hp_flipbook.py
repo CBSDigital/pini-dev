@@ -73,7 +73,7 @@ def flipbook(
     _sv = toolutils.sceneViewer()
     _vp = _sv.curViewport()
     _cam = _vp.camera()
-    _work = pipe.CACHE.cur_work
+    _work = pipe.CACHE.obt_cur_work()
     _fps = dcc.get_fps()
     _LOGGER.info(' - CAM %s', _cam)
 

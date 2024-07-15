@@ -1,3 +1,11 @@
+## [3.6.1] - Mon 2024-07-15 11:17
+### Summary
+ - Houdini Tools:
+    - bugfix error on flipbook if versioned up outside pipeline (achepkrakov),
+### Updated
+ - hou_pini.h_pipe.flipbook use pipe.CACHE.obt_cur_work,
+
+
 ## [3.6.0] - Mon 2024-07-15 10:56
 ### Summary
  - Sanity Check:
