@@ -14,29 +14,32 @@ CURRENT_ICON = icons.find('Star')
 UPDATE_ICON = icons.find('Gear')
 
 ABC_ICON = icons.find('Input Latin Letters')
-ABC_BG_ICON = icons.find('Blue Square')
 ASS_ICON = icons.find('Peach')
-ARCHIVE_ICON = icons.find('Red Paper Lantern')
-BLAST_ICON = icons.find('Collision')
 CAM_ICON = icons.find('Movie Camera')
 CSET_ICON = icons.find('Urn')
 FBX_ICON = icons.find('Worm')
-FBX_BG_ICON = icons.find('Green Square')
-LOOKDEV_BG_ICON = icons.find('Green circle')
-LOOKDEV_ICON = icons.find('Palette')
 MAYA_FILE_ICON = icons.find('Moai')
 MISSING_FROM_CACHE_ICON = icons.find('Adhesive Bandage')
-MODEL_ICON = icons.find('Ice')
 NUKE_FILE_ICON = icons.find('Radioactive')
-PLATE_ICON = icons.find('Plate')
-RENDER_ICON = icons.find('Film Frames')
-RIG_ICON = icons.find('Bone')
-RS_ICON = icons.find('Police Car Light')
-RS_BG_ICON = icons.find('Red Circle')
 USD_ICON = icons.find('Milky Way')
 VDB_ICON = icons.find('Cloud')
 VIDEO_ICON = icons.find('Videocassette')
+
+ABC_BG_ICON = icons.find('Blue Square')
+FBX_BG_ICON = icons.find('Green Square')
+LOOKDEV_BG_ICON = icons.find('Green circle')
+RS_BG_ICON = icons.find('Red Circle')
 VRMESH_BG_ICON = icons.find('Orange circle')
+
+ARCHIVE_TYPE_ICON = icons.find('Red Paper Lantern')
+BLAST_TYPE_ICON = icons.find('Collision')
+CURVES_TYPE_ICON = icons.find('Thread')
+LOOKDEV_TYPE_ICON = icons.find('Palette')
+MODEL_TYPE_ICON = icons.find('Ice')
+PLATE_TYPE_ICON = icons.find('Plate')
+RENDER_TYPE_ICON = icons.find('Film Frames')
+RIG_TYPE_ICON = icons.find('Bone')
+RS_TYPE_ICON = icons.find('Police Car Light')
 
 EXTN_ICONS = {
     'abc': ABC_ICON,
@@ -63,6 +66,7 @@ _WORK_ICONS = icons.EMOJI.find_grp('COOL')
 _8_BALL_ICON = icons.find('Pool 8 Ball')
 
 _NAME_MAP = {
+    'apple': 'Green Apple',
     'bottle': 'Bottle with Popping Cork',
     'chesspieces': 'Chess Pawn',
     'christmaspresents': 'Gift',
@@ -82,6 +86,7 @@ _NAME_MAP = {
     'palms': "Palm Tree",
     'personm': "Men's Room",
     'personf': "Women's Room",
+    'pumpkin': 'Jack-O-Lantern',
     'rocketship': 'Rocket',
     'screen': 'Television',
     'snowflakes': 'Snowflake',
@@ -325,7 +330,7 @@ def output_to_icon(output, overlay=None, force=False):
     elif output.asset_type == 'utl' and output.asset == 'camera':
         _icon = CAM_ICON
     elif output.asset_type == 'utl' and output.asset == 'lookdev':
-        _icon = LOOKDEV_ICON
+        _icon = LOOKDEV_TYPE_ICON
     elif (
             output.type_ in ('publish', 'publish_seq') and
             output.pini_task == 'lookdev' and
@@ -404,15 +409,17 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         (str): path to icon
     """
     if output.nice_type == 'render':
-        return RENDER_ICON
+        return RENDER_TYPE_ICON
     if output.nice_type == 'plate':
-        return PLATE_ICON
+        return PLATE_TYPE_ICON
     if output.nice_type == 'blast':
-        return BLAST_ICON
+        return BLAST_TYPE_ICON
     if output.content_type == 'VrmeshMa':
-        return ARCHIVE_ICON
+        return ARCHIVE_TYPE_ICON
     if output.content_type == 'RedshiftProxy':
-        return RS_ICON
+        return RS_TYPE_ICON
+    if output.content_type == 'CurvesMa':
+        return CURVES_TYPE_ICON
 
     if (
             output.extn not in ('ma', 'mb') and
@@ -420,9 +427,9 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         return EXTN_ICONS[output.extn]
 
     _task_map = {
-        'model': MODEL_ICON,
-        'rig': RIG_ICON,
-        'lookdev': LOOKDEV_ICON}
+        'model': MODEL_TYPE_ICON,
+        'rig': RIG_TYPE_ICON,
+        'lookdev': LOOKDEV_TYPE_ICON}
     _step = pipe.map_task(output.step)
     _task = pipe.map_task(output.task)
     return _task_map.get(_step) or _task_map.get(_task)

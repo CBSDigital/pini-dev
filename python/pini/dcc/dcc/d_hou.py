@@ -228,6 +228,16 @@ class HouDCC(BaseDCC):
         """
         node.setSelected(True)
 
+    def set_env(self, work):
+        """Set environment to the given work file in this dcc.
+
+        Apply $JOB to env.
+
+        Args:
+            work (CPWork): work file to apply
+        """
+        hou.putenv('JOB', work.job.path)
+
     def set_range(self, start, end):
         """Set current frame range.
 

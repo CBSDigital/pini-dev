@@ -3,7 +3,7 @@
 from pini import dcc
 
 from .ph_utils import (
-    output_to_icon, work_to_icon, CSET_ICON, CAM_ICON, LOOKDEV_ICON,
+    output_to_icon, work_to_icon, CSET_ICON, CAM_ICON, LOOKDEV_TYPE_ICON,
     ABC_ICON, UPDATE_ICON, is_active, output_to_namespace, obt_recent_work,
     obt_pixmap, output_to_type_icon)
 from .ph_base import (

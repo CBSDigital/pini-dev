@@ -1,3 +1,20 @@
+## [3.6.0] - Mon 2024-07-15 10:56
+### Summary
+ - Sanity Check:
+    - bugfix error on launch with no current scene (nwray),
+### Updated
+ - pini.dcc.set_env added,
+ - pini.dcc.HouDCC.set_env apply $JOB,
+ - pini.dcc.MayaDCC.set_env apply arnold snapshots dir,
+ - pini.pipe.CPWork.set_env use dcc.set_env not hou hardcoded,
+ - pini.tools.helper added CurvesMa handling,
+ - pini.tools.helper added apply/pumpkin icons,
+ - pini.tools.helper better env naming for bg/type icons,
+ - pini.tools.helper.jump_to added handling for no current scene,
+ - pini.tools.helper output find work jump to latest,
+ - maya_pin.utils.reset_ns use try/finally,
+
+
 ## [3.5.2] - Thu 2024-07-11 14:43
 ### Summary
  - Pini Helper:

@@ -112,9 +112,10 @@ def reset_ns(func):
 
     @functools.wraps(func)
     def _reset_ns_func(*args, **kwargs):
-        _result = func(*args, **kwargs)
-        cmds.namespace(set=':')
-        return _result
+        try:
+            return func(*args, **kwargs)
+        finally:
+            cmds.namespace(set=':')
 
     return _reset_ns_func
 

@@ -387,6 +387,18 @@ class MayaDCC(BaseDCC):
         """
         cmds.select(node, noExpand=True)
 
+    def set_env(self, work):
+        """Set environment to the given work file in this dcc.
+
+        Set arnold snapshots dir.
+
+        Args:
+            work (CPWork): work file to apply
+        """
+        if cmds.pluginInfo('mtoa', query=True, loaded=True):
+            _dir = work.work_dir.to_subdir('workspace/snapshots')
+            cmds.arnoldRenderView(opt=("Snapshots Folder", _dir.path))
+
     def set_fps(self, fps):
         """Set frame rate.
 

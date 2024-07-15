@@ -201,7 +201,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             if self.target:
                 _tab = 'Scene'
         if not self.target:
-            self.target = pipe.to_entity(path)
+            self.target = pipe.to_entity(path, catch=True)
         _LOGGER.debug(' - TARGET tab=%s %s', _tab, self.target)
 
         # Update ui
@@ -315,6 +315,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _asset = None
         if find_work:
             _src = pipe.map_path(output.metadata.get('src'))
+            _src = pipe.CACHE.obt_work(_src).find_latest()
             menu.add_action(
                 'Find work file', wrap_fn(self.jump_to, _src),
                 icon=icons.FIND, enabled=bool(_src))

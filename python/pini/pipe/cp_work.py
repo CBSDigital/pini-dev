@@ -671,10 +671,7 @@ class CPWork(File):  # pylint: disable=too-many-public-methods
         os.environ['PINI_TAG'] = self.tag or ''
         os.environ['PINI_VER'] = self.ver
 
-        if dcc.NAME == 'hou':
-            import hou
-            hou.putenv('JOB', self.job.path)  # pylint: disable=c-extension-no-member
-
+        dcc.set_env(self)
         for _, _callback in sorted(_SET_WORK_CALLBACKS.items()):
             _callback(self)
 

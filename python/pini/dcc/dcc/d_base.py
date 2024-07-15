@@ -488,6 +488,13 @@ class BaseDCC(object):
         """
         raise NotImplementedError
 
+    def set_env(self, work):
+        """Set environment to the given work file in this dcc.
+
+        Args:
+            work (CPWork): work file to apply
+        """
+
     def set_fps(self, fps):
         """Set frame rate.
 
