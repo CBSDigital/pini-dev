@@ -44,8 +44,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     _cur_tab = None
 
-    def __init__(self, jump_to=None, admin=None, load_settings=True,
-                 show=True, reset_cache=True):
+    def __init__(
+            self, jump_to=None, admin=None, load_settings=True,
+            show=True, reset_cache=True, title=None):
         """Constructor.
 
         Args:
@@ -54,6 +55,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             load_settings (bool): load settings on launch
             show (bool): show on launch
             reset_cache (bool): reset pipeline cache on launch
+            title (str): override helper window title
         """
         _LOGGER.debug('INIT')
         from pini.tools import helper
@@ -79,7 +81,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.ToggleAdmin.setVisible(self._admin_mode)
 
         # Init ui
-        self.setWindowTitle(TITLE)
+        _title = title or TITLE
+        self.setWindowTitle(_title)
         self.set_window_icon(ICON)
 
         self.ui.Job.redraw()

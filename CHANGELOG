@@ -1,7 +1,20 @@
+## [3.7.0] - Tue 2024-07-16 09:50
+### Summary
+ - Pini Helper:
+    - added facility to override helper window title,
+### Updated
+ - pini.dcc.export_handler.build_metadata added range_ arg,
+ - pini.tools.helper.launch added title override,
+ - pini.tools.release.run_tests limit mode values to all/unit/integration,
+ - maya_pini.open_maya.CAnimCurve added t_start/t_end,
+ - maya_pini.open_maya.CReference.anim added,
+ - maya_pini.open_maya.find_refs bugfix error on task filter if off-pipe ref in scene,
+
+
 ## [3.6.1] - Mon 2024-07-15 11:17
 ### Summary
  - Houdini Tools:
-    - bugfix error on flipbook if versioned up outside pipeline (achepkrakov),
+    - bugfix error on flipbook if versioned up outside pipeline (acheprakov),
 ### Updated
  - hou_pini.h_pipe.flipbook use pipe.CACHE.obt_cur_work,
 

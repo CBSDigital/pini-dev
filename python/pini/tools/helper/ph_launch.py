@@ -15,8 +15,9 @@ _LOGGER = logging.getLogger(__name__)
 
 @usage.get_tracker('LaunchPiniHelper')
 @error.catch
-def launch(jump_to=None, admin=None, parent=None, load_settings=True, show=True,
-           use_basic=False, reset_cache=True):
+def launch(
+        jump_to=None, admin=None, parent=None, load_settings=True, show=True,
+        use_basic=False, reset_cache=True, title=None):
     """Launch PiniHelper interface.
 
     Args:
@@ -27,6 +28,7 @@ def launch(jump_to=None, admin=None, parent=None, load_settings=True, show=True,
         show (bool): show on launch
         use_basic (bool): ignore any dcc overrides
         reset_cache (bool): reset pipeline cache on launch
+        title (str): override helper window title
 
     Returns:
         (PiniHelper): PiniHelper instance

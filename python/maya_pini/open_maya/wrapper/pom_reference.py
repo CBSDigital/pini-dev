@@ -67,6 +67,20 @@ class CReference(om.MFnReference, ref.FileRef):
             self, _ref_node, allow_no_namespace=allow_no_namespace)
 
     @property
+    def anim(self):
+        """Obtain list of anim curves for this reference.
+
+        Returns:
+            (CAnimCurve list): anim curves
+        """
+        _anims = []
+        for _plug in self.plugs:
+            _anim = _plug.to_anim()
+            if _anim:
+                _anims.append(_anim)
+        return _anims
+
+    @property
     def ctrls(self):
         """Obtain list of controls on this reference (from ctrls_SET).
 
@@ -356,7 +370,7 @@ def find_refs(
             _LOGGER.debug('   - FAILS FILTER')
             continue
         if task:
-            _out = pipe.to_output(_ref.path)
+            _out = pipe.to_output(_ref.path, catch=True)
             if not _out or _out.task != task:
                 _LOGGER.debug('   - FAILS TASK FILTER %s', _out)
                 continue

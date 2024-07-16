@@ -95,9 +95,16 @@ def run_tests(mode='all', tests=None, safe=True, force=False):
     _tests = list(tests) if tests else find_tests(mode=mode)
     _tests.sort(key=_test_sort_key)
 
-    if not force and mode and mode.lower() != 'unit':
-        dcc.handle_unsaved_changes()
+    # Handle unsaved changes
+    if not force:
+        if mode != 'unit':
+            dcc.handle_unsaved_changes()
+        elif mode in ('integration', 'all'):
+            pass
+        else:
+            raise ValueError(mode)
 
+    # Run tests
     for _idx, _test in qt.progress_bar(
             enumerate(_tests, start=1), 'Running {:d} test{}',
             stack_key='RunTests', show=len(_tests) > 1):

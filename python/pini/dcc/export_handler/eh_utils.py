@@ -7,8 +7,8 @@ from pini.utils import get_user
 
 
 def build_metadata(
-        handler, action=None, work=None, sanity_check_=False,
-        force=False, notes=None, task=None, source=None, content_type=None):
+        handler, action=None, work=None, sanity_check_=False, range_=None,
+        notes=None, task=None, source=None, content_type=None, force=False):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -16,11 +16,12 @@ def build_metadata(
         action (str): name of action (to pass to sanity check)
         work (CPWork): override workfile to read metadata from
         sanity_check_ (bool): run sanity checks before publish
-        force (bool): force completion without any confirmations
+        range_ (tuple): override range start/end
         notes (str): export notes
         task (str): task to pass to sanity check
         source (str): path to source file
         content_type (str): apply content type data (eg. ShadersMa/VrmeshMa)
+        force (bool): force completion without any confirmations
 
     Returns:
         (dict): metadata
@@ -41,7 +42,7 @@ def build_metadata(
     _data['handler'] = handler
     _data['mtime'] = int(time.time())
     _data['owner'] = get_user()
-    _data['range'] = dcc.t_range(int)
+    _data['range'] = range_ or dcc.t_range(int)
     _data['dcc'] = dcc.NAME
     _data['fps'] = dcc.get_fps()
     _data['dcc_version'] = dcc.to_version()

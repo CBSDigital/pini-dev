@@ -140,6 +140,46 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             self, edit=True, option='over', timeChange=offset,
             includeUpperBound=True, relative=True)
 
+    def t_start(self, class_=None):
+        """Obtain start frame.
+
+        Args:
+            class_ (type): override result class
+
+        Returns:
+            (float): start frame
+        """
+        _ktvs = self.get_ktvs()
+        _ts = [_t for _t, _ in _ktvs]
+        _start = min(_ts)
+        if class_ is float or class_ is None:
+            pass
+        elif class_ is int:
+            _start = int(round(_start, 0))
+        else:
+            raise ValueError(class_)
+        return _start
+
+    def t_end(self, class_=None):
+        """Obtain end frame.
+
+        Args:
+            class_ (type): override result class
+
+        Returns:
+            (float): end frame
+        """
+        _ktvs = self.get_ktvs()
+        _ts = [_t for _t, _ in _ktvs]
+        _end = max(_ts)
+        if class_ is float or class_ is None:
+            pass
+        elif class_ is int:
+            _end = int(round(_end, 0))
+        else:
+            raise ValueError(class_)
+        return _end
+
     def t_range(self, class_=None):
         """Obtain timeline range for this node.
 
@@ -149,18 +189,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (tuple): start/end frames
         """
-        _ktvs = self.get_ktvs()
-        _ts = [_t for _t, _ in _ktvs]
-        _start, _end = min(_ts), max(_ts)
-        if class_ is float or class_ is None:
-            pass
-        elif class_ is int:
-            _start = int(round(_start, 0))
-            _end = int(round(_end, 0))
-        else:
-            raise ValueError(class_)
-
-        return _start, _end
+        return self.t_start(class_=class_), self.t_end(class_=class_)
 
 
 def find_anim():

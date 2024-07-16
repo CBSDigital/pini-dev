@@ -19,8 +19,9 @@ _LOGGER = logging.getLogger(__name__)
 class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
     """Pini Helper in maya which docks to the main ui."""
 
-    def __init__(self, admin=None, load_settings=True, jump_to=None,
-                 parent=None, show=True, reset_cache=True):
+    def __init__(
+            self, admin=None, load_settings=True, jump_to=None,
+            parent=None, show=True, reset_cache=True, title=None):
         """Constructor.
 
         Args:
@@ -30,6 +31,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             parent (QDialog): override parent dialog
             show (bool): show on launch
             reset_cache (bool): reset pipeline cache on launch
+            title (str): override helper window title
         """
         from pini.tools import helper
         helper.MIXIN = self
@@ -47,7 +49,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
 
         ph_base.BasePiniHelper.__init__(
             self, admin=admin, load_settings=load_settings, show=False,
-            jump_to=jump_to, reset_cache=reset_cache)
+            jump_to=jump_to, reset_cache=reset_cache, title=title)
 
         self.show(dockable=True)
         self.apply_docking()
