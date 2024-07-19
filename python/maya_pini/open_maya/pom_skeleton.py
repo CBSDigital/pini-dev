@@ -410,7 +410,10 @@ class CSkeleton(object):  # pylint: disable=too-many-public-methods
     def zero(self):
         """Zero out this skeleton."""
         for _jnt in self.joints:
-            _jnt.rotate.set_val((0, 0, 0))
+            for _plug in [_jnt.rx, _jnt.ry, _jnt.rz]:
+                if _plug.is_locked():
+                    continue
+                _plug.set_val(0)
 
     def __repr__(self):
         return basic_repr(self, str(self.root), separator='|')

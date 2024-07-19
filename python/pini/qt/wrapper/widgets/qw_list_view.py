@@ -2,16 +2,34 @@
 
 import logging
 import operator
+import os
 
+from pini import dcc
 from pini.utils import basic_repr, single, EMPTY
 
 from ...q_mgr import QtWidgets, QtGui, Qt, QtCore
 
 _LOGGER = logging.getLogger(__name__)
 
+# Determine default font size
+_DEFAULT_FONT_SIZE = None
+if dcc.NAME:
+    _DCC_ENV = f'PINI_LISTVIEW_{dcc.NAME.upper()}_DEFAULT_FONT_SIZE'
+    if os.environ.get(_DCC_ENV):
+        _DEFAULT_FONT_SIZE = int(os.environ[_DCC_ENV])
+if _DEFAULT_FONT_SIZE is None:
+    _BASIC_ENV = 'PINI_LISTVIEW_DEFAULT_FONT_SIZE'
+    if os.environ.get(_BASIC_ENV):
+        _DEFAULT_FONT_SIZE = int(os.environ[_BASIC_ENV])
+if _DEFAULT_FONT_SIZE is None and dcc.NAME in ('hou', 'terragen'):
+    _DEFAULT_FONT_SIZE = 8
+_LOGGER.info(' - DEFAULT CListView FONT SIZE %s', _DEFAULT_FONT_SIZE)
+
 
 class CListView(QtWidgets.QListView):
     """Wrapper for QListView widget."""
+
+    DEFAULT_FONT_SIZE = _DEFAULT_FONT_SIZE
 
     def __init__(self, *args):
         """Constructor."""

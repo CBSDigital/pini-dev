@@ -1,3 +1,18 @@
+## [3.7.1] - Fri 2024-07-19 12:55
+### Summary
+ - Pini Helper:
+    - terragen fix font size issues (nwray),
+### Updated
+ - pini.utils to_camel/to_pascal use shared regex splitter,
+ - pini.dcc.MayaDCC.set_env create arnold snapshots if missing,
+ - pini.qt.CListView.DEFAULT_FONT_SIZE added with env override $PINI_LISTVIEW_DEFAULT_FONT_SIZE,
+ - pini.qt.build_tmp_icon added mode/over_scale args + force 144x144 size,
+ - pini.qt.to_pixmap added get_application call to avoid segfault on import,
+ - pini.tools.helper.PHWorkItem use CListView.DEFAULT_FONT_SIZE,
+ - maya_pini.open_maya.add_anim_offs returns offs/mult,
+ - maya_pini.open_maya.CSkeleton.zero catch locked rot plugs,
+
+
 ## [3.7.0] - Tue 2024-07-16 09:50
 ### Summary
  - Pini Helper:

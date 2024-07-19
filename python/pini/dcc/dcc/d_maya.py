@@ -397,6 +397,7 @@ class MayaDCC(BaseDCC):
         """
         if cmds.pluginInfo('mtoa', query=True, loaded=True):
             _dir = work.work_dir.to_subdir('workspace/snapshots')
+            _dir.mkdir()
             cmds.arnoldRenderView(opt=("Snapshots Folder", _dir.path))
 
     def set_fps(self, fps):

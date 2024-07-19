@@ -36,6 +36,8 @@ def add_anim_offs(tfm, anim):
     for _crv in anim:
         _anim_t.connect(_crv.input, force=True, break_connections=True)
 
+    return _offs, _mult
+
 
 def cast_node(node, type_=None, class_=None, maintain_shapes=False):
     """Cast a node to an appropriate pom type.

@@ -37,7 +37,9 @@ class SavePolicy(SixIntEnum):
     SAVE_IN_SCENE = 4
 
 
-def build_tmp_icon(file_, base, overlay, base_scale=None):
+def build_tmp_icon(
+        file_, base, overlay, base_scale=None, over_scale=0.45,
+        mode='Map File'):
     """Build tmp icon.
 
     This allows an icon to be built on the fly (eg. for maya shelf) by
@@ -50,6 +52,10 @@ def build_tmp_icon(file_, base, overlay, base_scale=None):
         base (str): base icon (name or path)
         overlay (str): overlay icon (name or path)
         base_scale (float): apply scaling to base icon
+        over_scale (float): apply scaling to overlay icon
+        mode (str): where to store icon file
+            Map File - use file as a map to a path in $TMP
+            Simple File - simply use the file path
 
     Returns:
         (str): path to tmp icon
@@ -59,6 +65,7 @@ def build_tmp_icon(file_, base, overlay, base_scale=None):
 
     # Get base pixmap
     _pix = to_pixmap(base)
+    _pix = _pix.resize(144)
     if base_scale:
         _base = _pix
         _pix = qt.CPixmap(_base.size())
@@ -69,13 +76,19 @@ def build_tmp_icon(file_, base, overlay, base_scale=None):
 
     # Add overlay
     _over = to_pixmap(overlay)
-    _pix.draw_overlay(_over, pos=_pix.size(), anchor='BR', size=65)
+    _over = _over.resize(144*over_scale)
+    _pix.draw_overlay(_over, pos=_pix.size(), anchor='BR')
 
-    # Save to tmp
-    _tmp_fmt = build_cache_fmt(
-        file_, tool='TmpIcons', extn='png', mode='home')
-    _LOGGER.debug(' - TMP FMT %s', _tmp_fmt)
-    _tmp_path = _tmp_fmt.format(func='icon')
+    # Save file
+    if mode == 'Map File':
+        _tmp_fmt = build_cache_fmt(
+            file_, tool='TmpIcons', extn='png', mode='home')
+        _LOGGER.debug(' - TMP FMT %s', _tmp_fmt)
+        _tmp_path = _tmp_fmt.format(func='icon')
+    elif mode == 'Simple File':
+        _tmp_path = file_
+    else:
+        raise ValueError(mode)
     _LOGGER.debug(' - TMP PATH %s', _tmp_path)
     _pix.save_as(_tmp_path, force=True, verbose=0)
 
@@ -393,6 +406,7 @@ def to_pixmap(arg):
         (CPixmap): pixmap
     """
     from pini import qt
+    qt.get_application()
     if isinstance(arg, qt.CPixmap):
         return arg
     if isinstance(arg, File):
