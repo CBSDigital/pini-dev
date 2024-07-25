@@ -65,7 +65,7 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
         qt_safe (bool): make catcher safe to run in qt thread
         supress_error (bool): supress error on exception
     """
-    from pini import qt, icons, dcc
+    from pini import qt, dcc
     from pini.tools import error
 
     from . import e_error, e_dialog
@@ -80,9 +80,7 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     elif isinstance(exc, error.HandledError):
         _title = exc.title or 'Error'
-        qt.notify(
-            str(exc), title=_title, icon=icons.find('Hot Pepper'),
-            parent=parent)
+        qt.notify(str(exc), title=_title, icon=exc.icon, parent=parent)
 
     elif isinstance(exc, error.FileError):
         _LOGGER.info(' - FILE ERROR %s', exc)

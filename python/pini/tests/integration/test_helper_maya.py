@@ -46,7 +46,7 @@ class TestHelper(unittest.TestCase):
 
     def test_store_settings_in_scene_export_handler(self):
 
-        _helper = helper.DIALOG
+        _helper = helper.obt_helper()
         _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
         _remove = export_handler.ReferencesMode.REMOVE
 

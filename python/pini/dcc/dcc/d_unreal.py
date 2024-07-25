@@ -10,9 +10,6 @@ from pini.utils import abs_path
 
 from .d_base import BaseDCC
 
-if not unreal.__file__:
-    raise ImportError('Bad unreal module')
-
 _LOGGER = logging.getLogger(__name__)
 
 

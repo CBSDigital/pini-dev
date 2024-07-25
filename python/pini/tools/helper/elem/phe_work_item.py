@@ -16,9 +16,6 @@ _LOGGER = logging.getLogger(__name__)
 
 # Setup font/metrics
 _FONT = QtGui.QFont()
-_LOGGER.info(
-    ' - FONT %s %s %s', _FONT, _FONT.pointSize(),
-    qt.get_application().font().pointSize())
 _OUTPUT_ICONS_OFFS_X = 195
 _NOTES_OFFS_X = 47
 _THUMB_H = 53
@@ -28,7 +25,7 @@ if qt.CListView.DEFAULT_FONT_SIZE is not None:
     _FONT.setPointSize(8)
     _NOTES_OFFS_X -= 5
     _THUMB_H += 5
-    _LOGGER.info(' - APPLYING DCC FONT %s', dcc.NAME)
+    _LOGGER.debug(' - APPLYING DCC FONT %s', dcc.NAME)
 _METRICS = QtGui.QFontMetrics(_FONT)
 
 _BG_COL = qt.CColor('White')

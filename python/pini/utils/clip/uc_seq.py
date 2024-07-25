@@ -222,7 +222,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 title='Confirm {}'.format(wording.capitalize()),
                 icon=icon or icons.find('Sponge'), parent=parent)
         for _frame in qt.progress_bar(
-                _frames, 'Deleting {:d} file{}', show_delay=1):
+                _frames, 'Deleting {:d} file{}', stack_key='DeleteFrames',
+                show_delay=1):
             _file = File(self[_frame])
             _file.delete(force=True)
         self._frames = set()

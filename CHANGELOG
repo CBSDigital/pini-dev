@@ -1,3 +1,17 @@
+## [3.8.0] - Thu 2024-07-25 15:18
+### Summary
+ - Pini Helper:
+    - lookdev publish added RedshiftMatteParameters/RedshiftVisibility node handling (cstewart),
+### Updated
+ - pini.utils.Seq.delete apply stack_key,
+ - pini.dcc.UnrealDCC remove buggy bad unreal namespace fix,
+ - pini.tools.pyui added catch for arg type changed str -> bool,
+ - pini.tools.helper.obt_helper added,
+ - pini.tools.helper scene refs catch error on work file outside cur dcc,
+ - pini.tools.error allow icon override in HandledError,
+ - maya_pini.m_pipe.lookdev.read_override_sets added RedshiftMatteParameters/RedshiftVisibility,
+
+
 ## [3.7.1] - Fri 2024-07-19 12:55
 ### Summary
  - Pini Helper:

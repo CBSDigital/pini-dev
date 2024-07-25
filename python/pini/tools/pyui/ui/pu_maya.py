@@ -376,7 +376,8 @@ def _build_apply_fn(field):
         if cmds.textField(field, query=True, exists=True):
             cmds.textField(field, edit=True, text=val)
         elif cmds.checkBox(field, query=True, exists=True):
-            cmds.checkBox(field, edit=True, value=val)
+            _val = bool(val)
+            cmds.checkBox(field, edit=True, value=_val)
         elif cmds.intField(field, query=True, exists=True):
             cmds.intField(field, edit=True, value=val)
         elif cmds.optionMenu(field, query=True, exists=True):

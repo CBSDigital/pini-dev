@@ -318,7 +318,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _asset = None
         if find_work:
             _src = pipe.map_path(output.metadata.get('src'))
-            _src = pipe.CACHE.obt_work(_src).find_latest()
+            _src = pipe.CACHE.obt_work(_src)
+            if _src:
+                _src = _src.find_latest(catch=True)
             menu.add_action(
                 'Find work file', wrap_fn(self.jump_to, _src),
                 icon=icons.FIND, enabled=bool(_src))

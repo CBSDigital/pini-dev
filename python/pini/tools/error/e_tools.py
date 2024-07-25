@@ -15,15 +15,18 @@ class HandledError(RuntimeError):
     to the developer.
     """
 
-    def __init__(self, message, title=None):
+    def __init__(self, message, title=None, icon=None):
         """Constructor.
 
         Args:
             message (str): error/dialog message
             title (str): title for error dialog
+            icon (str): path to dialog icon
         """
+        from pini import icons
         super(HandledError, self).__init__(message)
         self.title = title
+        self.icon = icon or icons.find('Hot Pepper')
 
 
 class FileError(RuntimeError):

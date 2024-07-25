@@ -113,6 +113,18 @@ def is_active():
         return False
 
 
+def obt_helper():
+    """Obtaion helper dialog, launching if needed.
+
+    Returns:
+        (PiniHelper): helper instance
+    """
+    from pini.tools import helper
+    if not helper.is_active():
+        helper.launch()
+    return helper.DIALOG
+
+
 def _cache_to_icon(output):
     """Obtain icon for cache output.
 

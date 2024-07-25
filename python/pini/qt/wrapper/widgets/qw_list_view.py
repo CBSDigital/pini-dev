@@ -23,7 +23,7 @@ if _DEFAULT_FONT_SIZE is None:
         _DEFAULT_FONT_SIZE = int(os.environ[_BASIC_ENV])
 if _DEFAULT_FONT_SIZE is None and dcc.NAME in ('hou', 'terragen'):
     _DEFAULT_FONT_SIZE = 8
-_LOGGER.info(' - DEFAULT CListView FONT SIZE %s', _DEFAULT_FONT_SIZE)
+_LOGGER.debug(' - DEFAULT CListView FONT SIZE %s', _DEFAULT_FONT_SIZE)
 
 
 class CListView(QtWidgets.QListView):

@@ -111,7 +111,11 @@ def read_override_sets(crop_namespace=True):
             if _item.object_type() == 'objectSet':
                 _sets.add(_item)
     if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
-        _sets |= set(pom.find_nodes(type_='RedshiftMeshParameters'))
+        for _type in [
+                'RedshiftMeshParameters',
+                'RedshiftMatteParameters',
+                'RedshiftVisibility']:
+            _sets |= set(pom.find_nodes(type_=_type))
 
     # Read contents of sets
     _data = {}
