@@ -23,7 +23,7 @@ from .pom_cmds import CMDS
 from .pom_utils import (
     to_mobject, get_selected, set_loc_scale, to_node, to_mesh, to_m, to_tfm,
     to_p, set_to_geos, set_to_tfms, cast_node, add_anim_offs, find_nodes,
-    selected_node, create_loc, create_square)
+    selected_node, create_loc, create_square, find_node)
 
 from .pom_joint import CJoint
 from .pom_skeleton import (

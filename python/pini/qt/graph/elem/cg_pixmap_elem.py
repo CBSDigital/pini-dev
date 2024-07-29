@@ -4,6 +4,7 @@ This is a graph space element where the pixmap is drawn on each frame.
 """
 
 import logging
+import math
 
 from ... import wrapper, q_utils
 from ...q_mgr import QtCore, QtGui
@@ -69,11 +70,16 @@ class CGPixmapElem(cg_basic_elem.CGBasicElem):
         Returns:
             (QPixmap): element's pixmap (if any)
         """
+        from pini import qt
+
         _rect_p = rect or self.rect_p
-        _size_p = q_utils.to_size(_rect_p.size(), class_=QtCore.QSize)
+        _size_p = qt.to_size(_rect_p.size(), class_=qt.CSizeF)
+        _pix_size = qt.to_size(
+            math.ceil(_size_p.width()),
+            math.ceil(_size_p.height()), class_=QtCore.QSize)
         _size_g = self.graph.p2g(_size_p)
 
-        _pix = wrapper.CPixmap(_size_p)
+        _pix = wrapper.CPixmap(_pix_size)
         _pix.fill('Transparent')
         self._draw_rounded_rect(
             pix=_pix, pos=(0, 0), size=_size_g, space='graph', anchor='TL',

@@ -1,3 +1,24 @@
+## [3.9.0] - Mon 2024-07-29 10:21
+### Summary
+ - Pini Helper:
+    - model publish bugfix delete history + freeze transforms in work file (mkim),
+    - lookdev publish allow for no cache set in referenced geo (eehemann),
+### Updated
+ - pini.utils.str_to_seed use custom random object to allow repr,
+ - pini.utils.find_exe added catch,
+ - pini.dcc.CMayaModelPublish apply delete hist + freeze tfms in clean scene to keep work file intact,
+ - pini.dcc.CMayaModelPublish bugfix missing node error on hist tfm in cache set,
+ - pini.qt.CSizeF.aspect added,
+ - pini.qt.CPainter.apply rotate added L/R anchor handling,
+ - pini.qt.CGraphElem.add_pixmap_elem added,
+ - pini.qt.CGPixmapElem draw pixmap use QSizeF,
+ - pini.qt.CGraphWindow added g2p/p2g,
+ - maya_pini.m_pipe.find_top_node made public,
+ - maya_pini.m_pipe.find_top_node added handling for no cache set,
+ - maya_pini.open_maya.find_node added,
+ - maya_pini.open_maya.CNode.exists added,
+
+
 ## [3.8.0] - Thu 2024-07-25 15:18
 ### Summary
  - Pini Helper:

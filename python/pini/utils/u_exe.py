@@ -114,15 +114,20 @@ def _find_path_exe(name):
 
 
 @cache_result
-def find_exe(name, force=False):
+def find_exe(name, catch=True, force=False):
     """Find an executable on this system.
 
     Args:
         name (str): name of executable to find
+        catch (bool): no error if fail to find exe
         force (bool): force search for exe on disk
 
     Returns:
         (File|None): executable if one is found - otherwise None
     """
-    return (_find_path_exe(name) or
-            _find_programs_exe(name))
+    _exe = _find_path_exe(name) or _find_programs_exe(name)
+    if _exe:
+        return _exe
+    if catch:
+        return None
+    raise OSError('Failed to find exe '+name)

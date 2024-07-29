@@ -674,6 +674,36 @@ def str_to_ints(string, chunk_sep=",", rng_sep="-", end=None, inc=1):
     return _ints
 
 
+class _RandFromStr(random.Random):
+    """Random object seeded by a string."""
+
+    def __init__(self, string, offset=0):
+        """Constructor.
+
+        Args:
+            string (str): seed string
+            offset (int): seed offset
+        """
+        super(_RandFromStr, self).__init__()
+
+        self.string = string
+        self.offset = offset
+
+        if not isinstance(string, six.string_types):
+            raise ValueError(f'Not string {string} ({type(string)})')
+
+        # Build seed
+        _total = offset
+        for _idx, _chr in enumerate(string):
+            self.seed(ord(_chr)*(_idx+1))
+            _total += int(self.random()*100000)
+        self.seed(_total)
+        _LOGGER.debug('STR TO SEED total=%d', _total)
+
+    def __repr__(self):
+        return basic_repr(self, f'"{self.string}"')
+
+
 def str_to_seed(string='', offset=0):
     """Build a Random object with seed based on the given string.
 
@@ -684,16 +714,7 @@ def str_to_seed(string='', offset=0):
     Returns:
         (Random): seeded random object
     """
-    _random = random.Random()
-    if not isinstance(string, six.string_types):
-        raise ValueError('Not string {} ({})'.format(string, type(string)))
-    _total = offset
-    for _idx, _chr in enumerate(string):
-        _random.seed(ord(_chr)*(_idx+1))
-        _total += int(_random.random()*100000)
-    _random.seed(_total)
-    _LOGGER.debug('STR TO SEED total=%d', _total)
-    return _random
+    return _RandFromStr(string, offset=offset)
 
 
 def system(

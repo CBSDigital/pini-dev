@@ -28,6 +28,10 @@ class CPainter(QtGui.QPainter):
 
         if anchor == 'C':
             _pos = qt.CPointF(rect.center())
+        elif anchor == 'L':
+            _pos = qt.CPointF(rect.left(), rect.center().y())
+        elif anchor == 'R':
+            _pos = qt.CPointF(rect.right(), rect.center().y())
         elif anchor == 'T':
             _pos = qt.CPointF(rect.center().x(), rect.top())
         elif anchor == 'TL':

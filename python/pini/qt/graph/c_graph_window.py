@@ -52,6 +52,28 @@ class CGraphWindow(custom.CUiMainWindow):
         self.ui.Graph.legend = legend
         self.ui.Graph.add_draw_callback(self.update_pixmap)
 
+    def g2p(self, item):
+        """Convert object from graph space to pixmap space.
+
+        Args:
+            item (CPointF|CRectF|CSizeF): object to convert
+
+        Returns:
+            (CPointF|CRectF|CSizeF): converted object
+        """
+        return self.ui.Graph.g2p(item)
+
+    def p2g(self, item):
+        """Convert object from pixmap space to graph space.
+
+        Args:
+            item (CPointF|CRectF|CSizeF): object to convert
+
+        Returns:
+            (CPointF|CRectF|CSizeF): converted object
+        """
+        return self.ui.Graph.p2g(item)
+
     def update_pixmap(self, pix):
         """Called on draw space.
 

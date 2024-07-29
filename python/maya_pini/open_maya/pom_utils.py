@@ -234,6 +234,18 @@ def find_connections(
     return _results
 
 
+def find_node(catch=False, **kwargs):
+    """Find node a node in the current scene.
+
+    Args:
+        catch (bool): no error if failed to match exactly one node
+
+    Returns:
+        (CNode): matching node
+    """
+    return single(find_nodes(**kwargs), catch=catch)
+
+
 def find_nodes(
         type_=None, namespace=EMPTY, referenced=None, filter_=None,
         clean_name=None, selected=False, dag_only=False, top_node=False,

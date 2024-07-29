@@ -74,12 +74,6 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _data = metadata or self.build_metadata(
             work=work, force=force, sanity_check_=sanity_check_, task='model')
 
-        _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
-        _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True
-
-        self._clean_geos(
-            delete_history=_del_history, freeze_tfms=_freeze_tfms)
-
         # Execute publish
         _outs = super(CMayaModelPublish, self).publish(
             work=work, force=force, revert=False, metadata=_data,
@@ -91,6 +85,20 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             self._apply_version_up(version_up=version_up)
 
         return _outs
+
+    def _clean_scene(self, references=None):
+        """Apply clean scene options to prepare for publish.
+
+        Args:
+            references (str): how to handle references (eg. Remove)
+        """
+        super(CMayaModelPublish, self)._clean_scene(references=references)
+
+        _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
+        _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True
+
+        self._clean_geos(
+            delete_history=_del_history, freeze_tfms=_freeze_tfms)
 
     def _clean_geos(
             self, delete_history=True, freeze_tfms=True,
@@ -110,6 +118,8 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _tfms = m_pipe.read_cache_set(mode='transforms')
         _LOGGER.info(' - TFMS %s', _tfms)
         for _tfm in _tfms:
+            if not _tfm.exists():
+                continue
             if delete_history:
                 _tfm.delete_history()
             if freeze_tfms:

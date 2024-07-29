@@ -10,6 +10,14 @@ _LOGGER = logging.getLogger(__name__)
 class CSizeF(QtCore.QSizeF):
     """Wrapper for QSizeF object."""
 
+    def aspect(self):
+        """Obtain aspect of this size.
+
+        Returns:
+            (float): width/height
+        """
+        return self.width() / self.height()
+
     def to_tuple(self):
         """Obtain this vector's values.
 

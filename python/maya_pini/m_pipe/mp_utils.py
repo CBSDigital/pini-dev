@@ -35,7 +35,16 @@ def find_top_node():
     Returns:
         (CTransform): top node
     """
-    return single(read_cache_set(mode='top'))
+    _from_set = read_cache_set(mode='top')
+    if _from_set:
+        return single(_from_set)
+    _ref = pom.find_ref(catch=True)
+    if _ref:
+        return _ref.top_node
+    _dag = pom.find_node(top_node=True, default=False, catch=True)
+    if _dag:
+        return _dag
+    raise NotImplementedError('Failed to find top node')
 
 
 def _read_cache_set_nodes(set_, mode):

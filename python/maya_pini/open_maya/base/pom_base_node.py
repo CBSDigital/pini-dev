@@ -331,6 +331,17 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _dup = _results[0]
         return _class(_dup)
 
+    def exists(self):
+        """Test whether this node exists.
+
+        NOTE: this would have to be a node that was created after the api
+        object was constructed.
+
+        Returns:
+            (bool): whether exists
+        """
+        return cmds.objExists(self)
+
     @functools.wraps(pom_utils.find_connections)
     def find_connections(self, **kwargs):
         """Find connections to this node.

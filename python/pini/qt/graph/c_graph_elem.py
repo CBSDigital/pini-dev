@@ -58,6 +58,15 @@ class CGraphElemBase(object):
         from . import elem
         return elem.CGMoveElem(parent=self, **kwargs)
 
+    def add_pixmap_elem(self, **kwargs):
+        """Add pixmap element to the graph.
+
+        Returns:
+            (CGPixmapElem): pixmap element
+        """
+        from . import elem
+        return elem.CGPixmapElem(parent=self, **kwargs)
+
     def add_stretch_elem(self, class_=None, **kwargs):
         """Add stretch element to the graph.
 
