@@ -147,7 +147,7 @@ def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
         catch (bool): no error if conversion fails
         force (bool): replace existing without confirmation
     """
-    _ffmpeg = find_exe('ffmpeg')
+    _ffmpeg = find_exe('ffmpeg', catch=True)
     _cmds = [_ffmpeg]
     if colspace:
         _cmds += ['-apply_trc', colspace]
@@ -155,6 +155,7 @@ def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
 
     trg.delete(force=force, wording='Replace')
     assert not trg.exists()
+    trg.to_dir().mkdir()
     system(_cmds, verbose=1)
 
     if not trg.exists():
