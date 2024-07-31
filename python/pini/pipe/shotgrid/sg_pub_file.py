@@ -6,7 +6,7 @@ import time
 
 from pini import pipe
 from pini.tools import release
-from pini.utils import abs_path, passes_filter, Seq, Video, TMP
+from pini.utils import abs_path, passes_filter, Seq, Video, TMP, Image
 
 from . import sg_handler, sg_job, sg_task, sg_entity, sg_utils
 
@@ -96,7 +96,7 @@ def create_pub_file(
     _thumb = thumb
     if not _thumb:
         if isinstance(output, Seq):
-            _thumb = output.to_frame_file()
+            _thumb = Image(output.to_frame_file())
             if _thumb.extn not in ('png', 'jpg'):
                 _thumb.convert(_TMP_THUMB, force=True)
                 _thumb = _TMP_THUMB

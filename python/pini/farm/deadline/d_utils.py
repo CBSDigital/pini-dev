@@ -184,12 +184,12 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
         _lines = []
         _lines += [
             'import sys',
-            'for _idx, _path in enumerate([']
+            'for _path in [']
         for _path in paths:
             _lines += ['        "{}",'.format(_path)]
         _lines += [
-            ']):',
-            '    sys.path.insert(_idx, _path)']
+            ']:',
+            '    sys.path.append(_path)']
         _lines += [
             'import pini_startup',
             'pini_startup.init(user="{}")'.format(get_user())]

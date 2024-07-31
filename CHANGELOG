@@ -1,3 +1,12 @@
+## [3.9.1] - Wed 2024-07-31 09:52
+### Summary
+ - Pini Helper:
+    - deadline render bugfix error on build exr thumbnail,
+### Updated
+ - pini.pipe.shotgrid.create_pub_file updated File -> Image to access convert method,,
+ - pini.farm.setup_deadline_submit update sys.path use append not insert to allow local execute override,
+
+
 ## [3.9.0] - Mon 2024-07-29 10:21
 ### Summary
  - Pini Helper:
