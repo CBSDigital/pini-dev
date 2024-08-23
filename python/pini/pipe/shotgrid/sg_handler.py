@@ -158,7 +158,9 @@ def create(entity_type, data):
     return to_handler().create(entity_type, data)
 
 
-def find(entity_type, filters=(), fields=(), fmt='list', job=None, id_=None):
+def find(
+        entity_type, filters=(), fields=(), fmt='list', job=None, id_=None,
+        limit=0):
     """Wrapper for Shotgrid.find command.
 
     Args:
@@ -170,6 +172,7 @@ def find(entity_type, filters=(), fields=(), fmt='list', job=None, id_=None):
             dict - sort results into dict with id as key
         job (CPJob): apply job filter
         id_ (int): apply id filter
+        limit (int): limit number of results (see sg docs)
 
     Returns:
         (dict list): results
@@ -182,7 +185,7 @@ def find(entity_type, filters=(), fields=(), fmt='list', job=None, id_=None):
     if id_ is not None:
         _filters.append(('id', 'is', id_))
     _results = to_handler().find(
-        entity_type, filters=_filters, fields=fields)
+        entity_type, filters=_filters, fields=fields, limit=limit)
 
     # Format results
     if fmt == 'list':

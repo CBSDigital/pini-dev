@@ -4,6 +4,7 @@ import logging
 
 from pini.utils import File
 
+from .. q_mgr import QtWidgets
 from .. import custom, q_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,16 +30,32 @@ class _MultiSelect(custom.CUiDialog):
         self.msg = msg
         self.multi = multi
         self.select = select
+
         super(_MultiSelect, self).__init__(
             title=title, ui_file=_UI_FILE, modal=True)
 
     def init_ui(self):
         """Init ui elements."""
+        from pini import qt
+
         self.ui.Message.setText(self.msg)
 
-        self.ui.Items.set_items(self.items)
-        if self.select:
+        # Populate items
+        _items = [
+            qt.CListWidgetItem(str(_item), data=_item) for _item in self.items]
+        self.ui.Items.set_items(_items)
+        self.ui.Items.doubleClicked.connect(self._callback__Select)
 
+        # Apply selection policy
+        _mode = QtWidgets.QAbstractItemView.SelectionMode
+        if self.multi:
+            _policy = _mode.ExtendedSelection
+        else:
+            _policy = _mode.SingleSelection
+        self.ui.Items.setSelectionMode(_policy)
+
+        # Apply selection
+        if self.select:
             _idxs = []
             if isinstance(self.select, list):
                 for _item in self.select:
@@ -47,9 +64,6 @@ class _MultiSelect(custom.CUiDialog):
             else:
                 raise ValueError(self.select)
             self.ui.Items.select_rows(_idxs)
-
-        if not self.multi:
-            raise NotImplementedError
 
     def _callback__Select(self):
         self.close()
@@ -73,6 +87,12 @@ def multi_select(
     """
     _dialog = _MultiSelect(
         items=items, msg=msg, multi=multi, title=title, select=select)
+
+    # Obtain result
     if not _dialog.selected:
         raise q_utils.DialogCancelled(_dialog)
-    return _dialog.ui.Items.selected_texts()
+    if _dialog.multi:
+        _result = _dialog.ui.Items.selected_datas()
+    else:
+        _result = _dialog.ui.Items.selected_data()
+    return _result

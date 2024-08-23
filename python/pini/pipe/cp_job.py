@@ -802,7 +802,9 @@ class CPJob(cp_settings.CPSettingsLevel):
         _LOGGER.debug('READ SHOTS SG')
         _class = class_ or pipe.CPShot
         _has_3d = True if self.settings['shotgrid']['only_3d'] else None
-        _sg_shots = shotgrid.SGC.find_shots(job=self, has_3d=_has_3d)
+        _whitelist = os.environ.get('PINI_PIPE_SHOTS_WHITELIST', '').split(',')
+        _sg_shots = shotgrid.SGC.find_shots(
+            job=self, has_3d=_has_3d, whitelist=_whitelist)
         _sg_shots = [
             _sg_shot for _sg_shot in _sg_shots
             if _sg_shot.status not in ('omt', )]

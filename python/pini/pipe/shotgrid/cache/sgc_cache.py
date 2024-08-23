@@ -236,29 +236,32 @@ class SGDataCache(object):
         """
         return self._read_pub_types(force=force)
 
-    def find_shot(self, match):
+    def find_shot(self, match, job=None):
         """Find a shot in the cache.
 
         Args:
             match (str): shot name/path
+            job (CPJob): job to search
 
         Returns:
             (SGCShot): matching shot
         """
-        _job = pipe.to_job(match)
+        _job = job or pipe.to_job(match)
         return self.find_job(_job).find_shot(match)
 
-    def find_shots(self, job, has_3d=None):
+    def find_shots(self, job, has_3d=None, whitelist=()):
         """Search the cache for shots.
 
         Args:
             job (CPJob): job to search
             has_3d (bool): filter by shot has 3D status
+            whitelist (tuple): shot names to force into list
+                (ie. ignore any filtering)
 
         Returns:
             (SGCShot list): matching shots
         """
-        return self.find_job(job).find_shots(has_3d=has_3d)
+        return self.find_job(job).find_shots(has_3d=has_3d, whitelist=whitelist)
 
     def find_step(self, match):
         """Find a pipeline step.

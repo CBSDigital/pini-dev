@@ -50,6 +50,14 @@ class SGCContainer(object):
         _data = {'sg_status_list': status, 'description': _desc}
         shotgrid.update('PublishedFile', self.id_, _data)
 
+    def to_filter(self):
+        """Build shotgrid search filter from this entry.
+
+        Returns:
+            (tuple): filter
+        """
+        return self.type_.lower(), 'is', self.to_entry()
+
     def to_entry(self):
         """Build shotgrid uid dict for this data entry.
 

@@ -1,3 +1,19 @@
+## [3.11.0] - Fri 2024-08-23 13:01
+### Summary
+ - Pini Helper:
+    - cache fix overwrite warning displaying abc for fbx exports (nle),
+    - added ability to display whitelist shots via $PINI_PIPE_SHOTS_WHITELIST,
+### Updated
+ - pini.pipe.CPJob.read_shots_sg allow whitelist via $PINI_PIPE_SHOTS_WHITELIST,
+ - pini.pipe.shotgrid.find_shot added job arg,
+ - pini.pipe.shotgrid find_shots/SGCJob.find_shots added whitelist arg,
+ - pini.pipe.shotgrid.SGCContainer.to_filter added,
+ - pini.pipe.shotgrid.find added limit arg,
+ - pini.qt.multi_select implemented multi as False,
+ - pini.qt.multi_select allow double-click quick select,
+ - maya_pini.m_pipe.cache fix overwrite warning hardcoded to abc,
+
+
 ## [3.10.0] - Fri 2024-08-23 08:25
 ### Summary
  - Pini Helper:

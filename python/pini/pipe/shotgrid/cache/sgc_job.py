@@ -224,11 +224,14 @@ class SGCJob(sgc_container.SGCContainer):
         raise ValueError(match, filter_)
 
     def find_shots(
-            self, has_3d=None, filter_=None, progress=False, force=False):
+            self, has_3d=None, whitelist=(), filter_=None, progress=False,
+            force=False):
         """Search shots within this job.
 
         Args:
             has_3d (bool): filter by has 3d status
+            whitelist (tuple): shot names to force into list
+                (ie. ignore any filtering)
             filter_ (str): apply shot name filter
             progress (bool): show read progress
             force (bool): force reread data
@@ -238,11 +241,16 @@ class SGCJob(sgc_container.SGCContainer):
         """
         _shots = []
         for _shot in self._read_shots(progress=progress, force=force):
-            if has_3d is not None and _shot.has_3d != has_3d:
+
+            if _shot.name in whitelist:
+                pass
+            elif has_3d is not None and _shot.has_3d != has_3d:
                 continue
-            if filter_ and not passes_filter(_shot.name, filter_):
+            elif filter_ and not passes_filter(_shot.name, filter_):
                 continue
+
             _shots.append(_shot)
+
         return _shots
 
     def find_task(self, path=None, entity=None, task=None, step=None):

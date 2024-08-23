@@ -55,8 +55,8 @@ def _check_for_overwrite(cacheables, extn, force):
     # Warn on overwrite
     if _to_replace:
         if not force:
-            _msg = 'Replace {:d} existing abc{}?\n\n{}'.format(
-                len(_to_replace), plural(_to_replace),
+            _msg = 'Replace {:d} existing {}{}?\n\n{}'.format(
+                len(_to_replace), extn, plural(_to_replace),
                 '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
                 _msg += '\n\n(and {:d} other abc{})'.format(
