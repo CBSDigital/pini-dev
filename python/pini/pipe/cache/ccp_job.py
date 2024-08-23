@@ -557,7 +557,7 @@ class CCPJob(CPJob):  # pylint: disable=too-many-public-methods
             try:
                 _out = _class(
                     _sg_pub.path, entity=_ety, work_dir=_work_dir,
-                    template=_tmpl)
+                    template=_tmpl, latest=_sg_pub.latest)
             except ValueError:  # Can fail if config changed
                 _LOGGER.warning(' - BUILD OUT FAILED %s', _sg_pub)
                 continue

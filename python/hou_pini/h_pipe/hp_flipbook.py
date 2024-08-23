@@ -1,6 +1,7 @@
 """Tools for managing flipbooking."""
 
 import logging
+import os
 
 import toolutils  # pylint: disable=import-error
 
@@ -55,7 +56,7 @@ def _prepare_output_path(format_, force):
 @usage.get_tracker('HouFlipbook')
 @error.catch
 def flipbook(
-        format_='mp4', view=True, range_=None, burnins=False, save=True,
+        format_=None, view=True, range_=None, burnins=False, save=True,
         force=False):
     """Execute flipbook.
 
@@ -67,18 +68,23 @@ def flipbook(
         save (bool): save scene on flipbook
         force (bool): replace existing without confirmation
     """
-    _LOGGER.info('FLIPBOOK')
+    _LOGGER.info('FLIPBOOK %s', format_)
+
+    _fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
+    _seq, _out, _to_video, _viewer = _prepare_output_path(
+        format_=_fmt, force=force)
+    _LOGGER.info(' - OUT %s', _out)
 
     _mplay = find_exe('mplay')
-    _sv = toolutils.sceneViewer()
+    _LOGGER.info(' - MPLAY %s', _mplay)
+    _sv = toolutils.sceneViewer()  # NOTE: this call seems to crash logging
+    _LOGGER.info(' - VIEWER %s', _sv)
     _vp = _sv.curViewport()
+    _LOGGER.info(' - VIEWPORT %s', _vp)
     _cam = _vp.camera()
     _work = pipe.CACHE.obt_cur_work()
     _fps = dcc.get_fps()
     _LOGGER.info(' - CAM %s', _cam)
-
-    _seq, _out, _to_video, _viewer = _prepare_output_path(
-        format_=format_, force=force)
 
     if save:
         _work.save(reason='blast')
@@ -86,7 +92,7 @@ def flipbook(
 
     # Post processing
     if _to_video:
-        _LOGGER.info(' - MAKING MOV')
+        _LOGGER.info(' - MAKING MOV %s %s', format_, _out)
         _seq.to_video(_out, fps=_fps, burnins=burnins)
         _seq.delete(force=True)
         _thumb = TMP.to_file('pini/tmp.jpg')

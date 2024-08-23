@@ -215,15 +215,17 @@ class SGCPubFile(_SGCPath):
     FIELDS = (
         'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by')
 
-    def __init__(self, data, job):
+    def __init__(self, data, job, latest=None):
         """Constructor.
 
         Args:
             data (dict): shotgrid data
             job (SGJob): parent job
+            latest (bool): whether this latest version of this publish stream
         """
         super(SGCPubFile, self).__init__(data, job)
         self.has_work_dir = data['has_work_dir']
+        self.latest = latest
 
 
 class SGCVersion(_SGCPath):

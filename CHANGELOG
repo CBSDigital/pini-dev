@@ -1,3 +1,30 @@
+## [3.10.0] - Fri 2024-08-23 08:25
+### Summary
+ - Pini Helper:
+    - houdini disabled sop abc archive search to improve speed on switch to scene tab (acheprakov),
+    - houdini 20.5 fix helper draw scaling,
+    - optimised find lookdev shaders ma to improve speed on scene ref right-click,
+### Updated
+ - pini.utils to_time_f/to_time_t added str handling with default fmts,
+ - pini.utils.ReadDataError added,
+ - pini.utils.File.read_pkl raises ReadDataError on fail,
+ - pini.utils.cache_method_to_file catch pkl read error + optimised,
+ - pini.utils.assert_eq added dp flag,
+ - pini.dcc.HouDCC.find_pipe_refs disabled sop abc search,
+ - pini.pipe.CPOutput added latest flag on init to force status,
+ - pini.pipe.CPOutput.cmp_key added caching,
+ - pini.pipe.shotgrid.SGC SGCPubFile check/apply latest status on init,
+ - pini.pipe.shotgrid.SGC.find_pub_files added filter_ arg + increased cache ver,
+ - pini.qt.CMenu use obt_pixmap for icon,
+ - pini.qt.CSize added,
+ - pini.install houdini flipbook check $PINI_VIDEO_FORMAT for format,
+ - pini.tools.helper added job icon min size,
+ - pini.tools.job_manager fix legacy ui title,
+ - pini.testing to_profiler/PROFILE_TXT_FMT added to allow name override,
+ - maya_pini.utils.set_namespace added handling for nested namespaces,
+ - hou_pini.h_pipe.flipbook updated hardcoded mp4 fmt -> use $PINI_VIDEO_FORMAT,
+
+
 ## [3.9.2] - Wed 2024-07-31 10:02
 ### Summary
  - Pini Helper:

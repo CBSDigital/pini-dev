@@ -1,6 +1,6 @@
 """Tools for adding functionality to generic qt objects."""
 
-from .core import CSettings, CPoint, CPointF, CSizeF
+from .core import CSettings, CPoint, CPointF, CSizeF, CSize
 from .gui import (
     CPixmap, CColor, CPainter, TEST_IMG, CVector2D, PIXMAP_EXTNS)
 from .widgets import (

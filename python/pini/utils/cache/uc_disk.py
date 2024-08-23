@@ -6,7 +6,6 @@ import logging
 import six
 
 from .uc_memory import obtain_results_cache
-from ..u_error import DebuggingError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ def get_method_to_file_cacher(
         @functools.wraps(func)
         def _method_cache_func(self, *args, **kwargs):
 
-            from pini.utils import File
+            from pini.utils import File, ReadDataError
 
             _LOGGER.debug('EXEC METHOD CACHE FUNC %s mtime_outdates=%s',
                           func.__name__, mtime_outdates)
@@ -96,14 +95,14 @@ def get_method_to_file_cacher(
                 file_=_file, mtime_outdates=mtime_outdates,
                 min_mtime=min_mtime, max_age=max_age)
             _LOGGER.debug(' - CACHE ACTION %s', _action)
+            _write_func = {
+                'yml': _file.write_yml,
+                'pkl': _file.write_pkl}[_file.extn]
 
             # Obtain result
             if _action == 'recache':
                 _result = func(self, *args, **kwargs)
                 _LOGGER.debug(' - CALCULATED RESULT')
-                _write_func = {
-                    'yml': _file.write_yml,
-                    'pkl': _file.write_pkl}[_file.extn]
                 try:
                     _write_func(_result, force=True)
                 except OSError:
@@ -113,6 +112,7 @@ def get_method_to_file_cacher(
             elif _action == 'use memory':
                 _result = _results[_key]
                 _LOGGER.debug(' - USING MEMORY CACHE')
+
             elif _action == 'use disk':
                 _LOGGER.debug(' - READING DISK CACHE')
                 _read_func = {
@@ -120,13 +120,11 @@ def get_method_to_file_cacher(
                     'pkl': _file.read_pkl}[_file.extn]
                 try:
                     _result = _read_func()
-                except DebuggingError as _exc:
-                    raise _exc
-                except RuntimeError:
+                except ReadDataError:
                     _LOGGER.info(
                         ' - READING DISK CACHE FAILED %s', _file.path)
                     _result = func(self, *args, **kwargs)
-                    _file.write_yml(_result, force=True)
+                    _write_func(_result, force=True)
                 _results[_key] = _result
             else:
                 raise ValueError(_action)
@@ -140,7 +138,7 @@ def get_method_to_file_cacher(
     return _method_to_file_cacher_dec
 
 
-def _determine_cache_action(
+def _determine_cache_action(  # pylint: disable=too-many-return-statements,too-many-branches
         force, results, key, file_, obj, mtime_outdates, min_mtime,
         max_age):
     """Determine action to take on results request.
@@ -160,25 +158,38 @@ def _determine_cache_action(
     """
     from pini.utils import File
 
-    if force:
-        _action = 'recache'
-    elif max_age and file_.exists() and file_.age() > max_age:
-        _action = 'recache'
-    elif key in results:
-        _action = 'use memory'
-    elif not file_.exists():
-        _action = 'recache'
-    elif (  # Apply mtime outdates to files
-            isinstance(obj, File) and
-            mtime_outdates and
-            file_.mtime() < obj.mtime()):
-        _action = 'recache'
-    elif min_mtime and file_.mtime() < min_mtime:
-        _action = 'recache'
-    else:
-        _action = 'use disk'
+    _exists = _mtime = None
 
-    return _action
+    if force:
+        return 'recache'
+
+    if max_age:
+        if _exists is None:
+            _exists = file_.exists()
+        if _exists and file_.age() > max_age:
+            return 'recache'
+
+    if key in results:
+        return 'use memory'
+
+    if _exists is None:
+        _exists = file_.exists()
+    if not _exists:
+        return 'recache'
+
+    # Apply mtime outdates to files
+    if isinstance(obj, File) and mtime_outdates:
+        if _mtime is None:
+            _mtime = file_.mtime()
+        if _mtime < obj.mtime():
+            return 'recache'
+    if min_mtime:
+        if _mtime is None:
+            _mtime = file_.mtime()
+        if _mtime < min_mtime:
+            return 'recache'
+
+    return 'use disk'
 
 
 def cache_method_to_file(func):

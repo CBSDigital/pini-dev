@@ -793,29 +793,6 @@ def system(
     raise ValueError(result)
 
 
-def to_time_f(val):
-    """Get a time float from the given value.
-
-    Args:
-        val (float/struct_time): value to convert
-
-    Returns:
-        (float): time as float
-    """
-    if isinstance(val, (int, float)):
-        return float(val)
-    if isinstance(val, time.struct_time):
-        return time.mktime(val)
-    if isinstance(val, datetime.datetime):
-        if sys.version_info.major == 3:
-            return val.timestamp()
-        if sys.version_info.major == 2:
-            return time.mktime(val.timetuple()) + val.microsecond / 1e6
-        raise NotImplementedError(sys.version_info.major)
-    raise NotImplementedError('Failed to map {} - {}'.format(
-        type(val).__name__, val))
-
-
 def to_str(obj):
     """Convert the given object to a string.
 
@@ -845,7 +822,32 @@ def to_str(obj):
         '{} ({})'.format(obj, type(obj).__name__))
 
 
-def to_time_t(val):
+def to_time_f(val):
+    """Get a time float from the given value.
+
+    Args:
+        val (float/struct_time): value to convert
+
+    Returns:
+        (float): time as float
+    """
+    if isinstance(val, (int, float)):
+        return float(val)
+    if isinstance(val, time.struct_time):
+        return time.mktime(val)
+    if isinstance(val, datetime.datetime):
+        if sys.version_info.major == 3:
+            return val.timestamp()
+        if sys.version_info.major == 2:
+            return time.mktime(val.timetuple()) + val.microsecond / 1e6
+        raise NotImplementedError(sys.version_info.major)
+    if isinstance(val, six.string_types):
+        return to_time_f(to_time_t(val))
+    raise NotImplementedError('Failed to map {} - {}'.format(
+        type(val).__name__, val))
+
+
+def to_time_t(val=None):
     """Get a time tuple from the given value.
 
     Args:
@@ -854,13 +856,29 @@ def to_time_t(val):
     Returns:
         (struct_time): time tuple
     """
+    if val is None:
+        return time.localtime()
     if isinstance(val, (int, float)):
         return time.localtime(val)
     if isinstance(val, time.struct_time):
         return val
     if isinstance(val, datetime.datetime):
         return val.timetuple()
-    raise ValueError(val)
+
+    # Convert from string
+    if isinstance(val, six.string_types):
+        for _fmt in (
+                '%d/%m/%y',
+                '%Y-%m-%dT%H:%M:%SZ',
+                '%Y-%m-%dT%H:%M:%S.%fZ',
+        ):
+            try:
+                return time.strptime(val, _fmt)
+            except ValueError:
+                pass
+        raise NotImplementedError(f'Failed to convert time string "{val}"')
+
+    raise NotImplementedError(val)
 
 
 def val_map(val, in_min=0.0, in_max=1.0, out_min=0.0, out_max=1.0):

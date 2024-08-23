@@ -34,11 +34,12 @@ class _PIHouBaseInstaller(i_installer.PIInstaller):
 
     def _gather_dcc_items(self):
         """Gather houdini-specific tools."""
+        _fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
         _flipbook = i_installer.PITool(
             name='FlipbookMp4', command='\n'.join([
                 'from hou_pini import h_pipe',
                 'h_pipe.flipbook()']),
-            icon=icons.find('collision'), label='Flipbook MP4')
+            icon=icons.find('collision'), label=f'Flipbook {_fmt.upper()}')
         return [_flipbook]
 
 

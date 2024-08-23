@@ -71,7 +71,6 @@ def set_namespace(namespace, clean=False):
         clean (bool): remove existing nodes
     """
     assert namespace.startswith(":")
-    assert namespace.count(":") == 1
 
     if clean:
         del_namespace(namespace, force=True)

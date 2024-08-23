@@ -106,21 +106,25 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         _cam.parmTuple('res').set(_res)
 
 
-def find_pipe_refs(selected=False):
+def find_pipe_refs(selected=False, sop_abcs=False):
     """Find pipe refs in the current scene.
 
     Args:
         selected (bool): return only selected refs
+        sop_abcs (bool): include sop abcs (this can be slow as obj level abcs
+            can be comprised of hundreds of sop abcs)
 
     Returns:
         (CHouAbcGeometryRef): ref list
     """
     _LOGGER.debug('READ PIPE REFS')
+
+    _types = [(hou.objNodeTypeCategory, 'alembicarchive', CHouAbcArchiveRef)]
+    if sop_abcs:
+        _types += [(hou.sopNodeTypeCategory, 'alembic', CHouAbcGeometryRef)]
+
     _refs = []
-    for _cat, _type, _class in [
-            (hou.objNodeTypeCategory, 'alembicarchive', CHouAbcArchiveRef),
-            (hou.sopNodeTypeCategory, 'alembic', CHouAbcGeometryRef),
-    ]:
+    for _cat, _type, _class in _types:
         for _node in _cat().nodeType(_type).instances():
 
             _LOGGER.debug('CHECKING NODE %s', _node)

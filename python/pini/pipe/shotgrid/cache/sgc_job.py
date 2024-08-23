@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes
 
+import copy
 import logging
 import operator
 import pprint
@@ -175,12 +176,14 @@ class SGCJob(sgc_container.SGCContainer):
         raise ValueError(path)
 
     def find_pub_files(
-            self, entity=None, work_dir=None, progress=False, force=False):
+            self, entity=None, work_dir=None, filter_=None, progress=False,
+            force=False):
         """Search pub file within this job.
 
         Args:
             entity (CPEntity): filter by entity
             work_dir (CPWorkDir): filter by work dir
+            filter_ (str): apply path filter
             progress (bool): show read progress
             force (bool): force reread data
 
@@ -192,6 +195,8 @@ class SGCJob(sgc_container.SGCContainer):
             if entity and not entity.contains(_pub.path):
                 continue
             if work_dir and not work_dir.contains(_pub.path):
+                continue
+            if filter_ and not passes_filter(_pub.path, filter_):
                 continue
             _pubs.append(_pub)
         return _pubs
@@ -536,6 +541,10 @@ class SGCJob(sgc_container.SGCContainer):
             # Add path data to result
             if isinstance(_path, pipe.CPOutputBase):
                 _result['has_work_dir'] = bool(_path.work_dir)
+                _data = copy.copy(_path.data)
+                _data['ver'] = '00'
+                _stream = _path.template.format(_data)
+                _result['stream'] = _stream
             _result['path'] = _path.path
             _result['template'] = _path.template.source.pattern
             _result['template_type'] = _path.template.type_
@@ -637,14 +646,28 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCPubFile list): pub files
         """
+        _LOGGER.debug('READ PUB FILES %s', self)
         _data = self._read_data(
             entity_type='PublishedFile',
             fields=sgc_container.SGCPubFile.FIELDS, progress=progress,
-            ver_n=2, force=force)
-        _pub_files = []
+            ver_n=3, force=force)
+
+        # Build pub file objects
+        _latest = {}
+        _pub_list = []
         for _item in _data:
             _pub_file = sgc_container.SGCPubFile(_item, job=self)
+            _stream = _item['stream']
+            _pub_list.append((_pub_file, _stream))
+            _latest[_stream] = _pub_file
+
+        # Apply latest
+        _pub_files = []
+        for _pub_file, _stream in _pub_list:
+            _pub_file.latest = _latest[_stream] == _pub_file
+            _LOGGER.debug(' - ADDING %d %s', _pub_file.latest, _pub_file.path)
             _pub_files.append(_pub_file)
+
         return _pub_files
 
     @pipe_cache_on_obj
@@ -728,7 +751,8 @@ class SGCJob(sgc_container.SGCContainer):
         return basic_repr(self, self.name)
 
 
-def _path_from_result(result, entity_type, job, step=None, entity_map=None):  # pylint: disable=too-many-return-statements
+def _path_from_result(  # pylint: disable=too-many-return-statements
+        result, entity_type, job, step=None, entity_map=None):
     """Build a pipe path object from the given shotgrid result.
 
     Args:

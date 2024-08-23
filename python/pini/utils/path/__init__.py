@@ -6,6 +6,6 @@ from .up_utils import (
     search_dir_files_for_text)
 
 from .up_find import find
-from .up_file import File, MetadataFile
+from .up_file import File, MetadataFile, ReadDataError
 from .up_dir import Dir, TMP, HOME, DESKTOP
 from .up_path import Path, DATA_PATH

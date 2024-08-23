@@ -46,7 +46,7 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
-        release.apply_deprecation('11/04/24', 'Use assign to')
+        release.apply_deprecation('11/04/24', 'Use assign_to')
         self.assign_to(obj)
 
     def assign_to(self, obj):

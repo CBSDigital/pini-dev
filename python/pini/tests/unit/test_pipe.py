@@ -29,6 +29,13 @@ class TestPipe(unittest.TestCase):
         assert _work_dir.to_output('publish', output_type=None, extn=dcc.DEFAULT_EXTN)
         assert _work_dir.to_output('publish', output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
 
+        _blast = _work.to_output(
+            'blast_mov', output_name='blah', extn='mov')
+        assert _blast.extn == 'mov'
+        _blast = _work.to_output(
+            'blast_mov', output_name='blah', extn='mov', dcc_='hou')
+        assert _blast.extn == 'mov'
+
     def test_templates(self):
 
         assert testing.TEST_JOB

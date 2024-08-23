@@ -1,9 +1,9 @@
 name: Quirinus
-date: 10/01/24
+date: 21/08/24
 templates:
   asset_entity_path: '{job_path}/assets/{asset_type}/{asset}'
   blast: '{entity_path}/blast/{task}/{entity}_{tag}_{output_name}_v{ver}/{entity}_{tag}_{output_name}_v{ver}.%04d.{extn}'
-  blast_mov: '{entity_path}/blast/{task}/{entity}_{tag}_{output_name}_v{ver}.mp4'
+  blast_mov: '{entity_path}/blast/{task}/{entity}_{tag}_{output_name}_v{ver}.{extn}'
   cache: '{entity_path}/outputs/{task}_{tag}/{output_name}/{entity}_{output_name}_v{ver}.{extn}'
   publish: '{work_dir}/publish/[{output_type}]/{entity}_{tag}[_v{ver}].{extn}'
   mov: '{entity_path}/mov/{task}/{entity}_{tag}_{output_name}_v{ver}.{extn}'

@@ -20,6 +20,10 @@ _DIFF_TOOL = None
 _BKP_FMT = '.bkp/{base}_{tstr}_{user}'
 
 
+class ReadDataError(RuntimeError):
+    """Raised when a data archive (eg. pkl/yml) errors on read."""
+
+
 def _find_diff_exe():
     """Find diff tool executable.
 
@@ -353,11 +357,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _handle = open(self.path, "rb")
         try:
             _obj = pickle.load(_handle)
-        except (EOFError, UnicodeDecodeError) as _exc:
+        except (EOFError, UnicodeDecodeError, ModuleNotFoundError) as _exc:
             if catch:
                 return {}
             _handle.close()
-            raise EOFError('{} {}'.format(_exc, self.path))
+            raise ReadDataError('{} {}'.format(_exc, self.path))
         _handle.close()
         return _obj
 

@@ -723,8 +723,10 @@ class CLSceneTab(object):
 
     def _context__SSceneRefs(self, menu):
 
+        _LOGGER.debug(' - CTX SCENE REFS')
         _ref = self.ui.SSceneRefs.selected_data(catch=True)
         _refs = self.ui.SSceneRefs.selected_datas()
+        _LOGGER.debug(' - READ %s %s', _ref, _refs)
         if _ref:
             self._ctx_scene_ref_add_opts(menu, ref=_ref)
         elif _refs:
@@ -737,6 +739,7 @@ class CLSceneTab(object):
             menu (QMenu): menu to add items to
             ref (CPipeRef): selected reference
         """
+        _LOGGER.debug(' - CTX SCENE REF ADD OPTS %s', ref)
         _out = ref.to_output(use_cache=False)
         _base, _ = split_base_index(ref.namespace)
 
@@ -760,6 +763,7 @@ class CLSceneTab(object):
         menu.add_separator()
 
         # Update options
+        _LOGGER.debug('   - ADD UPDATE OPTS %s', ref.output)
         if not ref.output:
             _ety_c = pipe.CACHE.obt_entity(_out.entity)
             menu.add_action(

@@ -39,8 +39,11 @@ class CPOutputBase(object):
 
     job = None
     entity = None
+
     _work_dir = None
     _tested_for_work_dir = False
+    _cmp_key = None
+    _latest = None
 
     profile = None
     asset_type = None
@@ -63,7 +66,7 @@ class CPOutputBase(object):
 
     def __init__(
             self, job=None, entity=None, work_dir=None, templates=None,
-            template=None, types=None):
+            template=None, types=None, latest=None):
         """Constructor.
 
         Args:
@@ -73,6 +76,7 @@ class CPOutputBase(object):
             templates (CPTemplate list): force list of templates to check
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
+            latest (bool): apply static latest status of this output
         """
 
         # Setup job
@@ -101,6 +105,7 @@ class CPOutputBase(object):
         self._init_extract_data_from_templates(
             types=types or OUTPUT_FILE_TYPES,
             templates=templates, template=template)
+        self._latest = latest
 
     def _init_extract_data_from_templates(
             self, types, templates=None, template=None, task=None):
@@ -246,12 +251,14 @@ class CPOutputBase(object):
             (tuple): sort key
         """
         from pini import pipe
-        return (
-            self.entity.path,
-            pipe.task_sort(self.pini_task),
-            self.dir,
-            pipe.tag_sort(self.tag),
-            self.filename)
+        if not self._cmp_key:
+            self._cmp_key = (
+                self.entity.path,
+                pipe.task_sort(self.pini_task),
+                self.dir,
+                pipe.tag_sort(self.tag),
+                self.filename)
+        return self._cmp_key
 
     @property
     def metadata(self):
@@ -455,6 +462,8 @@ class CPOutputBase(object):
         _LOGGER.debug('IS LATEST %s', self)
         if not self.ver_n:
             return True
+        if self._latest is not None:
+            return self._latest
         _vers = [_ver for _ver in self.find_vers() if _ver.ver_n]
         if not _vers:
             return False
@@ -565,7 +574,7 @@ class CPOutput(File, CPOutputBase):
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,
-            template=None, types=None):
+            template=None, types=None, latest=None):
         """Constructor.
 
         Args:
@@ -576,11 +585,12 @@ class CPOutput(File, CPOutputBase):
             templates (CPTemplate list): force list of templates to check
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
+            latest (bool): apply static latest status of this output
         """
         super(CPOutput, self).__init__(path)
         CPOutputBase.__init__(
             self, job=job, entity=entity, work_dir=work_dir,
-            template=template, templates=templates,
+            template=template, templates=templates, latest=latest,
             types=types or OUTPUT_FILE_TYPES)
 
     @classmethod
@@ -623,7 +633,7 @@ class CPOutputVideo(CPOutput, clip.Video):
 
     def __init__(
             self, path, job=None, entity=None, work_dir=None, templates=None,
-            template=None, types=None):
+            template=None, types=None, latest=None):
         """Constructor.
 
         Args:
@@ -634,10 +644,11 @@ class CPOutputVideo(CPOutput, clip.Video):
             templates (CPTemplate list): force list of templates to check
             template (CPTemplate): force template to use
             types (str list): override list of template types to test for
+            latest (bool): apply static latest status of this output
         """
         super(CPOutputVideo, self).__init__(
             path, job=job, entity=entity, work_dir=work_dir,
-            template=template, templates=templates,
+            template=template, templates=templates, latest=latest,
             types=types or OUTPUT_VIDEO_TYPES)
 
     @classmethod
@@ -742,7 +753,7 @@ class CPOutputSeq(Seq, CPOutputBase):
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,
-            template=None, frames=None, dir_=None, types=None):
+            template=None, frames=None, dir_=None, types=None, latest=None):
         """Constructor.
 
         Args:
@@ -755,12 +766,13 @@ class CPOutputSeq(Seq, CPOutputBase):
             frames (int list): force frame cache
             dir_ (Dir): parent directory (to facilitate caching)
             types (str list): override list of template types to test for
+            latest (bool): apply static latest status of this output
         """
         _LOGGER.debug('INIT CPOutputSeq %s', path)
         super(CPOutputSeq, self).__init__(path=path, frames=frames)
         CPOutputBase.__init__(
             self, job=job, entity=entity, work_dir=work_dir,
-            template=template, templates=templates,
+            template=template, templates=templates, latest=latest,
             types=types or OUTPUT_SEQ_TYPES)
         self._dir = dir_
         self._thumb = File('{}/.pini/{}_thumb.jpg'.format(self.dir, self.base))

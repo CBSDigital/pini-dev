@@ -3199,8 +3199,8 @@ Range: 1-10</string>
         <widget class="CPixmapLabel" name="JobIcon">
          <property name="minimumSize">
           <size>
-           <width>0</width>
-           <height>0</height>
+           <width>68</width>
+           <height>68</height>
           </size>
          </property>
          <property name="maximumSize">
