@@ -345,6 +345,8 @@ class CMayaFarmRender(CMayaRenderHandler):
                     _img_plane.plug['displayMode'].set_enum, _display_mode)
                 _reverts.append(_revert)
 
+        _prepare_scene_for_render()
+
         farm.submit_maya_render(
             frames=frames, camera=_cam,
             chunk_size=self.ui.ChunkSize.value(),
@@ -365,3 +367,10 @@ class CMayaFarmRender(CMayaRenderHandler):
             (str): path to icon
         """
         return farm.ICON
+
+
+def _prepare_scene_for_render():
+    """Setup scene to prepare for render."""
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren == 'vray':
+        cmds.setAttr('vraySettings.fileNamePadding', 4)
