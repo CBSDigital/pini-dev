@@ -1,3 +1,15 @@
+## [3.12.0] - Tue 2024-08-27 10:38
+### Summary
+ - Pipeline:
+    - added handling to accomodate for layout task in anim step [PT-330],
+    - added handling to distinguish between camera/scene abcs,
+### Updated
+ - pini.pipe.CPEntity.find_work_dir added handling for select anim over layout,
+ - pini.pipe.CPWorkDir.find_outputs bugfix stream uid missing output_name,
+ - pini.pipe.cache.CCPWorkDir.find_outputs added content_type filter,
+ - pini.pipe.cache.CCPOutput.content_type added handling for CameraAbc,
+
+
 ## [3.11.1] - Fri 2024-08-23 14:37
 ### Summary
  - Pini Helper:

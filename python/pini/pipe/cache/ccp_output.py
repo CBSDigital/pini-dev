@@ -45,7 +45,13 @@ class CCPOutputBase(CPOutputBase):
             return _content_type
 
         _pub_type = self.metadata.get('publish_type')
-        if self.extn == 'ma':
+        if self.extn == 'abc':
+            _type = self.metadata.get('type')
+            if _type == 'CPCacheableCam':
+                _c_type = 'CameraAbc'
+            else:
+                _c_type = 'Abc'
+        elif self.extn == 'ma':
             if 'vrmesh' in self.metadata:
                 _c_type = 'VrmeshMa'
             elif 'shd_yml' in self.metadata:

@@ -151,6 +151,15 @@ class CPEntity(cp_settings.CPSettingsLevel):
         if len(_map_task_matches) == 1:
             return single(_map_task_matches)
 
+        # In case where step matches mutiple tasks (eg. anim -> anim/layout)
+        _task_arg_matches = [
+            _work_dir for _work_dir in _work_dirs
+            if task == _work_dir.task]
+        _LOGGER.debug(
+            ' - FOUND %d TASK ARG MATCHES (%s)', len(_task_arg_matches), task)
+        if len(_task_arg_matches) == 1:
+            return single(_task_arg_matches)
+
         if catch:
             return None
         raise ValueError(match, task, step, dcc_)

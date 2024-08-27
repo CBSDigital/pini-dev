@@ -154,10 +154,11 @@ class CCPWorkDir(CPWorkDir):
         """
         return tuple(self.find_outputs())
 
-    def find_outputs(self, force=False, **kwargs):
+    def find_outputs(self, content_type=None, force=False, **kwargs):
         """Find outputs within this work dir.
 
         Args:
+            content_type (str): filter by content type
             force (bool): force reread from disk
 
         Returns:
@@ -165,10 +166,20 @@ class CCPWorkDir(CPWorkDir):
         """
         from pini import pipe
         _LOGGER.debug('FIND OUTPUTS force=%d %s', force, self)
+
+        # Apply force
         if force and pipe.MASTER == 'disk':
             self._read_outputs_disk(force=True)
             _LOGGER.debug(' - UPDATED CACHE %s', self)
-        return super(CCPWorkDir, self).find_outputs(**kwargs)
+
+        # Apply CCPWorkDir specific filters
+        _outs = []
+        for _out in super(CCPWorkDir, self).find_outputs(**kwargs):
+            if content_type and _out.content_type != content_type:
+                continue
+            _outs.append(_out)
+
+        return _outs
 
     @functools.wraps(CPWorkDir.to_work)
     def to_work(self, **kwargs):

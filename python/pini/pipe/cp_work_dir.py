@@ -419,7 +419,9 @@ class CPWorkDir(Dir):
             _LOGGER.debug(' - APPLYING LATEST FILTER %s', _all_outs)
             _latests = {}
             for _out in _all_outs:
-                _latests[_out.tag, _out.output_type] = _out
+                _stream_uid = (
+                    _out.tag, _out.output_type, _out.output_name, _out.extn)
+                _latests[_stream_uid] = _out
             _LOGGER.debug(' - LATESTS %s', _latests)
             _all_outs = sorted(_latests.values())
             _ver_n = EMPTY
