@@ -241,11 +241,22 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
 
         _rs_pxy = None
         if _tgl_export_rs_pxy:
+
             _tmpl = 'publish' if not _anim else 'publish_seq'
             _rs_pxy = work.to_output(
                 _tmpl, output_type='redshiftProxy', extn='rs')
             _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
-            cmds.select(m_pipe.find_cache_set())
+
+            # Select export geo
+            _select = m_pipe.find_cache_set()
+            if not _select:
+                _assigns = lookdev.read_shader_assignments()
+                _select = sorted(set(sum(
+                    [_item['geos'] for _item in _assigns.values()], [])))
+            if not _select:
+                raise RuntimeError('No geo found')
+            cmds.select(_select)
+
             save_redshift_proxy(_rs_pxy, selection=True, animation=_anim)
             _metadata = copy.deepcopy(metadata)
             _metadata['animated'] = _anim

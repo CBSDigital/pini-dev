@@ -1,3 +1,11 @@
+## [3.13.1] - Tue 2024-08-27 16:39
+### Summary
+ - Pini Helper:
+    - lookdev publish bugfix error on generated redshift proxy in scene with no cache set (cstewart),
+### Updated
+ - pini.dcc.CMayaLookdevPublish export rs proxy use shaded geo if no cache set,
+
+
 ## [3.13.0] - Tue 2024-08-27 16:07
 ### Summary
  - Pini Helper:
