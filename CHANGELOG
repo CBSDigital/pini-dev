@@ -1,3 +1,12 @@
+## [3.13.0] - Tue 2024-08-27 16:07
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click scene asset with mutiple extensions (eehemann),
+### Updated
+ - pini.pipe added versioned submodule,
+ - pini.tools.helper scene ref ctx add tag opts fix bad find latest code,
+
+
 ## [3.12.0] - Tue 2024-08-27 10:38
 ### Summary
  - Pipeline:

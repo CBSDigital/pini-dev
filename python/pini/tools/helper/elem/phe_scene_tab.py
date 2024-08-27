@@ -813,10 +813,18 @@ class CLSceneTab(object):
         _tags = sorted({_out.tag for _out in _outs}, key=pipe.tag_sort)
         for _tag in _tags:
 
+            # Find latest version for this tag
+            _latest = _out.work_dir.find_output(
+                tag=_tag, ver_n='latest', output_type=_out.output_type,
+                catch=True)
+            if not _latest:
+                _latest = _out.work_dir.find_output(
+                    tag=_tag, ver_n='latest', output_type=_out.output_type,
+                    extn=_out.extn, catch=True)
+            if not _latest:
+                continue
+
             # Determine icon/enabled
-            _latest = single(
-                _out.work_dir.find_outputs(
-                    tag=_tag, ver_n='latest', output_type=_out.output_type))
             if _tag == _out.tag:
                 _icon = CURRENT_ICON
                 _enabled = False

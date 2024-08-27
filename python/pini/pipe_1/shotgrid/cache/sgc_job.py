@@ -9,11 +9,11 @@ import pprint
 import time
 
 from pini import pipe, qt
-from pini.pipe.cache import pipe_cache_on_obj
 from pini.utils import (
     single, strftime, to_time_f, check_heart, Path, basic_repr,
     passes_filter, to_str)
 
+from ...cache import pipe_cache_on_obj
 from . import sgc_range, sgc_container, sgc_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -636,7 +636,7 @@ class SGCJob(sgc_container.SGCContainer):
         _fields = ['sg_asset_type', 'code', 'sg_status_list', 'updated_at']
         _data = self._read_data(
             entity_type='Asset', fields=_fields, progress=progress,
-            force=force)
+            force=force, ver_n=2)
         _assets = []
         for _item in _data:
             _asset = sgc_container.SGCAsset(_item, job=self)
@@ -658,7 +658,7 @@ class SGCJob(sgc_container.SGCContainer):
         _data = self._read_data(
             entity_type='PublishedFile',
             fields=sgc_container.SGCPubFile.FIELDS, progress=progress,
-            ver_n=3, force=force)
+            ver_n=4, force=force)
 
         # Build pub file objects
         _latest = {}
@@ -691,7 +691,7 @@ class SGCJob(sgc_container.SGCContainer):
         """
         _data = self._read_data(
             entity_type='Shot',
-            fields=sgc_container.SGCShot.FIELDS,
+            fields=sgc_container.SGCShot.FIELDS, ver_n=2,
             progress=progress, force=force)
         _shots = []
         for _item in _data:
@@ -712,7 +712,7 @@ class SGCJob(sgc_container.SGCContainer):
         """
         _ety_map = {(_ety.type_, _ety.id_): _ety for _ety in self.entities}
         _data = self._read_data(
-            entity_type='Task', entity_map=_ety_map,
+            entity_type='Task', entity_map=_ety_map, ver_n=2,
             fields=sgc_container.SGCTask.FIELDS,
             progress=progress, force=force)
         _tasks = []
@@ -736,7 +736,7 @@ class SGCJob(sgc_container.SGCContainer):
         _ety_map = {(_ety.type_, _ety.id_): _ety for _ety in self.entities}
         _data = self._read_data(
             entity_type='Version', entity_map=_ety_map, fields=_fields,
-            progress=progress, force=force)
+            progress=progress, force=force, ver_n=2)
         _vers = []
         for _item in _data:
             _ver = sgc_container.SGCVersion(_item, job=self)

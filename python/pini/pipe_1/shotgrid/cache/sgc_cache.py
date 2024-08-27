@@ -9,10 +9,10 @@ import logging
 import operator
 
 from pini import pipe
-from pini.pipe.cache import pipe_cache_on_obj
 from pini.utils import (
     single, strftime, basic_repr, apply_filter, get_user, passes_filter)
 
+from ...cache import pipe_cache_on_obj
 from . import sgc_job, sgc_utils, sgc_container
 
 _LOGGER = logging.getLogger(__name__)
@@ -412,7 +412,7 @@ class SGDataCache(object):
         _sg_job = self.find_job(_job)
         return _sg_job.find_ver(match, catch=catch, force=force)
 
-    def _read_data(self, entity_type, fields, force=False):
+    def _read_data(self, entity_type, fields, ver_n=1, force=False):
         """Read data from shotgrid.
 
         Data is written to a day so if it's already been read today
@@ -421,6 +421,7 @@ class SGDataCache(object):
         Args:
             entity_type (str): entity type to read
             fields (str list): fields to read
+            ver_n (int): apply version number suffix to cache file
             force (bool): force rebuild cache
                 1 - rebuild day cache
                 2 - rebuild all caches from shotgrid
@@ -430,28 +431,30 @@ class SGDataCache(object):
         """
         _fields = tuple(sorted(set(fields) | {'updated_at'}))
         _day_cache = _GLOBAL_CACHE_DIR.to_file(
-            '{}_D{}_{}.pkl'.format(
-                entity_type, strftime('%y%m%d'),
+            '{}_D{}_V{:d}_{}.pkl'.format(
+                entity_type, strftime('%y%m%d'), ver_n,
                 sgc_utils.to_fields_key(_fields)))
         if not force and _day_cache.exists():
             _data = _day_cache.read_pkl()
         else:
             _data = self._read_data_last_update(
-                entity_type=entity_type, fields=_fields, force=force > 1)
+                entity_type=entity_type, fields=_fields,
+                ver_n=ver_n, force=force > 1)
             _day_cache.write_pkl(_data, force=True)
 
         return _data
 
-    def _read_data_last_update(self, entity_type, fields, force=False):
-        """Find last time the given field was updated.
+    def _read_data_last_update(self, entity_type, fields, ver_n, force=False):
+        """Build data by assembling caches based on last update time.
 
         Args:
             entity_type (str): entity type to read
             fields (str list): fields to be requested
+            ver_n (int): apply version number suffix to cache file
             force (bool): force rebuild cache
 
         Returns:
-            ():
+            (dict list): shotgrid results
         """
 
         # Find most recent update
@@ -465,10 +468,10 @@ class SGDataCache(object):
         _LOGGER.info(
             ' - LAST STEPS UPDATE %s', strftime('%d/%m/%y %H:%M', _update_t))
 
-        # Obtain jobs data
+        # Obtain cached data
         _cache_file = _GLOBAL_CACHE_DIR.to_file(
-            '{}_T{}_{}.pkl'.format(
-                entity_type, _update_s,
+            '{}_T{}_V{:d}_{}.pkl'.format(
+                entity_type, _update_s, ver_n,
                 sgc_utils.to_fields_key(fields)))
         if not force and _cache_file.exists():
             _data = _cache_file.read_pkl()
@@ -493,7 +496,8 @@ class SGDataCache(object):
         _fields = (
             'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
             'sg_status', 'created_at')
-        _jobs_data = self._read_data('Project', force=force, fields=_fields)
+        _jobs_data = self._read_data(
+            'Project', force=force, fields=_fields, ver_n=2)
         assert _jobs_data
 
         _jobs = []
@@ -526,7 +530,7 @@ class SGDataCache(object):
         """
         _fields = ('code', )
         _types_data = self._read_data(
-            'PublishedFileType', fields=_fields, force=force)
+            'PublishedFileType', fields=_fields, ver_n=2, force=force)
         _types = [sgc_container.SGCPubType(_data) for _data in _types_data]
         return _types
 
@@ -543,7 +547,7 @@ class SGDataCache(object):
         _fields = (
             'entity_type', 'code', 'short_name', 'department', 'updated_at',
             'list_order')
-        _steps_data = self._read_data('Step', fields=_fields)
+        _steps_data = self._read_data('Step', fields=_fields, ver_n=2)
         _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
         return _steps
 
@@ -558,7 +562,8 @@ class SGDataCache(object):
             (SGCUser list): users
         """
         _fields = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
-        _users_data = self._read_data('HumanUser', fields=_fields, force=force)
+        _users_data = self._read_data(
+            'HumanUser', fields=_fields, ver_n=2, force=force)
         _users = [sgc_container.SGCUser(_data) for _data in _users_data]
         return _users
 

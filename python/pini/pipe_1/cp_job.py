@@ -567,9 +567,11 @@ class CPJob(cp_settings.CPSettingsLevel):
         """
         from pini import pipe
         from pini.pipe import shotgrid
+
         _sg_assets = shotgrid.SGC.find_assets(job=self)
         _class = class_ or pipe.CPAsset
         _assets = [_class(_sg_asset.path, job=self) for _sg_asset in _sg_assets]
+
         return _assets
 
     def find_sequence(self, match=None):
@@ -943,10 +945,9 @@ class CPJob(cp_settings.CPSettingsLevel):
         _LOGGER.debug('FIND PUBLISHES')
 
         from pini import pipe
-        from pini.pipe import cp_entity
 
         assert asset is None or isinstance(asset, six.string_types)
-        assert entity is None or isinstance(entity, cp_entity.CPEntity)
+        assert entity is None or isinstance(entity, pipe.CPEntity)
 
         # Search publishes
         if pipe.MASTER == 'disk':
