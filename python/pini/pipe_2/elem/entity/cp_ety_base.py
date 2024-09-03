@@ -9,7 +9,7 @@ import os
 import six
 
 from pini import dcc
-from pini.utils import single, EMPTY, passes_filter
+from pini.utils import single, EMPTY, passes_filter, cache_result
 
 from .. import cp_settings_elem
 from ...cp_utils import task_sort
@@ -78,6 +78,28 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             (CPTemplate list): matching templates
         """
         return self.job.find_templates(*args, profile=self.profile, **kwargs)
+
+    @cache_result
+    def _template_type_uses_token(self, type_, token):
+        """Test whether the given template type uses the given token.
+
+        For example in some pipelines, the cache template doesn't use the
+        tag token. This means that when searching for caches, the tag token
+        should be ignored. However, if the cache template uses the tag token
+        the searching for caches should take account of tag.
+
+        Args:
+            type_ (str): template type (eg. cache)
+            token (str): token to check (eg. tag)
+
+        Returns:
+            (bool): whether any templates of the given type uses the
+                given token
+        """
+        for _tmpl in self.find_templates(type_=type_):
+            if token in _tmpl.keys():
+                return True
+        return False
 
     def to_default_tasks(self, dcc_):
         """Read default tasks from config for the given dcc in this entity.

@@ -2,7 +2,7 @@
 
 import logging
 
-from pini.utils import Dir, single, cache_result, File, EMPTY
+from pini.utils import Dir, single, File, EMPTY
 
 from ... import cp_template
 from . import cp_ety_base
@@ -44,28 +44,6 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
             len(_seqs))
 
         return _outs
-
-    @cache_result
-    def _template_type_uses_token(self, type_, token):
-        """Test whether the given template type uses the given token.
-
-        For example in some pipelines, the cache template doesn't use the
-        tag token. This means that when searching for caches, the tag token
-        should be ignored. However, if the cache template uses the tag token
-        the searching for caches should take account of tag.
-
-        Args:
-            type_ (str): template type (eg. cache)
-            token (str): token to check (eg. tag)
-
-        Returns:
-            (bool): whether any templates of the given type uses the
-                given token
-        """
-        for _tmpl in self.find_templates(type_=type_):
-            if token in _tmpl.keys():
-                return True
-        return False
 
     def _find_root_output_templates(self):
         """Find output templates for the root of this entity.

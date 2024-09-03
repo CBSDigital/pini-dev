@@ -1,3 +1,13 @@
+## [3.14.2] - Tue 2024-09-03 13:32
+### Summary
+ - Pini Helper:
+    - bugfix error on lookdev publish if multiple top nodes in cache set (cstewart),
+    - bugfix error right-click scene reference,
+### Updated
+ - pini.pipe.CPEntity._template_type_uses_token moved CPEntityDisk -> CPEntityBase,
+ - maya_pini.m_pipe.find_top_node catch error due to multiple top nodes in cache_SET,
+
+
 ## [3.14.1] - Tue 2024-09-03 10:45
 ### Summary
  - Pini Helper:
