@@ -16,4 +16,4 @@ else:
     from ..pipe_2 import *
     VERSION = 2
     if MASTER == 'shotgrid':
-        from ..pipe_1 import shotgrid
+        from ..pipe_2 import shotgrid

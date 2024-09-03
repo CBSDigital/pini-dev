@@ -1,3 +1,11 @@
+## [3.14.1] - Tue 2024-09-03 10:45
+### Summary
+ - Pini Helper:
+    - bugfix error on populate scene tab (cstewart/farnold),
+### Updated
+ - pini.pipe bugfix shotgrid cache not updated to pipe_2,
+
+
 ## [3.14.0] - Tue 2024-09-03 08:15
 ### Summary
  - Pini Helper:
