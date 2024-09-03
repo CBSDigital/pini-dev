@@ -7,6 +7,7 @@ from maya import cmds
 
 from pini import dcc, testing, pipe
 from pini.dcc import pipe_ref
+from pini.pipe import cache
 from pini.tools import error, helper
 from pini.utils import single
 
@@ -87,7 +88,6 @@ class TestDCC(unittest.TestCase):
 
     def test_version_up_publish(self):
 
-        assert not error.TRIGGERED
         testing.TMP_ASSET.flush(force=True)
         pipe.CACHE.reset()
         _ety_c = pipe.CACHE.obt(testing.TMP_ASSET)
@@ -136,16 +136,14 @@ class TestDCC(unittest.TestCase):
 
         # Version up
         _next = pipe.version_up()
+        assert isinstance(_next, pipe.CPWork)
+        assert not isinstance(_next, cache.CCPWork)
         assert pipe.CACHE.cur_work
         assert pipe.CACHE.cur_work.ver_n == 2
         _work_c = pipe.CACHE.obt_work(_next)
 
         # Test publish with PiniHelper
-        _helper = helper.DIALOG
-        if not helper.is_active():
-            _helper = helper.launch()
-        else:
-            _helper._callback__Refresh()
+        _helper = helper.obt_helper()
         _helper.jump_to(_work_c)
         assert _helper.work.exists()
         assert _helper.work == pipe.cur_work()

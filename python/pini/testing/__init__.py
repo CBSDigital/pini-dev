@@ -6,7 +6,7 @@ from .t_env import (
     read_env_paths, insert_sys_path, append_sys_path, reset_enable_filesystem,
     print_sys_paths)
 from .t_pipe import (
-    TEST_JOB, TEST_ASSET, TEST_SHOT, CTmpPipeTestCase, TMP_SHOT, TMP_ASSET,
+    TEST_JOB, TEST_ASSET, TEST_SHOT, TMP_SHOT, TMP_ASSET,
     TEST_SEQUENCE, check_test_asset)
 from .t_profile import (
     profile, profile_start, profile_stop, PROFILE_FILE, PROFILE_TXT,

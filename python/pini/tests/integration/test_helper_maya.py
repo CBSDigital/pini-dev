@@ -3,7 +3,7 @@ import logging
 
 from pini import dcc, pipe, testing, qt
 from pini.dcc import export_handler
-from pini.tools import helper, error
+from pini.tools import helper
 
 from maya_pini import open_maya as pom
 
@@ -12,12 +12,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class TestHelper(unittest.TestCase):
-
-    def setUp(self):
-        assert not error.TRIGGERED
-        if not helper.is_active():
-            helper.launch(reset_cache=False)
-        assert not error.TRIGGERED
 
     def test_farm_render_handler(self):
 

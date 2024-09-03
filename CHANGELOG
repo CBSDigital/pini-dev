@@ -1,3 +1,16 @@
+## [3.14.0] - Tue 2024-09-03 08:15
+### Summary
+ - Pini Helper:
+    - bugfix default cache format aiStandIn if arnold not used in pipeline (mkim/farnold),
+    - bugfix range error in shotgrid cache,
+    - updated pipe module version 1 -> 2,
+### Updated
+ - pini.utils.Dir.to_file added filename arg,
+ - pini.dcc.MayaDCC.create_cache_ref disable aiStandIn default for fx caches if arnold not in allowed renderers,
+ - pini.testing.CTmpPipeTestCase removed,
+ - pini.pipe added pipe_2 implementation with separate types for disk/sg pipelines,
+
+
 ## [3.13.1] - Tue 2024-08-27 16:39
 ### Summary
  - Pini Helper:

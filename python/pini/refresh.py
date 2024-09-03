@@ -44,6 +44,8 @@ _RELOAD_ORDER = [
     'pini.dcc.export_handler',
     'pini.dcc',
 
+
+    # Pipe 1
     'pini.pipe_1.cp_utils',
     'pini.pipe_1.cp_template',
     'pini.pipe_1.cp_settings',
@@ -66,7 +68,39 @@ _RELOAD_ORDER = [
     'pini.pipe_1.cache',
     'pini.pipe_1',
 
+    # Pipe 2
+    'pini.pipe_2.cp_utils',
+    'pini.pipe_2.cp_template',
+    'pini.pipe_2.elem.cp_settings_elem',
+    'pini.pipe_2.elem.job',
+    'pini.pipe_2.elem.entity_type',
+    'pini.pipe_2.elem.entity.cp_ety_base',
+    'pini.pipe_2.elem.entity.cp_ety_disk',
+    'pini.pipe_2.elem.entity.cp_ety_sg',
+    'pini.pipe_2.elem.entity',
+    'pini.pipe_2.elem.asset',
+    'pini.pipe_2.elem.shot',
+    'pini.pipe_2.elem.work_dir',
+    'pini.pipe_2.elem.work',
+    'pini.pipe_2.elem.output',
+    'pini.pipe_2.elem.output.ccp_out_base',
+    'pini.pipe_2.elem.output.ccp_out_file',
+    'pini.pipe_2.elem.output.ccp_out_video',
+    'pini.pipe_2.elem',
+
+    'pini.pipe_2.cache.ccp_utils',
+    'pini.pipe_2.cache.ccp_job',
+    'pini.pipe_2.cache.ccp_ety_type',
+    'pini.pipe_2.cache.entity',
+    'pini.pipe_2.cache.output',
+    'pini.pipe_2.cache.work_dir',
+    'pini.pipe_2.cache.ccp_work',
+    'pini.pipe_2.cache.ccp_cache',
+    'pini.pipe_2.cache',
+    'pini.pipe_2',
+
     'pini.pipe',
+
 
     'pini.qt.utils',
     'pini.qt.wrapper.widgets.qw_base_widget',

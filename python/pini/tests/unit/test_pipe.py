@@ -138,6 +138,62 @@ class TestDiskPipe(unittest.TestCase):
 
     pipe_master_filter = 'disk'
 
+    def test_badly_named_dirs(self):
+
+        testing.TMP_ASSET.flush(force=True)
+        _work_dir = testing.TMP_ASSET.to_work_dir(task='model')
+        _LOGGER.info(' - WORK DIR %s', _work_dir)
+        _work_dir.flush(force=True)
+
+        _ver_1 = _work_dir.to_work(tag='blah', ver_n=1)
+        _ver_2 = _work_dir.to_work(tag='blah', ver_n=2)
+        if dcc.NAME == 'hou':
+            _extn = dcc.DEFAULT_EXTN
+        else:
+            _extn = 'hip'
+        _hip = _work_dir.to_work(tag='blah', ver_n=2, extn=_extn)
+        for _ver in [_ver_1, _ver_2, _hip]:
+            _LOGGER.info(' - TOUCH WORK %s', _ver)
+            _ver.touch()
+        _job = _work_dir.job
+        assert _job.exists()
+        assert _job.cfg['templates']
+        assert _work_dir.exists()
+        _job_c = pipe.CACHE.obt_job(_job)
+        assert _job_c
+        _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir)
+        _LOGGER.info(' - WORKS %s', _work_dir_c.works)
+        assert len(_work_dir_c.works) == 2
+        assert not _work_dir_c.badly_named_files
+        _work_dir.to_file('blah.'+dcc.DEFAULT_EXTN).touch()
+        assert not _work_dir_c.badly_named_files
+        _work_dir_c.find_works(force=True)
+        assert _work_dir_c.badly_named_files == 1
+
+        _work_dir.delete(force=True)
+
+    def test_output_get_metadata(self):
+
+        testing.TMP_ASSET.flush(force=True)
+        pipe.CACHE.reset()
+
+        _out = testing.TMP_ASSET.to_output('publish', task='model')
+        _out.touch()
+        _out_c = pipe.CACHE.obt_output(_out)
+        assert isinstance(_out_c, pipe.cache.CCPOutput)
+        _data = {'mtime': time.time()}
+        _out.set_metadata(_data)
+        assert _out.metadata == _data
+        assert _out_c.metadata == _data
+        _data = {'mtime': time.time()+1}
+        _out.set_metadata(_data)
+        assert _out.metadata == _data
+        testing.enable_file_system(False)
+        assert _out_c.metadata != _data
+        assert _out_c.get_metadata() != _data
+        testing.enable_file_system(True)
+        assert _out_c.get_metadata(force=True) == _data
+
     def test_output_seqs(self):
 
         if not testing.TEST_JOB.find_templates('render'):
@@ -320,6 +376,17 @@ class TestDiskPipe(unittest.TestCase):
         _pub_c = testing.TEST_YML.read_yml()
         assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
 
+    def test_validate_token(self):
+
+        _LOGGER.info('JOBS ROOT %s', pipe.JOBS_ROOT)
+        _LOGGER.info('JOBS %s', pipe.find_jobs())
+        _job = pipe.find_job('Testing')
+        _LOGGER.info('JOB %s', _job)
+        assert pipe.is_valid_token(
+            token='output_name', value='aaa', job=_job)
+        assert not pipe.is_valid_token(
+            token='output_name', value='aaa.aaa', job=_job)
+
     def test_update_publish_cache(self):
 
         if not testing.TEST_JOB.find_templates('publish'):
@@ -352,7 +419,7 @@ class TestDiskPipe(unittest.TestCase):
         assert not pipe.CACHE.obt_entity(_shot).find_publishes()
         _out.touch()
         assert _shot_c.find_publishes(force=True)
-        _yml = File(_shot_c.cache_fmt.format(func='_read_publishes_disk'))
+        _yml = File(_shot_c.cache_fmt.format(func='_read_publishes'))
         assert _yml.exists()
         assert _yml.read_yml()
         _LOGGER.info('YML %s', _yml.path)
@@ -411,79 +478,3 @@ class TestCache(unittest.TestCase):
         assert pipe.CACHE.obt_entity(_shot) is _shot_c
         pipe.CACHE.reset()
         assert pipe.CACHE.obt_entity(_shot) is not _shot_c
-
-
-class CTPTestPipe(testing.CTmpPipeTestCase):
-
-    pipe_master_filter = 'disk'
-
-    def test_validate_token(self):
-
-        _LOGGER.info('JOBS ROOT %s', pipe.JOBS_ROOT)
-        _LOGGER.info('JOBS %s', pipe.find_jobs())
-        _job = pipe.find_job('Testing')
-        _LOGGER.info('JOB %s', _job)
-        assert pipe.is_valid_token(
-            token='output_name', value='aaa', job=_job)
-        assert not pipe.is_valid_token(
-            token='output_name', value='aaa.aaa', job=_job)
-
-    def test_output_get_metadata(self):
-
-        testing.enable_file_system(True)
-
-        pipe.CACHE.reset()
-        _job = pipe.CACHE.obt_job('Test Pluto')
-        _path = _job.to_file('assets/char.cube/maya/rig/publish/cube_main_v001.mb')
-        _out = pipe.CPOutput(_path)
-        _out.touch()
-        _out_c = pipe.CACHE.obt_output(_out)
-        assert isinstance(_out_c, pipe.cache.CCPOutput)
-        _data = {'mtime': time.time()}
-        _out.set_metadata(_data)
-        assert _out.metadata == _data
-        assert _out_c.metadata == _data
-        _data = {'mtime': time.time()+1}
-        _out.set_metadata(_data)
-        assert _out.metadata == _data
-        testing.enable_file_system(False)
-        assert _out_c.metadata != _data
-        assert _out_c.get_metadata() != _data
-        testing.enable_file_system(True)
-        assert _out_c.get_metadata(force=True) == _data
-
-    def test_badly_named_dirs(self):
-
-        _path = self._tmp_jobs_root.to_subdir(
-            'Test Pluto/shots/common/{}/tmp'.format(dcc.NAME))
-        _work_dir = pipe.CPWorkDir(_path)
-        _LOGGER.info(' - WORK DIR %s', _work_dir)
-        assert _work_dir.task == 'tmp'
-        _work_dir.flush(force=True)
-
-        _ver_1 = _work_dir.to_work(tag='blah', ver_n=1)
-        _ver_2 = _work_dir.to_work(tag='blah', ver_n=2)
-        if dcc.NAME == 'hou':
-            _extn = dcc.DEFAULT_EXTN
-        else:
-            _extn = 'hip'
-        _hip = _work_dir.to_work(tag='blah', ver_n=2, extn=_extn)
-        for _ver in [_ver_1, _ver_2, _hip]:
-            _LOGGER.info(' - TOUCH WORK %s', _ver)
-            _ver.touch()
-        _job = pipe.CPJob(_path)
-        assert _job.exists()
-        assert _job.cfg['templates']
-        assert _work_dir.exists()
-        _job_c = pipe.CACHE.obt_job(_job)
-        assert _job_c
-        _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir)
-        _LOGGER.info(' - WORKS %s', _work_dir_c.works)
-        assert len(_work_dir_c.works) == 2
-        assert not _work_dir_c.badly_named_files
-        _work_dir.to_file('blah.'+dcc.DEFAULT_EXTN).touch()
-        assert not _work_dir_c.badly_named_files
-        _work_dir_c.find_works(force=True)
-        assert _work_dir_c.badly_named_files == 1
-
-        _work_dir.delete(force=True)

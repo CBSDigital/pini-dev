@@ -102,7 +102,10 @@ class MayaDCC(BaseDCC):
         _abc_mode = abc_mode
         if _abc_mode == 'Auto':
             _out = pipe.to_output(cache, catch=True)
-            _abc_mode = 'aiStandIn' if _out.task == 'fx' else 'Reference'
+            if 'arnold' in self.allowed_renderers() and _out.task == 'fx':
+                _abc_mode = 'aiStandIn'
+            else:
+                _abc_mode = 'Reference'
         _LOGGER.debug(' - ABC MODE %s', _abc_mode)
 
         # Create reference

@@ -264,8 +264,11 @@ class Path(object):
         return hash(self.path)
 
     def __eq__(self, other):
+        _LOGGER.debug('EQ %s %s', self, other)
         if not isinstance(other, Path):
+            _LOGGER.debug(' - OTHER IS NOT PATH')
             return False
+        _LOGGER.debug(' - APPLY PATH EQ')
         return self.path == other.path
 
     def __lt__(self, other):

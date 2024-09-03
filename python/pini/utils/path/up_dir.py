@@ -321,13 +321,16 @@ class Dir(up_path.Path):
             assert not self.contains(_trg)
             _trg.delete(force=True)
 
-    def to_file(self, rel_path=None, base=None, extn=None, class_=None):
+    def to_file(
+            self, rel_path=None, base=None, extn=None, filename=None,
+            class_=None):
         """Build a child of this directory as a file object.
 
         Args:
             rel_path (str): relative path to file from this dir
-            base (str): construct path using filename base
-            extn (str): construct path using extension
+            base (str): construct path using filename base (eg. blast)
+            extn (str): construct path using extension (eg. mb)
+            filename (str): construct path using filename (eg. blah.mb)
             class_ (class): override file class
 
         Returns:
@@ -342,6 +345,10 @@ class Dir(up_path.Path):
             _rel_path = base
             if extn:
                 _rel_path += '.'+extn
+            assert not filename
+        elif filename:
+            assert not base and not extn
+            _rel_path = filename
         else:
             raise TypeError(rel_path, base, extn)
 

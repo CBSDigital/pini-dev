@@ -2,11 +2,8 @@
 
 import logging
 import os
-import unittest
 
 from pini import pipe, dcc
-
-from .t_tools import TEST_DIR
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,28 +30,6 @@ if _PINI_TEST_JOB:
     if _PINI_TMP_ASSET:
         TMP_ASSET = TEST_JOB.to_asset(
             asset_type='char', asset=_PINI_TMP_ASSET)
-
-
-class CTmpPipeTestCase(unittest.TestCase):
-    """Test case which sets pini to a jobs root in TMP for testing."""
-
-    _tmp_jobs_root = TEST_DIR.to_subdir('Projects')
-    _tmp_job_dir = _tmp_jobs_root.to_subdir('Test Pluto')
-    _tmp_job = None
-
-    def setUp(self):
-        """Executed on begin test."""
-        _LOGGER.info('BEGIN TmpJobTestCase')
-        self._jobs_root = pipe.JOBS_ROOT
-        pipe.set_jobs_root(self._tmp_jobs_root.path)
-        self._tmp_job = pipe.CPJob(self._tmp_job_dir)
-        self._tmp_job.flush(force=True)
-        self._tmp_job.setup_cfg('Pluto')
-        self._tmp_job.set_setting(shotgrid={'disable': True})
-
-    def tearDown(self):
-        """Executed on complete test."""
-        pipe.set_jobs_root(self._jobs_root)
 
 
 def check_test_asset(force=False):

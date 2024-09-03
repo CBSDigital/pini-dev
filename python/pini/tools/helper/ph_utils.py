@@ -330,7 +330,6 @@ def output_to_icon(output, overlay=None, force=False):
     """
     _LOGGER.debug('OUTPUT TO ICON %s', output)
     _LOGGER.debug(' - NICE TYPE %s', output.nice_type)
-    assert isinstance(output, (pipe.CPOutput, pipe.CPOutputSeq))
 
     # Get base icon
     _bg = None
