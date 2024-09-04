@@ -111,7 +111,7 @@ def _write_metadata(outputs, cacheables, range_, step, checks_data):
         _data = _cbl.build_metadata()
         _data['range'] = range_
         _data['step'] = step
-        _data['checks'] = checks_data
+        _data['sanity_check'] = checks_data
         _out.set_metadata(_data)
 
 

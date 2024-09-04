@@ -61,7 +61,9 @@ class CheckAbcFpsMatchesScene(SCPipeCheck):
         self.write_log('Reading abcs')
         _abcs = dcc.find_pipe_refs(extn='abc')
         self.write_log('Found %d abcs', len(_abcs))
-        if not _abcs or not self.check_cache_up_to_date():
+        if not _abcs:
+            return
+        if self.check_cache_up_to_date():
             return
         _fps = dcc.get_fps()
         self.write_log('FPS %.01f', _fps)

@@ -27,7 +27,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         super(CPCacheableRef, self).__init__(ref_node)
         self.node = pom.CReference(ref_node)
 
-        self.asset = pipe.CPOutput(self.path)
+        self.asset = pipe.CPOutputFile(self.path)
         if self.asset.type_ != 'publish':
             raise ValueError
         if not self.to_geo():
@@ -63,7 +63,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         """
         _LOGGER.debug('TO ABC')
         _work = pipe.cur_work()
-        _pub = pipe.CPOutput(self.path)
+        _pub = pipe.CPOutputFile(self.path)
         _tmpl = _work.find_template('cache', has_key={'output_name': True})
         _LOGGER.debug(' - TMPL %s', _tmpl)
         _abc = _work.to_output(

@@ -6,7 +6,7 @@ import logging
 
 from maya import cmds, mel
 
-from pini import pipe, dcc
+from pini import pipe, dcc, qt
 from pini.dcc import export_handler
 from pini.tools import error
 from pini.utils import single, wrap_fn, check_heart, plural
@@ -399,8 +399,8 @@ class CheckGeoNaming(SCMayaCheck):
             '   - good name %s instanced=%d', _good_name,
             geo.shp.is_instanced())
         if not geo.shp.is_instanced() and _cur_name != _good_name:
-            _msg = ('Geo {} does not have matching shape name {} (shape '
-                    'is currently {})'.format(geo, _good_name, _geo_s))
+            _msg = ('Geo "{}" does not have matching shape name "{}" (shape '
+                    'is currently "{}")'.format(geo, _good_name, _geo_s))
             _fix = wrap_fn(self.fix_bad_shape, _geo_s, _good_name)
             self.add_fail(_msg, fix=_fix, node=geo)
             return
@@ -444,7 +444,11 @@ class CheckGeoNaming(SCMayaCheck):
         # Check for name clash
         if cmds.objExists(name):
             _node = pom.cast_node(name, maintain_shapes=True)
-            assert _node.plug['intermediateObject'].get_val()
+            if not _node.plug['intermediateObject'].get_val():
+                qt.raise_dialog(
+                    f'Shape "{_node}" is not intermediate object.\n\n'
+                    'You many want to check this geometry.',
+                    title='Warning', buttons=['Fix anyway', 'Cancel'])
             _node.rename(name+'Undeformed')
 
         cmds.rename(shp, name)

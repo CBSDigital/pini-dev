@@ -1,3 +1,16 @@
+## [4.1.0] - Wed 2024-09-04 13:39
+### Summary
+ - Sanity Check:
+    - check geo naming catch error on fix shape name with non-intermediate shape (cstewart),
+    - check abcs fps disable in absence of abcs,
+    - check cacheables bugfix error on execute,
+### Updated
+ - pini.tools.sanity_check.CheckGeoNaming catch error on non-intermediate node with warning,
+ - pini.tools.sanity_check.CheckAbcFpsMatchesScene disable check in absence of abcs,
+ - maya_pini.m_pipe.CPCacheable bugfix reference to legacy CPOutput object,
+ - maya_pini.m_pipe.cache bugfix inconsistent metadata location for sanity check results,
+
+
 ## [4.0.0] - Wed 2024-09-04 12:15
 ### Summary
  - Pipeline:
