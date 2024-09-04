@@ -1,3 +1,11 @@
+## [4.1.1] - Wed 2024-09-04 13:58
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click work file (mkim),
+### Updated
+ - pini.utils.File.read_pkl catch all exceptions on unpickle,
+
+
 ## [4.1.0] - Wed 2024-09-04 13:39
 ### Summary
  - Sanity Check:

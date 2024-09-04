@@ -357,7 +357,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _handle = open(self.path, "rb")
         try:
             _obj = pickle.load(_handle)
-        except (EOFError, UnicodeDecodeError, ModuleNotFoundError) as _exc:
+        except Exception as _exc:
             if catch:
                 return {}
             _handle.close()
