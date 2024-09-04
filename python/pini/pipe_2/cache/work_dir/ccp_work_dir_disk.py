@@ -45,4 +45,4 @@ class CCPWorkDirDisk(ccp_work_dir_base.CCPWorkDirBase):
         assert not class_
         _LOGGER.debug('READ OUTPUTS force=%d class=%s %s', force, class_, self)
         return super()._read_outputs(
-            class_=class_ or cache.CCPOutput)
+            class_=class_ or cache.CCPOutputFile)

@@ -160,7 +160,7 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
 
             # Determine output class
             if _sg_pub.template_type in pipe.OUTPUT_FILE_TYPES:
-                _class = cache.CCPOutput
+                _class = cache.CCPOutputFile
             elif _sg_pub.template_type in pipe.OUTPUT_VIDEO_TYPES:
                 _class = cache.CCPOutputVideo
             elif _sg_pub.template_type in pipe.OUTPUT_SEQ_TYPES:

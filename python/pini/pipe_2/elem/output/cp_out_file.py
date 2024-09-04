@@ -9,11 +9,11 @@ from . import cp_out_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPOutput(File, cp_out_base.CPOutputBase):
+class CPOutputFile(File, cp_out_base.CPOutputBase):
     """Represents an output file on disk."""
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
-    yaml_tag = '!CPOutput'
+    yaml_tag = '!CPOutputFile'
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,

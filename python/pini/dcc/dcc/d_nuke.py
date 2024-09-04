@@ -85,7 +85,7 @@ class NukeDCC(BaseDCC):
         """Test whether maya can reference the given output.
 
         Args:
-            output (CPOutputBase): output to reference
+            output (CPOutput): output to reference
 
         Returns:
             (bool): whether output can be referenced
@@ -119,7 +119,7 @@ class NukeDCC(BaseDCC):
         elif path.extn in ['mov', 'mp4']:
             _knobs += ' colorspace color_picking'
             _type = 'Read'
-        elif isinstance(path, pipe.CPOutput) and path.extn == 'abc':
+        elif isinstance(path, pipe.CPOutputFile) and path.extn == 'abc':
             _out = path
             _out_type = _out.metadata.get('type')
             _fps = _out.metadata.get('fps')

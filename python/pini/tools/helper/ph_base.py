@@ -251,7 +251,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if isinstance(output, pipe.CPOutputVideo):
             menu.add_video_actions(
                 output, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output, pipe.CPOutput):
+        elif isinstance(output, pipe.CPOutputFile):
             menu.add_file_actions(
                 output, delete_callback=_delete_callback, delete=delete)
         elif isinstance(output, pipe.CPOutputSeq):
@@ -339,7 +339,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             icon=icons.FIND, enabled=bool(_asset))
 
         # Add lookdev opts
-        if ref and isinstance(output, pipe.CPOutput):
+        if ref and isinstance(output, pipe.CPOutputFile):
             _out_c = pipe.CACHE.obt(output)
             _lookdev = _out_c.find_lookdev_shaders()
             menu.add_action(

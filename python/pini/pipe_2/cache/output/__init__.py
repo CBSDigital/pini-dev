@@ -3,7 +3,7 @@
 from pini.utils import register_custom_yaml_handler
 
 from .ccp_out_base import CCPOutputBase
-from .ccp_out_file import CCPOutput
+from .ccp_out_file import CCPOutputFile
 from .ccp_out_video import CCPOutputVideo
 from .ccp_out_seq_dir import CCPOutputSeqDir
 
@@ -16,4 +16,4 @@ elif MASTER == 'shotgrid':
 else:
     raise ValueError(MASTER)
 
-register_custom_yaml_handler(CCPOutput)
+register_custom_yaml_handler(CCPOutputFile)

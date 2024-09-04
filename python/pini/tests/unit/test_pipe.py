@@ -69,7 +69,7 @@ class TestPipe(unittest.TestCase):
                         _tmpl, task='anim', tag='vertical', output_name='test',
                         dcc_='maya')
                     _LOGGER.info('OUT %s', _out)
-                    _out = pipe.CPOutput(_out.path)
+                    _out = pipe.CPOutputFile(_out.path)
                     _LOGGER.info('OUT %s', _out)
         else:
             _LOGGER.info('NO PUBLISH TEMPLATES FOUND')
@@ -180,7 +180,7 @@ class TestDiskPipe(unittest.TestCase):
         _out = testing.TMP_ASSET.to_output('publish', task='model')
         _out.touch()
         _out_c = pipe.CACHE.obt_output(_out)
-        assert isinstance(_out_c, pipe.cache.CCPOutput)
+        assert isinstance(_out_c, pipe.cache.CCPOutputFile)
         _data = {'mtime': time.time()}
         _out.set_metadata(_data)
         assert _out.metadata == _data
@@ -426,12 +426,12 @@ class TestDiskPipe(unittest.TestCase):
         flush_caches()
         assert pipe.CACHE.obt_entity(_shot).find_publishes()
         _pub_c = single(pipe.CACHE.obt_entity(_shot).find_publishes())
-        assert isinstance(_pub_c, cache.CCPOutput)
+        assert isinstance(_pub_c, cache.CCPOutputFile)
         _out.delete(force=True)
         flush_caches()
         assert pipe.CACHE.obt_entity(_shot).find_publishes()
         _pub_c = single(pipe.CACHE.obt_entity(_shot).find_publishes())
-        assert isinstance(_pub_c, cache.CCPOutput)
+        assert isinstance(_pub_c, cache.CCPOutputFile)
         assert not pipe.CACHE.obt_entity(_shot).find_publishes(force=True)
 
         _shot.delete(force=True)
@@ -453,7 +453,7 @@ class TestCache(unittest.TestCase):
         _LOGGER.info('ETY (PUB) %s', _pub_c.entity)
         _LOGGER.info('ETY       %s', _ety_c)
 
-        assert isinstance(_pub_c, cache.CCPOutput)
+        assert isinstance(_pub_c, cache.CCPOutputFile)
         assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
         assert isinstance(_pub_c.work_dir.entity, cache.CCPEntity)
 

@@ -14,7 +14,7 @@ from .entity import (
     to_entity, cur_entity, find_entity, recent_entities)
 
 from .output import (
-    CPOutput, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
+    CPOutputFile, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
     to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
     CPOutputBase, cur_output, CPOutputSeqDir)
 

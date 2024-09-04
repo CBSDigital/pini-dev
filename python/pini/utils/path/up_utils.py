@@ -376,6 +376,7 @@ def search_files_for_text(
     if progress:
         from pini import qt
         _files = qt.progress_bar(_files)
+    _n_lines = _n_files = 0
     for _file in _files:
 
         _LOGGER.debug('CHECKING FILE %s', _file)
@@ -389,13 +390,16 @@ def search_files_for_text(
             continue
 
         # Check file contents
-        _printed_path = _search_file_contents(
+        _printed_path, _n_file_lines = _search_file_contents(
             file_=_file, body=_body, text=text, filter_=filter_, edit=edit)
+        _n_lines += _n_file_lines
         if _printed_path:
+            _n_files += 1
             _found_instance = True
 
     if not _found_instance:
         dprint('No instances found')
+    _LOGGER.info(' - MATCHED %d FILES / %d LINES', _n_files, _n_lines)
 
     return True
 
@@ -414,6 +418,7 @@ def _search_file_contents(file_, body, text, filter_, edit):
 
     # Check line of file
     _printed_path = False
+    _n_lines = 0
     for _idx, _line in enumerate(body.split('\n')):
 
         # Check line
@@ -438,6 +443,7 @@ def _search_file_contents(file_, body, text, filter_, edit):
             _print_line = True
 
         if _print_line:
+            _n_lines += 1
             if not _printed_path:
                 lprint(abs_path(file_))
             lprint('{:>6} {}'.format(
@@ -450,7 +456,7 @@ def _search_file_contents(file_, body, text, filter_, edit):
     if _printed_path:
         lprint()
 
-    return _printed_path
+    return _printed_path, _n_lines
 
 
 def _read_file_content(file_, catch, encoding):

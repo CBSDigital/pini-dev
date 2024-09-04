@@ -183,7 +183,7 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
         _LOGGER.debug('BUILD OUTPUT FILES %s', self)
         from pini import pipe
 
-        _file_class = file_class or pipe.CPOutput
+        _file_class = file_class or pipe.CPOutputFile
         _video_class = video_class or pipe.CPOutputVideo
         _globs = globs or self._read_output_globs()
         _outs = []

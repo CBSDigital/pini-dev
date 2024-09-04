@@ -60,6 +60,6 @@ def to_output(
     elif _file.extn and _file.extn.lower() in ('mp4', 'mov'):
         _class = cp_out_video.CPOutputVideo
     else:
-        _class = cp_out_file.CPOutput
+        _class = cp_out_file.CPOutputFile
     return _class(
         _path, job=job, entity=entity, template=template, work_dir=work_dir)

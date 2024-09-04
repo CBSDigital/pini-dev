@@ -92,7 +92,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
         # Find lookdev ref
         if isinstance(lookdev_, CMayaShadersRef):
             _look_ref = lookdev_
-        elif lookdev_ is None or isinstance(lookdev_, pipe.CPOutput):
+        elif lookdev_ is None or isinstance(lookdev_, pipe.CPOutputFile):
             _look_out = lookdev_ or self.output.find_lookdev_shaders(tag=tag)
             if not _look_out:
                 _LOGGER.info('NO LOOKDEV FOUND TO ATTACH %s', self)

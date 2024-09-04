@@ -80,7 +80,7 @@ class BaseDCC(object):
         """Test whether the dcc can reference the given output.
 
         Args:
-            output (CPOutputBase): output to reference
+            output (CPOutput): output to reference
 
         Returns:
             (bool): whether output can be referenced

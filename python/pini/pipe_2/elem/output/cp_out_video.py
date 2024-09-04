@@ -9,7 +9,7 @@ from . import cp_out_file, cp_out_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPOutputVideo(cp_out_file.CPOutput, clip.Video):
+class CPOutputVideo(cp_out_file.CPOutputFile, clip.Video):
     """Represents an output video file (eg. mov/mp4)."""
 
     yaml_tag = '!CPOutputVideo'

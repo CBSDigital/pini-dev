@@ -685,7 +685,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             dcc_=_dcc, data=_data)
         _LOGGER.debug(' - TEMPLATE %s', _tmpl)
         if _tmpl.type_ in pipe.OUTPUT_FILE_TYPES:
-            _class = pipe.CPOutput
+            _class = pipe.CPOutputFile
         elif _tmpl.type_ in pipe.OUTPUT_VIDEO_TYPES:
             _class = pipe.CPOutputVideo
         elif _tmpl.type_ in pipe.OUTPUT_SEQ_TYPES:

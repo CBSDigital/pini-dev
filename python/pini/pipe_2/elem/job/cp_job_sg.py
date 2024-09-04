@@ -274,7 +274,7 @@ def _to_out_stream_uid(output):
 
     ie. build an uid that identifies all versions of an output stream.
 
-    This could be achieved by using CPOutput.to_work(ver_n=0) but that is
+    This could be achieved by using CPOutputFile.to_work(ver_n=0) but that is
     slow. Instead, the data dict with the version key removed is converted
     to a tuple.
 

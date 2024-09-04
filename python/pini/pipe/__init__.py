@@ -8,12 +8,12 @@ shotgrid = None
 
 if os.environ.get('PINI_DEV') == '1':
     from ..pipe_2 import *
-    VERSION = 2
+    VERSION = 3
     if MASTER == 'shotgrid':
         from ..pipe_2 import shotgrid
     from ..pipe_2 import cp_template
 else:
     from ..pipe_2 import *
-    VERSION = 2
+    VERSION = 3
     if MASTER == 'shotgrid':
         from ..pipe_2 import shotgrid

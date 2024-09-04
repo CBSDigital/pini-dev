@@ -771,7 +771,7 @@ def _path_from_result(  # pylint: disable=too-many-return-statements
         entity_map (dict): entity map
 
     Returns:
-        (CPAsset|CPShot|CPWorkFile|CPOutput): pipe path object
+        (CPAsset|CPShot|CPWorkFile|CPOutputFile): pipe path object
     """
     check_heart()
     assert isinstance(job, pipe.CPJob)

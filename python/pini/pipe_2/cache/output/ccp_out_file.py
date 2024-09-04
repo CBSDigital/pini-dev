@@ -5,20 +5,20 @@ import operator
 
 from pini.utils import single, File, EMPTY
 
-from ...elem import CPOutput
+from ... import elem
 from . import ccp_out_base
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CCPOutput(CPOutput, ccp_out_base.CCPOutputBase):
+class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
     """Represents an output on disk with built in caching."""
 
     get_metadata = ccp_out_base.CCPOutputBase.get_metadata
     set_metadata = ccp_out_base.CCPOutputBase.set_metadata
     _exists = True
 
-    yaml_tag = '!CCPOutput'
+    yaml_tag = '!CCPOutputFile'
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -65,7 +65,7 @@ class CCPOutput(CPOutput, ccp_out_base.CCPOutputBase):
         Args:
             force (bool): delete without confirmation
         """
-        CPOutput.delete(self, force=force)
+        super().delete(self, force=force)
         _parent = self.work_dir or self.entity
         _parent.find_outputs(force=True)
         self._exists = False

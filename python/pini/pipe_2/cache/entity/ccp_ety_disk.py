@@ -98,7 +98,7 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
         from pini.pipe import cache
         return super()._build_output_files(
             globs=globs,
-            file_class=file_class or cache.CCPOutput,
+            file_class=file_class or cache.CCPOutputFile,
             video_class=video_class or cache.CCPOutputVideo)
 
     def _update_outputs_cache(self, force=True):

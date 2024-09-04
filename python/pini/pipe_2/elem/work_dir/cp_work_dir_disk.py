@@ -31,7 +31,7 @@ class CPWorkDirDisk(cp_work_dir_base.CPWorkDir):
         """
         from pini import pipe
 
-        _class = class_ or pipe.CPOutput
+        _class = class_ or pipe.CPOutputFile
         _LOGGER.debug('READ OUTPUTS DISK %s', _class)
         _tmpls = self._find_output_templates()
         _LOGGER.debug(' - FOUND %d TMPLS', len(_tmpls))

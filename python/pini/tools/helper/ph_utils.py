@@ -146,7 +146,7 @@ def _cache_to_icon(output):
     # Find overlay path
     _over_path = None
     if _asset_path:
-        _asset = pipe.CPOutput(pipe.map_path(_asset_path))
+        _asset = pipe.CPOutputFile(pipe.map_path(_asset_path))
         _over_path = output_to_icon(_asset)
     elif _type == 'CPCacheableCam':
         _over_path = CAM_ICON

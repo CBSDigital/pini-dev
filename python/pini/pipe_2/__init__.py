@@ -22,7 +22,7 @@ from .elem import (
     cur_entity, find_entity, recent_entities, CPWorkDir, cur_work_dir,
     to_work_dir, cur_task, map_task, CPWork, cur_work, add_recent_work,
     install_set_work_callback, recent_work, load_recent, to_work,
-    CPOutput, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
+    CPOutputFile, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
     to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
     CPOutputBase, cur_output, CPOutputSeqDir)
 
