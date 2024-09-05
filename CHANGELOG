@@ -1,3 +1,14 @@
+## [4.3.0] - Thu 2024-09-05 11:12
+### Summary
+ - Pini Helper:
+    - attach shaders bugfix error on missing override set geometry (mkim),
+### Updated
+ - pini.dcc.CMayaShadersRef.attach_to catch missing override set geo,
+ - pini.install refresh added usage tracking,
+ - pini.tools.sanity_check.CacheCacheable remove shape name fix for referenced nodes,
+ - pini.tools.helper better ns for duplicate asset with trailing digit + fix attach error due to non-cacheable,
+
+
 ## [4.2.0] - Thu 2024-09-05 08:32
 ### Summary
  - Sanity Check:

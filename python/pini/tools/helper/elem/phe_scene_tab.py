@@ -741,7 +741,11 @@ class CLSceneTab(object):
         """
         _LOGGER.debug(' - CTX SCENE REF ADD OPTS %s', ref)
         _out = ref.to_output(use_cache=False)
-        _base, _ = split_base_index(ref.namespace)
+        _out_c = pipe.CACHE.obt(_out)
+        if ref.namespace == _out.output_name:
+            _base = _out.output_name
+        else:
+            _base, _ = split_base_index(ref.namespace)
 
         menu.add_label('Ref: '+ref.namespace)
         menu.add_separator()
@@ -758,7 +762,7 @@ class CLSceneTab(object):
             icon=icons.EDIT)
         menu.add_action(
             'Duplicate',
-            wrap_fn(self._stage_import, _out, base=_base, redraw=True),
+            wrap_fn(self._stage_import, _out_c, base=_base, redraw=True),
             icon=icons.DUPLICATE)
         menu.add_separator()
 

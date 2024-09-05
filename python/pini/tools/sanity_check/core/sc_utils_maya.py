@@ -44,7 +44,7 @@ class SCMayaCheck(sc_check.SCCheck):
 
         # Handle multiple shapes
         if len(_shps) > 1:
-            _msg = 'Node {} has multiple shapes ({})'.format(
+            _msg = 'Node "{}" has multiple shapes ({})'.format(
                 node, '/'.join(_shps))
             self.add_fail(_msg, node=node)
             return
@@ -58,10 +58,13 @@ class SCMayaCheck(sc_check.SCCheck):
         _cur_shp = to_clean(_shp)
         _correct_shp = to_clean(node)+'Shape'
         if _cur_shp != _correct_shp:
-            _fix = wrap_fn(cmds.rename, _shp, _correct_shp)
+            if pom.CNode(node).is_referenced():
+                _fix = None
+            else:
+                _fix = wrap_fn(cmds.rename, _shp, _correct_shp)
             _msg = (
-                'Node {} has badly named shape node {} (should be '
-                '{})'.format(node, _shp, _correct_shp))
+                f'Node "{node}" has badly named shape node "{_shp}" (should '
+                f'be "{_correct_shp}")')
             self.add_fail(_msg, fix=_fix, node=node)
 
 

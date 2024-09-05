@@ -15,7 +15,9 @@ def _build_refresh_tool():
     """
     _cmd = '\n'.join([
         'from pini import refresh',
-        'refresh.reload_libs()'])
+        'from pini.tools import usage',
+        '_refresh = usage.get_tracker(name="ReloadTools")(refresh.reload_libs)',
+        '_refresh()'])
 
     _refresh = PITool(
         name='Refresh', command=_cmd,

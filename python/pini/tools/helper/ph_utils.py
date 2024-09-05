@@ -53,6 +53,7 @@ EXTN_ICONS = {
 }
 _EXTN_BG_MAP = {
     'abc': ABC_BG_ICON,
+    'fbx': FBX_BG_ICON,
 }
 _TYPE_BG_MAP = {
     'render': icons.find('Red Circle'),

@@ -339,8 +339,8 @@ class CMayaShadersRef(CMayaRef):
             # Find geos
             _geos = []
             for _geo in _clean_geos:
-                _geo = target.to_node(_geo)
-                if not cmds.objExists(_geo):
+                _geo = target.to_node(_geo, catch=True)
+                if not _geo or not cmds.objExists(_geo):
                     _LOGGER.debug('   - MISSING GEO %s', _geo)
                     continue
                 _LOGGER.debug('   - ADDING GEO %s', _geo)
