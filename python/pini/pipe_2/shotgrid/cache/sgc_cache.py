@@ -505,7 +505,7 @@ class SGDataCache(object):
             if not _result['tank_name']:
                 _LOGGER.debug(' - REJECT NO TANK NAME')
                 continue
-            _job_root = pipe.JOBS_ROOT.to_subdir(_result['tank_name'])
+            _job_root = pipe.ROOT.to_subdir(_result['tank_name'])
             _cfg = _job_root.to_file('.pini/config.yml')
             if not _cfg.exists():
                 _LOGGER.debug(' - REJECT NO CFG')

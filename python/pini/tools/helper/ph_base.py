@@ -72,7 +72,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self._save_settings = load_settings
         self._notes_stack = {}
         if not pipe.CACHE.jobs:
-            raise RuntimeError('No valid jobs found in '+pipe.JOBS_ROOT.path)
+            raise RuntimeError('No valid jobs found in '+pipe.ROOT.path)
 
         # Init admin mode
         self._admin_mode = admin

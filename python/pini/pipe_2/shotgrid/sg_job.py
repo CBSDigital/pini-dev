@@ -103,7 +103,7 @@ def find_jobs():
         'Project', fields=_JOB_FIELDS,
         filters=[('sg_status', 'in', ('Active', 'Bidding', 'Test'))])
 
-    _disk_jobs = pipe.JOBS_ROOT.find(type_='d', depth=1, full_path=False)
+    _disk_jobs = pipe.ROOT.find(type_='d', depth=1, full_path=False)
     _jobs = []
     for _data in _results:
         _name = _data[_JOB_NAME_TOKEN]

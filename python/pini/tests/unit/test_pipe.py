@@ -378,7 +378,7 @@ class TestDiskPipe(unittest.TestCase):
 
     def test_validate_token(self):
 
-        _LOGGER.info('JOBS ROOT %s', pipe.JOBS_ROOT)
+        _LOGGER.info('JOBS ROOT %s', pipe.ROOT)
         _LOGGER.info('JOBS %s', pipe.find_jobs())
         _job = pipe.find_job('Testing')
         _LOGGER.info('JOB %s', _job)

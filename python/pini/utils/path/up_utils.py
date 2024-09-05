@@ -248,10 +248,10 @@ def copied_path():
         return _text
 
     # Try splitting by jobs root
-    _LOGGER.debug(' - JOBS ROOT %s', pipe.JOBS_ROOT.path)
-    if pipe.JOBS_ROOT.path in _text:
-        _, _rel_path = _text.rsplit(pipe.JOBS_ROOT.path, 1)
-        _path = abs_path('{}/{}'.format(pipe.JOBS_ROOT.path, _rel_path))
+    _LOGGER.debug(' - JOBS ROOT %s', pipe.ROOT.path)
+    if pipe.ROOT.path in _text:
+        _, _rel_path = _text.rsplit(pipe.ROOT.path, 1)
+        _path = abs_path('{}/{}'.format(pipe.ROOT.path, _rel_path))
         if os.path.exists(_path):
             return _path
 

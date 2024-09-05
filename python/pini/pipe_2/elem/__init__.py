@@ -3,7 +3,7 @@
 # pylint: disable=no-name-in-module
 
 from .root import (
-    CPRoot, JOBS_ROOT, find_jobs, find_job, obt_job)
+    CPRoot, ROOT, find_jobs, find_job, obt_job)
 
 from .job import CPJob, cur_job, to_job
 

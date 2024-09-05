@@ -362,7 +362,7 @@ def _export_ass(metadata, force):
     return _ass
 
 
-def _flush_scene(keep_nodes):
+def _flush_scene(keep_nodes=None):
     """Remove nodes from scene to prepare for lookdev export.
 
     Args:
@@ -374,19 +374,22 @@ def _flush_scene(keep_nodes):
     if keep_nodes:
         _keep_nodes |= set(keep_nodes)
 
+    # Import refs (NOTE: needs to happen before remove geos from sets
+    # otherwise redshift sets get randomly deleted)
+    _refs = ref.find_refs()
+    _LOGGER.debug(' - REFS %s', _refs)
+    for _ref in _refs:
+        _LOGGER.debug('   - IMPORT REF %s', _ref)
+        _ref.import_(namespace=None)
+
     # Remove geos from override sets
     _sets = lookdev.read_override_sets(crop_namespace=False)
     _LOGGER.debug(' - SETS %s', _sets)
     for _set, _geos in _sets.items():
+        _keep_nodes.add(_set)
         _geos = sorted(set(_geos) - _keep_nodes)
         cmds.sets(_geos, remove=_set)
         _LOGGER.debug(' - CLEAN GEO %s set=%s', _geos, _set)
-
-    # Import refs
-    _refs = ref.find_refs()
-    _LOGGER.debug(' - REFS %s', _refs)
-    for _ref in _refs:
-        _ref.import_(namespace=None)
 
     # Move any lights in cache set into group
     _lights_grp = None

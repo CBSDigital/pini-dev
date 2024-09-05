@@ -16,7 +16,7 @@ SHOTGRID_AVAILABLE = bool(
 SUBMIT_AVAILABLE = os.environ.get('PINI_PIPE_ENABLE_SUBMIT', False)
 
 from .elem import (
-    CPJob, JOBS_ROOT, find_jobs, find_job, cur_job, CPRoot, obt_job,
+    CPJob, ROOT, find_jobs, find_job, cur_job, CPRoot, obt_job,
     to_job, CPSequence, cur_sequence, CPAsset,
     cur_asset, CPShot, cur_shot, to_shot, CPEntity, to_entity,
     cur_entity, find_entity, recent_entities, CPWorkDir, cur_work_dir,
@@ -37,4 +37,4 @@ from . import cache
 
 ENTITY_TYPES = CPAsset, CPShot
 
-CACHE = cache.CCPRoot(JOBS_ROOT.path)
+CACHE = cache.CCPRoot(ROOT.path)

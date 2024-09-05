@@ -411,26 +411,52 @@ class CheckGeoNaming(SCMayaCheck):
         Args:
             geos (str list): geometry
         """
-        _names = collections.defaultdict(list)
+
+        # Find bad names
+        _dup_names = set()
         for _geo in geos:
             _name = to_clean(_geo)
-            _names[_name].append(_geo)
+            if '|' in str(_geo):
+                _LOGGER.info(' - ADDING %s %s', _name, _geo)
+                _dup_names.add(_name)
 
-        _dup_names = False
-        for _name, _geos in _names.items():
-            if len(_geos) == 1:
+        # Add fail for each group of nodes with name
+        _scn_has_dups = False
+        for _name in _dup_names:
+            _LOGGER.info(' - CHECKING %s', _name)
+
+            # Sort child nodes first so that they are less likely to get
+            # renamed - often grp (unimportant) + mesh tfm have same name,
+            # so we just want to rename grp
+            _longs = []
+            _longs += cmds.ls(_name, long=True) or []
+            _longs += cmds.ls('*:'+_name, long=True) or []
+            _longs.sort(reverse=True)
+
+            _geos = []
+            for _long in _longs:
+                _LOGGER.info('   - NODE %s', _long)
+                if _long.startswith('|JUNK'):
+                    continue
+                _path = single(cmds.ls(_long, allPaths=True))
+                _geos.append(_path)
+            if len(_geos) <= 1:
+                _LOGGER.info('   - NONE TO RENAME')
                 continue
+            _LOGGER.info('   - GEOS %d %s', len(_geos), _geos)
+
             self.write_log('Duplicate names %s', _geos)
-            _fail = SCFail('Duplicate name {} in cache_SET: {}'.format(
-                _name, _geos))
+            _fail = SCFail('Duplicate name "{}" in cache_SET: {}'.format(
+                _name, [str(_geo) for _geo in _geos]))
             _sel = wrap_fn(cmds.select, _geos)
             _fail.add_action('Select nodes', _sel)
-            _fix = wrap_fn(self.fix_duplicate_nodes, _geos)
-            _fail.add_action('Fix', _fix)
+            if [_geo for _geo in _geos if not pom.CNode(_geo).is_referenced()]:
+                _fix = wrap_fn(self.fix_duplicate_nodes, _geos)
+                _fail.add_action('Fix', _fix, is_fix=True)
             self.add_fail(_fail)
-            _dup_names = True
+            _scn_has_dups = True
 
-        return _dup_names
+        return _scn_has_dups
 
     def fix_bad_shape(self, shp, name):
         """Fix bad shape name.
@@ -459,10 +485,14 @@ class CheckGeoNaming(SCMayaCheck):
         Args:
             nodes (str): duplicate nodes to fix
         """
-        _name = str(nodes[0]).split('|')[-1]
+        _LOGGER.info('FIX DUPLICATE NODES %s', nodes)
+        _name = to_clean(nodes[0])
+        _LOGGER.info(' - NAME %s', _name)
         _root = _name
         while _root[0].isdigit():
             _root = _root[:-1]
+        _LOGGER.info(' - ROOT %s', _root)
+
         for _node in nodes[1:]:
             _idx = 1
             _new_name = None
@@ -476,6 +506,7 @@ class CheckGeoNaming(SCMayaCheck):
             if not cmds.objExists(_node):
                 _LOGGER.warning(' - MISSING NODE %s', _node)
                 continue
+            _LOGGER.info(' - RENAME %s -> %s', _node, _new_name)
             cmds.rename(_node, _new_name)
 
 

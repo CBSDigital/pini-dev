@@ -40,7 +40,7 @@ class CPAsset(cp_ety.CPEntity):
             self.job = job
         else:
             _job = pipe.CPJob(_path)
-            self.job = pipe.JOBS_ROOT.obt_job(_job.name)
+            self.job = pipe.ROOT.obt_job(_job.name)
             assert_eq(self.job, _job)
             assert _path.startswith(_job.path)
 

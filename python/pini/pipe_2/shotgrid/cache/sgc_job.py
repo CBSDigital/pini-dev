@@ -45,7 +45,7 @@ class SGCJob(sgc_container.SGCContainer):
         if not self.name:
             raise ValueError(data)
 
-        self.root = pipe.JOBS_ROOT.to_subdir(self.name)
+        self.root = pipe.ROOT.to_subdir(self.name)
 
     @property
     def assets(self):
@@ -824,7 +824,7 @@ def _output_from_result(result, job):
     """
     _path = result.get('path_cache')
     if _path and not Path(_path).is_abs():
-        _path = pipe.JOBS_ROOT.to_file(_path)
+        _path = pipe.ROOT.to_file(_path)
     if not _path:
         _path_dict = result.get('path') or {}
         _path = _path_dict.get('local_path')

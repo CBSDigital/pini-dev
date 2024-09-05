@@ -15,10 +15,10 @@ elif MASTER == 'shotgrid':
 else:
     raise ValueError(MASTER)
 
-JOBS_ROOT = CPRoot(os.environ.get(
+ROOT = CPRoot(os.environ.get(
     'PINI_JOBS_ROOT', HOME_PATH+'/Documents/Projects'))
 
 # Map functions to global level
 for _name in ['find_jobs', 'find_job', 'obt_job']:
-    _func = getattr(JOBS_ROOT, _name)
+    _func = getattr(ROOT, _name)
     globals()[_name] = _func

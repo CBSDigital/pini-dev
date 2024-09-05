@@ -41,7 +41,7 @@ def to_job(name, catch=False):
     # Determine path
     _name = to_str(name)
     if '/' not in _name:
-        _path = pipe.JOBS_ROOT.to_subdir(_name)
+        _path = pipe.ROOT.to_subdir(_name)
     else:
         _path = _name
     _LOGGER.debug(' - PATH %s', _path)

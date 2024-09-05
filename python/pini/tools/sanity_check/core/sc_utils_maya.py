@@ -235,11 +235,14 @@ def is_display_points(node):
     return _node.shp.object_type() == 'displayPoints'
 
 
-def read_cache_set_geo():
+def read_cache_set_geo(filter_=None):
     """Read cache_SET contents.
 
     Based on publish references mode, this can contain different values,
     namely whether to include referenced nodes.
+
+    Args:
+        filter_ (str): apply filter to list
 
     Returns:
         (CBaseTransform list): cache set nodes
@@ -250,7 +253,8 @@ def read_cache_set_geo():
         export_handler.ReferencesMode.LEAVE_INTACT,
         export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE)
     return m_pipe.read_cache_set(
-        mode='geo', include_referenced=_include_referenced, set_=_set)
+        mode='geo', include_referenced=_include_referenced, set_=_set,
+        filter_=filter_)
 
 
 def shd_is_arnold(engine, type_):

@@ -1,3 +1,19 @@
+## [4.2.0] - Thu 2024-09-05 08:32
+### Summary
+ - Sanity Check:
+    - check geo naming catch duplicate nodes even if non-geo (cstewart/mkim),
+ - Pini Helper:
+    - lookdev publish bugfix some override sets not saved in shaders ma file,
+    - attach shaders bugfix error on missing override set,
+### Updated
+ - pini.pipe updated JOBS_ROOT -> ROOT,
+ - pini.dcc.CMayaShadersRef.attach_to catch missing override set,
+ - pini.dcc.CMayaLookdevPublish flush scene import refs before remove geo from sets to fix sets being removed,
+ - pini.tools.sanity_check.read_cache_set_geo added filter_ arg,
+ - pini.tools.sanity_check.CheckGeoNaming catch dup names even if non-geo,
+ - maya_pini.open_maya.CReference.to_node bugfix catch flag not working on dup nodes,
+
+
 ## [4.1.1] - Wed 2024-09-04 13:58
 ### Summary
  - Pini Helper:

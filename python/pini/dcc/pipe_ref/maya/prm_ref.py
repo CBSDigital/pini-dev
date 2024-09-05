@@ -326,14 +326,14 @@ class CMayaShadersRef(CMayaRef):
             _sets = self.shd_data.get('ai_override_sets', {})
 
         # Rebuild sets with geo from this ref
-        for _set, _clean_geos in _sets.items():
+        for _set_name, _clean_geos in _sets.items():
 
-            _LOGGER.debug(' - APPLYING SET %s %s', _set, _clean_geos)
+            _LOGGER.debug(' - APPLYING SET %s %s', _set_name, _clean_geos)
 
             # Find set
-            _set = self.to_node(_set)
-            if not cmds.objExists(_set):
-                _LOGGER.debug('  - MISSING SET')
+            _set = self.to_node(_set_name, catch=True)
+            if not _set or not cmds.objExists(_set):
+                _LOGGER.info('  - MISSING OVERRIDE SET %s', _set_name)
                 continue
 
             # Find geos

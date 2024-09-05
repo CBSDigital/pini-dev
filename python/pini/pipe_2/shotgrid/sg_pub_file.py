@@ -62,7 +62,7 @@ def create_pub_file(
         'description': _notes,
         'entity': _sg_ety.to_entry(),
         'name': output.filename,
-        'path_cache': pipe.JOBS_ROOT.rel_path(output.path),
+        'path_cache': pipe.ROOT.rel_path(output.path),
         'project': _sg_job.to_entry(),
         'published_file_type': _sg_type.to_entry(),
         'task': _sg_task.to_entry(),
@@ -277,7 +277,7 @@ def find_pub_files(
             _path = _path_dict.get('local_path')
         if not _path:
             continue
-        _path = abs_path(_path, root=pipe.JOBS_ROOT)
+        _path = abs_path(_path, root=pipe.ROOT)
         if not passes_filter(_path, filter_):
             continue
         if _path in _paths:

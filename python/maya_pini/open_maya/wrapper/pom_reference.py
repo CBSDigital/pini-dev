@@ -240,7 +240,12 @@ class CReference(om.MFnReference, ref.FileRef):
             if catch and not cmds.objExists(_node):
                 _node = None
             else:
-                _node = pom_utils.cast_node(_node)
+                try:
+                    _node = pom_utils.cast_node(_node)
+                except RuntimeError as _exc:
+                    if catch:
+                        return None
+                    raise _exc
         else:
             raise ValueError(fmt)
 
