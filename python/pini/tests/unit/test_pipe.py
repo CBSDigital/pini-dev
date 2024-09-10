@@ -293,6 +293,7 @@ class TestDiskPipe(unittest.TestCase):
 
         # Create frame so seq exists
         testing.obt_image('exr').copy_to(_frame_1)
+        _seq.add_metadata(src=_work.path)
         assert _seq.exists(force=True)
         assert _shot.find_outputs()
         assert _work.find_outputs()

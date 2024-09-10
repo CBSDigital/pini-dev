@@ -52,6 +52,7 @@ def profile_stop(name='pini', gprof2dot=False, bkp=True):
     _txt = File(PROFILE_TXT_FMT.format(name=name))
 
     # Dump to file
+    _file.test_dir()
     _PROFILE.dump_stats(_file.path)
     _LOGGER.info('RAN PROFILE IN %.02fs', time.time() - _PROFILE_START)
     _LOGGER.info(' - WROTE FILE %s', _file.path)

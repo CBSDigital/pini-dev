@@ -50,14 +50,6 @@ class SGCContainer(object):
         _data = {'sg_status_list': status, 'description': _desc}
         shotgrid.update('PublishedFile', self.id_, _data)
 
-    def to_filter(self):
-        """Build shotgrid search filter from this entry.
-
-        Returns:
-            (tuple): filter
-        """
-        return self.type_.lower(), 'is', self.to_entry()
-
     def to_entry(self):
         """Build shotgrid uid dict for this data entry.
 
@@ -65,6 +57,14 @@ class SGCContainer(object):
             (dict): shotgrid entry
         """
         return {'type': self.type_, 'id': self.id_}
+
+    def to_filter(self):
+        """Build shotgrid search filter from this entry.
+
+        Returns:
+            (tuple): filter
+        """
+        return self.type_.lower(), 'is', self.to_entry()
 
     def to_url(self):
         """Obtain url for this entry.
@@ -97,6 +97,9 @@ class SGCPubType(SGCContainer):
 class SGCStep(SGCContainer):
     """Represents a pipeline step."""
 
+    FIELDS = (
+        'entity_type', 'code', 'short_name', 'department', 'updated_at',
+        'list_order')
     ENTITY_TYPE = 'PipelineStep'
 
     def __init__(self, data):

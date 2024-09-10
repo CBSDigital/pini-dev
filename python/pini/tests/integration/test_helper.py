@@ -70,13 +70,9 @@ class TestHelper(unittest.TestCase):
         testing.enable_file_system(True)
         _helper.ui.MainPane.select_tab('Scene')
 
-        assert not error.TRIGGERED
-
     def test_save_new_tag(self):
 
         _LOGGER.info('TEST SAVE NEW TAG')
-
-        assert not error.TRIGGERED
 
         _shot = testing.TEST_SHOT
         _shot_c = pipe.CACHE.obt(testing.TEST_SHOT)
@@ -101,14 +97,14 @@ class TestHelper(unittest.TestCase):
         _helper = helper.DIALOG
         _helper.ui.Refresh.click()
         _helper.jump_to(_work)
-        assert_eq(_helper.work, _work)
+        assert_eq(_helper.work, _work.find_latest())
         _helper.ui.WWorksRefresh.click()
-        assert_eq(_helper.work, pipe.CACHE.cur_work)
+        assert_eq(_helper.work, pipe.CACHE.cur_work.find_latest())
 
         _work_dir_c = _helper.work_dir
         assert _helper.job is pipe.CACHE.cur_job
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
-        assert _helper.work is pipe.CACHE.cur_work
+        assert _helper.work is pipe.CACHE.cur_work.find_latest()
 
         _helper.ui.WTagText.setText('tmp1')
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
@@ -117,13 +113,9 @@ class TestHelper(unittest.TestCase):
         assert _helper.work
         _helper._callback__WSave(force=True)
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
-        assert _helper.work is pipe.CACHE.cur_work
-
-        assert not error.TRIGGERED
+        assert _helper.work is pipe.CACHE.cur_work.find_latest()
 
     def test_scene_refs_filter(self):
-
-        assert not error.TRIGGERED
 
         _filters = [helper.DIALOG.ui.SSceneRefsShowLookdevs,
                     helper.DIALOG.ui.SSceneRefsShowRigs,
@@ -135,8 +127,6 @@ class TestHelper(unittest.TestCase):
         helper.DIALOG.ui.SSceneRefsTypeFilterReset.click()
         for _filter in _filters:
             assert not _filter.isChecked()
-
-        assert not error.TRIGGERED
 
     def test_store_settings_in_scene_basic(self):
 

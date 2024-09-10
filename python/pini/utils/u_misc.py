@@ -581,7 +581,12 @@ def strftime(fmt=None, time_=None):
         eg. strftime('%a %D %b') -> 'Tue 10th Jan'
 
     Args:
-        fmt (str): time format (eg. %H:%M:%S)
+        fmt (str): time format (eg. %H:%M:%S) or preset:
+            default/path - clean/sortable style (eg. 240905_101414)
+            nice - simple readable format (eg. 05/09/24 10:14:14)
+            full - full readable format (eg. Fri 05/09/24 10:14:14)
+            date - just date (eg. 05/09/24)
+            time - just time (eg. 10:14:14)
         time_ (float/struct_time): time value
 
     Returns:
@@ -591,8 +596,14 @@ def strftime(fmt=None, time_=None):
 
     if fmt == 'nice':
         _fmt = '%d/%m/%y %H:%M:%S'
+    elif fmt == 'full':
+        _fmt = '%a %d/%m/%y %H:%M:%S'
     elif fmt in (None, 'default', 'path'):
         _fmt = '%y%m%d_%H%M%S'
+    elif fmt == 'date':
+        _fmt = '%d/%m/%y'
+    elif fmt == 'time':
+        _fmt = '%H:%M:%S'
     else:
         _fmt = fmt
 

@@ -97,10 +97,12 @@ class CCPWork(CPWork):
         return super().find_outputs(*args, **kwargs)
 
     @pipe_cache_to_file
-    def _read_outputs(self, force=False):
+    def _read_outputs(self, match_metadata=True, force=False):
         """Read outputs generated from this work file.
 
         Args:
+            match_metadata (bool): ignore output without this file
+                marked as their source in their metadata
             force (bool): force reread from disk
 
         Returns:
@@ -111,6 +113,11 @@ class CCPWork(CPWork):
             self._update_outputs_cache()
         _outs = super()._read_outputs()
         _LOGGER.debug(' - FOUND %d OUTPUTS %s', len(_outs), self)
+        if match_metadata:
+            _outs = [
+                _out for _out in _outs
+                if _out.metadata.get('src') == self.path]
+            _LOGGER.debug(' - APPLY METADATA MATCH -> %d OUTPUTS', len(_outs))
         return _outs
 
     def _update_outputs_cache(self):

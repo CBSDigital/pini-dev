@@ -137,11 +137,14 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCAsset|SGCShot): matching entity
         """
+        _LOGGER.debug('FIND ENTITY %s', match)
         _match_s = to_str(match)
+        _LOGGER.debug(' - MATCH_S %s', _match_s)
 
         _match_etys = [
             _ety for _ety in self.entities
             if _match_s in (_ety.name, _ety.path)]
+        _LOGGER.debug(' - MATCH ETYS %d %s', len(_match_etys), _match_etys)
         if len(_match_etys) == 1:
             return single(_match_etys)
 
@@ -211,13 +214,18 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCShot): matching shot
         """
+        _LOGGER.info('FIND SHOT %s', match)
         _shots = self.find_shots(filter_=filter_)
+        _match_s = to_str(match)
+        _LOGGER.info(' - MATCH_S %s', _match_s)
 
         if len(_shots) == 1:
             return single(_shots)
 
         _match_shots = [
-            _shot for _shot in _shots if match in (_shot.name, _shot.path)]
+            _shot for _shot in _shots
+            if match in (_shot.name, _shot.path) or
+            _match_s in (_shot.path, )]
         if len(_match_shots):
             return single(_match_shots)
 
@@ -488,8 +496,8 @@ class SGCJob(sgc_container.SGCContainer):
                 _path_map[_result['path']] = _result
 
         _results = list(_path_map.values())
-        _LOGGER.debug(
-            ' - FOUND %d RESULTS IN %.01fs', len(_results),
+        _LOGGER.log(
+            9, ' - FOUND %d RESULTS IN %.01fs', len(_results),
             time.time() - _v_start)
 
         return _results
@@ -673,7 +681,7 @@ class SGCJob(sgc_container.SGCContainer):
         _pub_files = []
         for _pub_file, _stream in _pub_list:
             _pub_file.latest = _latest[_stream] == _pub_file
-            _LOGGER.debug(' - ADDING %d %s', _pub_file.latest, _pub_file.path)
+            _LOGGER.log(9, ' - ADDING %d %s', _pub_file.latest, _pub_file.path)
             _pub_files.append(_pub_file)
 
         return _pub_files

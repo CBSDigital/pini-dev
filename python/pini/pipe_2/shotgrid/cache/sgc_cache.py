@@ -249,8 +249,9 @@ class SGDataCache(object):
         Returns:
             (SGCShot): matching shot
         """
-        _job = job or pipe.to_job(match)
-        return self.find_job(_job).find_shot(match)
+        _job_p = job or pipe.to_job(match)
+        _job_s = self.find_job(_job_p)
+        return _job_s.find_shot(match)
 
     def find_shots(self, job, has_3d=None, whitelist=()):
         """Search the cache for shots.
@@ -543,10 +544,8 @@ class SGDataCache(object):
         Returns:
             (SGCStep list): steps
         """
-        _fields = (
-            'entity_type', 'code', 'short_name', 'department', 'updated_at',
-            'list_order')
-        _steps_data = self._read_data('Step', fields=_fields)
+        _steps_data = self._read_data(
+            'Step', fields=sgc_container.SGCStep.FIELDS)
         _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
         return _steps
 

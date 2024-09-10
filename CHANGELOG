@@ -1,3 +1,24 @@
+## [4.4.0] - Tue 2024-09-10 14:43
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click video delete option (eehemann),
+    - hide work file outputs without metadata (mkim),
+    - bugfix error on right-click output with no metadata (farnold),
+    - added output right-click option to open in shotgrid,
+### Updated
+ - pini.utils.strftime added full/time/date fmt presets,
+ - pini.pipe.CPWorkSG.save bugfix error on update task due to cylical import,
+ - pini.pipe.cache.CCPOutFile.delete bugfix super call,
+ - pini.pipe.cache.CCPWork._read_outputs added match_metadata filter,
+ - pini.pipe.cache.CCPJob.find_shots bugfix error on apply sequence filter,
+ - pini.pipe.shotgrid.to_fields_key made public,
+ - pini.pipe.shotgrid.SGCStep.FIELDS added,
+ - pini.pipe.shotgrid.SGCJob.find_shots added match as CPShot handling,
+ - pini.tools.helper added output ctx open in shotgrid,
+ - pini.tools.helper output ctx bugfix error on no src in metadata,
+ - pini.testing.profile bugfix error on missing output file dir,
+
+
 ## [4.3.0] - Thu 2024-09-05 11:12
 ### Summary
  - Pini Helper:

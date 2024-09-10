@@ -65,7 +65,7 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
         Args:
             force (bool): delete without confirmation
         """
-        super().delete(self, force=force)
+        super().delete(force=force)
         _parent = self.work_dir or self.entity
         _parent.find_outputs(force=True)
         self._exists = False

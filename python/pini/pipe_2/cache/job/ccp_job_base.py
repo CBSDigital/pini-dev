@@ -237,7 +237,7 @@ class CCPJobBase(CPJob):
             (CPShot list): matching shots
         """
         _LOGGER.log(9, 'FIND SHOTS')
-        if force:
+        if force and sequence:
             sequence.find_shots(force=True)
 
         return super().find_shots(

@@ -2,7 +2,6 @@
 
 import logging
 
-from pini.pipe import shotgrid
 from pini.utils import get_user
 
 from . import cp_work_base
@@ -65,6 +64,7 @@ class CPWorkSG(cp_work_base.CPWorkBase):
         Returns:
             (CPWorkBkp): backup file
         """
+        from pini.pipe import shotgrid
         from pini.tools import error
 
         _bkp = super().save(**kwargs)

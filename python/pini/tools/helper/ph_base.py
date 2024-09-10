@@ -5,6 +5,7 @@
 import logging
 import os
 import pprint
+import webbrowser
 
 import six
 
@@ -30,6 +31,7 @@ ICON = EMOJI.path
 
 UI_FILE = _DIR.to_file('pini_helper.ui').path
 
+_OPEN_URL_ICON = icons.find('Globe Showing Europe-Africa')
 _ARCHIVE_ICON = icons.find('Skull')
 BKPS_ICON = icons.find('Package')
 OUTS_ICON = icons.find('Dove')
@@ -259,17 +261,26 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 output, delete_callback=_delete_callback, delete=delete)
         else:
             raise ValueError(output)
+        menu.add_separator()
         if isinstance(output, clip.Clip) and self.work:
             menu.add_action(
                 'Set as thumbnail', icon=icons.find('Picture'),
                 func=wrap_fn(self._set_work_thumb, output))
-        if output.submittable:
+
+        # Add shotgrid opts
+        if pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
-            assert parent
-            _submit = wrap_fn(shotgrid.SUBMITTER.run, output)
-            _func = chain_fns(_submit, parent.redraw)
+            if output.submittable:
+                assert parent
+                _submit = wrap_fn(shotgrid.SUBMITTER.run, output)
+                _func = chain_fns(_submit, parent.redraw)
+                menu.add_action(
+                    'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
+            _pub = shotgrid.SGC.find_pub_file(output)
+            _open_url = wrap_fn(webbrowser.open, _pub.to_url())
             menu.add_action(
-                'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
+                'Open in shotgrid', icon=_OPEN_URL_ICON, func=_open_url)
+
         menu.add_separator()
 
         if add:
@@ -318,7 +329,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _asset = None
         if find_work:
             _src = pipe.map_path(output.metadata.get('src'))
-            _src = pipe.CACHE.obt_work(_src)
+            if _src:
+                _src = pipe.CACHE.obt_work(_src)
             if _src:
                 _src = _src.find_latest(catch=True)
             menu.add_action(
