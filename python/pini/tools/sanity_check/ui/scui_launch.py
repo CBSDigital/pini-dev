@@ -10,12 +10,14 @@ from . import scui_dialog
 
 
 def _launch(
-        mode='standalone', checks=None, run=True, close_on_success=False,
-        reset_pipe_cache=True, filter_=None, task=None, force=False):
+        mode='standalone', action=None, checks=None, run=True,
+        close_on_success=False, reset_pipe_cache=True, filter_=None,
+        task=None, force=False):
     """Launch the sanity check interface.
 
     Args:
         mode (str): run in standalone or export mode
+        action (str): action being checked (eg. render/cache)
         checks (SCCheck list): override checks
         run (bool): automatically run checks on launch
         close_on_success (bool): close dialog on all checks passed
@@ -39,22 +41,22 @@ def _launch(
     # Launch
     sanity_check.DIALOG = scui_dialog.SanityCheckUi(
         mode=mode, checks=checks, run=run, close_on_success=close_on_success,
-        force=force, filter_=filter_, task=task)
+        force=force, filter_=filter_, task=task, action=action)
     return sanity_check.DIALOG
 
 
 def launch_export_ui(
-        mode, checks=None, reset_pipe_cache=True, filter_=None, task=None,  # pylint: disable=unused-argument
-        force=False):
+        action, checks=None, reset_pipe_cache=True, filter_=None, task=None,  # pylint: disable=unused-argument
+        close_on_success=True, force=False):
     """Launch SanityCheck in export mode.
 
     Args:
-        mode (str): export mode (eg. publish/render) - this only affects
-            button labels
+        action (str): export action (eg. publish/render)
         checks (SCCheck list): override checks
         reset_pipe_cache (bool): reset pipeline cache on launch
         filter_ (str): apply filter based on check name
         task (str): task to apply checks filter to
+        close_on_success (bool): close dialog on all checks passed
         force (bool): force export ignoring any issues
 
     Returns:
@@ -64,8 +66,9 @@ def launch_export_ui(
         return {'disabled': True}
 
     _dialog = _launch(
-        mode=mode, close_on_success=True, checks=checks, force=force,
-        reset_pipe_cache=reset_pipe_cache, filter_=filter_)
+        mode='export', action=action, close_on_success=close_on_success,
+        checks=checks, force=force, reset_pipe_cache=reset_pipe_cache,
+        filter_=filter_)
     if not _dialog.results:
         raise qt.DialogCancelled
     _results = {'checks': _dialog.results,

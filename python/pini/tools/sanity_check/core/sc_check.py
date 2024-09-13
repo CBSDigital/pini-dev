@@ -30,8 +30,9 @@ class SCCheck(object):
     enabled = True
     dev_only = False
     dcc_filter = None
-    profile_filter = None  # asset/shot
-    task_filter = None
+    profile_filter = None  # eg. asset/shot
+    task_filter = None  # eg. model/rig
+    action_filter = None  # eg. render/cache
 
     depends_on = ()
 

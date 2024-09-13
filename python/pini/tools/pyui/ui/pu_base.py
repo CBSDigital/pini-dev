@@ -1,6 +1,6 @@
 """Tools for managing the pyui interface base class."""
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
 
 import inspect
 import logging
@@ -36,6 +36,9 @@ class PUBaseUi(object):
     """Base class for all pyui interfaces."""
 
     label_w = 70
+    arg_h = 20
+    def_h = 35
+    sect_h = 22
 
     _mod = None
     _cur_section = None
@@ -234,6 +237,17 @@ class PUBaseUi(object):
         """
         raise NotImplementedError
 
+    def _add_arg_field(self, arg):
+        """Build an arg field.
+
+        Args:
+            arg (PUArg): arg to add
+
+        Returns:
+            (tuple): read func, set func, field name
+        """
+        raise NotImplementedError
+
     @error.catch
     def _execute_def(self, def_):
         """Called when function button is pressed.
@@ -350,6 +364,9 @@ class PUBaseUi(object):
 
         Args:
             settings (dict): override settings dict
+
+        Returns:
+            (dict): settings that were applied
         """
         _LOGGER.debug('LOAD SETTINGS %s', self.settings_file)
         _data = settings or self.settings_file.read_pkl(catch=True)
@@ -366,21 +383,24 @@ class PUBaseUi(object):
                     _set_fn(_arg_val)
 
         # Load sections (collapse)
-
         for _sect_name, _sect_val in _data.get('sections', {}).items():
             _sect_callbacks = self.callbacks['sections'].get(_sect_name, {})
             if not _sect_callbacks:
                 continue
-            _set_fn = _sect_callbacks['set']
-            _set_fn(_sect_val)
+            _set_fn = _sect_callbacks.get('set')
+            if _set_fn:
+                _set_fn(_sect_val)
 
         _LOGGER.debug(' - LOAD SETTINGS COMPLETE')
 
-    def save_settings(self):
-        """Save settings to disk."""
-        _LOGGER.debug('SAVE SETTINGS %s', self.name)
+        return _data
 
-        # Read args
+    def read_settings(self):
+        """Read ui settings.
+
+        Returns:
+            (dict): ui settings
+        """
         _data = {'defs': {}, 'sections': {}}
         _callbacks = CALLBACKS_CACHE[self.name]
 
@@ -396,11 +416,18 @@ class PUBaseUi(object):
             _val = _sect_callbacks['get']()
             _data['sections'][_sect_name] = _val
 
+        return _data
+
+    def save_settings(self):
+        """Save settings to disk."""
+        _LOGGER.debug('SAVE SETTINGS %s', self.name)
+        _data = self.read_settings()
         _LOGGER.debug(' - DEFS %s', _data['defs'])
         if not _data['defs']:
             _LOGGER.debug(' - BLOCKING EMPTY SAVE')
             return
         self.settings_file.write_pkl(_data, force=True)
+        _LOGGER.debug(' - SAVE %s', _data.get('geometry'))
         _LOGGER.debug(' - WROTE SETTINGS %s', self.settings_file)
 
     def close(self):

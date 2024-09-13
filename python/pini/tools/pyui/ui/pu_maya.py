@@ -8,14 +8,13 @@ import six
 
 from maya import cmds
 
-from pini import icons, qt, refresh, pipe
+from pini import icons, qt, refresh
 from pini.tools import pyui
-from pini.utils import (
-    to_nice, wrap_fn, copy_text, chain_fns, EMPTY, Path, abs_path, SixIterable)
+from pini.utils import wrap_fn, copy_text, chain_fns, EMPTY, SixIterable
 
 from maya_pini import ui
 
-from . import pu_base
+from . import pu_base, pu_utils
 from ..cpnt import pu_choice_mgr
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +50,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         self.master = self.uid+'_master'
         cmds.columnLayout(self.master, adjustableColumn=1)
 
-        super(PUMayaUi, self).init_ui()
+        super().init_ui()
 
     def add_menu(self, name):
         """Add menu to interface.
@@ -105,14 +104,12 @@ class PUMayaUi(pu_base.PUBaseUi):
         _LOGGER.debug(
             ' - ADD ARG %s default=%s browser=%s choices=%s',
             arg, arg.default, arg.browser, arg.choices)
-        _height = 20
 
         # Build row layout
-        _row = self._add_arg_lyt(arg, height=_height)
+        _row = self._add_arg_lyt(arg, height=self.arg_h)
 
         # Add label
-        _label = to_nice(arg.name).capitalize()
-        cmds.text(_label, align='left', statusBarMessage=arg.docs)
+        cmds.text(arg.label, align='left', statusBarMessage=arg.docs)
 
         # Add arg field
         _read_fn, _set_fn, _field = self._add_arg_field(arg)
@@ -120,19 +117,20 @@ class PUMayaUi(pu_base.PUBaseUi):
         # Add extras
         if isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
             cmds.iconTextButton(
-                image1=icons.REFRESH, width=_height, height=_height,
+                image1=icons.REFRESH, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage='Reread options',
                 command=wrap_fn(
                     _apply_update_opt_menu, mgr=arg.choices, field=_field))
         if arg.browser:
-            _mode = None if arg.browser is True else arg.browser
             cmds.iconTextButton(
-                image1=icons.BROWSER, width=_height, height=_height,
+                image1=icons.BROWSER, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage='Launch browser',
-                command=wrap_fn(_apply_browser, mode=_mode, field=_field))
+                command=wrap_fn(
+                    pu_utils.apply_browser_btn, mode=arg.browser_mode,
+                    read_fn=_read_fn, set_fn=_set_fn))
         if arg.clear:
             cmds.iconTextButton(
-                image1=icons.CLEAR, width=_height, height=_height,
+                image1=icons.CLEAR, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage='Clear text',
                 command=wrap_fn(cmds.textField, _field, edit=True, text=''))
         if arg.selection:
@@ -142,7 +140,7 @@ class PUMayaUi(pu_base.PUBaseUi):
                 _type = arg.selection
                 _tooltip = 'Get selected '+_type
             cmds.iconTextButton(
-                image1=icons.SELECT, width=_height, height=_height,
+                image1=icons.SELECT, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage=_tooltip,
                 command=wrap_fn(_apply_selection, field=_field, type_=_type))
 
@@ -233,24 +231,23 @@ class PUMayaUi(pu_base.PUBaseUi):
         assert isinstance(def_, pyui.PUDef)
         _LOGGER.debug(' - ADD EXECUTE %s', def_)
 
-        _size = 35
         _col = qt.to_col(def_.col or self.base_col)
 
         cmds.text(def_.uid+'Spacer', label='', height=3)  # Spacer
         cmds.rowLayout(
-            numberOfColumns=3, columnWidth3=(_size, 75, _size),
+            numberOfColumns=3, columnWidth3=(self.def_h, 75, self.def_h),
             adjustableColumn=2, columnAlign=(1, 'right'),
             columnAttach=[(1, 'left', 0), (2, 'both', 0), (3, 'right', 0)])
 
         cmds.iconTextButton(
-            image1=def_.icon, width=_size, height=_size,
+            image1=def_.icon, width=self.def_h, height=self.def_h,
             style='iconOnly', command=def_.edit)
 
         # Add execute button
         _docs = def_.py_def.to_docs('Title')
         _exec = wrap_fn(self._execute_def, def_)
         _btn = cmds.button(
-            label=def_.label, command=_exec, height=_size,
+            label=def_.label, command=_exec, height=self.def_h,
             backgroundColor=_col.to_tuple(float), statusBarMessage=_docs)
         self._add_execute_ctx(button=_btn, def_=def_, exec_=_exec)
 
@@ -259,7 +256,7 @@ class PUMayaUi(pu_base.PUBaseUi):
             qt.notify, def_.py_def.to_docstring(), icon=def_.icon,
             title=def_.label)
         cmds.iconTextButton(
-            image1=pu_base.INFO_ICON, width=_size, height=_size,
+            image1=pu_base.INFO_ICON, width=self.def_h, height=self.def_h,
             style='iconOnly', command=_info)
 
         cmds.setParent('..')
@@ -302,7 +299,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         Args:
             section (PUSection): section to apply
         """
-        super(PUMayaUi, self).set_section(section)
+        super().set_section(section)
 
         _resize = wrap_fn(
             cmds.evalDeferred, self._resize_to_fit_children,
@@ -388,41 +385,6 @@ def _build_apply_fn(field):
             _LOGGER.warning('FAILED TO APPLY VALUE %s %s', val, field)
 
     return _apply_val
-
-
-def _apply_browser(field, mode):
-    """Launch browser and apply its result to the given field.
-
-    Args:
-        field (str): field to apply result to
-        mode (str): browser mode (eg. ExistingFile)
-    """
-    _LOGGER.debug('BROWSER %s', mode)
-
-    _root = None
-
-    # Try to determine root from current path
-    _cur_path = cmds.textField(field, query=True, text=True)
-    if _cur_path:
-        _cur_path = Path(abs_path(_cur_path))
-        _LOGGER.debug(
-            ' - CUR PATH %s exists=%d', _cur_path.path, _cur_path.exists())
-        if _cur_path.exists():
-            if not _cur_path.is_dir():
-                _cur_path = _cur_path.to_dir()
-            _root = _cur_path
-        _LOGGER.info(' - ROOT FROM CUR PATH %s', _root)
-
-    # Try and use current pipe dirs
-    if not _root:
-        for _root in [pipe.cur_work_dir(), pipe.cur_entity(), pipe.cur_job()]:
-            if _root:
-                break
-        _LOGGER.info(' - ROOT FROM PIPE %s', _root)
-
-    _result = qt.file_browser(mode=mode, root=_root)
-    _LOGGER.debug(' - RESULT %s', _result)
-    cmds.textField(field, edit=True, text=_result.path)
 
 
 def _apply_selection(field, type_):

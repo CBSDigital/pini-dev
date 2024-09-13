@@ -78,7 +78,7 @@ class PUFile(PyFile):
         Returns:
             (list): children
         """
-        _child = super(PUFile, self)._map_ast_item_to_child(
+        _child = super()._map_ast_item_to_child(
             item=item, parent=parent)
 
         if not _child and _ast_item_is_set_section(item):

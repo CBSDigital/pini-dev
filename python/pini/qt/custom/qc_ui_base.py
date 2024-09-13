@@ -784,14 +784,10 @@ def _disable_on_execute(func, dialog, name):
 
         try:
             _result = func(*args, **kwargs)
-        except Exception as _exc:
+        finally:
             _widget.setEnabled(True)
-            _LOGGER.info('ERRORED ON %s', func)
-            raise _exc
-
-        _widget.setEnabled(True)
-        if hasattr(_widget, 'redraw'):
-            _widget.redraw()
+            if hasattr(_widget, 'redraw'):
+                _widget.redraw()
 
         return _result
 

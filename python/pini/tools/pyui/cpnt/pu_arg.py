@@ -2,7 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes
 
-from pini.utils import basic_repr
+from pini.utils import basic_repr, to_nice
 
 
 class PUArg(object):
@@ -37,15 +37,18 @@ class PUArg(object):
         """
         self.name = name
         self.default = py_arg.default
+        self.label = to_nice(self.name).capitalize()
 
         self.py_arg = py_arg
         self.py_def = py_def
         self.pyui_file = pyui_file
 
         self.clear = clear
-        self.browser = browser
         self.choices = choices
         self.selection = selection
+
+        self.browser = browser
+        self.browser_mode = None if browser is True else browser
 
         self.docs = docs
         self.label_w = label_w

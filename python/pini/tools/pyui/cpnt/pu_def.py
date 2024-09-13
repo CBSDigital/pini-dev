@@ -72,7 +72,7 @@ class PUDef(object):
         """
         return self.py_def.name
 
-    def edit(self):
+    def edit(self, *xargs):
         """Open this function def in an editor."""
         _LOGGER.info('EDIT %s', self)
         _py = PyFile(self.py_def.py_file)

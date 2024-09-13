@@ -4,7 +4,7 @@ from pini import dcc
 from pini.utils import to_str
 
 
-def build(py_file, title=None, base_col=None, load_settings=True):
+def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
     """Build interface from the given python file.
 
     Args:
@@ -12,16 +12,29 @@ def build(py_file, title=None, base_col=None, load_settings=True):
         title (str): override interface title
         base_col (str|QColor): override interface base colour
         load_settings (bool): load settings on launch
+        mode (str): override default ui mode (eg. maya/qt)
 
     Returns:
         (PUBaseUi): interface instance
     """
     _path = to_str(py_file)
-    if dcc.NAME == 'maya':
+
+    # Determine mode
+    _mode = mode
+    if _mode is None:
+        _mode = 'maya' if dcc.NAME == 'maya' else 'qt'
+
+    # Obtain ui class
+    if _mode == 'maya':
         from . import pu_maya
         _class = pu_maya.PUMayaUi
+    elif _mode == 'qt':
+        from . import pu_qt
+        _class = pu_qt.PUQtUi
     else:
-        raise ValueError(dcc.NAME)
+        raise ValueError(_mode)
+
+    # Build interface
     _pyui = _class(
         _path, title=title, base_col=base_col, load_settings=load_settings)
     return _pyui

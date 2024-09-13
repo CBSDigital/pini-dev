@@ -22,7 +22,8 @@ class SanityCheckUi(qt.CUiDialog):
 
     def __init__(
             self, mode='standalone', checks=None, run=True,
-            close_on_success=None, filter_=None, task=None, force=False):
+            close_on_success=None, filter_=None, task=None, action=None,
+            force=False):
         """Constructor.
 
         Args:
@@ -32,17 +33,19 @@ class SanityCheckUi(qt.CUiDialog):
             close_on_success (bool): close dialog on all checks passed
             filter_ (str): apply filter based on check name
             task (str): task to apply checks filter to
+            action (str): export action (eg. publish/render)
             force (bool): in export mode force export ignoring any issues
         """
         from pini.tools import sanity_check
 
         self.mode = mode
         self.task = task or pipe.cur_task(fmt='pini')
+        self.action = action
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
         self.checks = checks or sanity_check.find_checks(
-            filter_=filter_, task=self.task)
+            filter_=filter_, task=self.task, action=action)
 
         super(SanityCheckUi, self).__init__(
             ui_file=UI_FILE, show=False)
@@ -171,13 +174,12 @@ class SanityCheckUi(qt.CUiDialog):
             _msg += '{:d} error{} '.format(len(_errored), plural(_errored))
         _msg = _msg.strip()
         for _fmt, _elem in [
-                ('{mode_cap} ({msg})',
-                 self.ui.Continue),
-                ('Cancel {mode} and keep SanityCheck', self.ui.CancelAndKeep),
-                ('Cancel {mode}', self.ui.CancelAndClose),
+                ('{action_cap} ({msg})', self.ui.Continue),
+                ('Cancel {action} and keep SanityCheck', self.ui.CancelAndKeep),
+                ('Cancel {action}', self.ui.CancelAndClose),
         ]:
             _label = _fmt.format(
-                mode_cap=self.mode.capitalize(), mode=self.mode,
+                action_cap=self.action.capitalize(), action=self.action,
                 count=len(_checks), plural=plural(_checks), msg=_msg)
             _elem.setText(_label)
 

@@ -126,7 +126,8 @@ class CDFarm(base.CFarm):
 
         # Reverse list so they appear in order on deadline
         _cbls = sorted(cacheables, reverse=True)
-        _checks_data = checks_data or sanity_check.launch_export_ui('Cache')
+        _checks_data = checks_data or sanity_check.launch_export_ui(
+            action='cache')
         if save:
             _work.save(reason='deadline cache')
         _progress = qt.progress_dialog(
@@ -168,7 +169,7 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, group=None, chunk_size=1, version_up=False,
-            limit_groups=None, force=False):
+            limit_groups=None, checks_data=None, force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -182,6 +183,7 @@ class CDFarm(base.CFarm):
             version_up (bool): version up on render
             limit_groups (str): comma separated limit groups
                 (eg. maya-2023,vray)
+            checks_data (dict): override sanity checks data
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -200,7 +202,8 @@ class CDFarm(base.CFarm):
         _render_scene = _work.save(
             force=True, reason='deadline render', result='bkp')
         _metadata = export_handler.build_metadata(
-            'render', sanity_check_=True, task=_work.task, force=force)
+            'render', sanity_check_=True, checks_data=checks_data,
+            task=_work.task, force=force)
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')

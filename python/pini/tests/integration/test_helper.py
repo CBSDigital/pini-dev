@@ -97,14 +97,14 @@ class TestHelper(unittest.TestCase):
         _helper = helper.DIALOG
         _helper.ui.Refresh.click()
         _helper.jump_to(_work)
-        assert_eq(_helper.work, _work.find_latest())
+        assert_eq(_helper.work, _work)
         _helper.ui.WWorksRefresh.click()
-        assert_eq(_helper.work, pipe.CACHE.cur_work.find_latest())
+        assert_eq(_helper.work, pipe.CACHE.cur_work)
 
         _work_dir_c = _helper.work_dir
         assert _helper.job is pipe.CACHE.cur_job
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
-        assert _helper.work is pipe.CACHE.cur_work.find_latest()
+        assert _helper.work is pipe.CACHE.cur_work
 
         _helper.ui.WTagText.setText('tmp1')
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
@@ -113,7 +113,7 @@ class TestHelper(unittest.TestCase):
         assert _helper.work
         _helper._callback__WSave(force=True)
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
-        assert _helper.work is pipe.CACHE.cur_work.find_latest()
+        assert _helper.work is pipe.CACHE.cur_work
 
     def test_scene_refs_filter(self):
 

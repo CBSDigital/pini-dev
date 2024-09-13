@@ -1,6 +1,7 @@
 """Test for pyui."""
 
 import logging
+import time
 
 from pini import icons
 from pini.tools import pyui
@@ -63,6 +64,10 @@ def args_test(
     _LOGGER.info(" - NONE %s", none_test)
     _LOGGER.info(" - PATH %s", path_test)
     _LOGGER.info(" - CHOICES %s", choices_test)
+
+
+def wait_test():
+    time.sleep(1)
 
 
 pyui.set_section('Dev', collapse=False)

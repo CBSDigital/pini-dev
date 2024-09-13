@@ -3,9 +3,12 @@ import unittest
 
 import pini
 
-from pini.tools import usage, error
+from pini.tools import usage, error, pyui
+from pini.utils import File, PyFile, six_reload, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
+_DIR = File(__file__).to_dir()
+_TEST_PY = _DIR.to_file('_pyui_test.py')
 
 _TRACKBACK_STRS = [
 r'''
@@ -31,6 +34,43 @@ class TestErrorCatcher(unittest.TestCase):
 
         for _tb in _TRACKBACK_STRS:
             error.error_from_str(_tb)
+
+
+class TestPyui(unittest.TestCase):
+
+    def test_read_py_file(self):
+
+        _LOGGER.info('TEST PYUI')
+
+        _mod = PyFile(_TEST_PY).to_module()
+        _LOGGER.info(' - MOD %s', _mod)
+        six_reload(_mod)
+        _LOGGER.info(' - RELOADED')
+        assert isinstance(_mod.print_something, pyui.PUDef)
+
+        _ui = pyui.build(_TEST_PY, mode='qt', load_settings=False)
+        _LOGGER.info(' - UI %s', _ui)
+        _ui.close()
+
+    def test_qt_y_offset(self):
+
+        _ui = pyui.build(_TEST_PY, mode='qt', load_settings=False)
+        _pos_y = _ui.pos().y()
+        assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
+        _LOGGER.info('RELAUNCHING')
+        _ui = pyui.build(_TEST_PY, mode='qt', load_settings=True)
+        assert_eq(_ui.pos().y(), _pos_y)
+        assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
+
+        _ui = pyui.build(_TEST_PY, mode='qt', load_settings=True)
+        _ui.def_btns['Test'].click()
+        assert_eq(_ui.pos().y(), _pos_y)
+        assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
+
+        _ui = pyui.build(_TEST_PY, mode='qt', load_settings=True)
+        assert_eq(_ui.pos().y(), _pos_y)
+        assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
+        _ui.close()
 
 
 class TestRelease(unittest.TestCase):

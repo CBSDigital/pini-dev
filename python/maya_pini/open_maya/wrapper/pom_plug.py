@@ -725,7 +725,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
     elif isinstance(input2, CPlug):
         _type = input2.get_type()
     else:
-        raise ValueError('Unable to determine type')
+        raise ValueError(f'Unable to determine type {input1}/{input2}')
     _size = {
         'doubleLinear': 1,
         'double3': 3,

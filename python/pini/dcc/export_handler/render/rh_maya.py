@@ -6,7 +6,7 @@ from maya import cmds
 
 from pini import pipe, farm, qt, icons
 from pini.qt import QtWidgets
-from pini.tools import helper, error
+from pini.tools import helper, error, sanity_check
 from pini.utils import TMP_PATH, strftime, Seq, cache_result, wrap_fn
 
 from maya_pini import open_maya as pom
@@ -346,8 +346,10 @@ class CMayaFarmRender(CMayaRenderHandler):
                 _reverts.append(_revert)
 
         _prepare_scene_for_render()
+        _checks_data = sanity_check.launch_export_ui(action='render')
 
         farm.submit_maya_render(
+            checks_data=_checks_data,
             frames=frames, camera=_cam,
             chunk_size=self.ui.ChunkSize.value(),
             comment=self.ui.Comment.text(),

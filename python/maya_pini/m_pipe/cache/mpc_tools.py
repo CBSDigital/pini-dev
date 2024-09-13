@@ -147,7 +147,7 @@ def cache(
     _work = pipe.CACHE.obt_cur_work()
     _range = range_ or dcc.t_range(int, expand=1)
     _checks_data = checks_data or sanity_check.launch_export_ui(
-        'cache', force=force)
+        action='cache', force=force)
     _updated = False
     assert _work
 

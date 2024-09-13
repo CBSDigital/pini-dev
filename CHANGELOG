@@ -1,3 +1,25 @@
+## [4.5.0] - Fri 2024-09-13 08:06
+### Summary
+ - Farm Render Handler:
+    - updated to run sanity check before render submission,
+### Updated
+ - pini.dcc.export_handler.CMayaRenderHandler run checks before submit to allow ui edits in checks,
+ - pini.dcc.export_handler.build_metadata added checks_data arg,
+ - pini.qt.CUiBase disable on execute uses try/finally,
+ - pini.farm.submit_maya_render added checks_data arg,
+ - pini.tools.pyui.PUQtUi added,
+ - pini.tools.pyui.PUArg added label/browser_mode attrs,
+ - pini.tools.pyui.PUDef.execute added xargs for qt,
+ - pini.tools.pyui.PUBaseUi added arg_h/def_h/sect_h class attrs,
+ - pini.tools.pyui.PUBaseUi.load_settings returns settings data,
+ - pini.tools.pyui.PUBaseUi.read_settings added,
+ - pini.tools.pyui added shared apply_browser_btn fn,
+ - pini.tools.sanity_check added action filter,
+ - pini.tools.sanity_check.launch_export_ui renamed arg mode -> action,
+ - pini.tools.sanity_check.launch_export_ui added close_on_success arg,
+ - maya_pini.open_maya.plus_plug better error on unable to determine type,
+
+
 ## [4.4.0] - Tue 2024-09-10 14:43
 ### Summary
  - Pini Helper:

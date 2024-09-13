@@ -1,5 +1,7 @@
 """General tools for managing sanity checks."""
 
+# pylint: disable=too-many-statements
+
 import inspect
 import logging
 import os
@@ -30,7 +32,8 @@ def find_check(filter_, task=None):
 
 
 def find_checks(  # pylint: disable=too-many-branches
-        filter_=None, dev=False, work=None, task=None, force=False):
+        filter_=None, dev=False, work=None, task=None, action=None,
+        force=False):
     """Find sanity checks to apply.
 
     Args:
@@ -40,6 +43,7 @@ def find_checks(  # pylint: disable=too-many-branches
         task (str): force task (otherwise current task is used) - if
             'all' is passed, no task filter is applied and all checks
             are returned
+        action (str): apply action filter (eg. render/cache)
         force (bool): force reread checks from disk
 
     Returns:
@@ -81,6 +85,14 @@ def find_checks(  # pylint: disable=too-many-branches
         if not passes_filter(dcc.NAME, _check.dcc_filter):
             _LOGGER.debug('   - DCC FILTER REJECTED %s', filter_)
             continue
+
+        # Apply action filter
+        if action:
+            if not passes_filter(action, _check.action_filter):
+                continue
+        else:
+            if _check.action_filter:
+                continue
 
         # Apply profile filter
         _profile = _work.profile if _work else None
