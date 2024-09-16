@@ -304,10 +304,12 @@ class CMayaFarmRender(CMayaRenderHandler):
     def _callback__LimitGroupsSelect(self):
         _LOGGER.info('CALLBACK LIMIT GROUPS SELECT')
         _cur_grps = self.ui.LimitGroups.text().split(',')
+        _msg = (
+            'Select limit groups for deadline.\n\n'
+            'Hold down ctrl to select more than one group.')
         _grps = qt.multi_select(
             items=farm.find_limit_groups(),
-            select=_cur_grps, multi=True,
-            msg='Select limit groups:', title='Select groups')
+            select=_cur_grps, multi=True, msg=_msg, title='Select groups')
         self.ui.LimitGroups.setText(','.join(_grps))
 
     def _callback__Layers(self):

@@ -7,6 +7,7 @@ import platform
 import re
 
 from maya import cmds
+from maya.app.renderSetup.views import renderSetup
 
 from pini import qt, dcc, pipe
 from pini.utils import (
@@ -914,7 +915,12 @@ class CheckRenderLayers(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        _prefixes = ['bty', 'mte', 'sdw', 'ref', 'utl']
+        # Obtain list of prefixes
+        _prefixes = {'bty', 'mte', 'sdw', 'ref', 'utl'}
+        _prefixes |= set(self.settings.get('add_prefixes', []))
+        _prefixes = sorted(_prefixes)
+        self.write_log(' - prefixes %s', _prefixes)
+
         for _lyr in pom.find_render_layers():
             self.write_log('Checking %s pass=%s', _lyr, _lyr.pass_name)
 
@@ -932,7 +938,9 @@ class CheckRenderLayers(SCMayaCheck):
                     'Render layer "{}" has prefix "{}" which is not in the '
                     'list of approved prefixes: {}'.format(
                         _lyr.pass_name, _prefix, str(_prefixes).strip('[]')))
-                self.add_fail(_msg, node=_lyr)
+                _fail = SCFail(_msg)
+                _fail.add_action('Open layers', renderSetup.createUI)
+                self.add_fail(_fail)
                 continue
 
             # Check suffix
@@ -944,5 +952,5 @@ class CheckRenderLayers(SCMayaCheck):
                     'case (should be "{}")'.format(
                         _lyr.pass_name, _suffix, _new_name))
                 _fix = wrap_fn(_lyr.set_pass_name, _new_name)
-                self.add_fail(_msg, node=_lyr, fix=_fix)
+                self.add_fail(_msg, fix=_fix)
                 continue

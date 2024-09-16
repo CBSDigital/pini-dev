@@ -176,6 +176,7 @@ def to_nice(text):
         if _chr.isupper():
             _nice += ' '
         _nice += _chr.lower()
+    _nice = ' '.join(_nice.split())  # Remove double spaces
     return _nice.strip()
 
 

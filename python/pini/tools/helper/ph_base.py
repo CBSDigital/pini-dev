@@ -299,7 +299,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         # Add apply range option
         menu.add_separator()
         menu.add_action(
-            'Print metadata', wrap_fn(pprint.pprint, output.metadata),
+            'Print metadata',
+            wrap_fn(pprint.pprint, output.metadata, width=300),
             icon=icons.PRINT)
         _rng = output.metadata.get('range')
         if _rng and len(set(_rng)) > 1:

@@ -117,6 +117,15 @@ class SCCheck(object):
         return type(self).__name__
 
     @property
+    def settings(self):
+        """Obtain settings for this check.
+
+        Returns:
+            (dict): check settings
+        """
+        return self._read_settings()
+
+    @property
     def sort_key(self):
         """Obtain sort key for this check.
 
@@ -204,6 +213,15 @@ class SCCheck(object):
             (generator): generator to iterate
         """
         return _ProgressUpdater(data, check=self)
+
+    def _read_settings(self):
+        """Read settings for this check.
+
+        Returns:
+            (dict): settings
+        """
+        _ety_settings = pipe.cur_entity().settings or {}
+        return _ety_settings.get('sanity_check').get(self.name, {})
 
     def reset(self):
         """Reset this check."""

@@ -165,23 +165,26 @@ class SanityCheckUi(qt.CUiDialog):
             self.close()
 
         # Update export button labels
-        _msg = 'ignore '
-        if _failed:
-            _msg += '{:d} fail{} '.format(len(_failed), plural(_failed))
-        if _errored:
+        if self.action:
+            _msg = 'ignore '
             if _failed:
-                _msg += 'and '
-            _msg += '{:d} error{} '.format(len(_errored), plural(_errored))
-        _msg = _msg.strip()
-        for _fmt, _elem in [
-                ('{action_cap} ({msg})', self.ui.Continue),
-                ('Cancel {action} and keep SanityCheck', self.ui.CancelAndKeep),
-                ('Cancel {action}', self.ui.CancelAndClose),
-        ]:
-            _label = _fmt.format(
-                action_cap=self.action.capitalize(), action=self.action,
-                count=len(_checks), plural=plural(_checks), msg=_msg)
-            _elem.setText(_label)
+                _msg += '{:d} fail{} '.format(len(_failed), plural(_failed))
+            if _errored:
+                if _failed:
+                    _msg += 'and '
+                _msg += '{:d} error{} '.format(len(_errored), plural(_errored))
+            _msg = _msg.strip()
+            for _fmt, _elem in [
+                    ('{action_cap} ({msg})', self.ui.Continue),
+                    (
+                        'Cancel {action} and keep SanityCheck',
+                        self.ui.CancelAndKeep),
+                    ('Cancel {action}', self.ui.CancelAndClose),
+            ]:
+                _label = _fmt.format(
+                    action_cap=self.action.capitalize(), action=self.action,
+                    count=len(_checks), plural=plural(_checks), msg=_msg)
+                _elem.setText(_label)
 
         _LOGGER.debug(" - CHECK FOR SUCCESS COMPLETE %s", self.check)
 

@@ -568,6 +568,8 @@ class MetadataFile(File):
     the file itself.
     """
 
+    cache_file_extn = 'yml'
+
     @property
     def cache_fmt(self):
         """Obtain cache format path.
@@ -575,7 +577,7 @@ class MetadataFile(File):
         Returns:
             (str): cache format
         """
-        return '{}/.pini/{}_{{func}}.yml'.format(self.dir, self.base)
+        return f'{self.dir}/.pini/{self.base}_{{func}}.{self.cache_file_extn}'
 
     @property
     def metadata(self):

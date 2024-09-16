@@ -56,6 +56,7 @@ def build_metadata(
     if content_type:
         _data['content_type'] = content_type
 
+    # Add sanity checks data
     if checks_data:
         _data['sanity_check'] = checks_data
     elif sanity_check_:
