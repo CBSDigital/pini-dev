@@ -341,7 +341,7 @@ class CheckGeoNaming(SCMayaCheck):
         Args:
             geo (str): transform of mesh to check
         """
-        self.write_log(' - checking geo %s', geo)
+        self.write_log(' - checking geo %s ref=%d', geo, geo.is_referenced())
 
         # Check shapes
         _geo_ss = cmds.listRelatives(
@@ -375,7 +375,10 @@ class CheckGeoNaming(SCMayaCheck):
         _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
         if geo.namespace and _refs_mode != _import:
             _clean_name = to_clean(geo)
-            _fix = wrap_fn(cmds.rename, geo, _clean_name)
+            if geo.is_referenced():
+                _fix = None
+            else:
+                _fix = wrap_fn(cmds.rename, geo, _clean_name)
             _msg = 'Geo "{}" is using a namespace'.format(geo)
             self.add_fail(_msg, fix=_fix, node=geo)
             return

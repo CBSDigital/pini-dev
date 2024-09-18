@@ -1,9 +1,12 @@
 """Tools for managing the wrapper for the MBoundingBox object."""
 
+import logging
 import sys
 
 from maya import cmds
 from maya.api import OpenMaya as om
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CBoundingBox(om.MBoundingBox):
@@ -76,19 +79,36 @@ def to_bbox(obj):
     """
     from maya_pini import open_maya as pom
 
-    if obj and isinstance(obj, list) and isinstance(obj[0], pom.CPoint):
+    # Convert joint list to points
+    _obj = obj
+    if (
+            obj and
+            isinstance(_obj, (list, tuple)) and
+            isinstance(_obj[0], pom.CJoint)):
+        _obj = [_jnt.to_p() for _jnt in _obj]
+
+    # Find min/max for lists of points
+    if (
+            _obj and
+            isinstance(_obj, list) and
+            isinstance(_obj[0], pom.CPoint)):
         _min = pom.CPoint(sys.maxsize, sys.maxsize, sys.maxsize)
         _max = pom.CPoint(0, 0, 0)
-        for _pt in obj:
+        for _pt in _obj:
             _min = pom.CPoint(min(_min.x, _pt.x),
                               min(_min.y, _pt.y),
                               min(_min.z, _pt.z))
             _max = pom.CPoint(max(_max.x, _pt.x),
                               max(_max.y, _pt.y),
                               max(_max.z, _pt.z))
+            _LOGGER.debug(
+                ' - %s MIN %.01f/%.01f/%.01f - MAX %.01f/%.01f/%.01f',
+                _pt, _min.x, _min.y, _min.z, _max.x, _max.y, _max.z)
+
+    # Otherwise just use generic bbox function
     else:
         _result = cmds.exactWorldBoundingBox(
-            obj, calculateExactly=True, ignoreInvisible=True)
+            _obj, calculateExactly=True, ignoreInvisible=True)
         _min = pom.CPoint(_result[:3])
         _max = pom.CPoint(_result[-3:])
 

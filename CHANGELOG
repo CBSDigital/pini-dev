@@ -1,3 +1,26 @@
+## [4.7.0] - Wed 2024-09-18 08:13
+### Summary
+ - Pini Helper:
+    - better error on version up with no current work (mkim),
+    - shotgrid register exr sequences using 'Exr File' pub type (nhoyt),
+ - Sanity Check:
+    - check geo naming remove fix option for referenced geo (mkim),
+### Updated
+ - pini.pipe.CPWork.step added attr,
+ - pini.pipe.CPWork find_next/find_vers bugfix extn match,
+ - pini.pipe.CPWork.to_work added dcc_ arg,
+ - pini.pipe.shotgrid.SGC.find_pub_type force Exr File for exr extn,
+ - pini.pipe.version_up better error on no cur work,
+ - pini.qt.CTileWidgetItem added show_pc arg,
+ - pini.qt.safe_timer_event added check logging level,
+ - pini.tools.sanity_check.CheckGeoNaming remove fix for referenced geo,
+ - maya_pini.utils.set_col allow use qt colour names,
+ - maya_pini.open_maya.to_bbox convert joint list to points,
+ - maya_pini.open_maya.CMesh.is_referenced bugfix not checking tfm,
+ - maya_pini.open_maya.CReference.add_to_grp returns tfm,
+ - maya_pini.open_maya.create_ref check file exists,
+
+
 ## [4.6.0] - Mon 2024-09-16 10:56
 ### Summary
  - Sanity Check:

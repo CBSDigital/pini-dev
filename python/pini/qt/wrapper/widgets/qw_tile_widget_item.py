@@ -29,7 +29,8 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
 
     def __init__(
             self, name=None, col=None, size=100, label=EMPTY, margin=3,
-            data=None, mouse_tracking=True, thumb=None, filmstrip=None):
+            data=None, mouse_tracking=True, thumb=None, filmstrip=None,
+            show_pc=True):
         """Constructor.
 
         Args:
@@ -42,6 +43,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
             mouse_tracking (bool): apply mouse tracking
             thumb (File): thumbnail image
             filmstrip (File): filmstrip image
+            show_pc (bool): display mouse scroll percent
         """
         super(CTileWidgetItem, self).__init__(data=data)
 
@@ -49,6 +51,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
         self.col = col
         self.label = label if label is not EMPTY else self.name
         self.mouse_tracking = mouse_tracking
+        self.show_pc = show_pc
 
         self.thumb = thumb
         self.filmstrip = filmstrip
@@ -226,7 +229,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
                 pix.draw_text(self.label, pos=_pos, anchor='C', size=10)
 
             # Draw thumb scroll fraction as percentage
-            if self.t_fr is not None:
+            if self.show_pc and self.t_fr is not None:
                 _text = '{:.00f}%'.format(self.t_fr * 100)
                 _pos = qt.to_p(pix.center().x(), pix.height() - 3)
                 pix.draw_text(_text, pos=_pos, anchor='B', size=8)

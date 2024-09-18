@@ -12,76 +12,17 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestPipe(unittest.TestCase):
 
-    def test_work_to_output(self):
+    def test_cast_work_dcc(self):
 
-        # Check caches can have underscores in output name
-        _ety = pipe.CACHE.obt(testing.TEST_SHOT)
-        _work_dir = _ety.find_work_dir(task='anim', dcc_=dcc.NAME)
-        _work = _work_dir.to_work()
-        _out = _work.to_output('cache', output_name='blah_2', extn='abc')
-        assert _out
-        assert _out.task == 'anim'
-        assert _out.output_name == 'blah_2'
-
-        # Check asset pubs can have optional output_type
-        _ety = pipe.CACHE.obt(testing.TEST_ASSET)
-        _work_dir = _ety.find_work_dir('model', dcc_=dcc.NAME)
-        assert _work_dir.to_output('publish', output_type=None, extn=dcc.DEFAULT_EXTN)
-        assert _work_dir.to_output('publish', output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
-
-        _blast = _work.to_output(
-            'blast_mov', output_name='blah', extn='mov')
-        assert _blast.extn == 'mov'
-        _blast = _work.to_output(
-            'blast_mov', output_name='blah', extn='mov', dcc_='hou')
-        assert _blast.extn == 'mov'
-
-    def test_templates(self):
-
-        assert testing.TEST_JOB
-
-        _pattern = '{blah}/{blue}/{blee}'
-        _tmpl = pipe.CPTemplate('test', _pattern)
-        _tmpl = _tmpl.apply_data(blue='BLUE')
-        assert 'blue' in _tmpl.embedded_data
-        _tmpl = _tmpl.apply_data(blee='BLEE')
-        assert 'blue' in _tmpl.embedded_data
-        _data = _tmpl.parse('BLAH/BLUE/BLEE')
-        assert 'blue' in _data
-
-        # Test tag as vertical - this was causing bad template to be selected
-        # as it was being matched as a version
-        if testing.TEST_JOB.find_templates('publish'):
-            for _ety in [testing.TEST_ASSET, testing.TEST_SHOT]:
-                _tmpls = [
-                    testing.TEST_JOB.find_template(
-                        'publish', profile=_ety.profile,
-                        has_key={'tag': True, 'ver': True, 'output_type': False}),
-                    testing.TEST_JOB.find_template(
-                        'publish', profile=_ety.profile, catch=True,
-                        has_key={'tag': True, 'ver': False, 'output_type': False}),
-                ]
-                _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl]
-                assert _tmpls
-                for _tmpl in _tmpls:
-                    _LOGGER.info('TMPL %s', _tmpl)
-                    _out = _ety.to_output(
-                        _tmpl, task='anim', tag='vertical', output_name='test',
-                        dcc_='maya')
-                    _LOGGER.info('OUT %s', _out)
-                    _out = pipe.CPOutputFile(_out.path)
-                    _LOGGER.info('OUT %s', _out)
-        else:
-            _LOGGER.info('NO PUBLISH TEMPLATES FOUND')
-
-        # Test alt from template name
-        assert cp_template._extract_alt_from_name('blah') == ('blah', 0)
-        assert cp_template._extract_alt_from_name('blah_alt1') == ('blah', 1)
-        assert cp_template._extract_alt_from_name('alt_blah_alt3') == ('alt_blah', 3)
-
-        # Test apply data to tag with regex
-        _tmpl = pipe.CPTemplate(name='test', pattern='{task}/{tag:[^_]+}_v{ver}/{output_name}')
-        assert _tmpl.apply_data(tag='blah').pattern == '{task}/blah_v{ver}/{output_name}'
+        _work_ma = testing.TEST_SHOT.to_work_dir('light').to_work()
+        _LOGGER.info(_work_ma)
+        _work_nk = _work_ma.to_work(dcc_='nuke', tag='slapcomp', extn='nk')
+        _LOGGER.info(_work_nk)
+        assert _work_nk.extn == 'nk'
+        assert _work_nk.dcc == 'nuke'
+        _work_nk = _work_nk.find_next()
+        _LOGGER.info(_work_nk)
+        assert _work_nk.extn == 'nk'
 
     def test_settings(self):
 
@@ -132,6 +73,77 @@ class TestPipe(unittest.TestCase):
         assert _seq.settings
         assert _shot.settings
         testing.enable_file_system(True)
+
+    def test_templates(self):
+
+        assert testing.TEST_JOB
+
+        _pattern = '{blah}/{blue}/{blee}'
+        _tmpl = pipe.CPTemplate('test', _pattern)
+        _tmpl = _tmpl.apply_data(blue='BLUE')
+        assert 'blue' in _tmpl.embedded_data
+        _tmpl = _tmpl.apply_data(blee='BLEE')
+        assert 'blue' in _tmpl.embedded_data
+        _data = _tmpl.parse('BLAH/BLUE/BLEE')
+        assert 'blue' in _data
+
+        # Test tag as vertical - this was causing bad template to be selected
+        # as it was being matched as a version
+        if testing.TEST_JOB.find_templates('publish'):
+            for _ety in [testing.TEST_ASSET, testing.TEST_SHOT]:
+                _tmpls = [
+                    testing.TEST_JOB.find_template(
+                        'publish', profile=_ety.profile,
+                        has_key={'tag': True, 'ver': True, 'output_type': False}),
+                    testing.TEST_JOB.find_template(
+                        'publish', profile=_ety.profile, catch=True,
+                        has_key={'tag': True, 'ver': False, 'output_type': False}),
+                ]
+                _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl]
+                assert _tmpls
+                for _tmpl in _tmpls:
+                    _LOGGER.info('TMPL %s', _tmpl)
+                    _out = _ety.to_output(
+                        _tmpl, task='anim', tag='vertical', output_name='test',
+                        dcc_='maya')
+                    _LOGGER.info('OUT %s', _out)
+                    _out = pipe.CPOutputFile(_out.path)
+                    _LOGGER.info('OUT %s', _out)
+        else:
+            _LOGGER.info('NO PUBLISH TEMPLATES FOUND')
+
+        # Test alt from template name
+        assert cp_template._extract_alt_from_name('blah') == ('blah', 0)
+        assert cp_template._extract_alt_from_name('blah_alt1') == ('blah', 1)
+        assert cp_template._extract_alt_from_name('alt_blah_alt3') == ('alt_blah', 3)
+
+        # Test apply data to tag with regex
+        _tmpl = pipe.CPTemplate(name='test', pattern='{task}/{tag:[^_]+}_v{ver}/{output_name}')
+        assert _tmpl.apply_data(tag='blah').pattern == '{task}/blah_v{ver}/{output_name}'
+
+    def test_work_to_output(self):
+
+        # Check caches can have underscores in output name
+        _ety = pipe.CACHE.obt(testing.TEST_SHOT)
+        _work_dir = _ety.find_work_dir(task='anim', dcc_=dcc.NAME)
+        _work = _work_dir.to_work()
+        _out = _work.to_output('cache', output_name='blah_2', extn='abc')
+        assert _out
+        assert _out.task == 'anim'
+        assert _out.output_name == 'blah_2'
+
+        # Check asset pubs can have optional output_type
+        _ety = pipe.CACHE.obt(testing.TEST_ASSET)
+        _work_dir = _ety.find_work_dir('model', dcc_=dcc.NAME)
+        assert _work_dir.to_output('publish', output_type=None, extn=dcc.DEFAULT_EXTN)
+        assert _work_dir.to_output('publish', output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
+
+        _blast = _work.to_output(
+            'blast_mov', output_name='blah', extn='mov')
+        assert _blast.extn == 'mov'
+        _blast = _work.to_output(
+            'blast_mov', output_name='blah', extn='mov', dcc_='hou')
+        assert _blast.extn == 'mov'
 
 
 class TestDiskPipe(unittest.TestCase):

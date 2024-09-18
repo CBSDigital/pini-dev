@@ -9,7 +9,7 @@ import six
 
 from pini.utils import (
     cache_result, single, HOME_PATH, passes_filter, check_heart, SixIntEnum,
-    basic_repr, File, build_cache_fmt)
+    basic_repr, File, build_cache_fmt, check_logging_level)
 
 from .q_mgr import QtWidgets, QtCore, QtGui
 
@@ -230,6 +230,7 @@ def safe_timer_event(func):
             _LOGGER.info(' - TIMER FAILED %s', _exc)
             _stop = True
 
+        check_logging_level()
         _LOGGER.debug('SAFE TIMER EVENT %d vis=%d', _stop, self.isVisible())
 
         _stop = _stop or not self.isVisible()

@@ -33,9 +33,10 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
     asset = None
     sequence = None
     shot = None
+    step = None
+    task = None
 
     tag = None
-    task = None
     user = None
     ver = None
 
@@ -99,6 +100,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
                 _LOGGER.debug(' - EXC %s', _exc)
                 raise ValueError('Lucidity rejected '+self.path)
         self.data['task'] = self.work_dir.task
+        self.data['step'] = self.work_dir.step
         _LOGGER.log(9, ' - WORK DATA %s', self.data)
         _LOGGER.log(9, ' - WORK TMPL %s', self.template)
         for _key, _val in self.data.items():
@@ -260,8 +262,11 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             _ver_n = _latest.ver_n+1
         _user = user or cur_user()
 
+        _extn = self.extn
+        if self.dcc == dcc.NAME:
+            _extn = dcc.DEFAULT_EXTN
         _next = self.to_work(
-            ver_n=_ver_n, class_=class_, user=_user, extn=dcc.DEFAULT_EXTN)
+            ver_n=_ver_n, class_=class_, user=_user, extn=_extn)
         assert _next.work_dir is self.work_dir
         return _next
 
@@ -271,7 +276,11 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         Returns:
             (CPWork list): work file list
         """
-        return self.work_dir.find_works(tag=self.tag, extns=dcc.VALID_EXTNS)
+        if dcc.NAME == self.dcc:
+            _extns = dcc.VALID_EXTNS
+        else:
+            _extns = [self.extn]
+        return self.work_dir.find_works(tag=self.tag, extns=_extns)
 
     def has_bkp(self):
         """Test if this file has a corresponding backup file.
@@ -750,8 +759,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         raise ValueError(template)
 
     def to_work(
-            self, task=None, tag=EMPTY, user=EMPTY, ver_n=None, extn=EMPTY,
-            class_=None):
+            self, task=None, tag=EMPTY, user=EMPTY, ver_n=None,
+            dcc_=None, extn=EMPTY, class_=None):
         """Build a work file using this work file's template data.
 
         Args:
@@ -759,6 +768,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             tag (str): override tag
             user (str): over user
             ver_n (int): override version number
+            dcc_ (str): override dcc
             extn (str): override extension
             class_ (class): override work file class
 
@@ -778,11 +788,13 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         # Build data dict
         _data = copy.copy(self.data)
-        _data['extn'] = self.extn
+        _data['extn'] = extn or self.extn
         _LOGGER.debug(' - EXTN %s', self.extn)
         if user:
             _data['user'] = user
         _data['work_dir'] = _work_dir.path
+        if dcc_:
+            _data['dcc'] = dcc_
         if task is not None:
             _data['task'] = task
             _work_dir = self.entity.to_work_dir(task=task)
@@ -798,7 +810,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         # Obtain fresh template (in case tokens have been filled in)
         _tmpl = self.job.find_template(
-            'work', profile=self.entity.profile, dcc_=self.dcc,
+            'work', profile=self.entity.profile, dcc_=dcc_ or self.dcc,
             has_key={'tag': 'tag' in _data})
         _LOGGER.debug(' - TMPL %s', _tmpl)
 

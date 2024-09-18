@@ -216,6 +216,7 @@ class SGDataCache(object):
             'mp4': 'Movie',
             'mov': 'Movie',
             'rs': 'Redshift Proxy',
+            'exr': 'Exr File',
         }
         _map_matches = [
             _type for _type in _types

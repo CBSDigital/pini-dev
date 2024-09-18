@@ -10,14 +10,20 @@ def version_up(force=False):
         force (bool): overwrite any existing without confirmation
     """
     from pini import pipe
-    from pini.tools import usage
+    from pini.tools import usage, error
 
     usage.log_usage_event('VersionUp')
 
     _cur_work = pipe.cur_work()
     if not _cur_work:
-        dcc.error('Unable to version up - no current work file')
-        return None
+        _cur_file = dcc.cur_file()
+        if _cur_file:
+            _msg = (
+                f'Unable to version up - current scene is not a '
+                f'work file.\n\n{_cur_file}')
+        else:
+            _msg = 'Unable to version up.\n\nNo current scene.'
+        raise error.HandledError(_msg)
 
     _next_work = _cur_work.find_next()
     _next_work.save(force=force)

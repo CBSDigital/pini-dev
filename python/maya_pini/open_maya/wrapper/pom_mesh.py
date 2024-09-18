@@ -95,6 +95,15 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         _pt, _ = self.getClosestPoint(point, pom.WORLD_SPACE)
         return pom.CPoint(_pt)
 
+    def is_referenced(self):
+        """Check whether this node is referenced.
+
+        Returns:
+            (bool): whether referenced
+        """
+        from maya_pini import open_maya as pom
+        return pom.CNode(self).is_referenced()
+
     def rename(self, name):
         """Rename this mesh.
 

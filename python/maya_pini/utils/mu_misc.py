@@ -189,17 +189,32 @@ def set_col(node, col, force=False):
         col (str): colour to apply
         force (bool): flush any display layer connections before apply
     """
+    _LOGGER.debug('SET COL %s %s', node, col)
+    from pini import qt
     from maya_pini import open_maya as pom
-    _col = col.lower()
-    if _col not in COLS:
-        raise ValueError(
-            "Col {} not in colour list: {}".format(col, COLS))
 
+    # Setup node
     _node = pom.to_node(node)
     if force:
         _node.plug['drawOverride'].break_connections()
     _node.plug['overrideEnabled'].set_val(True)
-    _node.plug['overrideColor'].set_val(COLS.index(_col))
+
+    # Apply index col
+    _col = col.lower()
+    if _col in COLS:
+        _node.plug['overrideRGBColors'].set_val(0)  # Index
+        _node.plug['overrideColor'].set_val(COLS.index(_col))
+        return
+
+    # Apply rgb col (eg. SpringGreen)
+    _q_col = qt.to_col(_col)
+    if _q_col:
+        _LOGGER.debug(' - APPLY RGB COL %s', _q_col)
+        _node.plug['overrideRGBColors'].set_val(1)  # RGB
+        _node.plug['overrideColorRGB'].set_col(_q_col)
+        return
+
+    raise ValueError(col)
 
 
 def set_enum(chan, value):

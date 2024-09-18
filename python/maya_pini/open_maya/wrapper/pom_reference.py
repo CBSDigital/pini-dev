@@ -7,7 +7,8 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini import pipe
-from pini.utils import basic_repr, single, check_heart, passes_filter
+from pini.utils import (
+    basic_repr, single, check_heart, passes_filter, File)
 
 from maya_pini import ref
 from maya_pini.utils import to_namespace, to_clean, bake_results
@@ -138,7 +139,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Args:
             grp (str): name of group
         """
-        self.top_node.add_to_grp(grp)
+        return self.top_node.add_to_grp(grp)
 
     def bake(self, range_=None, simulation=True, add_offs=None):
         """Bake animation onto this reference.
@@ -288,7 +289,9 @@ def create_ref(file_, namespace, force=False):
     Returns:
         (CReference): new reference
     """
-    _ref = ref.create_ref(file_=file_, namespace=namespace, force=force)
+    _file = File(file_)
+    assert _file.exists()
+    _ref = ref.create_ref(file_=_file, namespace=namespace, force=force)
     return CReference(_ref.ref_node)
 
 
