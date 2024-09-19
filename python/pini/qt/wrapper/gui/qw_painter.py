@@ -76,7 +76,6 @@ class CPainter(QtGui.QPainter):
                 (overrides pos arg)
         """
         _kwargs = locals()
-        del _kwargs['self']
         from pini import qt
 
         # Check args
@@ -88,6 +87,9 @@ class CPainter(QtGui.QPainter):
 
         # Add by line if line height declared
         if line_h is not None and '\n' in text:
+            assert not rect
+            del _kwargs['self']
+            del _kwargs['rect']
             self._draw_text_lines(**_kwargs)
             return None
 
@@ -160,9 +162,9 @@ class CPainter(QtGui.QPainter):
 
         return _align, _rect
 
-    def _draw_text_lines(
-            self, text, line_h, pos=(0, 0), anchor='TL', col='White',  # pylint: disable=unused-argument
-            font=None, size=None, rotate=0.0):  # pylint: disable=unused-argument
+    def _draw_text_lines(  # pylint: disable=unused-argument
+            self, text, line_h, pos=(0, 0), anchor='TL', col='White',
+            font=None, size=None, rotate=0.0):
         """Draw text line by line.
 
         This allows control over line separation

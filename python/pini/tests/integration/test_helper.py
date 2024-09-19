@@ -51,10 +51,16 @@ class TestHelper(unittest.TestCase):
         assert not error.TRIGGERED
 
         # Check switch helper output tabs with file system disabled
+        print()
+        _LOGGER.info('CHECK SWITCH OUTPUT TABS')
         _helper = helper.DIALOG
         _helper.jump_to(testing.TEST_SHOT)
         for _en in (True, False):
+
+            print()
+            _LOGGER.info(' - APPLYING SCENE TAB %s', _helper.job)
             testing.enable_file_system(_en)
+
             _helper.ui.MainPane.select_tab('Scene')
             if dcc.NAME == 'maya':
                 _types = ['Asset', 'Cache', 'Render']
@@ -62,11 +68,25 @@ class TestHelper(unittest.TestCase):
                 _types = ['Cache', 'Render']
             else:
                 raise NotImplementedError(dcc.NAME)
+            _LOGGER.info(' - CHECKING TYPES %s', _types)
+
             for _type in _types:
+                _LOGGER.info(' - CHECKING TYPE %s %s', _type, _helper.entity)
                 _helper.ui.SOutputsPane.select_tab(_type)
+                _helper.ui.SOutputVers.select_text('latest')
                 assert _helper.ui.SOutputs.all_data()
+                assert _helper.ui.SOutputsPane.current_tab_text() == _type
+                _outs = _helper.ui.SOutputs.all_data()
+                _LOGGER.info('   - TASK %s', _helper.ui.SOutputTask.currentText())
+                _LOGGER.info('   - TAG %s', _helper.ui.SOutputTag.currentText())
+                _LOGGER.info('   - VERS %s', _helper.ui.SOutputVers.currentText())
+                _LOGGER.info('   - DISPLAYING %d OUTS %s', len(_outs), _outs)
+
+            _LOGGER.info(' - REVERTING TO EXPORT TAB')
             _helper.ui.MainPane.select_tab('Export')
+
             assert not error.TRIGGERED
+
         testing.enable_file_system(True)
         _helper.ui.MainPane.select_tab('Scene')
 

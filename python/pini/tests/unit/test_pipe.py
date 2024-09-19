@@ -1,5 +1,6 @@
 import logging
 import os
+import pprint
 import time
 import unittest
 
@@ -18,8 +19,9 @@ class TestPipe(unittest.TestCase):
         _LOGGER.info(_work_ma)
         _work_nk = _work_ma.to_work(dcc_='nuke', tag='slapcomp', extn='nk')
         _LOGGER.info(_work_nk)
+        pprint.pprint(_work_nk.data)
         assert _work_nk.extn == 'nk'
-        assert _work_nk.dcc == 'nuke'
+        assert_eq(_work_nk.dcc, 'nuke')
         _work_nk = _work_nk.find_next()
         _LOGGER.info(_work_nk)
         assert _work_nk.extn == 'nk'

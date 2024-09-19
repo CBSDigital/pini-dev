@@ -54,6 +54,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         if self.extn not in EXTN_TO_DCC:
             raise ValueError(self.extn)
+        self.dcc = EXTN_TO_DCC[self.extn]
 
         # Set up entity/job
         self.work_dir = work_dir or CPWorkDir(_file)
@@ -81,7 +82,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
                     step=self.work_dir.step, shot=self.entity.name)
                 for _tmpl in self.job.find_templates(
                     type_='work', profile=self.entity.profile,
-                    dcc_=EXTN_TO_DCC[self.extn])]
+                    dcc_=self.dcc)]
         _LOGGER.log(9, ' - TMPLS %s', _tmpls)
 
         # Extract data - use single template if possible for better error
@@ -110,10 +111,6 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         validate_tokens(self.data, job=self.job)
 
-        self.dcc = (
-            self.data.get('dcc') or
-            self.work_dir.dcc or
-            self.template.dcc)
         self.ver_n = int(self.ver)
         self.sequence = self.entity.sequence
 

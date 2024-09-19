@@ -151,6 +151,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             ({name: Template list} dict): template name/object data
         """
+        _LOGGER.debug('BUILD TEMPLATE %s', self)
         return cp_template.build_job_templates(job=self, catch=catch)
 
     def find_template(

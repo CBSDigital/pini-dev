@@ -74,7 +74,7 @@ class CPJobDisk(cp_job_base.CPJobBase):
         """
         _tmpl = self.find_template('sequence_path')
         _tmpl = _tmpl.apply_data(job_path=self.path)
-        _LOGGER.info(' - TMPL %s', _tmpl)
+        _LOGGER.debug(' - TMPL %s', _tmpl)
         _paths = _tmpl.glob_paths(job=self)
         return _paths
 

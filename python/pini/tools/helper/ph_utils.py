@@ -6,7 +6,7 @@ import six
 
 from pini import icons, qt, pipe, dcc
 from pini.qt import QtGui
-from pini.utils import str_to_seed, cache_result, Seq, Video, File
+from pini.utils import str_to_seed, cache_result, Seq, Video, File, to_str
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -329,7 +329,7 @@ def output_to_icon(output, overlay=None, force=False):
     Returns:
         (CPixmap): icon
     """
-    _LOGGER.debug('OUTPUT TO ICON %s', output)
+    _LOGGER.debug('OUTPUT TO ICON %s over=%s force=%d', output, overlay, force)
     _LOGGER.debug(' - NICE TYPE %s', output.nice_type)
 
     # Get base icon
@@ -362,8 +362,8 @@ def output_to_icon(output, overlay=None, force=False):
         _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
 
     _LOGGER.debug(' - ICON %s', _icon)
-    if _icon:
-        _icon = qt.to_pixmap(_icon)
+    if _icon and not isinstance(_icon, QtGui.QPixmap):
+        _icon = qt.obt_pixmap(to_str(_icon))
         assert isinstance(_icon, QtGui.QPixmap)
 
     return _icon

@@ -1,3 +1,21 @@
+## [4.8.0] - Thu 2024-09-19 12:15
+### Summary
+ - Pini Helper:
+    - use transparent background by default for scene/output elements (mkim),
+    - use native font size for scene/output elements (mkim),
+    - no error on launch from with non-3d shot file open (nle),
+### Updated
+ - pini.pipe.CPWork.dcc use dcc from extn,
+ - pini.pipe.CACHE.CCPJobSG.obt_work_dir added catch,
+ - pini.qt.CListView.DEFAULT_FONT_SIZE deprecated,
+ - pini.qt.CListViewPixmapItem added font/metrics/font_size/line_h/metrics properties,
+ - pini.qt.CPixmap.draw_text bugfix error on use line_h arg,
+ - pini.qt.CUiBase allow font size override via $PINI_DEFAULT_FONT_SIZE,
+ - pini.qt.obt_pixmap apply str type check,
+ - pini.tools.helper allow font size change,
+ - pini.tools.helper scene/output elems use transparent backdrop + use native font size,
+
+
 ## [4.7.0] - Wed 2024-09-18 08:13
 ### Summary
  - Pini Helper:

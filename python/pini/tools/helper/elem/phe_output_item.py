@@ -29,20 +29,35 @@ class PHOutputItem(qt.CListViewPixmapItem):
         self.helper = helper
         self.highlight = highlight
 
-        self.margin = 3
-        self.info_font_size = 5
-        self.info_y = 31
-        self.text_col = 'White' if highlight else 'Grey'
-        self.text_y = 12
-
-        self.bg_col = qt.CColor(self.text_col)
-        self.bg_col.setAlphaF(0.2)
+        if highlight:
+            self.bg_col = qt.CColor('White', alpha=0.1)
+            self.text_col = 'White'
+        else:
+            self.text_col = 'LightGrey'
+            self.bg_col = None
 
         self.icon = output_to_icon(self.output)
-        self.icon_w = 16
 
         super(PHOutputItem, self).__init__(
             list_view, col='Transparent', data=self.output)
+
+    @property
+    def info_font_size(self):
+        """Calculate font size of info text.
+
+        Returns:
+            (float): font size
+        """
+        return self.font_size*0.9
+
+    @property
+    def info_y(self):
+        """Calculate y-pos of info text.
+
+        Returns:
+            (float): y-pos
+        """
+        return self.font_size*5.5
 
     @property
     def label(self):
@@ -67,6 +82,15 @@ class PHOutputItem(qt.CListViewPixmapItem):
         return _label
 
     @property
+    def margin(self):
+        """Calculate margin for this item.
+
+        Returns:
+            (float): margin in pixels
+        """
+        return self.font_size*0.3
+
+    @property
     def sort_key(self):
         """Build sort key for this item to allow it to be compared with others.
 
@@ -77,6 +101,16 @@ class PHOutputItem(qt.CListViewPixmapItem):
                 self.output.tag or '',
                 self.output.ver_n or '')
 
+    @property
+    def size_y(self):
+        """Calculate height of this element.
+
+        Returns:
+            (int): height
+        """
+        _n_lines = 2.8 if not self.info else 4
+        return _n_lines * self.line_h
+
     def draw_pixmap(self, pix):
         """Draw pixmap for this item.
 
@@ -86,13 +120,14 @@ class PHOutputItem(qt.CListViewPixmapItem):
         super(PHOutputItem, self).draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
-        self.set_height(28 if not self.info else 36)
+        self.set_height(self.size_y)
 
         # Draw backdrop
-        pix.draw_rounded_rect(
-            pos=(self.margin, self.margin/2),
-            size=(pix.width()-self.margin*2, pix.height()-self.margin),
-            outline=None, col=self.bg_col)
+        if self.bg_col:
+            pix.draw_rounded_rect(
+                pos=(self.margin, self.margin/2),
+                size=(pix.width()-self.margin*2, pix.height()-self.margin),
+                outline=None, col=self.bg_col)
 
         # Add text/icon overlays
         _over = qt.CPixmap(pix.size())
@@ -112,7 +147,8 @@ class PHOutputItem(qt.CListViewPixmapItem):
         """
         assert isinstance(pix, qt.CPixmap)
         self._draw_left(pix)
-        self._draw_right_fade(pix, offset=44, width=12)
+        self._draw_right_fade(
+            pix, offset=self.font_size * 7.5, width=self.font_size * 1)
         self._draw_right(pix)
 
     def _draw_left(self, pix):
@@ -123,39 +159,44 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _left_m = 27
+        _font = QtGui.QFont(self.font)
+        _font.setBold(True)
+
+        _left_m = self.font_size*3.9
+        _icon_w = self.font_size*2.5
+        _text_y = self.font_size*1.3
 
         # Draw icon
         if self.icon:
-            _over = self.icon.resize(self.icon_w+4)
+            _over = self.icon.resize(_icon_w)
             pix.draw_overlay(
-                _over, pos=(self.margin+1, self.text_y+1), anchor='L')
+                _over, pos=(self.font_size*0.8, pix.height()/2), anchor='L')
 
         # Draw asset text
-        _FONT.setPointSize(7.5)
-        _FONT.setBold(True)
         if not self.output.tag:
             _rect = pix.draw_text(
-                self.label, pos=(_left_m, self.text_y), col=self.text_col,
-                font=_FONT, anchor='L')
+                self.label, pos=(_left_m, _text_y), col=self.text_col,
+                font=_font)
+
+        # Draw asset text with tag underneath
         else:
             _rect = pix.draw_text(
-                self.label, pos=(_left_m, self.text_y-5), col=self.text_col,
-                font=_FONT, anchor='L')
-            _FONT.setPointSize(6.5)
-            _FONT.setBold(False)
+                self.label, pos=(_left_m, _text_y-5), col=self.text_col,
+                font=_font)
+
+            _font.setBold(False)
             _rect = pix.draw_text(
                 self.output.tag,
-                pos=(_left_m, self.text_y+5), col=self.text_col,
-                font=_FONT, anchor='L')
+                pos=(_left_m, self.line_h*1.4), col=self.text_col,
+                font=_font)
 
         if self.info:
             _line_h = 43
-            _FONT.setPointSize(self.info_font_size)
+            _font.setPointSize(self.info_font_size)
             pix.draw_text(
                 self.output.strftime('%a %b %m %H:%M'),
                 pos=(_left_m, self.info_y), col=self.text_col,
-                font=_FONT, anchor='BL')
+                font=_font, anchor='BL')
 
     def _draw_right(self, pix):
         """Draw right size overlays.
@@ -163,18 +204,21 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _right_m = pix.width() - self.margin*3
+        _font = QtGui.QFont(self.font)
+        _font.setBold(True)
+
+        _icon_w = self.font_size*2
+        _right_m = pix.width() - self.font_size * 0.9
+        _text_x = _right_m - self.font_size * 2.7
+        _text_y = self.font_size*2.2
 
         _icon = output_to_type_icon(self.output)
         if _icon:
-            _over = obt_pixmap(_icon, size=self.icon_w-2)
+            _over = obt_pixmap(_icon, size=_icon_w)
             _pix = pix.draw_overlay(
-                _over, pos=(_right_m+3, self.text_y+2), anchor='R')
+                _over, pos=(_right_m+3, _text_y), anchor='R')
 
         # Draw version text
-        _text_x = _right_m - 16
-        _FONT.setPointSize(7.5)
-        _FONT.setBold(True)
         if self.output.ver_n:
             _ver_fmt = 'v{:03d}'
             _ver_n = self.output.ver_n
@@ -183,16 +227,17 @@ class PHOutputItem(qt.CListViewPixmapItem):
             _ver_fmt = '* v{:03d}'
         _ver_text = _ver_fmt.format(_ver_n)
         _rect = pix.draw_text(
-            _ver_text, pos=(_text_x, self.text_y),
-            col=self.text_col, anchor='R', font=_FONT)
+            _ver_text, pos=(_text_x, _text_y),
+            col=self.text_col, anchor='R', font=_font)
 
         if self.info:
-            _FONT.setPointSize(self.info_font_size)
-            _FONT.setBold(False)
+            _font = QtGui.QFont(self.font)
+            _font.setPointSize(self.info_font_size)
+            _font.setBold(False)
             pix.draw_text(
                 self.output.owner(),
                 pos=(_right_m, self.info_y), col=self.text_col,
-                font=_FONT, anchor='BR')
+                font=_font, anchor='BR')
 
     def __lt__(self, other):
         return self.sort_key < other.sort_key

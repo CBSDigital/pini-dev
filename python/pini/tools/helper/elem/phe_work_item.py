@@ -6,27 +6,12 @@ This is used to represent a work file in PiniHelper.
 import logging
 import time
 
-from pini import qt, icons, dcc
-from pini.qt import QtGui
+from pini import qt, icons
 from pini.utils import strftime, cache_result, get_user
 
 from .. import ph_utils
 
 _LOGGER = logging.getLogger(__name__)
-
-# Setup font/metrics
-_FONT = QtGui.QFont()
-_OUTPUT_ICONS_OFFS_X = 195
-_NOTES_OFFS_X = 47
-_THUMB_H = 53
-if qt.CListView.DEFAULT_FONT_SIZE is not None:
-    if qt.CListView.DEFAULT_FONT_SIZE != 8:
-        raise NotImplementedError(qt.CListView.DEFAULT_FONT_SIZE)
-    _FONT.setPointSize(8)
-    _NOTES_OFFS_X -= 5
-    _THUMB_H += 5
-    _LOGGER.debug(' - APPLYING DCC FONT %s', dcc.NAME)
-_METRICS = QtGui.QFontMetrics(_FONT)
 
 _BG_COL = qt.CColor('White')
 _BG_COL.setAlphaF(0.1)
@@ -51,6 +36,8 @@ _OUTPUT_ICONS = {
 class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-attributes
     """Represents a work file in PiniHelper."""
 
+    _font = None
+
     def __init__(self, list_view, helper, work):
         """Constructor.
 
@@ -66,9 +53,6 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         self.margin = 4
         self.helper = helper
         self.notes = ''
-
-        # Causes seg fault if declared globally
-        self._line_h = _METRICS.size(0, 'test').height()
 
         if work is helper.next_work:
             self.notes = 'this will be created if you version up'
@@ -87,11 +71,27 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             self.set_notes(self.work.notes, redraw=False)
         self.icon = ph_utils.obt_pixmap(_icon)
 
-        _text_h = 9 + self._line_h * self._to_n_lines()
-
         super(PHWorkItem, self).__init__(
             list_view=list_view, col='Transparent', data=work,
-            height=max(_text_h, _THUMB_H+20 if self._has_thumb else 0))
+            height=max(self.text_h, self.thumb_h+20 if self._has_thumb else 0))
+
+    @property
+    def text_h(self):
+        """Calculate height of text in this item.
+
+        Returns:
+            (float): height in pixels
+        """
+        return self.margin*3 + self.line_h * self._to_n_lines()
+
+    @property
+    def thumb_h(self):
+        """Calculate thumbnail height.
+
+        Returns:
+            (float): height in pixels
+        """
+        return self.metrics.size(0, '\n'.join('A'*4)).height() * 1.1
 
     def _to_n_lines(self):
         """Calculate number of lines of text.
@@ -116,13 +116,10 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             _owner = self.work.owner()
             _size_str = self.work.nice_size()
 
+        _date_s = strftime('%a %b %d %H:%M%P', self._mtime)
         _text = '\n'.join([
-            'v{work.ver} - {date}',
-            ' - Owner: {owner}',
-        ]).format(
-            work=self.work,
-            owner=_owner,
-            date=strftime('%a %b %d %H:%M%P', self._mtime))
+            f'v{self.work.ver} - {_date_s}',
+            f' - Owner: {_owner}'])
 
         if _size_str:
             _text += '\n - Size: '+_size_str
@@ -174,34 +171,41 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         # Draw text
         _text = self._to_text()
-        _pos = qt.to_p(_icon_size+16, 4)
+        _text_pos = qt.to_p(_icon_size+16.0, 4)
         pix.draw_text(
-            _text, pos=_pos, col=self.text_col, font=_FONT)
+            _text, pos=_text_pos, col=self.text_col, font=self.font,
+            line_h=self.line_h)
+
+        # Draw notes
         _n_lines = _text.count('\n') + 1
+        _n_offs_x = self.metrics.size(0, ' - Notes: ').width() + 1
         pix.draw_text(
             self.notes,
-            pos=_pos + qt.to_p(_NOTES_OFFS_X, (_n_lines-1)*self._line_h),
-            col=self.text_col, font=_FONT)
+            pos=_text_pos + qt.to_p(_n_offs_x, (_n_lines-1)*self.line_h+0.5),
+            col=self.text_col, font=self.font)
 
-        # Draw output tags
+        # Draw output icons
         _keys = set(_OUTPUT_ICONS.keys())
         _keys.remove('Empty')
+        _out_icons_offs_x = self.metrics.size(0, 'A'*25).width() + _text_pos.x()
+        _out_icons_width = self.metrics.size(0, 'A'*2).width()
+        _out_icons_offs_y = self.metrics.size(0, 'A').height()/2 + 6
         for _idx, _tag in enumerate(sorted(_keys, key=_sort_output_tag)):
+            _icon_size = _out_icons_width
             if _tag not in self.output_tags:
                 _tag = 'Empty'
-                _size = 3
-            else:
-                _size = 13
-            _icon = _to_output_icon(_tag, size=_size)
-            _indent = 11
-            _pos = (_indent + _OUTPUT_ICONS_OFFS_X + 13*_idx, _indent)
+                _icon_size *= 0.35
+            _icon = _to_output_icon(_tag, size=_icon_size)
+            _pos = (
+                _out_icons_offs_x + (_out_icons_width * 1.3)*_idx,
+                _out_icons_offs_y)
             pix.draw_overlay(_icon, pos=_pos, anchor='C')
 
         # Add thumb if available
         if self._has_thumb:
             _margin = 10
             _pix = ph_utils.obt_pixmap(self.work.image)
-            _size = _pix.size() * _THUMB_H/_pix.height()  # pylint: disable=no-member
+            _size = _pix.size() * self.thumb_h/_pix.height()  # pylint: disable=no-member
             self._draw_right_fade(pix, offset=_size.width()+_margin*2)
             pix.draw_overlay(
                 _pix, pos=(pix.width()-_margin, _margin),

@@ -468,7 +468,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _LOGGER.info('UPDATE JOB ICON %s', self.job)
+        _LOGGER.debug('UPDATE JOB ICON %s', self.job)
         _rand = str_to_seed(self.job.name)
         pix.fill('Transparent')
 

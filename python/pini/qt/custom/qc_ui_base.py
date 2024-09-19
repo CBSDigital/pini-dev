@@ -88,6 +88,7 @@ class CUiBase(object):
         if title:
             self.setWindowTitle(title)
 
+        self._apply_default_font_size()
         self._check_tooltips()
         self._connect_redraws()
         self._connect_callbacks()
@@ -228,6 +229,13 @@ class CUiBase(object):
         """
         assert isinstance(self.ui, _UiHandler)
         return self.ui.find_widgets(filter_=filter_, class_=class_)
+
+    def _apply_default_font_size(self):
+        """Setup default font size via $PINI_DEFAULT_FONT_SIZE."""
+        _size = os.environ.get('PINI_DEFAULT_FONT_SIZE')
+        if _size:
+            _size = int(_size)
+            self.setStyleSheet(f'font-size: {_size:d}pt')
 
     def _check_tooltips(self):
         """Check tooltips.

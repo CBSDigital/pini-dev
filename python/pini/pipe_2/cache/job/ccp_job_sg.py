@@ -222,7 +222,8 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
                 _work_dir for _work_dir in _work_dirs
                 if _work_dir == match]
             _result = single(
-                _matches, error='Failed to match {}'.format(match))
+                _matches, error='Failed to match {}'.format(match),
+                catch=True)
             return _result
         raise NotImplementedError(match)
 

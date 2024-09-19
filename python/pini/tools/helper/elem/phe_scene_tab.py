@@ -291,7 +291,15 @@ class CLSceneTab(object):
             _ref.to_output(use_cache=False) for _ref in dcc.find_pipe_refs()})
         _version_mode = self.ui.SOutputVers.currentText()
 
+        # Make sure all outputs are using cacheable version
+        for _idx, _out in enumerate(_outs):
+            if _out.job is not self.job:
+                _out = pipe.CACHE.obt(_out)
+                _outs[_idx] = _out
+            assert _out.job is self.job
+
         # Get list of outputs
+        _LOGGER.debug('   - CHECKING %d OUTS %s', len(_outs), _outs)
         if _filter:
             _outs = apply_filter(
                 _outs, _filter, key=operator.attrgetter('path'))

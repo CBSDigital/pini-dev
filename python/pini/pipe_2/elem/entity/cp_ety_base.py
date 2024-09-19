@@ -559,7 +559,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPOutput): matching output
         """
-        _LOGGER.info('TO OUTPUT')
+        _LOGGER.debug('TO OUTPUT')
         from pini import pipe
 
         # Get template
@@ -569,11 +569,11 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         elif isinstance(template, six.string_types):
             _want_key = {
                 'output_type': bool(output_type)}
-            _LOGGER.info(' - WANT KEY %s', _want_key)
+            _LOGGER.debug(' - WANT KEY %s', _want_key)
             _has_key = {
                 'tag': bool(_tag),
                 'ver': bool(ver_n)}
-            _LOGGER.info(' - HAS KEY %s', _has_key)
+            _LOGGER.debug(' - HAS KEY %s', _has_key)
             _tmpl = self.find_template(
                 template, has_key=_has_key, want_key=_want_key)
         else:

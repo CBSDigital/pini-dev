@@ -15,8 +15,6 @@ _MISSING_FROM_CACHE_ICON = icons.find('Adhesive Bandage')
 _OUTDATED_REF_ICON = icons.find('Cloud')
 _UNLOADED_REF_ICON = icons.find('Hollow Red Circle')
 
-_FONT = QtGui.QFont()
-
 
 class PHSceneRefItem(qt.CListViewPixmapItem):
     """Represents a scene reference in the scene reference list."""
@@ -41,9 +39,6 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         self.status = status
         self.namespace = namespace or self.ref.namespace
 
-        self.margin = 3
-        self.info_font_size = 5
-        self.info_y = 35
         self.text_col = 'White'
 
         self.detail = self.over_icon = None
@@ -78,14 +73,52 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         else:
             raise ValueError(status)
 
-        self.bg_col = qt.CColor(self.text_col)
-        self.bg_col.setAlphaF(0.2)
+        self.bg_col = None
+        if status or _overlay:
+            self.bg_col = qt.CColor(self.text_col, alpha=0.2)
         if _overlay:
             _overlay = File(_overlay)
         self.icon = output_to_icon(self.output, overlay=_overlay)
 
         super(PHSceneRefItem, self).__init__(
             list_view, col='Transparent', data=self.ref)
+
+    @property
+    def info_font_size(self):
+        """Calculate font size of info text.
+
+        Returns:
+            (float): font size
+        """
+        return self.font_size*0.9
+
+    @property
+    def info_y(self):
+        """Calculate y-pos of info text.
+
+        Returns:
+            (float): y-pos
+        """
+        return self.font_size*5.5
+
+    @property
+    def margin(self):
+        """Calculate margin for this item.
+
+        Returns:
+            (float): margin in pixels
+        """
+        return self.font_size*0.3
+
+    @property
+    def size_y(self):
+        """Calculate height of this element.
+
+        Returns:
+            (int): height
+        """
+        _n_lines = 3.0 if not self.info else 4
+        return _n_lines * self.line_h
 
     def draw_pixmap(self, pix):
         """Draw pixmap for this item.
@@ -96,13 +129,14 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         super(PHSceneRefItem, self).draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
-        self.set_height(40 if self.info else 32)
+        self.set_height(self.size_y)
 
         # Draw backdrop
-        pix.draw_rounded_rect(
-            pos=(self.margin, self.margin/2),
-            size=(pix.width()-self.margin*2, pix.height()-self.margin),
-            outline=None, col=self.bg_col)
+        if self.bg_col:
+            pix.draw_rounded_rect(
+                pos=(self.margin, self.margin/2),
+                size=(pix.width()-self.margin*2, pix.height()-self.margin),
+                outline=None, col=self.bg_col)
 
         # Add text/icon overlays
         _over = qt.CPixmap(pix.size())
@@ -121,7 +155,8 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             pix (CPixmap): pixmap to draw on
         """
         self._draw_left(pix)
-        self._draw_right_fade(pix, offset=49, width=12)
+        self._draw_right_fade(
+            pix, offset=self.font_size * 8, width=self.font_size * 1)
         self._draw_right(pix)
 
     def _draw_left(self, pix):
@@ -132,40 +167,40 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _left_m = 30
+        _font = QtGui.QFont(self.font)
+        _left_m = self.font_size*4.2
         _out = self.ref.to_output(use_cache=False)
 
         # Draw icon
         if self.icon:
-            _over = self.icon.resize(21)
-            pix.draw_overlay(_over, (self.margin+3, self.margin+12), anchor='L')
+            _over = self.icon.resize(self.font_size*2.5)
+            pix.draw_overlay(
+                _over, pos=(self.font_size*1, pix.height()/2), anchor='L')
 
         # Draw namespace
-        _FONT.setPointSize(7.5)
-        _FONT.setBold(True)
+        _font.setBold(True)
         _rect = pix.draw_text(
             self.namespace,
-            pos=(_left_m, 10), col=self.text_col,
-            font=_FONT, anchor='L')
+            pos=(_left_m, self.font_size*0.8), col=self.text_col,
+            font=_font)
 
         # Draw asset/tag
-        _FONT.setPointSize(6.5)
-        _FONT.setBold(False)
+        _font.setBold(False)
         _label = _out.entity.name
         if _out.tag:
             _label += '/'+_out.tag
         pix.draw_text(
             _label,
-            pos=(_left_m, _rect.bottom()-5), col=self.text_col,
-            font=_FONT, anchor='TL')
+            pos=(_left_m, self.font_size*2.4), col=self.text_col,
+            font=_font, anchor='TL')
 
         if self.info and self.output:
-            _line_h = 43
-            _FONT.setPointSize(self.info_font_size)
+            _line_h = self.font_size*4
+            _font.setPointSize(self.info_font_size)
             pix.draw_text(
                 self.output.strftime('%a %b %m %H:%M'),
                 pos=(_left_m, self.info_y), col=self.text_col,
-                font=_FONT, anchor='BL')
+                font=_font, anchor='BL')
 
     def _draw_right(self, pix):
         """Draw right size overlays.
@@ -173,20 +208,22 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _right_m = pix.width() - self.margin*3
+        _font = QtGui.QFont(self.font)
+        _right_m = pix.width() - self.margin*5
         _out = self.output or self.ref.to_output(use_cache=False)
 
         # Draw type icon
         _icon = output_to_type_icon(_out)
         if _icon:
-            _over = obt_pixmap(_icon, size=14)
-            pix.draw_overlay(_over, (_right_m+3, 16), anchor='R')
+            _over = obt_pixmap(_icon)
+            pix.draw_overlay(
+                _over, size=self.font_size*2,
+                pos=(_right_m+3, self.font_size*2.3), anchor='R')
 
         # Draw version text
-        _text_x = _right_m - 17
-        _text_y = 12 if self.detail else 14
-        _FONT.setPointSize(7.5)
-        _FONT.setBold(True)
+        _text_x = _right_m - self.font_size * 3.0
+        _text_y = self.font_size * (1.7 if self.detail else 2.3)
+        _font.setBold(True)
         if _out.ver_n:
             _ver_fmt = 'v{:03d}'
             _ver_n = _out.ver_n
@@ -196,25 +233,26 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _ver_text = _ver_fmt.format(_ver_n)
         _rect = pix.draw_text(
             _ver_text, pos=(_text_x, _text_y),
-            col=self.text_col, anchor='R', font=_FONT)
+            col=self.text_col, anchor='R', font=_font)
 
         # Draw detail
         if self.detail:
-            _FONT.setPointSize(4.5)
-            _FONT.setBold(False)
-            _pos = qt.to_p(_text_x-9, _text_y+5)
-            # print self.detail, _rect, _pos
+            _font.setPointSize(self.font_size*0.9)
+            _font.setBold(False)
+            _pos = (
+                _right_m - self.font_size * 4.5,
+                _text_y + self.font_size * 0.9)
             pix.draw_text(
                 self.detail, pos=_pos,
-                col=self.text_col, anchor='T', font=_FONT)
+                col=self.text_col, anchor='T', font=_font)
 
         if self.info:
-            _FONT.setPointSize(self.info_font_size)
-            _FONT.setBold(False)
+            _font.setPointSize(self.info_font_size)
+            _font.setBold(False)
             pix.draw_text(
                 self.output.owner(),
                 pos=(_right_m, self.info_y), col=self.text_col,
-                font=_FONT, anchor='BR')
+                font=_font, anchor='BR')
 
     def __repr__(self):
         return basic_repr(self, self.ref.namespace)

@@ -915,7 +915,7 @@ def glob_templates(templates, job):
         assert _root.is_abs()
         _roots[_root].append(_tmpl)
     _roots = dict(_roots)
-    _LOGGER.debug(' - ROOTS %s', _root)
+    _LOGGER.debug(' - ROOTS %s', _roots)
 
     # Search roots
     _results = []

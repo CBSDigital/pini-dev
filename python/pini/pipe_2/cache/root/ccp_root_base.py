@@ -370,7 +370,8 @@ class CCPRootBase(elem.CPRoot):
 
         # Obtain work dir
         if isinstance(_match, elem.CPWorkDir):
-            return self._obt_work_dir_cacheable(_match)
+            _cbl = self._obt_work_dir_cacheable(_match)
+            return _cbl
 
         _LOGGER.debug(' - FAILED TO CONVERT MATCH %s', _match)
         raise NotImplementedError(match)

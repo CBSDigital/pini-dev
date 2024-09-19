@@ -195,13 +195,13 @@ def get_application(force=False):
 
 
 @cache_result
-def obt_pixmap(file_):
+def obt_pixmap(file_: str):
     """Obtain a cached version of the given pixmap.
 
     ie. the image is only read from disk once
 
     Args:
-        file_ (str): image to read
+        file_ (str): image to read - a string is required for cache efficiency
 
     Returns:
         (CPixmap): pixmap

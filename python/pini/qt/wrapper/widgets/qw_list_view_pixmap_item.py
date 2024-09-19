@@ -1,10 +1,12 @@
 """Tools for managing the CListViewPixmapItem."""
 
 import logging
+import os
 import random
 
 from pini.utils import basic_repr, fr_range
 
+from ...q_mgr import QtGui
 from . import qw_list_view_widget_item, qw_pixmap_label
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,6 +17,8 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
 
     Internally this is managed using a CPixmapLabel widget.
     """
+
+    _font = None
 
     def __init__(self, list_view, text=None, col=None, height=25, data=None):
         """Constructor.
@@ -37,6 +41,46 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
             list_view=list_view, height=height, widget=_widget, data=data)
 
         self.redraw()
+
+    @property
+    def font(self):
+        """Obtain default font for this item.
+
+        Returns:
+            (QFont): font
+        """
+        _size = int(os.environ.get('PINI_DEFAULT_FONT_SIZE', 7)) + 1
+        if not self._font or not self._font.pointSize() == _size:
+            self._font = QtGui.QFont()
+            self._font.setPointSize(_size)
+        return self._font
+
+    @property
+    def font_size(self):
+        """Calculate default font size for this item.
+
+        Returns:
+            (int): font size
+        """
+        return self.font.pointSize()
+
+    @property
+    def line_h(self):
+        """Calculate default line height for text in this item.
+
+        Returns:
+            (int): line height in pixels
+        """
+        return self.metrics.size(0, 'test').height()
+
+    @property
+    def metrics(self):
+        """Obtain font metrics for this item.
+
+        Returns:
+            (QFontMetrics): metrics
+        """
+        return QtGui.QFontMetrics(self.font)
 
     def draw_pixmap(self, pix):
         """Draw this item's pixmap.

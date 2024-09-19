@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -2135,7 +2135,7 @@
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>55</width>
+                        <width>0</width>
                         <height>16777215</height>
                        </size>
                       </property>
@@ -2173,7 +2173,7 @@
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>55</width>
+                        <width>0</width>
                         <height>16777215</height>
                        </size>
                       </property>
@@ -2195,7 +2195,7 @@
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>55</width>
+                        <width>0</width>
                         <height>16777215</height>
                        </size>
                       </property>
@@ -2214,7 +2214,7 @@
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>55</width>
+                        <width>0</width>
                         <height>16777215</height>
                        </size>
                       </property>
@@ -2233,7 +2233,7 @@
                       </property>
                       <property name="maximumSize">
                        <size>
-                        <width>55</width>
+                        <width>0</width>
                         <height>16777215</height>
                        </size>
                       </property>
@@ -3219,6 +3219,22 @@ icon</string>
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -3323,14 +3339,14 @@ icon</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CListWidget</class>
-   <extends>QListWidget</extends>
-   <header>clistwidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>CComboBox</class>
    <extends>QComboBox</extends>
    <header>ccombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CListWidget</class>
+   <extends>QListWidget</extends>
+   <header>clistwidget.h</header>
   </customwidget>
   <customwidget>
    <class>CTabWidget</class>
