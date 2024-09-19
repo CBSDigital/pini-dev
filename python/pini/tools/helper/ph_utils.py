@@ -68,6 +68,7 @@ _8_BALL_ICON = icons.find('Pool 8 Ball')
 
 _NAME_MAP = {
     'apple': 'Green Apple',
+    'bee': 'Honeybee',
     'bottle': 'Bottle with Popping Cork',
     'chesspieces': 'Chess Pawn',
     'christmaspresents': 'Gift',

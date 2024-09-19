@@ -1,3 +1,11 @@
+## [4.9.0] - Thu 2024-09-19 14:41
+### Summary
+ - Sanity Check:
+    - better error on duplicate names in cset (mkim),
+### Updated
+ - pini.tools.sanity_check.CheckCacheables better fail on dup names,
+
+
 ## [4.8.0] - Thu 2024-09-19 12:15
 ### Summary
  - Pini Helper:

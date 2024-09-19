@@ -796,7 +796,6 @@ class CheckCacheables(SCMayaCheck):
         Args:
             cset (CPCacheableSet): CSET to check
         """
-
         _set = cset.node
 
         _top_nodes = m_pipe.read_cache_set(set_=_set, mode='top')
@@ -830,18 +829,26 @@ class CheckCacheables(SCMayaCheck):
             self.write_log(' - geo %s', _geo)
             self._check_shp(_geo)
 
-        # Check for duplicate nodes
+        # Check for duplicate names
         _names = collections.defaultdict(list)
-        for _node in cset.to_geo():
+        for _node in m_pipe.read_cache_set(
+                set_=cset.cache_set, mode='transforms'):
             _names[to_clean(_node)].append(_node)
         for _name, _nodes in _names.items():
             if len(_nodes) == 1:
                 continue
             for _node in _nodes[1:]:
-                _msg = 'Duplicate node {} in {}'.format(
-                    _node, cset.cache_set)
-                _fix = wrap_fn(self._fix_duplicate_node, _node)
-                self.add_fail(_msg, node=_node, fix=_fix)
+                _msg = (
+                    f'Duplicate name "{_name}" in "{_set}". This will '
+                    'cause errors on abc export.')
+                _fix = None
+                _fixable = bool([
+                    _node for _node in _nodes if not _node.is_referenced()])
+                if _fixable:
+                    _fix = wrap_fn(self._fix_duplicate_node, _node)
+                _fail = SCFail(_msg, fix=_fix)
+                _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
+                self.add_fail(_fail)
 
     def _fix_duplicate_node(self, node):
         """Rename a duplicate node so that it has a unique name.
