@@ -56,3 +56,16 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             self.job.find_work_dirs(entity=self, force=force))
         _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
         return _work_dirs
+
+    def _read_publishes(self, force=False):
+        """Read all publishes in this entity.
+
+        Args:
+            force (bool): rebuild disk cache
+
+        Returns:
+            (CPOutput list): all publishes
+        """
+        _pubs = self.job.find_publishes(force=force, entity=self)
+        _LOGGER.debug('READ PUBLISHES %s n_pubs=%d', self.name, len(_pubs))
+        return _pubs

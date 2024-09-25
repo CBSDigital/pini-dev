@@ -1,5 +1,4 @@
 import logging
-import os
 import pprint
 import unittest
 
@@ -30,7 +29,6 @@ class TestDCC(unittest.TestCase):
         _LOGGER.info(' - CHECKED TEST ASSET')
 
         _tag = testing.TEST_JOB.cfg['tokens']['tag']['default']
-        _model_task = os.environ.get('PINI_PIPE_MODEL_TASK', 'model')
         _asset_c = pipe.CACHE.obt(testing.TEST_ASSET)
 
         # Clean up
@@ -38,16 +36,17 @@ class TestDCC(unittest.TestCase):
         assert not cmds.objExists('CHAR')
 
         # Test mapping
-        _model = _asset_c.find_publish(
-            task=_model_task, ver_n='latest', tag=_tag, versionless=False)
-        _LOGGER.info('MODEL %s', _model)
+        _model_g = _asset_c.find_publish(
+            task='model', ver_n='latest', tag=_tag, versionless=False)
+        _LOGGER.info('MODEL G %s', _model_g)
+        _model = pipe.CACHE.obt(_model_g)
         assert _model
         assert _model.find_reps()
         _ass_gz = _model.find_rep(extn='gz')
         _rig = _ass_gz.find_rep(task='rig')
-        _LOGGER.info('MODEL %s', _rig.find_rep(task=_model_task))
-        assert _rig.find_rep(task=_model_task) == _model
-        assert _ass_gz.find_rep(task=_model_task) == _model
+        _LOGGER.info('MODEL %s', _rig.find_rep(task='model'))
+        assert _rig.find_rep(task='model') == _model
+        assert _ass_gz.find_rep(task='model') == _model
 
         # Create model ref
         _ref = dcc.create_ref(_model, namespace='test', group='BLAH')

@@ -44,5 +44,12 @@ class CCPWorkDirDisk(ccp_work_dir_base.CCPWorkDirBase):
         from pini.pipe import cache
         assert not class_
         _LOGGER.debug('READ OUTPUTS force=%d class=%s %s', force, class_, self)
-        return super()._read_outputs(
-            class_=class_ or cache.CCPOutputFile)
+
+        _outs = super()._read_outputs(class_=class_ or cache.CCPOutputFile)
+        _streams = {}
+        for _out in _outs:
+            _streams[_out.to_stream()] = _out
+        for _out in _outs:
+            _latest = _streams[_out.to_stream()] == _out
+            _out.set_latest(_latest)
+        return _outs

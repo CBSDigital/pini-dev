@@ -603,24 +603,24 @@ def read_reference_pipe_refs(selected=False):
     _LOGGER.log(9, 'READ REFERENCE PIPE REFS')
 
     _all_refs = pom.find_refs(selected=selected)
+    _LOGGER.log(9, ' - FOUND %d REFS', len(_all_refs))
 
     _refs = []
     for _ref in _all_refs:
 
-        _LOGGER.log(9, 'TESTING %s', _ref)
+        _LOGGER.log(9, ' - TESTING %s %s', _ref, _ref.path)
 
         # Obtain output
         _out = pipe.to_output(_ref.path, catch=True)
         if not _out:
-            _LOGGER.log(9, ' - NOT VALID OUTPUT %s', _ref.path)
+            _LOGGER.log(9, '   - NOT VALID OUTPUT %s', _ref.path)
             continue
-        _LOGGER.log(9, ' - OUT %s', _ref)
+        _LOGGER.log(9, '   - OUT %s', _ref)
 
         # Obtained cache output
-        try:
-            _out_c = pipe.CACHE.obt_output(_out)
-        except ValueError:
-            _LOGGER.log(9, ' - MISSING FROM CACHE')
+        _out_c = pipe.CACHE.obt_output(_out, catch=True)
+        if not _out_c:
+            _LOGGER.log(9, '   - MISSING FROM CACHE')
             continue
 
         # Determine class based on publish type
@@ -629,6 +629,7 @@ def read_reference_pipe_refs(selected=False):
         else:
             _class = CMayaRef
         _ref = _class(_ref)
+        _LOGGER.log(9, '   - VALID REF %s', _ref)
         _refs.append(_ref)
 
     return _refs

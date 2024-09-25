@@ -6,6 +6,7 @@ from .ccp_out_base import CCPOutputBase
 from .ccp_out_file import CCPOutputFile
 from .ccp_out_video import CCPOutputVideo
 from .ccp_out_seq_dir import CCPOutputSeqDir
+from .ccp_out_ghost import CCPOutputGhost
 
 from ... import MASTER
 

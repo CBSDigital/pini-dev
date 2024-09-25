@@ -38,7 +38,7 @@ class TestErrorCatcher(unittest.TestCase):
 
 class TestPyui(unittest.TestCase):
 
-    def test_read_py_file(self):
+    def test_read_py_file_qt(self):
 
         _LOGGER.info('TEST PYUI')
 
@@ -50,6 +50,7 @@ class TestPyui(unittest.TestCase):
 
         _ui = pyui.build(_TEST_PY, mode='qt', load_settings=False)
         _LOGGER.info(' - UI %s', _ui)
+        _ui.hide()
         _ui.close()
 
     def test_qt_y_offset(self):
@@ -70,6 +71,7 @@ class TestPyui(unittest.TestCase):
         _ui = pyui.build(_TEST_PY, mode='qt', load_settings=True)
         assert_eq(_ui.pos().y(), _pos_y)
         assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
+        _ui.hide()
         _ui.close()
 
 

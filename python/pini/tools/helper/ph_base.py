@@ -271,15 +271,15 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
             if output.submittable:
-                assert parent
                 _submit = wrap_fn(shotgrid.SUBMITTER.run, output)
                 _func = chain_fns(_submit, parent.redraw)
                 menu.add_action(
                     'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
-            _pub = shotgrid.SGC.find_pub_file(output)
-            _open_url = wrap_fn(webbrowser.open, _pub.to_url())
-            menu.add_action(
-                'Open in shotgrid', icon=_OPEN_URL_ICON, func=_open_url)
+            _pub = shotgrid.SGC.find_pub_file(output, catch=True)
+            if _pub:
+                _open_url = wrap_fn(webbrowser.open, _pub.to_url())
+                menu.add_action(
+                    'Open in shotgrid', icon=_OPEN_URL_ICON, func=_open_url)
 
         menu.add_separator()
 

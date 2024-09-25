@@ -4,6 +4,7 @@
 
 import functools
 import logging
+import time
 
 import six
 
@@ -95,17 +96,6 @@ class CCPJobBase(CPJob):
         """
         return tuple(self.find_assets() + self.find_shots())
 
-    @property
-    def outputs(self):
-        """Obtain list of outputs in this job.
-
-        NOTE: this is only applicable to shotgrid jobs.
-
-        Returns:
-            (CCPWorkDir tuple): outputs
-        """
-        return tuple(self.find_outputs())
-
     @pipe_cache_result
     def find_asset_types(self, force=False):
         """Search for asset types in this job.
@@ -163,22 +153,61 @@ class CCPJobBase(CPJob):
         _LOGGER.debug(' - FOUND %d ASSETS %s', len(_assets), _assets)
         return _assets
 
-    @functools.wraps(CPJob.find_publishes)
-    def find_publishes(self, force=False, **kwargs):
+    def find_publish(self, match=None, **kwargs):
+        """Find a publish within this job.
+
+        Args:
+            match (str): match by path/name
+
+        Returns:
+            (CPOutputGhost): matching publish
+        """
+        _pubs = self.find_publishes(**kwargs)
+        if len(_pubs) == 1:
+            return single(_pubs)
+        _LOGGER.info(
+            ' - KWARGS MATCHED %d %s %s', len(_pubs), _pubs[:5],
+            '...' if len(_pubs) > 5 else '')
+        raise ValueError(match or kwargs)
+
+    def find_publishes(self, task=None, entity=None, force=False, **kwargs):
         """Find asset publishes within this job.
 
         Args:
-            force (bool): force build asset publish disk caches
+            task (str): filter by task
+            entity (CPEntity): filter by entity
+            force (bool): force rebuild publishes cache
 
         Returns:
-            (CPOutput list): publishes
+            (CPOutputGhost list): publishes
         """
-        if force:
-            self._update_publishes_cache()
-        return super().find_publishes(**kwargs)
+        from pini import pipe
+        _LOGGER.debug('FIND PUBLISHES')
+        _start = time.time()
+        _pubs = []
+        for _pub in self._read_publishes(force=force):
+            if entity and (
+                    _pub.asset_type != entity.asset_type or
+                    _pub.asset != entity.asset or
+                    _pub.sequence != entity.sequence or
+                    _pub.shot != entity.shot):
+                continue
+            if not pipe.passes_filters(_pub, task=task, **kwargs):
+                continue
+            _pubs.append(_pub)
+        _LOGGER.debug('FOUND %s %d PUBLISHES IN %.01fs', self, len(_pubs),
+                      time.time() - _start)
+        return _pubs
 
-    def _update_publishes_cache(self):
-        """Rebuild publishes cache."""
+    def _read_publishes(self, force=False):
+        """Read publishes in this job.
+
+        Args:
+            force (bool): force rebuild disk cache
+
+        Returns:
+            (CPOutputGhost list): publishes
+        """
         raise NotImplementedError
 
     @pipe_cache_result
@@ -279,11 +308,12 @@ class CCPJobBase(CPJob):
 
         return super().find_entity(_match)
 
-    def obt_work_dir(self, match):
+    def obt_work_dir(self, match, catch=False):
         """Obtain a work dir object within this job.
 
         Args:
             match (CPWorkDir): work dir to match
+            catch (bool): no error if fail to find work dir
 
         Returns:
             (CCPWorkDir): cached work dir

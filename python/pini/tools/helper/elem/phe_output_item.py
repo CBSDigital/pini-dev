@@ -220,12 +220,11 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         # Draw version text
         if self.output.ver_n:
-            _ver_fmt = 'v{:03d}'
-            _ver_n = self.output.ver_n
+            _ver_text = f'v{self.output.ver}'
         else:
             _ver_n = self.output.find_latest().ver_n
             _ver_fmt = '* v{:03d}'
-        _ver_text = _ver_fmt.format(_ver_n)
+            _ver_text = _ver_fmt.format(_ver_n)
         _rect = pix.draw_text(
             _ver_text, pos=(_text_x, _text_y),
             col=self.text_col, anchor='R', font=_font)

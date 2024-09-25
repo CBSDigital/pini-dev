@@ -1,3 +1,47 @@
+## [5.0.0] - Wed 2024-09-25 08:06
+### Summary
+ - Pini Helper:
+    - allow loose version padding (nhoyt/mkim/nle),
+    - outputs + scene references list match version padding of output (mkim),
+    - improved publish caching for speed,
+### Updated
+ - pini.utils.SimpleNamespace fix bool false by default,
+ - pini.dcc.CExportHandler._apply_version_up added handling for version_up not declared,
+ - pini.dcc.CMayaLookdevPublish bugfix not passing force flag to rs proxy generate,
+ - pini.pipe.VERSION updated 3 -> 4,
+ - pini.pipe removed legacy pipe_1 code,
+ - pini.pipe DEFAULT_TAG/passes_filters added,
+ - pini.pipe.validate_token added strict_len handling,
+ - pini.pipe.CPJob added tokens.ver.strict_len to default cfg,
+ - pini.pipe find_publish/find_publishes returns CCPOutputGhost,
+ - pini.pipe job find_publish/find_publishes moved CPJob -> CCPJob,
+ - pini.pipe job find_outputs moved CPJobSG -> CCPJobSG,
+ - pini.pipe ety find_publish/find_publishes moved CPEntity -> CCPEntity,
+ - pini.pipe.CPOutput.to_stream added,
+ - pini.pipe.cache job outputs property moved CCPJobBase -> CCPJobSG,
+ - pini.pipe.cache.CCPJobBase.obt_work_dir added catch,
+ - pini.pipe.cache.CCPOutputBase set_latest/to_ghost added,
+ - pini.pipe.cache.CCPOutputGhost added,
+ - pini.pipe.cache.CCPWorkDir.obt_output added,
+ - pini.pipe.cache.CCPWorkDir._read_outputs apply latest on init,
+ - pini.pipe.cache.CCPRoot.obt added CCPOutputGhost handling,
+ - pini.pipe.cache.CCPRoot obt_work_dir/obt_work added catch,
+ - pini.pipe.shotgrid.SGC show progress on 2s delay by default,
+ - pini.pipe.shotgrid.SGC.find_jobs eliminate dup names by using latest id,
+ - pini.pipe.qt.progress_bar bugfix stacking issues with show_delay,
+ - pini.pipe.qt.progress_bar moved progress stack global outside pini,
+ - pini.pipe.qt.progress_dialog added show_delay,
+ - pini.pipe.qt.close_all_progress_bars added,
+ - pini.pipe.qt.ProgressBar is_finished/__repr__ added,
+ - pini.pipe.qt.ProgressBar removed py2 compatibility,
+ - pini.farm.deadline.CDCmdlineJob added,
+ - pini.tools.helper.obt_helper added reset_cache arg,
+ - pini.tools.helper PHOutputItem/PHSceneItem match output ver padding,
+ - pini.tools.helper bugfix error on right-click output missing from shotgrid,
+ - pini.tools.helper outputs list apply default format,
+ - maya_pini.utils.save_redshift_proxy added force flag,
+
+
 ## [4.9.0] - Thu 2024-09-19 14:41
 ### Summary
  - Sanity Check:

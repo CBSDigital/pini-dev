@@ -32,11 +32,12 @@ class SimpleNamespace(object):
 
     def __init__(self, **kwargs):
         """Constructor."""
+        self.bool = True
         for _name, _val in kwargs.items():
             setattr(self, _name, _val)
 
     def __bool__(self):
-        return False
+        return self.bool
 
     def __repr__(self):
         _name = getattr(self, 'name', type(self).__name__)
@@ -45,7 +46,7 @@ class SimpleNamespace(object):
 
 # Empty object used to denote a variable not having been set - this is useful
 # if None is a valid value for a variable
-EMPTY = SimpleNamespace(name='EMPTY')
+EMPTY = SimpleNamespace(name='EMPTY', bool=False)
 
 
 def check_logging_level():

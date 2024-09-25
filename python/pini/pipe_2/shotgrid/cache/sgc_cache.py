@@ -499,9 +499,10 @@ class SGDataCache(object):
             'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
             'sg_status', 'created_at')
         _jobs_data = self._read_data('Project', force=force, fields=_fields)
+        _jobs_data.sort(key=operator.itemgetter('id'))
         assert _jobs_data
 
-        _jobs = []
+        _jobs = {}
         for _result in _jobs_data:
             _LOGGER.debug('RESULT %d %s', _result['id'], _result)
             if not _result['tank_name']:
@@ -515,9 +516,9 @@ class SGDataCache(object):
             _result['path'] = _job_root.path
             _job = pipe.CPJob(_job_root)
             _job = sgc_job.SGCJob(_result, cache=self, job=_job)
-            _jobs.append(_job)
+            _jobs[_job.name] = _job
 
-        return sorted(_jobs)
+        return sorted(_jobs.values())
 
     @pipe_cache_on_obj
     def _read_pub_types(self, force=False):

@@ -32,7 +32,7 @@ _DEFAULT_CFG = {
         'sequence': {'filter': None, 'whitelist': []},
         'dcc': {'allowed': dcc.DCCS},
         'tag': {'default': None, 'nounderscore': True},
-        'ver': {'len': 3},
+        'ver': {'len': 3, 'strict_len': True},
     }}
 
 
@@ -664,50 +664,6 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             _etys = apply_filter(
                 _etys, filter_, key=operator.attrgetter('path'))
         return _etys
-
-    def find_publish(
-            self, asset=None, extn=EMPTY, tag=EMPTY, task=None,
-            ver_n='latest', versionless=None):
-        """Find publish within this job.
-
-        Args:
-            asset (str): filter by asset name (eg. deadHorse)
-            extn (str): filter by extension
-            tag (str): filter by tag
-            task (str): filter by task (eg. rig)
-            ver_n (str): filter by version number (default is latest)
-            versionless (bool): filter by versionless status
-
-        Returns:
-            (CPOutput): publish
-        """
-        _pubs = self.find_publishes(
-            asset=asset, task=task, ver_n=ver_n, tag=tag, extn=extn,
-            versionless=versionless)
-        return single(_pubs, items_label='publishes', verbose=1)
-
-    def find_publishes(
-            self, task=None, entity=None, asset=None, asset_type=None,
-            output_name=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
-            extn=EMPTY, extns=None):
-        """Find asset publishes within this job.
-
-        Args:
-            task (str): filter by task
-            entity (CPEntity): filter by entity
-            asset (str): filter by asset name (eg. deadHorse)
-            asset_type (str): filter by asset type name (eg. char)
-            output_name (str): filter by output name
-            tag (str): filter by tag
-            ver_n (int): filter by version number
-            versionless (bool): filter by versionless status
-            extn (str): filter by publish extension
-            extns (str list): filter by publish extensions
-
-        Returns:
-            (CPOutput list): publishes
-        """
-        raise NotImplementedError
 
     def to_prefix(self):
         """Obtain prefix for this job.

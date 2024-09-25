@@ -32,7 +32,7 @@ class CDJob(object):
     batch_name = None
 
     def __init__(
-            self, name, work, stime=None, priority=50, machine_limit=0,
+            self, name, work=None, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
             dependencies=(), group=None, chunk_size=1, limit_groups=None,
             scene=None):
@@ -88,7 +88,6 @@ class CDJob(object):
 
         assert self.stype
         assert self.name
-        assert self.work
 
         self.info_file = self._to_submission_file(extn='info')
         self.job_file = self._to_submission_file(extn='job')
@@ -235,6 +234,53 @@ class CDJob(object):
             [self], submit=submit, name=name or self.tag)
 
 
+class CDCmdlineJob(CDJob):
+    """Represents a command line job."""
+
+    stype = 'Cmdline'
+    plugin = 'CommandLine'
+
+    def __init__(self, cmds: list, name, stime=None, **kwargs):
+        """Constructor.
+
+        Args:
+            cmds (str list): list of commands
+            name (str): job name
+            stime (float): override job submission time
+        """
+        self.name = name
+        self.stime = stime or time.time()
+
+        self.cmds = cmds
+        self.exe = cmds[0]
+        self.args = cmds[1:]
+        self.sh_file = self._to_submission_file(extn='sh')
+
+        super().__init__(
+            work=self.sh_file, name=name, stime=stime, **kwargs)
+
+    def _build_job_data(self):
+        """Build job data for this submission.
+
+        Returns:
+            (dict): submission job data
+        """
+        _data = {
+            'Executable': self.exe,
+            'Arguments': ' '.join(self.args),
+        }
+        return _data
+
+    def write_submission_files(self):
+        """Write job submission files to disk."""
+
+        # Write tmp py file
+        self.sh_file.write(' '.join(self.cmds), force=True)
+        _LOGGER.info(' - SH FILE %s', self.sh_file.path)
+
+        super().write_submission_files()
+
+
 class CDPyJob(CDJob):
     """Represents a python job to be executed on deadline."""
 
@@ -272,7 +318,7 @@ class CDPyJob(CDJob):
         if edit_py:
             self.py_file.edit()
 
-        super(CDPyJob, self).__init__(
+        super().__init__(
             name=name, stime=stime, comment=comment, priority=priority,
             machine_limit=machine_limit, work=self.py_file,
             error_limit=error_limit, batch_name=batch_name,
@@ -300,4 +346,4 @@ class CDPyJob(CDJob):
         self.py_file.write(self.py, force=True)
         _LOGGER.info(' - PY FILE %s', self.py_file.path)
 
-        super(CDPyJob, self).write_submission_files()
+        super().write_submission_files()

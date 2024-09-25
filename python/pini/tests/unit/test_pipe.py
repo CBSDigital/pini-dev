@@ -410,23 +410,27 @@ class TestDiskPipe(unittest.TestCase):
 
         _shot = testing.TMP_SHOT
         _shot.flush(force=True)
-        _cache = pipe.CACHE
-        _shot_c = _cache.obt_entity(_shot)
+        _shot_c = pipe.CACHE.obt(_shot)
 
         # Test mem caching
         _work_dir = _shot.to_work_dir(task='rig')
         _LOGGER.info('WORK DIR %s', _work_dir)
         _work = _work_dir.to_work()
         _out = _work.to_output('publish', output_type=None)
-        assert not _shot.find_publishes()
+        assert not _work_dir.find_outputs()
+        assert not _shot.find_outputs()
         assert not _shot_c.find_publishes(force=True)
         _out.touch()
-        assert _shot.find_publishes()
+        assert _work_dir.find_outputs()
+        assert not _shot.find_outputs()
         assert not _shot_c.find_publishes()
-        _LOGGER.info('FORCE RECACHE')
-        assert _shot_c.find_publishes(force=True)
+        _LOGGER.info('FORCE RECACHE %s', _shot_c)
+        _pubs = _shot_c.find_publishes(force=True)
+        _LOGGER.info(' - PUBS %s', _pubs)
+        assert _pubs
         _out.delete(force=True)
-        assert not _shot.find_publishes()
+        assert not _work_dir.find_outputs()
+        assert not _shot.find_outputs()
         assert _shot_c.find_publishes()
         assert not _shot_c.find_publishes(force=True)
 
@@ -440,13 +444,13 @@ class TestDiskPipe(unittest.TestCase):
         _LOGGER.info('YML %s', _yml.path)
         flush_caches()
         assert pipe.CACHE.obt_entity(_shot).find_publishes()
-        _pub_c = single(pipe.CACHE.obt_entity(_shot).find_publishes())
-        assert isinstance(_pub_c, cache.CCPOutputFile)
+        _pub_g = pipe.CACHE.obt_entity(_shot).find_publish()
+        assert isinstance(_pub_g, cache.CCPOutputGhost)
         _out.delete(force=True)
         flush_caches()
         assert pipe.CACHE.obt_entity(_shot).find_publishes()
-        _pub_c = single(pipe.CACHE.obt_entity(_shot).find_publishes())
-        assert isinstance(_pub_c, cache.CCPOutputFile)
+        _pub_g = pipe.CACHE.obt_entity(_shot).find_publish()
+        assert isinstance(_pub_g, cache.CCPOutputGhost)
         assert not pipe.CACHE.obt_entity(_shot).find_publishes(force=True)
 
         _shot.delete(force=True)
@@ -493,3 +497,14 @@ class TestCache(unittest.TestCase):
         assert pipe.CACHE.obt_entity(_shot) is _shot_c
         pipe.CACHE.reset()
         assert pipe.CACHE.obt_entity(_shot) is not _shot_c
+
+    def test_output_ghost_obj(self):
+
+        _pub = pipe.CACHE.obt(testing.TEST_JOB).find_publishes()[0]
+        _LOGGER.info(' - PUB %s', _pub)
+        _out = pipe.to_output(_pub.path)
+        _out_c = pipe.CACHE.obt(_out)
+        _out_g = _out_c.to_ghost()
+        assert _out_c == _out_g
+        assert _out_c in [_out_g]
+        assert _out_g in [_out_c]

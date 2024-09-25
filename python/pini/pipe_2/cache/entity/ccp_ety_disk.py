@@ -130,22 +130,49 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
                     'Checking {:d} seq{}', stack_key='RereadSeqDirs'):
                 _seq_dir.find_outputs(force=True)
 
-    def _update_publishes_cache(self):
-        """Rebuild published file cache."""
-        self._read_work_dirs(force=True)
-        self._read_publishes(force=True)
-
     @pipe_cache_to_file
     def _read_publishes(self, force=False):
-        """Read publishes within this entity from disk.
+        """Read all publishes in this entity.
 
         Args:
-            force (bool): force reread from disk
+            force (bool): rebuild disk cache
 
         Returns:
-            (CCPOutput list): publishes
+            (CPOutput list): all publishes
         """
-        return super()._read_publishes()
+        _LOGGER.debug('READ PUBLISHES force=%d %s', force, self)
+
+        _work_dirs = self.find_work_dirs(force=force)
+        _LOGGER.debug(' - FOUND %d WORK DIRS', len(_work_dirs))
+
+        # Search work dirs for outputs
+        _outs = []
+        _streams = {}
+        for _work_dir in _work_dirs:
+            for _out in _work_dir.find_outputs(type_='publish'):
+                _LOGGER.debug(' - CHECK OUT %s', _out)
+                _stream = _out.to_stream()
+                _LOGGER.debug('   - STREAM %s', _stream)
+                _outs.append((_out, _stream))
+                _streams[_stream] = _out
+        _LOGGER.debug(' - FOUND %d WORK DIR OUTPUTS', len(_outs))
+
+        # Apply version numbers
+        _pubs = []
+        for _out, _stream in _outs:
+            _LOGGER.debug(' - TEST PUB %s', _out)
+            if not _out.ver_n:
+                _latest = True
+            else:
+                _latest = _streams[_stream] == _out
+                _LOGGER.debug('   - STREAM %s', _stream)
+            _LOGGER.debug('   - LATEST %d', _latest)
+            _pub = _out.to_ghost()
+            _LOGGER.debug('   - PUB %s', _pub)
+            _pubs.append(_pub)
+        _LOGGER.debug(' - FOUND %d PUBS', len(_pubs))
+
+        return _pubs
 
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.

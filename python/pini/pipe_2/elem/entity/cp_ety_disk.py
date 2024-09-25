@@ -213,19 +213,6 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
 
         return sorted(_outs)
 
-    def _read_publishes(self):
-        """Read all publishes in this entity.
-
-        Returns:
-            (CPOutput list): all publishes
-        """
-        _pubs = []
-        _work_dirs = self.find_work_dirs()
-        for _work_dir in _work_dirs:
-            for _out in _work_dir.find_outputs(type_='publish'):
-                _pubs.append(_out)
-        return _pubs
-
     def _read_work_dirs(self, class_=None):
         """Read work dirs within this entity.
 

@@ -13,6 +13,6 @@ from .work_dir import CCPWorkDir
 from .ccp_work import CCPWork
 from .output import (
     CCPOutputFile, CCPOutputSeq, CCPOutputSeqDir, CCPOutputBase,
-    CCPOutputVideo)
+    CCPOutputVideo, CCPOutputGhost)
 
 from .ccp_utils import pipe_cache_on_obj

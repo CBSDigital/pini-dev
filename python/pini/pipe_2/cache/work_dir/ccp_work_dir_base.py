@@ -71,7 +71,23 @@ class CCPWorkDirBase(CPWorkDir):
             self.entity = self.job.find_entity(self.entity)
         if self not in self.entity.work_dirs:
             self.entity.find_work_dirs(force=True)
-            assert self in self.entity.work_dirs
+
+    def obt_output(self, match, catch=False, force=False):
+        """Obtain output object from within this work dir.
+
+        Args:
+            match (str): match by name/path
+            catch (bool): no error if no matching output found
+            force (bool): force rebuild cache
+
+        Returns:
+            (CCPOutput): output
+        """
+        from pini import pipe
+        assert isinstance(match, pipe.CPOutputBase)
+        _outs = [
+            _out for _out in self.find_outputs(force=force) if _out == match]
+        return single(_outs, catch=catch)
 
     def obt_work(self, match, catch=False):
         """Obtain a work file within this work dir's cache.

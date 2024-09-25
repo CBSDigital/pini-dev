@@ -121,6 +121,9 @@ class CBasicPublish(eh_base.CExportHandler):
         _LOGGER.info('POST PUBLISH %s', work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
 
+        _job_c = work.job
+        _ety_c = work.entity
+
         self._apply_snapshot(work=work)
 
         # Register in shotgrid
@@ -141,12 +144,12 @@ class CBasicPublish(eh_base.CExportHandler):
         # Update cache
         _LOGGER.info(' - UPDATING CACHE')
         if pipe.MASTER == 'disk':
-            _ety_c = work.entity
             if not isinstance(work.entity, cache.CCPEntity):
                 _ety_c = pipe.CACHE.obt_entity(_ety_c)
             _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
             _ety_c.find_publishes(force=True)
-        _work_c = pipe.CACHE.obt_work(work)  # Has been rebuilt
+        pipe.CACHE.obt(work.job).find_publishes(force=True)
+        _work_c = pipe.CACHE.obt(work)  # Has been rebuilt
         _work_c.find_outputs(force=True)
         for _out in outs:
             assert _out in _work_c.outputs

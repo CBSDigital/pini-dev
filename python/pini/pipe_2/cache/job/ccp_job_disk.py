@@ -2,6 +2,7 @@
 
 import logging
 import operator
+import time
 
 from pini.utils import apply_filter
 
@@ -41,18 +42,30 @@ class CCPJobDisk(ccp_job_base.CCPJobBase):
 
         return _assets
 
-    def _update_publishes_cache(self):
-        """Rebuild publishes cache."""
-        from pini import qt
-        for _asset in qt.progress_bar(
-                self.assets, 'Reading {:d} asset{}'):
-            _asset.find_publishes(force=True)
+    def _read_publishes(self, force=False):
+        """Read publishes in this job.
 
-    def obt_work_dir(self, match):
+        Args:
+            force (bool): force rebuild disk cache
+
+        Returns:
+            (CPOutputGhost list): publishes
+        """
+        _LOGGER.debug('READ PUBLISHES')
+        _start = time.time()
+        _pubs = []
+        for _asset in self.find_assets():
+            _pubs += _asset.find_publishes(force=force)
+        _LOGGER.debug('FOUND %s %d PUBLISHES IN %.01fs', self, len(_pubs),
+                      time.time() - _start)
+        return sorted(_pubs)
+
+    def obt_work_dir(self, match, catch=False):
         """Obtain a work dir object within this job.
 
         Args:
             match (CPWorkDir): work dir to match
+            catch (bool): no error if fail to find work dir
 
         Returns:
             (CCPWorkDir): cached work dir

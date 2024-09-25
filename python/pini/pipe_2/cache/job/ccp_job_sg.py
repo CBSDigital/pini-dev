@@ -5,11 +5,13 @@
 import logging
 import operator
 import os
+import time
 
+from pini import qt
 from pini.utils import (
     single, apply_filter, get_method_to_file_cacher, check_heart)
 
-from ..ccp_utils import pipe_cache_result
+from ..ccp_utils import pipe_cache_result, pipe_cache_to_file
 from . import ccp_job_base
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,6 +19,17 @@ _LOGGER = logging.getLogger(__name__)
 
 class CCPJobSG(ccp_job_base.CCPJobBase):
     """Represents a cacheable job on a sg-based pipeline."""
+
+    @property
+    def outputs(self):
+        """Obtain list of outputs in this job.
+
+        NOTE: this is only applicable to shotgrid jobs.
+
+        Returns:
+            (CCPWorkDir tuple): outputs
+        """
+        return tuple(self.find_outputs())
 
     @property
     def work_dirs(self):
@@ -89,38 +102,39 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         _LOGGER.debug('READ SHOTS force=%d', force)
         return super().read_shots(class_=class_ or cache.CCPShot)
 
-    def find_outputs(  # pylint: disable=arguments-differ
-            self, type_=None, content_type=None, force=False, progress=False,
-            **kwargs):
+    def find_outputs(
+            self, type_=None, progress=True, force=False, **kwargs):
         """Find outputs in this job.
+
+        (Only applicable to shotgrid jobs)
 
         Args:
             type_ (str): filter by output type
-            content_type (str): filter by content type (eg. ShadersMa, Render)
-            force (bool): force reread outputs
-            progress (bool): show progress dialog
+            progress (bool): show progress
+            force (bool): force rebuild cache
 
         Returns:
             (CPOutput list): outputs
         """
-        from pini import qt
-        _LOGGER.debug(
-            'FIND OUTPUTS type=%s force=%d progress=%d', type_, force, progress)
+        from pini import pipe
+        _LOGGER.debug('FIND OUTPUTS %s', self)
 
         if force:
             self._read_outputs(force=True, progress=progress)
 
+        _all_outs = self._read_outputs(progress=progress)
         _outs = []
-        _all_outs = super().find_outputs(type_=type_, **kwargs)
-        for _out in qt.progress_bar(
-                _all_outs, 'Checking {:d} output{}', show=progress):
-            if content_type and _out.content_type != content_type:
+        for _out in _all_outs:
+            _LOGGER.debug(' - TESTING %s', _out)
+            if not pipe.passes_filters(_out, type_=type_, **kwargs):
                 continue
             _outs.append(_out)
-        return _outs
+
+        _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
+        return sorted(_outs)
 
     @pipe_cache_result
-    def _read_outputs(self, progress=False, force=False):
+    def _read_outputs(self, progress=True, force=False):
         """Read outputs in this job from shotgrid.
 
         Args:
@@ -202,15 +216,57 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         """
         return map_ or {}
 
-    def _update_publishes_cache(self):
-        """Rebuild publishes cache."""
-        self._read_outputs(force=True)
+    @pipe_cache_to_file
+    def _read_publishes(self, force=False):
+        """Read publishes in this job.
 
-    def obt_work_dir(self, match):
+        Args:
+            force (bool): force rebuild disk cache
+
+        Returns:
+            (CPOutputGhost list): publishes
+        """
+        _LOGGER.info('READING PUBLISHES %s', self)
+        from pini import pipe
+
+        # Find list of ouputs + streams
+        _start = time.time()
+        _streams = {}
+        _to_add = []
+        _outs = self.find_outputs()
+        for _out in qt.progress_bar(
+                _outs, 'Checking {:d} output{}',
+                stack_key='ReadPublishes'):
+            check_heart()
+            if isinstance(_out, (pipe.CPOutputSeq, pipe.CPOutputVideo)):
+                continue
+            if _out.entity.profile != 'asset':
+                continue
+            _LOGGER.debug('OUT %s', _out)
+            _stream = _out.to_stream()
+            _to_add.append((_out, _stream))
+            _streams[_stream] = _out
+        _out_dur = time.time() - _start
+        _LOGGER.info(' - CHECKED %d OUTPUTS IN %.01fs', len(_outs), _out_dur)
+
+        # Build list of ghost publishes
+        _pubs = []
+        for _out, _stream in _to_add:
+            _latest = _streams[_stream] == _out
+            _pub = _out.to_ghost()
+            _LOGGER.debug('   - PUB %s', _pub)
+            _pubs.append(_pub)
+        _pub_dur = time.time()
+        _LOGGER.info(' - FOUND %d PUBS', len(_pubs))
+
+        return _pubs
+
+    def obt_work_dir(self, match, catch=False):
         """Obtain a work dir object within this job.
 
         Args:
             match (CPWorkDir): work dir to match
+            catch (bool): no error if fail to find work dir
 
         Returns:
             (CCPWorkDir): cached work dir
@@ -223,7 +279,7 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
                 if _work_dir == match]
             _result = single(
                 _matches, error='Failed to match {}'.format(match),
-                catch=True)
+                catch=catch)
             return _result
         raise NotImplementedError(match)
 

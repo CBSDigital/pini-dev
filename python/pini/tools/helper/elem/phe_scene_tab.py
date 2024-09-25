@@ -250,6 +250,8 @@ class CLSceneTab(object):
 
     def _redraw__SOutputFormat(self):
 
+        _pane = self.ui.SOutputsPane.current_tab_text()
+
         _select = None
         _outs = self.ui.SOutputTag.selected_data() or []
         _extns = sorted({_out.extn for _out in _outs})
@@ -260,6 +262,17 @@ class CLSceneTab(object):
             _extns.insert(0, 'all')
             _data.insert(0, _outs)
             _select = 'all'
+
+        # Apply default format
+        _fmts_order = []
+        if _pane == 'Asset':
+            _fmts_order = ['ma', 'abc']
+        elif _pane == 'Cache':
+            _fmts_order = ['abc']
+        for _fmt in _fmts_order:
+            if _fmt in _extns:
+                _select = _fmt
+                break
 
         self.ui.SOutputFormat.set_items(
             _extns, data=_data, emit=True, select=_select)

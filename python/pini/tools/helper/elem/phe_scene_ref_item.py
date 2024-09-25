@@ -225,12 +225,11 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _text_y = self.font_size * (1.7 if self.detail else 2.3)
         _font.setBold(True)
         if _out.ver_n:
-            _ver_fmt = 'v{:03d}'
-            _ver_n = _out.ver_n
+            _ver_text = f'v{_out.ver}'
         else:
             _ver_n = self.output.find_latest().ver_n
             _ver_fmt = '* v{:03d}'
-        _ver_text = _ver_fmt.format(_ver_n)
+            _ver_text = _ver_fmt.format(_ver_n)
         _rect = pix.draw_text(
             _ver_text, pos=(_text_x, _text_y),
             col=self.text_col, anchor='R', font=_font)

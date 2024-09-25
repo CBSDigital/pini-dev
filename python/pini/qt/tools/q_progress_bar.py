@@ -1,20 +1,21 @@
 """Tools for managing the progress dialog."""
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,no-member
 
 import copy
 import functools
 import logging
+import operator
+import sys
 import time
 
 from pini.utils import (
     plural, check_heart, to_time_t, str_to_seed, dprint, HOME,
-    SixIterable)
+    SixIterable, basic_repr, apply_filter)
 
 from ..q_mgr import QtWidgets, QtCore
 
-_LOGGER = logging.getLogger('pini.qt')
-_PROGRESS_BARS = []
+_LOGGER = logging.getLogger(__name__)
 _PROGRESS_HEART = HOME.to_file('.progress_heart')
 
 
@@ -30,24 +31,25 @@ def _get_next_pos(stack_key):
     Returns:
         (QPoint): next position
     """
+    _LOGGER.debug(
+        'GET NEXT BAR POS %s %s', stack_key, sys.QT_PROGRESS_BAR_STACK)
 
     # Flush out unused bars
-    for _bar in copy.copy(_PROGRESS_BARS):
-        if (
-                not _bar.isVisible() or
-                _bar.stack_key == stack_key
-        ):
-            _LOGGER.debug('REPLACING EXISTING BAR %s', _bar)
-            _PROGRESS_BARS.remove(_bar)
+    for _bar in copy.copy(sys.QT_PROGRESS_BAR_STACK):
+        if _bar.is_finished() or _bar.stack_key == stack_key:
+            _LOGGER.debug(
+                ' - REMOVING BAR %s finished=%d', _bar, _bar.is_finished())
+            sys.QT_PROGRESS_BAR_STACK.remove(_bar)
             _bar.close()
             _bar.deleteLater()
 
-    if not _PROGRESS_BARS:
-        _LOGGER.debug('NO EXISTING BARS FOUND')
+    if not sys.QT_PROGRESS_BAR_STACK:
+        _LOGGER.debug(' - NO EXISTING BARS FOUND')
         return None
 
-    _pos = _PROGRESS_BARS[-1].pos() + QtCore.QPoint(0, 88)
-    _LOGGER.debug('USING EXISTING BAR POS')
+    _last_bar = sys.QT_PROGRESS_BAR_STACK[-1]
+    _pos = _last_bar.pos() + QtCore.QPoint(0, 88)
+    _LOGGER.debug(' - PLACING BELOW %s: %s', _last_bar, _pos)
     return _pos
 
 
@@ -56,7 +58,7 @@ class _ProgressDialog(QtWidgets.QDialog):
 
     def __init__(
             self, items, title='Processing {:d} item{}', col=None, show=True,
-            pos=None, parent=None, stack_key='progress', show_delay=None,
+            pos=None, parent=None, stack_key='DefaultProgress', show_delay=None,
             plural_=None, raise_stop=True):
         """Constructor.
 
@@ -94,22 +96,17 @@ class _ProgressDialog(QtWidgets.QDialog):
         self.durs = []
         self.info = ''
         self._display_pc = None
+        self._pos = pos
 
         _parent = parent or dcc.get_main_window_ptr()
         _args = [_parent] if _parent else []
-        super(_ProgressDialog, self).__init__(*_args)
+        super().__init__(*_args)
 
         _title = title.format(
             len(self.items), plural(self.items, plural_=plural_))
         self.setWindowTitle(_title)
         self.resize(408, 54)
-
-        if pos:
-            _pos = pos - qt.to_p(self.size())/2
-        else:
-            _pos = _get_next_pos(stack_key=stack_key)
-        if _pos:
-            self.move(_pos)
+        self._apply_pos()
 
         _col = col
         if not _col:
@@ -135,7 +132,17 @@ class _ProgressDialog(QtWidgets.QDialog):
             self._hidden = False
             self.show()
 
-        _PROGRESS_BARS.append(self)
+        sys.QT_PROGRESS_BAR_STACK.append(self)
+
+    def _apply_pos(self):
+        """Apply position."""
+        from pini import qt
+        if self._pos:
+            _pos = self._pos - qt.to_p(self.size())/2
+        else:
+            _pos = _get_next_pos(stack_key=self.stack_key)
+        if _pos:
+            self.move(_pos)
 
     @property
     def cur_pc(self):
@@ -146,26 +153,29 @@ class _ProgressDialog(QtWidgets.QDialog):
         """
         return round(100.0 * self.counter / max(len(self.items), 1))
 
-    def isVisible(self):
-        """Garbage collection safe wrapper for isVisible."""
-        try:
-            return super(_ProgressDialog, self).isVisible()
-        except RuntimeError:
-            return False
-
     def close(self):
         """Garbage collection safe wrapper for close."""
         try:
-            super(_ProgressDialog, self).close()
+            super().close()
         except RuntimeError:
             pass
 
-    def deleteLater(self):
-        """Garbage collection safe wrapper for deleteLater."""
-        try:
-            super(_ProgressDialog, self).deleteLater()
-        except RuntimeError:
-            pass
+    def _finalise(self):
+        """Finalise this dialog."""
+        if self in sys.QT_PROGRESS_BAR_STACK:
+            sys.QT_PROGRESS_BAR_STACK.remove(self)
+
+    def is_finished(self):
+        """Test whether this dialog is finished.
+
+        Returns:
+            (bool): whether finished
+        """
+        if not self.isVisible():
+            if self._hidden:
+                return False
+            return True
+        return False
 
     def print_eta(self):
         """Print expected time remaining."""
@@ -189,13 +199,38 @@ class _ProgressDialog(QtWidgets.QDialog):
         """
         while self.cur_pc <= percent:
             check_heart()
-            self.next(update_ui=False)
+            self.__next__(update_ui=False)  # pylint: disable=unnecessary-dunder-call
         self.update_ui()
+
+    def show(self):
+        """Show this dialog."""
+
+        # Show hidden progress bars above
+        for _bar in sys.QT_PROGRESS_BAR_STACK:
+            if _bar == self:
+                break
+            _bar.show()
+
+        super().show()
 
     def update_ui(self):
         """Update interface."""
         from pini import qt
         qt.get_application().processEvents()
+
+    def deleteLater(self):
+        """Garbage collection safe wrapper for deleteLater."""
+        try:
+            super().deleteLater()
+        except RuntimeError:
+            pass
+
+    def isVisible(self):
+        """Garbage collection safe wrapper for isVisible."""
+        try:
+            return super().isVisible()
+        except RuntimeError:
+            return False
 
     def __iter__(self):
         return self
@@ -211,11 +246,12 @@ class _ProgressDialog(QtWidgets.QDialog):
         if self._hidden and self.show_delay and _dur > self.show_delay:
             self.show()
             self._hidden = False
-        _LOGGER.debug('ITERATING %s %s', self.isVisible(), _dur)
+        _LOGGER.log(9, 'ITERATING %s %s', self.isVisible(), _dur)
         check_heart()
         check_heart(heart=_PROGRESS_HEART)
 
         if not self._hidden and not self.isVisible():
+            self._finalise()
             raise qt.DialogCancelled
 
         # Apply update
@@ -231,6 +267,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             _result = self.items[self.counter-1]
         except IndexError:
             self.close()
+            self._finalise()
             if self.raise_stop:
                 raise StopIteration
             return None
@@ -241,7 +278,24 @@ class _ProgressDialog(QtWidgets.QDialog):
 
         return _result
 
-    next = __next__  # py2 compatibility
+    def __repr__(self):
+        return basic_repr(self, self.stack_key)
+
+
+def close_all_progress_bars(filter_=None):
+    """Close all progress bar dialogs.
+
+    Args:
+        filter_ (str): apply stack_key filter
+    """
+    _bars = list(sys.QT_PROGRESS_BAR_STACK)
+    if filter_:
+        _bars = apply_filter(
+            _bars, filter_, key=operator.attrgetter('stack_key'))
+    while _bars:
+        _bar = _bars.pop()
+        _bar.deleteLater()
+        sys.QT_PROGRESS_BAR_STACK.remove(_bar)
 
 
 @functools.wraps(_ProgressDialog.__init__)
@@ -269,7 +323,7 @@ def progress_bar(items, *args, **kwargs):
 
 def progress_dialog(
         title='Progress Dialog', stack_key='ProgressDialog', col=None,
-        parent=None):
+        show_delay=None, parent=None):
     """Obtain a progress dialog interface.
 
     This is untethered to any data but can manually have its percentage
@@ -279,6 +333,7 @@ def progress_dialog(
         title (str): dialog title
         stack_key (str): override dialog unique identifier
         col (CColor): dialog colour
+        show_delay (float): delay before showing this dialog (in seconds)
         parent (QWidget): parent widget
 
     Returns:
@@ -286,6 +341,6 @@ def progress_dialog(
     """
     _dialog = _ProgressDialog(
         range(100), title=title, stack_key=stack_key, raise_stop=False, col=col,
-        parent=parent)
+        parent=parent, show_delay=show_delay)
     _dialog.set_pc(0)
     return _dialog

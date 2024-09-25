@@ -179,7 +179,7 @@ class SGCJob(sgc_container.SGCContainer):
         raise ValueError(path)
 
     def find_pub_files(
-            self, entity=None, work_dir=None, filter_=None, progress=False,
+            self, entity=None, work_dir=None, filter_=None, progress=True,
             force=False):
         """Search pub file within this job.
 
@@ -232,7 +232,7 @@ class SGCJob(sgc_container.SGCContainer):
         raise ValueError(match, filter_)
 
     def find_shots(
-            self, has_3d=None, whitelist=(), filter_=None, progress=False,
+            self, has_3d=None, whitelist=(), filter_=None, progress=True,
             force=False):
         """Search shots within this job.
 
@@ -284,7 +284,7 @@ class SGCJob(sgc_container.SGCContainer):
 
     def find_tasks(
             self, entity=None, task=None, step=None, department=None,
-            filter_=None, progress=False, force=False):
+            filter_=None, progress=True, force=False):
         """Search tasks within this job.
 
         Args:
@@ -390,7 +390,7 @@ class SGCJob(sgc_container.SGCContainer):
 
     def _read_data(
             self, entity_type, fields, entity_map=None, ver_n=None,
-            use_snapshots=True, progress=False, force=False):
+            use_snapshots=True, progress=True, force=False):
         """Read data from shotgrid.
 
         If the data hasn't been updated since it was last read, the cached
@@ -474,7 +474,8 @@ class SGCJob(sgc_container.SGCContainer):
         for _rng in qt.progress_bar(
                 _ranges,
                 '[SGC] Checking {} {}'.format(self.name, entity_type),
-                stack_key='SGCReadRanges', show=progress, col='Orange'):
+                stack_key='SGCReadRanges', show=progress, col='Orange',
+                show_delay=2):
 
             _LOGGER.log(9, ' - READ RANGE %s', _rng.label)
             _cache_file = sgc_utils.to_cache_file(
@@ -531,8 +532,8 @@ class SGCJob(sgc_container.SGCContainer):
                 _sg_results,
                 '[SGC] Reading {} {} results ({{:d}})'.format(
                     range_.label, entity_type),
-                show=progress, col='Yellow',
-                stack_key='SGCValidateResults'):
+                show=progress, col='Yellow', show_delay=2,
+                stack_key='SGCReadRange'):
 
             check_heart()
             _LOGGER.debug(' - RESULT %s', _result)

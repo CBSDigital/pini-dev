@@ -493,13 +493,14 @@ def save_obj(file_, selection=True, materials=True, force=False):
         exportSelected=True)
 
 
-def save_redshift_proxy(path, selection=True, animation=False):
+def save_redshift_proxy(path, selection=True, animation=False, force=False):
     """Save redshift proxy.
 
     Args:
         path (File|Seq): path to save to
         selection (bool): export selection
         animation (bool): export animation
+        force (bool): overwrite existing without confirmation
 
     Returns:
         (File): path to proxy
@@ -522,7 +523,7 @@ def save_redshift_proxy(path, selection=True, animation=False):
         _export_path = '{}/{}.####.{}'.format(_path.dir, _path.base, _path.extn)
     _LOGGER.info(' - EXPORT PATH %s', _export_path)
 
-    _path.delete(wording='Replace')
+    _path.delete(wording='Replace', force=force)
     _path.test_dir()
     assert not _path.exists()
     assert _path.to_dir().exists()

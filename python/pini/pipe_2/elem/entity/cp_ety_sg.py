@@ -20,16 +20,6 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         _outs = self.job.find_outputs(entity=self)
         return _outs
 
-    def _read_publishes(self):
-        """Read all publishes in this entity.
-
-        Returns:
-            (CPOutput list): all publishes
-        """
-        _pubs = self.job.find_publishes(entity=self)
-        _LOGGER.debug('READ PUBLISHES %s n_pubs=%d', self.name, len(_pubs))
-        return _pubs
-
     def _read_work_dirs(self, class_=None):
         """Read work dirs within this entity.
 

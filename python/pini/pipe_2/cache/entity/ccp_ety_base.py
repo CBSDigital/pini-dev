@@ -95,37 +95,55 @@ class CCPEntityBase(CPEntity):
 
         return _outs
 
-    @functools.wraps(CPEntity.find_publishes)
-    def find_publishes(  # pylint: disable=arguments-differ
-            self, content_type=None, force=False, **kwargs):
+    def find_publish(self, match=None, catch=False, **kwargs):
+        """Find publish within this entity.
+
+        Args:
+            match (str): match by name/path
+            catch (bool): no error if no match found
+
+        Returns:
+            (CPOutputGhost|None): matching publish
+        """
+        _pubs = self.find_publishes(**kwargs)
+        if len(_pubs) == 1:
+            return single(_pubs)
+        if catch:
+            return None
+        _LOGGER.info(' - MATCHED %d PUBS %s', len(_pubs), _pubs[:5])
+        raise ValueError(match or kwargs)
+
+    def find_publishes(self, task=None, force=False, **kwargs):
         """Find publishes within this entity.
 
         Publishes are cached to disk a entity level, so a force flag
         is added here.
 
         Args:
-            content_type (str): apply content type filter (eg. ShadersMa)
+            task (str): apply task filter
             force (bool): force reread from disk
 
         Returns:
-            (CCPOutput list): publishes
+            (CPOutputGhost list): publishes
         """
-
-        # Apply recache
-        if force:
-            self._update_publishes_cache()
-
-        # Apply filters to publishes
+        from pini import pipe
+        _LOGGER.debug('FIND PUBLISHES %s', self)
         _pubs = []
-        for _pub in super().find_publishes(**kwargs):
-            if content_type and _pub.content_type != content_type:
+        for _pub in self._read_publishes(force=force):
+            if not pipe.passes_filters(_pub, task=task, **kwargs):
                 continue
             _pubs.append(_pub)
-
         return _pubs
 
-    def _update_publishes_cache(self):
-        """Rebuild published file cache."""
+    def _read_publishes(self, force=False):
+        """Read all publishes in this entity.
+
+        Args:
+            force (bool): rebuild disk cache
+
+        Returns:
+            (CPOutput list): all publishes
+        """
         raise NotImplementedError
 
     def _update_outputs_cache(self, force=True):
@@ -148,10 +166,11 @@ class CCPEntityBase(CPEntity):
         """
         raise NotImplementedError
 
-    def find_work_dirs(self, force=False, **kwargs):
+    def find_work_dirs(self, task=None, force=False, **kwargs):
         """Find work dirs.
 
         Args:
+            task (str): apply task filter
             force (bool): force reread from disk
 
         Returns:
@@ -159,7 +178,7 @@ class CCPEntityBase(CPEntity):
         """
         if force:
             self._read_work_dirs(force=True)
-        return super().find_work_dirs(**kwargs)
+        return super().find_work_dirs(task=task, **kwargs)
 
     def _read_work_dirs(self, class_=None, force=False):
         """Read all work dirs for this entity.
@@ -219,5 +238,23 @@ class CCPEntityBase(CPEntity):
         Args:
             force (bool): remove elements without confirmation
         """
+        from pini import pipe
+
+        _LOGGER.info('FLUSH %s', self)
+
+        # Remove contents
+        assert self.name == 'tmp'
         super().flush(force=force)
+
+        # Update caches
         self.find_outputs(force=True)
+        if self.profile == pipe.ASSET_PROFILE:
+            self.job.find_publishes(force=True)
+
+        # Check caches
+        _this = pipe.CACHE.obt(self)
+        assert not _this.find_outputs()
+        assert not _this.outputs
+        assert not pipe.CACHE.obt(self.job).find_publishes(entity=_this)
+
+        _LOGGER.info(' - FLUSH COMPLETE %s', self)

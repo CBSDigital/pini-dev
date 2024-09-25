@@ -115,15 +115,18 @@ def is_active():
         return False
 
 
-def obt_helper():
+def obt_helper(reset_cache=False):
     """Obtaion helper dialog, launching if needed.
+
+    Args:
+        reset_cache (bool): reset cache on launch
 
     Returns:
         (PiniHelper): helper instance
     """
     from pini.tools import helper
     if not helper.is_active():
-        helper.launch()
+        helper.launch(reset_cache=reset_cache)
     return helper.DIALOG
 
 

@@ -404,7 +404,7 @@ class CExportHandler(object):
         elif self.ui:
             _version_up = self.ui.VersionUp.isChecked()
         else:
-            raise RuntimeError(version_up)
+            _version_up = False
         if _version_up:
             pipe.version_up()
 

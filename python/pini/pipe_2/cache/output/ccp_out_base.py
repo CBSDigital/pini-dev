@@ -5,6 +5,7 @@ import logging
 from pini import pipe
 from pini.utils import single, Seq, is_pascal
 
+from . import ccp_out_ghost
 from ..ccp_utils import pipe_cache_on_obj
 from ... import elem
 
@@ -168,11 +169,12 @@ class CCPOutputBase(elem.CPOutputBase):
             for _task in ['model', 'rig']:
                 if _task in (self.task, self.pini_task):
                     continue
-                _pub = self.entity.find_publish(
+                _pub_g = self.entity.find_publish(
                     ver_n='latest', tag=self.tag, versionless=False,
                     task=_task, catch=True)
-                _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub)
-                if _pub:
+                _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub_g)
+                if _pub_g:
+                    _pub = pipe.CACHE.obt(_pub_g)
                     _reps.append(_pub)
 
         # Add ass.gz for model refs
@@ -199,6 +201,34 @@ class CCPOutputBase(elem.CPOutputBase):
                 _reps.append(_shds)
 
         return _reps
+
+    def set_latest(self, latest: bool):
+        """Set whether this output is the latest in its version stream.
+
+        Args:
+            latest (bool): whether this is latest version
+        """
+        self._latest = latest
+
+    def to_ghost(self):
+        """Obtain ghost representation of this output for caching.
+
+        The ghost object contains all output metadata but has no hooks
+        to allow interaction with the pipeline.
+
+        Returns:
+            (CCPOutputGhost): ghost output for caching
+        """
+        # pylint: disable=no-member
+        assert self._latest is not None
+        return ccp_out_ghost.CCPOutputGhost(
+            self.path, latest=self._latest, mtime=self.mtime,
+            template=self.template.source.pattern, type_=self.type_,
+            task=self.task, pini_task=self.pini_task, ver_n=self.ver_n,
+            step=self.step, output_name=self.output_name, shot=self.shot,
+            sequence=self.sequence, asset=self.asset,
+            asset_type=self.asset_type, content_type=self.content_type,
+            job=self.job.name, output_type=self.output_type, tag=self.tag)
 
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.

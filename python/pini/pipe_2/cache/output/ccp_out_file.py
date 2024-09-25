@@ -99,7 +99,7 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
             tag (str): force tag to attach
 
         Returns:
-            (CPOutput): matching lookdev
+            (CPOutputFile): matching lookdev
         """
         from pini import pipe
         _LOGGER.debug('FIND LOOKDEV %s', self)
@@ -149,13 +149,15 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
         _LOGGER.debug(' - APPLY TAG FILTER %s %s', _tag, _tags)
         _lookdevs = [_lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
         _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
+
+        # Return most recent if multiple
         if len(_lookdevs) == 1:
-            return single(_lookdevs)
+            _ld_pub = single(_lookdevs)
+        else:
+            _LOGGER.debug(' - APPLYING DATE SORT')
+            _lookdevs.sort(key=operator.methodcaller('mtime'))
+            _ld_pub = _lookdevs[-1]
+            _LOGGER.debug(' - RECENT %s', _ld_pub)
+        _ld = pipe.CACHE.obt(_ld_pub)
 
-        # Return most recent
-        _LOGGER.debug(' - APPLYING DATE SORT')
-        _lookdevs.sort(key=operator.methodcaller('mtime'))
-        _recent = _lookdevs[-1]
-        _LOGGER.debug(' - RECENT %s', _recent)
-
-        return _recent
+        return _ld

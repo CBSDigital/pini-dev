@@ -224,12 +224,12 @@ class CCPWork(CPWork):
 
         # Check whether entity + work_dir need updating
         assert isinstance(self.work_dir, cache.CCPWorkDir)
-        _new_entity = not self.entity.exists()
-        _new_work_dir = not self.work_dir.exists()
+        _new_ety = self.entity not in self.job.entities
+        _new_work_dir = self.work_dir not in self.entity.work_dirs
         _LOGGER.debug('SAVE new_entity=%d new_work_dir=%d %s',
-                      _new_entity, _new_work_dir, self)
-        _LOGGER.debug(' - ENTITY %s', self.entity)
-        _LOGGER.debug(' - WORK DIR %s', self.work_dir)
+                      _new_ety, _new_work_dir, self)
+        _LOGGER.debug(' - ENTITY new=%d %s', _new_ety, self.entity)
+        _LOGGER.debug(' - WORK DIR new=%d %s', _new_work_dir, self.work_dir)
 
         _bkp = super().save(**kwargs)
         self._exists = True
@@ -238,7 +238,7 @@ class CCPWork(CPWork):
         self._read_metadata(force=True)
 
         # Update entity + work dir
-        if _new_entity:
+        if _new_ety:
             self.entity = self.job.obt_entity(self.entity)
             _LOGGER.debug(
                 ' - UPDATED ENTITY %s %s', self.entity, nice_id(self.entity))
@@ -254,7 +254,9 @@ class CCPWork(CPWork):
 
         # Update cache on work dir
         assert isinstance(self.work_dir, cache.CCPWorkDir)
-        self.work_dir.find_works(force=True)
+        _works = self.work_dir.find_works(force=True)
+        _LOGGER.debug(' - WORKS %d %s', len(_works), _works)
+        assert self in _works
         _this_work = self.work_dir.obt_work(self)
         _LOGGER.debug(' - THIS WORK %s', _this_work)
         _LOGGER.debug(' - CUR WORK %s', pipe.CACHE.cur_work)

@@ -8,9 +8,13 @@ import lucidity
 import six
 
 from pini.utils import (
-    passes_filter, abs_path, single, safe_zip, norm_path, get_user)
+    passes_filter, abs_path, single, safe_zip, norm_path, get_user, EMPTY)
 
 _LOGGER = logging.getLogger(__name__)
+
+DEFAULT_TAG = os.environ.get('PINI_PIPE_DEFAULT_TAG')
+ASSET_PROFILE = 'asset'
+SHOT_PROFILE = 'shot'
 
 EXTN_TO_DCC = {
     'blend': 'blender',
@@ -246,6 +250,76 @@ def output_clip_sort(output):
     return output.output_name not in _priority_lyrs, output.path
 
 
+def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
+        obj, type_=None, entity=None, asset=None, asset_type=None,
+        output_name=None, output_type=EMPTY, content_type=None,
+        task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
+        extn=EMPTY, extns=None):
+    """Check whether the given object passes pipeline filters.
+
+    Args:
+        obj (CPOutput|any): pipeline object being tested
+        type_ (str): match type (eg. cache, shot, render)
+        entity (CPEntity): match entity
+        asset (str): match asset name
+        asset_type (str): match asset type
+        output_name (str): match output name
+        output_type (str):  match output type
+        content_type (str): filter by content type
+        task (str): match task (or pini task)
+        tag (str): match tag
+        ver_n (int|str): match version number
+            (use "latest" to match latest version)
+        versionless (bool): match by versionless status
+        extn (str): match by extension
+        extns (str list): match by extension list
+
+    Returns:
+        (bool): whether object passed filters
+    """
+    from pini import pipe
+
+    # Apply entity level filters
+    assert asset is None or isinstance(asset, six.string_types)
+    if asset and obj.asset != asset:
+        return False
+    if asset_type and obj.asset_type != asset_type:
+        return False
+    assert entity is None or isinstance(entity, pipe.CPEntity)
+    if entity and obj.entity != entity:
+        return False
+
+    if type_ and obj.type_ != type_:
+        return False
+
+    # Apply token filters
+    if task and task not in (obj.task, obj.pini_task):
+        return False
+    if tag is not EMPTY and obj.tag != tag:
+        return False
+    if output_type is not EMPTY and obj.output_type != output_type:
+        return False
+    if output_name and obj.output_name != output_name:
+        return False
+    if content_type and obj.content_type != content_type:
+        return False
+    if extn is not EMPTY and obj.extn != extn:
+        return False
+    if extns and obj.extn not in extns:
+        return False
+    if versionless is not None and bool(obj.ver_n) == versionless:
+        return False
+
+    # Could be expensive so run last
+    if ver_n is not EMPTY:
+        if ver_n == 'latest':
+            return obj.latest
+        if obj.ver_n != ver_n:
+            return False
+
+    return True
+
+
 def tag_sort(tag):
     """Sort tags with None as first to avoid py3 sorting error.
 
@@ -256,7 +330,7 @@ def tag_sort(tag):
         (str): tag sort key
     """
     _default_tags = {
-        os.environ.get('PINI_PIPE_DEFAULT_TAG'), 'default', 'main', None}
+        DEFAULT_TAG, 'default', 'main', None}
     return tag not in _default_tags, (tag or '').lower()
 
 
@@ -391,8 +465,9 @@ def validate_token(value, token, job):
 
     # Apply length filter
     _len = _cfg.get('len')
+    _strict_len = _cfg.get('strict_len')
     _LOGGER.debug(' - LEN %s', _len)
-    if _len:
+    if _strict_len and _len:
         _lens = _len if isinstance(_len, list) else [_len]
         if len(value) not in _lens:
             raise ValueError('Token "{}" as "{}" fails len'.format(

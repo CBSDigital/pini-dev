@@ -28,7 +28,8 @@ from .q_utils import (
 
 from .tools import (
     file_browser, input_dialog, raise_dialog, ok_cancel, yes_no_cancel,
-    notify, progress_bar, progress_dialog, warning, multi_select)
+    notify, progress_bar, progress_dialog, warning, multi_select,
+    close_all_progress_bars)
 
 from .graph import (
     CGraphSpace, CGraphWindow, CGBasicElem, CGPixmapElem, CGMoveElem,
@@ -40,3 +41,5 @@ if dcc.NAME == 'maya':
 # Set up dialog stack for tracking interfaces
 if not hasattr(sys, 'QT_DIALOG_STACK'):
     sys.QT_DIALOG_STACK = {}
+if not hasattr(sys, 'QT_PROGRESS_BAR_STACK'):
+    sys.QT_PROGRESS_BAR_STACK = []

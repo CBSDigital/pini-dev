@@ -29,7 +29,8 @@ from .elem import (
 from .cp_template import CPTemplate, glob_templates, glob_template
 from .cp_utils import (
     validate_token, admin_mode, is_valid_token, task_sort, cur_user,
-    EXTN_TO_DCC, validate_tokens, map_path, tag_sort, output_clip_sort)
+    EXTN_TO_DCC, validate_tokens, map_path, tag_sort, output_clip_sort,
+    passes_filters, DEFAULT_TAG, ASSET_PROFILE, SHOT_PROFILE)
 
 from .cp_tools import version_up
 

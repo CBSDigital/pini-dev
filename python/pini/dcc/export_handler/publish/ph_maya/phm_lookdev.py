@@ -2,7 +2,6 @@
 
 import copy
 import logging
-import os
 
 from maya import cmds
 
@@ -20,24 +19,10 @@ from . import phm_base
 _LOGGER = logging.getLogger(__name__)
 
 
-def _to_name():
-    """Build name for lookdev publish handler.
-
-    eg. Maya Lookdev Publish
-        Maya Surface Publish
-
-    Returns:
-        (str): handler name
-    """
-    _task = os.environ.get('PINI_PIPE_LOOKDEV_TASK', 'lookdev')
-    _name = {'surf': 'surface'}.get(_task, _task)
-    return 'Maya {} Publish'.format(_name.capitalize())
-
-
 class CMayaLookdevPublish(phm_base.CMayaBasePublish):
     """Manages a maya lookdev publish."""
 
-    NAME = _to_name()
+    NAME = 'Maya Lookdev Publish'
     LABEL = '\n'.join([
         ' - Builds lookdev files for abc attach',
         ' - Shaders are stored in maya file and attached using yml',
@@ -221,7 +206,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
 
         return _vrm_ma
 
-    def _handle_export_rs_pxy(self, work, metadata,  force):
+    def _handle_export_rs_pxy(self, work, metadata, force):
         """Handle export redshift proxy file.
 
         Args:
@@ -257,7 +242,8 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
                 raise RuntimeError('No geo found')
             cmds.select(_select)
 
-            save_redshift_proxy(_rs_pxy, selection=True, animation=_anim)
+            save_redshift_proxy(
+                _rs_pxy, selection=True, animation=_anim, force=force)
             _metadata = copy.deepcopy(metadata)
             _metadata['animated'] = _anim
             _rs_pxy.set_metadata(_metadata)

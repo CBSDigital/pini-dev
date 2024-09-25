@@ -1,5 +1,7 @@
 """Tools for managing the base class for all outputs."""
 
+# pylint: disable=too-many-instance-attributes,too-many-public-methods
+
 import copy
 import logging
 
@@ -19,7 +21,7 @@ OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
 OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
 
 
-class CPOutputBase(object):  # pylint: disable=too-many-instance-attributes
+class CPOutputBase(object):
     """Base class for any output.
 
     This provides features shared between File outputs and Seq outputs.
@@ -483,6 +485,14 @@ class CPOutputBase(object):  # pylint: disable=too-many-instance-attributes
             raise ValueError(mode)
         self.metadata_yml.write_yml(_data, force=True)
 
+    def to_file(self, **kwargs):
+        """Map this output to a file with the same attributes.
+
+        Returns:
+            (File): file
+        """
+        raise NotImplementedError
+
     def to_output(self, template=None, **kwargs):
         """Map to a new output object overriding the given parameters.
 
@@ -523,13 +533,20 @@ class CPOutputBase(object):  # pylint: disable=too-many-instance-attributes
         _out = pipe.to_output(_path)
         return _out
 
-    def to_file(self, **kwargs):
-        """Map this output to a file with the same attributes.
+    def to_stream(self):
+        """Obtain path to stream.
+
+        This is the path to version zero on this output's stream.
+
+        eg. test_blah_v010 -> test_blah_v000
 
         Returns:
-            (File): file
+            (str): path to stream version zero
         """
-        raise NotImplementedError
+        _data = copy.copy(self.data)
+        if 'ver' in _data:
+            _data['ver'] = '0'*len(_data['ver'])
+        return self.template.format(_data)
 
     def to_work(self, dcc_=None, user=None, tag=None, extn=EMPTY, catch=True):
         """Map this output to a work file.

@@ -338,7 +338,7 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
 
     def delete(self):
         """Delete this interface."""
-        _LOGGER.info('DELETE')
+        _LOGGER.debug('DELETE')
         self.save_settings()
         self.deleteLater()
 
@@ -378,7 +378,7 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
             'y': self.pos().y(),
             'width': self.width(),
         }
-        _LOGGER.info(' - READ SETTINGS y=%d', _data['geometry']['y'])
+        _LOGGER.debug(' - READ SETTINGS y=%d', _data['geometry']['y'])
         return _data
 
     @qt.safe_timer_event
