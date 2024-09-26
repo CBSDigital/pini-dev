@@ -1,3 +1,27 @@
+## [5.1.0] - Thu 2024-09-26 13:43
+### Summary
+ - Pini Helper:
+    - maya deadline submit use render globals step size (eehemann),
+    - maya deadline submit better error on mayaSoftware renderer selected (eehemann),
+ - Sanity Check:
+    - check render globals checks image format exr (eehemann),
+    - check render globals redshift checks multi part exr (eehemann),
+### Updated
+ - pini.utils.ints_to_str added handling for different step sizes,
+ - pini.dcc.MayaDCC.t_frame in RenderGlobals mode use step size,
+ - pini.pipe.CACHE.CCPJob to_col/to_icon added,
+ - pini.qt.CListViewPixmapItem added margin/draw_pixmap_func args,
+ - pini.qt.CListWidget allow select as set + apply text/data selection,
+ - pini.qt.CSetting.apply_to_ui added type_filter arg,
+ - pini.qt.CUiBase bugfix not restoring QSplitter settings,
+ - pini.farm.submit_maya_render better error on bad renderer,
+ - pini.tools.sanity_check.CheckRenderGlobals apply image format check in vray/redshift,
+ - pini.tools.sanity_check.CheckRenderGlobals in redshift check multi part exrs,
+ - pini.tools.helper export/render save frames setting in scene,
+ - pini.tools.helper export/render accomodate step sizes other than 1,
+ - maya_pini.utils set_render_extn added redshift handling,
+
+
 ## [5.0.0] - Wed 2024-09-25 08:06
 ### Summary
  - Pini Helper:

@@ -187,25 +187,35 @@ def ints_to_str(ints):
         (str): readable string
     """
     _LOGGER.debug('STR TO INTS %s', ints)
-    _str = ''
-    for _idx, _int in enumerate(ints):
-        _last = _idx == len(ints) - 1
-        _LOGGER.debug(' - ADDING idx=%d idx=%d last=%d str=%s',
-                      _idx, _int, _last, _str)
-        if not _idx:
-            _str += str(_int)
-        elif ints[_idx-1] != _int-1:
-            _str += ',{}'.format(_int)
-        elif not _last and ints[_idx-1] == _int-1 and ints[_idx+1] == _int+1:
-            pass
-        else:
-            _str += '-{}'.format(_int)
-        # elif _last:
-        #     _str += str(_int)
-        # if not _str.endswith('-'):
-        #     _str += '-'
-    # _str = _str.rstrip('-')
-        _LOGGER.debug('   - STR %s', _str)
+
+    # Determine step size
+    _steps = {ints[_idx+1] - ints[_idx] for _idx in range(len(ints)-1)}
+    _step = single(_steps, catch=True)
+    _LOGGER.debug(' - STEPS %s', _steps)
+
+    if _step:
+        _str = f'{min(ints):d}-{max(ints):d}'
+        if _step != 1:
+            _str += f'x{_step:d}'
+
+    else:
+        _str = ''
+        for _idx, _int in enumerate(ints):
+            _last = _idx == len(ints) - 1
+            _LOGGER.debug(' - ADDING idx=%d idx=%d last=%d str=%s',
+                          _idx, _int, _last, _str)
+            if not _idx:
+                _str += str(_int)
+            elif ints[_idx-1] != _int-1:
+                _str += ',{}'.format(_int)
+            elif (  # Range use hypen
+                    not _last and
+                    ints[_idx-1] == _int-1 and
+                    ints[_idx+1] == _int+1):
+                pass
+            else:
+                _str += '-{}'.format(_int)
+            _LOGGER.debug('   - STR %s', _str)
     _LOGGER.debug('STR %s', _str)
     return _str
 

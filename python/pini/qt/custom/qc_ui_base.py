@@ -82,9 +82,11 @@ class CUiBase(object):
 
         # Initiate interface
         if self.store_settings:
-            self.load_settings()
+            self.load_settings(type_filter='-QSplitter')
         if not modal and show:
             self.show()
+        if self.store_settings:
+            self.load_settings(type_filter='QSplitter')
         if title:
             self.setWindowTitle(title)
 
@@ -476,11 +478,12 @@ class CUiBase(object):
         """
         self.settings.apply_to_widget(widget)
 
-    def load_settings(self, geometry=True):
+    def load_settings(self, geometry=True, type_filter=None):
         """Load interface settings.
 
         Args:
             geometry (bool): load window position/size
+            type_filter (str): apply widget type name filter
         """
         _LOGGER.debug('LOAD SETTINGS %s', self.settings.fileName())
 
@@ -495,7 +498,7 @@ class CUiBase(object):
                 _LOGGER.debug(' - APPLYING SIZE %s', _size)
                 self.resize(_size)
 
-        self.settings.apply_to_ui(self.ui)
+        self.settings.apply_to_ui(self.ui, type_filter=type_filter)
 
     def save_settings(self, filter_=None, pos=None):
         """Save settings to disk.

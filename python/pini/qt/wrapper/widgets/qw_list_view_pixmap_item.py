@@ -20,7 +20,9 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
 
     _font = None
 
-    def __init__(self, list_view, text=None, col=None, height=25, data=None):
+    def __init__(
+            self, list_view, text=None, col=None, height=25, data=None,
+            margin=4, draw_pixmap_func=None):
         """Constructor.
 
         Args:
@@ -29,11 +31,14 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
             col (QColor): base colour
             height (int): item height
             data (any): store item data
+            margin (int): margin around image in pixels
+            draw_pixmap_func (fn): override pixmap draw function
         """
         from pini import qt
 
         _widget = qw_pixmap_label.CPixmapLabel(
-            text=text, draw_pixmap_func=self.draw_pixmap)
+            text=text, margin=margin,
+            draw_pixmap_func=draw_pixmap_func or self.draw_pixmap)
         self.text = text
         self.col = col or random.choice(qt.PASTEL_COLS)
 

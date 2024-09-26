@@ -8,7 +8,8 @@ import logging
 from pini import qt, pipe, icons, dcc
 from pini.qt import QtWidgets
 from pini.tools import usage, error
-from pini.utils import single, str_to_ints, passes_filter, wrap_fn
+from pini.utils import (
+    single, str_to_ints, passes_filter, wrap_fn, ints_to_str)
 
 from . import phe_output_item
 
@@ -25,6 +26,7 @@ class CLExportTab(object):
         _LOGGER.debug('INIT UI')
 
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
+        self.ui.ERenderFrames.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
 
         # Disable tabs if no handlers found
         for _tab in ['Publish', 'Blast', 'Render']:
@@ -146,10 +148,7 @@ class CLExportTab(object):
         _text = '  '
         if _mode != 'Manual':
             _visible = True
-            if len(_frames) == 1:
-                _text += str(single(_frames))
-            else:
-                _text += '{:d}-{:d}'.format(_frames[0], _frames[-1])
+            _text = ' '+ints_to_str(_frames)
         else:
             _visible = False
         self.ui.ERenderFramesLabel.setVisible(_visible)

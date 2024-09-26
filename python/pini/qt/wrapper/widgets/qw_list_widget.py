@@ -253,12 +253,15 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                     _sel_idx = _idx
                 elif isinstance(select, six.string_types) and _text == select:
                     _sel_idx = _idx
-                elif isinstance(select, list) and _data and _data in select:
+                elif isinstance(select, (list, set)) and (
+                        (_data and _data in select) or
+                        _text in select):
                     _sel_idxs.append(_idx)
             elif _cur_text and _text == _cur_text:
                 _sel_idx = _idx
 
         # Apply selection
+        _LOGGER.debug(' - APPLY SEL %s', _sel_idxs)
         if _sel_idxs:
             self.select_rows(_sel_idxs)
         elif items and select is not EMPTY:

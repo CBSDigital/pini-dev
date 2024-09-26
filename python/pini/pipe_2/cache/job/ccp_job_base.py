@@ -8,7 +8,8 @@ import time
 
 import six
 
-from pini.utils import single, cache_method_to_file
+from pini import icons
+from pini.utils import single, cache_method_to_file, str_to_seed
 
 from ..ccp_utils import pipe_cache_result
 from ...elem import CPJob, CPEntity
@@ -365,6 +366,43 @@ class CCPJobBase(CPJob):
         from ... import cache
         return super().to_shot(
             sequence=sequence, shot=shot, class_=class_ or cache.CCPShot)
+
+    def to_col(self):
+        """Obtain colour for this job.
+
+        Returns:
+            (QColor): job colour
+        """
+        from pini import qt
+        _rand = str_to_seed(self.name)
+        if self.settings['col']:
+            _col = self.settings['col']
+        else:
+            _col = _rand.choice(qt.BOLD_COLS)
+            _col = qt.CColor(_col)
+            _col = _col.whiten(0.2)
+        return _col
+
+    def to_icon(self):
+        """Obtain icon for this job.
+
+        Returns:
+            (str): path to icon
+        """
+        from pini import testing
+        _rand = str_to_seed(self.name)
+
+        # Add icon
+        if self.settings['icon']:
+            _icon = icons.find(self.settings['icon'])
+        elif self == testing.TEST_JOB:
+            _icon = icons.find('Alembic')
+        elif 'Library' in self.name:
+            _icon = icons.find('Books')
+        else:
+            _icon = _rand.choice(icons.FRUIT)
+
+        return _icon
 
     def create_asset_type(self, *args, **kwargs):
         """Create a new asset type in this job.

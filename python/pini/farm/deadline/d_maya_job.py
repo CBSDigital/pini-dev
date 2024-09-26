@@ -343,7 +343,9 @@ def _determine_img_prefix(work=None):
     Returns:
         (str): render image prefix
     """
+    from pini.tools import error
     _LOGGER.debug('DETERMINE IMAGE PREFIX')
+
     _work = work or pipe.cur_work()
     _LOGGER.debug(' - WORK %s', _work.path)
     _imgs = cmds.workspace(fileRuleEntry='images')
@@ -358,7 +360,8 @@ def _determine_img_prefix(work=None):
     elif _ren == 'redshift':
         _token = '<Layer>'
     else:
-        raise ValueError(_ren)
+        raise error.HandledError(
+            f'No submitter has be implmented for {_ren} renderer')
 
     _out = _work.to_output('render', output_name='TOKEN')
     _out_path = _out.path.replace('TOKEN', _token)

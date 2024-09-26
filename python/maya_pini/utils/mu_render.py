@@ -1,5 +1,6 @@
 """Utilities for rendering."""
 
+import collections
 import logging
 import time
 
@@ -9,6 +10,7 @@ from pini import icons
 from pini.utils import File, single, find_exe, system, check_heart
 
 _LOGGER = logging.getLogger(__name__)
+_REN_FMTS_MAP = {}
 
 
 def _apply_globals_settings(path, col_mgt=None, animation=False):
@@ -296,6 +298,56 @@ def render(
         seq.view()
 
 
+def _obt_image_fmts_map():
+    """Obtain image formats map for the current renderer.
+
+    This applies all available int values to the image format attribute
+    and tests what the image format extension is after it's applied.
+
+    Returns:
+        (dict): map of index to format name
+    """
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren not in _REN_FMTS_MAP:
+        _fmts = collections.defaultdict(list)
+        if _ren == 'mayaSoftware':
+            _lle = cmds.attributeQuery(
+                'imageFormat', node='defaultRenderGlobals',
+                localizedListEnum=True)
+            _idxs = [int(_item.rsplit('=', 1)[1]) for _item in _lle]
+            for _idx in _idxs:
+                cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
+                _extn = to_render_extn()
+                _LOGGER.debug(' - EXTN %d %s', _idx, _extn)
+                _fmts[_extn].append(_idx)
+        elif _ren == 'redshift':
+            _val = cmds.getAttr('redshiftOptions.imageFormat')
+            for _idx in range(10):
+                _apply_rs_fmt_idx(_idx)
+                _extn = to_render_extn()
+                _LOGGER.info(' - IDX %d %s', _idx, _extn)
+                if not _extn or _extn in _fmts:
+                    break
+                _fmts[_extn].append(_idx)
+            cmds.setAttr('redshiftOptions.imageFormat', _val)
+            mel.eval('redshiftImageFormatChanged')
+        else:
+            raise ValueError(_ren)
+        _fmts = dict(_fmts)
+        _REN_FMTS_MAP[_ren] = _fmts
+    return _REN_FMTS_MAP[_ren]
+
+
+def _apply_rs_fmt_idx(idx):
+    """Apply a redshift image format index update.
+
+    Args:
+        idx (int): index to apply
+    """
+    cmds.setAttr('redshiftOptions.imageFormat', idx)
+    mel.eval('redshiftImageFormatChanged')
+
+
 def set_render_extn(extn):
     """Set render format for the current renderer.
 
@@ -305,8 +357,18 @@ def set_render_extn(extn):
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
     if _ren == 'vray':
         cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
-        return
-    raise NotImplementedError(_ren)
+    elif _ren == 'mayaSoftware':
+        _map = _obt_image_fmts_map()
+        _idx = single(_map[extn])
+        cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
+        _LOGGER.info(' - SET defaultRenderGlobals.imageFormat %s', _idx)
+    elif _ren == 'redshift':
+        _map = _obt_image_fmts_map()
+        _idx = single(_map[extn])
+        _apply_rs_fmt_idx(_idx)
+    else:
+        raise NotImplementedError(_ren)
+    assert to_render_extn() == extn
 
 
 def to_render_extn():

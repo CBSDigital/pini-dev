@@ -4,6 +4,7 @@
 
 import inspect
 import logging
+import operator
 import os
 import time
 
@@ -11,7 +12,8 @@ import six
 
 from pini import pipe, dcc
 from pini.utils import (
-    passes_filter, File, PyFile, cache_result, abs_path, Dir, single)
+    passes_filter, File, PyFile, cache_result, abs_path, Dir, single,
+    apply_filter)
 
 from . import sc_check
 
@@ -61,7 +63,10 @@ def find_checks(  # pylint: disable=too-many-branches
     _LOGGER.debug('FIND CHECKS task=%s work=%s', _task, _work)
 
     # Filter checks based on work
-    _LOGGER.debug('FILTERING %d CHECKS', len(_all_checks))
+    if filter_:  # Apply basic to help debugging
+        _all_checks = apply_filter(
+            _all_checks, filter_, key=operator.attrgetter('name'))
+    _LOGGER.debug(' - FILTERING %d CHECKS', len(_all_checks))
     _checks = []
     for _check in _all_checks:
 
@@ -75,10 +80,6 @@ def find_checks(  # pylint: disable=too-many-branches
         # Apply dev filter
         if not dev and _check.dev_only:
             _LOGGER.debug('   - DEV FILTER REJECTED')
-            continue
-
-        if not passes_filter(_check.name, filter_):
-            _LOGGER.debug('   - FILTER REJECTED %s', filter_)
             continue
 
         # Apply dcc filter

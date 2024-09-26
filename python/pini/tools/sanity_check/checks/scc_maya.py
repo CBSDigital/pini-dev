@@ -15,7 +15,8 @@ from pini.utils import (
     abs_path, Dir, is_camel, to_camel)
 
 from maya_pini import ref, open_maya as pom, m_pipe
-from maya_pini.utils import DEFAULT_NODES, to_clean, to_long, to_node
+from maya_pini.utils import (
+    DEFAULT_NODES, to_clean, to_long, to_node, to_render_extn, set_render_extn)
 
 from ..core import SCFail, SCMayaCheck
 
@@ -877,41 +878,47 @@ class CheckRenderGlobals(SCMayaCheck):
     def run(self):
         """Run this check."""
 
+        # Check render format
+        _fmt = to_render_extn()
+        if _fmt != 'exr':
+            _fix = wrap_fn(set_render_extn, 'exr')
+            _msg = f'Image format is not "exr" (set to "{_fmt}")'
+            self.add_fail(_msg, fix=_fix)
+
+        _to_check = []
+
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-
         if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
-
             if not cmds.objExists('defaultArnoldDriver'):
                 _msg = (
                     'Missing defaultArnoldDriver - try opening render globals')
                 self.add_fail(_msg)
-                return
+            else:
+                _to_check += [
+                    ('defaultArnoldDriver.mergeAOVs', True),
+                    ('defaultArnoldDriver.exrTiled', False),
+                    ('defaultArnoldDriver.halfPrecision', True)]
 
-            # Check image format
-            _plug = pom.CPlug('defaultArnoldDriver.aiTranslator')
-            _cur_fmt = _plug.get_val()
-            _task = pipe.cur_task(fmt='pini')
-            _req_fmt = {'lighting': 'exr',
-                        'model': 'png',
-                        'lookdev': 'png'}[_task]
-            if _cur_fmt != _req_fmt:
-                _fix = wrap_fn(_plug.set_val, _req_fmt)
-                _msg = 'Image format is not {} (set to {})'.format(
-                    _req_fmt, _cur_fmt)
-                self.add_fail(_msg, fix=_fix, node=_plug.node)
+        elif _ren == 'redshift':
+            _to_check += [
+                ('redshiftOptions.exrMultipart', True)]
 
-            # Check arnold settings
-            for _attr, _val in [
-                    ('mergeAOVs', True),
-                    ('exrTiled', False),
-                    ('halfPrecision', True)
-            ]:
-                _plug = pom.CNode('defaultArnoldDriver').plug[_attr]
-                if _plug.get_val() == _val:
-                    continue
-                _msg = '{} is not set to {}'.format(_plug, _val)
-                _fix = wrap_fn(_plug.set_val, _val)
-                self.add_fail(_msg, fix=_fix, node=_plug.node)
+        for _attr, _val in _to_check:
+            self._check_setting(_attr, _val)
+
+    def _check_setting(self, attr, val):
+        """Check a setting has the given value.
+
+        Args:
+            attr (str): attribute to check
+            val (any): expected value
+        """
+        _plug = pom.CPlug(attr)
+        if _plug.get_val() == val:
+            return
+        _msg = f'Attribute "{_plug}" is not set to "{val}"'
+        _fix = wrap_fn(_plug.set_val, val)
+        self.add_fail(_msg, fix=_fix, node=_plug.node)
 
 
 class CheckRenderLayers(SCMayaCheck):

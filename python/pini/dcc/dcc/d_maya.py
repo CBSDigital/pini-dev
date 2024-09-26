@@ -475,7 +475,8 @@ class MayaDCC(BaseDCC):
         if mode == 'RenderGlobals':
             _start = int(cmds.getAttr('defaultRenderGlobals.startFrame'))
             _end = int(cmds.getAttr('defaultRenderGlobals.endFrame'))
-            return list(range(_start, _end+1))
+            _step = int(cmds.getAttr('defaultRenderGlobals.byFrameStep'))
+            return list(range(_start, _end+1, _step))
         return super(MayaDCC, self).t_frames()
 
     def t_start(self, class_=float):

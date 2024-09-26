@@ -26,12 +26,13 @@ class CSettings(QtCore.QSettings, File):
         File.__init__(self, file_)
         super(CSettings, self).__init__(self.path, QtCore.QSettings.IniFormat)  # pylint: disable=too-many-function-args
 
-    def apply_to_ui(self, ui, filter_=None):
+    def apply_to_ui(self, ui, filter_=None, type_filter=None):
         """Apply these settings to the given ui object.
 
         Args:
             ui (CUiContainer): ui to apply settings to
             filter_ (str): filter by widget name
+            type_filter (str): filter by widget type name
         """
         from pini import qt
 
@@ -51,6 +52,11 @@ class CSettings(QtCore.QSettings, File):
                 _name, catch=True, case_sensitive=sys.platform != 'win32')
             if not _widget:
                 _LOGGER.debug('   - MISSING WIDGET')
+                continue
+            _type = type(_widget).__name__
+            _LOGGER.debug('   - TYPE %s', _type)
+            if type_filter and not passes_filter(_type, type_filter):
+                _LOGGER.debug('   - TYPE FILTER REJECTED %s', _widget)
                 continue
 
             # Check for disabled
@@ -74,6 +80,9 @@ class CSettings(QtCore.QSettings, File):
         If the value is not set, the value is read from the
         widgets section of these settings.
 
+        NOTE: QSplitter settings need to be applied after dialog
+        has been displayed to work properly.
+
         Args:
             widget (QWidget): widget to apply setting to
             value (any): value to apply
@@ -82,7 +91,7 @@ class CSettings(QtCore.QSettings, File):
         from pini import qt
 
         _LOGGER.debug(
-            'APPLY VALUE %s %s (type=%s)', widget, value, type(value))
+            '   - APPLY VALUE %s %s (type=%s)', widget, value, type(value))
         self._check_save_policy(widget)
 
         # Obtain value
@@ -126,6 +135,8 @@ class CSettings(QtCore.QSettings, File):
             _val = float(_val or 0.0)
             _sizes = _val*_width, _width-_val*_width
             widget.setSizes(_sizes)
+            _LOGGER.debug(
+                '   - APPLY SPLITTER w=%d, %s %s', _width, _val, _sizes)
         elif isinstance(widget, QtWidgets.QTabWidget):
             _val = {None: 0}.get(_val, _val)
             _val = int(_val)
