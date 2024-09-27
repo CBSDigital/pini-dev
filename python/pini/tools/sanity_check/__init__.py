@@ -2,7 +2,8 @@
 
 from pini import dcc
 
-from .core import find_checks, SCCheck, find_check, read_checks
+from .core import (
+    find_checks, SCCheck, find_check, read_checks, SCFail)
 from .ui import launch_ui, UI_FILE, ICON, launch_export_ui
 
 if dcc.NAME == 'maya':

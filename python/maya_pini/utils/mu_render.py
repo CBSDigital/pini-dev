@@ -348,7 +348,7 @@ def _apply_rs_fmt_idx(idx):
     mel.eval('redshiftImageFormatChanged')
 
 
-def set_render_extn(extn):
+def set_render_extn(extn: str):
     """Set render format for the current renderer.
 
     Args:
@@ -369,6 +369,23 @@ def set_render_extn(extn):
     else:
         raise NotImplementedError(_ren)
     assert to_render_extn() == extn
+
+
+def set_render_res(res: tuple):
+    """Set render resolution.
+
+    Args:
+        res (tuple): width/height to apply
+    """
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren in ('mayaSoftware', 'redshift'):
+        cmds.setAttr('defaultResolution.width', res[0])
+        cmds.setAttr('defaultResolution.height', res[1])
+    elif _ren == 'vray':
+        cmds.setAttr('vraySettings.width', res[0])
+        cmds.setAttr('vraySettings.height', res[1])
+    else:
+        raise NotImplementedError(_ren)
 
 
 def to_render_extn():
@@ -407,3 +424,21 @@ def to_render_extn():
         _fmt = _fmt.split()[0]
 
     return _fmt
+
+
+def to_render_res():
+    """Get current render resolution.
+
+    Returns:
+        (tuple): render width/height in pixels
+    """
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren in ('mayaSoftware', 'redshift'):
+        return tuple(
+            cmds.getAttr(f'defaultResolution.{_attr}')
+            for _attr in ['width', 'height'])
+    if _ren == 'vray':
+        return tuple(
+            cmds.getAttr(f'vraySettings.{_attr}')
+            for _attr in ['width', 'height'])
+    raise NotImplementedError(_ren)

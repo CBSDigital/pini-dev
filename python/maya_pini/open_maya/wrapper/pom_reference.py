@@ -290,7 +290,8 @@ def create_ref(file_, namespace, force=False):
         (CReference): new reference
     """
     _file = File(file_)
-    assert _file.exists()
+    if not _file.exists():
+        raise OSError(f'Missing file {_file.path}')
     _ref = ref.create_ref(file_=_file, namespace=namespace, force=force)
     return CReference(_ref.ref_node)
 

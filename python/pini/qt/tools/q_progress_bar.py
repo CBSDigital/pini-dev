@@ -19,6 +19,21 @@ _LOGGER = logging.getLogger(__name__)
 _PROGRESS_HEART = HOME.to_file('.progress_heart')
 
 
+def _flush_unused_bars(stack_key):
+    """Remove unused progress bars.
+
+    Args:
+        stack_key (str): replace any bars with this stack key
+    """
+    for _bar in copy.copy(sys.QT_PROGRESS_BAR_STACK):
+        if _bar.is_finished() or _bar.stack_key == stack_key:
+            _LOGGER.debug(
+                ' - REMOVING BAR %s finished=%d', _bar, _bar.is_finished())
+            sys.QT_PROGRESS_BAR_STACK.remove(_bar)
+            _bar.close()
+            _bar.deleteLater()
+
+
 def _get_next_pos(stack_key):
     """Get next progress dialog position.
 
@@ -33,15 +48,6 @@ def _get_next_pos(stack_key):
     """
     _LOGGER.debug(
         'GET NEXT BAR POS %s %s', stack_key, sys.QT_PROGRESS_BAR_STACK)
-
-    # Flush out unused bars
-    for _bar in copy.copy(sys.QT_PROGRESS_BAR_STACK):
-        if _bar.is_finished() or _bar.stack_key == stack_key:
-            _LOGGER.debug(
-                ' - REMOVING BAR %s finished=%d', _bar, _bar.is_finished())
-            sys.QT_PROGRESS_BAR_STACK.remove(_bar)
-            _bar.close()
-            _bar.deleteLater()
 
     if not sys.QT_PROGRESS_BAR_STACK:
         _LOGGER.debug(' - NO EXISTING BARS FOUND')
@@ -76,6 +82,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             raise_stop (bool): raise StopIteration on complete
         """
         from pini import dcc, qt
+        _flush_unused_bars(stack_key=stack_key)
 
         # Avoid batch mode seg fault
         if dcc.batch_mode():
@@ -321,9 +328,9 @@ def progress_bar(items, *args, **kwargs):
     return _ProgressDialog(items, *args, **kwargs)
 
 
+@functools.wraps(_ProgressDialog.__init__)
 def progress_dialog(
-        title='Progress Dialog', stack_key='ProgressDialog', col=None,
-        show_delay=None, parent=None):
+        title='Progress Dialog', stack_key='ProgressDialog', **kwargs):
     """Obtain a progress dialog interface.
 
     This is untethered to any data but can manually have its percentage
@@ -332,15 +339,12 @@ def progress_dialog(
     Args:
         title (str): dialog title
         stack_key (str): override dialog unique identifier
-        col (CColor): dialog colour
-        show_delay (float): delay before showing this dialog (in seconds)
-        parent (QWidget): parent widget
 
     Returns:
         (ProgressDialog): progress dialog
     """
     _dialog = _ProgressDialog(
-        range(100), title=title, stack_key=stack_key, raise_stop=False, col=col,
-        parent=parent, show_delay=show_delay)
+        range(100), title=title, stack_key=stack_key, raise_stop=False,
+        **kwargs)
     _dialog.set_pc(0)
     return _dialog

@@ -190,7 +190,7 @@ class TestDiskPiniHelper(TestHelper):
         assert not error.TRIGGERED
 
         dcc.new_scene(force=True)
-        _helper = helper.DIALOG
+        _helper = helper.obt_helper(reset_cache=False)
         _helper._callback__ToggleAdmin(True)
 
         _job = testing.TEST_JOB

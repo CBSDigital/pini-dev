@@ -1,3 +1,15 @@
+## [5.2.0] - Fri 2024-09-27 09:46
+### Summary
+ - Maya Tools:
+    - added functionality to get/set image resolution,
+### Updated
+ - pini.qt.progress_dialog enable pos override,
+ - pini.tools.release.run_tests reposition progress bar to avoid obscure by test dialogs,
+ - pini.tools.sanity_check.SCFail made public,
+ - maya_pini.utils added to_render_res/set_render_res,
+ - maya_pini.open_maya.create_ref better error on missing file,
+
+
 ## [5.1.0] - Thu 2024-09-26 13:43
 ### Summary
  - Pini Helper:

@@ -374,6 +374,7 @@ def reload_libs(
         from pini import qt
         _LOGGER.debug(' - CLOSING INTERFACES')
         qt.close_all_interfaces()
+        qt.close_all_progress_bars()
 
     # Get list of modules to reload
     _sort = sort or get_mod_sort(order=_RELOAD_ORDER)
