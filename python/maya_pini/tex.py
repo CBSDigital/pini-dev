@@ -193,7 +193,10 @@ class _Shader(pom.CNode):
         Returns:
             (CNode): shading group
         """
-        _se = single(self.out_col.find_outgoing(plugs=False), catch=True)
+        _LOGGER.debug('TO SE %s', self)
+        _se = single(
+            self.out_col.find_outgoing(plugs=False, type_='shadingEngine'),
+            catch=True)
         if not _se and create:
             _name = str(self)+"SG"
             _se = cmds.sets(

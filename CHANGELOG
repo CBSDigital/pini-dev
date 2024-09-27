@@ -1,3 +1,14 @@
+## [5.2.1] - Fri 2024-09-27 10:32
+### Summary
+ - Pini Helper:
+    - lookdev publish bugfix not finding geometry on shaders with AOV connected to outColor attribute (cstewart),
+ - Sanity Check:
+    - maya redshift check render globals updated exrMultipart -> exrForceMultilayer (eehemann),
+### Updated
+ - pini.tools.sanity_check.CheckRenderGlobals redshift updated exrMultipart -> exrForceMultilayer,
+ - maya_pini.tex.Shader.to_se added shadingEngine filter to outColour outgoing connections,
+
+
 ## [5.2.0] - Fri 2024-09-27 09:46
 ### Summary
  - Maya Tools:
