@@ -473,9 +473,10 @@ class CheckCacheables(SCMayaCheck):
         # Flag multiple top nodes
         if len(_top_nodes) > 1:
             self.add_fail(
-                'Cache set "{}" contains multiple top nodes - this will '
-                'in an abc with multiple top nodes, which is messy in the '
-                'outtliner'.format(_set), node=_set)
+                f'Cache set "{_set}" contains multiple top nodes - this will '
+                f'in an abc with multiple top nodes, which is messy in the '
+                f'outliner and not nice for people to pick up',
+                node=_set)
 
         # Flag overlapping nodes
         _longs = sorted([to_long(_node) for _node in _top_nodes])
@@ -515,25 +516,39 @@ class CheckCacheables(SCMayaCheck):
                 _fixable = bool([
                     _node for _node in _nodes if not _node.is_referenced()])
                 if _fixable:
-                    _fix = wrap_fn(self._fix_duplicate_node, _node)
+                    _fix = wrap_fn(
+                        self._fix_duplicate_node, node=_node, cbl=cset)
                 _fail = SCFail(_msg, fix=_fix)
                 _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
                 self.add_fail(_fail)
 
-    def _fix_duplicate_node(self, node):
+    def _fix_duplicate_node(self, node, cbl):
         """Rename a duplicate node so that it has a unique name.
 
         Args:
             node (str): node to fix
+            cbl (CPCacheable): cacheable to fix
         """
-        _base = re.split('[|:]', node)[-1]
+        _LOGGER.info('FIX DUP NODE %s', node)
+
+        _tfms = m_pipe.read_cache_set(set_=cbl.cache_set, mode='transforms')
+        _names = {to_clean(_tfm) for _tfm in _tfms}
+        _LOGGER.info(' - FOUND %d NAMES', len(_names))
+
+        _base = re.split('[|:]', str(node))[-1]
         while _base and _base[-1].isdigit():
             check_heart()
             _base = _base[:-1]
+        _LOGGER.info(' - BASE %s', _base)
+
+        # Find next base
         _idx = 1
         _name = _base
-        while cmds.objExists(_name):
+        _LOGGER.info(' - CHECK NAME %s', _name)
+        while cmds.objExists(_name) or _name in _names:
             check_heart()
-            _name = '{}{:d}'.format(_base, _idx)
+            _name = f'{_base}{_idx:d}'
+            _LOGGER.info(' - CHECK NAME %s', _name)
             _idx += 1
+        _LOGGER.info(' - RENAME %s -> %s', node, _name)
         cmds.rename(node, _name)
