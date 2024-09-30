@@ -1,3 +1,11 @@
+## [5.4.0] - Mon 2024-09-30 15:10
+### Summary
+ - Using Tracking:
+    - no error if write usage fails (lcayo),
+### Updated
+ - pini.tools.usage.log_usage_event catch all errors,
+
+
 ## [5.3.1] - Mon 2024-09-30 11:41
 ### Summary
  - Sanity Check:

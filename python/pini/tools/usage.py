@@ -73,11 +73,7 @@ def get_tracker(name=None, write_after=False, args=None):
             if write_after:
                 _result = func(*fn_args, **fn_kwargs)
             if not dcc.batch_mode():
-                try:
-                    log_usage_event(name or func.__name__, args=_args)
-                except Exception as _exc:  # pylint: disable=broad-exception-caught
-                    _LOGGER.info(
-                        'WRITE USAGE FAILED "%s" (%s)', _exc, type(_exc))
+                log_usage_event(name or func.__name__, args=_args)
             if not write_after:
                 _result = func(*fn_args, **fn_kwargs)
 
@@ -159,6 +155,20 @@ def _get_usage_yml():
 
 
 def log_usage_event(func, args=None):
+    """Log a usage event.
+
+    Args:
+        func (str): name of function which was used
+        args (dict): args data to store
+    """
+    try:
+        _write_usage_event(func=func, args=args)
+    except Exception as _exc:  # pylint: disable=broad-exception-caught
+        _LOGGER.info(
+            'WRITE USAGE FAILED "%s" (%s)', _exc, type(_exc))
+
+
+def _write_usage_event(func, args):
     """Write function usage instance to file.
 
     Args:
