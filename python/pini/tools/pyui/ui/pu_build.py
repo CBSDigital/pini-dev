@@ -1,6 +1,6 @@
 """Tools for managing build pyui interfaces."""
 
-from pini import dcc
+from pini import dcc, qt
 from pini.utils import to_str
 
 
@@ -30,6 +30,8 @@ def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
         _class = pu_maya.PUMayaUi
     elif _mode == 'qt':
         from . import pu_qt
+        if not dcc.NAME:
+            qt.set_dark_style(mode='qdarkstyle')
         _class = pu_qt.PUQtUi
     else:
         raise ValueError(_mode)

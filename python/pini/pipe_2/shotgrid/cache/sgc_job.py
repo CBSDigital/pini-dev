@@ -11,7 +11,7 @@ import time
 from pini import pipe, qt
 from pini.utils import (
     single, strftime, to_time_f, check_heart, Path, basic_repr,
-    passes_filter, to_str)
+    passes_filter, to_str, EMPTY, File)
 
 from ...cache import pipe_cache_on_obj
 from . import sgc_range, sgc_container, sgc_utils
@@ -156,7 +156,7 @@ class SGCJob(sgc_container.SGCContainer):
 
         raise ValueError(match)
 
-    def find_pub_file(self, match=None, path=None, catch=False, force=False):
+    def find_pub_file(self, match=None, path=None, catch=False, **kwargs):
         """Find a pub file in this job.
 
         Args:
@@ -169,24 +169,29 @@ class SGCJob(sgc_container.SGCContainer):
             (SGCPubFile): matching pub file
         """
         _path = to_str(path)
-        for _pub_file in self.find_pub_files(force=force):
-            if match in (_pub_file.id_, _pub_file.id_):
-                return _pub_file
-            if _pub_file.path == _path:
-                return _pub_file
+        _pubs = self.find_pub_files(**kwargs)
+        if len(_pubs) == 1:
+            return single(_pubs)
+        for _pub in _pubs:
+            if match in (_pub.id_, _pub.id_):
+                return _pub
+            if _pub.path == _path:
+                return _pub
         if catch:
             return None
         raise ValueError(path)
 
     def find_pub_files(
-            self, entity=None, work_dir=None, filter_=None, progress=True,
-            force=False):
+            self, entity=None, work_dir=None, filter_=None,
+            extn=EMPTY, ver_n=None, progress=True, force=False):
         """Search pub file within this job.
 
         Args:
             entity (CPEntity): filter by entity
             work_dir (CPWorkDir): filter by work dir
             filter_ (str): apply path filter
+            extn (str): apply extension filter
+            ver_n (int): apply version filter
             progress (bool): show read progress
             force (bool): force reread data
 
@@ -195,13 +200,26 @@ class SGCJob(sgc_container.SGCContainer):
         """
         _pubs = []
         for _pub in self._read_pub_files(progress=progress, force=force):
+
             if entity and not entity.contains(_pub.path):
                 continue
             if work_dir and not work_dir.contains(_pub.path):
                 continue
+            if extn is not EMPTY and File(_pub.path).extn != extn:
+                continue
             if filter_ and not passes_filter(_pub.path, filter_):
                 continue
+
+            if ver_n:
+                if ver_n == 'latest':
+                    if not _pub.latest:
+                        continue
+                else:
+                    if _pub.ver_n != ver_n:
+                        continue
+
             _pubs.append(_pub)
+
         return _pubs
 
     def find_shot(self, match=None, filter_=None):
@@ -214,10 +232,10 @@ class SGCJob(sgc_container.SGCContainer):
         Returns:
             (SGCShot): matching shot
         """
-        _LOGGER.info('FIND SHOT %s', match)
+        _LOGGER.debug('FIND SHOT %s', match)
         _shots = self.find_shots(filter_=filter_)
         _match_s = to_str(match)
-        _LOGGER.info(' - MATCH_S %s', _match_s)
+        _LOGGER.debug(' - MATCH_S %s', _match_s)
 
         if len(_shots) == 1:
             return single(_shots)

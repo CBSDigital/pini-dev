@@ -55,6 +55,25 @@ class CColor(QtGui.QColor):
             int(val_map(val, out_min=self.blue(), out_max=0)),
             self.alpha())
 
+    def fade_to(self, col, val):
+        """Fade this colour to another one.
+
+        Args:
+            col (QColor): target colour
+            val (float): fade value
+                0 - returns this colour
+                1 - returns target colour
+
+        Returns:
+            ():
+        """
+        from pini import qt
+        _trg = qt.to_col(col)
+        return CColor(
+            int(val_map(val, out_min=self.red(), out_max=_trg.red())),
+            int(val_map(val, out_min=self.green(), out_max=_trg.green())),
+            int(val_map(val, out_min=self.blue(), out_max=_trg.blue())))
+
     def to_tuple(self, type_=float):
         """Obtain tuple of this colour's float values.
 

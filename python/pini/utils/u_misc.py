@@ -306,52 +306,53 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     Returns:
         (str): readable age
     """
-    _LOGGER.debug('NICE AGE')
-    _str = ''
+    _LOGGER.debug('NICE AGE %s', age)
     _secs = int(age)
-    _depth = 0
     _fmt = '{:d}' if not pad else '{{:0{:d}d}}'.format(pad)
+    _vals = []
 
     # Add weeks
-    if weeks and _secs > 7*24*60*60 and (depth is None or _depth < depth):
+    if weeks and _secs > 7*24*60*60:
         _wks = int(_secs/(7*24*60*60))
         _secs = _secs - _wks*7*24*60*60
-        _str += (_fmt+'w').format(_wks)
-        _depth += 1
+        _str = (_fmt+'w').format(_wks)
+        _vals.append(_str)
 
     # Add days
-    if _secs > 24*60*60 and (depth is None or _depth < depth):
+    if _secs > 24*60*60:
         _days = int(_secs/(24*60*60))
         _secs = _secs - _days*24*60*60
-        _str += (_fmt+'d').format(_days)
-        _depth += 1
+        _str = (_fmt+'d').format(_days)
+        _vals.append(_str)
 
     # Add hours
-    if _str or _secs > 60*60 and (depth is None or _depth < depth):
+    if _vals or _secs > 60*60:
         _hours = int(_secs/(60*60))
-        _str += (_fmt+'h').format(_hours)
         _secs = _secs - _hours*60*60
-        _depth += 1
-        _LOGGER.debug(' - ADDED HOURS %s (secs=%d)', _str, _secs)
+        _str = (_fmt+'h').format(_hours)
+        _vals.append(_str)
 
     # Add mins
-    if depth is not None and _depth >= depth:  # depth filters
-        pass
-    elif (
-            (_str and _secs) or  # secs left but no minutes
+    _LOGGER.debug(' - ADDING MINS %d', _secs)
+    if (
+            (_vals and _secs) or  # secs left but no minutes
             _secs > 60):
         _mins = int(_secs/60)
-        _str += (_fmt+'m').format(_mins)
+        _str = (_fmt+'m').format(_mins)
         _secs = _secs - _mins*60
-        _depth += 1
-        _LOGGER.debug(' - ADDED MINS %s', _str)
+        _vals.append(_str)
 
     # Add secs
-    if seconds and depth is None or _depth < depth:
-        _str += (_fmt+'s').format(_secs)
-        _LOGGER.debug(' - ADDED SECS %s', _str)
+    _LOGGER.debug(' - ADDING SECONDS %d', _secs)
+    if seconds and _secs:
+        _str = (_fmt+'s').format(_secs)
+        _vals.append(_str)
 
-    return _str
+    if depth:
+        _vals = _vals[:depth]
+    _LOGGER.debug(' - VALS %s', _vals)
+
+    return ''.join(_vals)
 
 
 def nice_id(obj):

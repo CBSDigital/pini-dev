@@ -1,3 +1,23 @@
+## [5.3.0] - Mon 2024-09-30 10:49
+### Summary
+ - Pini Helper:
+    - cache bugfix error if camera locked translate (scunnane),
+ - Sanity Check:
+    - check aovs implemented for redshift (eehemann),
+### Updated
+ - pini.utils.nice_age bugfix depth limiting,
+ - pini.pipe.shotgrid.SGC.find_pub_file pass all kwargs,
+ - pini.pipe.shotgrid.SGC.find_pub_files added extn/ver_n filters,
+ - pini.qt.CColor.fade_to added,
+ - pini.tools.pyui.build apply qdarkstyle on qt mode w/o dcc,
+ - pini.tools.release.PRVersion added mtime attr,
+ - pini.tools.release.PRRepo.find_versions apply mtime,
+ - pini.tools.sanity_check moved render checks to submodule,
+ - pini.tools.sanity_check.CheckAOVs implemented for redshift,
+ - maya_pini.m_pipe.cache bugfix error on cam t/r locked,
+ - maya_pini.open_maya.CTransform.unlock_tfms added,
+
+
 ## [5.2.1] - Fri 2024-09-27 10:32
 ### Summary
  - Pini Helper:

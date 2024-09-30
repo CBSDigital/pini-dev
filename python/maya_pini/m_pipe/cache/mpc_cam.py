@@ -86,10 +86,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         _dup.shp.add_attr('piniTmpCam', True)
 
         # More to world + parent constrain to cam to keep anim
-        for _attr in 'trs':
-            for _axis in 'xyz':
-                _plug = '{}.{}{}'.format(_dup, _attr, _axis)
-                cmds.setAttr(_plug, lock=False)
+        _dup.unlock_tfms()
         if to_parent(_dup):
             cmds.parent(_dup, world=True)
         _cons = pom.CMDS.parentConstraint(self.cam, _dup)

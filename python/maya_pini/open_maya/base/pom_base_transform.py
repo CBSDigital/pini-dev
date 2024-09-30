@@ -445,6 +445,18 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """Unhide this node."""
         return self.set_visible()
 
+    def unlock_tfms(self):
+        """Unlock transforms on this node."""
+        _plugs = []
+        for _attr in 'trs':
+            _plug = f'{self}.{_attr}'
+            _plugs.append(_plug)
+            for _axis in 'xyz':
+                _plug = f'{self}.{_attr}{_axis}'
+                _plugs.append(_plug)
+        for _plug in _plugs:
+            cmds.setAttr(_plug, lock=False)
+
     def u_scale(self, scale):
         """Apply uniform scale to this noode.
 

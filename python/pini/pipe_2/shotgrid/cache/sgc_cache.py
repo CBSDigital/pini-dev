@@ -179,7 +179,8 @@ class SGDataCache(object):
         if not _job and work_dir:
             _job = work_dir.job
         assert _job
-        return self.find_job(_job).find_pub_files(
+        _job_c = self.find_job(_job)
+        return _job_c.find_pub_files(
             entity=entity, work_dir=work_dir, force=force,
             progress=progress)
 

@@ -7,7 +7,7 @@ import time
 
 from pini.utils import (
     Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
-    system)
+    system, to_time_f)
 
 from . import r_test_file
 from .r_version import PRVersion, DEV_VER
@@ -85,6 +85,7 @@ class PRRepo(Dir):
         Returns:
             (PRVersion list): repo versions
         """
+        _LOGGER.debug('FIND VERS %s', self)
         _lines = self.changelog.read().split('\n')
         _vers = []
         for _line in _lines:
@@ -93,8 +94,14 @@ class PRRepo(Dir):
                     _line.count('[') != 1 or
                     not _line.count(']')):
                 continue
-
-            _ver = PRVersion(re.split(r'[\[\]]', _line)[1])
+            _ver_s = re.split(r'[\[\]]', _line)[1]
+            _LOGGER.debug(' - ADD VER %s', _ver_s)
+            _LOGGER.debug('   - LINE %s', _line)
+            _, _time_s = _line.split(' - ', 1)
+            _time_t = time.strptime(_time_s, '%a %Y-%m-%d %H:%M')
+            _time_f = to_time_f(_time_t)
+            _LOGGER.debug('   - TIME %s %s', _time_s, _time_f)
+            _ver = PRVersion(_ver_s, mtime=_time_f)
             _vers.append(_ver)
 
         return sorted(_vers)

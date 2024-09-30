@@ -12,18 +12,20 @@ class PRVersion(object):
     major/minor/patch indices (eg. 1.2.3).
     """
 
-    def __init__(self, string):
+    def __init__(self, string, mtime=None):
         """Constructor.
 
         Args:
             string (str): version string (eg. 1.2.3)
+            mtime (float): release time
         """
         self.string = string
         _tokens = [int(_token) for _token in string.split('.')]
         self.major, self.minor, self.patch = _tokens
         self.cmp_str = '.'.join('{:03d}'.format(_val) for _val in _tokens)
+        self.mtime = mtime
 
-    def to_str(self):
+    def to_str(self) -> str:
         """Get version as string.
 
         Returns:
