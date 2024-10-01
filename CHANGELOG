@@ -1,6 +1,18 @@
+## [5.5.0] - Tue 2024-10-01 14:13
+### Summary
+ - Pini Helper:
+    - maya deadline render bugfix empty groups causing submit error (lcayo/mkim),
+ - Sanity Check:
+    - maya redshift check render globals apply multi part exr (eehemann/lcayo),
+### Updated
+ - pini.dcc.CMayaFarmerRender bugfix passing empty limit groups to deadline,
+ - pini.qt.multi_select bugfix appearing off screen by disable load settings,
+ - pini.tools.sanity_check.CheckRenderGlobals redshift apply exr multipart,
+
+
 ## [5.4.0] - Mon 2024-09-30 15:10
 ### Summary
- - Using Tracking:
+ - Usage Tracking:
     - no error if write usage fails (lcayo),
 ### Updated
  - pini.tools.usage.log_usage_event catch all errors,

@@ -79,6 +79,7 @@ class CDJob(object):
             raise RuntimeError('Bad group {}'.format(_group))
         self.group = _group
         if limit_groups:
+            _LOGGER.info(' - LIMIT GROUPS %s', limit_groups)
             if not isinstance(limit_groups, (list, tuple)):
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:

@@ -400,7 +400,8 @@ class CheckRenderGlobals(SCMayaCheck):
 
         elif _ren == 'redshift':
             _to_check += [
-                ('redshiftOptions.exrForceMultilayer', True)]
+                ('redshiftOptions.exrForceMultilayer', True),
+                ('redshiftOptions.exrMultipart', True)]
 
         for _attr, _val in _to_check:
             self._check_setting(_attr, _val)

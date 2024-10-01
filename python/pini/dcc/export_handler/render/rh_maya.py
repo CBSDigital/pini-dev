@@ -349,6 +349,8 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         _prepare_scene_for_render()
         _checks_data = sanity_check.launch_export_ui(action='render')
+        _limit_groups_s = self.ui.LimitGroups.text()
+        _limit_groups = [_grp for _grp in _limit_groups_s.split(',') if _grp]
 
         farm.submit_maya_render(
             checks_data=_checks_data,
@@ -357,7 +359,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             comment=self.ui.Comment.text(),
             priority=self.ui.Priority.value(),
             machine_limit=self.ui.MachineLimit.value(),
-            limit_groups=self.ui.LimitGroups.text().split(','),
+            limit_groups=_limit_groups,
             version_up=self.ui.VersionUp.isChecked())
 
         for _revert in _reverts:
