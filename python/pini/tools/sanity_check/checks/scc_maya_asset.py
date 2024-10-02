@@ -16,12 +16,12 @@ from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_node, to_long)
 
-from ..core import SCFail, SCMayaCheck, sc_utils_maya
+from .. import core, utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CheckTopNode(SCMayaCheck):
+class CheckTopNode(core.SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
     task_filter = 'model rig'
@@ -77,7 +77,7 @@ def _create_top_level_group(name, nodes):
         _node.add_to_grp(name)
 
 
-class CheckCacheSet(SCMayaCheck):
+class CheckCacheSet(core.SCMayaCheck):
     """Check this scene has a cache set with nodes in it.
 
     Used for checking assets which will be referenced and cached.
@@ -91,7 +91,7 @@ class CheckCacheSet(SCMayaCheck):
         """Run this check."""
 
         # Check set
-        _set = sc_utils_maya.find_cache_set()
+        _set = utils.find_cache_set()
         if not _set:
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)
@@ -101,11 +101,11 @@ class CheckCacheSet(SCMayaCheck):
             return
 
         # Check set geos
-        _geos = sc_utils_maya.read_cache_set_geo()
+        _geos = utils.read_cache_set_geo()
         self.write_log('Geos %s', _geos)
         if not _geos:
             _fix = None
-            _top_node = single(sc_utils_maya.find_top_level_nodes(), catch=True)
+            _top_node = single(utils.find_top_level_nodes(), catch=True)
             self.write_log('Top node %s', _top_node)
             if _top_node:
                 _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
@@ -114,6 +114,7 @@ class CheckCacheSet(SCMayaCheck):
         self.write_log('GEOS %s', _geos)
 
         self._check_for_single_top_node()
+        utils.check_set_for_overlapping_nodes(set_=_set, check=self)
 
     def _check_for_single_top_node(self):
         """Make sure cache set geo has a single top node."""
@@ -127,7 +128,7 @@ class CheckCacheSet(SCMayaCheck):
             self.add_fail(_msg)
 
 
-class CheckRenderStats(SCMayaCheck):
+class CheckRenderStats(core.SCMayaCheck):
     """Check render stats section on shape nodes."""
 
     task_filter = 'model rig layout'
@@ -172,7 +173,7 @@ class CheckRenderStats(SCMayaCheck):
                 self.add_fail(_msg, fix=_fix, node=geo)
 
 
-class CheckForEmptyNamespaces(SCMayaCheck):
+class CheckForEmptyNamespaces(core.SCMayaCheck):
     """Check scene for empty namespaces."""
 
     profile_filter = 'asset'
@@ -203,7 +204,7 @@ class CheckForEmptyNamespaces(SCMayaCheck):
             self.add_fail('Empty namespace {}'.format(_ns), fix=_fix)
 
 
-class CheckUVs(SCMayaCheck):
+class CheckUVs(core.SCMayaCheck):
     """Check UVs on current scene geo."""
 
     task_filter = 'model rig'
@@ -212,7 +213,7 @@ class CheckUVs(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = sc_utils_maya.read_cache_set_geo()
+        _geos = utils.read_cache_set_geo()
         if not _geos:
             self.add_fail('No geo found')
         for _geo in _geos:
@@ -247,12 +248,12 @@ class CheckUVs(SCMayaCheck):
             if 'map1' in _sets:
                 _msg = 'Geo {} is not using uv set map1 (set is {})'.format(
                     geo, _set)
-                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
+                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = ('Geo {} does not have uv set map1 (set is '
                         '{})'.format(geo, _set))
-                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
+                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             return
 
@@ -266,7 +267,7 @@ class CheckUVs(SCMayaCheck):
                 _msg = (
                     'Geo {} is using empty uv set map1 (should use '
                     '{})'.format(geo, _set))
-                _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
+                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = 'Geo "{}" empty uv set "map1"'.format(geo)
@@ -278,11 +279,11 @@ class CheckUVs(SCMayaCheck):
             _unused = sorted(set(_sets) - set(['map1']))
             _msg = 'Geo {} has unused uv set{}: {}'.format(
                 geo, plural(_sets[1:]), ', '.join(_unused))
-            _fix = wrap_fn(sc_utils_maya.fix_uvs, geo)
+            _fix = wrap_fn(utils.fix_uvs, geo)
             self.add_fail(_msg, node=geo, fix=_fix)
 
 
-class CheckModelGeo(SCMayaCheck):
+class CheckModelGeo(core.SCMayaCheck):
     """Check naming of cache set geometry."""
 
     task_filter = 'model'
@@ -301,7 +302,7 @@ class CheckModelGeo(SCMayaCheck):
                         fix=_plug.break_connections)
 
 
-class CheckGeoNaming(SCMayaCheck):
+class CheckGeoNaming(core.SCMayaCheck):
     """Check naming of cache set geometry."""
 
     task_filter = 'model rig layout'
@@ -313,7 +314,7 @@ class CheckGeoNaming(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = sc_utils_maya.read_cache_set_geo()
+        _geos = utils.read_cache_set_geo()
         self.write_log('GEOS %s', _geos)
         if self._check_for_duplicates(geos=_geos):
             return
@@ -360,7 +361,7 @@ class CheckGeoNaming(SCMayaCheck):
             if (
                     not _grp.endswith('_GRP') and
                     to_clean(_grp) not in ['GEO', 'RIG', 'MDL', 'LYT']):
-                _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+                _msg, _fix, _suggestion = utils.fix_node_suffix(
                     node=_grp, suffix='_GRP',
                     alts=['_Grp', '_gr'], type_='group',
                     ignore=self._ignore_names)
@@ -387,7 +388,7 @@ class CheckGeoNaming(SCMayaCheck):
         _name = to_clean(geo)
         _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
         if not (_name.endswith('_'+_geo_suffix) or _name == _geo_suffix):
-            _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+            _msg, _fix, _suggestion = utils.fix_node_suffix(
                 node=geo, suffix='_'+_geo_suffix,
                 alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
                 ignore=self._ignore_names)
@@ -449,7 +450,7 @@ class CheckGeoNaming(SCMayaCheck):
             _LOGGER.info('   - GEOS %d %s', len(_geos), _geos)
 
             self.write_log('Duplicate names %s', _geos)
-            _fail = SCFail('Duplicate name "{}" in cache_SET: {}'.format(
+            _fail = core.SCFail('Duplicate name "{}" in cache_SET: {}'.format(
                 _name, [str(_geo) for _geo in _geos]))
             _sel = wrap_fn(cmds.select, _geos)
             _fail.add_action('Select nodes', _sel)
@@ -513,7 +514,7 @@ class CheckGeoNaming(SCMayaCheck):
             cmds.rename(_node, _new_name)
 
 
-class CheckForNgons(SCMayaCheck):
+class CheckForNgons(core.SCMayaCheck):
     """Check for polygons with more than four sides."""
 
     task_filter = 'model'
@@ -547,7 +548,7 @@ class CheckForNgons(SCMayaCheck):
         cmds.select(geo)
 
 
-class FindUnneccessarySkinClusters(SCMayaCheck):
+class FindUnneccessarySkinClusters(core.SCMayaCheck):
     """Find skin clusters which are not needed.
 
     If a skin cluster is used where a constraint can be used, this can
@@ -564,7 +565,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        _geos = sc_utils_maya.read_cache_set_geo()
+        _geos = utils.read_cache_set_geo()
         if not _geos:
             self.add_fail('No geo found')
 
@@ -599,7 +600,7 @@ class FindUnneccessarySkinClusters(SCMayaCheck):
             self.add_fail(_msg, node=_geo.shp)
 
 
-class CheckForFaceAssignments(SCMayaCheck):
+class CheckForFaceAssignments(core.SCMayaCheck):
     """Checks for shaders assigned to faces rather than geometry."""
 
     task_filter = 'lookdev'
@@ -635,7 +636,7 @@ class CheckForFaceAssignments(SCMayaCheck):
                         '"{}"'.format(_assign) for _assign in _assigns]))
                 _fix = wrap_fn(
                     self._fix_face_assignment, geo=_geo, shader=_shd)
-                _fail = SCFail(_msg, node=_geo)
+                _fail = core.SCFail(_msg, node=_geo)
                 _fail.add_action(
                     'Select shader', wrap_fn(cmds.select, _shd))
                 _fail.add_action('Fix', _fix, is_fix=True)
@@ -661,7 +662,7 @@ class CheckForFaceAssignments(SCMayaCheck):
         shader.assign_to(geo)
 
 
-class CheckShaders(SCMayaCheck):
+class CheckShaders(core.SCMayaCheck):
     """Check the shader name matches the shading engine.
 
     eg. myShader -> myShaderSE
@@ -680,7 +681,7 @@ class CheckShaders(SCMayaCheck):
 
         # Check for referenced shaders
         for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
-            _fix = wrap_fn(sc_utils_maya.import_referenced_shader, _shd)
+            _fix = wrap_fn(utils.import_referenced_shader, _shd)
             self.add_fail(
                 'Shader "{}" is referenced - this must be imported into the '
                 'current scene'.format(str(_shd)),
@@ -716,7 +717,7 @@ class CheckShaders(SCMayaCheck):
 
             # Flag missing MTL suffix
             if not _shd.endswith('_MTL'):
-                _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+                _msg, _fix, _suggestion = utils.fix_node_suffix(
                     _shd, suffix='_MTL', alts=['_shd', '_mtl', '_SHD', '_Mat'],
                     type_='shader', ignore=_ignore_names)
                 _ignore_names.add(_suggestion)
@@ -730,7 +731,7 @@ class CheckShaders(SCMayaCheck):
             if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
 
                 # Flag non-arnold shader
-                if sc_utils_maya.shd_is_arnold(engine=_se, type_=_type):
+                if utils.shd_is_arnold(engine=_se, type_=_type):
                     _msg = 'Shader {} ({}) is not arnold shader'.format(
                         _shd, _type)
                     self.add_fail(_msg, node=_shd)
@@ -741,7 +742,7 @@ class CheckShaders(SCMayaCheck):
                 _base = _shd[:-4]
                 if check_ai_shd and _ai_shd:
                     if not _ai_shd.endswith('_AIS'):
-                        _msg, _fix, _suggestion = sc_utils_maya.fix_node_suffix(
+                        _msg, _fix, _suggestion = utils.fix_node_suffix(
                             _ai_shd, suffix='_AIS',
                             alts=['_shd', '_mtl', '_SHD'],
                             type_='ai shader', base=_base, ignore=_ignore_names)
@@ -763,7 +764,7 @@ class CheckShaders(SCMayaCheck):
 
             # Check for face assigns
             if '.f[' in _assign:
-                _fail = SCFail(
+                _fail = core.SCFail(
                     'Shader "{}" is face assignment "{}".'.format(
                         shader, _assign),
                     node=_assign)
@@ -773,7 +774,7 @@ class CheckShaders(SCMayaCheck):
 
             # Catch duplicate node
             if '|' in _assign:
-                _fail = SCFail(
+                _fail = core.SCFail(
                     'Shader "{}" is assigned to duplicate node "{}".'.format(
                         shader, _assign),
                     node=_assign)
@@ -795,7 +796,7 @@ class CheckShaders(SCMayaCheck):
                     shader, _geo))
             _fix = wrap_fn(
                 self._unassign_shader, engine=engine, geo=_geo)
-            _fail = SCFail(_msg, node=_geo)
+            _fail = core.SCFail(_msg, node=_geo)
             _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
             _fail.add_action('Fix', _fix, is_fix=True)
             self.add_fail(_fail)
@@ -852,7 +853,7 @@ class CheckShaders(SCMayaCheck):
             _ref = pom.find_ref(_node.namespace)
             break
         if not _ref:
-            _fail = SCFail(
+            _fail = core.SCFail(
                 'Shader "{}" is not assigned to referenced geometry, which '
                 'can lead to a mismatch between the geometry names in the '
                 'model/rig and the assignment - this could cause shaders to '
@@ -862,7 +863,7 @@ class CheckShaders(SCMayaCheck):
             self.add_fail(_fail)
 
 
-class NoObjectsWithDefaultShader(SCMayaCheck):
+class NoObjectsWithDefaultShader(core.SCMayaCheck):
     """Lookdev check to make sure no geos have default shader assigned."""
 
     task_filter = 'lookdev'

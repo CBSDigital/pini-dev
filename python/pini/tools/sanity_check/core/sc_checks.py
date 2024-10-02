@@ -13,7 +13,7 @@ import six
 from pini import pipe, dcc
 from pini.utils import (
     passes_filter, File, PyFile, cache_result, abs_path, Dir, single,
-    apply_filter)
+    apply_filter, EMPTY)
 
 from . import sc_check
 
@@ -34,7 +34,7 @@ def find_check(filter_, task=None):
 
 
 def find_checks(  # pylint: disable=too-many-branches
-        filter_=None, dev=False, work=None, task=None, action=None,
+        filter_=None, dev=False, work=None, task=EMPTY, action=None,
         force=False):
     """Find sanity checks to apply.
 
@@ -56,7 +56,10 @@ def find_checks(  # pylint: disable=too-many-branches
     _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
 
     # Determine task
-    _task = task or (_work.pini_task if _work else None)
+    if task is not EMPTY:
+        _task = task
+    else:
+        _task = _work.pini_task if _work else None
     _disable_task_filter = _task == 'all'
     if not _disable_task_filter:
         _task = pipe.map_task(_task, fmt='pini')
@@ -175,29 +178,47 @@ def read_checks(force=False):
     # Read py files to find checks
     _checks = []
     for _py in _pys:
-        _LOGGER.debug(' - PY %s', _py.path)
-        _mod = _py.to_module(catch=True)
-        if not _mod:
-            _LOGGER.debug('   - FAILED TO IMPORT')
-            continue
-        _types = [
-            _check for _, _check in inspect.getmembers(_mod, inspect.isclass)
-            if issubclass(_check, sc_check.SCCheck) and
-            not _check.__name__.startswith('_')]
-        _LOGGER.debug('   - MOD %s types=%d', _mod, len(_types))
-        _py_checks = []
-        for _type in _types:
-            _src = abs_path(inspect.getfile(_type))
-            _src = File(_src).to_file(extn='py')
-            if _src != _py:
-                _LOGGER.debug('   - REJECTED type=%s path=%s', _type, _src.path)
-                continue
-            _check = _type()
-            _py_checks.append(_check)
-        _LOGGER.debug('   - FOUND %d CHECKS %s', len(_py_checks), _py_checks)
-        _checks += _py_checks
-
-    _LOGGER.debug('FOUND %d CHECKS IN %.01fs', len(_checks),
-                  time.time() - _start)
+        _checks += _checks_from_py(_py)
+    _LOGGER.debug(
+        'FOUND %d CHECKS IN %.01fs', len(_checks), time.time() - _start)
 
     return sorted(_checks)
+
+
+def _checks_from_py(py_file) -> list:
+    """Checks from a python file.
+
+    Args:
+        py_file (PyFile): file to read
+
+    Returns:
+        (SCCheck list): checks
+    """
+    _LOGGER.debug(' - PY %s', py_file.path)
+    _mod = py_file.to_module(catch=True)
+    if not _mod:
+        _LOGGER.debug('   - FAILED TO IMPORT')
+        return []
+
+    # Search this module for sanity checks
+    _members = inspect.getmembers(_mod, inspect.isclass)
+    _LOGGER.debug('   - MEMS %d %s', len(_members), _members)
+    _types = [
+        _type for _, _type in _members
+        if issubclass(_type, sc_check.SCCheck) and
+        not _type.__name__.startswith('_')]
+    _LOGGER.debug('   - TYPES %d %s', len(_types), _types)
+
+    # Check these checks were defined in this py file
+    _checks = []
+    for _type in _types:
+        _src = abs_path(inspect.getfile(_type))
+        _src = File(_src).to_file(extn='py')
+        if _src != py_file:
+            _LOGGER.debug('   - REJECTED type=%s path=%s', _type, _src.path)
+            continue
+        _check = _type()
+        _checks.append(_check)
+    _LOGGER.debug('   - FOUND %d CHECKS %s', len(_checks), _checks)
+
+    return _checks

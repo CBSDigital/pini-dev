@@ -1,3 +1,20 @@
+## [5.6.0] - Wed 2024-10-02 10:21
+### Summary
+ - Pini Tools:
+    - reload tools also runs installer to re-read shot filters (nle),
+ - Sanity Check:
+    - check cache set checks for overlapping nodes (eehemann),
+### Updated
+ - pini.install renamed REFRESH_TOOL -> RELOAD_TOOL,
+ - pini.install reload added run installer,
+ - pini.install reload add basic reload ctx,
+ - pini.install.PIInstaller renamed _gather_refresh_tools -> _gather_reload_tools,
+ - pini.tools.sanity_check.find_checks allow task as None for all tasks,
+ - pini.tools.sanity_check._read_checks refactor for clarity,
+ - pini.tools.sanity_check.utils added submodule,
+ - pini.tools.sanity_check.CheckCacheSet check for overlapping nodes,
+
+
 ## [5.5.0] - Tue 2024-10-01 14:13
 ### Summary
  - Pini Helper:

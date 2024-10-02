@@ -166,10 +166,10 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
         """
         raise NotImplementedError
 
-    def _gather_refresh_tools(self, items):
-        """Gather refresh tools.
+    def _gather_reload_tools(self, items):
+        """Gather reload tools.
 
-        For shelves, the refresh button is added at the front, but for menus
+        For shelves, the reload button is added at the front, but for menus
         the button is added at the end.
 
         Args:
@@ -179,7 +179,7 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
             (list): updated items list
         """
         _tool, _items = super(
-            PIHouMenuInstaller, self)._gather_refresh_tools(items)
+            PIHouMenuInstaller, self)._gather_reload_tools(items)
 
         _install_shelf = i_tool.PITool(
             name='InstallShelf',

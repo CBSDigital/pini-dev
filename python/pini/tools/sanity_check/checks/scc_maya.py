@@ -14,15 +14,14 @@ from pini.utils import (
     abs_path, Dir)
 
 from maya_pini import ref, open_maya as pom, m_pipe
-from maya_pini.utils import (
-    DEFAULT_NODES, to_clean, to_long, to_node)
+from maya_pini.utils import DEFAULT_NODES, to_clean
 
-from ..core import SCFail, SCMayaCheck
+from .. import core, utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CheckUnmappedPaths(SCMayaCheck):
+class CheckUnmappedPaths(core.SCMayaCheck):
     """Check for unmapped reference paths.
 
     These are maps which have been set up on another OS, which can
@@ -74,7 +73,7 @@ class CheckUnmappedPaths(SCMayaCheck):
                     self.add_fail(_msg, fix=_fix, node=_node)
 
 
-class CleanBadSceneNodes(SCMayaCheck):
+class CleanBadSceneNodes(core.SCMayaCheck):
     """Clean unwanted scene nodes."""
 
     _info = 'Checks the scene for unwanted nodes'
@@ -111,7 +110,7 @@ class CleanBadSceneNodes(SCMayaCheck):
                     _ref = ref.FileRef(_ref_node)
                     _msg = 'Bad {} node {} in ref {}'.format(
                         _type, _node, _ref.namespace)
-                    _fail = SCFail(_msg, node=_node)
+                    _fail = core.SCFail(_msg, node=_node)
                     _top_node = _ref.find_top_node(catch=True)
                     if _top_node:
                         _action = wrap_fn(cmds.select, _top_node)
@@ -152,7 +151,7 @@ def _find_available_plugins():
     return sorted(_plugins)
 
 
-class RemoveBadPlugins(SCMayaCheck):
+class RemoveBadPlugins(core.SCMayaCheck):
     """Unload unwanted plugins."""
 
     def run(self):
@@ -212,7 +211,7 @@ class RemoveBadPlugins(SCMayaCheck):
         cmds.unloadPlugin(plugin, force=True)
 
 
-class FixRefNodeNames(SCMayaCheck):
+class FixRefNodeNames(core.SCMayaCheck):
     """Make sure reference node names match their namespace."""
 
     def run(self):
@@ -242,7 +241,7 @@ class FixRefNodeNames(SCMayaCheck):
         cmds.lockNode(_node, lock=True)
 
 
-class RunMayaScanner(SCMayaCheck):
+class RunMayaScanner(core.SCMayaCheck):
     """Run maya scanner to check for malware."""
 
     def run(self):
@@ -253,7 +252,7 @@ class RunMayaScanner(SCMayaCheck):
         self.write_log('Ran scan')
 
 
-class FixViewportCallbacks(SCMayaCheck):
+class FixViewportCallbacks(core.SCMayaCheck):
     """Fix viewport callbacks CgAbBlastPanelOptChangeCallback error."""
 
     def run(self):
@@ -307,7 +306,7 @@ class FixViewportCallbacks(SCMayaCheck):
         self._check_model_editor_callback('DCF_updateViewportList')
 
 
-class FixDuplicateRenderSetups(SCMayaCheck):
+class FixDuplicateRenderSetups(core.SCMayaCheck):
     """Fix duplicate render setups.
 
     This is caused by running duplicate input graph on a node that's
@@ -354,7 +353,7 @@ class FixDuplicateRenderSetups(SCMayaCheck):
                 _bad_nodes.add(_node)
 
 
-class CheckReferences(SCMayaCheck):
+class CheckReferences(core.SCMayaCheck):
     """Check each reference for common errors."""
 
     def run(self):
@@ -369,7 +368,7 @@ class CheckReferences(SCMayaCheck):
                 _msg = (
                     'Reference "{}" has no namespace which can make maya '
                     'unstable.'.format(_ref.ref_node))
-                _fail = SCFail(_msg, node=_ref.ref_node)
+                _fail = core.SCFail(_msg, node=_ref.ref_node)
                 _fail.add_action('Import nodes', _ref.import_, is_fix=True)
                 _fail.add_action('Remove', _ref.delete, is_fix=True)
                 self.add_fail(_fail)
@@ -434,7 +433,7 @@ def _ref_needs_cache_set(ref_):
     return True
 
 
-class CheckCacheables(SCMayaCheck):
+class CheckCacheables(core.SCMayaCheck):
     """Check cacheable sets in this scene.
 
     Used for checking cache refs in referenced assets and CSETS. The
@@ -445,7 +444,7 @@ class CheckCacheables(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        super(CheckCacheables, self).run()
+        super().run()
         for _cacheable in self.update_progress(m_pipe.find_cacheables()):
             if isinstance(_cacheable, m_pipe.CPCacheableCam):
                 self._check_cam(_cacheable)
@@ -479,20 +478,7 @@ class CheckCacheables(SCMayaCheck):
                 node=_set)
 
         # Flag overlapping nodes
-        _longs = sorted([to_long(_node) for _node in _top_nodes])
-        _overlaps = []
-        self.write_log(' - longs %s', _longs)
-        for _idx, _long in enumerate(_longs[1:], start=1):
-            for _o_long in _longs[:_idx]:
-                if _long.startswith(_o_long):
-                    _overlaps.append((_long, _o_long))
-        for _node, _parent in _overlaps:
-            _fix = wrap_fn(cmds.sets, _node, remove=_set)
-            self.add_fail(
-                'In cset "{}" the top node "{}" is inside top node "{}" '
-                'which will cause abc export to error'.format(
-                    _set, to_node(_node), to_node(_parent)),
-                node=_node, fix=_fix)
+        utils.check_set_for_overlapping_nodes(set_=_set, check=self)
 
         # Check shapes
         self.write_log('Checking shapes %s', cset)
@@ -518,7 +504,7 @@ class CheckCacheables(SCMayaCheck):
                 if _fixable:
                     _fix = wrap_fn(
                         self._fix_duplicate_node, node=_node, cbl=cset)
-                _fail = SCFail(_msg, fix=_fix)
+                _fail = core.SCFail(_msg, fix=_fix)
                 _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
                 self.add_fail(_fail)
 

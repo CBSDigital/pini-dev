@@ -8,64 +8,38 @@ from pini.dcc import export_handler
 from pini.utils import single, wrap_fn
 
 from maya_pini import open_maya as pom, m_pipe
-from maya_pini.utils import (
-    to_shps, to_clean, to_unique)
-
-from . import sc_check
+from maya_pini.utils import to_unique, to_long, to_node
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SCMayaCheck(sc_check.SCCheck):
-    """Base class for any maya check.
+def check_set_for_overlapping_nodes(set_, check):
+    """Check set for overlapping top nodes.
 
-    This adds a check shape method, so allow shape naming fails to be shared
-    across muliple checks.
+    If AbcExport is passed a set which contains two nodes which
+    are in the same parenting hierarchy then it will error.
+
+    eg. you cannot use |MDL and |MDL|geom in the same cache set.
+
+    Args:
+        set_ (str): set node to check
+        check (SCCheck): sanity check to add fails to
     """
-
-    _checked_shps = None
-
-    def run(self):
-        """Execute this check."""
-        self._checked_shps = set()
-
-    def _check_shp(self, node):
-        """Check node shapes.
-
-        Checks for multiple shape nodes and shape nodes not matching
-        transform.
-
-        Args:
-            node (str): node to check
-        """
-        _shps = to_shps(node)
-        if not _shps:
-            return
-
-        # Handle multiple shapes
-        if len(_shps) > 1:
-            _msg = 'Node "{}" has multiple shapes ({})'.format(
-                node, '/'.join(_shps))
-            self.add_fail(_msg, node=node)
-            return
-
-        _shp = single(_shps)
-        if _shp in self._checked_shps:
-            return
-        self._checked_shps.add(_shp)
-
-        # Check shape name
-        _cur_shp = to_clean(_shp)
-        _correct_shp = to_clean(node)+'Shape'
-        if _cur_shp != _correct_shp:
-            if pom.CNode(node).is_referenced():
-                _fix = None
-            else:
-                _fix = wrap_fn(cmds.rename, _shp, _correct_shp)
-            _msg = (
-                f'Node "{node}" has badly named shape node "{_shp}" (should '
-                f'be "{_correct_shp}")')
-            self.add_fail(_msg, fix=_fix, node=node)
+    _top_nodes = m_pipe.read_cache_set(set_=set_, mode='top')
+    _longs = sorted([to_long(_node) for _node in _top_nodes])
+    _overlaps = []
+    check.write_log(' - longs %s', _longs)
+    for _idx, _long in enumerate(_longs[1:], start=1):
+        for _o_long in _longs[:_idx]:
+            if _long.startswith(_o_long):
+                _overlaps.append((_long, _o_long))
+    for _node, _parent in _overlaps:
+        _fix = wrap_fn(cmds.sets, _node, remove=set_)
+        check.add_fail(
+            'In set "{}" the top node "{}" is inside top node "{}" '
+            'which will cause abc export to error'.format(
+                set_, to_node(_node), to_node(_parent)),
+            node=_node, fix=_fix)
 
 
 def find_cache_set():

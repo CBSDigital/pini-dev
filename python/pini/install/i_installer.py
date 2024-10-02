@@ -103,7 +103,7 @@ class PIInstaller(object):
         if _site_items:
             _div = PIDivider('SiteToolsDivider')
             _items += [_div] + _site_items
-        _, _items = self._gather_refresh_tools(_items)
+        _, _items = self._gather_reload_tools(_items)
 
         return _items
 
@@ -131,10 +131,10 @@ class PIInstaller(object):
         """Add site-specfic items (to be implemented in sub-class)."""
         return []
 
-    def _gather_refresh_tools(self, items):
-        """Gather refresh tools.
+    def _gather_reload_tools(self, items):
+        """Gather reload tools.
 
-        For shelves, the refresh button is added at the front, but for menus
+        For shelves, the reload button is added at the front, but for menus
         the button is added at the end.
 
         Args:
@@ -147,14 +147,14 @@ class PIInstaller(object):
         _LOGGER.debug('GATHER REFRESH TOOLS')
         _div = PIDivider('RefreshDivider')
         if self.style == 'menu':
-            _items += [_div, i_tools.REFRESH_TOOL]
+            _items += [_div, i_tools.RELOAD_TOOL]
         elif self.style == 'shelf':
-            _to_add = [i_tools.REFRESH_TOOL]
+            _to_add = [i_tools.RELOAD_TOOL]
             if self.dividers:
                 _to_add += [_div]
             _items = _to_add + _items
 
-        return i_tools.REFRESH_TOOL, _items
+        return i_tools.RELOAD_TOOL, _items
 
     def _build_item(self, item, parent=None):
         """Build the given tool/divider.

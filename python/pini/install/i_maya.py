@@ -29,8 +29,8 @@ class PIMayaShelfInstaller(i_installer.PIInstaller):
     prefix = 'PS'
     shelf = None
 
-    def _gather_refresh_tools(self, items):
-        """Gather refresh tools.
+    def _gather_reload_tools(self, items):
+        """Gather reload tools.
 
         Args:
             items (list): items list to append to
@@ -39,9 +39,9 @@ class PIMayaShelfInstaller(i_installer.PIInstaller):
             (list): updated items list
         """
 
-        # Build refresh button
+        # Build reload button
         _refresh, _items = super(
-            PIMayaShelfInstaller, self)._gather_refresh_tools(items)
+            PIMayaShelfInstaller, self)._gather_reload_tools(items)
         _refresh.add_divider('MayaRefresh1')
 
         # Add reset windows

@@ -7,22 +7,38 @@ from pini.utils import wrap_fn
 from .i_tool import PITool, PIDivider
 
 
-def _build_refresh_tool():
-    """Build refresh tool instance.
+def _build_reload_tool():
+    """Build reload tool instance.
 
     Returns:
-        (PITool): refresh tool
+        (PITool): reload tool
     """
+
+    # Build default refresh tool (with reinstall)
     _cmd = '\n'.join([
-        'from pini import refresh',
+        'from pini import refresh, install',
+        'from pini.tools import usage',
+        '_refresh = usage.get_tracker(name="ReloadTools")(refresh.reload_libs)',
+        '_refresh()',
+        'if install.INSTALLER:',
+        '    install.INSTALLER.run()'])
+    _refresh = PITool(
+        name='Reload', command=_cmd,
+        icon=icons.REFRESH, label='Reload tools')
+
+    # Build basic refresh tool (without reinstall)
+    _cmd = '\n'.join([
+        'from pini import refresh, install',
         'from pini.tools import usage',
         '_refresh = usage.get_tracker(name="ReloadTools")(refresh.reload_libs)',
         '_refresh()'])
+    _basic_reload = PITool(
+        name='ReloadBasic', command=_cmd,
+        icon=icons.REFRESH, label='Reload tools (without reinstall)')
+    _refresh.add_context(_basic_reload)
+    _refresh.add_divider('ReloadDivider')
 
-    _refresh = PITool(
-        name='Refresh', command=_cmd,
-        icon=icons.REFRESH, label='Reload tools')
-
+    # Add dev options
     _fs_toggle = wrap_fn(testing.enable_file_system, None)
     _nir_toggle = wrap_fn(testing.enable_nice_id_repr, None)
     for _ctx in [
@@ -53,7 +69,7 @@ def _build_refresh_tool():
     return _refresh
 
 
-REFRESH_TOOL = _build_refresh_tool()
+RELOAD_TOOL = _build_reload_tool()
 
 VERSION_UP_TOOL = PITool(
     name='VersionUp', command='\n'.join([

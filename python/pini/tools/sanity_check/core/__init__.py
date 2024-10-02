@@ -7,5 +7,4 @@ from .sc_checks import find_checks, find_check, read_checks
 from .sc_fail import SCFail
 
 if dcc.NAME == 'maya':
-    from .sc_utils_maya import (
-        SCMayaCheck, find_top_level_nodes, find_cache_set)
+    from .sc_maya_check import SCMayaCheck
