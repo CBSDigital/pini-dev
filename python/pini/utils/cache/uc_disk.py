@@ -3,8 +3,6 @@
 import functools
 import logging
 
-import six
-
 from .uc_memory import obtain_results_cache
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,7 +79,7 @@ def get_method_to_file_cacher(
             _LOGGER.debug('EXEC METHOD CACHE FUNC %s mtime_outdates=%s',
                           func.__name__, mtime_outdates)
             _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
-            assert isinstance(self.cache_fmt, six.string_types)
+            assert isinstance(self.cache_fmt, str)
             _key = func, self
             _LOGGER.debug(' - KEY %s', _key)
             _file = File(self.cache_fmt.format(func=func.__name__))

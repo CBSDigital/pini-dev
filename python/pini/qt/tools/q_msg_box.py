@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from pini import icons
 from pini.utils import lprint
 
@@ -89,7 +87,7 @@ class _CMessageBox(QtWidgets.QMessageBox):
             icon (str): path to icon
             icon_size (tuple): icon size
         """
-        if isinstance(icon, six.string_types):
+        if isinstance(icon, str):
             _pixmap = QtGui.QPixmap(icon)
         elif isinstance(icon, QtGui.QPixmap):
             _pixmap = icon

@@ -9,7 +9,6 @@ import pickle
 import shutil
 import time
 
-import six
 import yaml
 
 from . import up_path, up_utils
@@ -402,7 +401,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             if catch:
                 return {}
             raise _exc
-        assert isinstance(_body, six.string_types)
+        assert isinstance(_body, str)
 
         # Parse contents
         try:
@@ -609,7 +608,7 @@ class MetadataFile(File):
         _kwarg = single(list(kwargs.items()))
         _key, _val = _kwarg
         _LOGGER.debug(' - KEY/VAL %s %s', _key, _val)
-        assert isinstance(_val, (six.string_types, float, int, dict))
+        assert isinstance(_val, (str, float, int, dict))
         _data = self._read_metadata()
         if _data.get(_key) == _val:
             _LOGGER.debug(' - VAL ALREADY SET')

@@ -68,7 +68,7 @@ class CExportHandler(object):
         _settings_key = settings_key or _to_settings_key(
             name=name, handler=self)
         elem.set_settings_key(_settings_key)
-        _save_policy = save_policy or qt.SavePolicy.SAVE_ON_CHANGE
+        _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
         elem.load_setting()

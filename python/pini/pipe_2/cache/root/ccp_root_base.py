@@ -14,8 +14,6 @@ objects as their types have CCP prefix, rather than just CP.
 import logging
 import time
 
-import six
-
 from pini.utils import (
     single, passes_filter, nice_age, norm_path, Path, flush_caches)
 
@@ -173,7 +171,7 @@ class CCPRootBase(elem.CPRoot):
         if isinstance(_match, Path):
             _match = _match.path
 
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
 
             _match = norm_path(_match)
             _LOGGER.debug(' - STR MATCH %s', _match)
@@ -330,7 +328,7 @@ class CCPRootBase(elem.CPRoot):
 
         if isinstance(_match, Path):
             _match = _match.path
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             _match = norm_path(_match)
             _LOGGER.debug(' - STR MATCH %s', _match)
             if _match.count('/') == 1:
@@ -366,7 +364,7 @@ class CCPRootBase(elem.CPRoot):
                 isinstance(_match, Path)):
             _match = _match.path
             _LOGGER.debug(' - CONVERTED MATCH TO STR')
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             try:
                 _match = elem.CPWorkDir(_match)
                 _LOGGER.debug(' - CONVERTED MATCH TO WORK DIR')
@@ -407,7 +405,7 @@ class CCPRootBase(elem.CPRoot):
 
         _match = match
         _LOGGER.debug('OBT WORK %s', _match)
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             _match = elem.to_work(_match)
 
         if isinstance(_match, elem.CPWork):
@@ -453,7 +451,7 @@ class CCPRootBase(elem.CPRoot):
             _LOGGER.debug(' - CONVERT TO STRING %s', match)
 
         # Convert a string to an output
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             _LOGGER.debug(' - CONVERT TO OUTPUT')
             try:
                 _match = elem.to_output(_match)

@@ -137,14 +137,16 @@ class TestHelper(unittest.TestCase):
 
     def test_scene_refs_filter(self):
 
-        _filters = [helper.DIALOG.ui.SSceneRefsShowLookdevs,
-                    helper.DIALOG.ui.SSceneRefsShowRigs,
-                    helper.DIALOG.ui.SSceneRefsShowAbcs]
-        helper.DIALOG.ui.SSceneRefsTypeFilterReset.click()
+        _helper = helper.obt_helper()
+
+        _filters = [_helper.ui.SSceneRefsShowLookdevs,
+                    _helper.ui.SSceneRefsShowRigs,
+                    _helper.ui.SSceneRefsShowAbcs]
+        _helper.ui.SSceneRefsTypeFilterReset.click()
         for _filter in _filters:
             assert not _filter.isChecked()
-        helper.DIALOG.ui.SSceneRefsShowRigs.setChecked(True)
-        helper.DIALOG.ui.SSceneRefsTypeFilterReset.click()
+        _helper.ui.SSceneRefsShowRigs.setChecked(True)
+        _helper.ui.SSceneRefsTypeFilterReset.click()
         for _filter in _filters:
             assert not _filter.isChecked()
 

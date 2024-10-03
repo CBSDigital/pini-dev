@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from pini.utils import single, EMPTY
 
 from .qw_base_widget import CBaseWidget
@@ -251,7 +249,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                     _sel_idx = _idx
                 elif _data and _data == select:
                     _sel_idx = _idx
-                elif isinstance(select, six.string_types) and _text == select:
+                elif isinstance(select, str) and _text == select:
                     _sel_idx = _idx
                 elif isinstance(select, (list, set)) and (
                         (_data and _data in select) or

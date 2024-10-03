@@ -5,8 +5,6 @@
 import logging
 import math
 
-import six
-
 from pini import dcc
 from pini.utils import basic_repr, EMPTY, File
 
@@ -85,7 +83,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
             # Build strip pixmap
             if not self._filmstrip_pix:
                 _LOGGER.debug(' - BUILDING FILMSTRIP %s', self.filmstrip)
-                if isinstance(self._filmstrip_pix, (six.string_types, File)):
+                if isinstance(self._filmstrip_pix, (str, File)):
                     assert File(self._filmstrip_pix).exists()
                 self._filmstrip_pix = qt.CPixmap(self.filmstrip)
 

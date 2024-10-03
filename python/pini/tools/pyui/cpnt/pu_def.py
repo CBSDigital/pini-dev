@@ -3,13 +3,14 @@
 # pylint: disable=too-many-instance-attributes
 
 import functools
+import importlib
 import inspect
 import logging
 
 from pini import icons
 from pini.tools import usage, error
 from pini.utils import (
-    abs_path, str_to_seed, to_nice, basic_repr, single, PyFile, six_reload)
+    abs_path, str_to_seed, to_nice, basic_repr, single, PyFile)
 
 from . import pu_arg
 
@@ -160,7 +161,7 @@ class PUDef(object):
         _mod = _py.to_module()
         _LOGGER.debug(' - MOD %s', _mod)
         if not self.block_reload:
-            six_reload(_mod)
+            importlib.reload(_mod)
         _LOGGER.debug(' - RELOADED MODULE')
         _func = getattr(_mod, self.py_def.name)
         _LOGGER.debug(' - FUNC %s', _func)

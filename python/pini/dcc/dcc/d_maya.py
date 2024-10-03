@@ -5,8 +5,6 @@
 import inspect
 import logging
 
-import six
-
 from maya import cmds
 
 from pini.utils import single, wrap_fn, EMPTY, Path, abs_path
@@ -147,7 +145,7 @@ class MayaDCC(BaseDCC):
         _LOGGER.debug('CREATE REF %s', namespace)
 
         _path = path
-        if isinstance(_path, six.string_types):
+        if isinstance(_path, str):
             _path = Path(abs_path(_path))
         _LOGGER.debug(' - PATH %s', path)
 

@@ -8,8 +8,6 @@ import logging
 import os
 import tempfile
 
-import six
-
 from ..u_error import DebuggingError
 from ..u_misc import dprint, lprint, check_logging_level
 
@@ -125,7 +123,7 @@ def abs_path(path, win=False, root=None):
     _path = path
     if isinstance(_path, Path):
         _path = _path.path
-    if not isinstance(_path, six.string_types):
+    if not isinstance(_path, str):
         raise ValueError('bad type {}'.format(_path))
     _path = str(_path)  # convert unicode
     _path = _path.strip('"')
@@ -284,7 +282,7 @@ def norm_path(path):
         raise ValueError(_path)
 
     # Handle Path/Seq objects
-    if hasattr(_path, 'path') and isinstance(_path.path, six.string_types):
+    if hasattr(_path, 'path') and isinstance(_path.path, str):
         _path = _path.path
 
     _path = _path.strip('"')

@@ -8,8 +8,6 @@ import operator
 import os
 import time
 
-import six
-
 from pini import pipe, dcc
 from pini.utils import (
     passes_filter, File, PyFile, cache_result, abs_path, Dir, single,
@@ -117,7 +115,7 @@ def find_checks(  # pylint: disable=too-many-branches
         elif _task is None:
             if _check.task_filter:
                 continue
-        elif isinstance(_task, six.string_types):
+        elif isinstance(_task, str):
             if not passes_filter(_task, _check.task_filter):
                 _LOGGER.debug(
                     '   - REJECTED TASK task=%s filter=%s',

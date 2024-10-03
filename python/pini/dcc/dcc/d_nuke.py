@@ -5,7 +5,6 @@
 import logging
 
 import nuke
-import six
 
 from pini.utils import (
     abs_path, File, Seq, check_heart, passes_filter, to_str)
@@ -413,7 +412,7 @@ class NukeDCC(BaseDCC):
         _args = _key, key, val
         if isinstance(val, bool):
             _class = nuke.Boolean_Knob
-        elif isinstance(val, six.string_types):
+        elif isinstance(val, str):
             _class = nuke.String_Knob
         elif isinstance(val, int):
             _class = nuke.Int_Knob

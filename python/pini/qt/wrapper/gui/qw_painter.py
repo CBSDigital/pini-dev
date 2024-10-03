@@ -3,8 +3,6 @@
 import logging
 import math
 
-import six
-
 from ...q_mgr import QtGui, Qt, QtCore
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,7 +77,7 @@ class CPainter(QtGui.QPainter):
         from pini import qt
 
         # Check args
-        if not isinstance(text, six.string_types):
+        if not isinstance(text, str):
             raise TypeError("Bad text type {} ({})".format(
                 text, type(text).__name__))
         if size is not None and not int(size):

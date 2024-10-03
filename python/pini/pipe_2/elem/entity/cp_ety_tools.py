@@ -3,8 +3,6 @@
 import logging
 import re
 
-import six
-
 from pini import dcc
 from pini.utils import to_str
 
@@ -76,7 +74,7 @@ def to_entity(path, job=None, catch=False):
         return path
 
     # Treat as job/shot label
-    if isinstance(path, six.string_types) and path.count('/') == 1:
+    if isinstance(path, str) and path.count('/') == 1:
         _job_s, _ety_s = path.split('/')
         _job = job or pipe.find_job(_job_s)
         return _job.find_entity(_ety_s)

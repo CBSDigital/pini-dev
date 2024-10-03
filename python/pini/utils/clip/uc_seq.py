@@ -9,7 +9,6 @@ from . import uc_clip
 from ..u_error import DebuggingError
 from ..u_text import plural
 from ..u_misc import single, strftime, EMPTY, ints_to_str
-from ..u_six import six_cmp
 
 from ..cache import cache_method_to_file
 from ..path import Path, norm_path, Dir, File, abs_path
@@ -648,11 +647,6 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 nuke.delete(_node)
 
         return _video
-
-    def __cmp__(self, other):
-        if isinstance(other, Seq):
-            return six_cmp(self.path, other.path)
-        return six_cmp(self.path, other)
 
     def __eq__(self, other):
         if not isinstance(other, Seq):

@@ -6,8 +6,6 @@ import os
 import pprint
 import time
 
-import six
-
 from pini import qt, pipe
 from pini.tools import usage
 from pini.utils import single, to_time_f, strftime, basic_repr
@@ -346,7 +344,7 @@ def submit(output, comment=None, burnins=False, force=False):
 
     # Check output
     _out = output
-    if isinstance(_out, six.string_types):
+    if isinstance(_out, str):
         _out = pipe.to_output(_out)
 
     # Execute submit

@@ -1,7 +1,5 @@
 """Tools for managing release versions."""
 
-from pini.utils import six_cmp
-
 RELEASE_TYPES = ('major', 'minor', 'patch')
 
 
@@ -51,9 +49,6 @@ class PRVersion(object):
         else:
             raise ValueError(type_)
         return PRVersion('.'.join(str(_val) for _val in _vals))
-
-    def __cmp__(self, other):
-        return six_cmp(self.cmp_str, other.cmp_str)
 
     def __eq__(self, other):
         return self.cmp_str == other.cmp_str

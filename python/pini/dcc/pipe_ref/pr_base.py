@@ -4,7 +4,7 @@ import functools
 
 from pini import pipe
 from pini.pipe import cache
-from pini.utils import six_cmp, File, split_base_index
+from pini.utils import File, split_base_index
 
 
 class CPipeRef(object):
@@ -182,9 +182,6 @@ class CPipeRef(object):
             out (str): out to apply
         """
         raise NotImplementedError
-
-    def __cmp__(self, other):
-        return six_cmp(self.cmp_str, other.cmp_str)
 
     def __eq__(self, other):
         return self.cmp_str == other.cmp_str

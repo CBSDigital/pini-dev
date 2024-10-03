@@ -4,7 +4,6 @@ import logging
 import re
 
 import nuke
-import six
 
 from pini import pipe, qt
 from pini.pipe import cache
@@ -38,7 +37,7 @@ class CAutowrite2(object):
             node (Node): autowrite 2.0 node
         """
         _node = node
-        if isinstance(_node, six.string_types):
+        if isinstance(_node, str):
             _node = nuke.toNode(_node)
         self.node = _node
 

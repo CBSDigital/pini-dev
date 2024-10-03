@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from pini.tools import release
 from pini.utils import single
 
@@ -77,7 +75,7 @@ def to_step_data(match, entity_type=None):
     if isinstance(match, int):
         return single(_item for _item in _data if _item['id'] == match)
 
-    if isinstance(match, six.string_types):
+    if isinstance(match, str):
         return single(_item for _item in _data if _item['code'] == match)
 
     raise ValueError(match)

@@ -1,7 +1,5 @@
 """Tools for managing QColor wrapper."""
 
-import six
-
 from pini.utils import val_map, basic_repr, single
 
 from ...q_mgr import QtGui
@@ -23,7 +21,7 @@ class CColor(QtGui.QColor):
         # Apply extended colour names
         _args = args
         _arg = single(_args, catch=True)
-        if isinstance(_arg, six.string_types):
+        if isinstance(_arg, str):
             _name = _arg.lower()
             _args = _EXTENDED_COLS.get(_name, _args)
 

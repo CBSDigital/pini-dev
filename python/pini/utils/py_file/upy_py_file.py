@@ -3,6 +3,7 @@
 import ast
 import inspect
 import logging
+import importlib
 import sys
 
 from ..path import File, Dir
@@ -86,8 +87,6 @@ class PyFile(File, PyElem):
         Returns:
             (mod): module
         """
-        from pini.utils import six_reload
-
         _mod_name = self.to_module_name()
 
         # Import module
@@ -99,7 +98,7 @@ class PyFile(File, PyElem):
             raise _exc
 
         if reload_:
-            six_reload(_mod)
+            importlib.reload(_mod)
 
         return _mod
 

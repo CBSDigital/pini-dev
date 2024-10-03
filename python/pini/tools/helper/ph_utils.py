@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from pini import icons, qt, pipe, dcc
 from pini.qt import QtGui
 from pini.utils import str_to_seed, cache_result, Seq, Video, File, to_str
@@ -268,7 +266,7 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
 
     # Obtain overlay path
     _overlay = overlay
-    if isinstance(_overlay, six.string_types) and '/' not in _overlay:
+    if isinstance(_overlay, str) and '/' not in _overlay:
         _overlay = icons.find(_overlay)
 
     # Build pixmap

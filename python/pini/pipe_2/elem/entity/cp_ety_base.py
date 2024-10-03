@@ -6,8 +6,6 @@ import copy
 import logging
 import os
 
-import six
-
 from pini import dcc
 from pini.utils import single, EMPTY, passes_filter, cache_result
 
@@ -488,7 +486,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _tag = tag or self.job.cfg['tokens']['tag']['default']
         if isinstance(template, pipe.CPTemplate):
             _tmpl = template
-        elif isinstance(template, six.string_types):
+        elif isinstance(template, str):
             _want_key = {
                 'output_type': bool(output_type)}
             _LOGGER.debug(' - WANT KEY %s', _want_key)

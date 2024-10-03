@@ -1,6 +1,7 @@
 """Miscellaneous utilities."""
 
 import copy
+import collections
 import datetime
 import getpass
 import os
@@ -13,8 +14,6 @@ import subprocess
 import time
 import types
 import sys
-
-import six
 
 _LOGGER = logging.getLogger(__name__)
 _EXES = {}
@@ -231,9 +230,8 @@ def last(items):
     Returns:
         (list): list of data pairs
     """
-    from .u_six import SixIterable
     _items = items
-    if isinstance(_items, (enumerate, SixIterable)):
+    if isinstance(_items, (enumerate, collections.abc.Iterable)):
         _items = list(_items)
     _last_idx = len(_items) - 1
     return [(_idx == _last_idx, _item) for _idx, _item in enumerate(_items)]
@@ -553,15 +551,14 @@ def single(
     Raises:
         (ValueError): if there was not exactly one item in the list
     """
-    from pini.utils import SixIterable
     _LOGGER.debug('SINGLE type=%s %s', type(items), items)
 
     # Obtain item list
     _items = items
-    _iterables = SixIterable
+    _iterables = collections.abc.Iterable
     if (
             not isinstance(_items, (list, tuple)) and
-            isinstance(_items, SixIterable)):
+            isinstance(_items, collections.abc.Iterable)):
         _items = tuple(_items)
 
     # Handle fail
@@ -712,7 +709,7 @@ class _RandFromStr(random.Random):
         self.string = string
         self.offset = offset
 
-        if not isinstance(string, six.string_types):
+        if not isinstance(string, str):
             raise ValueError(f'Not string {string} ({type(string)})')
 
         # Build seed
@@ -834,7 +831,7 @@ def to_str(obj):
         return ''
     if isinstance(obj, (Path, Seq)):
         return obj.path
-    if isinstance(obj, six.string_types):
+    if isinstance(obj, str):
         return obj
     if isinstance(obj, (float, int)):
         return str(obj)
@@ -864,7 +861,7 @@ def to_time_f(val):
         if sys.version_info.major == 2:
             return time.mktime(val.timetuple()) + val.microsecond / 1e6
         raise NotImplementedError(sys.version_info.major)
-    if isinstance(val, six.string_types):
+    if isinstance(val, str):
         return to_time_f(to_time_t(val))
     raise NotImplementedError('Failed to map {} - {}'.format(
         type(val).__name__, val))
@@ -889,7 +886,7 @@ def to_time_t(val=None):
         return val.timetuple()
 
     # Convert from string
-    if isinstance(val, six.string_types):
+    if isinstance(val, str):
         for _fmt in (
                 '%d/%m/%y',
                 '%Y-%m-%dT%H:%M:%SZ',

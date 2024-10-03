@@ -1,12 +1,13 @@
 """Tools for managing the basic maya publish handler."""
 
 import copy
+import enum
 import logging
 
 from maya import cmds
 
 from pini import pipe, dcc, qt
-from pini.utils import single, SixIntEnum, to_nice, to_snake
+from pini.utils import single, to_nice, to_snake
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
@@ -19,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 _REFERENCES_MODE_KEY = 'PiniQt.Publish.References'
 
 
-class ReferencesMode(SixIntEnum):
+class ReferencesMode(enum.IntEnum):
     """Enum for managing how to handle references on publish."""
 
     REMOVE = 1

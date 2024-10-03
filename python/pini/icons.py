@@ -6,8 +6,6 @@ import logging
 import os
 import re
 
-import six
-
 try:
     from HTMLParser import HTMLParser
 except ImportError:
@@ -140,12 +138,12 @@ class _EmojiSet(Seq):
             _idx = None
             if isinstance(match, int):
                 _idx = match
-            elif isinstance(match, six.string_types) and match.isdigit():
+            elif isinstance(match, str) and match.isdigit():
                 _idx = int(match)
 
             # Match by index/name/filter
             for _o_emoji in self._emojis:  # pylint: disable=not-an-iterable
-                if isinstance(match, six.string_types):
+                if isinstance(match, str):
                     if _o_emoji.name.lower() == match.lower():
                         _emoji = _o_emoji
                         break

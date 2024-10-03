@@ -7,8 +7,6 @@ import os
 import pprint
 import webbrowser
 
-import six
-
 from pini import pipe, icons, dcc, qt
 from pini.dcc import pipe_ref
 from pini.qt import QtGui
@@ -491,7 +489,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         elif _profile == 'shots':
             _data = _job.find_sequences()
             _types = [
-                _seq if isinstance(_seq, six.string_types) else _seq.name
+                _seq if isinstance(_seq, str) else _seq.name
                 for _seq in _data]
         else:
             raise ValueError(_profile)

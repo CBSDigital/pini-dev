@@ -143,6 +143,11 @@ class CSettings(QtCore.QSettings, File):
             widget.setCurrentIndex(_val)
         elif isinstance(widget, QtWidgets.QTextEdit):
             widget.setPlainText(_val)
+
+        # Do nothing (may have accidentally been saved in settings)
+        elif isinstance(widget, QtWidgets.QLabel):
+            pass
+
         else:
             _LOGGER.info('FAILED TO APPLY SETTING %s %s', widget, _val)
 

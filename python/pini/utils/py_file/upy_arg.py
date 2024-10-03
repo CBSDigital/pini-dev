@@ -2,6 +2,8 @@
 
 from ..u_misc import EMPTY, basic_repr
 
+DIR_FILES = True
+
 
 class PyArg(object):
     """Represents an argument to a python function."""

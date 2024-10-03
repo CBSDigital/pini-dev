@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes,no-member
 
+import collections
 import copy
 import functools
 import logging
@@ -11,7 +12,7 @@ import time
 
 from pini.utils import (
     plural, check_heart, to_time_t, str_to_seed, dprint, HOME,
-    SixIterable, basic_repr, apply_filter)
+    basic_repr, apply_filter)
 
 from ..q_mgr import QtWidgets, QtCore
 
@@ -89,7 +90,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             raise RuntimeError("Cannot create progress bar in batch mode")
 
         _items = items
-        if isinstance(_items, (enumerate, SixIterable)):
+        if isinstance(_items, (enumerate, collections.abc.Iterable)):
             _items = list(_items)
         self.items = _items
 

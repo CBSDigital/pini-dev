@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from maya import cmds
 from maya.api import OpenMaya as om
 
@@ -58,7 +56,7 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
     _node = node
 
     # Determine type
-    assert isinstance(_node, six.string_types)
+    assert isinstance(_node, str)
     _type = type_ or cmds.objectType(node)
     _LOGGER.debug(' - TYPE %s', _type)
 
@@ -436,7 +434,7 @@ def to_mesh(node, class_=None):
     from maya_pini import open_maya as pom
     _class = class_ or pom.CMesh
     _node = node
-    if isinstance(_node, six.string_types):
+    if isinstance(_node, str):
         _type = cmds.objectType(_node)
         if _type == 'mesh':
             _node = to_parent(_node)
@@ -464,7 +462,7 @@ def to_mobject(node):
     _node = node
     if isinstance(_node, pom.CBaseNode):
         _node = str(_node)
-    if not isinstance(_node, six.string_types):
+    if not isinstance(_node, str):
         raise NotImplementedError(_node)
 
     # Build tmp selection list
@@ -573,7 +571,7 @@ def to_node(obj):
 
     if isinstance(obj, pom.CBaseNode):
         return obj
-    if isinstance(obj, six.string_types):
+    if isinstance(obj, str):
         return pom.CNode(_to_node(obj))
     if isinstance(obj, pom.CPlug):
         return obj.node
@@ -599,7 +597,7 @@ def to_p(*args):
 
         # Read point from object
         if isinstance(_arg, (
-                six.string_types,
+                str,
                 pom.CBaseNode,
                 pom.CPlug)):
             _val = cmds.xform(

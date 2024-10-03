@@ -9,7 +9,7 @@ import shiboken2
 from maya import OpenMayaUI, cmds, mel
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin, MayaQDockWidget
 
-from pini.utils import wrap_fn, six_long
+from pini.utils import wrap_fn
 
 from ..q_mgr import QtWidgets, Qt
 
@@ -77,8 +77,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
             cmds.deleteUI(self.ws_name)
 
         # Important that it's QMainWindow, and not QWidget/QDialog
-        _main_win_ptr = OpenMayaUI.MQtUtil.mainWindow()
-        _main_win_ptr = six_long(_main_win_ptr)
+        _main_win_ptr = int(OpenMayaUI.MQtUtil.mainWindow())
         _main_win = shiboken2.wrapInstance(
             _main_win_ptr, QtWidgets.QMainWindow)
 

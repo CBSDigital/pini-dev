@@ -6,7 +6,6 @@ import inspect
 import logging
 
 import hou
-import six
 
 from pini.utils import File, abs_path, check_heart, lprint
 
@@ -56,7 +55,7 @@ class HouDCC(BaseDCC):
             name (str): uid for item
             verbose (int): print process data
         """
-        if isinstance(command, six.string_types):
+        if isinstance(command, str):
             _cmd = command
         else:
             _mod = inspect.getmodule(command)

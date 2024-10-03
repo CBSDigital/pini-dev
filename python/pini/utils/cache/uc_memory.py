@@ -4,10 +4,7 @@ import functools
 import logging
 import time
 
-try:
-    from inspect import getfullargspec as _get_args  # py3
-except ImportError:
-    from inspect import getargspec as _get_args  # py2
+from inspect import getfullargspec as _get_args  # py3
 
 _LOGGER = logging.getLogger(__name__)
 _RESULTS = {}

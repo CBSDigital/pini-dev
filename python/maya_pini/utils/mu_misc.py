@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from maya import cmds, mel
 
 from pini.utils import single, check_heart, abs_path
@@ -384,7 +382,7 @@ def to_shps(node, type_=None):
     Returns:
         (str list): shapes
     """
-    if not isinstance(node, six.string_types):
+    if not isinstance(node, str):
         raise TypeError('Bad type {} - {}'.format(type(node), node))
     _kwargs = {}
     if type_:

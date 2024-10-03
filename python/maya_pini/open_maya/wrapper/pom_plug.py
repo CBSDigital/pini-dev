@@ -4,8 +4,6 @@ import functools
 import logging
 import re
 
-import six
-
 from maya import cmds
 from maya.api import OpenMaya as om
 
@@ -612,7 +610,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             self.unlock()
 
         # Apply value
-        if isinstance(val, six.string_types):
+        if isinstance(val, str):
             cmds.setAttr(self, val, type='string')
             return
         if isinstance(val, (pom.CArray3, qt.CColor)):
@@ -717,7 +715,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
     """
     _LOGGER.debug('PLUG PLUG')
     _add = cmds.createNode('plusMinusAverage', name=name)
-    _connect_types = tuple(list(six.string_types)+[CPlug])
+    _connect_types = str, CPlug
 
     # Determine attr size
     if isinstance(input1, CPlug):

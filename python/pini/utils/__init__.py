@@ -23,9 +23,6 @@ from .u_mel_file import MelFile
 from .u_ma_file import MaFile
 
 from .u_image import Image
-from .u_six import (
-    six_reload, six_cmp, six_long, SixIterable, SixIntEnum, six_execfile,
-    six_maxint)
 from .u_yaml import register_custom_yaml_handler
 
 from .path import (
@@ -42,4 +39,5 @@ from .clip import (
     Seq, CacheSeq, find_seqs, Video, find_viewers, find_viewer, file_to_seq,
     play_sound)
 
-from .py_file import PyFile, to_py_file, PyDef, PyClass, PyArg, PyElem
+from .py_file import (
+    PyFile, to_py_file, PyDef, PyClass, PyArg, PyElem, PyDefDocs)

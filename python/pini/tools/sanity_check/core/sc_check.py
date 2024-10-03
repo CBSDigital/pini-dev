@@ -3,8 +3,6 @@
 import logging
 import time
 
-import six
-
 from pini import dcc, pipe
 from pini.tools import error
 from pini.utils import to_nice, strftime, nice_age, check_heart
@@ -150,7 +148,7 @@ class SCCheck(object):
         Returns:
             (SCFail): fail
         """
-        if isinstance(fail, six.string_types):
+        if isinstance(fail, str):
             _fail = sc_fail.SCFail(msg=fail, node=node, fix=fix)
         elif isinstance(fail, sc_fail.SCFail):
             _fail = fail

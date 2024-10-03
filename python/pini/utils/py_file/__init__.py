@@ -5,3 +5,4 @@ from .upy_def import PyDef
 from .upy_class import PyClass
 from .upy_arg import PyArg
 from .upy_elem import PyElem
+from .upy_docs import PyDefDocs

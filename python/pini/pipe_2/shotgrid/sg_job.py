@@ -3,8 +3,6 @@
 import logging
 import os
 
-import six
-
 from pini import qt, pipe
 from pini.tools import release
 from pini.utils import single, norm_path
@@ -38,7 +36,7 @@ def create_job(job, force=False):
     # Determine job name
     if isinstance(job, pipe.CPJob):
         _job = job
-    elif isinstance(job, six.string_types):
+    elif isinstance(job, str):
         assert '/' not in norm_path(job)
         _job = pipe.to_job(job)
     else:
@@ -159,7 +157,7 @@ def to_job_data(job=None, create=True, force=False):
         (dict): shotgrid job data
     """
     _job = job
-    if isinstance(_job, six.string_types):
+    if isinstance(_job, str):
         _job = pipe.CPJob(_job)
     if not _job:
         _job = pipe.cur_job()

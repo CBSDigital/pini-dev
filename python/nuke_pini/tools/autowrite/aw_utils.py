@@ -1,6 +1,6 @@
 """General utilities for autowrite 2.0."""
 
-from pini.utils import SixIntEnum
+import enum
 
 COL_FMT = '<p style="color:{col};">{text}</p>'
 
@@ -14,7 +14,7 @@ RENDER_COL = 'CornflowerBlue'
 PLATE_COL = 'MediumSpringGreen'
 
 
-class UpdateLevel(SixIntEnum):
+class UpdateLevel(enum.IntEnum):
     """Enum for managing levels of autowrite update."""
 
     JOB = 0

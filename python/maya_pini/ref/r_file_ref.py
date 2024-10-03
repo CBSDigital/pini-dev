@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import six_cmp, File, single, passes_filter, safe_zip, EMPTY
+from pini.utils import File, single, passes_filter, safe_zip, EMPTY
 from maya_pini.utils import (
     to_namespace, set_namespace, del_namespace, to_clean)
 
@@ -346,11 +346,6 @@ class FileRef(r_path_ref.PathRef):
             if str(_exc) == 'Maya command error':
                 raise RuntimeError('Maya errored on opening file '+_file.path)
             raise _exc
-
-    def __cmp__(self, other):
-        if isinstance(other, FileRef):
-            return six_cmp(self.path_uid, other.path_uid)
-        return six_cmp(self.path_uid, other)
 
     def __eq__(self, other):
         return hash(self.path_uid)

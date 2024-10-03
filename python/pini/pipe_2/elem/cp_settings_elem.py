@@ -7,8 +7,6 @@ job/sequence/shot object.
 import logging
 import os
 
-import six
-
 from pini.utils import (
     cache_on_obj, Dir, single, File, cache_result, merge_dicts)
 
@@ -147,7 +145,7 @@ class CPSettingsLevel(Dir):
         """
         assert len(kwargs) == 1
         _key, _val = single(list(kwargs.items()))
-        assert isinstance(_key, six.string_types)
+        assert isinstance(_key, str)
 
         # Update dict
         _this = self.settings_file.read_yml(catch=True) or {}

@@ -6,8 +6,6 @@ import functools
 import logging
 import time
 
-import six
-
 from pini import icons
 from pini.utils import single, cache_method_to_file, str_to_seed
 
@@ -287,13 +285,13 @@ class CCPJobBase(CPJob):
         _LOGGER.log(9, 'FIND ENTITY %s', match)
 
         _match = match
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             _ety = pipe.to_entity(_match)
             if _ety:
                 _match = _ety
                 _LOGGER.debug(' - MAPPED TO ENTITY %s', _match)
 
-        if isinstance(_match, six.string_types):
+        if isinstance(_match, str):
             _LOGGER.debug(' - STR MATCH %s', _match)
             _matches = [_ety for _ety in self.entities
                         if _ety.name == _match]

@@ -6,8 +6,6 @@ import logging
 import operator
 import os
 
-import six
-
 from pini import dcc, icons
 from pini.utils import (
     Dir, abs_path, single, norm_path, merge_dicts, to_str,
@@ -562,7 +560,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         # Get sequence dirs to search
         if isinstance(sequence, pipe.CPSequence):
             _seqs = [sequence]
-        elif isinstance(sequence, six.string_types):
+        elif isinstance(sequence, str):
             _seq = self.find_sequence(sequence)
             _seqs = [_seq] if _seq else []
         elif sequence is None:
@@ -633,7 +631,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         from pini import pipe
         _LOGGER.debug('FIND ENTITY %s', match)
 
-        if isinstance(match, six.string_types):
+        if isinstance(match, str):
             if '.' in match:
                 return self.find_asset(match)
             return self.find_shot(match)

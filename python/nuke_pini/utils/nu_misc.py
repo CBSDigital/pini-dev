@@ -1,7 +1,6 @@
 """General selection utilities for nuke."""
 
 import nuke
-import six
 
 
 def clear_selection():
@@ -19,7 +18,7 @@ def set_node_col(node, col):
     """
     from pini import qt
     _node = node
-    if isinstance(_node, six.string_types):
+    if isinstance(_node, str):
         _node = nuke.toNode(_node)
 
     _name = qt.CColor(col).name().strip('#')+'ff'

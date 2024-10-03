@@ -1,7 +1,5 @@
 """Tools for managing mesh UVs."""
 
-import six
-
 from maya import cmds
 
 from pini.utils import basic_repr
@@ -18,7 +16,7 @@ def to_uv(uv):
     """
     if isinstance(uv, PUV):
         return uv
-    if isinstance(uv, six.string_types):
+    if isinstance(uv, str):
         _vals = cmds.polyEditUV(uv, query=True)
         return PUV(_vals)
     return PUV(uv)

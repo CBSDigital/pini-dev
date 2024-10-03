@@ -4,6 +4,7 @@ NOTE: this should be as low level as possible to allow usage in
 environments where qt is not availabe (eg. C4D).
 """
 
+import importlib
 import logging
 import os
 import sys
@@ -11,15 +12,13 @@ import time
 import traceback
 import types
 
-from pini.utils import (
-    apply_filter, six_reload, lprint, abs_path, check_heart)
+from pini.utils import apply_filter, lprint, abs_path, check_heart
 
 _LOGGER = logging.getLogger(__name__)
 
 _RELOAD_ORDER = [
     'pini.utils.u_misc',
     'pini.utils.u_yaml',
-    'pini.utils.u_six',
     'pini.utils.path.up_utils',
     'pini.utils.path.up_path',
     'pini.utils.path',
@@ -331,7 +330,7 @@ def _reload_mod(mod, sort, catch=False, verbose=0):
     # Try to reload
     _start = time.time()
     try:
-        six_reload(mod)
+        importlib.reload(mod)
     except ImportError as _exc:
         print("### RELOAD ERROR ###")
         print(traceback.format_exc())

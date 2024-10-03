@@ -1,10 +1,11 @@
+import importlib
 import logging
 import unittest
 
 import pini
 
 from pini.tools import usage, error, pyui
-from pini.utils import File, PyFile, six_reload, assert_eq
+from pini.utils import File, PyFile, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
 _DIR = File(__file__).to_dir()
@@ -44,7 +45,7 @@ class TestPyui(unittest.TestCase):
 
         _mod = PyFile(_TEST_PY).to_module()
         _LOGGER.info(' - MOD %s', _mod)
-        six_reload(_mod)
+        importlib.reload(_mod)
         _LOGGER.info(' - RELOADED')
         assert isinstance(_mod.print_something, pyui.PUDef)
 

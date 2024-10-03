@@ -1,5 +1,6 @@
 """Tools for sending emails using an SMPT server."""
 
+import collections
 import email
 import logging
 import os
@@ -11,8 +12,6 @@ except ImportError:
     from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
-
-import six
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,17 +34,17 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
         server (str): force SMTP server
         attach (File list): files to attach
     """
-    from pini.utils import File, SixIterable
+    from pini.utils import File
 
     _server = server or _EMAIL_SERVER
     _from = from_ or FROM_EMAIL
 
     assert _from
     assert _server
-    assert isinstance(attach, SixIterable)
+    assert isinstance(attach, collections.abc.Iterable)
 
-    _to = [to_] if isinstance(to_, six.string_types) else to_
-    _cc = [cc_] if isinstance(to_, six.string_types) else cc_
+    _to = [to_] if isinstance(to_, str) else to_
+    _cc = [cc_] if isinstance(to_, str) else cc_
 
     _email = MIMEMultipart('alternative')
     _email['Subject'] = subject
@@ -60,9 +59,9 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
 
     # Add attachments
     if attach:
-        if isinstance(attach, (six.string_types, File)):
+        if isinstance(attach, (str, File)):
             _attach = [attach]
-        elif isinstance(attach, SixIterable):
+        elif isinstance(attach, collections.abc.Iterable):
             _attach = attach
         else:
             raise ValueError(attach)

@@ -5,8 +5,6 @@
 import logging
 import sys
 
-import six
-
 from pini import icons, qt, dcc
 from pini.qt import QtWidgets, QtGui, Qt
 from pini.utils import wrap_fn, File
@@ -194,7 +192,7 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
                 data=arg.choices, select=arg.default)
             _read_fn = _field.selected_data
             _set_fn = _field.select_data
-        elif isinstance(arg.default, six.string_types) or arg.default is None:
+        elif isinstance(arg.default, str) or arg.default is None:
             _field = QtWidgets.QLineEdit()
             if arg.default:
                 _field.setText(arg.default)

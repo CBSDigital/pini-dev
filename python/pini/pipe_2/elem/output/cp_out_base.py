@@ -6,7 +6,6 @@ import copy
 import logging
 
 import lucidity
-import six
 
 from pini import dcc
 from pini.utils import EMPTY, single
@@ -508,7 +507,7 @@ class CPOutputBase(object):
 
         # Obtain template
         _tmpl = template or self.template
-        if isinstance(_tmpl, six.string_types):
+        if isinstance(_tmpl, str):
             _tmpl = self.entity.find_template(
                 _tmpl, has_key={'tag': bool('tag' in kwargs or self.tag)})
         assert isinstance(_tmpl, pipe.CPTemplate)

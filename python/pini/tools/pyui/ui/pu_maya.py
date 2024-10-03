@@ -1,16 +1,15 @@
 """Tools for managing pyui interfaces in maya."""
 
+import collections
 import logging
 import sys
 import types
-
-import six
 
 from maya import cmds
 
 from pini import icons, qt, refresh
 from pini.tools import pyui
-from pini.utils import wrap_fn, copy_text, chain_fns, EMPTY, SixIterable
+from pini.utils import wrap_fn, copy_text, chain_fns, EMPTY
 
 from maya_pini import ui
 
@@ -136,7 +135,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         if arg.selection:
             _type = None
             _tooltip = 'Get selection'
-            if isinstance(arg.selection, six.string_types):
+            if isinstance(arg.selection, str):
                 _type = arg.selection
                 _tooltip = 'Get selected '+_type
             cmds.iconTextButton(
@@ -187,7 +186,8 @@ class PUMayaUi(pu_base.PUBaseUi):
         if _default is None or _default is EMPTY:
             _default = ''
         if arg.choices:
-            if isinstance(arg.choices, (tuple, list, set, SixIterable)):
+            if isinstance(
+                    arg.choices, (tuple, list, set, collections.abc.Iterable)):
                 _choices = arg.choices
                 _select = _default
             elif isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
@@ -212,7 +212,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         elif isinstance(_default, int):
             _field = cmds.intField(value=_default)
             _read_fn = wrap_fn(cmds.intField, _field, query=True, value=True)
-        elif isinstance(_default, six.string_types) or _default is None:
+        elif isinstance(_default, str) or _default is None:
             _LOGGER.debug('   - CREATE TEXTFIELD')
             _field = cmds.textField(text=_default)
             _read_fn = wrap_fn(cmds.textField, _field, query=True, text=True)

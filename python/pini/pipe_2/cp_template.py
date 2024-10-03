@@ -9,7 +9,7 @@ import time
 import lucidity
 
 from pini import dcc
-from pini.utils import six_cmp, File, norm_path, Dir, is_abs, single
+from pini.utils import File, norm_path, Dir, is_abs, single
 
 from .cp_utils import (
     is_valid_token, are_valid_tokens, validate_tokens,
@@ -492,9 +492,6 @@ class CPTemplate(lucidity.Template):
         """
         return self.duplicate(
             pattern=File(self.pattern).to_dir().path, name=name)
-
-    def __cmp__(self, other):
-        return six_cmp(self.cmp_str, other.cmp_str)
 
     def __hash__(self):
         return hash(self.cmp_str)

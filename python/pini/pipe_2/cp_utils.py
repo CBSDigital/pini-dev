@@ -5,7 +5,6 @@ import os
 import re
 
 import lucidity
-import six
 
 from pini.utils import (
     passes_filter, abs_path, single, safe_zip, norm_path, get_user, EMPTY)
@@ -280,7 +279,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     from pini import pipe
 
     # Apply entity level filters
-    assert asset is None or isinstance(asset, six.string_types)
+    assert asset is None or isinstance(asset, str)
     if asset and obj.asset != asset:
         return False
     if asset_type and obj.asset_type != asset_type:
@@ -346,7 +345,7 @@ def task_sort(task):
 
     _task = task or ''
 
-    if not isinstance(_task, six.string_types):
+    if not isinstance(_task, str):
         raise ValueError(_task)
 
     # Test for step (if task has embedded step eg. surf/dev)

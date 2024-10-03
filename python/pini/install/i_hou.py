@@ -4,7 +4,6 @@ import logging
 import os
 
 import hou
-import six
 
 from pini import qt, icons, dcc
 from pini.tools import release
@@ -81,14 +80,14 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _uid = tool.to_uid(prefix=self.prefix)
         if _uid in hou.shelves.tools():
             hou.shelves.tools()[_uid].destroy()
-        if not isinstance(tool.command, six.string_types):
+        if not isinstance(tool.command, str):
             _LOGGER.debug(' - FAILED TO ADD TOOL %s', _uid)
             return None
 
         _LOGGER.debug('    - ADD TOOL %s icon=%s', _uid, tool.icon)
 
         assert '\b' not in tool.command
-        assert isinstance(tool.icon, six.string_types)
+        assert isinstance(tool.icon, str)
         assert os.path.exists(tool.icon)
 
         _tool = hou.shelves.newTool(

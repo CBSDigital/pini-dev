@@ -400,6 +400,7 @@ class CheckRenderGlobals(SCMayaCheck):
 
         elif _ren == 'redshift':
             _to_check += [
+                # ('redshiftOptions.autocrop', True),
                 ('redshiftOptions.exrForceMultilayer', True),
                 ('redshiftOptions.exrMultipart', True)]
 

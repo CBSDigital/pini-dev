@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 
+import importlib
 import inspect
 import logging
 import sys
@@ -10,8 +11,7 @@ import time
 from pini import icons, qt
 from pini.tools import error
 from pini.utils import (
-    PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime,
-    six_reload)
+    PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime)
 
 from .. import cpnt
 
@@ -304,7 +304,7 @@ class PUBaseUi(object):
         _LOGGER.debug('REBUILD')
 
         _mod = self.py_file.to_module()
-        six_reload(_mod)
+        importlib.reload(_mod)
 
         # Obtain fresh copy of class to survive reload
         _type = type(self)

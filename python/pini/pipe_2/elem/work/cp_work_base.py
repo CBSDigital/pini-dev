@@ -10,7 +10,6 @@ import sys
 import time
 
 import lucidity
-import six
 
 from pini import dcc
 from pini.utils import (
@@ -742,7 +741,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if isinstance(template, pipe.CPTemplate):
             return template
 
-        if isinstance(template, six.string_types):
+        if isinstance(template, str):
             _want_key = {}
             for _key in ['output_name', 'output_type', 'tag']:
                 if _key in data:

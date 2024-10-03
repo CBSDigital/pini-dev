@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from maya import cmds
 
 from pini import qt
@@ -95,7 +93,7 @@ class _Shader(pom.CNode):
              - path to file texture to apply
             colspace (str): colourspace for file node (if applicable)
         """
-        if isinstance(col, six.string_types):
+        if isinstance(col, str):
             _col = qt.to_col(col)
             self.col.set_val(_col)
         elif isinstance(col, File):

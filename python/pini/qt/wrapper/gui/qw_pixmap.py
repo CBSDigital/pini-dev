@@ -4,8 +4,6 @@ import logging
 import os
 import sys
 
-import six
-
 from pini.utils import (
     File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled,
     single)
@@ -37,7 +35,7 @@ class CPixmap(QtGui.QPixmap):
         _args = list(args)
         if len(_args) == 1 and isinstance(_args[0], File):
             _args[0] = _args[0].path
-        if len(_args) == 1 and isinstance(_args[0], six.string_types):
+        if len(_args) == 1 and isinstance(_args[0], str):
             error_on_file_system_disabled(path=_args[0])
 
         super(CPixmap, self).__init__(*_args)

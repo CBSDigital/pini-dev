@@ -1,7 +1,5 @@
 """Tools for managing the QMenu wrapper."""
 
-import six
-
 from pini import icons, dcc
 from pini.utils import copy_text, wrap_fn, chain_fns, File
 
@@ -66,7 +64,7 @@ class CMenu(QtWidgets.QMenu):
             edit (bool): add edit action (if available)
         """
         _file = file_
-        if isinstance(_file, six.string_types):
+        if isinstance(_file, str):
             _file = File(file_)
         _exists = _file.exists()
         self.add_action(

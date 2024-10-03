@@ -1,14 +1,13 @@
 """General qt utilities."""
 
+import enum
 import functools
 import logging
 import os
 import sys
 
-import six
-
 from pini.utils import (
-    cache_result, single, HOME_PATH, passes_filter, check_heart, SixIntEnum,
+    cache_result, single, HOME_PATH, passes_filter, check_heart,
     basic_repr, File, build_cache_fmt, check_logging_level)
 
 from .q_mgr import QtWidgets, QtCore, QtGui
@@ -24,7 +23,7 @@ class DialogCancelled(RuntimeError):
     """Raise on dialog cancelled."""
 
 
-class SavePolicy(SixIntEnum):
+class SavePolicy(enum.IntEnum):
     """Enum to manage widget save policy options.
 
     NOTE: Start numbering at zero so that boolean of DEFAULT is still
@@ -206,7 +205,7 @@ def obt_pixmap(file_: str):
     Returns:
         (CPixmap): pixmap
     """
-    assert isinstance(file_, six.string_types)
+    assert isinstance(file_, str)
     return to_pixmap(file_)
 
 
@@ -287,7 +286,7 @@ def to_col(*args):
     if _arg:
         if isinstance(_arg, (qt.CColor, QtGui.QLinearGradient)):
             return _arg
-        if isinstance(_arg, (six.string_types, QtGui.QColor)):
+        if isinstance(_arg, (str, QtGui.QColor)):
             return qt.CColor(_arg)
     if len(_args) in (3, 4):
         if (
@@ -497,7 +496,7 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
             _class = (QtCore.QSizeF if isinstance(_size[0], float)
                       else QtCore.QSize)
             _result = _class(_size[0], _size[1])
-        elif isinstance(_size, six.string_types):
+        elif isinstance(_size, str):
             _result = QtCore.QSize(*[
                 int(_token) for _token in _size.split('x')])
         elif isinstance(_size, int):

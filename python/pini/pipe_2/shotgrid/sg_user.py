@@ -2,8 +2,6 @@
 
 import logging
 
-import six
-
 from pini.tools import release
 from pini.utils import single, get_user
 
@@ -44,7 +42,7 @@ def to_user_data(user=None, catch=True, force=False):
 
     # Read username
     _user = _surname = _id = None
-    if user is None or isinstance(user, six.string_types):
+    if user is None or isinstance(user, str):
         _user = (user or get_user()).lower()
         assert _user
         _surname = _user[1:].lower()

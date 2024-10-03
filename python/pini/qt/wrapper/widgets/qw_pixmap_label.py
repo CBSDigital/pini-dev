@@ -3,8 +3,6 @@
 import logging
 import time
 
-import six
-
 from pini.utils import basic_repr, str_to_seed
 
 from ...q_mgr import QtWidgets, Qt
@@ -62,7 +60,7 @@ class CPixmapLabel(QtWidgets.QLabel):
                       size=_size, outline=None)
         if self.text:
             _LOGGER.debug('TEXT %s', self.text)
-            assert isinstance(self.text, six.string_types)
+            assert isinstance(self.text, str)
             pix.draw_text(self.text, pos=pix.center(), anchor='C')
 
     def redraw(self):

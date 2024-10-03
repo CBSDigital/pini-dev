@@ -4,8 +4,6 @@ import logging
 import os
 import time
 
-import six
-
 from maya import cmds
 from maya.app.general import createImageFormats
 
@@ -257,7 +255,7 @@ def _to_range(range_):
         raise ValueError(range_)
 
     # Interpret as string (eg. 1001-1100)
-    if isinstance(range_, six.string_types):
+    if isinstance(range_, str):
         _frames = str_to_ints(range_)
         return _frames[0], _frames[-1]
 
@@ -318,7 +316,7 @@ def blast(
     from maya_pini import open_maya as pom
 
     _clip = clip
-    if isinstance(_clip, six.string_types):
+    if isinstance(_clip, str):
         _class = Seq if '%04d' in _clip else Video
         _clip = _class(clip)
 

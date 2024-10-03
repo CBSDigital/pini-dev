@@ -7,7 +7,6 @@ import time
 
 from . import up_utils
 from ..u_misc import nice_size, nice_id, strftime
-from ..u_six import six_cmp
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -253,12 +252,6 @@ class Path(object):
         if _parent == self.path:
             return None
         return up_dir.Dir(_parent)
-
-    def __cmp__(self, other):
-        _LOGGER.debug('CMP %s %s', self, other)
-        if isinstance(other, Path):
-            return six_cmp(self.path, other.path)
-        return six_cmp(self.path, other)
 
     def __hash__(self):
         return hash(self.path)

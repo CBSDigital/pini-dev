@@ -3,8 +3,6 @@
 import functools
 import logging
 
-import six
-
 from maya import cmds, mel
 
 from pini import qt
@@ -31,7 +29,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _node = node
         if isinstance(_node, CBaseNode):
             _node = str(_node)
-        if not isinstance(_node, six.string_types):
+        if not isinstance(_node, str):
             raise ValueError(_node)
         self.node = _node
 
@@ -178,8 +176,6 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
 
             # Check type
             _cur_type = type(_val)
-            if _cur_type != str and _cur_type in six.string_types:
-                _cur_type = str
             if _cur_type != type(value):  # pylint: disable=unidiomatic-typecheck
                 raise NotImplementedError(
                     'Type mismatch {}/{}'.format(_cur_type, type(value)))
@@ -214,7 +210,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             _kwargs['attributeType'] = 'bool'
         elif isinstance(value, int):
             _kwargs['attributeType'] = 'long'
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             _kwargs['dataType'] = 'string'
         elif isinstance(value, CBaseNode):
             _kwargs['attributeType'] = 'message'
