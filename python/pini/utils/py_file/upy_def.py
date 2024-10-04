@@ -63,7 +63,8 @@ class PyDef(upy_elem.PyElem):
 
         # Add args
         for _ast_arg in _ast_args:
-            _arg = PyArg(_ast_arg_to_name(_ast_arg), parent=self)
+            _arg = PyArg(
+                _ast_arg_to_name(_ast_arg), parent=self, has_default=False)
             _args.append(_arg)
 
         # Add kwargs
@@ -86,7 +87,7 @@ class PyDef(upy_elem.PyElem):
             else:
                 raise ValueError(_ast_default)
             _LOGGER.debug('   - DEFAULT %s', _default)
-            _arg = PyArg(_name, default=_default, parent=self)
+            _arg = PyArg(_name, default=_default, parent=self, has_default=True)
             _LOGGER.debug('   - ARG %s type=%s', _arg, _arg.type_)
             _args.append(_arg)
 

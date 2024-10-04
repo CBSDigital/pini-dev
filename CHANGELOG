@@ -1,3 +1,19 @@
+## [5.8.0] - Fri 2024-10-04 09:20
+### Summary
+ - Sanity Check:
+    - check render globals fix error on update extn in arnold (skay),
+ - Pini Helper:
+    - maya cache cache bugfix empty abc if cam hidden (nle),
+### Updated
+ - pini.utils.PyElem.find_def added catch arg,
+ - pini.utils.PyArg.has_default added attr + default arg is kwarg,
+ - pini.utils.PyDefDocs added returns/raises handling,
+ - pini.dcc.CFarmRender.ui.VersionUp apply save on change save policy,
+ - pini.testing insert_env_path/insert_sys_path better error on path missing,
+ - maya_pini.utils.set_render_extn added arnold handling,
+ - maya_pini.m_pipe.cache unhide tmp cam,
+
+
 ## [5.7.0] - Thu 2024-10-03 07:56
 ### Summary
  - Pini:

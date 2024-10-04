@@ -192,11 +192,12 @@ class PyElem(object):
         return [_elem for _elem in self.find_children()
                 if isinstance(_elem, PyClass)]
 
-    def find_def(self, match):
+    def find_def(self, match, catch=False):
         """Find a child def of this object.
 
         Args:
             match (str): def name
+            catch (bool): no error if fail to find def
 
         Returns:
             (PyDef): child def
@@ -212,6 +213,8 @@ class PyElem(object):
         if len(_filter_matches) == 1:
             return single(_filter_matches)
 
+        if catch:
+            return None
         raise ValueError(match)
 
     def find_defs(self, internal=None, filter_=None, recursive=False):

@@ -354,9 +354,10 @@ def set_render_extn(extn: str):
     Args:
         extn (str): format to apply
     """
+    from maya_pini import open_maya as pom
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-    if _ren == 'vray':
-        cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
+    if _ren == 'arnold':
+        pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(extn)
     elif _ren == 'mayaSoftware':
         _map = _obt_image_fmts_map()
         _idx = single(_map[extn])
@@ -366,6 +367,8 @@ def set_render_extn(extn: str):
         _map = _obt_image_fmts_map()
         _idx = single(_map[extn])
         _apply_rs_fmt_idx(_idx)
+    elif _ren == 'vray':
+        cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
     else:
         raise NotImplementedError(_ren)
     assert to_render_extn() == extn

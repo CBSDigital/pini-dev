@@ -29,8 +29,6 @@ class TestHelper(unittest.TestCase):
 
     def test_helper_caching(self):
 
-        # assert not error.TRIGGERED
-
         dcc.new_scene(force=True)
 
         # Check outputs exists
@@ -53,7 +51,7 @@ class TestHelper(unittest.TestCase):
         # Check switch helper output tabs with file system disabled
         print()
         _LOGGER.info('CHECK SWITCH OUTPUT TABS')
-        _helper = helper.DIALOG
+        _helper = helper.obt_helper()
         _helper.jump_to(testing.TEST_SHOT)
         for _en in (True, False):
 

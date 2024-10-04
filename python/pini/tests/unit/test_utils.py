@@ -13,7 +13,7 @@ from pini.utils import (
     Path, File, Dir, assert_eq, abs_path, norm_path, HOME_PATH, str_to_ints,
     TMP_PATH, single, find, passes_filter, Seq, cache_result, path, to_nice,
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
-    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, EMPTY,
+    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
     Image, TMP, search_dict_for_key)
 from pini.utils.u_mel_file import _MelExpr
@@ -552,7 +552,8 @@ class TestPyFile(unittest.TestCase):
 
         assert _def
         assert _def.find_args()
-        assert _def.find_arg('myarg').default is EMPTY
+        assert not _def.find_arg('myarg').has_default
+        assert _def.find_arg('myarg').default is None
         assert _def.find_arg('myint').default == 1
         assert _def.find_arg('myfloat').default == 0.1
         assert _def.find_arg('mystr').default == 'a'
@@ -578,9 +579,12 @@ class TestPyFile(unittest.TestCase):
         assert _docs.to_str('Header') == _match
         assert _def.to_docs('Header') == _match
         assert _docs.to_str('SingleLine') == 'Some docs. New line.'
+        assert _docs.returns
+        assert _docs.raises
 
         # Test arg docs
         _test_arg = _def.find_arg('test_arg')
+        assert _test_arg.to_docs()
         assert _test_arg.to_docs().to_str() == 'arg docs'
         _long_arg = _def.find_arg('long_arg')
         assert _long_arg.name == 'long_arg'
@@ -622,7 +626,10 @@ def _py_docs_test(test_arg=None, long_arg=None):
             - long
             - docs
 
-    Result:
+    Returns:
         (int): exit code
+
+    Raises:
+        (ValueError): if something happens
     """
     return 1

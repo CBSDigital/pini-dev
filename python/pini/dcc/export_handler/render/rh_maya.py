@@ -239,7 +239,8 @@ class CMayaFarmRender(CMayaRenderHandler):
             label='Hide image planes',
             tooltip='Hide image planes before submission')
         self.ui.VersionUp = self.add_checkbox_elem(
-            name='VersionUp', val=False,
+            name='VersionUp', val=True,
+            save_policy=qt.SavePolicy.SAVE_ON_CHANGE,
             label='Version up on render',
             tooltip='Version up scene file after render submitted')
         self.add_separator_elem()

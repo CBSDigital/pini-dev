@@ -8,16 +8,19 @@ DIR_FILES = True
 class PyArg(object):
     """Represents an argument to a python function."""
 
-    def __init__(self, name, parent, default=EMPTY):
+    def __init__(self, name, parent, has_default, default=None):
         """Constructor.
 
         Args:
             name (str): arg name
             parent (PyDef): parent python def
+            has_default (bool): whether this arg has default value
+                (ie. arg or kwarg)
             default (any): arg default
         """
         self.name = name
         self.default = default
+        self.has_default = has_default
         self.type_ = type(default) if default is not EMPTY else None
         self.parent = parent
 

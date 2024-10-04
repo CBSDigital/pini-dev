@@ -20,7 +20,8 @@ def _add_sys_path(path, action):
         action (str): how to add the path (insert/append)
     """
     _path = abs_path(path)
-    assert os.path.exists(_path)
+    if not os.path.exists(_path):
+        raise OSError('Missing path '+_path)
     while _path in sys.path:
         sys.path.remove(_path)
 
@@ -141,7 +142,8 @@ def insert_env_path(path, env):
         env (str): environment variable to add to
     """
     _path = Path(abs_path(path))
-    assert _path.exists()
+    if not _path.exists():
+        raise OSError('Missing path '+_path.path)
     if env not in os.environ:
         os.environ[env] = _path.path
         return

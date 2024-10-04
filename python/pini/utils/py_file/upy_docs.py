@@ -24,12 +24,24 @@ class PyDefDocs(object):
         self.docstring = docstring or ''
         self.def_ = def_
 
-        _header = self.docstring
-        _LOGGER.debug(' - HEADER (A) %s', _header.split('\n'))
-        for _splitter in ["\nArgs:\n"]:
-            _header = _header.split(_splitter)[0]
-            _LOGGER.debug(' - HEADER (B) %s', _header.split('\n'))
-        self.header = _header.strip()
+        _body = self.docstring
+
+        self.raises = None
+        if 'Raises:' in _body:
+            _body, _raises = _body.rsplit('Raises:', 1)
+            self.raises = _raises.strip()
+
+        self.returns = None
+        if 'Returns:' in _body:
+            _body, _returns = _body.rsplit('Returns:', 1)
+            self.returns = _returns.strip()
+
+        self.args_str = None
+        _splitter = "\nArgs:\n"
+        if _splitter in _body:
+            _body, self.args_str = _body.rsplit(_splitter, 1)
+
+        self.header = _body.strip()
         _LOGGER.debug(' - HEADER %s', self.header.split('\n'))
 
         self.title = self.header.split('\n')[0]
@@ -78,7 +90,7 @@ class PyDefDocs(object):
         if _splitter not in self.docstring:
             return []
         _, _body = self.docstring.split(_splitter, 1)
-        _body = _body.split('\nResult:\n')[0]
+        _body = _body.split('\nReturns:\n')[0]
         _body = _body.rstrip()
 
         # Separate out texts
@@ -160,6 +172,8 @@ class _PyArgDocs(object):
             _result = self.body
         elif mode == 'SingleLine':
             _result = self.body.replace('\n    ', ' ')
+        elif mode == 'HTML':
+            _result = f'<b>{self.name}</b> ({self.type_}) - {self.body}'
         else:
             raise ValueError(mode)
         return _result
