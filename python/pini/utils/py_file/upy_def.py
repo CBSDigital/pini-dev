@@ -1,9 +1,11 @@
 """Tools for managing py defs, ie. function definitions in a python file."""
 
 import ast
+import importlib
 import logging
 import sys
 
+from ..u_heart import check_heart
 from ..u_misc import safe_zip, single
 from . import upy_elem, upy_docs
 
@@ -84,6 +86,8 @@ class PyDef(upy_elem.PyElem):
                 _default = tuple(_item.s for _item in _ast_default.dims)
             elif isinstance(_ast_default, (ast.Name, ast.Call, _AstNoneType)):
                 _default = None
+            elif isinstance(_ast_default, ast.Attribute):
+                _default = _ast_attr_to_val(_ast_default)
             else:
                 raise ValueError(_ast_default)
             _LOGGER.debug('   - DEFAULT %s', _default)
@@ -130,6 +134,40 @@ class PyDef(upy_elem.PyElem):
         else:
             raise ValueError(mode)
         return _result
+
+
+def _ast_attr_to_val(attr):
+    """Obtain a value from an ast attribute.
+
+    This occurs when ast encounters an attibute as a default value.
+
+        eg. def _test(arg=lucididy.Template.ANCHOR_END)
+
+    Args:
+        attr (Attribute): ast attribute to read
+
+    Returns:
+        (any): value of attribute
+    """
+    _LOGGER.info(
+        'READ ATTR %s attr=%s val=%s', attr, attr.attr, attr.value)
+    _attr = attr
+    _path = []
+    _LOGGER.info(' - ATTR %s', _attr)
+    while hasattr(_attr, 'value'):
+        check_heart()
+        _path.insert(0, _attr.attr)
+        _LOGGER.info(' - PATH %s %s', _path, _attr)
+        _attr = _attr.value
+    _attr_name = '.'.join(_path)
+    _mod_name = _attr.id
+    _mod = importlib.import_module(_mod_name)
+    _parent = _mod
+    while len(_path) > 1:
+        check_heart()
+        _parent = getattr(_parent, _path.pop(0))
+        _LOGGER.info(' - PARENT %s', _parent)
+    return getattr(_parent, single(_path))
 
 
 def _ast_arg_to_name(arg):

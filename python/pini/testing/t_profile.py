@@ -32,9 +32,11 @@ def profile_start():
 def profile_stop(name='pini', gprof2dot=False, bkp=True):
     """Stop profiler and write profiling information to disk.
 
-    The data is stored in a readable form here:
+    The data is stored here:
+        $TMP/profile/{name}.prof
 
-    $TMP/profile/readable.txt
+    The data is stored in a readable form here:
+        $TMP/profile/{name}_readable.txt
 
     It is also backed up to a timestamped file in the same directory.
 

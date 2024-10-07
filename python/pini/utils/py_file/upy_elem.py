@@ -117,7 +117,7 @@ class PyElem(object):
         Returns:
             (PyElem list): child elements
         """
-        _LOGGER.debug('FIND CHILDREN %s')
+        _LOGGER.debug('FIND CHILDREN %s', self)
         from pini.utils import PyFile
 
         _children = []
@@ -170,17 +170,28 @@ class PyElem(object):
 
         return None
 
-    def find_class(self, name):
+    def find_class(self, match=None, catch=False):
         """Find a matching child class within this element.
 
         Args:
-            name (str): class name
+            match (str): class name to match
+            catch (bool): no error if fail to find class
 
         Returns:
             (PyClass): matching class
         """
-        return single([_class for _class in self.find_classes()
-                       if _class.name == name])
+        _classes = self.find_classes()
+        if len(_classes) == 1:
+            return single(_classes)
+        _matches = [_class for _class in _classes if match in (_class.name, )]
+        if len(_matches) == 1:
+            return single(_matches)
+
+        # Handle fail
+        if catch:
+            return None
+        _match_s = '' if not match else f' "{match}"'
+        raise ValueError(f'Failed to find class{_match_s} in {self.name}')
 
     def find_classes(self):
         """Find child classes of this object.
@@ -192,21 +203,28 @@ class PyElem(object):
         return [_elem for _elem in self.find_children()
                 if isinstance(_elem, PyClass)]
 
-    def find_def(self, match, catch=False):
+    def find_def(self, match, internal=None, recursive=False, catch=False):
         """Find a child def of this object.
 
         Args:
             match (str): def name
+            internal (bool): filter by def internal state
+            recursive (bool): include children of children
             catch (bool): no error if fail to find def
 
         Returns:
             (PyDef): child def
         """
-        _defs = self.find_defs()
+        _LOGGER.debug('FIND DEF %s', match)
+        _defs = self.find_defs(internal=internal, recursive=recursive)
+        _LOGGER.debug(' - FOUND %d DEFS %s', len(_defs), _defs)
 
-        _name_matches = [_def for _def in _defs if _def.name == match]
-        if len(_name_matches) == 1:
-            return single(_name_matches)
+        _matches = [
+            _def for _def in _defs
+            if match in {_def.name, _def.clean_name}]
+        _LOGGER.debug(' - FOUND %d MATCHES %s', len(_matches), _matches)
+        if len(_matches) == 1:
+            return single(_matches)
 
         _filter_matches = apply_filter(
             _defs, match, key=operator.attrgetter('name'))
@@ -217,12 +235,12 @@ class PyElem(object):
             return None
         raise ValueError(match)
 
-    def find_defs(self, internal=None, filter_=None, recursive=False):
+    def find_defs(self, filter_=None, internal=None, recursive=False):
         """Find child defs of this object.
 
         Args:
-            internal (bool): filter by def internal state
             filter_ (str): filter by name
+            internal (bool): filter by def internal state
             recursive (bool): include children of children
 
         Returns:

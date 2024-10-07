@@ -12,7 +12,7 @@ from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
-    save_redshift_proxy)
+    save_redshift_proxy, disable_scanner_callbacks)
 
 from . import phm_base
 
@@ -348,13 +348,14 @@ def _export_ass(metadata, force):
     return _ass
 
 
+@disable_scanner_callbacks
 def _flush_scene(keep_nodes=None):
     """Remove nodes from scene to prepare for lookdev export.
 
     Args:
         keep_nodes (list): list of nodes to keep in scene
     """
-    _LOGGER.debug('FLUSH SCENE')
+    _LOGGER.debug('FLUSH SCENE %s', keep_nodes)
 
     _keep_nodes = set(DEFAULT_NODES)
     if keep_nodes:

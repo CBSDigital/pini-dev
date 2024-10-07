@@ -206,13 +206,16 @@ def _apply_replace_root(path):
 
 
 def error_on_file_system_disabled(path=None):
-    """Thown an error if file system disabled.
+    """Throw an error if file system disabled.
 
-    File system is disabled using  $PINI_DISABLE_FILE_SYSTEM. This is
+    File system is disabled using $PINI_DISABLE_FILE_SYSTEM. This is
     used for debugging.
 
     Args:
         path (str): path that was accessed (for error message)
+
+    Raises:
+        (DebuggingError): if $PINI_DISABLE_FILE_SYSTEM applied
     """
     if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
         _msg = "Access file system disabled using PINI_DISABLE_FILE_SYSTEM"

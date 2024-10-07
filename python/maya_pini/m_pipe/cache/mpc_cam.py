@@ -79,7 +79,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         if to_clean(_dup) != 'CAM':
             _dup = cmds.rename(_dup, 'CAM')
         _dup = pom.CCamera(_dup)
-        _dup.unhide()
+        _dup.unhide(unlock=True)
         _dup.fix_shp_name()
         _dup.shp.plug['overscan'].set_locked(False)
 

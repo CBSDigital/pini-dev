@@ -39,7 +39,8 @@ class PyDefDocs(object):
         self.args_str = None
         _splitter = "\nArgs:\n"
         if _splitter in _body:
-            _body, self.args_str = _body.rsplit(_splitter, 1)
+            _body, _args_str = _body.rsplit(_splitter, 1)
+            self.args_str = _args_str.rstrip()
 
         self.header = _body.strip()
         _LOGGER.debug(' - HEADER %s', self.header.split('\n'))
@@ -84,18 +85,12 @@ class PyDefDocs(object):
         Returns:
             (PyArgDoc list): arg list
         """
-
-        # Extract args body
-        _splitter = '\nArgs:\n'
-        if _splitter not in self.docstring:
+        if not self.args_str:
             return []
-        _, _body = self.docstring.split(_splitter, 1)
-        _body = _body.split('\nReturns:\n')[0]
-        _body = _body.rstrip()
 
         # Separate out texts
         _arg_strs = []
-        for _line in _body.split('\n'):
+        for _line in self.args_str.split('\n'):
             _LOGGER.log(9, 'LINE %s', _line)
             if not _line.startswith(' '*8):
                 if not _line.startswith(' '*4):

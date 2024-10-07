@@ -8,6 +8,29 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
+def disable_scanner_callbacks(func):
+    """Disable maya scanner callbacks.
+
+    These sometimes seem to cause maya to segfault on import reference,
+    so this decorater can be used to temporarily disable them.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _scanner_disable_func(*args, **kwargs):
+        cmds.unloadPlugin('MayaScannerCB')
+        _result = func(*args, **kwargs)
+        cmds.loadPlugin('MayaScannerCB')
+        return _result
+
+    return _scanner_disable_func
+
+
 def get_ns_cleaner(namespace, delete=False):
     """Build a decorator which runs a function in a namespace.
 

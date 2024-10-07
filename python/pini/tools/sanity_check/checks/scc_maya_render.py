@@ -375,16 +375,8 @@ class CheckRenderGlobals(SCMayaCheck):
     def run(self):
         """Run this check."""
 
-        # Check render format
-        _fmt = to_render_extn()
-        self.write_log('check format %s', _fmt)
-        if _fmt != 'exr':
-            _fix = wrap_fn(set_render_extn, 'exr')
-            _msg = f'Image format is not "exr" (set to "{_fmt}")'
-            self.add_fail(_msg, fix=_fix)
-
+        # Apply checks by renderer
         _to_check = []
-
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         self.write_log('renderer %s', _ren)
         if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
@@ -399,10 +391,20 @@ class CheckRenderGlobals(SCMayaCheck):
                     ('defaultArnoldDriver.halfPrecision', True)]
 
         elif _ren == 'redshift':
+            if not self._redshift_globals_initialised():
+                return
             _to_check += [
                 # ('redshiftOptions.autocrop', True),
                 ('redshiftOptions.exrForceMultilayer', True),
                 ('redshiftOptions.exrMultipart', True)]
+
+        # Check render format
+        _fmt = to_render_extn()
+        self.write_log('check format %s', _fmt)
+        if _fmt != 'exr':
+            _fix = wrap_fn(set_render_extn, 'exr')
+            _msg = f'Image format is not "exr" (set to "{_fmt}")'
+            self.add_fail(_msg, fix=_fix)
 
         for _attr, _val in _to_check:
             self._check_setting(_attr, _val)
@@ -424,6 +426,26 @@ class CheckRenderGlobals(SCMayaCheck):
         _msg = f'Attribute "{_plug}" is not set to "{val}"'
         _fix = wrap_fn(_plug.set_val, val)
         self.add_fail(_msg, fix=_fix, node=_plug.node)
+
+    def _redshift_globals_initialised(self):
+        """Check redshift globals have been initialised.
+
+        If they haven't then image format update callbacks will fail.
+
+        Returns:
+            (bool): whether globals have been initialised
+        """
+        try:
+            mel.eval('redshiftImageFormatChanged')
+        except RuntimeError:
+            pass
+        else:
+            return True
+        self.add_fail(
+            'Redshift render globals need to be set up by opening render '
+            'globals window',
+            fix=wrap_fn(mel.eval, 'unifiedRenderGlobalsWindow;'))
+        return False
 
 
 class CheckRenderLayers(SCMayaCheck):

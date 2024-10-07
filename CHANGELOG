@@ -1,3 +1,26 @@
+## [5.9.0] - Mon 2024-10-07 11:58
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix intermittent scanner segfault (eehemann/cstewart),
+    - maya cache bugfix error on locked hidden cam (nle),
+ - Sanity Check:
+    - check render globals catch error on redshift globals not initialised (mkim),
+### Updated
+ - pini.utils.PyElem.find_class renamed arg name -> match,
+ - pini.utils.PyElem.find_class added catch arg,
+ - pini.utils.PyElem.find_def added internal/recursive flags,
+ - pini.utils.PyDef.find_args added ast.Attribute default handling,
+ - pini.utils.PyDefDocs.args_str added attr,
+ - pini.utils.PyDefDocs added handling for Raises,
+ - pini.dcc.CBaseExportHandler._add_elem bugfix disable_save_settings not working,
+ - pini.dcc.CLookdevPublish disable scanner on flush scene,
+ - pini.tools.sanity_check.CheckRenderGlobals check rs globals initialised,
+ - maya_pini.utils.disable_scanner_callbacks added,
+ - maya_pini.utils.set_render_extn better error on rs no initialised,
+ - maya_pini.m_pipe.cache unlock tmp cam vis,
+ - maya_pini.open_maya.CBaseTransform set_visible/unhide added unlock arg,
+
+
 ## [5.8.0] - Fri 2024-10-04 09:20
 ### Summary
  - Sanity Check:

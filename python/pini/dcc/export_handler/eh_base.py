@@ -64,11 +64,13 @@ class CExportHandler(object):
             elem.setToolTip(tooltip)
 
         # Setup settings
+        _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
+        if disable_save_settings:
+            _save_policy = qt.SavePolicy.NO_SAVE
         elem.disable_save_settings = disable_save_settings
         _settings_key = settings_key or _to_settings_key(
             name=name, handler=self)
         elem.set_settings_key(_settings_key)
-        _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
         elem.load_setting()

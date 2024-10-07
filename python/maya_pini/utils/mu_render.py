@@ -345,7 +345,12 @@ def _apply_rs_fmt_idx(idx):
         idx (int): index to apply
     """
     cmds.setAttr('redshiftOptions.imageFormat', idx)
-    mel.eval('redshiftImageFormatChanged')
+    try:
+        mel.eval('redshiftImageFormatChanged')
+    except RuntimeError as _exc:
+        raise RuntimeError(
+            'Update image format failed - this could be because render '
+            'gobals window needs to be opened to initialise redshift')
 
 
 def set_render_extn(extn: str):
@@ -355,7 +360,9 @@ def set_render_extn(extn: str):
         extn (str): format to apply
     """
     from maya_pini import open_maya as pom
+
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+
     if _ren == 'arnold':
         pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(extn)
     elif _ren == 'mayaSoftware':
@@ -371,6 +378,7 @@ def set_render_extn(extn: str):
         cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
     else:
         raise NotImplementedError(_ren)
+
     assert to_render_extn() == extn
 
 

@@ -107,12 +107,12 @@ class TestHelper(unittest.TestCase):
         _work.save(force=True)
 
         pipe.CACHE.reset()
+        _helper = helper.obt_helper(reset_cache=False)
         assert pipe.CACHE.cur_entity
         assert pipe.CACHE.cur_work_dir
         assert pipe.cur_work()
         assert pipe.CACHE.cur_work
 
-        _helper = helper.DIALOG
         _helper.ui.Refresh.click()
         _helper.jump_to(_work)
         assert_eq(_helper.work, _work)

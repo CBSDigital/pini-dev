@@ -392,13 +392,14 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             if _toggle:
                 cmds.move(_pos[0], _pos[1], _pos[2], _plug)
 
-    def set_visible(self, visible=True):
+    def set_visible(self, visible=True, unlock=False):
         """Set this transform's visibility.
 
         Args:
             visible (bool): visibility to apply
+            unlock (bool): also unlock attribute
         """
-        self.visibility.set_val(visible)
+        self.visibility.set_val(visible, unlock=unlock)
 
     def solidify(self, col='Yellow'):
         """Solidify this transform.
@@ -441,9 +442,13 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             _plugs += [self.sx, self.sy, self.sz]
         return _plugs
 
-    def unhide(self):
-        """Unhide this node."""
-        return self.set_visible()
+    def unhide(self, unlock=False):
+        """Unhide this node.
+
+        Args:
+            unlock (bool): unlock visibility if locked
+        """
+        return self.set_visible(unlock=unlock)
 
     def unlock_tfms(self):
         """Unlock transforms on this node."""
