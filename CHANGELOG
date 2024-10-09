@@ -1,3 +1,16 @@
+## [5.10.0] - Wed 2024-10-09 10:00
+### Summary
+ - Pini Menu:
+    - better error on version up fail (acheprakov/cwalser),
+ - Sanity Check:
+    - check cset bugfix false positive for overlapping nodes (nle),
+### Updated
+ - pini.utils.Dir.find functools.wraps only casts docs,
+ - pini.pipe.version_up added error catch + use CACHE.obt_cur_work to update cache,
+ - pini.qt.CColor updated for py3.11,
+ - pini.tools.sanity_check.check_set_for_overlapping_nodes catch false position on nodes sharing same root,
+
+
 ## [5.9.0] - Mon 2024-10-07 11:58
 ### Summary
  - Pini Helper:

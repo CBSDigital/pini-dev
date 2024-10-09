@@ -49,7 +49,7 @@ class Path(object):
         return time.time() - self.mtime()
 
     def ctime(self):
-        """Get last modified time for this path.
+        """Get creation time for this path.
 
         Returns:
             (float): mtime in secs

@@ -107,7 +107,7 @@ class Dir(up_path.Path):
                 icon=_icon, title=wording)
         shutil.rmtree(self.path)
 
-    @functools.wraps(up_find.find)
+    @functools.wraps(up_find.find, assigned=('__doc__', ))
     def find(self, class_=False, **kwargs):
         """Search for files in this directory.
 

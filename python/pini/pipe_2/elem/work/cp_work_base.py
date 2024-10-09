@@ -44,7 +44,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         Args:
             file_ (str): path to work file
-            work_dir (CPWorkDIr): force parent work dir
+            work_dir (CPWorkDir): force parent work dir
             template (CPTemplate): force template
         """
         _file = abs_path(file_)
@@ -624,7 +624,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             parent (QDialog): parent dialog for popups
             force (bool): load scene without unsaved changes warning
             lazy (bool): don't load the file if it's already open
-            load_func (func): override load function
+            load_func (fn): override load function
         """
 
         # Obtain file to load - if this work file does not exist then

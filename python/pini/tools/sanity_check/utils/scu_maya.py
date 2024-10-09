@@ -31,7 +31,7 @@ def check_set_for_overlapping_nodes(set_, check):
     check.write_log(' - longs %s', _longs)
     for _idx, _long in enumerate(_longs[1:], start=1):
         for _o_long in _longs[:_idx]:
-            if _long.startswith(_o_long):
+            if _long.startswith(_o_long+'|'):
                 _overlaps.append((_long, _o_long))
     for _node, _parent in _overlaps:
         _fix = wrap_fn(cmds.sets, _node, remove=set_)

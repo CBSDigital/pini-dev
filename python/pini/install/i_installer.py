@@ -144,8 +144,8 @@ class PIInstaller(object):
             (list): updated items list
         """
         _items = copy.copy(items)
-        _LOGGER.debug('GATHER REFRESH TOOLS')
-        _div = PIDivider('RefreshDivider')
+        _LOGGER.debug('GATHER RELOAD TOOLS')
+        _div = PIDivider('ReloadDivider')
         if self.style == 'menu':
             _items += [_div, i_tools.RELOAD_TOOL]
         elif self.style == 'shelf':

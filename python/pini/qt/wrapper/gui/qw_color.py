@@ -25,7 +25,8 @@ class CColor(QtGui.QColor):
             _name = _arg.lower()
             _args = _EXTENDED_COLS.get(_name, _args)
 
-        super(CColor, self).__init__(*_args, **kwargs)
+        assert not kwargs
+        super().__init__(*_args)
         if _alpha:
             self.setAlphaF(_alpha)
 

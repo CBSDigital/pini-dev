@@ -37,7 +37,7 @@ def cur_work(work_dir=None):
     """Get a work file object for the current scene.
 
     Args:
-        work_dir (CPWorkDIr): force parent work dir (to faciliate caching)
+        work_dir (CPWorkDir): force parent work dir (to faciliate caching)
 
     Returns:
         (CPWork|None): current work (if any)
