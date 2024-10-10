@@ -70,7 +70,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
             entity_type (str): type of entity to find
             filters (list): filter the results
             fields (tuple): fields to return
-            order (dict list): sorts dict (see sg docs)
+            order (dict list): apply sorting to results (see sg docs)
             filter_operator (str): see sg docs
             limit (int): limit number of results (see sg docs)
             retired_only (bool): return only entries which have been retired
@@ -160,7 +160,7 @@ def create(entity_type, data):
 
 def find(
         entity_type, filters=(), fields=(), fmt='list', job=None, id_=None,
-        limit=0):
+        limit=0, order=None):
     """Wrapper for Shotgrid.find command.
 
     Args:
@@ -173,6 +173,7 @@ def find(
         job (CPJob): apply job filter
         id_ (int): apply id filter
         limit (int): limit number of results (see sg docs)
+        order (dict list): apply sorting to results (see sg docs)
 
     Returns:
         (dict list): results
@@ -185,7 +186,8 @@ def find(
     if id_ is not None:
         _filters.append(('id', 'is', id_))
     _results = to_handler().find(
-        entity_type, filters=_filters, fields=fields, limit=limit)
+        entity_type, filters=_filters, fields=fields, limit=limit,
+        order=order)
 
     # Format results
     if fmt == 'list':

@@ -179,6 +179,14 @@ class SGCAsset(_SGCPath):
         self.name = data['code']
         self.asset_type = data['sg_asset_type']
 
+    def to_filter(self):
+        """Build filter for this asset.
+
+        Returns:
+            (tuple): shotgrid filter
+        """
+        return 'entity', 'is', self.to_entry()
+
 
 class SGCShot(_SGCPath):
     """Represents a shot."""

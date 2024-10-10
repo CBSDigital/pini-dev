@@ -577,6 +577,16 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         cmds.setKeyframe(
             self, inTangentType=_itt, outTangentType=_ott, **_kwargs)
 
+    def set_keyable(self, keyable=True):
+        """Set keyable status of this plug.
+
+        Keyable attributes appear in the channel box.
+
+        Args:
+            keyable (bool): apply keyable status
+        """
+        cmds.setAttr(self, keyable=keyable)
+
     def set_locked(self, locked=True):
         """Set locked state of this plug.
 

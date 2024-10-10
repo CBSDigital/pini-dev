@@ -448,6 +448,7 @@ class CMayaShadersRef(CMayaRef):
             settings (dict): settings data
             target (CMayaRef): ref to attach shaders to
         """
+        _LOGGER.debug('APPLY SETTINGS %s %s', target, settings)
         _ref = target.ref
         _to_apply = []
         for _key, _data in settings.items():

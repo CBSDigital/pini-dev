@@ -219,6 +219,11 @@ def _read_geo_settings():
             _attrs += [
                 _attr for _attr in _user_attrs
                 if _attr.startswith('vray')]
+        if 'redshift' in dcc.allowed_renderers():
+            _attrs += [
+                'rsEnableSubdivision',
+                'rsEnableDisplacement']
+            _LOGGER.info(' - RS ATTRS %s', _attrs)
 
         # Read non-default settings
         for _attr in _attrs:

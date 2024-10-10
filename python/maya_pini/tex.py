@@ -68,19 +68,25 @@ class _Shader(pom.CNode):
         _LOGGER.info(' - ADD %s TO %s', _obj, _se)
         cmds.sets(_obj, edit=True, forceElement=_se)
 
-    def duplicate(self, name=None, upstream_nodes=True):
+    def duplicate(self, name=None, upstream_nodes=True, class_=None):
         """Duplicate this shading network.
 
         Args:
             name (str): node name
             upstream_nodes (bool): duplicate upstream nodes
+            class_ (class): override node class
 
         Returns:
             (Shader): duplicated shader
         """
-        _dup = super(_Shader, self).duplicate(
-            name=name, upstream_nodes=upstream_nodes)
-        _shd = to_shd(_dup)
+        assert not class_
+        _dup = super().duplicate(
+            name=name, upstream_nodes=upstream_nodes, class_=pom.CNode)
+        _LOGGER.info('DUPLICATE %s %s', self, _dup)
+        assert _dup
+        _shd = _Shader(_dup)
+        assert _shd
+        _LOGGER.info(' - SHD %s', _shd)
         _shd.to_se(create=True)
         return _shd
 

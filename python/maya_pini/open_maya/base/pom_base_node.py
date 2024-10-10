@@ -306,12 +306,13 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         """Delete history on this node."""
         cmds.delete(self, constructionHistory=True)
 
-    def duplicate(self, name=None, upstream_nodes=False):
+    def duplicate(self, name=None, upstream_nodes=False, class_=None):
         """Duplicate this node.
 
         Args:
             name (str): node name
             upstream_nodes (bool): duplicate upstream nodes
+            class_ (class): override node class
 
         Returns:
             (CBaseNode): duplicated node
@@ -320,12 +321,15 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _kwargs = {}
         if name:
             _kwargs['name'] = name
-        _class = type(self)
+        _class = class_ or type(self)
         _results = cmds.duplicate(
             self, renameChildren=True, upstreamNodes=upstream_nodes, **_kwargs)
         _LOGGER.debug(' - RESULTS %s', _results)
         _dup = _results[0]
-        return _class(_dup)
+        _LOGGER.debug(' - RESULT %s %s', _dup, _class)
+        _node = _class(_dup)
+        _LOGGER.debug(' - NODE %s', _node)
+        return _node
 
     def exists(self):
         """Test whether this node exists.

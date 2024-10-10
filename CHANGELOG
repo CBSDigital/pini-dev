@@ -1,3 +1,21 @@
+## [5.11.0] - Thu 2024-10-10 10:10
+### Summary
+ - Pini Helper:
+    - lookdev publish added redshift subd/displ to saved settings (mkim),
+ - Sanity Check:
+    - check shaders bugfix error on import referenced shader (eehemann),
+### Updated
+ - pini.pipe.shotgrid.SGC.SGCAsset.to_filter added,
+ - pini.pipe.shotgrid.find added order arg,
+ - pini.pipe_5 added wip,
+ - pini.tools.sanity_check.SCMayaCheck._check_setting moved from CheckRenderGlobals,
+ - pini.refresh removed legacy pipe_1 sort,
+ - maya_pini.m_pipe.lookdev added rs subd/displ to settings,
+ - maya_pini.open_maya.CBaseNode.duplicate added class_ arg,
+ - maya_pini.open_maya.CPlug.set_keyable added,
+ - maya_pini.tex.Shader.duplicate bugfix error on rebuild obj,
+
+
 ## [5.10.0] - Wed 2024-10-09 10:00
 ### Summary
  - Pini Menu:

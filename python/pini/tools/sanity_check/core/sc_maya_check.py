@@ -27,6 +27,24 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
+    def _check_setting(self, attr, val):
+        """Check a setting has the given value.
+
+        Args:
+            attr (str): attribute to check
+            val (any): expected value
+        """
+        _plug = pom.CPlug(attr)
+        _cur_val = _plug.get_val()
+        _passed = _cur_val == val
+        self.write_log(
+            ' - check setting %s == %s passed=%d', attr, val, _passed)
+        if _passed:
+            return
+        _msg = f'Attribute "{_plug}" is not set to "{val}"'
+        _fix = wrap_fn(_plug.set_val, val)
+        self.add_fail(_msg, fix=_fix, node=_plug.node)
+
     def _check_shp(self, node):
         """Check node shapes.
 

@@ -43,30 +43,6 @@ _RELOAD_ORDER = [
     'pini.dcc.export_handler',
     'pini.dcc',
 
-
-    # Pipe 1
-    'pini.pipe_1.cp_utils',
-    'pini.pipe_1.cp_template',
-    'pini.pipe_1.cp_settings',
-    'pini.pipe_1.cp_job',
-    'pini.pipe_1.cp_sequence',
-    'pini.pipe_1.cp_entity',
-    'pini.pipe_1.cp_asset',
-    'pini.pipe_1.cp_shot',
-    'pini.pipe_1.cp_work_dir',
-    'pini.pipe_1.cp_work',
-    'pini.pipe_1.cp_output',
-
-    'pini.pipe_1.cache.ccp_utils',
-    'pini.pipe_1.cache.ccp_job',
-    'pini.pipe_1.cache.ccp_entity',
-    'pini.pipe_1.cache.ccp_work_dir',
-    'pini.pipe_1.cache.ccp_work',
-    'pini.pipe_1.cache.ccp_output',
-    'pini.pipe_1.cache.ccp_cache',
-    'pini.pipe_1.cache',
-    'pini.pipe_1',
-
     # Pipe 2
     'pini.pipe_2.cp_utils',
     'pini.pipe_2.cp_template',
@@ -101,6 +77,47 @@ _RELOAD_ORDER = [
     'pini.pipe_2.cache.root',
     'pini.pipe_2.cache',
     'pini.pipe_2',
+
+    # Pipe 3
+    'pini.pipe_3.cp_utils',
+    'pini.pipe_3.cp_template',
+    'pini.pipe_3.elem.cp_settings_elem',
+    'pini.pipe_3.elem.job',
+    'pini.pipe_3.elem.entity_type',
+    'pini.pipe_3.elem.entity.cp_ety_base',
+    'pini.pipe_3.elem.entity.cp_ety_disk',
+    'pini.pipe_3.elem.entity.cp_ety_sg',
+    'pini.pipe_3.elem.entity',
+    'pini.pipe_3.elem.asset',
+    'pini.pipe_3.elem.shot',
+    'pini.pipe_3.elem.work_dir',
+    'pini.pipe_3.elem.work',
+    'pini.pipe_3.elem.output',
+    'pini.pipe_3.elem.output.ccp_out_base',
+    'pini.pipe_3.elem.output.ccp_out_file',
+    'pini.pipe_3.elem.output.ccp_out_video',
+    'pini.pipe_3.elem',
+
+    'pini.pipe_3.cache.ccp_utils',
+    'pini.pipe_3.cache.job',
+    'pini.pipe_3.cache.ccp_ety_type',
+    'pini.pipe_3.cache.entity.ccp_ety_base',
+    'pini.pipe_3.cache.entity.ccp_ety_disk',
+    'pini.pipe_3.cache.entity.ccp_ety_sg',
+    'pini.pipe_3.cache.entity.ccp_ety',
+    'pini.pipe_3.cache.entity',
+    'pini.pipe_3.cache.output',
+    'pini.pipe_3.cache.work_dir',
+    'pini.pipe_3.cache.ccp_work',
+    'pini.pipe_3.cache.root',
+    'pini.pipe_3.cache',
+
+    'pini.pipe_3.shotgrid.cache.sgc_elem',
+    'pini.pipe_3.shotgrid.cache.sgc_container',
+    'pini.pipe_3.shotgrid.cache.sgc_ety',
+    'pini.pipe_3.shotgrid',
+
+    'pini.pipe_3',
 
     'pini.pipe',
 
