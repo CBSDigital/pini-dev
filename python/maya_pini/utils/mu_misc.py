@@ -189,7 +189,20 @@ def set_col(node, col, force=False):
     """
     _LOGGER.debug('SET COL %s %s', node, col)
     from pini import qt
+    from pini.qt import QtGui
     from maya_pini import open_maya as pom
+
+    # Find colour or QColor
+    _col = _q_col = None
+    if isinstance(col, str):
+        if col.lower() in COLS:
+            _col = col.lower()
+        else:
+            _q_col = qt.to_col(_col)
+    elif isinstance(col, QtGui.QColor):
+        _q_col = col
+    else:
+        raise ValueError(col)
 
     # Setup node
     _node = pom.to_node(node)
@@ -198,21 +211,15 @@ def set_col(node, col, force=False):
     _node.plug['overrideEnabled'].set_val(True)
 
     # Apply index col
-    _col = col.lower()
-    if _col in COLS:
+    if _col:
         _node.plug['overrideRGBColors'].set_val(0)  # Index
         _node.plug['overrideColor'].set_val(COLS.index(_col))
-        return
-
-    # Apply rgb col (eg. SpringGreen)
-    _q_col = qt.to_col(_col)
-    if _q_col:
+    elif _q_col:
         _LOGGER.debug(' - APPLY RGB COL %s', _q_col)
         _node.plug['overrideRGBColors'].set_val(1)  # RGB
         _node.plug['overrideColorRGB'].set_col(_q_col)
-        return
-
-    raise ValueError(col)
+    else:
+        raise RuntimeError
 
 
 def set_enum(chan, value):

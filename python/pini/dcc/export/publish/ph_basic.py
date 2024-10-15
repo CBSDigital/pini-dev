@@ -16,8 +16,9 @@ class CBasicPublish(eh_base.CExportHandler):
     """Manages a basic publish."""
 
     NAME = 'Basic Publish'
+    TYPE = 'Publish'
     LABEL = 'Makes a copy of this scene in the publish directory'
-    ACTION = 'publish'
+    ACTION = 'BasicPublish'
 
     def build_metadata(
             self, work=None, sanity_check_=True, task=None, force=False):

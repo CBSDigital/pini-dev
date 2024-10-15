@@ -313,22 +313,22 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         Returns:
             (CCPWorkDir list): work dirs
         """
+        asdasdasd
         _LOGGER.debug('READ WORK DIRS SG %s', self)
         from pini.pipe import shotgrid, cache
 
         _etys = list(self.entities)
         _work_dirs = []
         _filter = os.environ.get('PINI_PIPE_TASK_FILTER')
-        for _sg_task in shotgrid.SGC.find_tasks(
-                job=self, department='3d', filter_=_filter):
+        for _sg_task in self.sg_entity.find_tasks(filter_=_filter):
 
             _LOGGER.debug(' - TASK %s', _sg_task)
 
-            # Find entity
-            _ety = _iter_to_next_parent(path=_sg_task.path, parents=_etys)
-            _LOGGER.debug('   - ETY %s', _ety)
-            if not _ety:
-                continue
+            # # Find entity
+            # _ety = _iter_to_next_parent(path=_sg_task.path, parents=_etys)
+            # _LOGGER.debug('   - ETY %s', _ety)
+            # if not _ety:
+            #     continue
 
             _work_dir = cache.CCPWorkDir(_sg_task.path, entity=_ety)
             _work_dirs.append(_work_dir)
@@ -336,36 +336,36 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         return _work_dirs
 
 
-def _iter_to_next_parent(path, parents):
-    """Iterate the given order list to find the next parent.
+# def _iter_to_next_parent(path, parents):
+#     """Iterate the given order list to find the next parent.
 
-    eg. Iterate over a sorted list of shots to find the shot containing the
-    given path. If the path provided falls before (alphabetically) the next
-    shot, it's assumed that the path doesn't fall within a shot and None
-    is returned.
+#     eg. Iterate over a sorted list of shots to find the shot containing the
+#     given path. If the path provided falls before (alphabetically) the next
+#     shot, it's assumed that the path doesn't fall within a shot and None
+#     is returned.
 
-    NOTE: the list of parents is altered during this process
+#     NOTE: the list of parents is altered during this process
 
-    Args:
-        path (str): path to iterate to
-        parents (Dir list): ordered list of parents
+#     Args:
+#         path (str): path to iterate to
+#         parents (Dir list): ordered list of parents
 
-    Returns:
-        (Dir|None): next parent dir (if any)
-    """
-    _parent = None
-    while parents:
-        check_heart()
-        if parents[0].contains(path):
-            _parent = parents[0]
-            break
-        if parents[0].path > path:
-            _LOGGER.debug('   - PARENT NOT FOUND')
-            break
-        _LOGGER.debug('   - MOVING TO NEXT PARENT %s', parents[0])
-        parents.pop(0)
+#     Returns:
+#         (Dir|None): next parent dir (if any)
+#     """
+#     _parent = None
+#     while parents:
+#         check_heart()
+#         if parents[0].contains(path):
+#             _parent = parents[0]
+#             break
+#         if parents[0].path > path:
+#             _LOGGER.debug('   - PARENT NOT FOUND')
+#             break
+#         _LOGGER.debug('   - MOVING TO NEXT PARENT %s', parents[0])
+#         parents.pop(0)
 
-    if _parent:
-        assert _parent.contains(path)
+#     if _parent:
+#         assert _parent.contains(path)
 
-    return _parent
+#     return _parent

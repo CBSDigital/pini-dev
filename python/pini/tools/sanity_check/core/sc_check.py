@@ -234,6 +234,11 @@ class SCCheck(object):
         self.log = ''
         self.set_progress(0)
 
+    def reset_and_run(self, **kwargs):
+        """Reset this test and then run it."""
+        self.reset()
+        self.run(**kwargs)
+
     def run(self):
         """Run this check.
 

@@ -20,6 +20,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         'Copies this scene to the publish directory - make sure there '
         'is only one top node named MDL and that it has a cache set named '
         'cache_SET')
+    ACTION = 'ModelPublish'
 
     def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.

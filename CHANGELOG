@@ -1,3 +1,42 @@
+## [6.0.0] - Tue 2024-10-15 08:45
+### Summary
+ - Sanity Check:
+    - check cache set will update publish references mode to import if referenced geo found in cache set (mkim),
+    - check cache set allow default top node to be applied (mkim),
+    - asset hierarchy check added (mkim),
+### Updated
+ - pini.dcc renamed export_handler -> export,
+ - pini.dcc.export.CBaseExportHandler.TYPE added attr,
+ - pini.dcc.export renamed ReferencesMode -> PubRefsMode,
+ - pini.dcc.export renamed PubRefsMode.IMPORT_INTO_ROOT_NAMESPACE -> PubRefsMode.IMPORT_TO_ROOT,
+ - pini.dcc.export.set_pub_refs_mode added,
+ - pini.dcc.export.PubRefsMode updated from IntEnum to Enum using nice strings,
+ - pini.dcc find_export_handler/find_export_handlers renamed action -> type_ for clarity + requires pascal,
+ - pini.pipe added maya/pub_refs_mode to default settings,
+ - pini.pipe_5 updated wip,
+ - pini.qt.CPixmap.save_as added apply_cmyk arg,
+ - pini.tools.pyui.PUMayaUi added def btn ctx option execute in profile,
+ - pini.tools.sanity_check.SCCheck.reset_and_run added,
+ - pini.tools.sanity_check.find_check name as first arg,
+ - pini.tools.sanity_check.find_check enforce action in approved values,
+ - pini.tools.sanity_check.find_checks action filter overrides task filter,
+ - pini.tools.sanity_check.find_checks custom checks override default checks with same name,
+ - pini.tools.sanity_check.SCMayaCheck renamed _check_setting -> _check_attr,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp made public,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp bugfix no fix on deformed shps with referenced tfms,
+ - pini.tools.sanity_check.utils replaced check_set_for_overlapping_nodes -> check_cacheable_set,
+ - pini.tools.sanity_check.utils.read_cache_set_geo disable apply pub refs filter,
+ - pini.tools.sanity_check.CheckCacheables uses shared code for csets,
+ - pini.tools.sanity_check renamed CheckTopNode -> CheckAssetHierarchy,
+ - pini.tools.sanity_check.CheckCacheSet refd geo fix is update pub refs mode,
+ - pini.tools.sanity_check.CheckCacheSet added top node priority for default top node on empty set,
+ - pini.tools.sanity_check.CheckShaders.action_filter added,
+ - pini.tools.sanity_check launch/launch_export_ui added modal flag,
+ - maya_pini.utils.set_col allow X11 col names,
+ - maya_pini.open_maya.CMDS.annotate added,
+ - maya_pini.open_maya.CBaseNode.add_to_set allow set as CBaseNode,
+
+
 ## [5.11.0] - Thu 2024-10-10 10:10
 ### Summary
  - Pini Helper:

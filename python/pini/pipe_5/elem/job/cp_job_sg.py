@@ -1,7 +1,6 @@
 """Tools for managing jobs in a sg-based pipeline."""
 
 import logging
-import os
 
 from pini.utils import passes_filter
 
@@ -13,14 +12,27 @@ _LOGGER = logging.getLogger(__name__)
 class CPJobSG(cp_job_base.CPJobBase):
     """Represents a job in a sg-based pipeline."""
 
+    _sg_proj = None
+
+    @property
+    def sg_proj(self):
+        """Obtain shotgrid cache project for this job.
+
+        Returns:
+            (SGCProj): shotgrid cache project
+        """
+        from pini.pipe import shotgrid
+        if not self._sg_proj:
+            self._sg_proj = shotgrid.SGC.find_proj(self)
+        return self._sg_proj
+
     def to_prefix(self):
         """Obtain prefix for this job.
 
         Returns:
             (str): job prefix
         """
-        from ... import shotgrid
-        return shotgrid.SGC.find_job(self).prefix
+        return self.sg_proj.prefix
 
     def find_assets(self, asset_type=None, filter_=None):
         """Find assets in this job.
@@ -65,11 +77,18 @@ class CPJobSG(cp_job_base.CPJobBase):
             (CPAsset list): assets
         """
         from pini import pipe
-        from pini.pipe import shotgrid
 
-        _sg_assets = shotgrid.SGC.find_assets(job=self)
+        # _sg_assets = shotgrid.SGC.find_assets(job=self)
         _class = class_ or pipe.CPAsset
-        _assets = [_class(_sg_asset.path, job=self) for _sg_asset in _sg_assets]
+        _tmpl = self.find_template('entity_path', profile='asset')
+
+        _assets = []
+        for _sg_asset in self.sg_proj.assets:
+            _path = _tmpl.format(
+                job_path=self.path, asset=_sg_asset.asset,
+                asset_type=_sg_asset.asset_type)
+            _asset = _class(_path, job=self)
+            _assets.append(_asset)
 
         return _assets
 
@@ -82,9 +101,17 @@ class CPJobSG(cp_job_base.CPJobBase):
         Returns:
             (str list): asset type paths
         """
+        _tmpl = self.find_template('entity_path', profile='asset')
+        _tmpl = _tmpl.crop_to_token('asset_type', name='asset_type')
+        _names = sorted({_asset.asset_type for _asset in self.sg_proj.assets})
+        # _LOGGER.debug(' - SEQS %s', _names)
         return [
-            _asset for _asset in self._read_assets()
-            if _asset.asset_type == asset_type]
+            _tmpl.format(job_path=self.path, asset_type=_name)
+            for _name in _names]
+
+        # return [
+        #     _asset for _asset in self._read_assets()
+        #     if _asset.asset_type == asset_type]
 
     def _find_sequence_paths(self):
         """Find paths to all sequences.
@@ -92,12 +119,36 @@ class CPJobSG(cp_job_base.CPJobBase):
         Returns:
             (str list): sequence path
         """
-        from pini import pipe
-        _paths = sorted({
-            pipe.CPSequence(_shot, job=self)
-            for _shot in self.read_shots()})
-        _LOGGER.debug(' - SEQ PATHS %s', _paths)
-        return _paths
+        _tmpl = self.find_template('entity_path', profile='shot')
+        _tmpl = _tmpl.crop_to_token('sequence', name='sequence')
+        _LOGGER.debug(' - TMPL %s', _tmpl)
+
+        _names = sorted({_shot.sequence for _shot in self.sg_proj.shots})
+        _LOGGER.debug(' - SEQS %s', _names)
+        return [
+            _tmpl.format(job_path=self.path, sequence=_name)
+            for _name in _names]
+
+    def find_shot(self, match, sequence=None, catch=False):
+        """Find shot within this job.
+
+        Args:
+            match (str): match by shot name
+            sequence (str): filter by sequence
+            catch (bool): no error if shot not found
+
+        Returns:
+            (CPShot): matching shot
+        """
+        _LOGGER.debug('FIND SHOT %s', match)
+        _match = match
+        _seq = sequence
+        if not _seq:
+            _sg_shot = self.sg_proj.find_shot(match)
+            _LOGGER.debug(' - SG SHOT %s', _sg_shot)
+            _seq = _sg_shot.sequence
+            _match = _sg_shot.name
+        return super().find_shot(match=_match, sequence=_seq, catch=catch)
 
     def read_shots(self, class_=None):
         """Read shots from shotgrid.
@@ -112,14 +163,15 @@ class CPJobSG(cp_job_base.CPJobBase):
         from pini.pipe import shotgrid
         _LOGGER.debug('READ SHOTS SG')
         _class = class_ or pipe.CPShot
-        _has_3d = True if self.settings['shotgrid']['only_3d'] else None
-        _whitelist = os.environ.get('PINI_PIPE_SHOTS_WHITELIST', '').split(',')
-        _sg_shots = shotgrid.SGC.find_shots(
-            job=self, has_3d=_has_3d, whitelist=_whitelist)
-        _sg_shots = [
-            _sg_shot for _sg_shot in _sg_shots
-            if _sg_shot.status not in ('omt', )]
-        _shots = [_class(_sg_shot.path, job=self) for _sg_shot in _sg_shots]
+        _tmpl = self.find_template('entity_path', profile='shot')
+        _shots = []
+        for _sg_shot in shotgrid.SGC.find_shots(job=self):
+            _path = _tmpl.format(
+                job_path=self.path, sequence=_sg_shot.sequence,
+                shot=_sg_shot.shot)
+            _shot = _class(_path, job=self)
+            _shots.append(_shot)
+
         _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
-        assert len(_sg_shots) == len(_shots)
+
         return _shots

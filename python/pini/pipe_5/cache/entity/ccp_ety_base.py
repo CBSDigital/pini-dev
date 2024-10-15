@@ -5,6 +5,7 @@ import logging
 
 from pini.utils import single
 
+from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
 from ...elem import CPEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -180,6 +181,19 @@ class CCPEntityBase(CPEntity):
             self._read_work_dirs(force=True)
         return super().find_work_dirs(task=task, **kwargs)
 
+    # def _read_work_dirs(self, class_=None, force=False):
+    #     """Read all work dirs for this entity.
+
+    #     Args:
+    #         class_ (class): override work dir class
+    #         force (bool): rebuild cache
+
+    #     Returns:
+    #         (CCPWorkDir): work dirs
+    #     """
+    #     return super()._read_work_dirs(class_=class_)
+
+    @pipe_cache_on_obj
     def _read_work_dirs(self, class_=None, force=False):
         """Read all work dirs for this entity.
 
@@ -190,7 +204,13 @@ class CCPEntityBase(CPEntity):
         Returns:
             (CCPWorkDir): work dirs
         """
-        return super()._read_work_dirs(class_=class_)
+        from ... import cache
+        _LOGGER.debug('READ WORK DIRS %s', self)
+        if class_:
+            raise NotImplementedError
+        _work_dirs = super()._read_work_dirs(class_=cache.CCPWorkDir)
+        _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
+        return _work_dirs
 
     def to_work_dir(self, *args, **kwargs):
         """Obtain a work dir object within this entity.

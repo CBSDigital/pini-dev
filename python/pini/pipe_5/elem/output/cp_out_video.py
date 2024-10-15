@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 class CPOutputVideo(cp_out_file.CPOutputFile, clip.Video):
     """Represents an output video file (eg. mov/mp4)."""
 
-    yaml_tag = '!CPOutputVideo'
+    # yaml_tag = '!CPOutputVideo'
     to_frame = clip.Video.to_frame
 
     def __init__(
@@ -35,16 +35,16 @@ class CPOutputVideo(cp_out_file.CPOutputFile, clip.Video):
             template=template, templates=templates, latest=latest,
             types=types or cp_out_base.OUTPUT_VIDEO_TYPES)
 
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        """Convert this output to yaml.
+    # @classmethod
+    # def to_yaml(cls, dumper, data):
+    #     """Convert this output to yaml.
 
-        Args:
-            cls (class): output class
-            dumper (Dumper): yaml dumper
-            data (CPOutput): output being exported
+    #     Args:
+    #         cls (class): output class
+    #         dumper (Dumper): yaml dumper
+    #         data (CPOutput): output being exported
 
-        Returns:
-            (str): output as yaml
-        """
-        return dumper.represent_scalar(cls.yaml_tag, data.path)
+    #     Returns:
+    #         (str): output as yaml
+    #     """
+    #     return dumper.represent_scalar(cls.yaml_tag, data.path)

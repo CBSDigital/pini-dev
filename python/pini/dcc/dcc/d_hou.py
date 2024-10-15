@@ -201,10 +201,10 @@ class HouDCC(BaseDCC):
     def _init_export_handlers(self):
         """Initiate export handlers list."""
         if self._export_handlers is None:
-            from .. import export_handler
+            from .. import export
             _LOGGER.debug('INIT EXPORT HANDLERS')
             self._export_handlers = [
-                export_handler.CHouFlipbook(),
+                export.CHouFlipbook(),
             ]
 
     def _read_pipe_refs(self, selected=False):

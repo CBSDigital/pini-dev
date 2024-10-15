@@ -3,7 +3,7 @@
 import logging
 
 from pini import icons, pipe
-from pini.utils import single, get_result_cacher
+from pini.utils import single, get_method_to_file_cacher, get_result_cacher
 
 _LOGGER = logging.getLogger(__name__)
 ICON = icons.find("Spiral Notepad")
@@ -31,6 +31,20 @@ def sg_cache_result(func):
         (fn): decorated function
     """
     _cacher = get_sg_result_cacher()
+    return _cacher(func)
+
+
+def sg_cache_to_file(func):
+    """Cache the result of the given method to file using the pipe namespace.
+
+    Args:
+        func (fn): method to cache
+
+    Returns:
+        (fn): decorated method
+    """
+    _cacher = get_method_to_file_cacher(
+        mtime_outdates=False, namespace='shotgrid')
     return _cacher(func)
 
 

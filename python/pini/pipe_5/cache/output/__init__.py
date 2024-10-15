@@ -1,6 +1,6 @@
 """Tools for managing cacheable output objects."""
 
-from pini.utils import register_custom_yaml_handler
+# from pini.utils import register_custom_yaml_handler
 
 from .ccp_out_base import CCPOutputBase
 from .ccp_out_file import CCPOutputFile
@@ -17,4 +17,4 @@ elif MASTER == 'shotgrid':
 else:
     raise ValueError(MASTER)
 
-register_custom_yaml_handler(CCPOutputFile)
+# register_custom_yaml_handler(CCPOutputFile)

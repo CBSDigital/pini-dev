@@ -70,7 +70,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
             entity_type (str): type of entity to find
             filters (list): filter the results
             fields (tuple): fields to return
-            order (dict list): sorts dict (see sg docs)
+            order (dict list): apply sorting (see sg docs)
             filter_operator (str): see sg docs
             limit (int): limit number of results (see sg docs)
             retired_only (bool): return only entries which have been retired
@@ -173,6 +173,7 @@ def find(
         job (CPJob): apply job filter
         id_ (int): apply id filter
         limit (int): limit number of results (see sg docs)
+        order (dict list): apply sorting (see sg docs)
 
     Returns:
         (dict list): results

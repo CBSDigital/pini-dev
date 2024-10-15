@@ -13,7 +13,7 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
     """Represents an output file on disk."""
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
-    yaml_tag = '!CPOutputFile'
+    # yaml_tag = '!CPOutputFile'
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,
@@ -36,33 +36,31 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
             template=template, templates=templates, latest=latest,
             types=types or cp_out_base.OUTPUT_FILE_TYPES)
 
-    @classmethod
-    def from_yaml(cls, loader, node):
-        """Build output object from yaml.
+    # @classmethod
+    # def from_yaml(cls, loader, node):
+    #     """Build output object from yaml.
 
-        Args:
-            cls (class): output class
-            loader (Loader): yaml loader
-            node (Node): yaml data
+    #     Args:
+    #         loader (Loader): yaml loader
+    #         node (Node): yaml data
 
-        Returns:
-            (CPOutput): output
-        """
-        del loader  # for linter
-        return cls(node.value)
+    #     Returns:
+    #         (CPOutput): output
+    #     """
+    #     del loader  # for linter
+    #     return cls(node.value)
 
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        """Convert this output to yaml.
+    # @classmethod
+    # def to_yaml(cls, dumper, data):
+    #     """Convert this output to yaml.
 
-        Args:
-            cls (class): output class
-            dumper (Dumper): yaml dumper
-            data (CPOutput): output being exported
+    #     Args:
+    #         dumper (Dumper): yaml dumper
+    #         data (CPOutput): output being exported
 
-        Returns:
-            (str): output as yaml
-        """
-        _tag = '!'+type(data).__name__
-        _LOGGER.debug('TO YAML %s %s', cls.yaml_tag, _tag)
-        return dumper.represent_scalar(_tag, data.path)
+    #     Returns:
+    #         (str): output as yaml
+    #     """
+    #     _tag = '!'+type(data).__name__
+    #     _LOGGER.debug('TO YAML %s %s', cls.yaml_tag, _tag)
+    #     return dumper.represent_scalar(_tag, data.path)

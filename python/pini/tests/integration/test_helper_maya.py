@@ -2,7 +2,7 @@ import unittest
 import logging
 
 from pini import dcc, pipe, testing, qt
-from pini.dcc import export_handler
+from pini.dcc import export
 from pini.tools import helper
 
 from maya_pini import open_maya as pom
@@ -43,8 +43,8 @@ class TestHelper(unittest.TestCase):
         testing.check_test_asset(force=True)
 
         _helper = helper.obt_helper()
-        _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
-        _remove = export_handler.ReferencesMode.REMOVE
+        _import = export.PubRefsMode.IMPORT_TO_ROOT
+        _remove = export.PubRefsMode.REMOVE
 
         # Apply refs mode
         _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
@@ -65,7 +65,7 @@ class TestHelper(unittest.TestCase):
         assert _m_pub.ui.References.has_scene_setting()
         assert _m_pub.ui.References.get_scene_setting() == 'Import into root namespace'
         assert _m_pub.ui.References.selected_data() is _import
-        assert export_handler.get_publish_references_mode() is _import
+        assert export.get_pub_refs_mode() is _import
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
 
         # Check setting maintained
@@ -82,10 +82,10 @@ class TestHelper(unittest.TestCase):
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert export_handler.get_publish_references_mode() is _import
+        assert export.get_pub_refs_mode() is _import
         _m_pub.ui.References.select_text('Remove')
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
-        assert export_handler.get_publish_references_mode() is _remove
+        assert export.get_pub_refs_mode() is _remove
         _helper.close()
         _LOGGER.info('HELPER CLOSED')
         print('')
@@ -94,10 +94,10 @@ class TestHelper(unittest.TestCase):
         _helper.ui.MainPane.select_tab('Export')
         _LOGGER.info('SELECTED EXPORT TAB')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
-        assert export_handler.get_publish_references_mode() is _remove
+        assert export.get_pub_refs_mode() is _remove
         _helper.close()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert export_handler.get_publish_references_mode() is _remove
+        assert export.get_pub_refs_mode() is _remove

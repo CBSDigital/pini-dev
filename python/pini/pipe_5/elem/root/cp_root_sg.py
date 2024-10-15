@@ -13,4 +13,4 @@ class CPRootSG(cp_root_base.CPRootBase):
             (str list): job dir paths
         """
         from pini.pipe import shotgrid
-        return [_job.path for _job in shotgrid.SGC.jobs]
+        return [_job.path for _job in shotgrid.SGC.projs]

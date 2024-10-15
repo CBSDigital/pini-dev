@@ -26,7 +26,8 @@ def cur_output():
 
 
 def to_output(
-        path, job=None, entity=None, work_dir=None, template=None, catch=False):
+        path, job=None, entity=None, work_dir=None, template=None,
+        latest=None, catch=False):
     """Get an output object based on the given path.
 
     Args:
@@ -35,17 +36,20 @@ def to_output(
         entity (CPEntity): parent entity
         work_dir (CPWorkDir): parent work dir
         template (CPTemplate): template to use
+        latest (bool): apply latest status to output
         catch (bool): no error if no output created
 
     Returns:
         (CPOutput|CPOutputSeq): output or output seq
     """
     _LOGGER.log(9, 'TO OUTPUT %s', path)
+    _kwargs = locals()
 
     # Handle catch
     if catch:
+        _kwargs.pop('catch')
         try:
-            return to_output(path, job=job, template=template)
+            return to_output(**_kwargs)
         except ValueError as _exc:
             return None
 
@@ -62,4 +66,5 @@ def to_output(
     else:
         _class = cp_out_file.CPOutputFile
     return _class(
-        _path, job=job, entity=entity, template=template, work_dir=work_dir)
+        _path, job=job, entity=entity, template=template, work_dir=work_dir,
+        latest=latest)

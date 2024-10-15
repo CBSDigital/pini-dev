@@ -27,8 +27,8 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
-    def _check_setting(self, attr, val):
-        """Check a setting has the given value.
+    def _check_attr(self, attr, val):
+        """Check a attribute has the given value.
 
         Args:
             attr (str): attribute to check
@@ -45,7 +45,7 @@ class SCMayaCheck(sc_check.SCCheck):
         _fix = wrap_fn(_plug.set_val, val)
         self.add_fail(_msg, fix=_fix, node=_plug.node)
 
-    def _check_shp(self, node):
+    def check_shp(self, node):
         """Check node shapes.
 
         Checks for multiple shape nodes and shape nodes not matching
@@ -54,7 +54,7 @@ class SCMayaCheck(sc_check.SCCheck):
         Args:
             node (str): node to check
         """
-        _shps = to_shps(node)
+        _shps = to_shps(str(node))
         if not _shps:
             return
 
@@ -74,7 +74,7 @@ class SCMayaCheck(sc_check.SCCheck):
         _cur_shp = to_clean(_shp)
         _correct_shp = to_clean(node)+'Shape'
         if _cur_shp != _correct_shp:
-            if pom.CNode(node).is_referenced():
+            if pom.CNode(_cur_shp).is_referenced():
                 _fix = None
             else:
                 _fix = wrap_fn(cmds.rename, _shp, _correct_shp)

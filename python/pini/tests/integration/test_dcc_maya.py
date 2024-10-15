@@ -1,3 +1,5 @@
+# pylint: disable=import-error
+
 import logging
 import pprint
 import unittest
@@ -5,10 +7,12 @@ import unittest
 from maya import cmds
 
 from pini import dcc, testing, pipe
-from pini.dcc import pipe_ref
+from pini.dcc import pipe_ref, export
 from pini.pipe import cache
 from pini.tools import error, helper
-from pini.utils import single
+from pini.utils import single, assert_eq
+
+from pini.dcc.export.publish.ph_maya import phm_basic
 
 from maya_pini import open_maya as pom
 
@@ -16,6 +20,41 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class TestDCC(unittest.TestCase):
+
+    def test_pub_refs_mode(self):
+
+        dcc.new_scene(force=True)
+
+        _ety = pipe.CACHE.obt(testing.TEST_ASSET)
+        _work_dir = _ety.find_work_dir(
+            'rig', dcc_=dcc.NAME)
+        _work = _work_dir.to_work(tag='tmp')
+        _work.save(force=True)
+
+        # Test without helper
+        assert not dcc.get_scene_data(phm_basic._PUB_REFS_MODE_KEY)
+        _mode = export.get_pub_refs_mode()
+        _LOGGER.info('MODE %s', _mode)
+        assert _mode is export.PubRefsMode.REMOVE
+        export.set_pub_refs_mode(export.PubRefsMode.IMPORT_TO_ROOT)
+        _mode = export.get_pub_refs_mode()
+        assert _mode
+        _LOGGER.info('MODE %s', _mode)
+        assert_eq(_mode, export.PubRefsMode.IMPORT_TO_ROOT)
+        export.set_pub_refs_mode(export.PubRefsMode.REMOVE)
+        _mode = export.get_pub_refs_mode()
+        assert _mode
+        _LOGGER.info('MODE %s', _mode)
+        assert_eq(_mode, export.PubRefsMode.REMOVE)
+
+        # Test with helper
+        _helper = helper.obt_helper(reset_cache=False)
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Publish')
+        _handler = _helper.ui.EPublishHandler.selected_data()
+        assert _handler.ui.References.currentText() == 'Remove'
+        export.set_pub_refs_mode(export.PubRefsMode.IMPORT_TO_ROOT)
+        assert _handler.ui.References.currentText() == 'Import into root namespace'
 
     def test_swap_refs(self):
 

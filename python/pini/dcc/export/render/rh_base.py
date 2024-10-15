@@ -15,7 +15,8 @@ class CRenderHandler(eh_base.CExportHandler):
     """Base class for any render handler."""
 
     NAME = None
-    ACTION = 'render'
+    ACTION = 'Render'
+    TYPE = 'Render'
 
     def __init__(self, priority=50, label_w=60):
         """Constructor.

@@ -14,7 +14,7 @@ from .publish import CBasicPublish
 if dcc.NAME == 'maya':
     from .publish import (
         CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        ReferencesMode, get_publish_references_mode)
+        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode)
     from .render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
     from .blast import CMayaPlayblast

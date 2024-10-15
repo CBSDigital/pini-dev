@@ -6,7 +6,7 @@ import sys
 
 from pini.utils import (
     File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled,
-    single)
+    single, TMP)
 
 from .qw_painter import CPainter
 from ...q_mgr import QtGui, Qt, QtCore
@@ -483,12 +483,15 @@ class CPixmap(QtGui.QPixmap):
         _tfm.rotate(degrees)
         return CPixmap(self.transformed(_tfm))
 
-    def save_as(self, file_, force=False, quality=100, verbose=1):
+    def save_as(
+            self, file_, force=False, apply_cmyk=False, quality=100,
+            verbose=1):
         """Save this image to disk.
 
         Args:
             file_ (str): path to save to
             force (bool): overwrite with no warning dialog
+            apply_cmyk (bool): apply CMYK colour space for printing
             quality (int): file quality
                 100 - maximum quality
                 -1 - use system default quality
@@ -513,6 +516,17 @@ class CPixmap(QtGui.QPixmap):
 
         self.save(abs_path(_file.path, win=os.name == 'nt'),
                   format=_fmt, quality=quality)
+
+        if apply_cmyk:
+            import PIL
+            _LOGGER.info(' - APPLY CMYK %s', _file)
+            _tmp = TMP.to_file(f'tmp.{_file.extn}')
+            _LOGGER.info(' - TMP IMG %s', _tmp)
+            _file.move_to(_tmp, force=True)
+            _fmt = {'jpg': 'JPEG'}.get(_file.extn, _file.extn.upper())
+            _cmyk = PIL.Image.open(_tmp.path).convert('CMYK')
+            _cmyk.save(_file.path, _fmt, optimize=True)
+
         assert _file.exists()
 
         return _file

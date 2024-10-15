@@ -190,7 +190,7 @@ class CDFarm(base.CFarm):
             (CDJob list): jobs
         """
         from maya_pini import open_maya as pom
-        from pini.dcc import export_handler
+        from pini.dcc import export
         from . import d_maya_job
 
         _cam = camera or pom.find_render_cam()
@@ -201,7 +201,7 @@ class CDFarm(base.CFarm):
 
         _render_scene = _work.save(
             force=True, reason='deadline render', result='bkp')
-        _metadata = export_handler.build_metadata(
+        _metadata = export.build_metadata(
             'render', sanity_check_=True, checks_data=checks_data,
             task=_work.task, force=force)
         _progress = qt.progress_dialog(

@@ -7,7 +7,7 @@ import types
 
 from maya import cmds
 
-from pini import icons, qt, refresh
+from pini import icons, qt, refresh, testing
 from pini.tools import pyui
 from pini.utils import wrap_fn, copy_text, chain_fns, EMPTY
 
@@ -269,6 +269,7 @@ class PUMayaUi(pu_base.PUBaseUi):
             def_ (PUDef): function being added
             exec_ (fn): execute function
         """
+
         _menu = cmds.popupMenu(parent=button)
 
         _cmd = '\n'.join([
@@ -279,6 +280,7 @@ class PUMayaUi(pu_base.PUBaseUi):
             'Copy import statement', parent=_menu,
             image=icons.COPY,
             command=wrap_fn(copy_text, _cmd))
+        cmds.menuItem(divider=True)
 
         cmds.menuItem(
             'Lock button', parent=_menu,
@@ -288,6 +290,10 @@ class PUMayaUi(pu_base.PUBaseUi):
             'Refresh and execute', parent=_menu,
             image=icons.REFRESH,
             command=chain_fns(refresh.reload_libs, exec_))
+        cmds.menuItem(
+            'Execute in profile', parent=_menu,
+            image=icons.find('High Voltage'),
+            command=testing.profile(exec_))
         cmds.menuItem(
             'Reset settings', parent=_menu,
             image=icons.RESET,

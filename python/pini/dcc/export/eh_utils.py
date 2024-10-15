@@ -61,7 +61,6 @@ def build_metadata(
         _data['sanity_check'] = checks_data
     elif sanity_check_:
         _action = action or handler
-        assert _action in ('render', 'publish')
         _results = sanity_check.launch_export_ui(
             action=_action, force=force, task=task)
         _data['sanity_check'] = _results

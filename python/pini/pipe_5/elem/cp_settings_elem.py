@@ -18,6 +18,8 @@ _DEFAULT_SETTINGS = {
     'sanity_check': {
         'ExampleCheck': {
             'enabled': True}},
+    'maya': {
+        'pub_refs_mode': 'Import'},
     'icon': None,
     'col': None}
 

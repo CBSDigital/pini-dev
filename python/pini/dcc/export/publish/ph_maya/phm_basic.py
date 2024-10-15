@@ -7,7 +7,7 @@ import logging
 from maya import cmds
 
 from pini import pipe, dcc, qt
-from pini.utils import single, to_nice, to_snake
+from pini.utils import single
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
@@ -17,15 +17,15 @@ from maya_pini.utils import (
 from . import phm_base
 
 _LOGGER = logging.getLogger(__name__)
-_REFERENCES_MODE_KEY = 'PiniQt.Publish.References'
+_PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
 
 
-class ReferencesMode(enum.IntEnum):
+class PubRefsMode(enum.Enum):
     """Enum for managing how to handle references on publish."""
 
-    REMOVE = 1
-    LEAVE_INTACT = 2
-    IMPORT_INTO_ROOT_NAMESPACE = 3
+    REMOVE = "Remove"
+    LEAVE_INTACT = "Leave intact"
+    IMPORT_TO_ROOT = "Import into root namespace"
 
 
 class CMayaBasicPublish(phm_base.CMayaBasePublish):
@@ -74,12 +74,12 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         self.add_separator_elem()
 
         # Add reference option
-        _data = list(ReferencesMode)
-        _items = [to_nice(_item.name.lower()).capitalize() for _item in _data]
+        _data = list(PubRefsMode)
+        _items = [_item.value for _item in _data]
         self.ui.References = self.add_combobox_elem(
             name='References', items=_items, data=_data,
             save_policy=qt.SavePolicy.SAVE_IN_SCENE,
-            settings_key=_REFERENCES_MODE_KEY)
+            settings_key=_PUB_REFS_MODE_KEY)
         self.add_separator_elem()
 
         # Add notes
@@ -355,19 +355,41 @@ def _find_dag_sets():
     return _sets
 
 
-def get_publish_references_mode():
-    """Obtain current references mode setting.
+def get_pub_refs_mode():
+    """Obtain current publish references mode setting.
 
     Returns:
-        (ReferencesMode): current references mode
+        (PubRefsMode): current references mode
     """
+    _LOGGER.debug('GET PUB REFS MODE')
     _mode = None
-    _scn = dcc.get_scene_data(_REFERENCES_MODE_KEY)
+    _scn = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
+    _LOGGER.debug(' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
     if _scn:
-        _match = to_snake(_scn).upper()
         _mode = single(
-            [_item for _item in list(ReferencesMode)
-             if _item.name == _match],
+            [_item for _item in list(PubRefsMode) if _item.value == _scn],
             catch=True)
+        _LOGGER.debug(' - MATCHED %s', _mode)
 
-    return _mode or ReferencesMode.REMOVE
+    return _mode or PubRefsMode.REMOVE
+
+
+def set_pub_refs_mode(mode):
+    """Set current publish references mode.
+
+    Args:
+        mode (PubRefsMode): mode to apply
+    """
+    _LOGGER.info('SET PUB REFS MODE %s', mode)
+    assert isinstance(mode, PubRefsMode)
+
+    _LOGGER.info(' - VAL STR %s', mode.value)
+
+    for _handler in dcc.find_export_handlers('Publish'):
+        if not _handler.ui_is_active():
+            continue
+        if not hasattr(_handler.ui, 'References'):
+            continue
+        _handler.ui.References.setCurrentText(mode.value)
+
+    dcc.set_scene_data(_PUB_REFS_MODE_KEY, mode.value)

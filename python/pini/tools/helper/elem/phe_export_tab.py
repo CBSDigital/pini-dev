@@ -30,7 +30,7 @@ class CLExportTab(object):
 
         # Disable tabs if no handlers found
         for _tab in ['Publish', 'Blast', 'Render']:
-            _handlers = dcc.find_export_handlers(_tab.lower())
+            _handlers = dcc.find_export_handlers(_tab)
             _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
             self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
             _LOGGER.debug(' - CHECKED TAB %s', _tab)
@@ -92,7 +92,7 @@ class CLExportTab(object):
 
     def _redraw__EPublishHandler(self):
 
-        _handlers = dcc.find_export_handlers('publish')
+        _handlers = dcc.find_export_handlers('Publish')
 
         # Find selected publish handler
         _select = dcc.find_export_handler(
@@ -113,7 +113,7 @@ class CLExportTab(object):
 
     def _redraw__EBlastHandler(self):
 
-        _handlers = dcc.find_export_handlers('blast')
+        _handlers = dcc.find_export_handlers('Blast')
         self.ui.EBlastHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
             data=_handlers)
@@ -122,7 +122,7 @@ class CLExportTab(object):
         self.ui.ECacheRefs.set_items([], emit=False)
 
     def _redraw__ERenderHandler(self):
-        _handlers = sorted(dcc.find_export_handlers('render'))
+        _handlers = sorted(dcc.find_export_handlers('Render'))
         self.ui.ERenderHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
             data=_handlers)

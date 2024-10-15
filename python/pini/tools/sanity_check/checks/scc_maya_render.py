@@ -407,7 +407,7 @@ class CheckRenderGlobals(SCMayaCheck):
             self.add_fail(_msg, fix=_fix)
 
         for _attr, _val in _to_check:
-            self._check_setting(_attr, _val)
+            self._check_attr(_attr, _val)
 
     def _redshift_globals_initialised(self):
         """Check redshift globals have been initialised.

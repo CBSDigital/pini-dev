@@ -3,11 +3,16 @@
 These are simple classes for storing shotgrid results.
 """
 
+# pylint: disable=abstract-method
+
+import logging
 import os
 
-from pini.utils import basic_repr, strftime, Path
+from pini.utils import basic_repr, strftime, Path, abs_path
 
 from . import sgc_elem
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SGCContainer(sgc_elem.SGCElem):
@@ -16,23 +21,21 @@ class SGCContainer(sgc_elem.SGCElem):
     FIELDS = None
     ENTITY_TYPE = None
 
-    def __init__(self, data, proj=None):
+    def __init__(self, data):
         """Constructor.
 
         Args:
             data (dict): shotgrid data
-            proj (SGCProj): parent proj (if any)
         """
         self.data = data
 
         self.id_ = data['id']
         self.updated_at = data['updated_at']
-        # self.type_ = data['type']
+
         assert self.ENTITY_TYPE
         assert self.FIELDS
         assert isinstance(self.FIELDS, tuple)
-
-        self.proj = proj
+        assert data['type'] == self.ENTITY_TYPE
 
     def omit(self):
         """Omit this entry by setting status to 'omt'."""
@@ -86,6 +89,7 @@ class SGCPubType(SGCContainer):
     """Represents a published file type."""
 
     ENTITY_TYPE = 'PublishedFileType'
+    FIELDS = ('code', )
 
     def __init__(self, data):
         """Constructor.
@@ -129,6 +133,7 @@ class SGCUser(SGCContainer):
     """Represents a human user on shotgrid."""
 
     ENTITY_TYPE = 'HumanUser'
+    FIELDS = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
 
     def __init__(self, data):
         """Constructor.
@@ -149,17 +154,19 @@ class SGCUser(SGCContainer):
 class SGCPath(SGCContainer, Path):
     """Base class for all pipe template shotgrid elements."""
 
-    def __init__(self, data, proj=None, path=None):
+    def __init__(self, data, path):
         """Constructor.
 
         Args:
             data (dict): shotgrid data
-            proj (SGCProj): parent proj
+            path (str): element path
         """
-        super().__init__(data, proj=proj)
-        Path.__init__(self, path or data['path'])
-        # self.template = data['template']
-        # self.template_type = data['template_type']
+        super().__init__(data)
+
+        if path:
+            Path.__init__(self, path)
+        else:
+            self.path = ''
         self.status = data['sg_status_list']
 
     def __lt__(self, other):
@@ -169,68 +176,27 @@ class SGCPath(SGCContainer, Path):
         return basic_repr(self, self.path)
 
 
-# class SGCAsset(SGCPath):
-#     """Represents an asset."""
-
-#     ENTITY_TYPE = 'Asset'
-
-#     def __init__(self, data, job):
-#         """Constructor.
-
-#         Args:
-#             data (dict): shotgrid data
-#             job (SGCProj): parent job
-#         """
-#         super().__init__(data, job)
-#         self.name = data['code']
-#         self.asset_type = data['sg_asset_type']
-
-#     def to_filter(self):
-#         return 'entity', 'is', self.to_entry()
-
-
-# class SGCShot(SGCPath):
-#     """Represents a shot."""
-
-#     ENTITY_TYPE = 'Shot'
-#     FIELDS = [
-#         'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
-#         'updated_at', 'sg_has_3d']
-
-#     def __init__(self, data, job):
-#         """Constructor.
-
-#         Args:
-#             data (dict): shotgrid data
-#             job (SGCProj): parent job
-#         """
-#         super().__init__(data, job)
-#         self.name = data['code']
-#         self.has_3d = data['sg_has_3d']
-
-
 class SGCTask(SGCContainer):
     """Represents a task."""
 
     ENTITY_TYPE = 'Task'
     FIELDS = (
-        'step', 'sg_short_name', 'entity', 'sg_status_list', 'updated_at')
+        'step', 'sg_short_name', 'entity', 'sg_status_list',
+        'updated_at', 'project')
 
-    def __init__(self, data, entity):
+    def __init__(self, data):
         """Constructor.
 
         Args:
             data (dict): shotgrid data
-            proj (SGCProj): parent proj
         """
-        self.entity = entity
-        super().__init__(data, proj=entity.proj)
+        super().__init__(data)
         self.name = data['sg_short_name']
         self.step_id = data['step']['id']
         self.step = data['step']['name']
 
     def __repr__(self):
-        _step = self.proj.cache.find_step(self.step_id)
+        _step = self.root.find_step(self.step_id)
         return basic_repr(
             self, f'{self.entity.uid}.{_step.short_name}/{self.name}')
 
@@ -242,17 +208,30 @@ class SGCPubFile(SGCPath):
     FIELDS = (
         'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by')
 
-    def __init__(self, data, proj, latest=None):
+    def __init__(self, data):
         """Constructor.
 
         Args:
             data (dict): shotgrid data
-            proj (SGCProj): parent proj
-            latest (bool): whether this latest version of this publish stream
         """
-        super().__init__(data, proj)
-        self.has_work_dir = data['has_work_dir']
-        self.latest = latest
+        from pini import pipe
+
+        if data['path_cache']:
+            _path = pipe.ROOT.to_file(data['path_cache']).path
+        elif data['path']:
+            _path = abs_path(data['path']['local_path'])
+            _LOGGER.debug(' - PATH %s', _path)
+            # asdasd
+        else:
+            _path = None
+
+        super().__init__(data, path=_path)
+
+        # These are set after init
+        self.latest = None
+        self.validated = None
+        self.template = None
+        self.stream = None
 
 
 class SGCVersion(SGCPath):

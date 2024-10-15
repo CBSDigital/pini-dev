@@ -7,7 +7,7 @@ import os
 import sys
 
 from pini import icons
-from pini.utils import File, single, passes_filter
+from pini.utils import File, single, passes_filter, is_pascal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -208,26 +208,26 @@ class BaseDCC(object):
         return sorted(_refs)
 
     def find_export_handler(
-            self, match=None, action=None, filter_=None, catch=False):
+            self, match=None, type_=None, filter_=None, catch=False):
         """Find an installed export handler.
 
         Args:
             match (str): token to identify export handler
                 (eg. name/action/type)
-            action (str): filter by export type (eg. publish/render)
+            type_ (str): filter by export type (eg. Publish/Render)
             filter_ (str): filter by exporter name
             catch (bool): no error if no matching handler found
 
         Returns:
             (CExportHandler): matching export handler
         """
-        _handlers = self.find_export_handlers(action=action, filter_=filter_)
+        _handlers = self.find_export_handlers(type_=type_, filter_=filter_)
         if len(_handlers) == 1:
             return single(_handlers)
 
         # Try type match
         _action_match = single(
-            [_handler for _handler in _handlers if _handler.ACTION == match],
+            [_handler for _handler in _handlers if _handler.TYPE == match],
             catch=True)
         if _action_match:
             return _action_match
@@ -259,11 +259,11 @@ class BaseDCC(object):
             return None
         raise ValueError(_handlers)
 
-    def find_export_handlers(self, action=None, filter_=None):
+    def find_export_handlers(self, type_=None, filter_=None):
         """Find render handlers for this dcc.
 
         Args:
-            action (str): filter by export type (eg. publish/render)
+            type_ (str): filter by exporter type (eg. Publish/Render)
             filter_ (str): filter by exporter name
 
         Returns:
@@ -271,11 +271,13 @@ class BaseDCC(object):
         """
         _LOGGER.debug('FIND EXPORT HANDLERS %s', self._export_handlers)
         self._init_export_handlers()
+        if not (is_pascal(type_) or type_ is None):
+            raise ValueError(type_)
 
         # Build list
         _handlers = []
         for _handler in self._export_handlers:
-            if action and _handler.ACTION != action:
+            if type_ and _handler.TYPE != type_:
                 continue
             if not passes_filter(_handler.NAME, filter_):
                 continue
@@ -388,10 +390,10 @@ class BaseDCC(object):
     def _init_export_handlers(self):
         """Initiate export handlers list."""
         if self._export_handlers is None:
-            from .. import export_handler
+            from .. import export
             _LOGGER.debug('INIT EXPORT HANDLERS')
             self._export_handlers = [
-                export_handler.CBasicPublish(),
+                export.CBasicPublish(),
             ]
 
     def load(self, file_, parent=None, force=False, lazy=False):

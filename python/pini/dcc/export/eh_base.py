@@ -19,6 +19,7 @@ class CExportHandler(object):
     """Base class for any export handler."""
 
     NAME = None
+    TYPE = None
     ACTION = None
     ICON = None
 
@@ -371,10 +372,10 @@ class CExportHandler(object):
         if not self.ui:
             return False
         try:
-            self.ui.find_widgets()
+            _widgets = self.ui.find_widgets()
         except RuntimeError:
             return False
-        return True
+        return bool(_widgets)
 
     def update_ui(self, parent, layout):
         """Builds the ui into the given layout, flushing any existing widgets.

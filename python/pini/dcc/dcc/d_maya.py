@@ -343,17 +343,17 @@ class MayaDCC(BaseDCC):
     def _init_export_handlers(self):
         """Initiate export handlers."""
         if self._export_handlers is None:
-            from .. import export_handler
+            from .. import export
             from pini import farm
             self._export_handlers = [
-                export_handler.CMayaBasicPublish(),
-                export_handler.CMayaModelPublish(),
-                export_handler.CMayaLookdevPublish(),
-                export_handler.CMayaLocalRender(),
-                export_handler.CMayaPlayblast(),
+                export.CMayaBasicPublish(),
+                export.CMayaModelPublish(),
+                export.CMayaLookdevPublish(),
+                export.CMayaLocalRender(),
+                export.CMayaPlayblast(),
             ]
             if farm.IS_AVAILABLE:
-                self._export_handlers.append(export_handler.CMayaFarmRender())
+                self._export_handlers.append(export.CMayaFarmRender())
 
     def _read_pipe_refs(self, selected=False):
         """Find references in the current scene.

@@ -10,20 +10,20 @@ import operator
 
 from pini import pipe
 from pini.utils import (
-    single, strftime, basic_repr, apply_filter, get_user, passes_filter)
+    single, basic_repr, apply_filter, get_user, passes_filter)
 
 from ...cache import pipe_cache_on_obj
-from . import sgc_proj, sgc_utils, sgc_container, sgc_elem
+from . import sgc_proj, sgc_container, sgc_elem
 
 _LOGGER = logging.getLogger(__name__)
 _GLOBAL_CACHE_DIR = pipe.GLOBAL_CACHE_ROOT.to_subdir('sgc')
 
 
-class SGDataCache(sgc_elem.SGCElem):
+class SGCRoot(sgc_elem.SGCElem):
     """Base container class for the shotgrid data cache."""
 
     _sg = None
-    # ENTITY_TYPE = 
+    # ENTITY_TYPE =
 
     @property
     def projs(self):
@@ -62,7 +62,7 @@ class SGDataCache(sgc_elem.SGCElem):
             (SGCAsset): matching asset
         """
         _job = pipe.to_job(match)
-        return self.find_job(_job).find_asset(match)
+        return self.find_proj(_job).find_asset(match)
 
     def find_assets(self, job):
         """Search assets in the cache.
@@ -73,7 +73,7 @@ class SGDataCache(sgc_elem.SGCElem):
         Returns:
             (SGCAsset list): assets
         """
-        return self.find_job(job).find_assets()
+        return self.find_proj(job).find_assets()
 
     def find_entity(self, match):
         """Find an entity within the cache.
@@ -85,8 +85,8 @@ class SGDataCache(sgc_elem.SGCElem):
             (SGCAsset|SGCShot): matching entity
         """
         _job = pipe.to_job(match)
-        _sg_job = self.find_job(_job)
-        return _sg_job.find_entity(match)
+        _sg_proj = self.find_proj(_job)
+        return _sg_proj.find_entity(match)
 
     def find_proj(self, match=None, force=False):
         """Find a job.
@@ -130,7 +130,7 @@ class SGDataCache(sgc_elem.SGCElem):
             _projs.append(_proj)
         return _projs
 
-    def find_pub_file(self, path=None, proj=None, catch=False):
+    def find_pub_file(self, path=None, job=None, catch=False):
         """Find a pub file in the cache.
 
         Args:
@@ -249,14 +249,11 @@ class SGDataCache(sgc_elem.SGCElem):
 
         Args:
             job (CPJob): job to search
-            has_3d (bool): filter by shot has 3D status
-            whitelist (tuple): shot names to force into list
-                (ie. ignore any filtering)
 
         Returns:
             (SGCShot list): matching shots
         """
-        return self.find_job(job).find_shots()
+        return self.find_proj(job).find_shots()
 
     def find_step(self, match):
         """Find a pipeline step.
@@ -299,52 +296,6 @@ class SGDataCache(sgc_elem.SGCElem):
                 continue
             _steps.append(_step)
         return _steps
-
-    # def find_task(self, path=None, entity=None, step=None, task=None):
-    #     """Find a task in the cache.
-
-    #     Args:
-    #         path (str): path to match
-    #         entity (str): filter by entity
-    #         step (str): filter by step
-    #         task (str): filter by task
-
-    #     Returns:
-    #         (SGCTask): matching task
-    #     """
-    #     _job = None
-    #     if entity:
-    #         _job = entity.job
-    #     if not _job and path:
-    #         _job = pipe.CPJob(path)
-    #     assert _job
-
-    #     return self.find_job(_job).find_task(
-    #         path=path, entity=entity, step=step, task=task)
-
-    # def find_tasks(
-    #         self, job=None, entity=None, step=None, task=None, department=None,
-    #         filter_=None):
-    #     """Search tasks in the cache.
-
-    #     Args:
-    #         job (CPJob): job to search
-    #         entity (str): filter by entity
-    #         step (str): filter by step
-    #         task (str): filter by task
-    #         department (str): filter by department (eg. 3D/2D)
-    #         filter_ (str): apply step/task name filter
-
-    #     Returns:
-    #         (SGCTask list): matching tasks
-    #     """
-    #     _job = job
-    #     if not _job and entity:
-    #         _job = entity.job
-    #     assert _job
-    #     return self.find_job(_job).find_tasks(
-    #         department=department, entity=entity, filter_=filter_, task=task,
-    #         step=step)
 
     def find_user(self, match=None, catch=True, force=False):
         """Find a user entry.
@@ -392,92 +343,6 @@ class SGDataCache(sgc_elem.SGCElem):
         """
         return self._read_users(force=force)
 
-    # def find_ver(self, match, catch=False, force=False):
-    #     """Find version.
-
-    #     Args:
-    #         match (str): match by path/id
-    #         catch (bool): no error if fail to match exactly one pub file
-    #         force (bool): force rebuild cache
-
-    #     Returns:
-    #         (SGVersion): matching version
-    #     """
-    #     _job = pipe.CPJob(match)
-    #     _sg_job = self.find_job(_job)
-    #     return _sg_job.find_ver(match, catch=catch, force=force)
-
-    # def _read_data(self, entity_type, fields, force=False):
-    #     return self.sg.find(entity_type
-
-
-    # def _read_data(self, entity_type, fields, force=False):
-    #     """Read data from shotgrid.
-
-    #     Data is written to a day so if it's already been read today
-    #     then that read is reused. Otherwise the cache is rebuilt.
-
-    #     Args:
-    #         entity_type (str): entity type to read
-    #         fields (str list): fields to read
-    #         force (bool): force rebuild cache
-    #             1 - rebuild day cache
-    #             2 - rebuild all caches from shotgrid
-
-    #     Returns:
-    #         (dict list): shotgrid results
-    #     """
-    #     _fields = tuple(sorted(set(fields) | {'updated_at'}))
-    #     _day_cache = _GLOBAL_CACHE_DIR.to_file(
-    #         '{}_T{}_F{}_P{:d}.pkl'.format(
-    #             entity_type, strftime('%y%m%d'),
-    #             sgc_utils.to_fields_key(_fields), pipe.VERSION))
-    #     if not force and _day_cache.exists():
-    #         _data = _day_cache.read_pkl()
-    #     else:
-    #         _data = self._read_data_last_update(
-    #             entity_type=entity_type, fields=_fields, force=force > 1)
-    #         _day_cache.write_pkl(_data, force=True)
-
-    #     return _data
-
-    # def _read_data_last_update(self, entity_type, fields, force=False):
-    #     """Find last time the given field was updated.
-
-    #     Args:
-    #         entity_type (str): entity type to read
-    #         fields (str list): fields to be requested
-    #         force (bool): force rebuild cache
-
-    #     Returns:
-    #         ():
-    #     """
-
-    #     # Find most recent update
-    #     _recent = single(self.sg.find(
-    #         entity_type=entity_type,
-    #         fields=['updated_at'],
-    #         limit=1,
-    #         order=[{'field_name': 'updated_at', 'direction': 'desc'}]))
-    #     _update_t = _recent['updated_at']
-    #     _update_s = strftime('%y%m%d_%H%M')
-    #     _LOGGER.info(
-    #         ' - LAST STEPS UPDATE %s', strftime('%d/%m/%y %H:%M', _update_t))
-
-    #     # Obtain jobs data
-    #     _cache_file = _GLOBAL_CACHE_DIR.to_file(
-    #         '{}_T{}_F{}_P{:d}.pkl'.format(
-    #             entity_type, _update_s,
-    #             sgc_utils.to_fields_key(fields), pipe.VERSION))
-    #     if not force and _cache_file.exists():
-    #         _data = _cache_file.read_pkl()
-    #     else:
-    #         _LOGGER.info(' - READING STEPS')
-    #         _data = self.sg.find(entity_type, fields=fields)
-    #         _cache_file.write_pkl(_data, force=True)
-
-    #     return _data
-
     @pipe_cache_on_obj
     def _read_projs(self, force=False):
         """Build list of valid projs on shotgrid.
@@ -488,32 +353,24 @@ class SGDataCache(sgc_elem.SGCElem):
         Returns:
             (SGCProj list): projs
         """
-        _LOGGER.debug(' - READING JOBS')
-        # _fields = (
-        #     'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
-        #     'sg_status', 'created_at')
-        _projs_data = self._read_data(
-            sgc_proj.SGCProj, force=force)
-        _projs_data.sort(key=operator.itemgetter('id'))
-        assert _projs_data
+        _LOGGER.debug(' - READING PROJECTS')
+        _projs = self._read_elems(sgc_proj.SGCProj, force=force)
+        _LOGGER.info('   - FOUND %d PROJS', len(_projs))
+        assert _projs
 
-        _projs = {}
-        for _result in _projs_data:
-            _LOGGER.debug('RESULT %d %s', _result['id'], _result)
-            if not _result['tank_name']:
-                _LOGGER.debug(' - REJECT NO TANK NAME')
-                continue
-            _job_root = pipe.ROOT.to_subdir(_result['tank_name'])
-            _cfg = _job_root.to_file('.pini/config.yml')
+        # Filter dup projects + embed job object
+        _projs_map = {}
+        for _proj in sorted(_projs, key=operator.attrgetter('id_')):
+            _LOGGER.debug('PROJECT %d %s', _proj.id_, _proj)
+            _job_path = pipe.ROOT.to_subdir(_proj.name)
+            _cfg = _job_path.to_file('.pini/config.yml')
             if not _cfg.exists():
-                _LOGGER.debug(' - REJECT NO CFG')
+                _LOGGER.debug(' - REJECT NO CFG %s', _proj)
                 continue
-            _result['path'] = _job_root.path
-            _job = pipe.CPJob(_job_root)
-            _proj = sgc_proj.SGCProj(_result, cache=self, job=_job)
-            _projs[_job.name] = _proj
+            _proj.job = pipe.CPJob(_job_path)
+            _projs_map[_proj.name] = _proj
 
-        return sorted(_projs.values())
+        return sorted(_projs_map.values())
 
     @pipe_cache_on_obj
     def _read_pub_types(self, force=False):
@@ -525,11 +382,7 @@ class SGDataCache(sgc_elem.SGCElem):
         Returns:
             (SGCPubType list): steps
         """
-        _fields = ('code', )
-        _types_data = self._read_data(
-            'PublishedFileType', fields=_fields, force=force)
-        _types = [sgc_container.SGCPubType(_data) for _data in _types_data]
-        return _types
+        return self._read_elems(sgc_container.SGCPubType)
 
     @pipe_cache_on_obj
     def _read_steps(self, force=False):
@@ -541,9 +394,7 @@ class SGDataCache(sgc_elem.SGCElem):
         Returns:
             (SGCStep list): steps
         """
-        _steps_data = self._read_data(sgc_container.SGCStep)
-        _steps = [sgc_container.SGCStep(_data) for _data in _steps_data]
-        return _steps
+        return self._read_elems(sgc_container.SGCStep, force=force)
 
     @pipe_cache_on_obj
     def _read_users(self, force=False):
@@ -555,12 +406,14 @@ class SGDataCache(sgc_elem.SGCElem):
         Returns:
             (SGCUser list): users
         """
-        _fields = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
-        _users_data = self._read_data('HumanUser', fields=_fields, force=force)
-        _users = [sgc_container.SGCUser(_data) for _data in _users_data]
-        return _users
+        return self._read_elems(sgc_container.SGCUser)
 
     def to_filter(self):
+        """Build shotgrid search filter from this entry.
+
+        Returns:
+            (None): not applicable
+        """
         return None
 
     def __repr__(self):
@@ -599,3 +452,6 @@ def _name_to_login(name):
         return None
     _first, _last = name.split(' ', 1)
     return _first[0].lower() + _last.lower().replace(' ', '')
+
+
+SGC = SGCRoot()

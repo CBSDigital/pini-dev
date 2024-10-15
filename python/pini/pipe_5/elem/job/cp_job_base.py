@@ -238,8 +238,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         _LOGGER.log(9, 'FIND TEMPLATES %s type_=%s', self.name, type_)
 
         # Apply simple filters
-        if profile:
-            assert profile in ['shot', 'asset']
+        assert profile in ['shot', 'asset', None]
         _tmpls = []
         for _tmpl in sum(self.templates.values(), []):
             if type_ and _tmpl.type_ != type_:

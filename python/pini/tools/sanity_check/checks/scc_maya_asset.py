@@ -6,10 +6,10 @@ import logging
 
 from maya import cmds, mel
 
-from pini import pipe, dcc, qt
-from pini.dcc import export_handler
+from pini import pipe, dcc
+from pini.dcc import export
 from pini.tools import error
-from pini.utils import single, wrap_fn, check_heart, plural
+from pini.utils import single, wrap_fn, plural
 
 from maya_pini import ref, open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
@@ -21,47 +21,105 @@ from .. import core, utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class CheckTopNode(core.SCMayaCheck):
+class CheckAssetHierarchy(core.SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
+    action_filter = 'Publish'
     task_filter = 'model rig'
     sort = 30
 
-    def run(self):
-        """Run this check."""
-        _task = pipe.cur_task(fmt='pini')
-        _name = {'model': 'MDL', 'rig': 'RIG'}.get(_task)
+    def run(self, req_nodes=None):
+        """Run this check.
 
-        _top_nodes = [
-            _node for _node in pom.find_nodes(top_node=True, default=False)
-            if _node != 'JUNK']
-        self.write_log(' - top nodes %s', _top_nodes)
+        Args:
+            req_nodes (dict): dict of required nodes in hierarchy
+        """
+
+        # Determine required node hierarchy
+        _task = pipe.cur_task(fmt='pini')
+        _req_nodes = req_nodes or self.settings.get('nodes', {}).get(_task, {})
+        if not _req_nodes:
+            _req_nodes = {
+                'model': {'MDL': None},
+                'rig': {'RIG': None}}.get(_task, {})
+        self.write_log('req nodes %s', _req_nodes)
+        if not _req_nodes:
+            return
+        _req_top_node = single(
+            _node for _node in _req_nodes.keys() if _node != 'JUNK')
+        self.write_log('req top node %s', _req_top_node)
 
         # Fix no groups at top level
-        _top_tfms = [
-            _node for _node in _top_nodes
-            if isinstance(_node, pom.CTransform)]
+        _top_nodes = pom.find_nodes(top_node=True, default=False)
+        _top_tfms = [_node for _node in _top_nodes if not _node.shp]
         self.write_log(' - top tfms %s', _top_tfms)
         if _top_nodes and not _top_tfms:
             _fix = wrap_fn(
-                _create_top_level_group, name=_name, nodes=_top_nodes)
-            self.add_fail('No top level {} group'.format(_name), fix=_fix)
+                _create_top_level_group, name=_req_top_node,
+                nodes=_top_nodes)
+            self.add_fail(
+                'No top level "{}" group'.format(_req_top_node), fix=_fix)
             return
 
-        # Fix top nodes not in group
-        _top_node = single(_top_nodes, catch=True)
-        if _top_nodes and not _top_node:
-            _fix = wrap_fn(
-                _create_top_level_group, name=_name, nodes=_top_nodes)
-            self.add_fail(
-                'No single top level {} group'.format(_name), fix=_fix)
-            return
-        self.write_log('Top node %s', _top_node)
-        if _name and _top_node != _name:
-            _fix = wrap_fn(cmds.rename, _top_node, _name)
-            _msg = 'Badly named top node {} (should be {})'.format(
-                _top_node, _name)
+        # Fix badly named top node
+        _top_node = pom.find_node(
+            top_node=True, default=False, filter_='-JUNK', catch=True)
+        if _top_node and _top_node != _req_top_node:
+            _fix = wrap_fn(cmds.rename, _top_node, _req_top_node)
+            _msg = (
+                f'Badly named top node "{_top_node}" (should be '
+                f'"{_req_top_node}")')
             self.add_fail(_msg, fix=_fix, node=_top_node)
+            return
+
+        # Check hierarchy
+        if not self._check_hierarchy(_req_nodes):
+            return
+        _top_node = _req_top_node
+
+        # Fix top nodes not in group
+        _extra_top_nodes = [
+            _node for _node in pom.find_nodes(top_node=True, default=False)
+            if _node not in (_top_node, 'JUNK')]
+        self.write_log(' - extra top nodes %s', _top_nodes)
+        if _extra_top_nodes:
+            for _node in _extra_top_nodes:
+                self.add_fail(
+                    f'Top node "{_node}" outside "{_top_node}"',
+                    fix=wrap_fn(cmds.parent, _node, _top_node))
+            return
+
+    def _check_hierarchy(self, nodes, parent=None):
+        """Check the given node hierarchy exists.
+
+        Args:
+            nodes (dict): node hierarchy to check
+            parent (str): path to parent node (eg. |RIG|ABC)
+
+        Returns:
+            (bool): whether check passed
+        """
+        _passed = True
+        _parent = parent or ''
+        for _node, _children in nodes.items():
+
+            _node = f'{_parent}|{_node}'
+            self.write_log('check %s', _node)
+            if not cmds.objExists(_node):
+                _parent, _name = _node.rsplit('|', 1)
+                self.write_log('check %s', _node)
+                self.add_fail(
+                    f'Missing node "{_node}"',
+                    fix=wrap_fn(
+                        cmds.group, name=_name, empty=True,
+                        parent=_parent))
+                _passed = False
+
+            if _children:
+                if not self._check_hierarchy(nodes=_children, parent=_node):
+                    _passed = False
+
+        return _passed
 
 
 def _create_top_level_group(name, nodes):
@@ -87,8 +145,22 @@ class CheckCacheSet(core.SCMayaCheck):
     sort = 40  # Should happen before checks which need cache set
     _ignore_names = None
 
-    def run(self):
-        """Run this check."""
+    def run(self, top_node_priority=None):
+        """Run this check.
+
+        Args:
+            top_node_priority (str list): override top node priority
+                sorting (eg. ['ABC', 'RIG'])
+        """
+        super().run()
+
+        _task = pipe.cur_task()
+        _top_node_priority = top_node_priority
+        if not _top_node_priority:
+            _top_node_priority = self.settings.get(
+                'top_node_priority', {}).get(_task)
+        _top_node_priority = _top_node_priority or []
+        self.write_log('top node priority %s', _top_node_priority)
 
         # Check set
         _set = utils.find_cache_set()
@@ -104,28 +176,38 @@ class CheckCacheSet(core.SCMayaCheck):
         _geos = utils.read_cache_set_geo()
         self.write_log('Geos %s', _geos)
         if not _geos:
-            _fix = None
-            _top_node = single(utils.find_top_level_nodes(), catch=True)
+
+            # Find top node
+            _top_node = None
+            for _node in _top_node_priority:
+                if cmds.objExists(_node):
+                    _top_node = _node
+                    break
+            else:
+                _top_node = single(utils.find_top_level_nodes(), catch=True)
             self.write_log('Top node %s', _top_node)
+
+            _fix = None
             if _top_node:
                 _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
-            _fail = self.add_fail('Empty cache set', fix=_fix)
+            self.add_fail('Empty cache set', fix=_fix)
             return
-        self.write_log('GEOS %s', _geos)
 
-        self._check_for_single_top_node()
-        utils.check_set_for_overlapping_nodes(set_=_set, check=self)
-
-    def _check_for_single_top_node(self):
-        """Make sure cache set geo has a single top node."""
-        if not cmds.objExists('cache_SET'):
+        # Check for referenced geo in cache set
+        _ref_mode = export.get_pub_refs_mode()
+        _import_refs = export.PubRefsMode.IMPORT_TO_ROOT
+        _refd_geo = [_geo for _geo in _geos if _geo.is_referenced()]
+        self.write_log('Referenced geos %s', _refd_geo)
+        if _refd_geo and _ref_mode != _import_refs:
+            _fix = wrap_fn(export.set_pub_refs_mode, _import_refs)
+            self.add_fail(
+                f'Referenced geo in cache set but references mode is '
+                f'set to "{_ref_mode.value}" (should be '
+                f'"{_import_refs.value}")',
+                fix=_fix)
             return
-        _top_nodes = cmds.sets('cache_SET', query=True) or []
-        if len(_top_nodes) != 1:
-            _msg = ('Cache set should contain one single node to avoid '
-                    'abcs with multiple top nodes - cache_SET contains {:d} '
-                    'top nodes').format(len(_top_nodes))
-            self.add_fail(_msg)
+
+        utils.check_cacheable_set(set_=_set, check=self)
 
 
 class CheckRenderStats(core.SCMayaCheck):
@@ -315,9 +397,7 @@ class CheckGeoNaming(core.SCMayaCheck):
     def run(self):
         """Run this check."""
         _geos = utils.read_cache_set_geo()
-        self.write_log('GEOS %s', _geos)
-        if self._check_for_duplicates(geos=_geos):
-            return
+        self.write_log('geos %s', _geos)
         self._check_geos(geos=_geos)
 
     def _check_geos(self, geos):
@@ -372,8 +452,8 @@ class CheckGeoNaming(core.SCMayaCheck):
         self.write_log('   - shape %s', _geo_s)
 
         # Check for namespace
-        _refs_mode = export_handler.get_publish_references_mode()
-        _import = export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE
+        _refs_mode = export.get_pub_refs_mode()
+        _import = export.PubRefsMode.IMPORT_TO_ROOT
         if geo.namespace and _refs_mode != _import:
             _clean_name = to_clean(geo)
             if geo.is_referenced():
@@ -395,123 +475,6 @@ class CheckGeoNaming(core.SCMayaCheck):
             self._ignore_names.append(_suggestion)
             self.add_fail(_msg, node=geo, fix=_fix)
             return
-
-        # Check shape name
-        _cur_name = to_clean(geo.shp)
-        _good_name = to_clean(geo)+'Shape'
-        self.write_log(
-            '   - good name %s instanced=%d', _good_name,
-            geo.shp.is_instanced())
-        if not geo.shp.is_instanced() and _cur_name != _good_name:
-            _msg = ('Geo "{}" does not have matching shape name "{}" (shape '
-                    'is currently "{}")'.format(geo, _good_name, _geo_s))
-            _fix = wrap_fn(self.fix_bad_shape, _geo_s, _good_name)
-            self.add_fail(_msg, fix=_fix, node=geo)
-            return
-
-    def _check_for_duplicates(self, geos):
-        """Flag for duplicate nodes in the cache set.
-
-        Args:
-            geos (str list): geometry
-        """
-
-        # Find bad names
-        _dup_names = set()
-        for _geo in geos:
-            _name = to_clean(_geo)
-            if '|' in str(_geo):
-                _LOGGER.info(' - ADDING %s %s', _name, _geo)
-                _dup_names.add(_name)
-
-        # Add fail for each group of nodes with name
-        _scn_has_dups = False
-        for _name in _dup_names:
-            _LOGGER.info(' - CHECKING %s', _name)
-
-            # Sort child nodes first so that they are less likely to get
-            # renamed - often grp (unimportant) + mesh tfm have same name,
-            # so we just want to rename grp
-            _longs = []
-            _longs += cmds.ls(_name, long=True) or []
-            _longs += cmds.ls('*:'+_name, long=True) or []
-            _longs.sort(reverse=True)
-
-            _geos = []
-            for _long in _longs:
-                _LOGGER.info('   - NODE %s', _long)
-                if _long.startswith('|JUNK'):
-                    continue
-                _path = single(cmds.ls(_long, allPaths=True))
-                _geos.append(_path)
-            if len(_geos) <= 1:
-                _LOGGER.info('   - NONE TO RENAME')
-                continue
-            _LOGGER.info('   - GEOS %d %s', len(_geos), _geos)
-
-            self.write_log('Duplicate names %s', _geos)
-            _fail = core.SCFail('Duplicate name "{}" in cache_SET: {}'.format(
-                _name, [str(_geo) for _geo in _geos]))
-            _sel = wrap_fn(cmds.select, _geos)
-            _fail.add_action('Select nodes', _sel)
-            if [_geo for _geo in _geos if not pom.CNode(_geo).is_referenced()]:
-                _fix = wrap_fn(self.fix_duplicate_nodes, _geos)
-                _fail.add_action('Fix', _fix, is_fix=True)
-            self.add_fail(_fail)
-            _scn_has_dups = True
-
-        return _scn_has_dups
-
-    def fix_bad_shape(self, shp, name):
-        """Fix bad shape name.
-
-        Args:
-            shp (str): shape to fix
-            name (str): new name to apply
-        """
-        _LOGGER.debug('FIX BAD SHAPE %s -> %s', shp, name)
-
-        # Check for name clash
-        if cmds.objExists(name):
-            _node = pom.cast_node(name, maintain_shapes=True)
-            if not _node.plug['intermediateObject'].get_val():
-                qt.raise_dialog(
-                    f'Shape "{_node}" is not intermediate object.\n\n'
-                    'You many want to check this geometry.',
-                    title='Warning', buttons=['Fix anyway', 'Cancel'])
-            _node.rename(name+'Undeformed')
-
-        cmds.rename(shp, name)
-
-    def fix_duplicate_nodes(self, nodes):
-        """Fix duplicate nodes.
-
-        Args:
-            nodes (str): duplicate nodes to fix
-        """
-        _LOGGER.info('FIX DUPLICATE NODES %s', nodes)
-        _name = to_clean(nodes[0])
-        _LOGGER.info(' - NAME %s', _name)
-        _root = _name
-        while _root[0].isdigit():
-            _root = _root[:-1]
-        _LOGGER.info(' - ROOT %s', _root)
-
-        for _node in nodes[1:]:
-            _idx = 1
-            _new_name = None
-            while True:
-                check_heart()
-                _new_name = '{}{:d}'.format(_root, _idx)
-                _idx += 1
-                if cmds.objExists(_new_name):
-                    continue
-                break
-            if not cmds.objExists(_node):
-                _LOGGER.warning(' - MISSING NODE %s', _node)
-                continue
-            _LOGGER.info(' - RENAME %s -> %s', _node, _new_name)
-            cmds.rename(_node, _new_name)
 
 
 class CheckForNgons(core.SCMayaCheck):
@@ -669,6 +632,7 @@ class CheckShaders(core.SCMayaCheck):
     """
 
     sort = 100
+    action_filter = 'LookdevPublish'
     task_filter = 'lookdev'
     depends_on = (CheckForFaceAssignments, )
 

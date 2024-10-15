@@ -1,20 +1,18 @@
 """Maya specific sanity checks."""
 
-import collections
 import logging
 import os
 import platform
-import re
 
 from maya import cmds
 
 from pini import qt, dcc, pipe
 from pini.utils import (
-    single, wrap_fn, check_heart, nice_size, cache_result, Path,
+    single, wrap_fn, nice_size, cache_result, Path,
     abs_path, Dir)
 
 from maya_pini import ref, open_maya as pom, m_pipe
-from maya_pini.utils import DEFAULT_NODES, to_clean
+from maya_pini.utils import DEFAULT_NODES
 
 from .. import core, utils
 
@@ -457,7 +455,7 @@ class CheckCacheables(core.SCMayaCheck):
         Args:
             cam (CPCacheableCam): camera to check
         """
-        self._check_shp(cam.cam)
+        self.check_shp(cam.cam)
 
     def _check_cset(self, cset):
         """Check the given CSET.
@@ -465,76 +463,4 @@ class CheckCacheables(core.SCMayaCheck):
         Args:
             cset (CPCacheableSet): CSET to check
         """
-        _set = cset.node
-
-        _top_nodes = m_pipe.read_cache_set(set_=_set, mode='top')
-
-        # Flag multiple top nodes
-        if len(_top_nodes) > 1:
-            self.add_fail(
-                f'Cache set "{_set}" contains multiple top nodes - this will '
-                f'in an abc with multiple top nodes, which is messy in the '
-                f'outliner and not nice for people to pick up',
-                node=_set)
-
-        # Flag overlapping nodes
-        utils.check_set_for_overlapping_nodes(set_=_set, check=self)
-
-        # Check shapes
-        self.write_log('Checking shapes %s', cset)
-        for _geo in cset.to_geo():
-            self.write_log(' - geo %s', _geo)
-            self._check_shp(_geo)
-
-        # Check for duplicate names
-        _names = collections.defaultdict(list)
-        for _node in m_pipe.read_cache_set(
-                set_=cset.cache_set, mode='transforms'):
-            _names[to_clean(_node)].append(_node)
-        for _name, _nodes in _names.items():
-            if len(_nodes) == 1:
-                continue
-            for _node in _nodes[1:]:
-                _msg = (
-                    f'Duplicate name "{_name}" in "{_set}". This will '
-                    'cause errors on abc export.')
-                _fix = None
-                _fixable = bool([
-                    _node for _node in _nodes if not _node.is_referenced()])
-                if _fixable:
-                    _fix = wrap_fn(
-                        self._fix_duplicate_node, node=_node, cbl=cset)
-                _fail = core.SCFail(_msg, fix=_fix)
-                _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
-                self.add_fail(_fail)
-
-    def _fix_duplicate_node(self, node, cbl):
-        """Rename a duplicate node so that it has a unique name.
-
-        Args:
-            node (str): node to fix
-            cbl (CPCacheable): cacheable to fix
-        """
-        _LOGGER.info('FIX DUP NODE %s', node)
-
-        _tfms = m_pipe.read_cache_set(set_=cbl.cache_set, mode='transforms')
-        _names = {to_clean(_tfm) for _tfm in _tfms}
-        _LOGGER.info(' - FOUND %d NAMES', len(_names))
-
-        _base = re.split('[|:]', str(node))[-1]
-        while _base and _base[-1].isdigit():
-            check_heart()
-            _base = _base[:-1]
-        _LOGGER.info(' - BASE %s', _base)
-
-        # Find next base
-        _idx = 1
-        _name = _base
-        _LOGGER.info(' - CHECK NAME %s', _name)
-        while cmds.objExists(_name) or _name in _names:
-            check_heart()
-            _name = f'{_base}{_idx:d}'
-            _LOGGER.info(' - CHECK NAME %s', _name)
-            _idx += 1
-        _LOGGER.info(' - RENAME %s -> %s', node, _name)
-        cmds.rename(node, _name)
+        utils.check_cacheable_set(set_=cset.node, check=self)

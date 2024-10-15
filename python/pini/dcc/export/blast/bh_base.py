@@ -16,7 +16,8 @@ class CBlastHandler(eh_base.CExportHandler):
 
     NAME = 'Blast Tool'
     LABEL = 'Playblasts the current scene'
-    ACTION = 'blast'
+    TYPE = 'Blast'
+    ACTION = 'Blast'
 
     _manual_range_elems = None
 

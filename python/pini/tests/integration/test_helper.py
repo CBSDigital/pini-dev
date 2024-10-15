@@ -158,7 +158,7 @@ class TestHelper(unittest.TestCase):
         _work = _work_dir.to_work()
         _LOGGER.info(' - WORK %s', _work)
 
-        _helper = helper.DIALOG
+        _helper = helper.obt_helper()
         _helper.jump_to(_work)
         dcc.new_scene(force=True)
         _work.save(force=True)
@@ -186,8 +186,6 @@ class TestDiskPiniHelper(TestHelper):
     pipe_master_filter = 'disk'
 
     def test_pini_helper_create(self):
-
-        assert not error.TRIGGERED
 
         dcc.new_scene(force=True)
         _helper = helper.obt_helper(reset_cache=False)

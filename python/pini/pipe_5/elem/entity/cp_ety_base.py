@@ -22,6 +22,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
     name = None
 
     profile = None
+    entity_type = None
     asset_type = None
     asset = None
     sequence = None

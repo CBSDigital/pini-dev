@@ -193,21 +193,21 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
                 error='Failed to find work dir '+match.path)
         raise NotImplementedError
 
-    @pipe_cache_on_obj
-    def _read_work_dirs(self, class_=None, force=False):
-        """Read all work dirs for this entity.
+    # @pipe_cache_on_obj
+    # def _read_work_dirs(self, class_=None, force=False):
+    #     """Read all work dirs for this entity.
 
-        Args:
-            class_ (class): override work dir class
-            force (bool): rebuild cache
+    #     Args:
+    #         class_ (class): override work dir class
+    #         force (bool): rebuild cache
 
-        Returns:
-            (CCPWorkDir): work dirs
-        """
-        from ... import cache
-        _LOGGER.debug('READ WORK DIRS %s %s', nice_id(self), self)
-        if class_:
-            raise NotImplementedError
-        _work_dirs = super()._read_work_dirs(class_=cache.CCPWorkDir)
-        _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
-        return _work_dirs
+    #     Returns:
+    #         (CCPWorkDir): work dirs
+    #     """
+    #     from ... import cache
+    #     _LOGGER.debug('READ WORK DIRS %s %s', nice_id(self), self)
+    #     if class_:
+    #         raise NotImplementedError
+    #     _work_dirs = super()._read_work_dirs(class_=cache.CCPWorkDir)
+    #     _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
+    #     return _work_dirs

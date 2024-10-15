@@ -13,6 +13,7 @@ import logging
 from maya import cmds
 
 from pini.utils import basic_repr, single
+from maya_pini.utils import to_parent
 
 from .pom_utils import cast_node
 
@@ -76,10 +77,14 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
             _args.insert(0, node)
         _LOGGER.debug(' - ARGS/KWARGS %s %s', _args, _kwargs)
         _result = func(*_args, **_kwargs)
-        _LOGGER.debug(' - RESULT %s', _result)
+        _LOGGER.debug(' - RESULT "%s"', _result)
 
         # Process results
-        if _name == 'camera':
+        if _name == 'annotate':
+            _shp = _result.strip()
+            _tfm = to_parent(_shp)
+            _result = pom.CTransform(_tfm)
+        elif _name == 'camera':
             _tfm, _ = _result
             _result = pom.CCamera(_tfm)
         elif _name in ['circle']:
@@ -104,6 +109,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
         elif _name in ['group']:
             _result = pom.CTransform(_result)
 
+        # Special handlers
         elif _name == 'listConnections':
             _result = _clean_list_connections(_result, **_kwargs)
         elif _name == 'listRelatives':
@@ -128,7 +134,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
             _result = pom.CTransform(_ik), pom.CNode(_ee)
 
         else:
-            raise NotImplementedError(_name)
+            raise NotImplementedError(_name, _result)
 
         return _result
 

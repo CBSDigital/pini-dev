@@ -5,7 +5,7 @@ import subprocess
 import time
 
 from pini import icons
-from pini.utils import File, Seq, str_to_ints, ints_to_str, Image, find_exe
+from pini.utils import File, Seq, Image, find_exe
 
 from . import cp_out_base
 
@@ -17,7 +17,7 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
 
     _dir = None
 
-    yaml_tag = '!CPOutputSeq'
+    # yaml_tag = '!CPOutputSeq'
     to_file = Seq.to_file
 
     def __init__(  # pylint: disable=unused-argument
@@ -46,36 +46,34 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
         self._dir = dir_
         self._thumb = File('{}/.pini/{}_thumb.jpg'.format(self.dir, self.base))
 
-    @classmethod
-    def from_yaml(cls, loader, node):
-        """Build output seq object from yaml.
+    # @classmethod
+    # def from_yaml(cls, loader, node):
+    #     """Build output seq object from yaml.
 
-        Args:
-            cls (class): output class
-            loader (Loader): yaml loader
-            node (Node): yaml data
+    #     Args:
+    #         loader (Loader): yaml loader
+    #         node (Node): yaml data
 
-        Returns:
-            (CPOutputSeq): output seq
-        """
-        del loader  # for linter
-        _path, _frames = node.value
-        return CPOutputSeq(_path.value, frames=str_to_ints(_frames.value))
+    #     Returns:
+    #         (CPOutputSeq): output seq
+    #     """
+    #     del loader  # for linter
+    #     _path, _frames = node.value
+    #     return CPOutputSeq(_path.value, frames=str_to_ints(_frames.value))
 
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        """Convert this output seq to yaml.
+    # @classmethod
+    # def to_yaml(cls, dumper, data):
+    #     """Convert this output seq to yaml.
 
-        Args:
-            cls (class): output seq class
-            dumper (Dumper): yaml dumper
-            data (CPOutput): output seq being exported
+    #     Args:
+    #         dumper (Dumper): yaml dumper
+    #         data (CPOutput): output seq being exported
 
-        Returns:
-            (str): output seq as yaml
-        """
-        _data = [data.path, ints_to_str(data.frames)]
-        return dumper.represent_sequence(cls.yaml_tag, _data)
+    #     Returns:
+    #         (str): output seq as yaml
+    #     """
+    #     _data = [data.path, ints_to_str(data.frames)]
+    #     return dumper.represent_sequence(cls.yaml_tag, _data)
 
     def to_thumb(self, force=False):
         """Obtain thumbnail for this image sequence, building it if needed.

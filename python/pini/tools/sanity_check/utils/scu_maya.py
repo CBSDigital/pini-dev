@@ -1,19 +1,129 @@
 """General utilies for sanity check in maya."""
 
+import collections
 import logging
+import re
 
 from maya import cmds
 
-from pini.dcc import export_handler
-from pini.utils import single, wrap_fn
+from pini.dcc import export
+from pini.utils import single, wrap_fn, check_heart
 
 from maya_pini import open_maya as pom, m_pipe
-from maya_pini.utils import to_unique, to_long, to_node
+from maya_pini.utils import to_unique, to_long, to_node, to_clean, to_parent
+
+from .. import core
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def check_set_for_overlapping_nodes(set_, check):
+def check_cacheable_set(set_, check):
+    """Check a cacheable set.
+
+    Args:
+        set_ (str): name of cache_SET or CSET
+        check (SCCheck): check to apply fails to
+    """
+    for _func in [
+            _check_for_overlapping_nodes,
+            _check_for_duplicate_names,
+            _check_geo_shapes,
+            _check_for_mutiple_top_nodes,
+    ]:
+        _func(set_=set_, check=check)
+        if check.fails:
+            return
+
+
+def _check_geo_shapes(set_, check):
+    """Check shapes nodes match transforms.
+
+    Args:
+        set_ (str): name of cache_SET or CSET
+        check (SCCheck): check to apply fails to
+    """
+    check.write_log('Checking shapes %s', set_)
+    _geos = m_pipe.read_cache_set(set_=set_, mode='geo')
+    for _geo in _geos:
+        check.write_log(' - geo %s', _geo)
+        check.check_shp(_geo)
+
+
+def _check_for_duplicate_names(set_, check):
+    """Check for duplicate names in set.
+
+    Args:
+        set_ (str): name of cache_SET or CSET
+        check (SCCheck): check to apply fails to
+    """
+    _names = collections.defaultdict(list)
+
+    for _node in m_pipe.read_cache_set(set_=set_, mode='transforms'):
+        _names[to_clean(_node)].append(_node)
+
+    for _name, _nodes in _names.items():
+        if len(_nodes) == 1:
+            continue
+        for _node in _nodes[1:]:
+            _msg = (
+                f'Duplicate name "{_name}" in "{set_}". This will '
+                'cause errors on abc export.')
+            _fix = None
+            _fixable = bool([
+                _node for _node in _nodes if not _node.is_referenced()])
+            if _fixable:
+                _fix = wrap_fn(
+                    _fix_duplicate_node, node=_node, set_=set_)
+            _fail = core.SCFail(_msg, fix=_fix)
+            _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
+            check.add_fail(_fail)
+
+
+def _check_for_mutiple_top_nodes(set_, check):
+    """Make sure cache set geo has a single top node.
+
+    Args:
+        set_ (str): name of cache_SET or CSET
+        check (SCCheck): check to apply fails to
+    """
+    _top_nodes = cmds.sets(set_, query=True) or []
+    if len(_top_nodes) == 1:
+        return
+
+    _msg = ('Cache set should contain one single node to avoid '
+            'abcs with multiple top nodes - cache_SET contains {:d} '
+            'top nodes').format(len(_top_nodes))
+    _fix = None
+    _shared_parent = single(
+        {to_parent(_node) for _node in _top_nodes}, catch=True)
+    check.write_log('shared parent %s', _shared_parent)
+    if _shared_parent:
+
+        # Check if we can existing group or create one
+        _grp = 'ABC'
+        _can_use_grp = False
+        if not cmds.objExists(_grp):
+            _can_use_grp = True
+        elif _shared_parent == _grp:
+            _children = tuple(sorted(
+                cmds.listRelatives('ABC', children=True)))
+            check.write_log('children %s', _children)
+            _top_nodes = tuple(sorted(
+                str(_node) for _node in _top_nodes))
+            check.write_log('top nodes %s', _top_nodes)
+            if _children == _top_nodes:
+                _can_use_grp = True
+        check.write_log('can use grp %d', _can_use_grp)
+
+        if _can_use_grp:
+            _fix = wrap_fn(
+                _fix_shared_parent, parent=_shared_parent, nodes=_top_nodes,
+                set_=set_, grp=_grp)
+
+    check.add_fail(_msg, fix=_fix)
+
+
+def _check_for_overlapping_nodes(set_, check):
     """Check set for overlapping top nodes.
 
     If AbcExport is passed a set which contains two nodes which
@@ -22,8 +132,8 @@ def check_set_for_overlapping_nodes(set_, check):
     eg. you cannot use |MDL and |MDL|geom in the same cache set.
 
     Args:
-        set_ (str): set node to check
-        check (SCCheck): sanity check to add fails to
+        set_ (str): name of cache_SET or CSET
+        check (SCCheck): check to apply fails to
     """
     _top_nodes = m_pipe.read_cache_set(set_=set_, mode='top')
     _longs = sorted([to_long(_node) for _node in _top_nodes])
@@ -42,6 +152,58 @@ def check_set_for_overlapping_nodes(set_, check):
             node=_node, fix=_fix)
 
 
+def _fix_shared_parent(parent, nodes, set_, grp):
+    """Fix cache set with two nodes sharing the same parent.
+
+    Args:
+        parent (str): parent node
+        nodes (str): nodes sharing parent
+        set_ (str): name of cache_SET or CSET
+        grp (str): name of intermediate node to create
+    """
+    if not cmds.objExists(grp):
+        _grp = pom.CMDS.group(name=grp, empty=True)
+        _grp.add_to_grp(parent)
+    else:
+        _grp = pom.CTransform(grp)
+    _grp.add_to_set(set_)
+    for _node in nodes:
+        cmds.sets(_node, remove=set_)
+        pom.CTransform(_node).add_to_grp(grp)
+
+
+def _fix_duplicate_node(node, set_):
+    """Rename a duplicate node so that it has a unique name.
+
+    Args:
+        node (str): node to fix (eg. lightsGrp)
+        set_ (str): name of cache_SET or CSET
+    """
+    _LOGGER.info('FIX DUP NODE %s', node)
+
+    _tfms = m_pipe.read_cache_set(set_=set_, mode='transforms')
+    _names = {to_clean(_tfm) for _tfm in _tfms}
+    _LOGGER.info(' - FOUND %d NAMES', len(_names))
+
+    _base = re.split('[|:]', str(node))[-1]
+    while _base and _base[-1].isdigit():
+        check_heart()
+        _base = _base[:-1]
+    _LOGGER.info(' - BASE %s', _base)
+
+    # Find next base
+    _idx = 1
+    _name = _base
+    _LOGGER.info(' - CHECK NAME %s', _name)
+    while cmds.objExists(_name) or _name in _names:
+        check_heart()
+        _name = f'{_base}{_idx:d}'
+        _LOGGER.info(' - CHECK NAME %s', _name)
+        _idx += 1
+    _LOGGER.info(' - RENAME %s -> %s', node, _name)
+    cmds.rename(node, _name)
+
+
 def find_cache_set():
     """Find cache set in the current scene.
 
@@ -53,8 +215,8 @@ def find_cache_set():
     """
     if cmds.objExists('cache_SET'):
         return pom.CNode('cache_SET')
-    _refs_mode = export_handler.get_publish_references_mode()
-    if _refs_mode is export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE:
+    _refs_mode = export.get_pub_refs_mode()
+    if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT:
         _sets = pom.find_nodes(
             type_='objectSet', default=False, clean_name='cache_SET')
         _set = single(_sets, catch=True)
@@ -212,7 +374,7 @@ def is_display_points(node):
     return _node.shp.object_type() == 'displayPoints'
 
 
-def read_cache_set_geo(filter_=None):
+def read_cache_set_geo(filter_=None, apply_pub_refs_mode=False):
     """Read cache_SET contents.
 
     Based on publish references mode, this can contain different values,
@@ -220,15 +382,20 @@ def read_cache_set_geo(filter_=None):
 
     Args:
         filter_ (str): apply filter to list
+        apply_pub_refs_mode (bool): apply publish references mode filtering
+            (ie. if publish references is set to remove then ignore
+            referenced nodes)
 
     Returns:
         (CBaseTransform list): cache set nodes
     """
     _set = find_cache_set()
-    _refs_mode = export_handler.get_publish_references_mode()
-    _include_referenced = _refs_mode in (
-        export_handler.ReferencesMode.LEAVE_INTACT,
-        export_handler.ReferencesMode.IMPORT_INTO_ROOT_NAMESPACE)
+    _include_referenced = True
+    if apply_pub_refs_mode:
+        _refs_mode = export.get_pub_refs_mode()
+        _include_referenced = _refs_mode in (
+            export.PubRefsMode.LEAVE_INTACT,
+            export.PubRefsMode.IMPORT_TO_ROOT)
     return m_pipe.read_cache_set(
         mode='geo', include_referenced=_include_referenced, set_=_set,
         filter_=filter_)

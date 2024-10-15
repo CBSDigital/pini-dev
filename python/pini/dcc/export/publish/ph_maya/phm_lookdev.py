@@ -29,6 +29,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         ' - Nodes in JUNK group are ignored',
         ' - Any sets in overrides_SET are saved and restored on abc attach',
     ])
+    ACTION = 'LookdevPublish'
 
     shd_yml = None
 

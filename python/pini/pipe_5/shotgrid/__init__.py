@@ -29,6 +29,6 @@ from .sg_tools import update_work_task
 from .sg_submit import submit, set_submitter, CPSubmitter, SUBMITTER
 
 from . import cache
-from .cache import SGCPubFile, to_fields_key
+from .cache import SGCPubFile, SGC
 
-SGC = cache.SGDataCache()
+# SGC = cache.SGDataCache()

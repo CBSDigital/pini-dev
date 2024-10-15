@@ -18,17 +18,20 @@ from . import sc_check
 _LOGGER = logging.getLogger(__name__)
 
 
-def find_check(filter_, task=None):
+def find_check(name=None, catch=False, **kwargs):
     """Find a single sanity check.
 
     Args:
-        filter_ (str): filter by name
-        task (str): force task (otherwise current task is used)
+        name (str): match check by name
+        catch (bool): no error if fail to find test
 
     Returns:
         (SCCheck): matching check
     """
-    return single(find_checks(filter_=filter_, task=task))
+    _checks = find_checks(**kwargs)
+    if name:
+        _checks = [_check for _check in _checks if _check.name == name]
+    return single(_checks, catch=catch)
 
 
 def find_checks(  # pylint: disable=too-many-branches
@@ -43,12 +46,18 @@ def find_checks(  # pylint: disable=too-many-branches
         task (str): force task (otherwise current task is used) - if
             'all' is passed, no task filter is applied and all checks
             are returned
-        action (str): apply action filter (eg. render/cache)
+        action (str): apply action filter
+            (eg. render/cache)
         force (bool): force reread checks from disk
 
     Returns:
         (SCCheck list): checks
     """
+    if action not in (
+            None, 'Render', 'ModelPublish', 'LookdevPublish', 'Cache',
+            'BasicPublish'):
+        raise ValueError(action)
+
     _all_checks = read_checks(force=force)
     _work = work or pipe.cur_work()
     _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
@@ -88,14 +97,6 @@ def find_checks(  # pylint: disable=too-many-branches
             _LOGGER.debug('   - DCC FILTER REJECTED %s', filter_)
             continue
 
-        # Apply action filter
-        if action:
-            if not passes_filter(action, _check.action_filter):
-                continue
-        else:
-            if _check.action_filter:
-                continue
-
         # Apply profile filter
         _profile = _work.profile if _work else None
         if _check.profile_filter and not _profile:
@@ -109,8 +110,13 @@ def find_checks(  # pylint: disable=too-many-branches
                 _profile, _check.profile_filter)
             continue
 
-        # Apply task filter
-        if _disable_task_filter:
+        # Apply action + task filters
+        _action_match = False
+        _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
+        if action and _check.action_filter:
+            _action_match = passes_filter(action, _check.action_filter)
+        _LOGGER.debug('   - ACTION MATCH %s', _action_match)
+        if _action_match or _disable_task_filter:
             pass
         elif _task is None:
             if _check.task_filter:
@@ -179,6 +185,12 @@ def read_checks(force=False):
         _checks += _checks_from_py(_py)
     _LOGGER.debug(
         'FOUND %d CHECKS IN %.01fs', len(_checks), time.time() - _start)
+
+    # Allow custom checks to replace default checks (by name)
+    _map = {}
+    for _check in _checks:
+        _map[_check.name] = _check
+    _checks = sorted(_map.values())
 
     return sorted(_checks)
 
