@@ -1,3 +1,11 @@
+## [6.0.1] - Tue 2024-10-15 09:38
+### Summary
+ - Pini Helper:
+    - bugfix error on blast to mov due to unhandled 29.97df frame rate (nle),
+### Updated
+ - pini.dcc.MayaDCC.get_fps added 29.97df fps handling,
+
+
 ## [6.0.0] - Tue 2024-10-15 08:45
 ### Summary
  - Sanity Check:

@@ -4,6 +4,7 @@ import logging
 
 from pini.utils import nice_id
 
+from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
 from . import ccp_ety_base
 
 _LOGGER = logging.getLogger(__name__)
@@ -59,6 +60,14 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
     #         self.job.find_work_dirs(entity=self, force=force))
     #     _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
     #     return _work_dirs
+
+    @pipe_cache_on_obj
+    def _read_outputs(self, force=False):
+        _outs = []
+        for _out in super()._read_outputs():
+            _LOGGER.info(' - OUT %s', _out)
+            
+        asdasd
 
     def _read_publishes(self, force=False):
         """Read all publishes in this entity.
