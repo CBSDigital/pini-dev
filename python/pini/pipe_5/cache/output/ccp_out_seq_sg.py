@@ -35,5 +35,6 @@ class CCPOutputSeqSG(ccp_out_seq_base.CCPOutputSeqBase):
             (int list): frames
         """
         _LOGGER.info('READ FRAMES %s', self.path)
+        _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
         _frames = super()._read_frames()
         return _frames

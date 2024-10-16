@@ -20,6 +20,7 @@ class SGCProj(sgc_container.SGCContainer):
     FIELDS = (
         'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
         'sg_status', 'created_at')
+    STATUS_KEY = 'sg_status'
 
     def __init__(self, data):
         """Constructor.
@@ -105,13 +106,12 @@ class SGCProj(sgc_container.SGCContainer):
             _assets.append(_asset)
         return _assets
 
-    def find_entity(self, match=None, **kwargs):
+    def find_entity(self, match=None, catch=False, **kwargs):
         """Find entity within this job.
 
         Args:
             match (str|CPEntity): entity or path to match
-            id_ (int): apply id filter
-            type_ (str): apply element type filter
+            catch (bool): no error if fail to match entity
 
         Returns:
             (SGCAsset|SGCShot): matching entity
@@ -125,7 +125,7 @@ class SGCProj(sgc_container.SGCContainer):
             _kwargs['entity_type'] = _kwargs.get(
                 'entity_type', match.entity_type)
         _LOGGER.debug(' - FIND ENTITES %s', _kwargs)
-        
+
         _etys = self.find_entities(**_kwargs)
         if len(_etys) == 1:
             return single(_etys)
@@ -141,13 +141,15 @@ class SGCProj(sgc_container.SGCContainer):
         if len(_match_etys) == 1:
             return single(_match_etys)
 
-        _contains_etys = [
-            _ety for _ety in self.entities
-            if _match_s.startswith(_ety.path)]
-        if len(_contains_etys) == 1:
-            return single(_contains_etys)
+        # _contains_etys = [
+        #     _ety for _ety in self.entities
+        #     if _match_s.startswith(_ety.path)]
+        # if len(_contains_etys) == 1:
+        #     return single(_contains_etys)
 
-        raise ValueError(match)
+        if catch:
+            return None
+        raise ValueError(match, _kwargs)
 
     def find_entities(self, type_=None, force=False, **kwargs):
         """Search entities in this project.

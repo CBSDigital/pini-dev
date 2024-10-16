@@ -26,8 +26,11 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (str): cache format
         """
-        return '{dir}/.pini/pipe_{ver:d}/{base}_{extn}_{{func}}.yml'.format(
-            dir=self.dir, ver=pipe.VERSION, base=self.base, extn=self.extn)
+
+        _cache_extn = 'yml' if pipe.VERSION <= 4 else 'pkl'
+        return (
+            f'{self.dir}/.pini/pipe_{pipe.VERSION:d}/'
+            f'{self.base}_{self.extn}_{{func}}.{_cache_extn}')
 
     @property
     def content_type(self):  # pylint: disable=too-many-branches
@@ -220,7 +223,7 @@ class CCPOutputBase(elem.CPOutputBase):
             (CCPOutputGhost): ghost output for caching
         """
         # pylint: disable=no-member
-        assert self._latest is not None
+        # assert self._latest is not None
         return ccp_out_ghost.CCPOutputGhost(
             self.path, latest=self._latest, mtime=self.mtime,
             template=self.template.source.pattern, type_=self.type_,

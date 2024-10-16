@@ -337,7 +337,9 @@ class TestDiskPipe(unittest.TestCase):
         assert not _seq.work_dir
         assert _seq.find_vers()
         testing.enable_file_system(False)
-        _seq_c = single(_work_c.find_outputs())
+        _seq_g = single(_work_c.find_outputs())
+        _seq_c = pipe.CACHE.obt_output(_seq_g)
+        _seq_c = pipe.CACHE.obt(_seq_g)
         _LOGGER.info('SEQ C %s', _seq_c)
         assert isinstance(_seq_c, cache.CCPOutputSeq)
         assert len(_seq_c.frames) == 1

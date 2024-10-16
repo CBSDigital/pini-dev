@@ -25,7 +25,7 @@ class TestHelper(unittest.TestCase):
             _blah_lyr = pom.create_render_layer('blah')
         assert _blah_lyr
 
-        _helper = helper.DIALOG
+        _helper = helper.obt_helper()
         _helper.ui.MainPane.select_tab('Export')
         _helper.ui.EExportPane.select_tab('Render')
         _helper.ui.ERenderHandler.select_data(_farm_rh)

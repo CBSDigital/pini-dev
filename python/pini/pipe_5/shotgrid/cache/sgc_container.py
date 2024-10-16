@@ -20,6 +20,7 @@ class SGCContainer(sgc_elem.SGCElem):
 
     FIELDS = None
     ENTITY_TYPE = None
+    STATUS_KEY = 'sg_status_list'
 
     def __init__(self, data):
         """Constructor.
@@ -31,11 +32,21 @@ class SGCContainer(sgc_elem.SGCElem):
 
         self.id_ = data['id']
         self.updated_at = data['updated_at']
+        self.status = data.get(self.STATUS_KEY)
 
         assert self.ENTITY_TYPE
         assert self.FIELDS
         assert isinstance(self.FIELDS, tuple)
         assert data['type'] == self.ENTITY_TYPE
+
+    @property
+    def omitted(self):
+        """Check whether this element has been omitted.
+
+        Returns:
+            (bool): whether omitted
+        """
+        return self.status == 'omt'
 
     def omit(self):
         """Omit this entry by setting status to 'omt'."""
@@ -193,12 +204,12 @@ class SGCTask(SGCContainer):
         super().__init__(data)
         self.name = data['sg_short_name']
         self.step_id = data['step']['id']
-        self.step = data['step']['name']
+        _step = self.root.find_step(self.step_id)
+        self.step = _step.short_name
 
     def __repr__(self):
-        _step = self.root.find_step(self.step_id)
         return basic_repr(
-            self, f'{self.entity.uid}.{_step.short_name}/{self.name}')
+            self, f'{self.entity.uid}.{self.step}/{self.name}')
 
 
 class SGCPubFile(SGCPath):
@@ -206,7 +217,8 @@ class SGCPubFile(SGCPath):
 
     ENTITY_TYPE = 'PublishedFile'
     FIELDS = (
-        'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by')
+        'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by',
+        'entity', 'project')
 
     def __init__(self, data):
         """Constructor.

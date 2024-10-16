@@ -88,6 +88,11 @@ class CPJobSG(cp_job_base.CPJobBase):
                 job_path=self.path, asset=_sg_asset.asset,
                 asset_type=_sg_asset.asset_type)
             _asset = _class(_path, job=self)
+            if not _asset.sg_entity:
+                _LOGGER.warning(
+                    ' - FAILED TO FIND SG ENTITY %s (%s)', _asset.path,
+                    _sg_asset.to_url())
+                continue
             _assets.append(_asset)
 
         return _assets
@@ -169,7 +174,10 @@ class CPJobSG(cp_job_base.CPJobBase):
             _path = _tmpl.format(
                 job_path=self.path, sequence=_sg_shot.sequence,
                 shot=_sg_shot.shot)
-            _shot = _class(_path, job=self)
+            try:
+                _shot = _class(_path, job=self)
+            except ValueError:
+                continue
             _shots.append(_shot)
 
         _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))

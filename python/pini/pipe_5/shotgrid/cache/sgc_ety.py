@@ -106,6 +106,9 @@ class _SGCEntity(sgc_container.SGCContainer):
     def _read_pub_files(self, force=False):
         """Read pub files in this entity.
 
+        Args:
+            force (bool): force reread from shotgrid
+
         Returns:
             (SGCPubFile list): pub files
         """
@@ -161,6 +164,11 @@ class _SGCEntity(sgc_container.SGCContainer):
                 _pub_files, key=operator.attrgetter('path')):
             _LOGGER.debug(' - CHECKING PUB FILE %s', _pub_file)
             _out = pipe.to_output(_pub_file.path, catch=True)
+            if _out and _out.entity.name != self.name:
+                _LOGGER.debug(
+                    '   - ENTITY NAME MISMATCH %s != %s', _out.entity.name,
+                    self.name)
+                _out = None
             _LOGGER.debug('   - OUT %s', _out)
             _pub_file.validated = bool(_out)
             _LOGGER.debug('   - VALIDATED %d', _pub_file.validated)

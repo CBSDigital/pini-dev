@@ -1,3 +1,17 @@
+## [6.0.2] - Tue 2024-10-15 16:59
+### Summary
+ - Pini Helper:
+    - bugfix error on cache (nle),
+ - Sanity Check:
+    - check cache set bugfix error on check shape with namespace,
+### Updated
+ - pini.utils.Seq bugfix transferring frame cache from existing seq if none set up,
+ - pini.utils.Seq.has_frames_cache added,,
+ - pini.pipe_5 wip,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp bugfix error on shp with namespace,
+ - maya_pini.m_pipe.cache bugfix error due to non-pascal action,
+
+
 ## [6.0.1] - Tue 2024-10-15 09:38
 ### Summary
  - Pini Helper:

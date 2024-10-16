@@ -37,7 +37,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         _path = path
         _frames = frames
-        if isinstance(_path, Seq):
+        if isinstance(_path, Seq) and _path.has_frames_cache():
             _path = path.path
             _frames = path.frames
         self.path = norm_path(_path)
@@ -294,6 +294,14 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         _frames = self.to_frames(force=force)
         return _frames[0], _frames[-1]
+
+    def has_frames_cache(self):
+        """Check whether this sequence has a frames cache.
+
+        Returns:
+            (bool): whether frames cache
+        """
+        return self._frames is not None
 
     def is_missing_frames(self, frames=None):
         """Test whether this sequence's frame range is incomplete.

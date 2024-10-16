@@ -3,7 +3,7 @@
 import logging
 import time
 
-from pini.utils import nice_id, single, Dir
+from pini.utils import single, Dir
 
 from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
 from . import ccp_ety_base

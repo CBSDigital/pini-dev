@@ -20,9 +20,10 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             (SGCEntity): shotgrid cache entity
         """
         if not self._sg_entity:
+            _LOGGER.debug('SG ENTITY %s', self)
             self._sg_entity = self.sg_proj.find_entity(
                 type_=self.profile.capitalize(), entity_type=self.entity_type,
-                name=self.name)
+                name=self.name, omitted=False, catch=True)
         return self._sg_entity
 
     @property
@@ -52,6 +53,7 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             _out = pipe.to_output(
                 _sg_pub_file.path, template=_tmpl, entity=self,
                 latest=_sg_pub_file.latest)
+            _out.sg_pub_file = _sg_pub_file
             _LOGGER.debug('   - OUT %s', _out)
             _outs.append(_out)
         return _outs
@@ -78,9 +80,11 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
 
         _work_dirs = []
         for _task in self.sg_entity.tasks:
+            _LOGGER.debug(' - TASK %s', _task)
             _path = _tmpl.format(task=_task.name, step=_task.step)
+            _LOGGER.debug('   - PATH %s', _path)
             _work_dir = _class(_path, template=_tmpl, entity=self)
-            _LOGGER.debug('     - WORK DIR %s ', _work_dir)
+            _LOGGER.debug('   - WORK DIR %s ', _work_dir)
             _work_dirs.append(_work_dir)
 
         return _work_dirs
@@ -91,13 +95,16 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         Args:
             force (bool): remove contents without confirmation
         """
+        _LOGGER.info('FLUSH %s', self)
         from pini import qt
 
         super().flush(force=force)
 
         # Omit pub files in shotgrid
         _sg_pubs = self.sg_entity.find_pub_files(entity=self)
+        _LOGGER.info(' - OMITTING %d PUBS', len(_sg_pubs))
         assert isinstance(_sg_pubs, list)
         for _sg_pub in qt.progress_bar(_sg_pubs, 'Updating {:d} output{}'):
             _sg_pub.set_status('omt')
+            _LOGGER.info(' - OMIT %s', _sg_pub)
         self.sg_entity.find_pub_files(force=True)

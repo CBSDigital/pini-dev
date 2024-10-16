@@ -5,7 +5,7 @@ and then subsequent requests for the same data are satisfied using the
 cached data.
 """
 
-from .root import CCPRoot
+from .ccp_root import CCPRoot
 from .job import CCPJob
 from .ccp_ety_type import CCPSequence
 from .entity import CCPAsset, CCPShot, CCPEntity

@@ -126,10 +126,12 @@ class TestDCC(unittest.TestCase):
 
     def test_version_up_publish(self):
 
-        testing.TMP_ASSET.flush(force=True)
+        _ety = testing.TMP_ASSET
+        _ety.flush(force=True)
         pipe.CACHE.reset()
         _ety_c = pipe.CACHE.obt(testing.TMP_ASSET)
         pprint.pprint(_ety_c.outputs)
+        assert not _ety_c.outputs
         assert not _ety_c.find_outputs()
 
         _handler = dcc.find_export_handler(

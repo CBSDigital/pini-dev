@@ -5,7 +5,7 @@ import logging
 
 from pini.utils import single
 
-from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
+from ..ccp_utils import pipe_cache_on_obj
 from ...elem import CPEntity
 
 _LOGGER = logging.getLogger(__name__)

@@ -19,5 +19,5 @@ class CCPWorkDirSG(ccp_work_dir_base.CCPWorkDirBase):
         Returns:
             (CPOutput list):
         """
-        return [_out for _out in self.job.find_outputs()
+        return [_out for _out in self.entity.find_outputs()
                 if _out.work_dir == self]

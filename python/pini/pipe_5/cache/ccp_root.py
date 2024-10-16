@@ -17,13 +17,13 @@ import time
 from pini.utils import (
     single, passes_filter, nice_age, norm_path, Path, flush_caches)
 
-from ... import elem
-from .. import job, ccp_utils, output
+from .. import elem
+from . import job, ccp_utils, output
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CCPRootBase(elem.CPRoot):
+class CCPRoot(elem.CPRoot):
     """Base object for the pipeline cache.
 
     Used to store top-level information, eg. list of jobs.
@@ -389,7 +389,12 @@ class CCPRootBase(elem.CPRoot):
         Returns:
             (CCPWorkDir): cacheable work dir
         """
-        raise NotImplementedError
+        from .. import cache
+        _ety = self.obt_entity(work_dir.entity)
+        assert isinstance(_ety, cache.CCPEntity)
+        return single([
+            _work_dir for _work_dir in _ety.work_dirs
+            if _work_dir == work_dir], catch=catch)
 
     def obt_work(self, match, catch=False):
         """Obtain the given work file object.
@@ -401,7 +406,7 @@ class CCPRootBase(elem.CPRoot):
         Returns:
             (CCPWork): matching work file
         """
-        from ... import cache
+        from .. import cache
 
         _match = match
         _LOGGER.debug('OBT WORK %s', _match)
@@ -436,7 +441,7 @@ class CCPRootBase(elem.CPRoot):
         Returns:
             (CPOutput): output
         """
-        from ... import cache
+        from .. import cache
 
         _LOGGER.debug('FIND OUTPUT %s', match)
 

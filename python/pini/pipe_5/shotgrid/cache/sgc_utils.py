@@ -16,9 +16,11 @@ def passes_filters(elem, filter_attr='path', **kwargs):
 
     Args:
         elem (SGCElem): element
+        filter_attr (str): which attribute to apply filter_ arg to
+            (eg. path/uid)
 
     Returns:
-        ():
+        (bool): whether the given element passes the given filters
     """
     _LOGGER.debug('PASSES FILTERS %s %s', elem, kwargs)
 
@@ -28,7 +30,7 @@ def passes_filters(elem, filter_attr='path', **kwargs):
         _filterable_val = getattr(elem, filter_attr)
         if not passes_filter(_filterable_val, _filter):
             return False
-    
+
     # Apply simple attr filters
     for _attr, _val in kwargs.items():
         if _val is None:
@@ -36,7 +38,7 @@ def passes_filters(elem, filter_attr='path', **kwargs):
         _elem_val = getattr(elem, _attr)
         if _elem_val != _val:
             return False
-    
+
     return True
 
 # def to_cache_file(range_, entity_type, job, fields, ver_n=None):

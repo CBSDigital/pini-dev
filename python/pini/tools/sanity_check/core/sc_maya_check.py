@@ -74,7 +74,7 @@ class SCMayaCheck(sc_check.SCCheck):
         _cur_shp = to_clean(_shp)
         _correct_shp = to_clean(node)+'Shape'
         if _cur_shp != _correct_shp:
-            if pom.CNode(_cur_shp).is_referenced():
+            if pom.CNode(_shp).is_referenced():
                 _fix = None
             else:
                 _fix = wrap_fn(cmds.rename, _shp, _correct_shp)

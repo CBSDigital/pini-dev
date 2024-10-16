@@ -106,9 +106,10 @@ class CCPWork(CPWork):
             force (bool): force reread from disk
 
         Returns:
-            (CPOutput list): outputs
+            (CPOutputGhost list): outputs
         """
         _LOGGER.debug('READ OUTPUTS force=%d %s', force, self)
+        # _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
         if force:
             self._update_outputs_cache()
         _outs = super()._read_outputs()
@@ -118,7 +119,9 @@ class CCPWork(CPWork):
                 _out for _out in _outs
                 if _out.metadata.get('src') == self.path]
             _LOGGER.debug(' - APPLY METADATA MATCH -> %d OUTPUTS', len(_outs))
-        return _outs
+        _out_gs = [_out.to_ghost() for _out in _outs]
+        # asdasd
+        return _out_gs
 
     def _update_outputs_cache(self):
         """Rebuild outputs cache."""
@@ -143,7 +146,7 @@ class CCPWork(CPWork):
                     ' - FOUND %d SEQS %s', len(_out_seqs), _seq_dir)
             _LOGGER.debug(' - UPDATED CACHES %s', self)
         elif pipe.MASTER == 'shotgrid':
-            self.job.find_outputs(force=True)
+            self.entity.find_outputs(force=True)
         else:
             raise ValueError(pipe.MASTER)
 

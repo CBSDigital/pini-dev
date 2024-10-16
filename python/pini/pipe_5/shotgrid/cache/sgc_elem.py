@@ -26,7 +26,7 @@ class SGCElem(object):
             (SGCEntity): entity
         """
         if 'entity' not in self.data:
-            raise RuntimeError
+            raise RuntimeError(self, self.data)
         return self.proj.find_entity(
             id_=self.data['entity']['id'],
             type_=self.data['entity']['type'])

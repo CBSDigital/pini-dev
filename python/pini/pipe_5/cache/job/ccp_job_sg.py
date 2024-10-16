@@ -4,12 +4,9 @@
 
 import logging
 import operator
-import os
-import time
 
 from pini import qt
-from pini.utils import (
-    single, apply_filter, get_method_to_file_cacher, check_heart)
+from pini.utils import single, apply_filter, check_heart
 
 from ..ccp_utils import pipe_cache_result, pipe_cache_to_file
 from . import ccp_job_base
@@ -102,119 +99,122 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         _LOGGER.debug('READ SHOTS force=%d', force)
         return super().read_shots(class_=class_ or cache.CCPShot)
 
-    def find_outputs(
-            self, type_=None, progress=True, force=False, **kwargs):
-        """Find outputs in this job.
+    # def find_outputs(
+    #         self, type_=None, progress=True, force=False, **kwargs):
+    #     """Find outputs in this job.
 
-        (Only applicable to shotgrid jobs)
+    #     (Only applicable to shotgrid jobs)
 
-        Args:
-            type_ (str): filter by output type
-            progress (bool): show progress
-            force (bool): force rebuild cache
+    #     Args:
+    #         type_ (str): filter by output type
+    #         progress (bool): show progress
+    #         force (bool): force rebuild cache
 
-        Returns:
-            (CPOutput list): outputs
-        """
-        from pini import pipe
-        _LOGGER.debug('FIND OUTPUTS %s', self)
+    #     Returns:
+    #         (CPOutput list): outputs
+    #     """
+    #     asdasdasd
+    #     from pini import pipe
+    #     _LOGGER.debug('FIND OUTPUTS %s', self)
 
-        if force:
-            self._read_outputs(force=True, progress=progress)
+    #     if force:
+    #         self._read_outputs(force=True, progress=progress)
 
-        _all_outs = self._read_outputs(progress=progress)
-        _outs = []
-        for _out in _all_outs:
-            _LOGGER.debug(' - TESTING %s', _out)
-            if not pipe.passes_filters(_out, type_=type_, **kwargs):
-                continue
-            _outs.append(_out)
+    #     _all_outs = self._read_outputs(progress=progress)
+    #     _outs = []
+    #     for _out in _all_outs:
+    #         _LOGGER.debug(' - TESTING %s', _out)
+    #         if not pipe.passes_filters(_out, type_=type_, **kwargs):
+    #             continue
+    #         _outs.append(_out)
 
-        _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
-        return sorted(_outs)
+    #     _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
+    #     return sorted(_outs)
 
-    @pipe_cache_result
-    def _read_outputs(self, progress=True, force=False):
-        """Read outputs in this job from shotgrid.
+    # @pipe_cache_result
+    # def _read_outputs(self, progress=True, force=False):
+    #     """Read outputs in this job from shotgrid.
 
-        Args:
-            progress (bool): show progress dialog
-            force (bool): force reread outputs
+    #     Args:
+    #         progress (bool): show progress dialog
+    #         force (bool): force reread outputs
 
-        Returns:
-            (CCPOutput list): outputs
-        """
-        _LOGGER.debug('READ OUTPUTS SG %s', self)
-        from pini import pipe
-        from pini.pipe import cache, shotgrid
+    #     Returns:
+    #         (CCPOutput list): outputs
+    #     """
 
-        _etys = list(self.entities)
-        _work_dirs = list(self.work_dirs)
+    #     asdasd
+    #     _LOGGER.debug('READ OUTPUTS SG %s', self)
+    #     from pini import pipe
+    #     from pini.pipe import cache, shotgrid
 
-        _outs = []
-        for _sg_pub in shotgrid.SGC.find_pub_files(
-                job=self, force=force, progress=progress):
+    #     _etys = list(self.entities)
+    #     _work_dirs = list(self.work_dirs)
 
-            _LOGGER.debug('PUB %s', _sg_pub)
-            if _sg_pub.status in ('omt', ):
-                continue
+    #     _outs = []
+    #     for _sg_pub in shotgrid.SGC.find_pub_files(
+    #             job=self, force=force, progress=progress):
 
-            # Find parent entity or work dir
-            _work_dir = _ety = None
-            if not _sg_pub.has_work_dir:
-                _ety = _iter_to_next_parent(
-                    path=_sg_pub.path, parents=_etys)
-            else:
-                _work_dir = _iter_to_next_parent(
-                    path=_sg_pub.path, parents=_work_dirs)
-            if not (_ety or _work_dir):
-                continue
-            _LOGGER.debug(' - ETY %s', _ety)
-            _LOGGER.debug(' - WORK DIR %s', _work_dir)
+    #         _LOGGER.debug('PUB %s', _sg_pub)
+    #         if _sg_pub.status in ('omt', ):
+    #             continue
 
-            # Determine output class
-            if _sg_pub.template_type in pipe.OUTPUT_FILE_TYPES:
-                _class = cache.CCPOutputFile
-            elif _sg_pub.template_type in pipe.OUTPUT_VIDEO_TYPES:
-                _class = cache.CCPOutputVideo
-            elif _sg_pub.template_type in pipe.OUTPUT_SEQ_TYPES:
-                _class = cache.CCPOutputSeq
-            else:
-                raise ValueError(_sg_pub.template_type)
+    #         # Find parent entity or work dir
+    #         _work_dir = _ety = None
+    #         if not _sg_pub.has_work_dir:
+    #             _ety = _iter_to_next_parent(
+    #                 path=_sg_pub.path, parents=_etys)
+    #         else:
+    #             _work_dir = _iter_to_next_parent(
+    #                 path=_sg_pub.path, parents=_work_dirs)
+    #         if not (_ety or _work_dir):
+    #             continue
+    #         _LOGGER.debug(' - ETY %s', _ety)
+    #         _LOGGER.debug(' - WORK DIR %s', _work_dir)
 
-            # Build output object
-            _tmpl = self.find_template_by_pattern(_sg_pub.template)
-            try:
-                _out = _class(
-                    _sg_pub.path, entity=_ety, work_dir=_work_dir,
-                    template=_tmpl, latest=_sg_pub.latest)
-            except ValueError:  # Can fail if config changed
-                _LOGGER.warning(' - BUILD OUT FAILED %s', _sg_pub)
-                continue
-            _LOGGER.debug('   - OUT %s', _out)
+    #         # Determine output class
+    #         if _sg_pub.template_type in pipe.OUTPUT_FILE_TYPES:
+    #             _class = cache.CCPOutputFile
+    #         elif _sg_pub.template_type in pipe.OUTPUT_VIDEO_TYPES:
+    #             _class = cache.CCPOutputVideo
+    #         elif _sg_pub.template_type in pipe.OUTPUT_SEQ_TYPES:
+    #             _class = cache.CCPOutputSeq
+    #         else:
+    #             raise ValueError(_sg_pub.template_type)
 
-            _outs.append(_out)
-            assert isinstance(_out.entity, cache.CCPEntity)
+    #         # Build output object
+    #         _tmpl = self.find_template_by_pattern(_sg_pub.template)
+    #         try:
+    #             _out = _class(
+    #                 _sg_pub.path, entity=_ety, work_dir=_work_dir,
+    #                 template=_tmpl, latest=_sg_pub.latest)
+    #         except ValueError:  # Can fail if config changed
+    #             _LOGGER.warning(' - BUILD OUT FAILED %s', _sg_pub)
+    #             continue
+    #         _LOGGER.debug('   - OUT %s', _out)
 
-        return _outs
+    #         _outs.append(_out)
+    #         assert isinstance(_out.entity, cache.CCPEntity)
 
-    @get_method_to_file_cacher()
-    def get_sg_output_template_map(self, map_=None, force=False):
-        """Get shotgrid output template map.
+    #     return _outs
 
-        This maps paths to their output template pattern, and is used to
-        streamline build output objects from shotgrid results, by avoiding
-        each result needing to be checked against a full list output
-        templates.
+    # @get_method_to_file_cacher()
+    # def get_sg_output_template_map(self, map_=None, force=False):
+    #     """Get shotgrid output template map.
 
-        Args:
-            map_ (dict): output template map to apply to cache
-            force (bool): force write result to disk
+    #     This maps paths to their output template pattern, and is used to
+    #     streamline build output objects from shotgrid results, by avoiding
+    #     each result needing to be checked against a full list output
+    #     templates.
 
-        Returns:
-            (dict): output template map
-        """
-        return map_ or {}
+    #     Args:
+    #         map_ (dict): output template map to apply to cache
+    #         force (bool): force write result to disk
+
+    #     Returns:
+    #         (dict): output template map
+    #     """
+    #     return map_ or {}
 
     @pipe_cache_to_file
     def _read_publishes(self, force=False):
@@ -226,40 +226,57 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
         Returns:
             (CPOutputGhost list): publishes
         """
-        _LOGGER.info('READING PUBLISHES %s', self)
-        from pini import pipe
-
-        # Find list of ouputs + streams
-        _start = time.time()
-        _streams = {}
-        _to_add = []
-        _outs = self.find_outputs()
-        for _out in qt.progress_bar(
-                _outs, 'Checking {:d} output{}',
-                stack_key='ReadPublishes'):
-            check_heart()
-            if isinstance(_out, (pipe.CPOutputSeq, pipe.CPOutputVideo)):
-                continue
-            if _out.entity.profile != 'asset':
-                continue
-            _LOGGER.debug('OUT %s', _out)
-            _stream = _out.to_stream()
-            _to_add.append((_out, _stream))
-            _streams[_stream] = _out
-        _out_dur = time.time() - _start
-        _LOGGER.info(' - CHECKED %d OUTPUTS IN %.01fs', len(_outs), _out_dur)
-
-        # Build list of ghost publishes
+        _LOGGER.info('READ PUBLISHES %s', self)
+        _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
+        # aaa
         _pubs = []
-        for _out, _stream in _to_add:
-            _latest = _streams[_stream] == _out
-            _pub = _out.to_ghost()
-            _LOGGER.debug('   - PUB %s', _pub)
-            _pubs.append(_pub)
-        _pub_dur = time.time()
+        for _asset in qt.progress_bar(
+                self.assets,
+                f'Reading {{:d}} {self.name} asset{{}}',
+                show_delay=1, stack_key='ReadJobPublishes',
+                col='SpringGreen'):
+            check_heart()
+            _pubs += _asset.find_publishes(force=force > 1)
+        _c_types = sorted({_pub.content_type for _pub in _pubs})
+        _LOGGER.info(' - FOUND %d CONTENT TYPES %s', len(_c_types), _c_types)
         _LOGGER.info(' - FOUND %d PUBS', len(_pubs))
-
+        # ppp
         return _pubs
+
+        # _LOGGER.info('READING PUBLISHES %s', self)
+        # from pini import pipe
+
+        # # Find list of ouputs + streams
+        # _start = time.time()
+        # _streams = {}
+        # _to_add = []
+        # _outs = self.find_outputs()
+        # for _out in qt.progress_bar(
+        #         _outs, 'Checking {:d} output{}',
+        #         stack_key='ReadPublishes'):
+        #     check_heart()
+        #     if isinstance(_out, (pipe.CPOutputSeq, pipe.CPOutputVideo)):
+        #         continue
+        #     if _out.entity.profile != 'asset':
+        #         continue
+        #     _LOGGER.debug('OUT %s', _out)
+        #     _stream = _out.to_stream()
+        #     _to_add.append((_out, _stream))
+        #     _streams[_stream] = _out
+        # _out_dur = time.time() - _start
+        # _LOGGER.info(' - CHECKED %d OUTPUTS IN %.01fs', len(_outs), _out_dur)
+
+        # # Build list of ghost publishes
+        # _pubs = []
+        # for _out, _stream in _to_add:
+        #     _latest = _streams[_stream] == _out
+        #     _pub = _out.to_ghost()
+        #     _LOGGER.debug('   - PUB %s', _pub)
+        #     _pubs.append(_pub)
+        # _pub_dur = time.time()
+        # _LOGGER.info(' - FOUND %d PUBS', len(_pubs))
+
+        # return _pubs
 
     def obt_work_dir(self, match, catch=False):
         """Obtain a work dir object within this job.
@@ -283,57 +300,65 @@ class CCPJobSG(ccp_job_base.CCPJobBase):
             return _result
         raise NotImplementedError(match)
 
-    def find_work_dirs(self, entity=None, force=False):
-        """Find work dirs within this job.
+    # def find_work_dirs(self, entity=None, force=False):
+    #     """Find work dirs within this job.
 
-        NOTE: this is only applicable to shotgrid jobs, where work dirs
-        are cached at job level.
+    #     NOTE: this is only applicable to shotgrid jobs, where work dirs
+    #     are cached at job level.
 
-        Args:
-            entity (CPEntity): entity filter
-            force (bool): rebuild cache
+    #     Args:
+    #         entity (CPEntity): entity filter
+    #         force (bool): rebuild cache
 
-        Returns:
-            (CCPWorkDir list): work dirs
-        """
-        _work_dirs = []
-        for _work_dir in self._read_work_dirs(force=force):
-            if entity and _work_dir.entity != entity:
-                continue
-            _work_dirs.append(_work_dir)
-        return _work_dirs
+    #     Returns:
+    #         (CCPWorkDir list): work dirs
+    #     """
+    #     asdasd
+    #     _work_dirs = []
+    #     for _work_dir in self._read_work_dirs(force=force):
+    #         if entity and _work_dir.entity != entity:
+    #             continue
+    #         _work_dirs.append(_work_dir)
+    #     return _work_dirs
 
-    @pipe_cache_result
-    def _read_work_dirs(self, force=False):
-        """Read work dirs in this job from shotgrid.
+    # @pipe_cache_result
+    # def _read_work_dirs(self, force=False):
+    #     """Read work dirs in this job from shotgrid.
 
-        Args:
-            force (bool): rebuild cache
+    #     Args:
+    #         force (bool): rebuild cache
 
-        Returns:
-            (CCPWorkDir list): work dirs
-        """
-        asdasdasd
-        _LOGGER.debug('READ WORK DIRS SG %s', self)
-        from pini.pipe import shotgrid, cache
+    #     Returns:
+    #         (CCPWorkDir list): work dirs
+    #     """
+    #     eeee
+    #     _pubs = []
+    #     for _asset in qt.progress_bar(
+    #             self.assets, 'Reading {:d} asset{}', show_delay=5):
+    #         check_heart()
+    #         _pubs += _asset.find_publishes(force=force > 1)
+    #     asdasdasd
+    #     return _pubs
+    #     _LOGGER.debug('READ WORK DIRS SG %s', self)
+    #     from pini.pipe import shotgrid, cache
 
-        _etys = list(self.entities)
-        _work_dirs = []
-        _filter = os.environ.get('PINI_PIPE_TASK_FILTER')
-        for _sg_task in self.sg_entity.find_tasks(filter_=_filter):
+    #     _etys = list(self.entities)
+    #     _work_dirs = []
+    #     _filter = os.environ.get('PINI_PIPE_TASK_FILTER')
+    #     for _sg_task in self.sg_entity.find_tasks(filter_=_filter):
 
-            _LOGGER.debug(' - TASK %s', _sg_task)
+    #         _LOGGER.debug(' - TASK %s', _sg_task)
 
-            # # Find entity
-            # _ety = _iter_to_next_parent(path=_sg_task.path, parents=_etys)
-            # _LOGGER.debug('   - ETY %s', _ety)
-            # if not _ety:
-            #     continue
+    #         # # Find entity
+    #         # _ety = _iter_to_next_parent(path=_sg_task.path, parents=_etys)
+    #         # _LOGGER.debug('   - ETY %s', _ety)
+    #         # if not _ety:
+    #         #     continue
 
-            _work_dir = cache.CCPWorkDir(_sg_task.path, entity=_ety)
-            _work_dirs.append(_work_dir)
+    #         _work_dir = cache.CCPWorkDir(_sg_task.path, entity=_ety)
+    #         _work_dirs.append(_work_dir)
 
-        return _work_dirs
+    #     return _work_dirs
 
 
 # def _iter_to_next_parent(path, parents):
