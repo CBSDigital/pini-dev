@@ -70,7 +70,8 @@ def find_checks(  # pylint: disable=too-many-branches
     _disable_task_filter = _task == 'all'
     if not _disable_task_filter:
         _task = pipe.map_task(_task, fmt='pini')
-    _LOGGER.debug('FIND CHECKS task=%s work=%s', _task, _work)
+    _LOGGER.debug(
+        'FIND CHECKS action=%s task=%s work=%action, s', action, _task, _work)
 
     # Filter checks based on work
     if filter_:  # Apply basic to help debugging
@@ -110,25 +111,26 @@ def find_checks(  # pylint: disable=too-many-branches
                 _profile, _check.profile_filter)
             continue
 
-        # Apply action + task filters
-        _action_match = False
-        _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
+        # Apply action + task filters (action overrides task)
         if action and _check.action_filter:
-            _action_match = passes_filter(action, _check.action_filter)
-        _LOGGER.debug('   - ACTION MATCH %s', _action_match)
-        if _action_match or _disable_task_filter:
-            pass
-        elif _task is None:
-            if _check.task_filter:
-                continue
-        elif isinstance(_task, str):
-            if not passes_filter(_task, _check.task_filter):
-                _LOGGER.debug(
-                    '   - REJECTED TASK task=%s filter=%s',
-                    _task, _check.task_filter)
+            _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
+            if not passes_filter(action, _check.action_filter):
+                _LOGGER.debug('   - REJECTED ACTION')
                 continue
         else:
-            raise ValueError(_task)
+            if _disable_task_filter:
+                pass
+            elif _task is None:
+                if _check.task_filter:
+                    continue
+            elif isinstance(_task, str):
+                if not passes_filter(_task, _check.task_filter):
+                    _LOGGER.debug(
+                        '   - REJECTED TASK task=%s filter=%s',
+                        _task, _check.task_filter)
+                    continue
+            else:
+                raise ValueError(_task)
 
         # Apply settings filter
         if not _sc_settings.get(_check.name, {}).get('enabled', True):

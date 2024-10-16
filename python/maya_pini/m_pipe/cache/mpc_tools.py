@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 
 from pini import pipe, icons, qt, dcc, farm
-from pini.tools import sanity_check
+from pini.tools import sanity_check, error
 from pini.utils import single, plural, safe_zip, passes_filter, last
 
 from maya_pini import ref
@@ -149,7 +149,10 @@ def cache(
     _checks_data = checks_data or sanity_check.launch_export_ui(
         action='Cache', force=force)
     _updated = False
-    assert _work
+    if not _work:
+        raise error.HandledError(
+            'No current work file.\n\nPlease save your scene using pini '
+            'before caching.')
 
     # Warn on no cache template set up
     if not _work.job.find_templates('cache'):

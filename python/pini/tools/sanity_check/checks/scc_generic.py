@@ -80,7 +80,7 @@ class CheckAbcFpsMatchesScene(SCPipeCheck):
                         _abc.namespace, _abc_fps, _fps))
 
 
-class CheckRes(SCCheck):
+class CheckRenderRes(SCCheck):
     """Check resolution matches resolution applied in settings."""
 
     dcc_filter = '-hou'

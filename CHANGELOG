@@ -1,3 +1,17 @@
+## [6.1.0] - Wed 2024-10-16 10:46
+### Summary
+ - Sanity Check:
+    - bugfix checks from render appearing on cache/publish (nle/mkim),
+ - Pini Helper:
+    - better error on cache with no work file (nle),
+### Updated
+ - pini.dcc.export.CBaseExportHandler.ui_is_active better widget testing to avoid false positive,
+ - pini.tools.sanity_check.find_checks bugfix action filter,
+ - pini.tools.sanity_check renamed CheckRes -> CheckRenderRes for symmetry,
+ - maya_pini.utils.to_render_res added arnold handling,
+ - maya_pini.m_pipe.cache better error on no work,
+
+
 ## [6.0.3] - Tue 2024-10-15 18:15
 ### Summary
  - Pini Helper:

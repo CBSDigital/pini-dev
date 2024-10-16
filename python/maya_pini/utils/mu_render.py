@@ -444,7 +444,7 @@ def to_render_res():
         (tuple): render width/height in pixels
     """
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-    if _ren in ('mayaSoftware', 'redshift'):
+    if _ren in ('arnold', 'mayaSoftware', 'redshift'):
         return tuple(
             cmds.getAttr(f'defaultResolution.{_attr}')
             for _attr in ['width', 'height'])
