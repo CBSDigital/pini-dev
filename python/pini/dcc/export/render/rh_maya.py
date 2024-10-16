@@ -349,7 +349,7 @@ class CMayaFarmRender(CMayaRenderHandler):
                 _reverts.append(_revert)
 
         _prepare_scene_for_render()
-        _checks_data = sanity_check.launch_export_ui(action='render')
+        _checks_data = sanity_check.launch_export_ui(action='Render')
         _limit_groups_s = self.ui.LimitGroups.text()
         _limit_groups = [_grp for _grp in _limit_groups_s.split(',') if _grp]
 
