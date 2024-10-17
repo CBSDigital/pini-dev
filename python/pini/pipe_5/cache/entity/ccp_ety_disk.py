@@ -174,6 +174,45 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
 
         return _pubs
 
+    def _obt_output_cacheable(self, output, catch, force):
+        """Obtain cacheable version of the given output.
+
+        Args:
+            output (CPOutput): output to convert
+            catch (bool): no error if no output found
+            force (bool): reread outputs from disk
+
+        Returns:
+            (CCPOutput): cacheable output
+        """
+        from pini import pipe
+        from ... import cache
+
+        _LOGGER.debug(' - OBTAINED OUTPUT %s', output)
+        assert output.entity == self
+
+        # Find output
+        if output.work_dir:  # Work dir output
+            _work_dir = self.obt_work_dir(output.work_dir)
+            if not _work_dir:
+                return None
+            _LOGGER.debug(' - WORK DIR %s', _work_dir)
+            assert isinstance(_work_dir, cache.CCPWorkDir)
+            assert isinstance(_work_dir.entity, cache.CCPEntity)
+            _out = _work_dir.obt_output(output, catch=catch, force=force)
+            assert isinstance(_out.entity, cache.CCPEntity)
+        else:  # Must be entity level output
+            _LOGGER.debug(' - SEARCHING ENTITY OUTPUTS')
+            _out = self.find_output(output, catch=catch)
+        _LOGGER.debug(' - FOUND OUTPUT %s', _out)
+
+        # Check output
+        if _out:
+            assert isinstance(_out, pipe.CPOutputBase)
+            assert isinstance(_out, cache.CCPOutputBase)
+
+        return _out
+
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.
 

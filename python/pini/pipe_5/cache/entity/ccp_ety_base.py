@@ -55,18 +55,25 @@ class CCPEntityBase(CPEntity):
             (CPOutput): matching output
         """
         from pini import pipe
-
         if force:
-            self.find_outputs(force=True)
+            self._update_outputs_cache(force=True)
+        _LOGGER.debug('OBTAIN OUTPUT %s', match)
+        _out_u = pipe.to_output(match, catch=True)
+        if _out_u:
+            return self._obt_output_cacheable(_out_u, catch=catch, force=force)
+        raise NotImplementedError(match)
 
-        _match = match
-        if isinstance(_match, pipe.CPOutputBase):
-            _out = self.find_output(
-                output_name=_match.output_name, task=_match.task,
-                output_type=_match.output_type, ver_n=_match.ver_n,
-                tag=_match.tag, extn=_match.extn, catch=catch)
-            return _out
+    def _obt_output_cacheable(self, output, catch, force):
+        """Obtain cacheable version of the given output.
 
+        Args:
+            output (CPOutput): output to convert
+            catch (bool): no error if no output found
+            force (bool): reread outputs from disk
+
+        Returns:
+            (CCPOutput): cacheable output
+        """
         raise NotImplementedError
 
     def find_outputs(  # pylint: disable=arguments-differ
@@ -278,3 +285,29 @@ class CCPEntityBase(CPEntity):
         assert not pipe.CACHE.obt(self.job).find_publishes(entity=_this)
 
         _LOGGER.info(' - FLUSH COMPLETE %s', self)
+
+
+# def _to_output(match):
+
+#     # Try to map match to an output object
+#     _match = match
+#     if isinstance(_match, cache.CCPOutputGhost):
+#         _match = _match.path
+#     if (
+#             not isinstance(_match, elem.CPOutputBase) and
+#             isinstance(_match, Path)):
+#         _match = _match.path
+#         _LOGGER.debug(' - CONVERT TO STRING %s', match)
+
+#     # Convert a string to an output
+#     if isinstance(_match, str):
+#         _LOGGER.debug(' - CONVERT TO OUTPUT')
+#         try:
+#             return elem.to_output(_match)
+#         except ValueError:
+#             _LOGGER.debug(' - FAILED TO CONVERT TO OUTPUT')
+#             if '/' in _match:
+#                 raise ValueError('Path is not output '+_match)
+#             if not _match:
+#                 raise ValueError('Empty path')
+#             raise NotImplementedError(match)

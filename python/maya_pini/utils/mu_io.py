@@ -343,7 +343,7 @@ def _generate_abc(job_arg, abc, force=False):
     """
     cmds.loadPlugin('AbcExport', quiet=True)
 
-    abc.delete(wording='Replace', force=force)
+    abc.delete(wording='replace', force=force)
     abc.test_dir()
 
     _LOGGER.info('cmds.AbcExport(jobArg="%s")', job_arg)

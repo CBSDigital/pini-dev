@@ -370,30 +370,38 @@ def _fix_bad_aov_conn(disconnect, connect):
 class CheckRenderGlobals(SCMayaCheck):
     """Check render format is exr."""
 
-    task_filter = 'lighting model lookdev'
+    task_filter = 'lighting lookdev'
 
     def run(self):
         """Run this check."""
-
-        # Apply checks by renderer
-        _to_check = []
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         self.write_log('renderer %s', _ren)
+
+        # Check renderer
+        _rens = dcc.allowed_renderers()
+        self.write_log('allowed renderers %s %d', _rens, _ren in _rens)
+        if _ren not in _rens:
+            self.add_fail(
+                f'Current renderer "{_ren}" is not supported in this pipeline')
+            return False
+
+        # Apply checks by renderer
+        _attrs_to_check = []
         if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
             if not cmds.objExists('defaultArnoldDriver'):
                 _msg = (
                     'Missing defaultArnoldDriver - try opening render globals')
                 self.add_fail(_msg)
             else:
-                _to_check += [
+                _attrs_to_check += [
                     ('defaultArnoldDriver.mergeAOVs', True),
                     ('defaultArnoldDriver.exrTiled', False),
                     ('defaultArnoldDriver.halfPrecision', True)]
 
         elif _ren == 'redshift':
             if not self._redshift_globals_initialised():
-                return
-            _to_check += [
+                return False
+            _attrs_to_check += [
                 # ('redshiftOptions.autocrop', True),
                 ('redshiftOptions.exrForceMultilayer', True),
                 ('redshiftOptions.exrMultipart', True)]
@@ -406,8 +414,10 @@ class CheckRenderGlobals(SCMayaCheck):
             _msg = f'Image format is not "exr" (set to "{_fmt}")'
             self.add_fail(_msg, fix=_fix)
 
-        for _attr, _val in _to_check:
+        for _attr, _val in _attrs_to_check:
             self._check_attr(_attr, _val)
+
+        return True
 
     def _redshift_globals_initialised(self):
         """Check redshift globals have been initialised.

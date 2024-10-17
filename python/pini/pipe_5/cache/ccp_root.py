@@ -441,62 +441,65 @@ class CCPRoot(elem.CPRoot):
         Returns:
             (CPOutput): output
         """
-        from .. import cache
+        _ety = self.obt_entity(match)
+        return _ety.obt_output(match, catch=catch, force=force)
 
-        _LOGGER.debug('FIND OUTPUT %s', match)
+        # from .. import cache
 
-        # Try to map match to an output object
-        _match = match
-        if isinstance(_match, cache.CCPOutputGhost):
-            _match = _match.path
-        if (
-                not isinstance(_match, elem.CPOutputBase) and
-                isinstance(_match, Path)):
-            _match = _match.path
-            _LOGGER.debug(' - CONVERT TO STRING %s', match)
+        # _LOGGER.debug('FIND OUTPUT %s', match)
 
-        # Convert a string to an output
-        if isinstance(_match, str):
-            _LOGGER.debug(' - CONVERT TO OUTPUT')
-            try:
-                _match = elem.to_output(_match)
-            except ValueError:
-                _LOGGER.debug(' - FAILED TO CONVERT TO OUTPUT')
-                if '/' in _match:
-                    raise ValueError('Path is not output '+_match)
-                if not _match:
-                    raise ValueError('Empty path')
-                raise NotImplementedError(match)
+        # # Try to map match to an output object
+        # _match = match
+        # if isinstance(_match, cache.CCPOutputGhost):
+        #     _match = _match.path
+        # if (
+        #         not isinstance(_match, elem.CPOutputBase) and
+        #         isinstance(_match, Path)):
+        #     _match = _match.path
+        #     _LOGGER.debug(' - CONVERT TO STRING %s', match)
 
-        # Map an output object to a cacheable
-        if isinstance(_match, elem.CPOutputBase):
-            _LOGGER.debug(' - OBTAINED OUTPUT %s', _match)
+        # # Convert a string to an output
+        # if isinstance(_match, str):
+        #     _LOGGER.debug(' - CONVERT TO OUTPUT')
+        #     try:
+        #         _match = elem.to_output(_match)
+        #     except ValueError:
+        #         _LOGGER.debug(' - FAILED TO CONVERT TO OUTPUT')
+        #         if '/' in _match:
+        #             raise ValueError('Path is not output '+_match)
+        #         if not _match:
+        #             raise ValueError('Empty path')
+        #         raise NotImplementedError(match)
 
-            # Try as work dir output
-            if _match.work_dir:
-                _work_dir = self.obt_work_dir(_match.work_dir)
-                if not _work_dir:
-                    return None
-                _LOGGER.debug(' - WORK DIR %s', _work_dir)
-                assert isinstance(_work_dir, cache.CCPWorkDir)
-                assert isinstance(_work_dir.entity, cache.CCPEntity)
-                _out = _work_dir.obt_output(_match, catch=catch, force=force)
-                assert isinstance(_out.entity, cache.CCPEntity)
+        # # Map an output object to a cacheable
+        # if isinstance(_match, elem.CPOutputBase):
+        #     _LOGGER.debug(' - OBTAINED OUTPUT %s', _match)
 
-            # Must be entity level output
-            else:
-                _ety = self.obt_entity(_match.entity)
-                _LOGGER.debug(' - ENTITY %s', _ety)
-                assert isinstance(_ety, cache.CCPEntity)
-                _out = _ety.obt_output(_match, catch=catch, force=force)
+        #     # Try as work dir output
+        #     if _match.work_dir:
+        #         _work_dir = self.obt_work_dir(_match.work_dir)
+        #         if not _work_dir:
+        #             return None
+        #         _LOGGER.debug(' - WORK DIR %s', _work_dir)
+        #         assert isinstance(_work_dir, cache.CCPWorkDir)
+        #         assert isinstance(_work_dir.entity, cache.CCPEntity)
+        #         _out = _work_dir.obt_output(_match, catch=catch, force=force)
+        #         assert isinstance(_out.entity, cache.CCPEntity)
 
-            if _out:
-                _LOGGER.debug(' - FOUND OUTPUT %s', _out)
-                assert isinstance(_out, cache.CCPOutputBase)
+        #     # Must be entity level output
+        #     else:
+        #         _ety = self.obt_entity(_match.entity)
+        #         _LOGGER.debug(' - ENTITY %s', _ety)
+        #         assert isinstance(_ety, cache.CCPEntity)
+        #         _out = _ety.obt_output(_match, catch=catch, force=force)
 
-            return _out
+        #     if _out:
+        #         _LOGGER.debug(' - FOUND OUTPUT %s', _out)
+        #         assert isinstance(_out, cache.CCPOutputBase)
 
-        raise NotImplementedError(match)
+        #     return _out
+
+        # raise NotImplementedError(match)
 
     def obt_output_seq_dir(self, dir_, force=False):
         """Obtain an output sequence directory from the cache.

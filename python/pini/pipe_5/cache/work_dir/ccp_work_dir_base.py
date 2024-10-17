@@ -83,10 +83,12 @@ class CCPWorkDirBase(CPWorkDir):
         Returns:
             (CCPOutput): output
         """
+        _LOGGER.debug('OBT OUTPUT %s', match)
         from pini import pipe
         assert isinstance(match, pipe.CPOutputBase)
         _outs = [
             _out for _out in self.find_outputs(force=force) if _out == match]
+        _LOGGER.debug(' - FOUND %d OUTPUTS %s', len(_outs), _outs)
         return single(_outs, catch=catch)
 
     def obt_work(self, match, catch=False):

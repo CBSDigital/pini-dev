@@ -63,7 +63,7 @@ def output_to_work(output):
     if 'src' in output.metadata:
         _path = pipe.map_path(output.metadata['src'])
         _work = pipe.CPWork(_path)
-        return pipe.CACHE.obt_work(_work)
+        return pipe.CACHE.obt_work(_work, catch=True)
     _LOGGER.debug(' - NO SRC IN METADATA')
 
     # Try mapping

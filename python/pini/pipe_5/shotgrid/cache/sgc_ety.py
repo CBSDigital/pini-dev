@@ -4,7 +4,7 @@ import operator
 import logging
 
 from pini.utils import (
-    basic_repr, strftime, Dir, to_time_f)
+    basic_repr, strftime, Dir, to_time_f, single)
 
 from ..sg_utils import sg_cache_to_file
 from . import sgc_container, sgc_utils
@@ -78,6 +78,28 @@ class _SGCEntity(sgc_container.SGCContainer):
         """
         return self.find_tasks()
 
+    def find_pub_file(self, match=None, catch=False, **kwargs):
+        """Find pub file within this entity.
+
+        Args:
+            match (Path|str): token to match
+            catch (bool): no error if fail to match pub file
+
+        Returns:
+            (SGCPubFile): matching pub file
+        """
+        _pub_files = self.find_pub_files(**kwargs)
+        if len(_pub_files) == 1:
+            return single(_pub_files)
+        _matches = [
+            _pub_file for _pub_file in _pub_files
+            if match in (_pub_file, _pub_file.path, )]
+        if len(_matches) == 1:
+            return single(_matches)
+        if catch:
+            return None
+        raise ValueError(match, kwargs)
+
     def find_pub_files(self, force=False, **kwargs):
         """Search pub files in this entity.
 
@@ -95,13 +117,45 @@ class _SGCEntity(sgc_container.SGCContainer):
             _pub_files.append(_pub_file)
         return _pub_files
 
-    def find_tasks(self):
+    def find_task(self, match=None, catch=False, **kwargs):
+        """Find a task within this entity.
+
+        Args:
+            match (Path|str): token to match
+            catch (bool): no error if fail to match task
+
+        Returns:
+            (SGCTask): matching task
+        """
+        _LOGGER.debug('FIND TASK %s %s', match, kwargs)
+        _tasks = self.find_tasks(**kwargs)
+        if len(_tasks) == 1:
+            return single(_tasks)
+        _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
+        _matches = [
+            _task for _task in _tasks
+            if match in (_task.path, )]
+        if len(_matches) == 1:
+            return single(_matches)
+        _LOGGER.debug(' - MATCHED %d TASKS', len(_matches))
+        if catch:
+            return None
+        raise ValueError(match, kwargs)
+
+    def find_tasks(self, **kwargs):
         """Search tasks in this entity.
 
         Returns:
             (SGCTask list): tasks
         """
-        return self._read_tasks()
+        _LOGGER.debug('FIND TASKS %s', kwargs)
+        _tasks = []
+        for _task in self._read_tasks():
+            if not sgc_utils.passes_filters(_task, **kwargs):
+                continue
+            _tasks.append(_task)
+        _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
+        return _tasks
 
     def _read_pub_files(self, force=False):
         """Read pub files in this entity.
@@ -147,7 +201,7 @@ class _SGCEntity(sgc_container.SGCContainer):
         """
         from pini import pipe
 
-        _LOGGER.info(' - BUILD PUB FILES DATA %s', self)
+        _LOGGER.info('BUILD PUB FILES DATA force=%d %s', force, self)
         _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
 
         # Read pub file elements

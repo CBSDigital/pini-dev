@@ -63,12 +63,13 @@ def _check_model(force):
         if File(_pub).exists()]
     if not _pubs:
         _mdl_work.load(lazy=True)
-        _pub = dcc.find_export_handler(action='publish', filter_='model')
+        _pub = dcc.find_export_handler(type_='Publish', filter_='model')
         _pub.publish(force=True)
     _mdl_pub_g = _asset_c.find_publish(
         task=_mod_task, ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
         type_='publish')
     _mdl_pub = pipe.CACHE.obt(_mdl_pub_g)
+    assert _mdl_pub.path == _mdl_pub_g.path
     assert _mdl_pub
     assert _mdl_pub.exists()
     _LOGGER.info(' - MODEL PUB %s', _mdl_pub)

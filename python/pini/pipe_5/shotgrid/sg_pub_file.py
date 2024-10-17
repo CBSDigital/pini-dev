@@ -34,13 +34,18 @@ def create_pub_file(
     from pini.pipe import shotgrid
     _LOGGER.info('CREATE PUB FILE %s', output)
 
+    _sg_proj = shotgrid.SGC.find_proj(output.job)
+    _sg_ety = _sg_proj.find_entity(output.entity)
+
     # Catch already exists
-    _sg_pub = shotgrid.SGC.find_pub_file(output, catch=True)
+    _sg_pub = _sg_ety.find_pub_file(output, catch=True)
     if _sg_pub:
         _LOGGER.info(' - ALREADY REGISTERED IN SHOTGRID %d %s',
                      _sg_pub.id_, output.path)
         if not force:
             return to_pub_file_data(output)
+    else:
+        assert not _sg_ety.find_pub_files(path=output.path)
 
     _LOGGER.debug(
         ' - CREATE PUBLISHED FILE %s update_cache=%d', output.path,
@@ -49,11 +54,8 @@ def create_pub_file(
 
     _sg_type = shotgrid.SGC.find_pub_type(
         output.extn, type_='Sequence' if isinstance(output, Seq) else 'File')
-    _sg_ety = shotgrid.SGC.find_entity(output.entity)
     _sg_user = shotgrid.SGC.find_user()
-    _sg_job = shotgrid.SGC.find_job(output.job)
-    _sg_task = shotgrid.SGC.find_task(
-        entity=output.entity, step=output.step, task=output.task)
+    _sg_task = _sg_ety.find_task(step=output.step, task=output.task)
 
     # Build data
     _data = {
@@ -63,7 +65,7 @@ def create_pub_file(
         'entity': _sg_ety.to_entry(),
         'name': output.filename,
         'path_cache': pipe.ROOT.rel_path(output.path),
-        'project': _sg_job.to_entry(),
+        'project': _sg_proj.to_entry(),
         'published_file_type': _sg_type.to_entry(),
         'task': _sg_task.to_entry(),
         'sg_status_list': status,
@@ -85,12 +87,13 @@ def create_pub_file(
     # Update cache
     if update_cache:
         _LOGGER.info(' - UPDATING CACHE')
-        _job_c = pipe.CACHE.obt(output.job)
-        _job_c.find_outputs(force=True)
+        _ety_c = pipe.CACHE.obt(output.entity)
+        _ety_c.find_outputs(force=True)
         _out_c = pipe.CACHE.obt(output)
         assert _out_c
         _LOGGER.info(' - UPDATED CACHE')
         _sg_pub = shotgrid.SGC.find_pub_file(output)
+        assert _sg_pub
 
     # Apply thumb
     _thumb = thumb

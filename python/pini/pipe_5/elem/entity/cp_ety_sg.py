@@ -44,7 +44,8 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         from pini import pipe
         _LOGGER.debug('READ OUTPUTS')
         _outs = []
-        for _sg_pub_file in self.sg_entity.find_pub_files(validated=True):
+        for _sg_pub_file in self.sg_entity.find_pub_files(
+                validated=True, omitted=False):
             _LOGGER.debug(' - PUB FILE %s', _sg_pub_file)
             assert _sg_pub_file.validated
             assert _sg_pub_file.latest is not None
@@ -95,13 +96,14 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         Args:
             force (bool): remove contents without confirmation
         """
-        _LOGGER.info('FLUSH %s', self)
+        _LOGGER.info('FLUSH %s %s', self, self.sg_entity.id_)
         from pini import qt
 
+        assert self.name == 'tmp'
         super().flush(force=force)
 
         # Omit pub files in shotgrid
-        _sg_pubs = self.sg_entity.find_pub_files(entity=self)
+        _sg_pubs = self.sg_entity.find_pub_files()
         _LOGGER.info(' - OMITTING %d PUBS', len(_sg_pubs))
         assert isinstance(_sg_pubs, list)
         for _sg_pub in qt.progress_bar(_sg_pubs, 'Updating {:d} output{}'):

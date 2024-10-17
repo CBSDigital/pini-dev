@@ -378,7 +378,11 @@ class CExportHandler(object):
         if not _widgets:
             return False
         _widget = _widgets[0]
-        return bool(_widget.objectName())
+        try:
+            _widget.objectName()
+        except RuntimeError:
+            return False
+        return True
 
     def update_ui(self, parent, layout):
         """Builds the ui into the given layout, flushing any existing widgets.

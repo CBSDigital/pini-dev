@@ -17,6 +17,8 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         Args:
             force (bool): provided for symmetry
         """
+        _LOGGER.info('UPDATE OUTPUTS CACHE')
+        # self.sg_entity.find_pub_files(force=True)
         self._read_outputs(force=True)
         # asdasd
         # self.job.find_outputs(force=True)
@@ -37,9 +39,9 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         Returns:
             (CCPWorkDir): matching work dir
         """
-        from pini import pipe
-        if isinstance(match, pipe.CPWorkDir):
-            return self.job.obt_work_dir(match)
+        # from pini import pipe
+        # if isinstance(match, pipe.CPWorkDir):
+        #     return self.job.obt_work_dir(match)
         raise NotImplementedError
 
     # def _read_work_dirs(self, class_=None, force=False):
@@ -69,33 +71,37 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             force (bool): force reread from shotgrid
 
         Returns:
-            ():
+            (CCPOutput list): outputs
         """
+        _LOGGER.info('READ OUTPUTS %s', self)
         from pini import pipe
         from pini.pipe import cache
 
         if force:
+            _LOGGER.debug(' - UPDATING SGC')
             self.sg_entity.find_pub_files(force=True)
 
         _out_cs = []
-        for _out in super()._read_outputs():
-            _LOGGER.debug(' - OUT %s', _out)
+        _out_us = super()._read_outputs()
+        for _out_u in _out_us:
+            _LOGGER.debug('   - OUT %s', _out_u)
             _kwargs = {
-                'template': _out.template,
+                'template': _out_u.template,
                 'entity': self,
-                'latest': _out.sg_pub_file.latest}
-            if isinstance(_out, pipe.CPOutputVideo):
-                _out_c = cache.CCPOutputVideo(_out, **_kwargs)
-            elif isinstance(_out, pipe.CPOutputFile):
-                _out_c = cache.CCPOutputFile(_out, **_kwargs)
-            elif isinstance(_out, pipe.CPOutputSeq):
-                _LOGGER.debug('   - URL %s', _out.sg_pub_file.to_url())
-                _out_c = cache.CCPOutputSeq(_out, **_kwargs)
-                _LOGGER.debug('   - CACHE FMT %s', _out_c.cache_fmt)
+                'latest': _out_u.sg_pub_file.latest}
+            if isinstance(_out_u, pipe.CPOutputVideo):
+                _out_c = cache.CCPOutputVideo(_out_u, **_kwargs)
+            elif isinstance(_out_u, pipe.CPOutputFile):
+                _out_c = cache.CCPOutputFile(_out_u, **_kwargs)
+            elif isinstance(_out_u, pipe.CPOutputSeq):
+                _LOGGER.debug('     - URL %s', _out_u.sg_pub_file.to_url())
+                _out_c = cache.CCPOutputSeq(_out_u, **_kwargs)
+                _LOGGER.debug('     - CACHE FMT %s', _out_c.cache_fmt)
             else:
-                raise ValueError(_out)
-            _LOGGER.debug('   - OUT C %s', _out_c)
+                raise ValueError(_out_u)
+            _LOGGER.debug('     - OUT C %s', _out_c)
             _out_cs.append(_out_c)
+        _LOGGER.debug(' - FOUND %d OUTS', len(_out_cs))
         return _out_cs
 
     @pipe_cache_to_file
@@ -125,3 +131,30 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         _LOGGER.debug(' - FOUND %d CONTENT TYPES %s', len(_c_types), _c_types)
         _LOGGER.info(' - FOUND %d PUBS %s', len(_pubs), self)
         return _pubs
+
+    def _obt_output_cacheable(self, output, catch, force):
+        """Obtain cacheable version of the given output.
+
+        Args:
+            output (CPOutput): output to convert
+            catch (bool): no error if no output found
+            force (bool): reread outputs from disk
+
+        Returns:
+            (CCPOutput): cacheable output
+        """
+        from pini import pipe
+        from ... import cache
+
+        _LOGGER.debug(' - OBTAINED OUTPUT %s', output)
+        assert output.entity == self
+        _LOGGER.debug(' - SEARCHING ENTITY OUTPUTS')
+        _out = self.find_output(output, catch=catch)
+        _LOGGER.debug(' - FOUND OUTPUT %s', _out)
+
+        # Check output
+        if _out:
+            assert isinstance(_out, pipe.CPOutputBase)
+            assert isinstance(_out, cache.CCPOutputBase)
+
+        return _out

@@ -126,7 +126,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
 
         if self.ui_is_active():
             self.ui.save_settings()
-        _pub.delete(wording='Replace', force=force)
+        _pub.delete(wording='replace', force=force)
         _work.save(reason='publish', force=True, update_outputs=False)
 
         self._clean_scene(references=references)

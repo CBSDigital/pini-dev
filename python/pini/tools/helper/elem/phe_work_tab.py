@@ -555,7 +555,7 @@ class CLWorkTab(object):
             _sel_label,
         ])
         qt.ok_cancel(
-            msg=_msg, title='Change Stream', parent=self,
+            msg=_msg, title='Change stream', parent=self,
             icon=icons.find('Bug'))
 
     def flush_notes_stack(self):

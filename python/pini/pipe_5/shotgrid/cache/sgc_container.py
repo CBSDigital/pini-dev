@@ -3,7 +3,7 @@
 These are simple classes for storing shotgrid results.
 """
 
-# pylint: disable=abstract-method
+# pylint: disable=abstract-method,unsupported-membership-test
 
 import logging
 import os
@@ -28,16 +28,17 @@ class SGCContainer(sgc_elem.SGCElem):
         Args:
             data (dict): shotgrid data
         """
+        assert self.ENTITY_TYPE
+        assert self.FIELDS
+        assert isinstance(self.FIELDS, tuple)
+        assert data['type'] == self.ENTITY_TYPE
+        assert 'updated_at' in self.FIELDS
+
         self.data = data
 
         self.id_ = data['id']
         self.updated_at = data['updated_at']
         self.status = data.get(self.STATUS_KEY)
-
-        assert self.ENTITY_TYPE
-        assert self.FIELDS
-        assert isinstance(self.FIELDS, tuple)
-        assert data['type'] == self.ENTITY_TYPE
 
     @property
     def omitted(self):
@@ -100,7 +101,7 @@ class SGCPubType(SGCContainer):
     """Represents a published file type."""
 
     ENTITY_TYPE = 'PublishedFileType'
-    FIELDS = ('code', )
+    FIELDS = ('code', 'updated_at')
 
     def __init__(self, data):
         """Constructor.
@@ -203,6 +204,7 @@ class SGCTask(SGCContainer):
         """
         super().__init__(data)
         self.name = data['sg_short_name']
+        self.task = self.name
         self.step_id = data['step']['id']
         _step = self.root.find_step(self.step_id)
         self.step = _step.short_name

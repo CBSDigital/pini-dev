@@ -3,7 +3,7 @@
 import logging
 
 from pini import dcc
-from pini.utils import File, abs_path
+from pini.utils import File, abs_path, to_str
 
 from . import cp_out_seq, cp_out_file, cp_out_video
 
@@ -56,7 +56,7 @@ def to_output(
     if not path:
         raise ValueError('Empty path')
 
-    _path = abs_path(path)
+    _path = abs_path(to_str(path))
     _file = File(_path)
     _LOGGER.log(9, ' - PATH %s', _file.path)
     if '%' in _file.path:

@@ -11,5 +11,6 @@ if dcc.NAME == 'maya':
         read_cache_set_geo, find_top_level_nodes,
         find_cache_set)
     from .core import SCMayaCheck
+    from .checks import CheckRenderGlobals
 
 DIALOG = None

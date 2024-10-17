@@ -141,13 +141,14 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCPubFile): matching pub file
         """
-        _job = job or pipe.CPJob(path)
-        _sg_proj = self.find_proj(_job)
-        return _sg_proj.find_pub_file(path=path, catch=catch)
+        assert not job
+        _ety = pipe.to_entity(path)
+        _sg_ety = self.find_entity(_ety)
+        return _sg_ety.find_pub_file(path=path, catch=catch)
 
     def find_pub_files(
             self, job=None, entity=None, work_dir=None,
-            progress=True, force=False):
+            progress=True, force=False, **kwargs):
         """Search pub files in the cache.
 
         Args:
@@ -171,7 +172,7 @@ class SGCRoot(sgc_elem.SGCElem):
         _sgc_proj = self.find_proj(_job)
         return _sgc_proj.find_pub_files(
             entity=entity, work_dir=work_dir, force=force,
-            progress=progress)
+            progress=progress, **kwargs)
 
     def find_pub_type(self, match, type_='File', force=False):
         """Find published file type.

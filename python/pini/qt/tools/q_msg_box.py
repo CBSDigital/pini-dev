@@ -3,7 +3,7 @@
 import logging
 
 from pini import icons
-from pini.utils import lprint
+from pini.utils import lprint, assert_eq
 
 from ..q_mgr import QtWidgets, QtGui, QtCore
 from .. import q_utils
@@ -184,13 +184,17 @@ def raise_dialog(
     Returns:
         (str): text from selected button
     """
-    from pini import dcc, qt
+    from pini import dcc, qt, testing
 
     # Avoid farm qt seg fault
     if dcc.batch_mode():
         lprint('MESSAGE:\n'+msg)
         raise RuntimeError("Cannot raise dialog in batch mode - "+title)
     qt.get_application()
+
+    # Check format in dev mode
+    if testing.dev_mode():
+        assert_eq(title, title.capitalize())
 
     # Build dialog
     _icon = icon or icons.find('Bear')

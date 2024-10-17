@@ -372,16 +372,26 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             _works += _task_works
         return _works
 
-    def find_output(self, catch=False, **kwargs):
+    def find_output(self, match=None, catch=False, **kwargs):
         """Find an output within this entity.
 
         Args:
+            match (Path|str): token to match to output
             catch (bool): no error if no output found
 
         Returns:
             (CPOutput): matching output
         """
-        return single(self.find_outputs(**kwargs), catch=catch)
+        _outs = self.find_outputs(**kwargs)
+        if len(_outs) == 1:
+            return single(_outs)
+        _matches = [
+            _out for _out in _outs if match in (_out.path, _out)]
+        if len(_matches) == 1:
+            return single(_matches)
+        if catch:
+            return None
+        raise ValueError(match)
 
     def find_outputs(
             self, type_=None, output_name=None, output_type=None, task=None,

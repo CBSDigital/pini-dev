@@ -374,7 +374,7 @@ class BaseDCC(object):
         if not save or not _file:
             qt.ok_cancel(
                 'Lose unsaved changes in current scene?', parent=parent,
-                title='Unsaved Changes')
+                title='Unsaved changes')
             return
 
         # Offer to save unsaved changes
@@ -383,7 +383,7 @@ class BaseDCC(object):
         _icon = icons.find('Tiger Face')
         _result = qt.raise_dialog(
             msg=_msg, buttons=('Save', "Don't Save", 'Cancel'),
-            title='Save Changes', icon=_icon, parent=parent)
+            title='Save changes', icon=_icon, parent=parent)
         if _result == 'Save':
             self._force_save()
 

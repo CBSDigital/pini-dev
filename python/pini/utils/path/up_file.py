@@ -149,9 +149,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             from pini import qt, icons
             _icon = icon or icons.find('Sponge')
             qt.ok_cancel(
-                title='Confirm {}'.format(wording.capitalize()),
-                icon=_icon, msg='{} existing file?\n\n{}'.format(
-                    wording, self.path),
+                title=f'Confirm {wording}',
+                icon=_icon,
+                msg=f'{wording.capitalize()} existing file?\n\n{self.path}',
                 verbose=verbose)
         if execute:
             os.remove(self.path)

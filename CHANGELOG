@@ -1,3 +1,19 @@
+## [6.2.0] - Thu 2024-10-17 09:27
+### Summary
+ - Pini Helper:
+    - catch error on submit blast when work file has been deleted (nle),
+ - Sanity Check:
+    - check render globals flag off-pipeline renderer (rcalderon),
+### Updated
+ - pini.dcc.export.CBaseExportHandler.ui_is_active better widget testing to avoid false positive,
+ - pini.qt.raise_dialog enforce capitalise in dev mode,
+ - pini.pipe.shotgrid.output_to_work catch work file deleted,
+ - pini.pipe_5 wip,
+ - pini.tools.sanity_check.CheckRenderGlobals removed model from task filter,
+ - pini.tools.sanity_check.CheckRenderGlobals check renderer in allowed renderers,
+ - pini.tools.sanity_check.CheckRenderGlobals made public,
+
+
 ## [6.1.0] - Wed 2024-10-16 10:46
 ### Summary
  - Sanity Check:

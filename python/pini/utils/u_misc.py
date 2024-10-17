@@ -825,11 +825,11 @@ def to_str(obj):
     Returns:
         (str): object as a string
     """
-    from pini.utils import Path, Seq, abs_path
+    from pini.utils import Path, Seq, abs_path, clip
 
     if obj is None:
         return ''
-    if isinstance(obj, (Path, Seq)):
+    if isinstance(obj, (Path, Seq, clip.Seq)):
         return obj.path
     if isinstance(obj, str):
         return obj

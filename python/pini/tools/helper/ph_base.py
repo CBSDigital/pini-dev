@@ -329,7 +329,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if find_work:
             _src = pipe.map_path(output.metadata.get('src'))
             if _src:
-                _src = pipe.CACHE.obt_work(_src)
+                _src = pipe.CACHE.obt_work(_src, catch=True)
             if _src:
                 _src = _src.find_latest(catch=True)
             menu.add_action(
