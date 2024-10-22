@@ -40,5 +40,5 @@ def pipe_cache_to_file(func):
         (fn): decorated method
     """
     _cacher = get_method_to_file_cacher(
-        mtime_outdates=False, namespace='pipe')
+        mtime_outdates=False, min_mtime=1729536593, namespace='pipe')
     return _cacher(func)

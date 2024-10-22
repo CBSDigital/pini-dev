@@ -2,7 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes
 
-from pini import qt
+from pini import qt, pipe
 from pini.qt import QtGui
 from pini.utils import basic_repr, Seq, Video
 
@@ -76,7 +76,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         if _out.extn == 'gz' and _out.output_name == 'shdCache':
             return '{} ({} ass.gz)'.format(_out.entity.name,  _out.task)
 
-        _label = _out.output_name or _out.entity.name
+        _label = _out.output_name or _out.asset or _out.shot
         if isinstance(_out, (Seq, Video)):
             _label += ' '+self.output.extn
         return _label
@@ -222,7 +222,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         if self.output.ver_n:
             _ver_text = f'v{self.output.ver}'
         else:
-            _ver_n = self.output.find_latest().ver_n
+            _ver_n = pipe.CACHE.obt(self.output).find_latest().ver_n
             _ver_fmt = '* v{:03d}'
             _ver_text = _ver_fmt.format(_ver_n)
         _rect = pix.draw_text(

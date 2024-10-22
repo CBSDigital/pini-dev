@@ -730,16 +730,19 @@ class _UiHandler(object):
 
         _result = getattr(self.ui, attr)
 
-        try:
-            _name = _result.objectName()
-        except RuntimeError as _exc:
-            assert str(_exc).startswith('Internal C++ object')
-            assert str(_exc).endswith('already deleted.')
+        if isinstance(_result, QtWidgets.QSpacerItem):
+            _LOGGER.warning('UI getattr %s RETURNED SPACER - REBUILDING', attr)
         else:
-            return _result
+            try:
+                _name = _result.objectName()
+            except RuntimeError as _exc:
+                assert str(_exc).startswith('Internal C++ object')
+                assert str(_exc).endswith('already deleted.')
+            else:
+                return _result
+            _LOGGER.info('UI GARGAGE COLLECTED (%s) - REBUILDING', attr)
 
         # Rebuild ui object
-        _LOGGER.info('UI GARGAGE COLLECTED (%s) - REBUILDING', attr)
         self.rebuild_ui()
         return getattr(self.ui, attr)
 

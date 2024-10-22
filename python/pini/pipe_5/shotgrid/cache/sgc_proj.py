@@ -8,12 +8,12 @@ from pini import pipe
 from pini.utils import single, basic_repr, passes_filter, to_str
 
 from ...cache import pipe_cache_on_obj
-from . import sgc_container, sgc_ety, sgc_utils
+from . import sgc_elem, sgc_ety, sgc_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SGCProj(sgc_container.SGCContainer):
+class SGCProj(sgc_elem.SGCElem):
     """Represents a job on shotgrid."""
 
     ENTITY_TYPE = 'Project'
@@ -79,9 +79,18 @@ class SGCProj(sgc_container.SGCContainer):
         Returns:
             (SGCAsset): matching asset
         """
-        _assets = self.find_assets(filter_=filter_)
+        _LOGGER.debug('FIND ASSET %s', match)
+        _entity_type = _name = None
+        if isinstance(match, pipe.CPEntity):
+            _entity_type = match.entity_type
+            _name = match.name
+            _LOGGER.debug(' - TYPE/ETY %s %s', _entity_type, _name)
+
+        _assets = self.find_assets(
+            filter_=filter_, entity_type=_entity_type, name=_name)
         if len(_assets) == 1:
             return single(_assets)
+        _LOGGER.debug(' - MATCHED %d ASSETS', len(_assets))
 
         return single([
             _asset for _asset in _assets
@@ -110,42 +119,43 @@ class SGCProj(sgc_container.SGCContainer):
         """Find entity within this job.
 
         Args:
-            match (str|CPEntity): entity or path to match
+            match (str|CPEntity|CPOutput): entity or path to match
             catch (bool): no error if fail to match entity
 
         Returns:
             (SGCAsset|SGCShot): matching entity
         """
-        _kwargs = kwargs
-        _LOGGER.debug('FIND ENTITY %s %s', match, _kwargs)
+        _LOGGER.debug('FIND ENTITY %s %s', match, kwargs)
 
+        # Build search kwargs
+        _kwargs = kwargs
         if isinstance(match, pipe.CPEntity):
             _kwargs['name'] = _kwargs.get(
                 'name', match.name)
             _kwargs['entity_type'] = _kwargs.get(
                 'entity_type', match.entity_type)
+        if isinstance(match, pipe.CPOutputBase):
+            _kwargs['name'] = _kwargs.get(
+                'name', match.entity.name)
+            _kwargs['entity_type'] = _kwargs.get(
+                'entity_type', match.entity.entity_type)
         _LOGGER.debug(' - FIND ENTITES %s', _kwargs)
 
+        # Find matching entities
         _etys = self.find_entities(**_kwargs)
         if len(_etys) == 1:
             return single(_etys)
         _LOGGER.debug(' - MATCHED %d ETYS', len(_etys))
 
+        # Attempt string match
         _match_s = to_str(match)
         _LOGGER.debug(' - MATCH_S %s', _match_s)
-
         _match_etys = [
             _ety for _ety in self.entities
             if _match_s in (_ety.name, )]
         _LOGGER.debug(' - MATCH ETYS %d %s', len(_match_etys), _match_etys)
         if len(_match_etys) == 1:
             return single(_match_etys)
-
-        # _contains_etys = [
-        #     _ety for _ety in self.entities
-        #     if _match_s.startswith(_ety.path)]
-        # if len(_contains_etys) == 1:
-        #     return single(_contains_etys)
 
         if catch:
             return None
@@ -180,8 +190,14 @@ class SGCProj(sgc_container.SGCContainer):
         Returns:
             (SGCShot): matching shot
         """
+        _entity_type = _name = None
+        if isinstance(match, pipe.CPEntity):
+            _entity_type = match.entity_type
+            _name = match.name
+
         _LOGGER.debug('FIND SHOT %s', match)
-        _shots = self.find_shots(filter_=filter_)
+        _shots = self.find_shots(
+            filter_=filter_, entity_type=_entity_type, name=_name)
         _match_s = to_str(match)
         _LOGGER.debug(' - MATCH_S %s', _match_s)
 

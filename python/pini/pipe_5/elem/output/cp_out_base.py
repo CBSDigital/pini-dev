@@ -11,7 +11,7 @@ from pini import dcc
 from pini.utils import EMPTY, single
 
 from ..entity import to_entity
-from ...cp_utils import validate_tokens
+from ... import cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +137,7 @@ class CPOutputBase(object):
         _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
                     self.template)
 
-        validate_tokens(self.data, job=self.job)
+        cp_utils.validate_tokens(self.data, job=self.job)
 
         # Set task
         self.task = task or self.data.get('task', self.template.task)
@@ -273,8 +273,8 @@ class CPOutputBase(object):
         return self.to_file(dir_=self.dir+'/.pini', extn='yml')
 
     @property
-    def nice_type(self):
-        """Obtain nice type name for this template.
+    def basic_type(self):
+        """Obtain basic type name for this template.
 
         This is the template type in a simple, readable form.
 
@@ -286,14 +286,7 @@ class CPOutputBase(object):
         Returns:
             (str): nice type
         """
-        _type = self.type_
-        if _type.endswith('_mov'):
-            _type = _type[:-4]
-        if _type.endswith('_seq'):
-            _type = _type[:-4]
-        if _type == 'mov':
-            _type = 'render'
-        return _type
+        return cp_utils.to_basic_type(self.type_)
 
     @property
     def submittable(self):
@@ -351,7 +344,7 @@ class CPOutputBase(object):
         Returns:
             (dict): metadata
         """
-        return self.metadata_yml.read_yml(catch=True)
+        return self.metadata_yml.read_yml(catch=True) or {}
 
     def _find_templates(self, types):
         """Find templates of the given list of types.

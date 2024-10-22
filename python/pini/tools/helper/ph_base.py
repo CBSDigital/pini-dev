@@ -12,8 +12,7 @@ from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, wrap_fn, chain_fns, copied_path, clip,
-    get_user, strftime)
+    File, wrap_fn, chain_fns, copied_path, get_user, strftime)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
 from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work, obt_pixmap
@@ -248,19 +247,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add actions based on file type
         _delete_callback = delete_callback or self.ui.SOutputs.redraw
-        if isinstance(output, pipe.CPOutputVideo):
+        if output.content_type == 'Video':
             menu.add_video_actions(
                 output, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output, pipe.CPOutputFile):
-            menu.add_file_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output, pipe.CPOutputSeq):
+        elif output.content_type == 'Render':
             menu.add_seq_actions(
                 output, delete_callback=_delete_callback, delete=delete)
         else:
-            raise ValueError(output)
+            menu.add_file_actions(
+                output, delete_callback=_delete_callback, delete=delete)
         menu.add_separator()
-        if isinstance(output, clip.Clip) and self.work:
+        if output.content_type in ('Render', 'Video') and self.work:
             menu.add_action(
                 'Set as thumbnail', icon=icons.find('Picture'),
                 func=wrap_fn(self._set_work_thumb, output))
@@ -298,15 +295,14 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         menu.add_separator()
         menu.add_action(
             'Print metadata',
-            wrap_fn(pprint.pprint, output.metadata, width=300),
+            wrap_fn(_print_metadata, output),
             icon=icons.PRINT)
-        _rng = output.metadata.get('range')
-        if _rng and len(set(_rng)) > 1:
+        if output.range_ and len(set(output.range_)) > 1:
             menu.add_action(
-                'Apply range ({:.00f}-{:.00f})'.format(*_rng),
-                wrap_fn(dcc.set_range, _rng[0], _rng[1]),
+                'Apply range ({:.00f}-{:.00f})'.format(*output.range_),
+                wrap_fn(dcc.set_range, output.range_[0], output.range_[1]),
                 icon=icons.find('Left-Right Arrow'),
-                enabled=_rng != dcc.t_range(int))
+                enabled=output.range_ != dcc.t_range(int))
 
         # Add lookdev opts
         if _apply_lookdev_opts(output, ref):
@@ -327,20 +323,16 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         # Add find work
         _asset = None
         if find_work:
-            _src = pipe.map_path(output.metadata.get('src'))
-            if _src:
-                _src = pipe.CACHE.obt_work(_src, catch=True)
-            if _src:
-                _src = _src.find_latest(catch=True)
             menu.add_action(
-                'Find work file', wrap_fn(self.jump_to, _src),
-                icon=icons.FIND, enabled=bool(_src))
-            _asset = output.metadata.get('asset')
+                'Find work file',
+                wrap_fn(self._jump_to_latest_out_work, output),
+                icon=icons.FIND, enabled=bool(output.src))
+            _asset = output.src_ref
 
         # Add find asset
         if (
                 not _asset and
-                output.nice_type in ('publish', 'publish_seq') and
+                output.basic_type in ('publish', 'publish_seq') and
                 output.profile == 'asset'):
             _asset = output
             _asset = pipe.map_path(_asset)
@@ -363,13 +355,33 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
                 enabled=bool(_lookdev and ref))
 
-    def _set_work_thumb(self, clip_):
+    def _jump_to_latest_out_work(self, output):
+        """Jump to latest work file for the given output.
+
+        Args:
+            output (CPOutput): output to find work for
+        """
+        _LOGGER.info('FIND LATEST WORK %s', output.path)
+        _src = pipe.map_path(output.src)
+        if not _src:
+            _LOGGER.info(' - NO WORK FOUND IN METADATA')
+            return
+        _src_work = pipe.CACHE.obt_work(_src, catch=True)
+        if not _src_work:
+            _LOGGER.info(' - FAILED TO FIND WORK FILE %s', _src)
+            return
+        _src_work = _src_work.find_latest(catch=True)
+        _LOGGER.info(' - LATEST %s', _src_work)
+        self.jump_to(_src_work)
+
+    def _set_work_thumb(self, output):
         """Update current work thumbnail to match the given clip.
 
         Args:
-            clip_ (Clip): video or image sequence to apply
+            output (CPOutputBase): video or image sequence to apply
         """
-        clip_.build_thumbnail(self.work.image, force=True)
+        _out = pipe.CACHE.obt(output)
+        _out.build_thumbnail(self.work.image, force=True)
         obt_pixmap(self.work.image, force=True)
         self.ui.WWorks.redraw()
 
@@ -876,10 +888,22 @@ def _apply_lookdev_opts(output, ref):
     if dcc.NAME != 'maya':
         return False
 
-    if output.metadata.get('publish_type') != 'CMayaLookdevPublish':
+    if output.content_type != 'ShadersMa':
         return False
 
     if ref and not isinstance(ref, pipe_ref.CMayaShadersRef):
         return False
 
     return True
+
+
+def _print_metadata(output):
+    """Print metadata for the given output.
+
+    Implemented here to accommodate ghost outputs.
+
+    Args:
+        output (CPOutput|CCPOutputGhost): output to print metadata for
+    """
+    _out = pipe.to_output(output)
+    pprint.pprint(_out.metadata, width=300)

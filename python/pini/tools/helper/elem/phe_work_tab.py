@@ -510,7 +510,7 @@ class CLWorkTab(object):
         _LOGGER.debug('SAVE %s', _work)
         if not force:
             self._warn_on_switch_stream()
-        _work = _work.save(notes=_notes, parent=self)
+        _work = _work.save(notes=_notes, parent=self, force=force)
 
         # Update ui
         if _new_task:
@@ -651,7 +651,7 @@ class CLWorkTab(object):
         _icon = None
         _header = '{}: {}'.format(
             out.type_.capitalize(), out.filename)
-        _label = '{} - {}'.format(out.nice_type.capitalize(), out.filename)
+        _label = '{} - {}'.format(out.basic_type.capitalize(), out.filename)
         if out.type_ in ('publish', 'publish_seq'):
             _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
@@ -710,5 +710,5 @@ def _menu_out_sort(out):
     Returns:
         (tuple): sort key
     """
-    _type = out.nice_type
+    _type = out.basic_type
     return _type != 'publish', _type, out.path

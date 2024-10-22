@@ -3,10 +3,9 @@
 import logging
 import pprint
 
-from pini import qt
-from pini.utils import Seq, get_user, TMP, clip, File
+from pini.utils import Seq, get_user, File
 
-from . import sg_handler, sg_entity, sg_utils
+from . import sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -133,103 +132,3 @@ def _build_ver_data(video, frames, comment, pub_files):
             _data['published_files'].append(_sg_pub_file.to_entry())
 
     return _data
-
-
-def _build_filmstrip(video):
-    """Build filmstrip image from the given video.
-
-    NOTE: shotgrid does this automatically when a video is applied
-    to the sg_uploaded_movie field of a version entry, so this
-    function isn't needed.
-
-    Args:
-        video (Video): video to convert
-
-    Returns:
-        (File): filmstrip file
-    """
-    _strip = TMP.to_file('PiniTmp/strip.jpg')
-
-    _LOGGER.debug(' - DUR %f', video.to_dur())
-    _LOGGER.debug(' - FPS %f', video.to_fps())
-    _res = video.to_res()
-    _strip_height = int(240.0*_res[1]/_res[0])
-    _LOGGER.debug(' - RES %s', _res)
-    _n_frames = int(video.to_dur() * video.to_fps())
-    _max_frames = int(32000 / 240)
-    _LOGGER.debug(' - N FRAMES %d (MAX %d)', _n_frames, _max_frames)
-    if _n_frames < _max_frames:
-        _strip_fps = None
-    else:
-        _strip_fps = int(_max_frames / video.to_dur())
-    _LOGGER.debug(' - STRIP FPS %s', _strip_fps)
-
-    # Render out tmp seq
-    _tmp_seq_res = 240, _strip_height
-    _LOGGER.debug(' - TMP SEQ RES (A) %s', _tmp_seq_res)
-    _tmp_seq = TMP.to_seq('PiniTmp/imgs.%04d.jpg')
-    _tmp_seq.delete(force=True)
-    video.to_seq(_tmp_seq, res=_tmp_seq_res, fps=_strip_fps, verbose=1)
-    _LOGGER.debug(' - TMP SEQ %s', _tmp_seq)
-    assert _tmp_seq.frames
-    _LOGGER.debug(' - TMP SEQ RES (B) %s', _tmp_seq.to_res())
-    assert _tmp_seq.to_res() == _tmp_seq_res
-    _n_frames = len(_tmp_seq.frames)
-
-    # Render tmp seq to video
-    _tmp_seq_res = (240, int(_strip_height/2)*2)
-    _tmp_vid = TMP.to_file('PiniTmp/video.mp4', class_=clip.Video)
-    _tmp_seq.to_video(_tmp_vid, res=_tmp_seq_res, force=True)
-
-    # Build filmstrip
-    _strip_width = 240*_n_frames
-    assert _strip_width < 32767
-    _pix = qt.CPixmap(_strip_width, _strip_height)
-    _LOGGER.info(' - TMP SEQ %s %s', _tmp_seq.frames, _tmp_seq)
-    for _idx, _frame in enumerate(_tmp_seq.frames):
-        _file = _tmp_seq[_frame]
-        # _LOGGER.info(_file)
-        _pos = (240*_idx, 0)
-        _pix.draw_overlay(_file, pos=_pos)
-    _pix.save_as(_strip, force=True)
-
-    return _strip
-
-
-def to_version_data(output, fields=None):
-    """Obtain version data for the given output.
-
-    Args:
-        output (CPOutputBase): output video/seq to find data for
-        fields (str list): override fields to request
-
-    Returns:
-        (dict): shotgrid data
-    """
-    _filters = [
-        sg_entity.to_entity_filter(output),
-        ('code', 'is', output.base),
-        ('sg_status_list', 'not_in', ('na', 'omt')),
-    ]
-    _fields = fields or [
-        'sg_path_to_frames',
-        'sg_path_to_movie',
-        'sg_uploaded_movie',
-        'user',
-    ]
-    return sg_handler.find_one('Version', filters=_filters, fields=_fields)
-
-
-def to_version_id(output):
-    """Obtain version id for the given output.
-
-    Args:
-        output (CPOutputBase): output video/seq to find id for
-
-    Returns:
-        (int|None): version id (if any)
-    """
-    _data = to_version_data(output)
-    if not _data:
-        return None
-    return _data['id']

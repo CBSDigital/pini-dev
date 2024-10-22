@@ -107,12 +107,14 @@ class CheckAssetHierarchy(core.SCMayaCheck):
             self.write_log('check %s', _node)
             if not cmds.objExists(_node):
                 _parent, _name = _node.rsplit('|', 1)
+                _kwargs = {}
+                if _parent:
+                    _kwargs['parent'] = _parent
                 self.write_log('check %s', _node)
                 self.add_fail(
                     f'Missing node "{_node}"',
                     fix=wrap_fn(
-                        cmds.group, name=_name, empty=True,
-                        parent=_parent))
+                        cmds.group, name=_name, empty=True, **_kwargs))
                 _passed = False
 
             if _children:
@@ -317,6 +319,7 @@ class CheckUVs(core.SCMayaCheck):
             cmds.polyUVSet(geo, query=True, currentUVSet=True) or [],
             catch=True)
         _sets = cmds.polyUVSet(geo, query=True, allUVSets=True) or []
+        _fix = wrap_fn(utils.fix_uvs, geo)
         self.write_log('Checking geo %s cur=%s, sets=%s', geo, _set, _sets)
 
         # Flag no uv sets
@@ -330,12 +333,10 @@ class CheckUVs(core.SCMayaCheck):
             if 'map1' in _sets:
                 _msg = 'Geo {} is not using uv set map1 (set is {})'.format(
                     geo, _set)
-                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = ('Geo {} does not have uv set map1 (set is '
                         '{})'.format(geo, _set))
-                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             return
 
@@ -349,11 +350,10 @@ class CheckUVs(core.SCMayaCheck):
                 _msg = (
                     'Geo {} is using empty uv set map1 (should use '
                     '{})'.format(geo, _set))
-                _fix = wrap_fn(utils.fix_uvs, geo)
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
                 _msg = 'Geo "{}" empty uv set "map1"'.format(geo)
-                self.add_fail(_msg, node=geo)
+                self.add_fail(_msg, node=geo, fix=_fix)
             return
 
         # Flag unused sets
@@ -361,7 +361,6 @@ class CheckUVs(core.SCMayaCheck):
             _unused = sorted(set(_sets) - set(['map1']))
             _msg = 'Geo {} has unused uv set{}: {}'.format(
                 geo, plural(_sets[1:]), ', '.join(_unused))
-            _fix = wrap_fn(utils.fix_uvs, geo)
             self.add_fail(_msg, node=geo, fix=_fix)
 
 

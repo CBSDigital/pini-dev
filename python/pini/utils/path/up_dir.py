@@ -7,7 +7,7 @@ import platform
 import shutil
 import sys
 
-from .. u_misc import EMPTY
+from .. u_misc import EMPTY, to_str
 from . import up_path, up_utils, up_find
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class Dir(up_path.Path):
         """
         _LOGGER.debug('CONTAINS')
         _this = up_utils.abs_path(self.path).rstrip('/')
-        _path = up_utils.abs_path(path)
+        _path = up_utils.abs_path(to_str(path))
         if sys.platform == 'win32':
             _path = _path.lower()
             _this = _this.lower()
@@ -336,7 +336,7 @@ class Dir(up_path.Path):
         Returns:
             (File): child file
         """
-        from pini.utils import File, to_str
+        from pini.utils import File
 
         _class = class_ or File
         if rel_path:

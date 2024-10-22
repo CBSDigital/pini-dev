@@ -1,7 +1,7 @@
 """Tools for managing the QMenu wrapper."""
 
 from pini import icons, dcc
-from pini.utils import copy_text, wrap_fn, chain_fns, File
+from pini.utils import copy_text, wrap_fn, chain_fns, File, Video
 
 from ...q_mgr import QtWidgets
 from ...q_utils import to_icon
@@ -121,8 +121,9 @@ class CMenu(QtWidgets.QMenu):
         """
         self.add_file_actions(
             video, delete_callback=delete_callback, delete=delete)
+        _video = Video(video)
         self.add_action(
-            'View', video.view, icon=icons.find("Play Button"))
+            'View', _video.view, icon=icons.find("Play Button"))
 
     def add_label(self, text, icon=None):
         """Add an action as a label.

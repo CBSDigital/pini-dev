@@ -126,7 +126,9 @@ class PRNotes(object):
             _to_cmdline(self._summary_lines),
             _to_cmdline(self._tech_lines))
 
-    def to_email(self, repo, ver, mtime, diffs_link=None, get_ticket_url=None):
+    def to_email(
+            self, repo, ver, mtime, diffs_link=None, links=(),
+            get_ticket_url=None):
         """To get email body version of these notes.
 
         Args:
@@ -134,6 +136,7 @@ class PRNotes(object):
             ver (PRVersion): release version
             mtime (float): release time
             diffs_link (str): view diffs url
+            links (tuple list): list of label/link items to add
             get_ticket_url (fn): function to retrieve ticket urls
 
         Returns:
@@ -163,8 +166,12 @@ class PRNotes(object):
             _lines += [' - {},'.format(_line)]
 
         # Add show diffs
-        _diffs = '<a href={}>View diffs</a>'.format(diffs_link)
-        _lines += ['', _diffs]
+        if diffs_link:
+            _diffs = '<a href={}>View diffs</a>'.format(diffs_link)
+            _lines += ['', _diffs]
+        for _label, _link in links:
+            _diffs = f'<a href={_link}>{_label}</a>'
+            _lines += ['', _diffs]
 
         _body = '\n'.join(_lines)
         _body = _body.replace('\n', '<br>\n')

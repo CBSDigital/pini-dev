@@ -2,6 +2,8 @@
 
 import logging
 
+from pini.utils import single
+
 from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
 from . import ccp_ety_base
 
@@ -20,14 +22,10 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         _LOGGER.info('UPDATE OUTPUTS CACHE')
         # self.sg_entity.find_pub_files(force=True)
         self._read_outputs(force=True)
-        # asdasd
-        # self.job.find_outputs(force=True)
 
     def _update_publishes_cache(self):
         """Rebuild published file cache."""
         self._read_publishes(force=True)
-        # asdasdasd
-        # self.job.find_publishes(force=True)
 
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.
@@ -39,29 +37,15 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         Returns:
             (CCPWorkDir): matching work dir
         """
-        # from pini import pipe
-        # if isinstance(match, pipe.CPWorkDir):
-        #     return self.job.obt_work_dir(match)
-        raise NotImplementedError
-
-    # def _read_work_dirs(self, class_=None, force=False):
-    #     """Read all work dirs for this entity.
-
-    #     Args:
-    #         class_ (class): override work dir class
-    #         force (bool): rebuild cache
-
-    #     Returns:
-    #         (CCPWorkDir): work dirs
-    #     """
-    #     if class_:
-    #         raise NotImplementedError(class_=
-    #     return super()._read_publishes(class
-    #     _LOGGER.debug('READ WORK DIRS %s %s', nice_id(self), self)
-    #     _work_dirs = sorted(
-    #         self.job.find_work_dirs(entity=self, force=force))
-    #     _LOGGER.debug(' - FOUND %d WORK DIRS %s', len(_work_dirs), _work_dirs)
-    #     return _work_dirs
+        _work_dirs = self.find_work_dirs()
+        _matches = [
+            _work_dir for _work_dir in _work_dirs
+            if match in (_work_dir, _work_dir.path, _work_dir.task)]
+        if len(_matches) == 1:
+            return single(_matches)
+        if catch:
+            return None
+        raise ValueError(match)
 
     @pipe_cache_on_obj
     def _read_outputs(self, force=False):
@@ -81,14 +65,24 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             _LOGGER.debug(' - UPDATING SGC')
             self.sg_entity.find_pub_files(force=True)
 
+        # Rebuild outputs into cacheable objects
         _out_cs = []
         _out_us = super()._read_outputs()
         for _out_u in _out_us:
+
             _LOGGER.debug('   - OUT %s', _out_u)
+
+            # Build shared kwargs
+            _work_dir = single([
+                _work_dir for _work_dir in self.work_dirs
+                if _work_dir.contains(_out_u.path)], catch=True)
             _kwargs = {
                 'template': _out_u.template,
                 'entity': self,
+                'work_dir': _work_dir,
                 'latest': _out_u.sg_pub_file.latest}
+
+            # Build cacheable
             if isinstance(_out_u, pipe.CPOutputVideo):
                 _out_c = cache.CCPOutputVideo(_out_u, **_kwargs)
             elif isinstance(_out_u, pipe.CPOutputFile):
@@ -101,6 +95,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
                 raise ValueError(_out_u)
             _LOGGER.debug('     - OUT C %s', _out_c)
             _out_cs.append(_out_c)
+
         _LOGGER.debug(' - FOUND %d OUTS', len(_out_cs))
         return _out_cs
 
@@ -116,6 +111,8 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         """
         _LOGGER.debug('READ PUBLISHES %s', self)
         _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
+
+        # Read publishes
         _pubs = []
         _c_types = set()
         for _out in self.find_outputs():
@@ -130,6 +127,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         _c_types = sorted(_c_types)
         _LOGGER.debug(' - FOUND %d CONTENT TYPES %s', len(_c_types), _c_types)
         _LOGGER.info(' - FOUND %d PUBS %s', len(_pubs), self)
+
         return _pubs
 
     def _obt_output_cacheable(self, output, catch, force):

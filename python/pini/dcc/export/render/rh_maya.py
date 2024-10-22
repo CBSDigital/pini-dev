@@ -100,17 +100,22 @@ class CMayaLocalRender(CMayaRenderHandler):
         self.ui.Cleanup = self.add_checkbox_elem(
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
+        self.ui.VersionUp = self.add_checkbox_elem(
+            name='VersionUp', val=True,
+            label='Version up on render')
 
         self.layout.addStretch()
 
     def _callback__Mov(self):
         self.ui.Cleanup.setVisible(self.ui.Mov.isChecked())
 
-    def render(self, frames=None):
+    def render(self, frames=None, render_=True, force=False):
         """Execute render.
 
         Args:
             frames (int list): list of frames to render
+            render_ (bool): execute render
+            force (bool): replace existing without confirmation
         """
         _data = self.build_metadata()
         _cam = self.ui.Camera.currentText()
@@ -133,7 +138,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                 TMP_PATH, strftime('%y%m%d_%H%M%S'))
             _LOGGER.info('TMP PATH %s', _tmp_path)
             _out_seq = Seq(_tmp_path)
-            _out.delete(wording='Replace')
+            _out.delete(wording='Replace', force=force)
         else:
             if not _work.find_template('render', catch=True):
                 qt.notify(
@@ -149,7 +154,9 @@ class CMayaLocalRender(CMayaRenderHandler):
             _out_seq = _out
 
         # Execute render
-        _work.save(reason='render')
+        _work.save(reason='render', force=force)
+        if not render_:
+            return
         render(seq=_out_seq, frames=frames, camera=_cam)
         if _mov:
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
@@ -171,6 +178,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             from pini.pipe import shotgrid
             shotgrid.create_pub_file(_out)
         _work.update_outputs()
+        self._apply_version_up()
 
 
 def _compile_video_with_scene_audio(seq, video):
@@ -321,11 +329,13 @@ class CMayaFarmRender(CMayaRenderHandler):
             _LOGGER.debug(' - %s %d', _lyr, _ren)
             _lyr.set_renderable(_ren)
 
-    def render(self, frames=None):
+    def render(self, frames=None, render_=True, force=False):
         """Launch deadline render ui.
 
         Args:
             frames (int list): list of frames to render
+            render_ (bool): execute render
+            force (bool): replace existing frames without confirmation
         """
         _work = pipe.cur_work()
         if not _work:
@@ -349,11 +359,13 @@ class CMayaFarmRender(CMayaRenderHandler):
                 _reverts.append(_revert)
 
         _prepare_scene_for_render()
-        _checks_data = sanity_check.launch_export_ui(action='Render')
+        _checks_data = sanity_check.launch_export_ui(
+            action='Render', force=force)
         _limit_groups_s = self.ui.LimitGroups.text()
         _limit_groups = [_grp for _grp in _limit_groups_s.split(',') if _grp]
 
         farm.submit_maya_render(
+            submit=render_, force=force,
             checks_data=_checks_data,
             frames=frames, camera=_cam,
             chunk_size=self.ui.ChunkSize.value(),

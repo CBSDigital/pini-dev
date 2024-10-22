@@ -13,17 +13,14 @@ from pini.utils import (
     single, basic_repr, apply_filter, get_user, passes_filter)
 
 from ...cache import pipe_cache_on_obj
-from . import sgc_proj, sgc_container, sgc_elem
+from . import sgc_proj, sgc_elems, sgc_elem_reader
 
 _LOGGER = logging.getLogger(__name__)
 _GLOBAL_CACHE_DIR = pipe.GLOBAL_CACHE_ROOT.to_subdir('sgc')
 
 
-class SGCRoot(sgc_elem.SGCElem):
+class SGCRoot(sgc_elem_reader.SGCElemReader):
     """Base container class for the shotgrid data cache."""
-
-    _sg = None
-    # ENTITY_TYPE =
 
     @property
     def projs(self):
@@ -61,8 +58,11 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCAsset): matching asset
         """
+        _LOGGER.debug('FIND ASSET %s', match)
         _job = pipe.to_job(match)
-        return self.find_proj(_job).find_asset(match)
+        _proj_s = self.find_proj(_job)
+        _LOGGER.debug(' - JOB %s %s', _job, _proj_s)
+        return _proj_s.find_asset(match)
 
     def find_assets(self, job):
         """Search assets in the cache.
@@ -88,11 +88,12 @@ class SGCRoot(sgc_elem.SGCElem):
         _sg_proj = self.find_proj(_job)
         return _sg_proj.find_entity(match)
 
-    def find_proj(self, match=None, force=False):
+    def find_proj(self, match=None, catch=False, force=False):
         """Find a job.
 
         Args:
             match (str|int): job name/prefix/id
+            catch (bool): no error if fail to match project
             force (bool): force rebuild cache
 
         Returns:
@@ -111,6 +112,8 @@ class SGCRoot(sgc_elem.SGCElem):
         if len(_filter_projs) == 1:
             return single(_filter_projs)
 
+        if catch:
+            return None
         raise ValueError(match)
 
     def find_projs(self, filter_=None, force=False):
@@ -130,11 +133,11 @@ class SGCRoot(sgc_elem.SGCElem):
             _projs.append(_proj)
         return _projs
 
-    def find_pub_file(self, path=None, job=None, catch=False):
+    def find_pub_file(self, match, job=None, catch=False):
         """Find a pub file in the cache.
 
         Args:
-            path (str): match by path
+            match (str|File): match by path/file
             job (CPJob): job to search
             catch (bool): no error if fail to find matching pub file
 
@@ -142,9 +145,9 @@ class SGCRoot(sgc_elem.SGCElem):
             (SGCPubFile): matching pub file
         """
         assert not job
-        _ety = pipe.to_entity(path)
+        _ety = pipe.to_entity(match)
         _sg_ety = self.find_entity(_ety)
-        return _sg_ety.find_pub_file(path=path, catch=catch)
+        return _sg_ety.find_pub_file(match, catch=catch)
 
     def find_pub_files(
             self, job=None, entity=None, work_dir=None,
@@ -241,8 +244,10 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCShot): matching shot
         """
+        _LOGGER.debug('FIND SHOT %s', match)
         _job = job or pipe.to_job(match)
         _sgc_proj = self.find_proj(_job)
+        _LOGGER.debug(' - JOB %s %s', _job, _sgc_proj)
         return _sgc_proj.find_shot(match)
 
     def find_shots(self, job):
@@ -344,6 +349,14 @@ class SGCRoot(sgc_elem.SGCElem):
         """
         return self._read_users(force=force)
 
+    def find_version(self, match):
+        """Find a version.
+
+        Args:
+            match (str): match by name/path
+        """
+        raise NotImplementedError
+
     @pipe_cache_on_obj
     def _read_projs(self, force=False):
         """Build list of valid projs on shotgrid.
@@ -356,7 +369,7 @@ class SGCRoot(sgc_elem.SGCElem):
         """
         _LOGGER.debug(' - READING PROJECTS')
         _projs = self._read_elems(sgc_proj.SGCProj, force=force)
-        _LOGGER.info('   - FOUND %d PROJS', len(_projs))
+        _LOGGER.debug('   - FOUND %d PROJS', len(_projs))
         assert _projs
 
         # Filter dup projects + embed job object
@@ -383,7 +396,7 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCPubType list): steps
         """
-        return self._read_elems(sgc_container.SGCPubType)
+        return self._read_elems(sgc_elems.SGCPubType)
 
     @pipe_cache_on_obj
     def _read_steps(self, force=False):
@@ -395,7 +408,7 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCStep list): steps
         """
-        return self._read_elems(sgc_container.SGCStep, force=force)
+        return self._read_elems(sgc_elems.SGCStep, force=force)
 
     @pipe_cache_on_obj
     def _read_users(self, force=False):
@@ -407,7 +420,7 @@ class SGCRoot(sgc_elem.SGCElem):
         Returns:
             (SGCUser list): users
         """
-        return self._read_elems(sgc_container.SGCUser)
+        return self._read_elems(sgc_elems.SGCUser)
 
     def to_filter(self):
         """Build shotgrid search filter from this entry.

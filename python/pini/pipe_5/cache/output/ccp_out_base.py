@@ -47,9 +47,12 @@ class CCPOutputBase(elem.CPOutputBase):
 
         _pub_type = self.metadata.get('publish_type')
         if self.extn == 'abc':
-            _type = self.metadata.get('type')
+            _type = self.metadata.get('handler')
+            _type = _type or self.metadata.get('type')   # Legacy 18/10/24
             if _type == 'CPCacheableCam':
                 _c_type = 'CameraAbc'
+            elif _type == 'CPCacheableRef':
+                _c_type = 'PipeAbc'
             else:
                 _c_type = 'Abc'
         elif self.extn == 'ma':
@@ -70,18 +73,78 @@ class CCPOutputBase(elem.CPOutputBase):
         elif isinstance(self, Seq):
             if self.extn == 'obj':
                 _c_type = 'ObjSeq'
-            elif self.nice_type == 'blast':
+            elif self.basic_type == 'blast':
                 _c_type = 'Blast'
-            elif self.nice_type == 'render':
+            elif self.basic_type == 'render':
                 _c_type = 'Render'
             else:
-                raise ValueError(self.path, _pub_type, self.nice_type)
+                raise ValueError(self.path, _pub_type, self.basic_type)
         elif self.extn in ('mov', 'mp4'):
             _c_type = 'Video'
         else:
             _c_type = self.extn.capitalize()
         assert is_pascal(_c_type) or _c_type[0].isdigit()
         return _c_type
+
+    @property
+    def handler(self):
+        """Obtain export handler for this output.
+
+        Returns:
+            (str): export handler (eg. CMayaModelPublish/CPCacheableRef)
+        """
+        return (
+            self.metadata.get('handler') or
+            self.metadata.get('type'))  # Legacy 18/10/24 (from Cache)
+
+    @property
+    def range_(self):
+        """Obtain range for this output.
+
+        Returns:
+            (tuple|None): range (if any)
+        """
+        return self.metadata.get('range')
+
+    @property
+    def src(self):
+        """Obtain source work file for this output.
+
+        Returns:
+            (str): path to source work file
+        """
+        return self.metadata.get('src')
+
+    @property
+    def src_ref(self):
+        """Obtain source reference path for this output.
+
+        eg. path to rig for an abc
+
+        Returns:
+            (str): source reference path
+        """
+        return (
+            self.metadata.get('src_ref') or
+            self.metadata.get('asset'))  # Legacy 18/10/24 (from Cache)
+
+    @property
+    def updated_at(self):
+        """Obtain time when this output was last updated.
+
+        Returns:
+            (float): update time (in seconds since epoch)
+        """
+        return self.metadata.get('mtime')
+
+    @property
+    def updated_by(self):
+        """Obtain owner of this output.
+
+        Returns:
+            (str): output owner
+        """
+        return self.metadata.get('owner') or self.owner()  # pylint: disable=no-member
 
     @pipe_cache_on_obj
     def get_metadata(self, force=False, data=None):
@@ -223,15 +286,20 @@ class CCPOutputBase(elem.CPOutputBase):
             (CCPOutputGhost): ghost output for caching
         """
         # pylint: disable=no-member
-        # assert self._latest is not None
+        _LOGGER.debug('TO GHOST %s', self.path)
         return ccp_out_ghost.CCPOutputGhost(
-            self.path, latest=self._latest, mtime=self.mtime,
+            self.path, latest=self._latest, updated_at=self.updated_at,
             template=self.template.source.pattern, type_=self.type_,
             task=self.task, pini_task=self.pini_task, ver_n=self.ver_n,
             step=self.step, output_name=self.output_name, shot=self.shot,
             sequence=self.sequence, asset=self.asset,
-            asset_type=self.asset_type, content_type=self.content_type,
-            job=self.job.name, output_type=self.output_type, tag=self.tag)
+            updated_by=self.updated_by, asset_type=self.asset_type,
+            content_type=self.content_type, job=self.job.name,
+            output_type=self.output_type, tag=self.tag,
+            basic_type=self.basic_type, profile=self.profile, ver=self.ver,
+            range_=self.range_, submittable=self.submittable,
+            src=self.src, src_ref=self.src_ref, handler=self.handler,
+            stream=self.to_stream())
 
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.

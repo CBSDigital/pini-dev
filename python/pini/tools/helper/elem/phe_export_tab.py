@@ -166,7 +166,7 @@ class CLExportTab(object):
             elif self.work.find_outputs('blast'):
                 _select = 'blast'
 
-        _tmpls, _data = _sort_by_attr(_outs, attr='nice_type')
+        _tmpls, _data = _sort_by_attr(_outs, attr='basic_type')
         self.ui.ESubmitTemplate.set_items(
             _tmpls, data=_data, select=_select, emit=True)
         self.ui.ESubmitTemplate.setEnabled(len(_tmpls) > 1)
@@ -402,9 +402,10 @@ class CLExportTab(object):
         self.ui.ERender.redraw()
 
     @usage.get_tracker('PiniHelper.Render')
-    def _callback__ERender(self):
+    def _callback__ERender(self, render_=True, force=False):
         _handler = self.ui.ERenderHandler.selected_data()
-        _handler.render(frames=self._get_render_frames())
+        _handler.render(
+            frames=self._get_render_frames(), force=force, render_=render_)
 
     def _callback__ESubmitTemplate(self):
         self.ui.ESubmitTask.redraw()

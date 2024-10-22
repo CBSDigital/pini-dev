@@ -325,7 +325,7 @@ def _obt_image_fmts_map():
             for _idx in range(10):
                 _apply_rs_fmt_idx(_idx)
                 _extn = to_render_extn()
-                _LOGGER.info(' - IDX %d %s', _idx, _extn)
+                _LOGGER.debug(' - IDX %d %s', _idx, _extn)
                 if not _extn or _extn in _fmts:
                     break
                 _fmts[_extn].append(_idx)

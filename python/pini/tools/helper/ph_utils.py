@@ -137,8 +137,6 @@ def _cache_to_icon(output):
     Returns:
         (str|QPixmap): icon
     """
-    _type = output.metadata.get('type')
-    _asset_path = output.metadata.get('asset')
     _bg_icon = _EXTN_BG_MAP.get(output.extn) or EXTN_ICONS.get(output.extn)
     _LOGGER.debug(' - BG ICON %s %s', output.extn, _bg_icon)
     _fmt = output.extn
@@ -148,12 +146,12 @@ def _cache_to_icon(output):
 
     # Find overlay path
     _over_path = None
-    if _asset_path:
-        _asset = pipe.CPOutputFile(pipe.map_path(_asset_path))
+    if output.src_ref:
+        _asset = pipe.CPOutputFile(output.src_ref)
         _over_path = output_to_icon(_asset)
-    elif _type == 'CPCacheableCam':
+    elif output.content_type == 'CameraAbc':
         _over_path = CAM_ICON
-    elif _type == 'CPCacheableSet':
+    elif output.type_ == 'CPCacheableSet':
         _over_path = CSET_ICON
 
     # Build icon
@@ -177,15 +175,7 @@ def _lookdev_to_icon(lookdev):
     _LOGGER.debug(' - LOOKDEV TO ICON %s', lookdev)
     assert lookdev.type_ in ('publish', 'publish_seq')
 
-    # Find rig icon
-    _tmpl = lookdev.job.find_template(
-        'publish', profile=lookdev.profile,
-        want_key={'output_type': False, 'ver': False},
-        has_key={'tag': bool(lookdev.tag)})
-    _LOGGER.debug(' - TMPL %s', _tmpl)
-    _rig_out = lookdev.to_output(task='rig', template=_tmpl)
-    _LOGGER.debug(' - RIG OUT %s', _rig_out.path)
-    _asset_icon = _output_to_entity_icon(_rig_out)
+    _asset_icon = _output_to_entity_icon(lookdev)
 
     if lookdev.content_type == 'VrmeshMa':
         _base_icon = VRMESH_BG_ICON
@@ -215,9 +205,7 @@ def _output_to_entity_icon(output):
     """
 
     # Try to match with mapped icon
-    _ety = output.entity
-    _LOGGER.debug(' - ETY %s', _ety)
-    _ety_name = output.entity.name
+    _ety_name = output.asset or output.shot
     while _ety_name and _ety_name[-1].isdigit():
         _ety_name = _ety_name[:-1]
     _ety_name = _ety_name.lower()
@@ -233,12 +221,12 @@ def _output_to_entity_icon(output):
         _icon = icons.find(_name, catch=True)
         _LOGGER.debug(' - FIND ICON BY NAME %s %s', _name, _icon)
     if not _icon:
-        if _ety.profile == 'asset':
-            _uid = _ety.path
-        elif _ety.profile == 'shot':
+        if output.asset:
+            _uid = f'{output.asset_type}.{output.asset}'
+        elif output.shot:
             _uid = output.to_output(ver_n=0).path
         else:
-            raise ValueError(_ety)
+            raise ValueError(output)
         _LOGGER.debug(' - USING RAND UID %s', _uid)
         _rand = str_to_seed(_uid)
         _icon = _rand.choice(_CACHE_ICONS)
@@ -332,11 +320,11 @@ def output_to_icon(output, overlay=None, force=False):
         (CPixmap): icon
     """
     _LOGGER.debug('OUTPUT TO ICON %s over=%s force=%d', output, overlay, force)
-    _LOGGER.debug(' - NICE TYPE %s', output.nice_type)
+    _LOGGER.debug(' - BASIC TYPE %s', output.basic_type)
 
     # Get base icon
     _bg = None
-    if output.nice_type == 'cache':
+    if output.basic_type == 'cache':
         _LOGGER.debug(' - APPLYING CACHE ICON')
         _icon = _cache_to_icon(output)
     elif output.output_type == 'cam':
@@ -389,18 +377,19 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
         return attach.namespace+'_shd'
 
     _mode = 'asset'
+    _ety_name = output.asset or output.shot
     if base:
         _base = base
     elif output.type_ in ('publish', 'publish_seq'):
-        _base = output.entity.name
+        _base = _ety_name
     elif output.type_ == 'cache' and output.output_type == 'cam':
         _mode = 'cache'
-        _base = '{}_{}'.format(output.entity.name, output.output_name)
+        _base = '{}_{}'.format(_ety_name, output.output_name)
     elif output.type_ == 'cache' and output.output_name == 'restCache':
-        _base = output.entity.name
+        _base = _ety_name
     elif output.type_ in ['cache', 'cache_seq', 'ass_gz']:
         _mode = 'cache'
-        _base = output.output_name or output.entity.name
+        _base = output.output_name or _ety_name
     elif isinstance(output, (Seq, Video)):
         _ver = 'v{:03d}'.format(output.ver_n)
         _base = output.base.replace(_ver, '').strip('_')
@@ -422,11 +411,11 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     Returns:
         (str): path to icon
     """
-    if output.nice_type == 'render':
+    if output.basic_type == 'render':
         return RENDER_TYPE_ICON
-    if output.nice_type == 'plate':
+    if output.basic_type == 'plate':
         return PLATE_TYPE_ICON
-    if output.nice_type == 'blast':
+    if output.basic_type == 'blast':
         return BLAST_TYPE_ICON
     if output.content_type == 'VrmeshMa':
         return ARCHIVE_TYPE_ICON

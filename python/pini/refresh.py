@@ -112,8 +112,10 @@ _RELOAD_ORDER = [
     'pini.pipe_5.cache.root',
     'pini.pipe_5.cache',
 
+    'pini.pipe_5.shotgrid.sg_handler',
+    'pini.pipe_5.shotgrid.cache.sgc_elem_reader',
     'pini.pipe_5.shotgrid.cache.sgc_elem',
-    'pini.pipe_5.shotgrid.cache.sgc_container',
+    'pini.pipe_5.shotgrid.cache.sgc_elems',
     'pini.pipe_5.shotgrid.cache.sgc_ety',
     'pini.pipe_5.shotgrid',
 

@@ -29,7 +29,7 @@ def apply_grouping(top_node, output, group=EMPTY):
             _grp = output.asset_type.upper()
         elif output.output_type:
             _grp = output.output_type.upper()
-        elif output.nice_type == 'cache':
+        elif output.basic_type == 'cache':
             _grp = 'CACHE'
         else:
             _grp = None

@@ -17,26 +17,6 @@ _LOGGER = logging.getLogger(__name__)
 class CCPJobSG(ccp_job_base.CCPJobBase):
     """Represents a cacheable job on a sg-based pipeline."""
 
-    @property
-    def outputs(self):
-        """Obtain list of outputs in this job.
-
-        NOTE: this is only applicable to shotgrid jobs.
-
-        Returns:
-            (CCPWorkDir tuple): outputs
-        """
-        return tuple(self.find_outputs())
-
-    @property
-    def work_dirs(self):
-        """Obtain list of work dirs in this job.
-
-        Returns:
-            (CCPWorkDir tuple): work dirs
-        """
-        return tuple(self.find_work_dirs())
-
     @pipe_cache_result
     def to_prefix(self):
         """Obtain prefix for this job.

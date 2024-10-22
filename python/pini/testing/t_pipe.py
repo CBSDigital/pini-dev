@@ -2,6 +2,7 @@
 
 import logging
 import os
+import pprint
 
 from pini import pipe, dcc
 from pini.utils import File
@@ -104,10 +105,17 @@ def _check_lookdev(force, model_pub):
         _shd.assign_to(_ref.ref.to_node('cube_GEO'))
         _ld_work.save(force=True)
 
-    _ld_pub = _asset_c.find_publish(
+    # Find publish
+    _kwargs = dict(  # pylint: disable=use-dict-literal
         task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
-        output_type='lookdev')
+        output_type='lookdev', extn='ma')
+    _ld_pubs = _asset_c.find_publishes(**_kwargs)
+    if len(_ld_pubs) > 1:
+        pprint.pprint(_ld_pubs)
+        raise RuntimeError
+    _ld_pub = _asset_c.find_publish(**_kwargs)
     if not _ld_pub:
+
         _ld_work.load(lazy=True)
         _pub = dcc.find_export_handler('lookdev')
         _pub.publish(force=True, version_up=False)
@@ -146,6 +154,7 @@ def check_test_asset(force=False):
         _pub = dcc.find_export_handler(action='publish', filter_='basic')
         _pub.publish(force=True)
     assert _asset_c.find_publish(
-        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False)
+        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        extn='ma')
 
     _check_lookdev(force=force, model_pub=_mdl_pub)

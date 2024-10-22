@@ -1,3 +1,52 @@
+## [6.3.0] - Tue 2024-10-22 09:45
+### Summary
+ - Pini Helper:
+    - redesigned shotgrid caching to improve speed,
+ - Sanity Check:
+    - check asset hierarchy fix error on create top level group,
+    - check uvs fix missing fix on empty map1 set,
+### Updated
+ - pini.utils.Dir.contains accepts Path/Seq objects,
+ - pini.utils.Seq.to_owner catch error on no frames,
+ - pini.dcc.CMayaLocalRender added version up,
+ - pini.dcc CMayaLocalRender/CMayaFarmRender added render_/force flags for testing,
+ - pini.dcc.export.build_metadata renamed arg source -> src to match metadata key,
+ - pini.dcc.export.build_metadata added src_ref arg,
+ - pini.pipe updated VERSION 4 -> 5,
+ - pini.pipe updated submodule pipe_2 -> pipe_5,
+ - pini.pipe pipe_5 passes all tests,
+ - pini.pipe.CPOutput renamed nice_type -> basic_type,
+ - pini.pipe.passes_filter added step/filter_/filter_attr args,
+ - pini.pipe.to_basic_type added,
+ - pini.pipe.CPJobSG._read_assets ignore assets w/o asset_type/asset,
+ - pini.pipe.CPEntityBase.find_outputs uses kwargs/passes_filters,
+ - pini.pipe.CPEntitySG._read_outputs reapply latest to take account of omit,
+ - pini.pipe.CPEntitySG._read_work_dirs ignore tasks w/o step/task,
+ - pini.pipe.CPEntitySG.flush delete rather than omit pub files,
+ - pini.pipe.CPWorkDirSG._read_outputs use entity.find_outputs,
+ - pini.pipe.CPOutputBase.get_metadata catch None as metadata,
+ - pini.pipe.cache.CCPJobBase.find_publish added path match,
+ - pini.pipe.cache.CCPJobSG removed outputs/work_dirs properties,
+ - pini.pipe.cache.CCPOutputBase.content_type abc use handler not type,
+ - pini.pipe.cache.CCPOutputBase added handler/range_/src/src_ref/updated_at/updated_by properties to match ghost output,
+ - pini.pipe.cache.CCPOutputGhost added more attrs to cache,
+ - pini.pipe.shotgrid.SGC.SGCElemReader added as base class,
+ - pini.pipe.shotgrid.SGC renamed SGCContainer -> SGCElem,
+ - pini.pipe.shotgrid flushed out legacy non-cache functions,
+ - pini.qt.CUiBase.__getattr__ rebuild ui on QSpacerItem result,
+ - pini.farm.submit_maya_render added submit arg for testing,
+ - pini.tools.sanity_check.CheckAssetHierarchy fix error on create top level grp,
+ - pini.tools.sanity_check.CheckUVs fix missing fix for empty map1,
+ - pini.tools.sanity_check fix full action name on export buttons,
+ - pini.tools.helper fix ghost cache items requesting live cache data,
+ - pini.tools.helper added anim/lighting workflow test,
+ - pini.tools.helper updated to use cache output attrs mtime -> updated_at + owner -> updated_by,
+ - pini.tools.helper.save bugfix force arg not being passed,
+ - pini.tools.release.PRNotes.to_email added links arg,
+ - maya_pini.m_pipe.cache use export.build_metadata for better symmetry,
+ - maya_pini.m_pipe.cache renamed metadata type_ -> handler, asset -> src_ref,
+
+
 ## [6.2.0] - Thu 2024-10-17 09:27
 ### Summary
  - Pini Helper:

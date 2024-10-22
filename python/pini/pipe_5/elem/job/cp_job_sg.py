@@ -84,6 +84,8 @@ class CPJobSG(cp_job_base.CPJobBase):
 
         _assets = []
         for _sg_asset in self.sg_proj.assets:
+            if not (_sg_asset.asset_type and _sg_asset.asset):
+                continue
             _path = _tmpl.format(
                 job_path=self.path, asset=_sg_asset.asset,
                 asset_type=_sg_asset.asset_type)

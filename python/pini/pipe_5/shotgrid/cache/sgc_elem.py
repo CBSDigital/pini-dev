@@ -1,22 +1,53 @@
 """Tools for managing shotgrid elements, any queryable item in shotgrid."""
 
+# pylint: disable=unsupported-membership-test
+
 import logging
-import operator
+import os
 
-from pini.utils import single, to_time_f
+from pini.utils import strftime
 
-from ..sg_utils import sg_cache_result
+from . import sgc_elem_reader
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SGCElem(object):
+class SGCElem(sgc_elem_reader.SGCElemReader):
     """Base class for all shotgrid elements."""
-
-    data = None
 
     FIELDS = None
     ENTITY_TYPE = None
+
+    FIELDS = None
+    ENTITY_TYPE = None
+    STATUS_KEY = 'sg_status_list'
+
+    def __init__(self, data):
+        """Constructor.
+
+        Args:
+            data (dict): shotgrid data
+        """
+        assert self.ENTITY_TYPE
+        assert self.FIELDS
+        assert isinstance(self.FIELDS, tuple)
+        assert data['type'] == self.ENTITY_TYPE
+        assert 'updated_at' in self.FIELDS
+
+        self.data = data
+
+        self.id_ = data['id']
+        self.updated_at = data['updated_at']
+        self.status = data.get(self.STATUS_KEY)
+
+    @property
+    def cmp_key(self):
+        """Get comparison key.
+
+        Returns:
+            (tuple): cmp key
+        """
+        return self.id_, self.ENTITY_TYPE
 
     @property
     def entity(self):
@@ -43,6 +74,15 @@ class SGCElem(object):
         return self.root.find_proj(self.data['project']['id'])
 
     @property
+    def omitted(self):
+        """Check whether this element has been omitted.
+
+        Returns:
+            (bool): whether omitted
+        """
+        return self.status == 'omt'
+
+    @property
     def root(self):
         """Obtain cache root.
 
@@ -53,22 +93,13 @@ class SGCElem(object):
         return sgc_root.SGC
 
     @property
-    def sg(self):
-        """Obtain shotgrid handler.
+    def url(self):
+        """Obtain url for this entry.
 
         Returns:
-            (CSGHandler): shotgrid request handler
+            (str): shotgrid url
         """
-        from ... import shotgrid
-        return shotgrid.to_handler()
-
-    def to_filter(self):
-        """Build shotgrid search filter from this entry.
-
-        Returns:
-            (tuple): filter
-        """
-        raise NotImplementedError
+        return self.to_url()
 
     @classmethod
     def build_cls_filters(cls):
@@ -84,83 +115,65 @@ class SGCElem(object):
             _filters.append(('sg_status_list', 'is_not', 'omt'))
         return _filters
 
-    def _build_filters(self, type_):
-        """Build filters to limit results to children of this element.
+    def omit(self):
+        """Omit this entry by setting status to 'omt'."""
+        self.set_status('omt')
+
+    def set_status(self, status):
+        """Update status of this entry.
+
+        NOTE: to force the update_at field to update, it seems like you need
+        to also update a field other than sg_status_list, so the description
+        is updated with a date-stamped status.
 
         Args:
-            type_ (class): type of entity being requested
+            status (str): status to apply
+        """
+        from pini.pipe import shotgrid
+        _data = {'sg_status_list': status}
+        if status == 'omt':
+            _desc = strftime('Omitted %d/%m/%y %H:%M:%S')
+            _data['description'] = _desc
+        elif status in 'wtg':
+            pass
+        else:
+            raise NotImplementedError(status)
+        shotgrid.update(self.ENTITY_TYPE, self.id_, _data)
+
+    def to_entry(self):
+        """Build shotgrid uid dict for this data entry.
 
         Returns:
-            (tuple list): filters
+            (dict): shotgrid entry
         """
-        _filters = type_.build_cls_filters()
-        _filter = self.to_filter()
-        if _filter:
-            _filters.append(_filter)
+        return {'type': self.ENTITY_TYPE, 'id': self.id_}
 
-        return _filters
-
-    @sg_cache_result
-    def _read_elems(self, type_, sort_attr=None, force=None):
-        """Read elements within this one.
-
-        eg. read shots in a project
-
-        Args:
-            type_ (class): type of element to read
-            sort_attr (str): apply sort attribute
-            force (bool): force reread cached data
+    def to_filter(self):
+        """Build shotgrid search filter from this entry.
 
         Returns:
-            (SGCElem list): elements
+            (tuple): filter
         """
-        _LOGGER.debug('READ ELEMS %s', type_)
-        _filters = self._build_filters(type_)
-        _LOGGER.debug(' - FILTERS %s', _filters)
-        _data = self.sg.find(
-            type_.ENTITY_TYPE, fields=type_.FIELDS,
-            filters=_filters)
+        return self.ENTITY_TYPE.lower(), 'is', self.to_entry()
 
-        _elems = []
-        for _item in _data:
-            _LOGGER.debug('   - ADDING ITEM %s', _item)
-            assert isinstance(_item, dict)
-            try:
-                _elem = type_(_item)
-            except ValueError as _exc:
-                _LOGGER.debug(' - REJECTED %s %s', type_, _item)
-                _LOGGER.debug(' - ERROR %s', _exc)
-                continue
-            _elems.append(_elem)
-
-        if sort_attr:
-            _elems.sort(key=operator.attrgetter(sort_attr))
-        _LOGGER.debug(' - FOUND %d ELEMS', len(_elems))
-        return _elems
-
-    def _read_elems_updated_t(self, type_):
-        """Read the time the last element of this type was updated.
-
-        If the update time of data cached to disk is the same, the data
-        does not need to be rebuilt. This is to save time validating the
-        read data (actually reading the data from shotgrid is not slow).
-
-        Args:
-            type_ (class): type of element to read
+    def to_url(self):
+        """Obtain url for this entry.
 
         Returns:
-            (float): last update time
+            (str): entry url
         """
-        _LOGGER.debug('READ ELEMS UPDATED T %s', type_.ENTITY_TYPE)
+        return '{}/detail/{}/{}'.format(
+            os.environ.get('PINI_SG_URL'), self.ENTITY_TYPE, self.id_)
 
-        _last_e = single(
-            self.sg.find(
-                type_.ENTITY_TYPE,
-                filters=self._build_filters(type_),
-                fields=['updated_at'],
-                limit=1,
-                order=[{'field_name': 'updated_at', 'direction': 'desc'}]),
-            catch=True)
-        if not _last_e:
-            return None
-        return to_time_f(_last_e['updated_at'])
+    def __eq__(self, other):
+        if hasattr(other, 'cmp_key'):
+            return self.cmp_key == other.cmp_key
+        if hasattr(self, 'path') and hasattr(other, 'path'):
+            return self.path == other.path  # pylint: disable=no-member
+        return False
+
+    def __hash__(self):
+        return hash(self.cmp_key)
+
+    def __lt__(self, other):
+        return self.cmp_key < other.cmp_key

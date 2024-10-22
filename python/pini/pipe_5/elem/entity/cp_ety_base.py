@@ -10,7 +10,7 @@ from pini import dcc
 from pini.utils import single, EMPTY, passes_filter, cache_result
 
 from .. import cp_settings_elem
-from ...cp_utils import task_sort
+from ... import cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             _tasks = _defaults[_dcc_key]
         else:
             _tasks = _defaults.get(_generic_key, [])
-        return sorted(_tasks, key=task_sort)
+        return sorted(_tasks, key=cp_utils.task_sort)
 
     def _create_tasks(self):
         """Create task folders (work dirs)."""
@@ -385,30 +385,24 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _outs = self.find_outputs(**kwargs)
         if len(_outs) == 1:
             return single(_outs)
+
         _matches = [
             _out for _out in _outs if match in (_out.path, _out)]
         if len(_matches) == 1:
             return single(_matches)
+
         if catch:
             return None
         raise ValueError(match)
 
-    def find_outputs(
-            self, type_=None, output_name=None, output_type=None, task=None,
-            ver_n=EMPTY, tag=EMPTY, extn=None, filter_=None, class_=None):
+    def find_outputs(self, tag=EMPTY, ver_n=EMPTY, class_=None, **kwargs):
         """Find outputs in this entity.
 
         This will only search outputs stored at entity level.
 
         Args:
-            type_ (str): filter by output type (eg. render/cache)
-            output_name (str): filter by output name
-            output_type (str):  filter by output type
-            task (str): filter by task
-            ver_n (int|None): filter by version number
             tag (str|None): filter by tag
-            extn (str): filter by extension
-            filter_ (str): filter by path
+            ver_n (int|None): filter by version number
             class_ (class): filter by class
 
         Returns:
@@ -436,13 +430,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _outs = []
         for _out in _all_outs:
             _LOGGER.debug(' - TESTING %s', _out)
-            if extn and _out.extn != extn:
-                continue
-            if output_type and _out.output_type != output_type:
-                continue
-            if output_name and _out.output_name != output_name:
-                continue
-            if task and task not in (_out.task, _out.pini_task):
+            if not cp_utils.passes_filters(_out, filter_attr='path', **kwargs):
                 continue
             if (
                     tag is not EMPTY and
@@ -451,11 +439,6 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
                     _out.tag != tag):
                 continue
             if _ver_n is not EMPTY and _out.ver_n != _ver_n:
-                continue
-            if type_ is not None and _out.type_ != type_:
-                _LOGGER.debug('   - TYPE FILTERED %s (%s)', _out.type_, type_)
-                continue
-            if filter_ and not passes_filter(_out.path, filter_):
                 continue
             if class_ and not isinstance(_out, class_):
                 continue

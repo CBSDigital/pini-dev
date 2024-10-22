@@ -252,8 +252,8 @@ def output_clip_sort(output):
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
         obj, type_=None, entity=None, asset=None, asset_type=None,
         output_name=None, output_type=EMPTY, content_type=None,
-        task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
-        extn=EMPTY, extns=None):
+        step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
+        extn=EMPTY, extns=None, filter_=None, filter_attr='path'):
     """Check whether the given object passes pipeline filters.
 
     Args:
@@ -265,6 +265,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         output_name (str): match output name
         output_type (str):  match output type
         content_type (str): filter by content type
+        step (str): apply step filter
         task (str): match task (or pini task)
         tag (str): match tag
         ver_n (int|str): match version number
@@ -272,11 +273,18 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         versionless (bool): match by versionless status
         extn (str): match by extension
         extns (str list): match by extension list
+        filter_ (str): apply filter to filter attribute
+        filter_attr (str): filter attribute (default is path)
 
     Returns:
         (bool): whether object passed filters
     """
     from pini import pipe
+
+    if filter_:
+        _filter_val = getattr(obj, filter_attr)
+        if not passes_filter(_filter_val, filter_):
+            return False
 
     # Apply entity level filters
     assert asset is None or isinstance(asset, str)
@@ -293,6 +301,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
 
     # Apply token filters
     if task and task not in (obj.task, obj.pini_task):
+        return False
+    if step and step != obj.step:
         return False
     if tag is not EMPTY and obj.tag != tag:
         return False
@@ -424,6 +434,32 @@ def _to_task_sort_idx(task):
     _LOGGER.debug(' - TASK SORT KEY %s mapped=%s idx=%d', task, _task, _idx)
 
     return _idx
+
+
+def to_basic_type(type_):
+    """Obtain basic type name for a template type.
+
+    This is the template type in a simple, readable form.
+
+    eg. render -> render
+        cache_seq -> cache
+        blast_mov -> blast
+        mov -> render
+
+    Args:
+        type_ (str): template type
+
+    Returns:
+        (str): nice type
+    """
+    _type = type_
+    if _type.endswith('_mov'):
+        _type = _type[:-4]
+    if _type.endswith('_seq'):
+        _type = _type[:-4]
+    if _type == 'mov':
+        _type = 'render'
+    return _type
 
 
 def validate_token(value, token, job):

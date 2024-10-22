@@ -76,7 +76,7 @@ class CCPEntityBase(CPEntity):
         """
         raise NotImplementedError
 
-    def find_outputs(  # pylint: disable=arguments-differ
+    def find_outputs(  # pylint: disable=arguments-differ,arguments-renamed
             self, type_=None, content_type=None, force=False, **kwargs):
         """Find outputs in this entity (stored at entity level).
 
@@ -265,49 +265,31 @@ class CCPEntityBase(CPEntity):
         Args:
             force (bool): remove elements without confirmation
         """
-        from pini import pipe
+        from pini import pipe, testing
 
         _LOGGER.info('FLUSH %s', self)
 
         # Remove contents
-        assert self.name == 'tmp'
+        assert self in [testing.TMP_SHOT, testing.TMP_ASSET]
         super().flush(force=force)
 
         # Update caches
         self.find_outputs(force=True)
         if self.profile == pipe.ASSET_PROFILE:
+            self.find_publishes(force=True)
             self.job.find_publishes(force=True)
 
         # Check caches
         _this = pipe.CACHE.obt(self)
-        assert not _this.find_outputs()
+        if _this.find_outputs():
+            raise RuntimeError(_this.outputs)
         assert not _this.outputs
-        assert not pipe.CACHE.obt(self.job).find_publishes(entity=_this)
+        _job = pipe.CACHE.obt(self.job)
+        assert _job is self.job
+        assert _job is _this.job
+        assert _job.find_entity(_this) is _this
+        _pubs = _job.find_publishes(entity=_this)
+        if _pubs:
+            raise RuntimeError(_pubs)
 
         _LOGGER.info(' - FLUSH COMPLETE %s', self)
-
-
-# def _to_output(match):
-
-#     # Try to map match to an output object
-#     _match = match
-#     if isinstance(_match, cache.CCPOutputGhost):
-#         _match = _match.path
-#     if (
-#             not isinstance(_match, elem.CPOutputBase) and
-#             isinstance(_match, Path)):
-#         _match = _match.path
-#         _LOGGER.debug(' - CONVERT TO STRING %s', match)
-
-#     # Convert a string to an output
-#     if isinstance(_match, str):
-#         _LOGGER.debug(' - CONVERT TO OUTPUT')
-#         try:
-#             return elem.to_output(_match)
-#         except ValueError:
-#             _LOGGER.debug(' - FAILED TO CONVERT TO OUTPUT')
-#             if '/' in _match:
-#                 raise ValueError('Path is not output '+_match)
-#             if not _match:
-#                 raise ValueError('Empty path')
-#             raise NotImplementedError(match)

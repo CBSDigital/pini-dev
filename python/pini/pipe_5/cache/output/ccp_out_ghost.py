@@ -16,19 +16,30 @@ class CCPOutputGhost(File):
     """
 
     def __init__(
-            self, path: str, latest: bool, template: str, type_: str,
-            job: str, asset: str, asset_type: str, shot: str, sequence: str,
-            step: str, task: str, pini_task: str, tag: str, ver_n,
+            self, path: str, stream: str, template: str,
+            src: str, src_ref: str,
+            type_: str, basic_type: str,
+            job: str, profile: str,
+            asset: str, asset_type: str,
+            shot: str, sequence: str,
+            step: str, task: str, pini_task: str, tag: str,
+            ver_n, ver: str, latest: bool,
             output_name: str, output_type: str, content_type: str,
-            mtime: float):
+            updated_at: float, updated_by: str, range_: tuple,
+            submittable: bool, handler: str):
         """Constructor.
 
         Args:
             path (str): path to output
-            latest (bool): whether this is latest version
+            stream (str): path to output version stream
+                (ie. version zero of stream)
             template (str): path to output template source
+            src (str): path to source work file
+            src_ref (str): path to source reference (eg. rig path)
             type_ (str): output type
+            basic_type (str): output basic type
             job (str): output job name
+            profile (str): output profile
             asset (str): output asset name
             asset_type (str): output asset type name
             shot (str): output shot name
@@ -38,18 +49,31 @@ class CCPOutputGhost(File):
             pini_task (str): output pini task name
             tag (str): output tag
             ver_n (int|None): output version number
+            ver (str|None): output version string
+            latest (bool): whether this is latest version
             output_name (str): output name
             output_type (str): output type
             content_type (str): output content type
-            mtime (float): output mtime
+            updated_at (float): output mtime
+            updated_by (str): output owner
+            range_ (tuple|None): output range
+            submittable (bool): whether this output is submittable
+            handler (str): export handler
         """
+        assert isinstance(updated_by, str) or updated_by is None
         super().__init__(path)
-        self.mtime = mtime
 
+        # Path list attrs
         self.template = template
+        self.stream = stream
+        self.src = src
+        self.src_ref = src_ref
+
         self.type_ = type_
+        self.basic_type = basic_type
 
         self.job = job
+        self.profile = profile
         self.asset = asset
         self.asset_type = asset_type
         self.shot = shot
@@ -66,6 +90,21 @@ class CCPOutputGhost(File):
 
         self.latest = latest
         self.ver_n = ver_n
+        self.ver = ver
+
+        self.updated_at = updated_at
+        self.updated_by = updated_by
+        self.range_ = range_
+        self.submittable = submittable
+        self.handler = handler
+
+    def is_latest(self):
+        """Test whether this is the latest version.
+
+        Returns:
+            (bool): whether latest
+        """
+        return self.latest
 
     def __lt__(self, other):
         return self.path < other.path

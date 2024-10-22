@@ -43,6 +43,9 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         """
         from pini import pipe
         _LOGGER.debug('READ OUTPUTS')
+
+        # Build output objects
+        _latest_map = {}
         _outs = []
         for _sg_pub_file in self.sg_entity.find_pub_files(
                 validated=True, omitted=False):
@@ -57,6 +60,16 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             _out.sg_pub_file = _sg_pub_file
             _LOGGER.debug('   - OUT %s', _out)
             _outs.append(_out)
+            _latest_map[_sg_pub_file.stream] = _out
+
+        # Need to reapply latest to take account of omissions
+        for _out in _outs:
+            _stream = _out.sg_pub_file.stream
+            _out.latest = _latest_map[_stream] == _out
+            _LOGGER.debug(' - APPLY LATEST %d %s', _out.latest, _out.path)
+            _LOGGER.debug('   - STREAM %s', _out.sg_pub_file.stream)
+            _LOGGER.debug('   - LATEST %s', _latest_map[_stream])
+
         return _outs
 
     def _read_work_dirs(self, class_=None):
@@ -81,7 +94,9 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
 
         _work_dirs = []
         for _task in self.sg_entity.tasks:
-            _LOGGER.debug(' - TASK %s', _task)
+            if not (_task.step and _task.name):
+                continue
+            _LOGGER.debug(' - STEP/TASK %s %s', _task.step, _task)
             _path = _tmpl.format(task=_task.name, step=_task.step)
             _LOGGER.debug('   - PATH %s', _path)
             _work_dir = _class(_path, template=_tmpl, entity=self)
@@ -97,16 +112,24 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             force (bool): remove contents without confirmation
         """
         _LOGGER.info('FLUSH %s %s', self, self.sg_entity.id_)
-        from pini import qt
+        from pini import qt, testing
+        from pini.pipe import shotgrid
 
-        assert self.name == 'tmp'
+        assert self in (testing.TMP_ASSET, testing.TMP_SHOT)
+        assert 'tmp' in self.name.lower()
         super().flush(force=force)
 
-        # Omit pub files in shotgrid
-        _sg_pubs = self.sg_entity.find_pub_files()
-        _LOGGER.info(' - OMITTING %d PUBS', len(_sg_pubs))
-        assert isinstance(_sg_pubs, list)
-        for _sg_pub in qt.progress_bar(_sg_pubs, 'Updating {:d} output{}'):
-            _sg_pub.set_status('omt')
-            _LOGGER.info(' - OMIT %s', _sg_pub)
+        # Delete all pub file entries
+        _sg = shotgrid.to_handler()
+        _results = _sg.find(
+            'PublishedFile', fields=['entity', 'name'],
+            filters=[self.sg_entity.to_filter()])
+        _LOGGER.info(' - FOUND %d RESULTS', len(_results))
+        for _result in qt.progress_bar(
+                _results, 'Deleting {:d} tmp entries',
+                stack_key='DeletePublishedFiles'):
+            _LOGGER.info('DELETE %s %s', _result['name'], _result)
+            assert _result['entity']['id'] == self.sg_entity.id_
+            _sg.delete(entity_type='PublishedFile', entity_id=_result['id'])
+
         self.sg_entity.find_pub_files(force=True)

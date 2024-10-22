@@ -372,6 +372,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Returns:
             (str): owner
         """
+        if not self.frames:
+            return None
         return self._to_center_path().owner()
 
     def size(self):

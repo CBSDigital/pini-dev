@@ -1,5 +1,7 @@
 """Tools for managing the (dockable) pini helper in maya."""
 
+# pylint: disable=too-many-ancestors
+
 import logging
 import platform
 import time
@@ -43,7 +45,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             _title = ph_base.TITLE
         else:
             _title = ph_base.EMOJI.to_unicode()+' '+ph_base.TITLE
-        super(MayaPiniHelper, self).__init__(
+        super().__init__(
             show=False, ui_file=ph_base.UI_FILE, load_settings=False,
             parent=parent, title=_title)
 
@@ -129,7 +131,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             menu (CMenu): menu to add to
             work (CPWork): work file to add options for
         """
-        super(MayaPiniHelper, self)._add_load_ctx_opts(menu=menu, work=work)
+        super()._add_load_ctx_opts(menu=menu, work=work)
 
         _work = work or self.work
 
@@ -154,7 +156,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
         Args:
             event (QEvent): close event
         """
-        super(MayaPiniHelper, self).closeEvent(event)
+        super().closeEvent(event)
         ph_base.BasePiniHelper.closeEvent(self, event)
 
     @qt.safe_timer_event
@@ -164,7 +166,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
         Args:
             event (QTimerEvent): triggered event
         """
-        super(MayaPiniHelper, self).timerEvent(event)
+        super().timerEvent(event)
         ph_base.BasePiniHelper.timerEvent(self, event)
 
 

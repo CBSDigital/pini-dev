@@ -180,14 +180,18 @@ class SanityCheckUi(qt.CUiDialog):
                 _msg += '{:d} error{} '.format(len(_errored), plural(_errored))
             _msg = _msg.strip()
             for _fmt, _elem in [
-                    ('{action_cap} ({msg})', self.ui.Continue),
+                    ('{action_label} ({msg})', self.ui.Continue),
                     (
                         'Cancel {action} and keep SanityCheck',
                         self.ui.CancelAndKeep),
                     ('Cancel {action}', self.ui.CancelAndClose),
             ]:
+                if self.action.endswith('Publish'):
+                    _action_label = 'Publish'
+                else:
+                    _action_label = self.action
                 _label = _fmt.format(
-                    action_cap=self.action.capitalize(), action=self.action,
+                    action_label=_action_label, action=self.action,
                     count=len(_checks), plural=plural(_checks), msg=_msg)
                 _elem.setText(_label)
 

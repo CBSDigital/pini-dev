@@ -141,8 +141,9 @@ class CheckFrameRange(SCCheck):
             return
         from pini.pipe import shotgrid
         _ety = pipe.cur_entity()
-        _sg_rng = shotgrid.to_entity_range(_ety)
-        if not _sg_rng:
+        _ety_sg = shotgrid.SGC.find_entity(_ety)
+        _sg_rng = _ety_sg.data['sg_head_in'], _ety_sg.data['sg_tail_out']
+        if None in _sg_rng:
             self.write_log('No range found in %s', _ety)
             return
         _cur_rng = dcc.t_range(int)

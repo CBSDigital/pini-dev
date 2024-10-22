@@ -4,15 +4,15 @@ import operator
 import logging
 
 from pini.utils import (
-    basic_repr, strftime, Dir, to_time_f, single)
+    basic_repr, strftime, Dir, to_time_f, single, to_str)
 
 from ..sg_utils import sg_cache_to_file
-from . import sgc_container, sgc_utils
+from . import sgc_elems, sgc_utils, sgc_elem
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class _SGCEntity(sgc_container.SGCContainer):
+class _SGCEntity(sgc_elem.SGCElem):
     """Base class for asset/shot element containers."""
 
     PROFILE = None
@@ -91,28 +91,43 @@ class _SGCEntity(sgc_container.SGCContainer):
         _pub_files = self.find_pub_files(**kwargs)
         if len(_pub_files) == 1:
             return single(_pub_files)
+
+        # Try item/path matches
         _matches = [
             _pub_file for _pub_file in _pub_files
             if match in (_pub_file, _pub_file.path, )]
         if len(_matches) == 1:
             return single(_matches)
+
+        # Try string (eg. path) matches
+        _match_s = to_str(match)
+        _s_matches = [
+            _pub_file for _pub_file in _pub_files
+            if _match_s in (_pub_file.path, )]
+        if len(_s_matches) == 1:
+            return single(_s_matches)
+
         if catch:
             return None
         raise ValueError(match, kwargs)
 
-    def find_pub_files(self, force=False, **kwargs):
+    def find_pub_files(self, task=None, force=False, **kwargs):
         """Search pub files in this entity.
 
         Args:
+            task (str): filter by task
             force (bool): reread cached data
 
         Returns:
             (SGCPubFile list): pub files
         """
+        _kwargs = kwargs
+        if task is not None:
+            _kwargs['task'] = task
         _pub_files = []
         for _pub_file in self._read_pub_files(force=force):
             if not sgc_utils.passes_filters(
-                    _pub_file, filter_attr='path', **kwargs):
+                    _pub_file, filter_attr='path', **_kwargs):
                 continue
             _pub_files.append(_pub_file)
         return _pub_files
@@ -128,16 +143,25 @@ class _SGCEntity(sgc_container.SGCContainer):
             (SGCTask): matching task
         """
         _LOGGER.debug('FIND TASK %s %s', match, kwargs)
-        _tasks = self.find_tasks(**kwargs)
+
+        _kwargs = kwargs
+        if hasattr(match, 'step'):
+            _kwargs['step'] = _kwargs.get('step', match.step)
+        if hasattr(match, 'task'):
+            _kwargs['task'] = _kwargs.get('task', match.task)
+
+        _tasks = self.find_tasks(**_kwargs)
         if len(_tasks) == 1:
             return single(_tasks)
         _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
+
         _matches = [
             _task for _task in _tasks
-            if match in (_task.path, )]
+            if match in (_task.name, )]
         if len(_matches) == 1:
             return single(_matches)
         _LOGGER.debug(' - MATCHED %d TASKS', len(_matches))
+
         if catch:
             return None
         raise ValueError(match, kwargs)
@@ -168,7 +192,7 @@ class _SGCEntity(sgc_container.SGCContainer):
         """
         _LOGGER.debug('READ PUB FILES %s', self)
 
-        _last_t = self._read_elems_updated_t(sgc_container.SGCPubFile)
+        _last_t = self._read_elems_updated_t(sgc_elems.SGCPubFile)
         if not _last_t:
             return []
         _LOGGER.debug(' - LAST T %s', strftime('nice', _last_t))
@@ -202,11 +226,11 @@ class _SGCEntity(sgc_container.SGCContainer):
         from pini import pipe
 
         _LOGGER.info('BUILD PUB FILES DATA force=%d %s', force, self)
-        _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
+        _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
 
         # Read pub file elements
         _pub_files = self._read_elems(
-            sgc_container.SGCPubFile, force=force)
+            sgc_elems.SGCPubFile, force=force)
         assert _pub_files
         _LOGGER.debug(' - FOUND %d PUB FILES', len(_pub_files))
         _last_t = to_time_f(max(
@@ -229,12 +253,15 @@ class _SGCEntity(sgc_container.SGCContainer):
             if _out:
                 _pub_file.stream = _out.to_stream()
                 _pub_file.template = _out.template.source.pattern
+                _pub_file.task = _out.task
                 _latest_map[_pub_file.stream] = _pub_file
 
         # Mark latest
         for _pub_file in _pub_files:
             if _pub_file.stream:
                 _pub_file.latest = _pub_file is _latest_map[_pub_file.stream]
+
+        _LOGGER.debug(' - COMPLETE')
 
         return _last_t, _pub_files
 
@@ -247,7 +274,7 @@ class _SGCEntity(sgc_container.SGCContainer):
         Returns:
             (SGCTask list): tasks
         """
-        return self._read_elems(sgc_container.SGCTask, force=force)
+        return self._read_elems(sgc_elems.SGCTask, force=force)
 
     def to_filter(self):
         """Build shotgrid search filter from this entry.
@@ -290,7 +317,7 @@ class SGCShot(_SGCEntity):
     ENTITY_TYPE = 'Shot'
     FIELDS = (
         'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
-        'updated_at', 'sg_has_3d', 'project')
+        'updated_at', 'sg_has_3d', 'project', 'sg_tail_out')
 
     def __init__(self, data):
         """Constructor.

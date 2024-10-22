@@ -19,10 +19,4 @@ class CPWorkDirSG(cp_work_dir_base.CPWorkDir):
         Returns:
             (CPOutput list): outputs
         """
-        from pini import pipe
-        from pini.pipe import shotgrid
-        _outs = []
-        for _sg_pub in shotgrid.SGC.find_pub_files(work_dir=self):
-            _out = pipe.to_output(_sg_pub.path, work_dir=self)
-            _outs.append(_out)
-        return _outs
+        return self.entity.find_outputs(task=self.task, step=self.step)

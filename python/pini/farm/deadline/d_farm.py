@@ -169,7 +169,7 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, group=None, chunk_size=1, version_up=False,
-            limit_groups=None, checks_data=None, force=False):
+            limit_groups=None, checks_data=None, submit=True, force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -184,6 +184,7 @@ class CDFarm(base.CFarm):
             limit_groups (str): comma separated limit groups
                 (eg. maya-2023,vray)
             checks_data (dict): override sanity checks data
+            submit (bool): submit render to deadline (disable for debugging)
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -220,15 +221,16 @@ class CDFarm(base.CFarm):
             _LOGGER.info(' - SCENE %s', _job.scene)
             assert _job.scene == _render_scene
         assert not _render_jobs[0].jid
-        self.submit_jobs(_render_jobs, name='render')
-        assert _render_jobs[0].jid
+        if submit:
+            self.submit_jobs(_render_jobs, name='render')
+            assert _render_jobs[0].jid
         _progress.set_pc(50)
 
         # Submit update cache job
         _update_job = self._submit_update_job(
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
-            priority=priority,
+            priority=priority, submit=submit,
             outputs=[_job.output for _job in _render_jobs])
         _progress.set_pc(100)
         _progress.close()
@@ -297,7 +299,7 @@ class CDFarm(base.CFarm):
 
     def _submit_update_job(
             self, work, dependencies, comment, batch_name, stime,
-            priority=50, metadata=None, outputs=None):
+            priority=50, metadata=None, outputs=None, submit=True):
         """Submit job which updates work file output cache.
 
         Args:
@@ -309,6 +311,7 @@ class CDFarm(base.CFarm):
             priority (int): job priority (0 [low] - 100 [high])
             metadata (dict): metadata to apply to outputs
             outputs (CPOutput list): outputs to apply metadata to
+            submit (bool): execute submission
 
         Returns:
             (CDPyJob): update job
@@ -322,8 +325,9 @@ class CDFarm(base.CFarm):
             py=_py, batch_name=batch_name, dependencies=dependencies,
             stime=stime, priority=priority)
         assert not _update_job.jid
-        _update_job.submit(name='update')
-        assert _update_job.jid
+        if submit:
+            _update_job.submit(name='update')
+            assert _update_job.jid
 
         return _update_job
 

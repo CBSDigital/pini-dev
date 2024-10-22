@@ -40,7 +40,7 @@ class CPTemplate(lucidity.Template):
         Args:
             name (str): template name
             pattern (str): template pattern
-            anchor (Enum): anchor type
+            anchor (Enum): anchor type (default is Template.ANCHOR_END)
             separate_dir (bool): check dir first and then filename - this
                 allows more complex paths to be parsed successfully
                 (eg. abc files with many tokens)

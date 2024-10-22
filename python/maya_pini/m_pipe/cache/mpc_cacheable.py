@@ -1,10 +1,9 @@
 """Tools for manaing the base cacheable class."""
 
 import logging
-import time
 
-from pini import pipe, dcc
-from pini.utils import get_user
+from pini import pipe
+from pini.dcc import export
 
 from maya_pini.utils import save_abc
 
@@ -27,13 +26,14 @@ class CPCacheable(object):
         Returns:
             (dict): metadata
         """
-        _data = {'owner': get_user(),
-                 'mtime': time.time(),
-                 'src': dcc.cur_file(),
-                 'fps': dcc.get_fps(),
-                 'dcc': dcc.NAME}
-        _data['asset'] = self.path
-        _data['type'] = type(self).__name__.strip('_')
+        _handler = type(self).__name__.strip('_')
+        _src_ref = self.path
+        _data = export.build_metadata(handler=_handler, src_ref=_src_ref)
+
+        # Legacy 18/10/24
+        _data['asset'] = _src_ref
+        _data['type'] = _handler
+
         return _data
 
     @property

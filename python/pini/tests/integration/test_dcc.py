@@ -120,8 +120,7 @@ class TestPublish(unittest.TestCase):
 
         # Test publish
         _LOGGER.info('TESTING PUBLISH')
-        _basic_pub = dcc.find_export_handler(
-            'publish', filter_='Basic', catch=True)
+        _basic_pub = dcc.find_export_handler('BasicPublish', catch=True)
         if not _basic_pub:
             assert dcc.NAME in ['hou', 'nuke']
         else:

@@ -361,7 +361,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         for _out in self._read_outputs():
             if base and _out.base != base:
                 continue
-            if type_ and type_ not in (_out.type_, _out.nice_type):
+            if type_ and type_ not in (_out.type_, _out.basic_type):
                 continue
             if output_name and _out.output_name != output_name:
                 continue

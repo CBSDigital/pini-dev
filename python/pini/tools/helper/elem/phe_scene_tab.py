@@ -51,7 +51,7 @@ class CLSceneTab(object):
         _tab = None
         if self.target and isinstance(self.target, pipe.CPOutputBase):
             _LOGGER.debug(' - TARGET %s', self.target)
-            if self.target.nice_type == 'publish':
+            if self.target.basic_type == 'publish':
                 _tab = 'Asset'
         elif switch_tabs:
             _task = pipe.cur_task(fmt='pini')
@@ -304,13 +304,6 @@ class CLSceneTab(object):
             _ref.to_output(use_cache=False) for _ref in dcc.find_pipe_refs()})
         _version_mode = self.ui.SOutputVers.currentText()
 
-        # Make sure all outputs are using cacheable version
-        for _idx, _out in enumerate(_outs):
-            if _out.job is not self.job:
-                _out = pipe.CACHE.obt(_out)
-                _outs[_idx] = _out
-            assert _out.job is self.job
-
         # Get list of outputs
         _LOGGER.debug('   - CHECKING %d OUTS %s', len(_outs), _outs)
         if _filter:
@@ -371,26 +364,23 @@ class CLSceneTab(object):
         if _out:
 
             _LOGGER.debug(' - READ OUTPUT %s', _out)
-            _owner = _out.metadata.get('owner')
-            if _owner:
-                _text += 'Owner: {}\n'.format(_owner)
-            _mtime = _out.metadata.get('mtime')
-            if _mtime:
+            if _out.owner:
+                _text += 'Owner: {}\n'.format(_out.updated_by)
+            if _out.updated_at:
                 _text += 'Exported: {}\n'.format(
-                    strftime('%a %d %b %H:%M', _mtime))
+                    strftime('%a %d %b %H:%M', _out.updated_at))
 
             # Add range
-            _rng = _out.metadata.get('range')
-            if not _rng:
+            if not _out.range_:
                 _fmt = None
-            elif len(_rng) == 1:
+            elif len(_out.range_) == 1:
                 _fmt = 'Range: {:.00f}\n'
-            elif len(_rng) == 2:
+            elif len(_out.range_) == 2:
                 _fmt = 'Range: {:.00f}-{:.00f}\n'
             else:
-                raise ValueError(_rng)
+                raise ValueError(_out.range_)
             if _fmt:
-                _text += _fmt.format(*_rng)
+                _text += _fmt.format(*_out.range_)
 
         _text = _text.strip()
         self.ui.SOutputInfo.setVisible(bool(_text))

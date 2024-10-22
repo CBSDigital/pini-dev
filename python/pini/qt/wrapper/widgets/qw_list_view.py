@@ -16,7 +16,7 @@ class CListView(QtWidgets.QListView):
     def __init__(self, *args):
         """Constructor."""
         _LOGGER.debug('CREATE LIST VIEW')
-        super(CListView, self).__init__(*args)
+        super().__init__(*args)
         _LOGGER.debug(' - RAN INIT')
 
         _model = QtGui.QStandardItemModel(self)
@@ -145,7 +145,7 @@ class CListView(QtWidgets.QListView):
         _datas, _items = self.all_data(), self.all_items()
         if data not in _datas:
             if not catch:
-                raise ValueError
+                raise ValueError(f'Failed to select {data}')
             return
         self.select_item(_items[_datas.index(data)])
 
@@ -272,7 +272,7 @@ class CListView(QtWidgets.QListView):
             event (QResizeEvent): triggered event
         """
         _LOGGER.debug('RESIZE EVENT')
-        super(CListView, self).resizeEvent(event)
+        super().resizeEvent(event)
         if self.model():
             self.redraw_items()
         _LOGGER.debug(' - RESIZE EVENT COMPLETE')

@@ -55,7 +55,7 @@ class CCPJobDisk(ccp_job_base.CCPJobBase):
         _start = time.time()
         _pubs = []
         for _asset in self.find_assets():
-            _pubs += _asset.find_publishes(force=force)
+            _pubs += _asset.find_publishes(force=force > 1)
         _LOGGER.debug('FOUND %s %d PUBLISHES IN %.01fs', self, len(_pubs),
                       time.time() - _start)
         return sorted(_pubs)

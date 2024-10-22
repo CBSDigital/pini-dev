@@ -1,9 +1,11 @@
-import unittest
 import logging
+import pprint
+import unittest
 
 from pini import dcc, pipe, testing, qt
 from pini.dcc import export
 from pini.tools import helper
+from pini.utils import single, assert_eq
 
 from maya_pini import open_maya as pom
 
@@ -37,6 +39,19 @@ class TestHelper(unittest.TestCase):
         _farm_rh.ui.Layers.select(_default_lyr, replace=True)
         assert _default_lyr.is_renderable()
         assert not _blah_lyr.is_renderable()
+
+    def test_shot_workflow(self, show_ctx=False, force=True):
+
+        _progress = qt.progress_dialog('Testing shot workflow')
+
+        _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+        _ety.flush(force=True)
+
+        _test_anim_workflow(
+            progress=_progress, force=force, show_ctx=show_ctx)
+        _test_lighting_workflow(
+            progress=_progress, force=force, show_ctx=show_ctx)
+        _progress.close()
 
     def test_store_settings_in_scene_export_handler(self):
 
@@ -101,3 +116,164 @@ class TestHelper(unittest.TestCase):
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
         assert export.get_pub_refs_mode() is _remove
+
+
+def _test_anim_workflow(progress, force, show_ctx):
+
+    _helper = helper.obt_helper()
+    _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+    _asset = pipe.CACHE.obt(testing.TEST_ASSET)
+    _rig_pub_g = _asset.find_publish(
+        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        extn='ma')
+    _rig_pub = pipe.CACHE.obt(_rig_pub_g)
+
+    # Save anim work
+    progress.set_pc(5)
+    dcc.new_scene(force=force)
+    dcc.set_range(1001, 1005)
+    _helper.jump_to(_ety)
+    _work_dir = _ety.find_work_dir('anim', dcc_=dcc.NAME, catch=True)
+    if _work_dir:
+        _helper.ui.WTasks.select_data(_work_dir)
+    else:
+        if not _helper.ui.ToggleAdmin.isChecked():
+            _helper.ui.ToggleAdmin.click()
+        _helper.ui.WTaskText.setText('anim')
+    _helper.ui.WTagText.setText('test')
+    _helper.ui.WWorks.select_item(_helper.ui.WWorks.all_items()[-1])
+    assert _helper.work.entity == testing.TMP_SHOT
+    assert _helper.work.tag == 'test'
+    assert _helper.work.pini_task == 'anim'
+    assert _helper.work.ver_n == 1
+    _helper._callback__WSave(force=True)
+    if _helper.ui.ToggleAdmin.isChecked():
+        _helper.ui.ToggleAdmin.click()
+    assert not _helper.ui.ToggleAdmin.isChecked()
+
+    # Flush outputs
+    progress.set_pc(10)
+    _updated = False
+    for _out in _helper.work.outputs:
+        _LOGGER.info(' - REMOVE %s', _out)
+        _updated = True
+        assert pipe.to_entity(_out) == testing.TMP_SHOT
+        _out.delete(force=True)
+    if _updated:
+        _helper.work.find_outputs(force=True)
+    assert not _helper.work.outputs
+
+    # Check work context menu
+    assert _helper.work
+    _pos = _helper.ui.WWorks.rect().center()
+    _LOGGER.info(' - %s', _pos)
+    _menu = qt.CMenu(_helper.ui.WWorks)
+    _helper._context__WWorks(_menu)
+    if show_ctx:
+        _menu.exec_(_helper.ui.WWorks.mapToGlobal(_pos))
+    assert _menu.actions()
+    _menu.deleteLater()
+
+    # Select rig in outputs list
+    _helper.ui.MainPane.select_tab('Scene')
+    _helper.ui.SOutputType.select_text('char')
+    _helper.ui.SOutputTask.select_text('rig/rig')
+    _helper.ui.SOutputTag.select_text(pipe.DEFAULT_TAG)
+    _helper.ui.SOutputVers.select_text('latest')
+    _helper.ui.SOutputs.select_data(_rig_pub, catch=False)
+    _out_info = _helper.ui.SOutputInfo.text()
+    assert 'bound method' not in _out_info
+
+    # Test output context
+    assert _helper.ui.SOutputs.selected_data()
+    _pos = _helper.ui.SOutputs.rect().center()
+    _menu = qt.CMenu(_helper.ui.SOutputs)
+    _helper._context__SOutputs(_menu)
+    if show_ctx:
+        _menu.exec_(_helper.ui.SOutputs.mapToGlobal(_pos))
+
+    # Bring in rig
+    progress.set_pc(20)
+    _helper.ui.SRefresh.click()
+    _helper.ui.SAdd.click()
+    _helper._callback__SApply(force=True)
+
+    # Test scene ref context
+    _rig_ref = single(_helper.ui.SSceneRefs.all_data())
+    _helper.ui.SSceneRefs.select_data(_rig_ref)
+    assert _helper.ui.SSceneRefs.selected_data()
+    _pos = _helper.ui.SSceneRefs.rect().center()
+    _menu = qt.CMenu(_helper.ui.SSceneRefs)
+    _helper._context__SSceneRefs(_menu)
+    if show_ctx:
+        _menu.exec_(_helper.ui.SSceneRefs.mapToGlobal(_pos))
+
+    # Test blast
+    progress.set_pc(30)
+    assert not _helper.work.outputs
+    _helper.ui.MainPane.select_tab('Export')
+    _helper.ui.EExportPane.select_tab('Blast')
+    _blast_h = _helper.ui.EBlastHandler.selected_data()
+    assert _blast_h
+    _blast_h.ui.Force.setChecked(True)
+    _blast_h.ui.View.setChecked(False)
+    _helper.ui.EBlast.click()
+    assert _helper.work.outputs
+    assert_eq(single(_helper.work.outputs).type_, 'blast_mov')
+
+    # Test cache
+    progress.set_pc(40)
+    assert not _helper.work.find_outputs(extn='abc')
+    _helper.ui.EExportPane.select_tab('Cache')
+    _helper.ui.ECacheVersionUp.setChecked(False)
+    _helper.ui.ECache.click()
+    assert _helper.work.find_outputs(extn='abc')
+    _abc = single(_helper.work.find_outputs(extn='abc'))
+    assert _abc.extn == 'abc'
+
+    return _abc
+
+
+def _test_lighting_workflow(progress, force, show_ctx):
+
+    _helper = helper.obt_helper()
+    _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+
+    # Save lighting work
+    dcc.new_scene(force=force)
+    dcc.set_range(1001, 1005)
+    progress.set_pc(50)
+    _work_dir = _ety.find_work_dir(task='lighting', catch=True)
+    if _work_dir:
+        _helper.ui.WTasks.select_data(_work_dir)
+    else:
+        if not _helper.ui.ToggleAdmin.isChecked():
+            _helper.ui.ToggleAdmin.click()
+        _helper.ui.WTaskText.setText('lighting')
+    _helper.ui.WTagText.setText('test')
+    assert _helper.work.ver_n == 1
+    assert _helper.work.pini_task == 'lighting'
+    assert _helper.work.tag == 'test'
+    _helper._callback__WSave(force=True)
+    if _helper.ui.ToggleAdmin.isChecked():
+        _helper.ui.ToggleAdmin.click()
+    assert not _helper.ui.ToggleAdmin.isChecked()
+
+    # Bring in abc
+    progress.set_pc(60)
+    _helper.ui.MainPane.select_tab('Scene')
+    pprint.pprint(_ety.find_outputs(extn='abc', tag='test'))
+    _abc = _ety.find_output(extn='abc', tag='test', ver_n='latest')
+    _helper.ui.SOutputs.select_data(_abc)
+    _helper.ui.SAdd.click()
+    assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
+    _helper._callback__SApply(force=True)
+
+    # Test render
+    progress.set_pc(80)
+    _helper.ui.MainPane.select_tab('Export')
+    _helper.ui.EExportPane.select_tab('Render')
+    _render_h = _helper.ui.ERenderHandler.selected_data()
+    assert _render_h
+    _render_h.ui.VersionUp.setChecked(False)
+    _helper._callback__ERender(force=True, render_=False)

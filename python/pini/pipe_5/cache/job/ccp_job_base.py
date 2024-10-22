@@ -167,6 +167,11 @@ class CCPJobBase(CPJob):
         _LOGGER.info(
             ' - KWARGS MATCHED %d %s %s', len(_pubs), _pubs[:5],
             '...' if len(_pubs) > 5 else '')
+
+        _matches = [_pub for _pub in _pubs if match in (_pub.path, )]
+        if len(_matches) == 1:
+            return single(_matches)
+
         raise ValueError(match or kwargs)
 
     def find_publishes(self, task=None, entity=None, force=False, **kwargs):

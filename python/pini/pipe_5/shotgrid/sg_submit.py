@@ -10,7 +10,7 @@ from pini import qt, pipe
 from pini.tools import usage
 from pini.utils import single, to_time_f, strftime, basic_repr
 
-from . import sg_user, sg_version, sg_utils, sg_handler
+from . import sg_version, sg_utils, sg_handler
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -141,10 +141,11 @@ def _check_video_sg_metadata(video, sg_data=None, force=False):
         sg_data (dict): current shotgrid metadeata
         force (bool): update video without confirmation
     """
+    from pini.pipe import shotgrid
     _LOGGER.debug('CHECK VIDEO METADATA %s', video)
     _LOGGER.debug(' - DISK METADATA %s', video.metadata)
 
-    _sg_data = sg_data or sg_version.to_version_data(video)
+    _sg_data = sg_data
 
     # Check path to movie
     _LOGGER.debug(' - PATH TO MOVIE %s', _sg_data['sg_path_to_movie'])
@@ -175,7 +176,7 @@ def _check_video_sg_metadata(video, sg_data=None, force=False):
     _user = video.metadata.get('owner')
     _LOGGER.info(' - USER %s %s', _sg_data['user'], _user)
     if _user:
-        _user_data = sg_user.to_user_data(_user)
+        _user_data = shotgrid.SGC.find_user(_user).data
         _LOGGER.info(' - USER %s %s', _user, _user_data)
         if not _user_data:
             _LOGGER.info('USER MISSING FROM SG')
@@ -306,14 +307,14 @@ def _submit_video(video, progress, frames=None, comment=None, force=False):
         comment (str): submission comment
         force (bool): create entries without confirmation
     """
+    from pini.pipe import shotgrid
     _LOGGER.info('SUBMIT VIDEO %s', video.path)
 
     _check_video_disk_metadata(video)
     progress.set_pc(40)
 
     # Check for existing
-    _data = sg_version.to_version_data(
-        video, fields=['user', 'sg_uploaded_movie', 'created_at'])
+    _data = shotgrid.SGC.find_version(video).data
     _frames = frames or video.metadata.get('frames')
     if _data:
         _user = _data.get('user', {}).get('name', '<Unknown>')

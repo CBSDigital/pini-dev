@@ -372,8 +372,15 @@ class CheckRenderGlobals(SCMayaCheck):
 
     task_filter = 'lighting lookdev'
 
-    def run(self):
-        """Run this check."""
+    def run(self, img_fmt='exr'):
+        """Run this check.
+
+        Args:
+            img_fmt (str): image format to check
+
+        Returns:
+            (bool): whether check completed successfully
+        """
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         self.write_log('renderer %s', _ren)
 
@@ -409,9 +416,9 @@ class CheckRenderGlobals(SCMayaCheck):
         # Check render format
         _fmt = to_render_extn()
         self.write_log('check format %s', _fmt)
-        if _fmt != 'exr':
-            _fix = wrap_fn(set_render_extn, 'exr')
-            _msg = f'Image format is not "exr" (set to "{_fmt}")'
+        if _fmt != img_fmt:
+            _fix = wrap_fn(set_render_extn, img_fmt)
+            _msg = f'Image format is not "{img_fmt}" (set to "{_fmt}")'
             self.add_fail(_msg, fix=_fix)
 
         for _attr, _val in _attrs_to_check:
