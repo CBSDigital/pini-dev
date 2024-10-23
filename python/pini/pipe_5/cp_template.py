@@ -53,7 +53,11 @@ class CPTemplate(lucidity.Template):
                 and appear in output lists
             source (CPTemplate): original source of this template (if any)
         """
+
+        # Deprecate 23/10/24 - better to use regex, or need to reimplement
+        # to accomodate regex with / divider confusing splitter
         self._separate_dir = separate_dir
+        assert not separate_dir
 
         _pattern = pattern
         super().__init__(
@@ -80,7 +84,7 @@ class CPTemplate(lucidity.Template):
         if _tokens[0] in _profiles:
             self.profile = _tokens.pop(0)
         assert not _profiles & set(_tokens)
-        assert self.profile in ['asset', 'shot', None]
+        assert self.profile in ('asset', 'shot', None)
 
         self.type_ = '_'.join(_tokens)
         self.embedded_data = {}
@@ -544,13 +548,8 @@ def build_job_templates(job, catch=True):
             _separate_dir = False
             if (
                     'render' in _name or
-                    'plate' in _name or
-                    # 'cache' in _name or
                     'mov' in _name):
                 _anchor = lucidity.Template.ANCHOR_START
-                _separate_dir = True
-            elif 'cache' in _name:
-                _separate_dir = True
 
             # Add regex to placeholders
             for _token, _data in job.cfg['tokens'].items():

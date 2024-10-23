@@ -715,7 +715,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         _work_dir = self.work_dir if self.work_dir.contains(_path) else None
         if _work_dir:
+            _LOGGER.debug(' - WORK DIR %s', _work_dir)
             _tmpl = _tmpl.apply_data(work_dir=_work_dir.path)
+            _LOGGER.debug(' - TEMPLATE %s', _tmpl)
 
         return _class(_path, templates=[_tmpl], entity=self.entity,
                       work_dir=_work_dir)

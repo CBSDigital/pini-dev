@@ -299,7 +299,7 @@ class CLExportTab(object):
         if not _cur_work:
             qt.notify(
                 'No current work found.\n\nPlease save your scene using '
-                '{}.'.format(helper.TITLE), title='No Current Work',
+                '{}.'.format(helper.TITLE), title='No current work',
                 icon=icons.find('Vomit'))
             return None
 

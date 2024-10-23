@@ -303,6 +303,16 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         return self._frames is not None
 
+    def is_editable(self):
+        """Test whether this is editable in a text editor.
+
+        Provided for symmetry with Path object.
+
+        Returns:
+            (bool): false
+        """
+        return False
+
     def is_missing_frames(self, frames=None):
         """Test whether this sequence's frame range is incomplete.
 
@@ -854,3 +864,25 @@ def file_to_seq(file_, safe=True, catch=False):
 
     _path = '{}/{}.{}.{}'.format(_file.dir, _base, _f_expr, _extn)
     return Seq(_path)
+
+
+def to_seq(obj):
+    """Obtain a sequence from the given object.
+
+    eg. "/tmp/blah.0001.jpg" -> Seq("/tmp/blah.%04d.jpg")
+        "/tmp/blah.%04d.jpg" -> Seq("/tmp/blah.%04d.jpg")
+        Seq("/tmp/blah.%04d.jpg") -> Seq("/tmp/blah.%04d.jpg")
+
+    Args:
+        obj (any): object to read sequence from
+
+    Returns:
+        (Seq): sequence
+    """
+    if isinstance(obj, Seq):
+        return obj
+    if isinstance(obj, str):
+        _seq = file_to_seq(obj, catch=True)
+        if _seq:
+            return _seq
+    raise ValueError(obj)

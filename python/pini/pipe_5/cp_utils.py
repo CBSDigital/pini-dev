@@ -250,7 +250,7 @@ def output_clip_sort(output):
 
 
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
-        obj, type_=None, entity=None, asset=None, asset_type=None,
+        obj, type_=None, entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
         extn=EMPTY, extns=None, filter_=None, filter_attr='path'):
@@ -262,6 +262,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         entity (CPEntity): match entity
         asset (str): match asset name
         asset_type (str): match asset type
+        profile (str): apply profile filter (ie. asset/shot)
         output_name (str): match output name
         output_type (str):  match output type
         content_type (str): filter by content type
@@ -287,6 +288,9 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
             return False
 
     # Apply entity level filters
+    assert profile in (None, 'asset', 'shot')
+    if profile and obj.profile != profile:
+        return False
     assert asset is None or isinstance(asset, str)
     if asset and obj.asset != asset:
         return False

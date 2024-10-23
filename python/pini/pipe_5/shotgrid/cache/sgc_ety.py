@@ -201,7 +201,7 @@ class _SGCEntity(sgc_elem.SGCElem):
         if _last_t_c != _last_t:
             _last_t_c, _pub_files_c = self._build_pub_files_cache(
                 force=True)
-            _LOGGER.info(
+            _LOGGER.debug(
                 ' - T CMP last="%s" cache="%s"',
                 strftime('nice', _last_t),
                 strftime('nice', _last_t_c))

@@ -4,8 +4,8 @@ import logging
 
 from maya import cmds
 
-from pini import dcc
-from pini.utils import single, Seq, file_to_seq
+from pini import dcc, pipe
+from pini.utils import single, Seq, file_to_seq, to_seq
 
 from maya_pini import open_maya as pom, ui
 from maya_pini.utils import load_redshift_proxy
@@ -64,7 +64,7 @@ class CMayaAiStandIn(_CMayaNodeRef):
                 _path = _seq.path
 
         _LOGGER.debug(' - PATH %s', _path)
-        super(CMayaAiStandIn, self).__init__(
+        super().__init__(
             path or _path, namespace=str(self.node))
 
     def update(self, out):
@@ -175,6 +175,56 @@ def read_aistandins(selected=False):
     return _asses
 
 
+class CMayaImgPlaneRef(_CMayaNodeRef):
+    """Represents an image plane referencing a pipelined image sequence."""
+
+    def __init__(self, img):
+        """Constructor.
+
+        Args:
+            img (CNode): image plane node
+        """
+        _path = img.plug['imageName'].get_val()
+        _LOGGER.debug(' - PATH %s', _path)
+        _seq = to_seq(_path)
+        if not _seq:
+            raise ValueError
+        _LOGGER.debug(' - SEQ %s', _seq)
+        _out = pipe.to_output(_seq.path)
+        if not _out:
+            raise ValueError
+        super().__init__(path=_seq.path, namespace=str(img))
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutputSeq): new images to apply
+        """
+        raise NotImplementedError
+
+
+def read_img_planes(selected=False):
+    """Read image planes from the current scene.
+
+    Args:
+        selected (bool): apply selected filter
+
+    Returns:
+        (CMayaImgPlaneRef list): image plane refs
+    """
+    _LOGGER.debug('READ IMG PLANES')
+    _imgs = []
+    for _img in pom.find_nodes(type_='imagePlane', selected=selected):
+        try:
+            _img = CMayaImgPlaneRef(_img)
+        except ValueError:
+            continue
+        _imgs.append(_img)
+    return _imgs
+    # asdasd
+
+
 class CMayaRedshiftProxyRef(_CMayaNodeRef):
     """A RedshiftProxyMesh node referencing a pipelined output."""
 
@@ -195,7 +245,7 @@ class CMayaRedshiftProxyRef(_CMayaNodeRef):
         self.top_node = _mesh
         _path = self.node.plug['fileName'].get_val().replace('.####.', '.%04d.')
         _LOGGER.debug(' - PATH %s', _path)
-        super(CMayaRedshiftProxyRef, self).__init__(
+        super().__init__(
             path=_path, namespace=str(self.top_node))
 
     def update(self, out):
@@ -272,7 +322,7 @@ class CMayaVdb(_CMayaNodeRef):
         if not _path:
             raise ValueError('Empty path')
 
-        super(CMayaVdb, self).__init__(path or _path, namespace=str(self.node))
+        super().__init__(path or _path, namespace=str(self.node))
 
     def update(self, out):
         """Update this node to a new output.
