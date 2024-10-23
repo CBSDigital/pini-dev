@@ -1,3 +1,15 @@
+## [6.4.1] - Wed 2024-10-23 14:17
+### Summary
+ - Pini Helper:
+    - bugfix error on render in shots with bad pub file cache (farnold),
+### Updated
+ - pini.utils.to_seq added catch,
+ - pini.dcc.pipe_ref.CMayaImgPlaneRef made public,
+ - pini.dcc.pipe_ref.CMayaImgPlaneRef working update,
+ - pini.dcc.pipe_ref.find_pipe_refs added image planes,
+ - pini.pipe.cache.CACHE_START added shared global with SGC,
+
+
 ## [6.4.0] - Wed 2024-10-23 10:57
 ### Summary
  - Pini Helper:

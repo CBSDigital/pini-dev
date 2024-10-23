@@ -184,6 +184,7 @@ class CMayaImgPlaneRef(_CMayaNodeRef):
         Args:
             img (CNode): image plane node
         """
+        self.img = img
         _path = img.plug['imageName'].get_val()
         _LOGGER.debug(' - PATH %s', _path)
         _seq = to_seq(_path)
@@ -201,7 +202,11 @@ class CMayaImgPlaneRef(_CMayaNodeRef):
         Args:
             out (CPOutputSeq): new images to apply
         """
-        raise NotImplementedError
+        _LOGGER.info('UPDATE %s %s', self, out.path)
+        assert isinstance(out, Seq)
+        _path = out[out.frames[0]]
+        _LOGGER.info(' - PATH %s', _path)
+        self.img.plug['imageName'].set_val(_path)
 
 
 def read_img_planes(selected=False):

@@ -15,4 +15,4 @@ from .output import (
     CCPOutputFile, CCPOutputSeq, CCPOutputSeqDir, CCPOutputBase,
     CCPOutputVideo, CCPOutputGhost)
 
-from .ccp_utils import pipe_cache_on_obj, pipe_cache_result
+from .ccp_utils import pipe_cache_on_obj, pipe_cache_result, CACHE_START

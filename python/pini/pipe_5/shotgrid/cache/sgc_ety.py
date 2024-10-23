@@ -88,9 +88,11 @@ class _SGCEntity(sgc_elem.SGCElem):
         Returns:
             (SGCPubFile): matching pub file
         """
+        _LOGGER.debug('FIND PUB FILE %s %s', match, kwargs)
         _pub_files = self.find_pub_files(**kwargs)
         if len(_pub_files) == 1:
             return single(_pub_files)
+        _LOGGER.debug(' - FOUND %d PUB FILES', len(_pub_files))
 
         # Try item/path matches
         _matches = [
@@ -98,14 +100,17 @@ class _SGCEntity(sgc_elem.SGCElem):
             if match in (_pub_file, _pub_file.path, )]
         if len(_matches) == 1:
             return single(_matches)
+        _LOGGER.debug(' - MATCH %d PUB FILES', len(_matches))
 
         # Try string (eg. path) matches
         _match_s = to_str(match)
+        _LOGGER.debug(' - MATCH S %s', _match_s)
         _s_matches = [
             _pub_file for _pub_file in _pub_files
             if _match_s in (_pub_file.path, )]
         if len(_s_matches) == 1:
             return single(_s_matches)
+        _LOGGER.debug(' - S MATCHED %d PUB FILES', len(_s_matches))
 
         if catch:
             return None

@@ -2,6 +2,8 @@
 
 from pini.utils import get_result_cacher, get_method_to_file_cacher
 
+CACHE_START = 1729706863
+
 
 def pipe_cache_result(func):
     """Decorate to cache a function result to the pipe namespace.
@@ -40,5 +42,5 @@ def pipe_cache_to_file(func):
         (fn): decorated method
     """
     _cacher = get_method_to_file_cacher(
-        mtime_outdates=False, min_mtime=1729536593, namespace='pipe')
+        mtime_outdates=False, min_mtime=CACHE_START, namespace='pipe')
     return _cacher(func)

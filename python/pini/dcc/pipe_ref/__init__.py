@@ -8,7 +8,7 @@ if dcc.NAME == 'maya':
     from .maya import (
         CMayaAiStandIn, CMayaRef, CMayaShadersRef, lock_cams, CMayaVdb,
         apply_grouping, find_pipe_refs, create_aistandin, create_rs_pxy,
-        create_vdb)
+        create_vdb, CMayaImgPlaneRef)
 elif dcc.NAME == 'nuke':
     from .pr_nuke import CNukeReadRef
 elif dcc.NAME == 'hou':

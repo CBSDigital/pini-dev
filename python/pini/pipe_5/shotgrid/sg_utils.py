@@ -3,6 +3,7 @@
 import logging
 
 from pini import icons, pipe
+from pini.pipe import cache
 from pini.utils import single, get_method_to_file_cacher, get_result_cacher
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ def sg_cache_to_file(func):
         (fn): decorated method
     """
     _cacher = get_method_to_file_cacher(
-        mtime_outdates=False, min_mtime=1729210654, namespace='shotgrid')
+        mtime_outdates=False, min_mtime=cache.CACHE_START, namespace='shotgrid')
     return _cacher(func)
 
 

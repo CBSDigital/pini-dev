@@ -1,10 +1,13 @@
 """Tools for managing pipelined references."""
 
 import functools
+import logging
 
 from pini import pipe
 from pini.pipe import cache
 from pini.utils import File, split_base_index
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CPipeRef(object):
@@ -24,6 +27,7 @@ class CPipeRef(object):
             path (str): path to reference
             namespace (str): namespace for node
         """
+        _LOGGER.debug('INIT CPipeRef %s %s', path, namespace)
         self.namespace = namespace
         self.cmp_str = to_cmp_str(self.namespace)
         self._init_path_attrs(path)
@@ -40,6 +44,7 @@ class CPipeRef(object):
 
         # Setup outputs (uncached/cached)
         self._out = pipe.to_output(self.path, catch=True)
+        _LOGGER.debug(' - OUT %s', self._out)
         if not self._out:
             raise ValueError('Failed to map path to output '+self.path)
         self._out_c = pipe.CACHE.obt_output(self._out, catch=True)
