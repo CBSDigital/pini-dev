@@ -6,7 +6,7 @@ import unittest
 
 from maya import cmds
 
-from pini import dcc, testing, pipe
+from pini import dcc, testing, pipe, qt
 from pini.dcc import pipe_ref, export
 from pini.pipe import cache
 from pini.tools import error, helper
@@ -126,6 +126,7 @@ class TestDCC(unittest.TestCase):
 
     def test_version_up_publish(self):
 
+        _progress = qt.progress_dialog('Test version up publish')
         _ety = testing.TMP_ASSET
         _ety.flush(force=True)
         pipe.CACHE.reset()
@@ -134,11 +135,13 @@ class TestDCC(unittest.TestCase):
         assert not _ety_c.outputs
         assert not _ety_c.find_outputs()
 
+        _progress.set_pc(10)
         _handler = dcc.find_export_handler(
             'publish', filter_='basic', catch=True)
         _handler.ui = None  # Reset any leftover ui elems
 
         # Save basic scene to publish
+        _progress.set_pc(20)
         dcc.new_scene(force=True)
         cmds.polyCube()
         _work = testing.TMP_ASSET.to_work(task='mod')
@@ -148,6 +151,7 @@ class TestDCC(unittest.TestCase):
         _work_c = pipe.CACHE.obt_work(_work)
 
         # Test publish without PiniHelper
+        _progress.set_pc(30)
         _LOGGER.info(' - CUR WORK OUTS %s', _work_c.find_outputs())
         if _work_c.outputs:
             _work_c.find_outputs(force=True)
@@ -175,6 +179,7 @@ class TestDCC(unittest.TestCase):
         assert _out in _work_c.outputs
 
         # Version up
+        _progress.set_pc(40)
         _next = pipe.version_up()
         assert isinstance(_next, pipe.CPWork)
         assert not isinstance(_next, cache.CCPWork)
@@ -183,6 +188,7 @@ class TestDCC(unittest.TestCase):
         _work_c = pipe.CACHE.obt_work(_next)
 
         # Test publish with PiniHelper
+        _progress.set_pc(50)
         _helper = helper.obt_helper()
         _helper.jump_to(_work_c)
         assert _helper.work.exists()
@@ -192,6 +198,7 @@ class TestDCC(unittest.TestCase):
         assert _helper.work is pipe.CACHE.cur_work
 
         # Publish
+        _progress.set_pc(70)
         _helper.ui.MainPane.select_tab('Export')
         _pub = _helper.ui.EPublishHandler.selected_data()
         _pub.ui.VersionUp.setChecked(False)
@@ -217,7 +224,10 @@ class TestDCC(unittest.TestCase):
         assert _out in _work_c.outputs
 
         # Version up
+        _progress.set_pc(90)
         _helper.ui.WWorks.select_data(_helper.next_work)
         _helper.ui.WSave.click()
         assert pipe.CACHE.cur_work.ver_n == 3
         assert not error.TRIGGERED
+
+        _progress.close()

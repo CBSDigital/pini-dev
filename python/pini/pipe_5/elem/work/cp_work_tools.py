@@ -68,7 +68,7 @@ def load_recent():
     _latest = recent_work()[0].find_latest()
     qt.ok_cancel(
         'Load latest work file?\n\n'+_latest.path,
-        title='Load Recent', icon=icons.find('Monkey Face'))
+        title='Load recent', icon=icons.find('Monkey Face'))
     _latest.load()
 
 

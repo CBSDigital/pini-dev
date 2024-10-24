@@ -84,7 +84,8 @@ def find_attr_refs(types=()):
             ('aiStandIn', 'dso')]
     if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
         _types += [
-            ('RedshiftProxyMesh', 'fileName')]
+            ('RedshiftProxyMesh', 'fileName'),
+            ('RedshiftSprite', 'tex0')]
 
     # Check files
     _a_refs = []

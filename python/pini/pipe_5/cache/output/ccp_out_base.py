@@ -77,6 +77,8 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'Blast'
             elif self.basic_type == 'render':
                 _c_type = 'Render'
+            elif self.basic_type == 'plate':
+                _c_type = 'Plate'
             else:
                 raise ValueError(self.path, _pub_type, self.basic_type)
         elif self.extn in ('mov', 'mp4'):

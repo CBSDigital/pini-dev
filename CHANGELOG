@@ -1,3 +1,13 @@
+## [6.5.0] - Thu 2024-10-24 09:50
+### Summary
+ - Pini Helper:
+    - bugfix error on publish in shot with plates (nle),
+### Updated
+ - pini.pipe.CCPOutputBase.content_type added plate handling,
+ - pini.pipe.shotgrid.SGC.find_entity added path handling,
+ - maya_pini.ref.find_attr_refs added RedshiftSprite.tex0,
+
+
 ## [6.4.1] - Wed 2024-10-23 14:17
 ### Summary
  - Pini Helper:

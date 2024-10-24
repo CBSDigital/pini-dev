@@ -127,18 +127,21 @@ class SGCProj(sgc_elem.SGCElem):
         """
         _LOGGER.debug('FIND ENTITY %s %s', match, kwargs)
 
+        _ety = None
+        if isinstance(match, pipe.CPEntity):
+            _ety = match
+        elif isinstance(match, pipe.CPOutputBase):
+            _ety = match.entity
+        if not _ety:
+            _ety = pipe.to_entity(match, catch=True)
+
         # Build search kwargs
         _kwargs = kwargs
-        if isinstance(match, pipe.CPEntity):
+        if _ety:
             _kwargs['name'] = _kwargs.get(
-                'name', match.name)
+                'name', _ety.name)
             _kwargs['entity_type'] = _kwargs.get(
-                'entity_type', match.entity_type)
-        if isinstance(match, pipe.CPOutputBase):
-            _kwargs['name'] = _kwargs.get(
-                'name', match.entity.name)
-            _kwargs['entity_type'] = _kwargs.get(
-                'entity_type', match.entity.entity_type)
+                'entity_type', _ety.entity_type)
         _LOGGER.debug(' - FIND ENTITES %s', _kwargs)
 
         # Find matching entities
