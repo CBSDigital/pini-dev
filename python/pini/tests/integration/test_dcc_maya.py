@@ -89,7 +89,7 @@ class TestDCC(unittest.TestCase):
 
         # Create model ref
         _ref = dcc.create_ref(_model, namespace='test', group='BLAH')
-        pom.CPoint(0, 4, 0).apply_to(_ref.node)
+        pom.CPoint(0, 4, 0).apply_to(_ref.top_node)
         assert _ref.output == _model
         assert isinstance(_ref, pipe_ref.CMayaRef)
         assert _ref.node.ty.get_val() == 4
@@ -102,8 +102,9 @@ class TestDCC(unittest.TestCase):
         _ref = _ref.update(_ass_gz)
         assert _ref.output == _ass_gz
         assert isinstance(_ref, pipe_ref.CMayaAiStandIn)
-        assert _ref.node.ty.get_val() == 4
-        assert _ref.node.to_parent().name() == 'BLAH'
+        _LOGGER.info(' - REF %s %s %s', _ref, _ref.node, _ref.top_node)
+        assert _ref.top_node.ty.get_val() == 4
+        assert _ref.top_node.to_parent().name() == 'BLAH'
         assert _ref.namespace == 'test'
         assert not cmds.objExists('CHAR')
 
@@ -113,16 +114,16 @@ class TestDCC(unittest.TestCase):
         _ref = _ref.update(_rig)
         assert _ref.output == _rig
         assert isinstance(_ref, pipe_ref.CMayaRef)
-        assert _ref.node.ty.get_val() == 4
-        assert _ref.node.to_parent().name() == 'BLAH'
+        assert _ref.top_node.ty.get_val() == 4
+        assert _ref.top_node.to_parent().name() == 'BLAH'
         assert not cmds.objExists('CHAR')
         assert _ref.namespace == 'test'
 
         # Test no parent
         _ref = dcc.create_ref(_model, namespace='test2', group=None)
-        assert not _ref.node.to_parent()
+        assert not _ref.top_node.to_parent()
         _ref = _ref.update(_ass_gz)
-        assert not _ref.node.to_parent()
+        assert not _ref.top_node.to_parent()
 
     def test_version_up_publish(self):
 

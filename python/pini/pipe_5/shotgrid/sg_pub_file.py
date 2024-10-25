@@ -52,7 +52,6 @@ def create_pub_file(
     _sg_type = shotgrid.SGC.find_pub_type(
         output.extn, type_='Sequence' if isinstance(output, Seq) else 'File')
     _sg_user = shotgrid.SGC.find_user()
-    _sg_task = _sg_ety.find_task(step=output.step, task=output.task)
 
     # Build data
     _data = {
@@ -64,11 +63,15 @@ def create_pub_file(
         'path_cache': pipe.ROOT.rel_path(output.path),
         'project': _sg_proj.to_entry(),
         'published_file_type': _sg_type.to_entry(),
-        'task': _sg_task.to_entry(),
         'sg_status_list': status,
         'updated_by': _sg_user.to_entry(),
         'version_number': output.ver_n,
     }
+
+    # Add task (if applicable)
+    _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
+    if _sg_task:
+        _data['task'] = _sg_task.to_entry()
 
     # Apply to shotgrid
     if not _sg_pub:

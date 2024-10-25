@@ -112,7 +112,7 @@ class MayaDCC(BaseDCC):
             _ref = self.create_ref(cache, namespace=namespace, force=force)
             _ref.attach_shaders(lookdev, mode=attach_mode)
         elif _abc_mode == 'aiStandIn':
-            _ref = pipe_ref.create_aistandin(path=cache, namespace=namespace)
+            _ref = pipe_ref.create_ai_standin(path=cache, namespace=namespace)
         else:
             raise ValueError(abc_mode)
         _LOGGER.debug(' - REF %s', _ref)
@@ -152,9 +152,9 @@ class MayaDCC(BaseDCC):
 
         # Bring in reference
         if _path.extn == 'vdb':
-            _ref = pipe_ref.create_vdb(_path, namespace=namespace)
+            _ref = pipe_ref.create_ai_vol(_path, namespace=namespace)
         elif _path.extn in ('ass', 'usd', 'gz'):
-            _ref = pipe_ref.create_aistandin(
+            _ref = pipe_ref.create_ai_standin(
                 path=_path, namespace=namespace)
         elif _path.extn in ('rs', ):
             _ref = pipe_ref.create_rs_pxy(_path, namespace=namespace)

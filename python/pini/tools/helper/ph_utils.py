@@ -54,6 +54,7 @@ _EXTN_BG_MAP = {
     'fbx': FBX_BG_ICON,
 }
 _TYPE_BG_MAP = {
+    'plate': icons.find('Brown Circle'),
     'render': icons.find('Red Circle'),
     'render_mov': icons.find('Orange Circle'),
     'blast': icons.find('Yellow Circle'),

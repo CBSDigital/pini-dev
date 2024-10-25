@@ -18,7 +18,22 @@ _LOGGER = logging.getLogger(__name__)
 class _CMayaNodeRef(prm_base.CMayaPipeRef):
     """Base class for any pipelined node reference."""
 
+    TYPE = None
     ref = None
+
+    def __init__(self, path, namespace, node, top_node):
+        """Constructor.
+
+        Args:
+            path (str): path to reference
+            namespace (str): namespace (eg. node name)
+            node (CNode): shape node
+            top_node (CTransform): transform node
+        """
+        super().__init__(path=path, namespace=namespace)
+        self.node = node
+        self.top_node = top_node
+        assert self.TYPE
 
     def delete(self, force=False):
         """Delete this node.
@@ -28,7 +43,7 @@ class _CMayaNodeRef(prm_base.CMayaPipeRef):
         """
         if not force:
             raise NotImplementedError
-        cmds.delete(self.node)
+        cmds.delete(self.top_node)
 
     def update(self, out):
         """Update this node to a new output.
@@ -42,6 +57,8 @@ class _CMayaNodeRef(prm_base.CMayaPipeRef):
 class CMayaAiStandIn(_CMayaNodeRef):
     """Represents a pipeline ass/usd reference in an aiStandIn node."""
 
+    TYPE = 'aiStandIn'
+
     def __init__(self, node, path=None):
         """Constructor.
 
@@ -50,13 +67,11 @@ class CMayaAiStandIn(_CMayaNodeRef):
             path (str): override path - to accommodate arnold delayed update
         """
         _LOGGER.debug('INIT CMayaAiStandIn %s %s', node, path)
-        self.node = node
-        self.top_node = node
-        assert isinstance(self.node, pom.CTransform)
-        assert self.node.shp.object_type() == 'aiStandIn'
+        assert isinstance(node, pom.CTransform)
+        assert node.shp.object_type() == 'aiStandIn'
 
         # Update path to %04d format
-        _path = self.node.shp.plug['dso'].get_val()
+        _path = node.shp.plug['dso'].get_val()
         _path = _path.replace('.####.', '.%04d.')
         if '.%04d.' not in _path:
             _seq = file_to_seq(_path, catch=True)
@@ -65,7 +80,8 @@ class CMayaAiStandIn(_CMayaNodeRef):
 
         _LOGGER.debug(' - PATH %s', _path)
         super().__init__(
-            path or _path, namespace=str(self.node))
+            path or _path, namespace=str(node), node=node.shp,
+            top_node=node)
 
     def update(self, out):
         """Update this node to a new output.
@@ -93,7 +109,142 @@ class CMayaAiStandIn(_CMayaNodeRef):
         raise NotImplementedError(out)
 
 
-def create_aistandin(path, namespace):
+class CMayaAiVolume(_CMayaNodeRef):
+    """Represents a pipeline vdb reference in an aiVolume node."""
+
+    TYPE = 'aiVolume'
+    ref = None
+
+    def __init__(self, node, path=None):
+        """Constructor.
+
+        Args:
+            node (CTransform): aiVolume transform
+            path (str): override path - maya seems to only read the
+                vdb if useFileSequence is disabled but then it seems
+                to update it in a deferred thread; this allows the path
+                to be hacked so a valid vdb ref can be built on create
+        """
+        assert isinstance(node, pom.CTransform)
+        assert node.shp.object_type() == 'aiVolume'
+        _path = node.shp.plug['filename'].get_val() or ''
+        _path = _path.replace('.####.', '.%04d.')
+        if not _path:
+            raise ValueError('Empty path')
+
+        super().__init__(
+            path or _path, namespace=str(self.node), node=node.shp,
+            top_node=node)
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutputSeq): new volume to apply
+        """
+        assert isinstance(out, Seq)
+        _path = out.path.replace('.%04d.', '.####.')
+        self.node.shp.plug['filename'].set_val(_path)
+
+
+class CMayaImgPlaneRef(_CMayaNodeRef):
+    """Represents an image plane referencing a pipelined image sequence."""
+
+    TYPE = 'imagePlane'
+
+    def __init__(self, img):
+        """Constructor.
+
+        Args:
+            img (CNode): image plane node
+        """
+        _path = img.plug['imageName'].get_val()
+        _LOGGER.debug(' - PATH %s', _path)
+        _seq = to_seq(_path)
+        if not _seq:
+            raise ValueError
+        _LOGGER.debug(' - SEQ %s', _seq)
+        _out = pipe.to_output(_seq.path)
+        if not _out:
+            raise ValueError
+        _top_node = img.to_parent()
+        _name = str(_top_node).split('->')[-1]
+        super().__init__(
+            node=img, top_node=_top_node, path=_seq.path, namespace=_name)
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutputSeq): new images to apply
+        """
+        _LOGGER.info('UPDATE %s %s', self, out.path)
+        assert isinstance(out, Seq)
+        _path = out[out.frames[0]]
+        _LOGGER.info(' - PATH %s', _path)
+        self.node.plug['imageName'].set_val(_path)
+
+
+class CMayaRsProxyRef(_CMayaNodeRef):
+    """A RedshiftProxyMesh node referencing a pipelined output."""
+
+    TYPE = 'RedshiftProxyMesh'
+
+    def __init__(self, node):
+        """Constructor.
+
+        Args:
+            node (CNode): RedshiftProxyMesh node
+        """
+        _LOGGER.debug('INIT CMayaRsProxyRef %s', node)
+
+        _tfm = single(
+            node.find_outgoing(plugs=False, connections=False, type_='mesh'))
+        _LOGGER.debug(' - TFM %s', _tfm)
+        _mesh = pom.CMesh(_tfm)
+
+        _path = node.plug['fileName'].get_val().replace('.####.', '.%04d.')
+        _LOGGER.debug(' - PATH %s', _path)
+        super().__init__(
+            path=_path, namespace=str(self.top_node), node=node, top_node=_mesh)
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutput|CPOutputSeq): output to apply
+        """
+        raise NotImplementedError
+
+
+class CMayaRsDomeLight(_CMayaNodeRef):
+    """A RedshiftDomeLight node referencing a pipelined output."""
+
+    TYPE = 'RedshiftDomeLight'
+
+    def __init__(self, node):
+        """Constructor.
+
+        Args:
+            node (CNode): CMayaRsDomeLight node
+        """
+        _LOGGER.debug('INIT CMayaRsDomeLight %s', node)
+        _tfm = node.to_parent()
+        _path = to_seq(node.plug['tex1'].get_val())
+        super().__init__(
+            node=node, top_node=_tfm, path=_path, namespace=str(_tfm))
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutput|CPOutputSeq): output to apply
+        """
+        _path = out[out.frames[0]]
+        self.node.plug['tex1'].set_val(_path)
+
+
+def create_ai_standin(path, namespace):
     """Create aiStandIn reference from the given path.
 
     Args:
@@ -126,7 +277,47 @@ def create_aistandin(path, namespace):
     return _ref
 
 
-def read_aistandins(selected=False):
+def create_ai_vol(output, namespace):
+    """Create vdb reference.
+
+    Args:
+        output (CPOutput): output to reference in vdb
+        namespace (str): node name
+
+    Returns:
+        (CMayaAiVolume): vdb reference
+    """
+    assert isinstance(output, Seq)
+    cmds.loadPlugin('mtoa', quiet=True)
+    _seq = output
+    _shp = pom.CMDS.createNode('aiVolume', name=namespace+'Shape')
+    _path = _seq[_seq.frames[0]]
+    _shp.plug['filename'].set_val(_path)
+    _tfm = _shp.to_parent().rename(namespace)
+    _ns = str(_tfm)
+    _shp.plug['useFrameExtension'].set_val(True)
+    _ref = CMayaAiVolume(_tfm, path=_seq.path)
+
+    return _ref
+
+
+def create_rs_pxy(output, namespace):
+    """Create redshift proxy reference.
+
+    Args:
+        output (CPOutput): path to proxy
+        namespace (str): name for transform
+
+    Returns:
+        (CMayaRsProxyRef): proxy reference
+    """
+    _LOGGER.info('CREATE RS PXY %s', output)
+    _node = load_redshift_proxy(output, name=namespace)
+    _LOGGER.info(' - NODE %s', _node)
+    return CMayaRsProxyRef(_node.proxy)
+
+
+def read_ai_standins(selected=False):
     """Find pipelined aiStandIn references in the current scene.
 
     Args:
@@ -175,203 +366,14 @@ def read_aistandins(selected=False):
     return _asses
 
 
-class CMayaImgPlaneRef(_CMayaNodeRef):
-    """Represents an image plane referencing a pipelined image sequence."""
-
-    def __init__(self, img):
-        """Constructor.
-
-        Args:
-            img (CNode): image plane node
-        """
-        self.img = img
-        _path = img.plug['imageName'].get_val()
-        _LOGGER.debug(' - PATH %s', _path)
-        _seq = to_seq(_path)
-        if not _seq:
-            raise ValueError
-        _LOGGER.debug(' - SEQ %s', _seq)
-        _out = pipe.to_output(_seq.path)
-        if not _out:
-            raise ValueError
-        super().__init__(path=_seq.path, namespace=str(img))
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutputSeq): new images to apply
-        """
-        _LOGGER.info('UPDATE %s %s', self, out.path)
-        assert isinstance(out, Seq)
-        _path = out[out.frames[0]]
-        _LOGGER.info(' - PATH %s', _path)
-        self.img.plug['imageName'].set_val(_path)
-
-
-def read_img_planes(selected=False):
-    """Read image planes from the current scene.
-
-    Args:
-        selected (bool): apply selected filter
-
-    Returns:
-        (CMayaImgPlaneRef list): image plane refs
-    """
-    _LOGGER.debug('READ IMG PLANES')
-    _imgs = []
-    for _img in pom.find_nodes(type_='imagePlane', selected=selected):
-        try:
-            _img = CMayaImgPlaneRef(_img)
-        except ValueError:
-            continue
-        _imgs.append(_img)
-    return _imgs
-    # asdasd
-
-
-class CMayaRedshiftProxyRef(_CMayaNodeRef):
-    """A RedshiftProxyMesh node referencing a pipelined output."""
-
-    def __init__(self, node):
-        """Constructor.
-
-        Args:
-            node (CNode): RedshiftProxyMesh node
-        """
-        _LOGGER.debug('INIT CMayaRedshiftProxyRef %s', node)
-        self.node = node
-
-        _tfm = single(
-            node.find_outgoing(plugs=False, connections=False, type_='mesh'))
-        _LOGGER.debug(' - TFM %s', _tfm)
-        _mesh = pom.CMesh(_tfm)
-
-        self.top_node = _mesh
-        _path = self.node.plug['fileName'].get_val().replace('.####.', '.%04d.')
-        _LOGGER.debug(' - PATH %s', _path)
-        super().__init__(
-            path=_path, namespace=str(self.top_node))
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutput|CPOutputSeq): new standin to apply
-        """
-        raise NotImplementedError
-
-
-def create_rs_pxy(output, namespace):
-    """Create redshift proxy reference.
-
-    Args:
-        output (CPOutput): path to proxy
-        namespace (str): name for transform
-
-    Returns:
-        (CMayaRedshiftProxyRef): proxy reference
-    """
-    _LOGGER.info('CREATE RS PXY %s', output)
-    _node = load_redshift_proxy(output, name=namespace)
-    _LOGGER.info(' - NODE %s', _node)
-    return CMayaRedshiftProxyRef(_node.proxy)
-
-
-def read_rs_pxys(selected=False):
-    """Read RedshiftProxyMesh references in the current scene.
-
-    Args:
-        selected (bool): return selected only
-
-    Returns:
-        (CMayaRedshiftProxyRef list): redshift proxy refs
-    """
-    if 'RedshiftProxyMesh' not in cmds.allNodeTypes():
-        return []
-
-    _pxys = []
-    for _node in pom.find_nodes(type_='RedshiftProxyMesh'):
-        try:
-            _pxy = CMayaRedshiftProxyRef(_node)
-        except ValueError:
-            continue
-        if selected and _pxy.top_node not in cmds.ls(selection=True):
-            continue
-        _pxys.append(_pxy)
-
-    return _pxys
-
-
-class CMayaVdb(_CMayaNodeRef):
-    """Represents a pipeline vdb reference in an aiVolume node."""
-
-    ref = None
-
-    def __init__(self, node, path=None):
-        """Constructor.
-
-        Args:
-            node (CTransform): aiVolume transform
-            path (str): override path - maya seems to only read the
-                vdb if useFileSequence is disabled but then it seems
-                to update it in a deferred thread; this allows the path
-                to be hacked so a valid vdb ref can be built on create
-        """
-        self.node = node
-        self.top_node = node
-        assert isinstance(self.node, pom.CTransform)
-        assert self.node.shp.object_type() == 'aiVolume'
-        _path = self.node.shp.plug['filename'].get_val() or ''
-        _path = _path.replace('.####.', '.%04d.')
-        if not _path:
-            raise ValueError('Empty path')
-
-        super().__init__(path or _path, namespace=str(self.node))
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutputSeq): new volume to apply
-        """
-        assert isinstance(out, Seq)
-        _path = out.path.replace('.%04d.', '.####.')
-        self.node.shp.plug['filename'].set_val(_path)
-
-
-def create_vdb(output, namespace):
-    """Create vdb reference.
-
-    Args:
-        output (CPOutput): output to reference in vdb
-        namespace (str): node name
-
-    Returns:
-        (CMayaVdb): vdb reference
-    """
-    assert isinstance(output, Seq)
-    cmds.loadPlugin('mtoa', quiet=True)
-    _seq = output
-    _shp = pom.CMDS.createNode('aiVolume', name=namespace+'Shape')
-    _path = _seq[_seq.frames[0]]
-    _shp.plug['filename'].set_val(_path)
-    _tfm = _shp.to_parent().rename(namespace)
-    _ns = str(_tfm)
-    _shp.plug['useFrameExtension'].set_val(True)
-    _ref = CMayaVdb(_tfm, path=_seq.path)
-
-    return _ref
-
-
-def read_vdbs(selected=False):
+def read_ai_vols(selected=False):
     """Read pipeline vdb refs.
 
     Args:
         selected (bool): only find selected refs
 
     Returns:
-        (CMayaVdb list): vdb refs
+        (CMayaAiVolume list): vdb refs
     """
     _LOGGER.log(9, 'READ VDB PIPE REFS')
 
@@ -396,13 +398,77 @@ def read_vdbs(selected=False):
     else:
         _aivs = pom.CMDS.ls(type='aiVolume')
 
-    # Map to CMayaVdb objects
+    # Map to CMayaAiVolume objects
     _vdbs = []
     for _aiv_s in _aivs:
         _aiv = _aiv_s.to_parent()
         try:
-            _vdb = CMayaVdb(_aiv)
+            _vdb = CMayaAiVolume(_aiv)
         except ValueError:
             continue
         _vdbs.append(_vdb)
     return _vdbs
+
+
+def _read_type_nodes(class_, selected):
+    """Read nodes of the given class in the current scene.
+
+    Args:
+        class_ (class): type of node to search for
+        selected (bool): apply selected nodes filter
+
+    Returns:
+        (CMayaNodeRef list): matching node ref objects
+    """
+    if class_.TYPE not in cmds.allNodeTypes():
+        return []
+    _sel = cmds.ls(selection=True)
+
+    _pxys = []
+    assert class_.TYPE
+    for _node in pom.find_nodes(type_=class_.TYPE):
+        try:
+            _pxy = class_(_node)
+        except ValueError:
+            continue
+        if selected and _pxy.top_node not in _sel and _pxy.node not in _sel:
+            continue
+        _pxys.append(_pxy)
+
+    return _pxys
+
+
+def read_img_planes(selected=False):
+    """Read image planes from the current scene.
+
+    Args:
+        selected (bool): apply selected filter
+
+    Returns:
+        (CMayaImgPlaneRef list): image plane refs
+    """
+    return _read_type_nodes(class_=CMayaImgPlaneRef, selected=selected)
+
+
+def read_rs_pxys(selected=False):
+    """Read RedshiftProxyMesh references in the current scene.
+
+    Args:
+        selected (bool): return selected only
+
+    Returns:
+        (CMayaRsProxyRef list): redshift proxy refs
+    """
+    return _read_type_nodes(class_=CMayaRsProxyRef, selected=selected)
+
+
+def read_rs_dome_lights(selected=False):
+    """Read RedshiftDomeLight references in the current scene.
+
+    Args:
+        selected (bool): return selected only
+
+    Returns:
+        (CMayaRsProxyRef list): redshift dome lights
+    """
+    return _read_type_nodes(class_=CMayaRsDomeLight, selected=selected)

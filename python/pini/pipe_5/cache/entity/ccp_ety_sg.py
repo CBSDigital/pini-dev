@@ -147,7 +147,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         _LOGGER.debug(' - OBTAINED OUTPUT %s', output)
         assert output.entity == self
         _LOGGER.debug(' - SEARCHING ENTITY OUTPUTS')
-        _out = self.find_output(output, catch=catch)
+        _out = self.find_output(path=output.path, catch=catch)
         _LOGGER.debug(' - FOUND OUTPUT %s', _out)
 
         # Check output

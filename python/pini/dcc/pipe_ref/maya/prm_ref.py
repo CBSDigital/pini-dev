@@ -232,6 +232,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
             self._init_path_attrs(out)
             if _mtx and self.top_node:
                 _mtx.apply_to(self.top_node)
+                _LOGGER.debug('   - APPLY MTX %s', self.top_node)
             if _grp and self.top_node:
                 self.top_node.add_to_grp(_grp)
 
@@ -258,7 +259,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
             self.delete(force=True)
             _ref = dcc.create_ref(out, namespace=_ns, group=_grp)
             _LOGGER.debug(' - REF %s', _ref)
-            _mtx.apply_to(_ref.node)
+            _mtx.apply_to(_ref.top_node)
             return _ref
 
         raise NotImplementedError(out)

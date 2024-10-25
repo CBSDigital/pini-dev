@@ -247,7 +247,7 @@ def find_node(catch=False, **kwargs):
 def find_nodes(
         type_=None, namespace=EMPTY, referenced=None, filter_=None,
         clean_name=None, selected=False, dag_only=False, top_node=False,
-        default=None):
+        default=None, name=None, pattern=None):
     """Find nodes in the current scene.
 
     Args:
@@ -260,6 +260,8 @@ def find_nodes(
         dag_only (bool): apply dagObject flag to ls command
         top_node (bool): return only top nodes
         default (bool): filter by default node status
+        name (str): apply node name filter
+        pattern (str): apply filter pattern to ls comment (eg. "camera*")
 
     Returns:
         (CBaseNode list): nodes in scene
@@ -267,6 +269,7 @@ def find_nodes(
     from maya_pini import open_maya as pom
 
     # Read nodes
+    _args = [pattern] if pattern else []
     _kwargs = {}
     if type_:
         _kwargs['type'] = type_
@@ -275,7 +278,7 @@ def find_nodes(
     _dag_only = dag_only or top_node
     if _dag_only:
         _kwargs['dagObjects'] = True
-    _results = pom.CMDS.ls(**_kwargs)
+    _results = pom.CMDS.ls(*_args, **_kwargs)
 
     _nodes = []
     for _node in _results:
@@ -292,6 +295,8 @@ def find_nodes(
         if default is not None and (_node in DEFAULT_NODES) != default:
             continue
         if top_node and to_parent(_node):
+            continue
+        if name and _node != name:
             continue
 
         # Build node object

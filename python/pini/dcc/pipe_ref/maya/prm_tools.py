@@ -23,10 +23,11 @@ def find_pipe_refs(filter_=None, selected=False, extn=None):
     _refs = []
     _refs += prm_ref.read_reference_pipe_refs(selected=selected)
 
-    _refs += prm_node.read_aistandins(selected=selected)
+    _refs += prm_node.read_ai_standins(selected=selected)
+    _refs += prm_node.read_ai_vols(selected=selected)
     _refs += prm_node.read_img_planes(selected=selected)
+    _refs += prm_node.read_rs_dome_lights(selected=selected)
     _refs += prm_node.read_rs_pxys(selected=selected)
-    _refs += prm_node.read_vdbs(selected=selected)
 
     if extn:
         _refs = [_ref for _ref in _refs if _ref.extn == extn]

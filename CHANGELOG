@@ -1,3 +1,23 @@
+## [6.6.0] - Fri 2024-10-25 09:02
+### Summary
+ - Pini Helper:
+    - added image plane + redshift dome light monitoring,
+### Updated
+ - pini.dcc.find_pipe_refs added imagePlane/RedshiftDomeLight handling,
+ - pini.dcc.pipe_ref.CMayaNodeRef.TYPE added,
+ - pini.dcc.pipe_ref renamed create_aistandin -> create_ai_standin,
+ - pini.dcc.pipe_ref renamed create_vdb -> create_ai_vol,
+ - pini.dcc.pipe_ref renamed CMayaVdb -> CMayaAiVolume,
+ - pini.dcc.pipe_ref added read_img_planes/read_rs_dome_lights,
+ - pini.dcc.pipe_ref.CMayaAiStandIn.node updated to aiStandIn node,
+ - pine.pipe.passes_filter added path filter,
+ - pini.pipe.CACHE.obt_output bugfix returning unmatching paths,
+ - pini.pipe.shotgrid.create_pub_file allow empty task for plates,
+ - pini.tools.helper added plate output handling,
+ - pini.tools.helper.PLATE_TYPE_ICON added,
+ - maya_pini.open_maya.find_nodes added name/pattern args,
+
+
 ## [6.5.0] - Thu 2024-10-24 09:50
 ### Summary
  - Pini Helper:

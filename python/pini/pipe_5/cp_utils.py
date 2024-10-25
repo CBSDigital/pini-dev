@@ -250,7 +250,8 @@ def output_clip_sort(output):
 
 
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
-        obj, type_=None, entity=None, asset=None, asset_type=None, profile=None,
+        obj, type_=None, path=None,
+        entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
         extn=EMPTY, extns=None, filter_=None, filter_attr='path'):
@@ -259,6 +260,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     Args:
         obj (CPOutput|any): pipeline object being tested
         type_ (str): match type (eg. cache, shot, render)
+        path (str): apply path filter
         entity (CPEntity): match entity
         asset (str): match asset name
         asset_type (str): match asset type
@@ -282,6 +284,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     """
     from pini import pipe
 
+    if path and obj.path != path:
+        return False
     if filter_:
         _filter_val = getattr(obj, filter_attr)
         if not passes_filter(_filter_val, filter_):

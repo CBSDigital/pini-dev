@@ -636,6 +636,7 @@ def _rebuild_ui_on_error(func):
             if (
                     not str(_exc).startswith('Internal C++ object') or
                     not str(_exc).endswith('already deleted.')):
+                _LOGGER.info(' - UNHANDLED ERROR "%s"', _exc)
                 raise _exc
             self.rebuild_ui()
             _result = func(self, *args, **kwargs)
