@@ -5,7 +5,7 @@
 import logging
 import os
 
-from pini.utils import strftime
+from pini.utils import strftime, basic_repr
 
 from . import sgc_elem_reader
 
@@ -177,3 +177,6 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key
+
+    def __repr__(self):
+        return basic_repr(self, str(self.id_))

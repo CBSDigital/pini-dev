@@ -274,10 +274,9 @@ class CCPEntityBase(CPEntity):
         super().flush(force=force)
 
         # Update caches
-        self.find_outputs(force=True)
+        self._update_outputs_cache()
         if self.profile == pipe.ASSET_PROFILE:
-            self.find_publishes(force=True)
-            self.job.find_publishes(force=True)
+            self._update_publishes_cache()
 
         # Check caches
         _this = pipe.CACHE.obt(self)

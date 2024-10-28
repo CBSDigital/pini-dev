@@ -132,6 +132,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     progress.set_pc(5)
     dcc.new_scene(force=force)
     dcc.set_range(1001, 1005)
+    _helper.ui.Refresh.click()
     _helper.jump_to(_ety)
     _work_dir = _ety.find_work_dir('anim', dcc_=dcc.NAME, catch=True)
     if _work_dir:

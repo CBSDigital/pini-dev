@@ -5,7 +5,7 @@ import logging
 
 from pini import pipe
 from pini.pipe import cache
-from pini.utils import File, split_base_index
+from pini.utils import File, split_base_index, basic_repr
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -198,8 +198,7 @@ class CPipeRef(object):
         return self.cmp_str < other.cmp_str
 
     def __repr__(self):
-        return '<{}|{}>'.format(
-            type(self).__name__.strip('_'), self.namespace)
+        return basic_repr(self, self.namespace)
 
 
 def to_cmp_str(namespace):

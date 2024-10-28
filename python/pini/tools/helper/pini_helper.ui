@@ -509,7 +509,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>3</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -2605,35 +2605,6 @@ Range: 1-10</string>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="SRefresh">
-                 <property name="maximumSize">
-                  <size>
-                   <width>20</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="toolTip">
-                  <string>Redraw scene references list</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</iconset>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>20</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="flat">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QPushButton" name="SInfo">
                  <property name="maximumSize">
                   <size>
@@ -2659,6 +2630,35 @@ Range: 1-10</string>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="SRefresh">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Redraw scene references list</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
                  </property>
                  <property name="flat">
                   <bool>true</bool>

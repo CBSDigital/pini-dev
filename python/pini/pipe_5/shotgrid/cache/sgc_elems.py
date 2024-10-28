@@ -181,7 +181,10 @@ class SGCPubFile(SGCPath):
         self.task = None
 
 
-class SGCVersion(SGCPath):
+class SGCVersion(sgc_elem.SGCElem):
     """Represents a version entity."""
 
     ENTITY_TYPE = 'Version'
+    FIELDS = (
+        'published_files', 'entity', 'project', 'sg_task', 'sg_path_to_movie',
+        'updated_at', 'updated_by', 'sg_status_list')

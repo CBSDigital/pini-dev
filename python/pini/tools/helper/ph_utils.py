@@ -3,6 +3,7 @@
 import logging
 
 from pini import icons, qt, pipe, dcc
+from pini.pipe import cache
 from pini.qt import QtGui
 from pini.utils import str_to_seed, cache_result, Seq, Video, File, to_str
 
@@ -64,6 +65,8 @@ _TYPE_BG_MAP = {
 _CACHE_ICONS = icons.EMOJI.find_grp('FRUIT')
 _WORK_ICONS = icons.EMOJI.find_grp('COOL')
 _8_BALL_ICON = icons.find('Pool 8 Ball')
+_NO_CACHE_OUTPUT_ICON = icons.find('White Circle')
+_NO_CACHE_TYPE_ICON = icons.find('Cross Mark')
 
 _NAME_MAP = {
     'apple': 'Green Apple',
@@ -324,33 +327,39 @@ def output_to_icon(output, overlay=None, force=False):
     _LOGGER.debug(' - BASIC TYPE %s', output.basic_type)
 
     # Get base icon
-    _bg = None
-    if output.basic_type == 'cache':
-        _LOGGER.debug(' - APPLYING CACHE ICON')
-        _icon = _cache_to_icon(output)
-    elif output.output_type == 'cam':
-        _icon = CAM_ICON
-    elif output.asset_type == 'utl' and output.asset == 'camera':
-        _icon = CAM_ICON
-    elif output.asset_type == 'utl' and output.asset == 'lookdev':
-        _icon = LOOKDEV_TYPE_ICON
-    elif (
-            output.type_ in ('publish', 'publish_seq') and
-            output.pini_task == 'lookdev' and
-            output.content_type in ('ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
-        _LOGGER.debug(' - APPLYING LOOKDEV ICON')
-        _icon = _lookdev_to_icon(output)
-    elif output.type_ in _TYPE_BG_MAP:
-        _bg = _TYPE_BG_MAP[output.type_]
-        _icon = _output_to_entity_icon(output)
-    else:
-        _LOGGER.debug(' - APPLYING ENTITY ICON')
-        _icon = _output_to_entity_icon(output)
+    if not isinstance(output, cache.CCPOutputBase):
+        _icon = _NO_CACHE_OUTPUT_ICON
 
-    if overlay:
-        _icon = _add_icon_overlay(icon=_icon, overlay=overlay)
-    if _bg:
-        _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
+    else:
+
+        _bg = None
+        if output.basic_type == 'cache':
+            _LOGGER.debug(' - APPLYING CACHE ICON')
+            _icon = _cache_to_icon(output)
+        elif output.output_type == 'cam':
+            _icon = CAM_ICON
+        elif output.asset_type == 'utl' and output.asset == 'camera':
+            _icon = CAM_ICON
+        elif output.asset_type == 'utl' and output.asset == 'lookdev':
+            _icon = LOOKDEV_TYPE_ICON
+        elif (
+                output.type_ in ('publish', 'publish_seq') and
+                output.pini_task == 'lookdev' and
+                output.content_type in (
+                    'ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
+            _LOGGER.debug(' - APPLYING LOOKDEV ICON')
+            _icon = _lookdev_to_icon(output)
+        elif output.type_ in _TYPE_BG_MAP:
+            _bg = _TYPE_BG_MAP[output.type_]
+            _icon = _output_to_entity_icon(output)
+        else:
+            _LOGGER.debug(' - APPLYING ENTITY ICON')
+            _icon = _output_to_entity_icon(output)
+
+        if overlay:
+            _icon = _add_icon_overlay(icon=_icon, overlay=overlay)
+        if _bg:
+            _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
 
     _LOGGER.debug(' - ICON %s', _icon)
     if _icon and not isinstance(_icon, QtGui.QPixmap):
@@ -412,6 +421,8 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     Returns:
         (str): path to icon
     """
+    if not isinstance(output, cache.CCPOutputBase):
+        return _NO_CACHE_TYPE_ICON
     if output.basic_type == 'render':
         return RENDER_TYPE_ICON
     if output.basic_type == 'plate':

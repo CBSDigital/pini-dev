@@ -6,7 +6,7 @@ import logging
 from pini.utils import (
     basic_repr, strftime, Dir, to_time_f, single, to_str)
 
-from ..sg_utils import sg_cache_to_file
+from ..sg_utils import sg_cache_to_file, sg_cache_result
 from . import sgc_elems, sgc_utils, sgc_elem
 
 _LOGGER = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class _SGCEntity(sgc_elem.SGCElem):
         # Try item/path matches
         _matches = [
             _pub_file for _pub_file in _pub_files
-            if match in (_pub_file, _pub_file.path, )]
+            if match in (_pub_file, _pub_file.path, _pub_file.id_)]
         if len(_matches) == 1:
             return single(_matches)
         _LOGGER.debug(' - MATCH %d PUB FILES', len(_matches))
@@ -186,6 +186,22 @@ class _SGCEntity(sgc_elem.SGCElem):
         _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
         return _tasks
 
+    def find_vers(self, **kwargs):
+        """Search versions in this entity.
+
+        Returns:
+            (SGCVer list): tasks
+        """
+        _LOGGER.debug('FIND TASKS %s', kwargs)
+        _vers = []
+        for _ver in self._read_vers():
+            if not sgc_utils.passes_filters(_ver, **kwargs):
+                continue
+            _vers.append(_ver)
+        _LOGGER.debug(' - FOUND %d VERS', len(_vers))
+        return _vers
+
+    @sg_cache_result
     def _read_pub_files(self, force=False):
         """Read pub files in this entity.
 
@@ -280,6 +296,17 @@ class _SGCEntity(sgc_elem.SGCElem):
             (SGCTask list): tasks
         """
         return self._read_elems(sgc_elems.SGCTask, force=force)
+
+    def _read_vers(self, force=False):
+        """Read vers inside this entity.
+
+        Args:
+            force (bool): force rebuild cached data
+
+        Returns:
+            (SGCTask list): vers
+        """
+        return self._read_elems(sgc_elems.SGCVersion, force=force)
 
     def to_filter(self):
         """Build shotgrid search filter from this entry.

@@ -20,12 +20,13 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             force (bool): provided for symmetry
         """
         _LOGGER.info('UPDATE OUTPUTS CACHE')
-        # self.sg_entity.find_pub_files(force=True)
         self._read_outputs(force=True)
 
     def _update_publishes_cache(self):
         """Rebuild published file cache."""
-        self._read_publishes(force=True)
+        self.sg_entity.find_pub_files(force=True)
+        self.find_publishes(force=True)
+        self.job.find_publishes(force=True)
 
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.

@@ -752,7 +752,7 @@ class CLSceneTab(object):
         """
         _LOGGER.debug(' - CTX SCENE REF ADD OPTS %s', ref)
         _out = ref.to_output(use_cache=False)
-        _out_c = pipe.CACHE.obt(_out)
+        _out_c = pipe.CACHE.obt_output(_out, catch=True)
         if ref.namespace == _out.output_name:
             _base = _out.output_name
         else:
@@ -779,7 +779,7 @@ class CLSceneTab(object):
 
         # Update options
         _LOGGER.debug('   - ADD UPDATE OPTS %s', ref.output)
-        if not ref.output:
+        if not _out_c:
             _ety_c = pipe.CACHE.obt_entity(_out.entity)
             menu.add_action(
                 'Rebuild cache',
@@ -802,11 +802,11 @@ class CLSceneTab(object):
             self._ctx_scene_refs_add_update_tag_opts(menu, refs=[ref])
             self._ctx_scene_ref_add_update_ver_opts(menu, ref=ref)
             self._ctx_scene_ref_add_update_rep_opts(menu, refs=[ref])
-            menu.add_separator()
+        menu.add_separator()
 
-            self._add_output_opts(
-                menu=menu, output=_out, header=False, delete=False,
-                add=False, ref=ref, parent=self.ui.SSceneRefs)
+        self._add_output_opts(
+            menu=menu, output=_out, header=False, delete=False,
+            add=False, ref=ref, parent=self.ui.SSceneRefs)
 
     def _ctx_scene_refs_add_update_tag_opts(self, menu, refs):
         """Add options relating to swapping to a different tag.

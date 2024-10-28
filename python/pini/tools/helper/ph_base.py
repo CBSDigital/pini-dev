@@ -12,7 +12,7 @@ from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, wrap_fn, chain_fns, copied_path, get_user, strftime)
+    File, wrap_fn, chain_fns, copied_path, get_user, strftime, Video, Seq)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
 from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work, obt_pixmap
@@ -237,6 +237,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             parent (QWidget): widget to update if outputs change
             delete_callback (fn): callback to execute on output deletion
         """
+        _out = output
+        _out_c = pipe.CACHE.obt_output(_out, catch=True)
 
         # Add header
         if header:
@@ -246,36 +248,26 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             menu.add_separator()
 
         # Add actions based on file type
-        _delete_callback = delete_callback or self.ui.SOutputs.redraw
-        if output.content_type == 'Video':
-            menu.add_video_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        elif output.content_type == 'Render':
-            menu.add_seq_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        else:
-            menu.add_file_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        menu.add_separator()
-        if output.content_type in ('Render', 'Video') and self.work:
-            menu.add_action(
-                'Set as thumbnail', icon=icons.find('Picture'),
-                func=wrap_fn(self._set_work_thumb, output))
+        self._add_output_path_opts(
+            menu=menu, output=_out, output_c=_out_c, delete=delete,
+            delete_callback=delete_callback)
 
         # Add shotgrid opts
-        if pipe.SHOTGRID_AVAILABLE:
+        if _out_c and pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
-            if output.submittable:
-                _submit = wrap_fn(shotgrid.SUBMITTER.run, output)
+            if _out_c.submittable:
+                _submit = wrap_fn(shotgrid.SUBMITTER.run, _out_c)
                 _func = chain_fns(_submit, parent.redraw)
                 menu.add_action(
                     'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
-            _pub = shotgrid.SGC.find_pub_file(output, catch=True)
+            _pub = shotgrid.SGC.find_pub_file(_out_c, catch=True)
             if _pub:
                 _open_url = wrap_fn(webbrowser.open, _pub.to_url())
                 menu.add_action(
                     'Open in shotgrid', icon=_OPEN_URL_ICON, func=_open_url)
 
+        if not _out_c:
+            return
         menu.add_separator()
 
         if add:
@@ -308,6 +300,41 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         if _apply_lookdev_opts(output, ref):
             self._add_output_lookdev_opts(
                 menu, lookdev=output, ref=ref, ignore_ui=ignore_ui)
+
+    def _add_output_path_opts(
+            self, menu, output, output_c, delete, delete_callback):
+        """Add path-specific output options.
+
+        Args:
+            menu (QMenu): menu to add options to
+            output (CPOutput): output to add options for
+            output_c (CCPOutput): cacheable version of output
+            delete (bool): include delete option
+            delete_callback (fn): callback to execute on output deletion
+        """
+        _delete_callback = delete_callback or self.ui.SOutputs.redraw
+
+        if isinstance(output, Video):
+            menu.add_video_actions(
+                output, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(output, Seq):
+            menu.add_seq_actions(
+                output, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(output, File):
+            menu.add_file_actions(
+                output, delete_callback=_delete_callback, delete=delete)
+        else:
+            raise ValueError(output)
+
+        if (
+                output_c and
+                output_c.content_type in ('Render', 'Video') and
+                self.work):
+            menu.add_action(
+                'Set as thumbnail', icon=icons.find('Picture'),
+                func=wrap_fn(self._set_work_thumb, output))
+
+        menu.add_separator()
 
     def _add_output_find_opts(self, menu, find_work, ref, output):
         """Add find options for the given output.
@@ -445,7 +472,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         for _label, _refs in _to_add:
 
             _refs = [_ref for _ref in _refs
-                     if _ref.output.pini_task != 'lookdev']
+                     if _ref.output and _ref.output.pini_task != 'lookdev']
 
             if ref:  # Attach existing ref
                 _funcs = []

@@ -1,3 +1,17 @@
+## [6.7.0] - Mon 2024-10-28 10:32
+### Summary
+ - Pini Helper:
+    - bugfix error on open scene tab with output missing from shotgrid (eehemann),
+### Updated
+ - pini.dcc.pipe_ref.CMayaRsProxyRef bugfix bad namespace,
+ - pini.pipe.cache.CCPEntitySG._update_publishes_cache also update sg,
+ - pini.pipe.shotgrid.SGCElem.__repr__ added using id,
+ - pini.pipe.shotgrid.SGCVersion.FIELDS added,
+ - pini.pipe.shotgrid.SGCEntity.find_pub_file allow id match,
+ - pini.pipe.shotgrid.SGCEntity.find_vers added,
+ - pini.tools.helper bugfix handling for outputs missing from cache,
+
+
 ## [6.6.0] - Fri 2024-10-25 09:02
 ### Summary
  - Pini Helper:

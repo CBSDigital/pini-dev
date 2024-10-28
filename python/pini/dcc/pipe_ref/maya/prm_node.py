@@ -206,7 +206,7 @@ class CMayaRsProxyRef(_CMayaNodeRef):
         _path = node.plug['fileName'].get_val().replace('.####.', '.%04d.')
         _LOGGER.debug(' - PATH %s', _path)
         super().__init__(
-            path=_path, namespace=str(self.top_node), node=node, top_node=_mesh)
+            path=_path, namespace=str(_mesh), node=node, top_node=_mesh)
 
     def update(self, out):
         """Update this node to a new output.
