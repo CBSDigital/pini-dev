@@ -30,7 +30,7 @@ class SCUiFailItem(qt.CListViewWidgetItem):  # pylint: disable=too-many-instance
         self.text = fail.msg
         self.margin = 5
         self.btn_h = 25
-        self.btn_w = 100
+        self.btn_w = fail.button_width or 100
 
         _n_actions = len(fail.actions)
         self.btns_height = (

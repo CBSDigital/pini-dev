@@ -327,7 +327,7 @@ def output_to_icon(output, overlay=None, force=False):
     _LOGGER.debug(' - BASIC TYPE %s', output.basic_type)
 
     # Get base icon
-    if not isinstance(output, cache.CCPOutputBase):
+    if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
         _icon = _NO_CACHE_OUTPUT_ICON
 
     else:
@@ -421,7 +421,7 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     Returns:
         (str): path to icon
     """
-    if not isinstance(output, cache.CCPOutputBase):
+    if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
         return _NO_CACHE_TYPE_ICON
     if output.basic_type == 'render':
         return RENDER_TYPE_ICON

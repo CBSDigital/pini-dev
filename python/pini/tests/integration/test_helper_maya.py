@@ -121,7 +121,7 @@ class TestHelper(unittest.TestCase):
 def _test_anim_workflow(progress, force, show_ctx):
 
     _helper = helper.obt_helper()
-    _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+    _shot = pipe.CACHE.obt(testing.TMP_SHOT)
     _asset = pipe.CACHE.obt(testing.TEST_ASSET)
     _rig_pub_g = _asset.find_publish(
         task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
@@ -133,8 +133,8 @@ def _test_anim_workflow(progress, force, show_ctx):
     dcc.new_scene(force=force)
     dcc.set_range(1001, 1005)
     _helper.ui.Refresh.click()
-    _helper.jump_to(_ety)
-    _work_dir = _ety.find_work_dir('anim', dcc_=dcc.NAME, catch=True)
+    _helper.jump_to(_shot)
+    _work_dir = _shot.find_work_dir('anim', dcc_=dcc.NAME, catch=True)
     if _work_dir:
         _helper.ui.WTasks.select_data(_work_dir)
     else:
@@ -187,11 +187,9 @@ def _test_anim_workflow(progress, force, show_ctx):
 
     # Test output context
     assert _helper.ui.SOutputs.selected_data()
-    _pos = _helper.ui.SOutputs.rect().center()
-    _menu = qt.CMenu(_helper.ui.SOutputs)
-    _helper._context__SOutputs(_menu)
-    if show_ctx:
-        _menu.exec_(_helper.ui.SOutputs.mapToGlobal(_pos))
+    _test_ctx(
+        widget=_helper.ui.SOutputs, method=_helper._context__SOutputs,
+        show_ctx=show_ctx)
 
     # Bring in rig
     progress.set_pc(20)
@@ -199,15 +197,13 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper.ui.SAdd.click()
     _helper._callback__SApply(force=True)
 
-    # Test scene ref context
+    # Test scene ref ctx
     _rig_ref = single(_helper.ui.SSceneRefs.all_data())
     _helper.ui.SSceneRefs.select_data(_rig_ref)
     assert _helper.ui.SSceneRefs.selected_data()
-    _pos = _helper.ui.SSceneRefs.rect().center()
-    _menu = qt.CMenu(_helper.ui.SSceneRefs)
-    _helper._context__SSceneRefs(_menu)
-    if show_ctx:
-        _menu.exec_(_helper.ui.SSceneRefs.mapToGlobal(_pos))
+    _test_ctx(
+        widget=_helper.ui.SSceneRefs, method=_helper._context__SSceneRefs,
+        show_ctx=show_ctx)
 
     # Test blast
     progress.set_pc(30)
@@ -238,13 +234,18 @@ def _test_anim_workflow(progress, force, show_ctx):
 def _test_lighting_workflow(progress, force, show_ctx):
 
     _helper = helper.obt_helper()
-    _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+    _shot = pipe.CACHE.obt(testing.TMP_SHOT)
+    _asset = pipe.CACHE.obt(testing.TEST_ASSET)
+    _lookdev_pub_g = _asset.find_publish(
+        task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        extn='ma', content_type='ShadersMa')
+    _lookdev_pub = pipe.CACHE.obt(_lookdev_pub_g)
 
     # Save lighting work
     dcc.new_scene(force=force)
     dcc.set_range(1001, 1005)
     progress.set_pc(50)
-    _work_dir = _ety.find_work_dir(task='lighting', catch=True)
+    _work_dir = _shot.find_work_dir(task='lighting', catch=True)
     if _work_dir:
         _helper.ui.WTasks.select_data(_work_dir)
     else:
@@ -263,12 +264,21 @@ def _test_lighting_workflow(progress, force, show_ctx):
     # Bring in abc
     progress.set_pc(60)
     _helper.ui.MainPane.select_tab('Scene')
-    pprint.pprint(_ety.find_outputs(extn='abc', tag='test'))
-    _abc = _ety.find_output(extn='abc', tag='test', ver_n='latest')
+    pprint.pprint(_shot.find_outputs(extn='abc', tag='test'))
+    _abc = _shot.find_output(extn='abc', tag='test', ver_n='latest')
     _helper.ui.SOutputs.select_data(_abc)
     _helper.ui.SAdd.click()
     assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
     _helper._callback__SApply(force=True)
+
+    # Test lookdev publish ctx
+    progress.set_pc(70)
+    _helper.ui.SOutputsPane.select_tab('Asset')
+    _helper.jump_to(_lookdev_pub)
+    assert _helper.ui.SOutputs.selected_data() == _lookdev_pub
+    _test_ctx(
+        widget=_helper.ui.SOutputs, method=_helper._context__SOutputs,
+        show_ctx=show_ctx)
 
     # Test render
     progress.set_pc(80)
@@ -278,3 +288,12 @@ def _test_lighting_workflow(progress, force, show_ctx):
     assert _render_h
     _render_h.ui.VersionUp.setChecked(False)
     _helper._callback__ERender(force=True, render_=False)
+
+
+def _test_ctx(widget, method, show_ctx):
+
+    _pos = widget.rect().center()
+    _menu = qt.CMenu(widget)
+    method(_menu)
+    if show_ctx:
+        _menu.exec_(widget.mapToGlobal(_pos))

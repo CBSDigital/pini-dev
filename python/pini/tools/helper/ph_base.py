@@ -425,33 +425,22 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         """
 
         # Check for shd yml file
-        _shd_yml = lookdev.metadata.get('shd_yml')
-        if not _shd_yml:
+        if not lookdev.content_type == 'ShadersMa':
             return
-        menu.shd_yml = File(pipe.map_path(_shd_yml))
 
         # Store shd yml on menu to avoid garbage collection
         menu.add_separator()
         menu.add_action(
-            'Edit shaders yaml', menu.shd_yml.edit, icon=icons.EDIT)
-
-        # Add print option
-        _ld_data = menu.shd_yml.read_yml()
-        _func = chain_fns(
-            wrap_fn(
-                _LOGGER.info,
-                strftime(
-                    'Published at %H:%M:%S on %a %D %b',
-                    lookdev.metadata.get('mtime'))),
-            wrap_fn(pprint.pprint, _ld_data))
+            'Edit shaders yaml', wrap_fn(_shd_yml_edit, lookdev),
+            icon=icons.EDIT)
         menu.add_action(
-            'Print shaders data', _func, icon=icons.PRINT)
+            'Print shaders data', _shd_yml_print, icon=icons.PRINT)
         menu.add_separator()
 
         # Add reapply to target option
         _trg = ref.find_target() if ref else None
         if _trg:
-            _text = 'Reapply to "{}"'.format(_trg.namespace)
+            _text = f'Reapply to "{_trg.namespace}"'
         else:
             _text = 'Reapply to target'
         _func = wrap_fn(ref.attach_to, _trg) if ref else None
@@ -480,7 +469,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                     _funcs += [wrap_fn(_ref.attach_shaders, ref)]
                 _func = chain_fns(*_funcs)
                 menu.add_action(
-                    'Assign to {} selection'.format(_label), _func,
+                    f'Assign to {_label} selection', _func,
                     icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
             else:  # Bring in new ref
                 _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
@@ -490,7 +479,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 _funcs += [self.ui.SSceneRefs.redraw]
                 _func = chain_fns(*_funcs)
                 menu.add_action(
-                    'Apply to {} selection'.format(_label), _func,
+                    f'Apply to {_label} selection', _func,
                     icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
 
     def _redraw__Job(self):
@@ -934,3 +923,28 @@ def _print_metadata(output):
     """
     _out = pipe.to_output(output)
     pprint.pprint(_out.metadata, width=300)
+
+
+def _shd_yml_edit(output):
+    """Edit shaders yml file for the given lookdev output.
+
+    Args:
+        output (CPOutput): lookdev output
+    """
+    _out_c = pipe.CACHE.obt(output)
+    _shd_yml = _out_c.metadata['shd_yml']
+    File(_shd_yml).edit()
+
+
+def _shd_yml_print(output):
+    """Print shaders yml data for the given lookdev output.
+
+    Args:
+        output (CPOutput): lookdev output
+    """
+    _out_c = pipe.CACHE.obt(output)
+    _shd_yml = _out_c.metadata['shd_yml']
+    _data = File(_shd_yml).read_yml()
+    _LOGGER.info(
+        strftime('Published at %H:%M:%S on %a %D %b', _out_c.updated_at))
+    pprint.pprint(_data, width=200)

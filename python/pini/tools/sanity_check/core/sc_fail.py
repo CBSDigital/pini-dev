@@ -11,17 +11,20 @@ _LOGGER = logging.getLogger(__name__)
 class SCFail(object):
     """Represent a check failure."""
 
-    def __init__(self, msg, node=None, fix=None):
+    def __init__(self, msg, node=None, fix=None, button_width=None):
         """Constructor.
 
         Args:
             msg (str): fail message
             node (any): fail node (if any)
             fix (fn): fix function (if any)
+            button_width (int): override default button with in sanity check
+                ui for this fail (to accommodate for long option names)
         """
         self.msg = msg
         self.actions = []
         self.node = node
+        self.button_width = button_width
         if node:
             self.add_action('Select node', wrap_fn(dcc.select_node, node))
         if fix:
