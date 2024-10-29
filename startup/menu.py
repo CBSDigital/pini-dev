@@ -11,6 +11,12 @@ _LOGGER = logging.getLogger('pini/menu.py')
 
 def _run_pini_install():
     """Install pini."""
+
+    # Setup pini
+    import pini_startup
+    pini_startup.init()
+
+    # Run installer
     from pini import install, testing
     testing.setup_logging()
     _file = inspect.getfile(_run_pini_install)

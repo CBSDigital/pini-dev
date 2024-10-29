@@ -406,6 +406,7 @@ def to_render_extn():
         (str): render extn (eg. jpg/exr)
     """
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _LOGGER.debug('TO RENDER EXTN %s', _ren)
     _fmt = None
     if _ren == 'arnold':
         if cmds.objExists('defaultArnoldDriver'):
@@ -419,7 +420,8 @@ def to_render_extn():
 
     elif _ren == 'redshift':
         _image = single(cmds.renderSettings(firstImageName=True))
-        _fmt = File(_image).extn
+        _LOGGER.debug(' - IMG %s', _image)
+        _, _fmt = _image.rsplit('.', 1)
 
     elif _ren == 'mayaSoftware':
         if cmds.objExists('defaultRenderGlobals'):
@@ -433,6 +435,7 @@ def to_render_extn():
     # Fix description in attr name (eg. "exr (multichannel)")
     if _fmt:
         _fmt = _fmt.split()[0]
+    _LOGGER.debug(' - FMT %s', _fmt)
 
     return _fmt
 

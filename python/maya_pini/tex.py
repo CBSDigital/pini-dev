@@ -53,7 +53,7 @@ class _Shader(pom.CNode):
         Args:
             obj (str): object to apply to
         """
-        _LOGGER.info('APPLY %s TO %s (%s)', self, obj, type(obj).__name__)
+        _LOGGER.debug('ASSIGN %s TO %s (%s)', self, obj, type(obj).__name__)
         if isinstance(obj, list):
             for _item in obj:
                 self.assign_to(_item)
@@ -65,7 +65,7 @@ class _Shader(pom.CNode):
         except ValueError:
             pass  # Possible face assignment
         _se = self.to_se(create=True)
-        _LOGGER.info(' - ADD %s TO %s', _obj, _se)
+        _LOGGER.debug(' - ADD %s TO %s', _obj, _se)
         cmds.sets(_obj, edit=True, forceElement=_se)
 
     def duplicate(self, name=None, upstream_nodes=True, class_=None):

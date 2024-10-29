@@ -25,8 +25,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
     def _update_publishes_cache(self):
         """Rebuild published file cache."""
         self.sg_entity.find_pub_files(force=True)
-        self.find_publishes(force=True)
-        self.job.find_publishes(force=True)
+        super()._update_publishes_cache()
 
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.

@@ -162,6 +162,12 @@ class CCPEntityBase(CPEntity):
         """
         raise NotImplementedError
 
+    def _update_publishes_cache(self):
+        """Rebuild published file cache."""
+        self._update_outputs_cache()
+        self.find_publishes(force=True)
+        self.job.find_publishes(force=True)
+
     def obt_work_dir(self, match, catch=False):
         """Find a work dir object within this entity.
 
@@ -187,18 +193,6 @@ class CCPEntityBase(CPEntity):
         if force:
             self._read_work_dirs(force=True)
         return super().find_work_dirs(task=task, **kwargs)
-
-    # def _read_work_dirs(self, class_=None, force=False):
-    #     """Read all work dirs for this entity.
-
-    #     Args:
-    #         class_ (class): override work dir class
-    #         force (bool): rebuild cache
-
-    #     Returns:
-    #         (CCPWorkDir): work dirs
-    #     """
-    #     return super()._read_work_dirs(class_=class_)
 
     @pipe_cache_on_obj
     def _read_work_dirs(self, class_=None, force=False):

@@ -1,3 +1,13 @@
+## [6.7.1] - Tue 2024-10-29 09:06
+### Summary
+ - Pini Helper:
+    - maya redshift deadline bugfix error on submit if animation off (lcayo),
+### Updated
+ - pini.pipe.CCPEntityBase._update_publishes_cache added,
+ - maya_pini.utils.to_render_extn bugfix error on rs with anim disabled,
+ - startup/menu.py added pini_startup call,
+
+
 ## [6.7.0] - Mon 2024-10-28 10:32
 ### Summary
  - Pini Helper:

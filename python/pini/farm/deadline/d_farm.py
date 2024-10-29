@@ -242,7 +242,7 @@ class CDFarm(base.CFarm):
             qt.notify(
                 'Submitted {:d} layer{} to deadline.\n\nBatch name:\n{}'.format(
                     len(_lyrs), plural(_lyrs), _batch),
-                title='Render Submitted', icon=d_utils.ICON)
+                title='Render submitted', icon=d_utils.ICON)
 
         return _render_jobs + [_update_job]
 
