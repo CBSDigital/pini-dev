@@ -268,6 +268,8 @@ def is_abs(path):
     Returns:
         ():
     """
+    if not path:
+        return False
     return path.startswith('/') or (len(path) >= 2 and path[1] == ':')
 
 

@@ -213,7 +213,7 @@ class TestSanityCheck(unittest.TestCase):
         _check.reset_and_run()
         pprint.pprint(_check.fails)
         _fail = single(_check.fails)
-        assert _fail.msg == 'Empty cache set'
+        assert_eq(_fail.msg, 'Empty cache set')
         _fail.fix()
         _check.reset_and_run()
         pprint.pprint(_check.fails)

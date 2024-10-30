@@ -1,3 +1,14 @@
+## [6.9.0] - Wed 2024-10-30 14:52
+### Summary
+ - Sanity Check:
+    - check cache set better error on no geo in cache set (mkim),
+### Updated
+ - pini.utils.is_abs added handling for None,
+ - pini.pipe.CPTemplate added handling for job as None,
+ - pini.tools.pyui.install added col arg,
+ - pini.tools.sanity_check.CheckCacheSet better error on no geo,
+
+
 ## [6.8.0] - Tue 2024-10-29 13:52
 ### Summary
  - Pini Helper:

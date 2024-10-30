@@ -175,7 +175,8 @@ class CheckCacheSet(core.SCMayaCheck):
             return
 
         # Check set geos
-        _geos = utils.read_cache_set_geo()
+        _geos = m_pipe.read_cache_set(set_=_set, mode='geo')
+        _tfms = m_pipe.read_cache_set(set_=_set, mode='transforms')
         self.write_log('Geos %s', _geos)
         if not _geos:
 
@@ -192,7 +193,11 @@ class CheckCacheSet(core.SCMayaCheck):
             _fix = None
             if _top_node:
                 _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
-            self.add_fail('Empty cache set', fix=_fix)
+            if _tfms:
+                _msg = 'No geo in cache set'
+            else:
+                _msg = 'Empty cache set'
+            self.add_fail(_msg, fix=_fix)
             return
 
         # Check for referenced geo in cache set

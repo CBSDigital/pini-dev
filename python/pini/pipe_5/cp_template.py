@@ -800,11 +800,12 @@ def _glob_rel_templates(templates, dir_, job):  # pylint: disable=too-many-branc
                     _LOGGER.log(9, '     - PARSE FAILED %s', _path.path)
                     continue
                 _LOGGER.log(9, '     - DATA %s', _data)
-                try:
-                    validate_tokens(_data, job=job)
-                except ValueError:
-                    _LOGGER.log(9, '     - VALIDATE TOKENS FAILED')
-                    continue
+                if job:
+                    try:
+                        validate_tokens(_data, job=job)
+                    except ValueError:
+                        _LOGGER.log(9, '     - VALIDATE TOKENS FAILED')
+                        continue
 
                 # Apply data from this dir to child templates and
                 # add them to list of templates to apply in subdir
@@ -838,10 +839,11 @@ def _glob_rel_templates(templates, dir_, job):  # pylint: disable=too-many-branc
                 _data = _fin_tmpl.parse(_abs_path.path)
             except lucidity.ParseError:
                 continue
-            try:
-                validate_tokens(_data, job=job)
-            except ValueError:
-                continue
+            if job:
+                try:
+                    validate_tokens(_data, job=job)
+                except ValueError:
+                    continue
             _path = _path.to_abs(root=dir_)
             _result = _fin_tmpl, _path
 
