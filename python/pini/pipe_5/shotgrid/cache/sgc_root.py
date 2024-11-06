@@ -150,32 +150,26 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         return _sg_ety.find_pub_file(match, catch=catch)
 
     def find_pub_files(
-            self, job=None, entity=None, work_dir=None,
-            progress=True, force=False, **kwargs):
+            self, entity=None, work_dir=None, force=False, **kwargs):
         """Search pub files in the cache.
 
         Args:
-            job (CPJob): job to search
             entity (CPEntity): filter by entity
             work_dir (CPWorkDir): filter by work dir
-            progress (bool): show progress dialog
             force (bool): force rebuild cache
 
         Returns:
             (SGCPubFile list): pub files
         """
-        _job = None
-        if job:
-            _job = job
-        if not _job and entity:
-            _job = entity.job
-        if not _job and work_dir:
-            _job = work_dir.job
-        assert _job
-        _sgc_proj = self.find_proj(_job)
-        return _sgc_proj.find_pub_files(
-            entity=entity, work_dir=work_dir, force=force,
-            progress=progress, **kwargs)
+        _entity = None
+        if entity:
+            _entity = entity
+        if _entity and work_dir:
+            _entity = work_dir.entity
+        assert _entity
+        _sgc_ety = self.find_entity(_entity)
+        return _sgc_ety.find_pub_files(
+            work_dir=work_dir, force=force, **kwargs)
 
     def find_pub_type(self, match, type_='File', force=False):
         """Find published file type.
@@ -201,7 +195,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         # Try using type suffix
         _file_matches = [
             _type for _type in _types
-            if _type.code == '{} {}'.format(_match_s.capitalize(), type_)]
+            if _type.code == f'{_match_s.capitalize()} {type_}']
         if len(_file_matches) == 1:
             return single(_file_matches)
 

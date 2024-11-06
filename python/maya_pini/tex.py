@@ -5,7 +5,6 @@ import logging
 from maya import cmds
 
 from pini import qt
-from pini.tools import release
 from pini.utils import single, File, Dir, abs_path, EMPTY, Image
 
 from maya_pini import open_maya as pom
@@ -37,15 +36,6 @@ class _Shader(pom.CNode):
             (CPlug): output colour
         """
         return self.plug[self.out_col_attr]
-
-    def apply_to(self, obj):
-        """Assign this shader to the given object.
-
-        Args:
-            obj (str): object to apply to
-        """
-        release.apply_deprecation('11/04/24', 'Use assign_to')
-        self.assign_to(obj)
 
     def assign_to(self, obj):
         """Assign this shader to the given object.
@@ -224,15 +214,6 @@ class _Shader(pom.CNode):
                 continue
             _LOGGER.info(' - UNAPPLY %s', _assign)
             cmds.sets(_assign, edit=True, remove=_engine)
-
-    def unapply(self, node=None):
-        """Remove this shader from its geometry.
-
-        Args:
-            node (str): only remove the given geometry node
-        """
-        release.apply_deprecation('11/04/24', 'Use unassign')
-        self.unassign(node=node)
 
 
 class _Lambert(_Shader):

@@ -92,8 +92,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         from pini import qt
         qt.ok_cancel(
-            'Create new job using <i>{}</i> structure?<br><br>{}'.format(
-                cfg_name, self.path),
+            f'Create new job using <i>{cfg_name}</i> structure?'
+            f'<br><br>{self.path}',
             icon=icons.find('Rosette'), title='Create Job')
         self.mkdir()
         self.setup_cfg(cfg_name)
@@ -153,7 +153,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         return cp_template.build_job_templates(job=self, catch=catch)
 
     def find_template(
-            self, type_, profile=None, dcc_=None, alt=EMPTY,
+            self, type_, profile=None, dcc_=EMPTY, alt=EMPTY,
             has_key=None, want_key=None, catch=False):
         """Find a single template within this job's templates.
 
@@ -194,8 +194,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
                 9, 'FAILED TO FIND TEMPLATE tmpls=%d has_key=%s want_key=%s '
                 'tmpls=%s', len(_tmpls), has_key, want_key, _tmpls)
             raise ValueError(
-                'Failed to find template "{}" in {}'.format(
-                    type_, self.name))
+                f'Failed to find template "{type_}" in {self.name}')
 
     @cache_result
     def find_template_by_pattern(self, pattern):
@@ -209,11 +208,11 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         _tmpl = single(self.find_templates(pattern=pattern), catch=True)
         if not _tmpl:
-            raise ValueError('Failed to match pattern {}'.format(pattern))
+            raise ValueError('Failed to match pattern {pattern}')
         return _tmpl
 
     def find_templates(
-            self, type_=None, profile=None, dcc_=None, alt=EMPTY, has_key=None,
+            self, type_=None, profile=None, dcc_=EMPTY, alt=EMPTY, has_key=None,
             want_key=None, pattern=None):
         """Find templates in this job.
 
@@ -252,7 +251,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             _tmpls.append(_tmpl)
 
         # Apply complex filters
-        if dcc_:
+        if dcc_ is not EMPTY:
             _tmpls = self._find_templates_dcc(_tmpls, dcc_=dcc_)
         if has_key:
             _tmpls = self._find_templates_has_key(_tmpls, has_key=has_key)
@@ -351,8 +350,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         if not force:
             from pini import qt
             qt.ok_cancel(
-                'Create new asset type {} in {}?\n\n{}'.format(
-                    asset_type, self.name, _type_dir.path),
+                f'Create new asset type {asset_type} in {self.name}?'
+                f'\n\n{_type_dir.path}',
                 icon=icons.find('Plus'), title='Create Asset Type',
                 parent=parent)
 
@@ -407,7 +406,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         # Match by label
         for _asset in _assets:
-            _label = '{}.{}'.format(_asset.asset_type, _asset.name)
+            _label = f'{_asset.asset_type}.{_asset.name}'
             _LOGGER.debug(' - TESTING %s', _label)
             if _label == match:
                 return _asset

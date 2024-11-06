@@ -228,7 +228,7 @@ def _output_to_entity_icon(output):
         if output.asset:
             _uid = f'{output.asset_type}.{output.asset}'
         elif output.shot:
-            _uid = output.to_output(ver_n=0).path
+            _uid = output.stream
         else:
             raise ValueError(output)
         _LOGGER.debug(' - USING RAND UID %s', _uid)
@@ -394,14 +394,14 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
         _base = _ety_name
     elif output.type_ == 'cache' and output.output_type == 'cam':
         _mode = 'cache'
-        _base = '{}_{}'.format(_ety_name, output.output_name)
+        _base = f'{_ety_name}_{output.output_name}'
     elif output.type_ == 'cache' and output.output_name == 'restCache':
         _base = _ety_name
     elif output.type_ in ['cache', 'cache_seq', 'ass_gz']:
         _mode = 'cache'
         _base = output.output_name or _ety_name
     elif isinstance(output, (Seq, Video)):
-        _ver = 'v{:03d}'.format(output.ver_n)
+        _ver = f'v{output.ver_n:03d}'
         _base = output.base.replace(_ver, '').strip('_')
     else:
         _LOGGER.info(' - TYPE %s', output.type_)

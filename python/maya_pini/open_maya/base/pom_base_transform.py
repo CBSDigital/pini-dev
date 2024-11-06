@@ -195,7 +195,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
 
             _LOGGER.debug(' - CHILD %s', _child)
 
-            if filter_ and not passes_filter(_child, filter_):
+            if filter_ and not passes_filter(str(_child), filter_):
                 continue
 
             # Test if this result should be added

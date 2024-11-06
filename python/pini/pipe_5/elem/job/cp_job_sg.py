@@ -151,7 +151,9 @@ class CPJobSG(cp_job_base.CPJobBase):
         _match = match
         _seq = sequence
         if not _seq:
-            _sg_shot = self.sg_proj.find_shot(match)
+            _sg_shot = self.sg_proj.find_shot(match, catch=catch)
+            if not _sg_shot:
+                return None
             _LOGGER.debug(' - SG SHOT %s', _sg_shot)
             _seq = _sg_shot.sequence
             _match = _sg_shot.name

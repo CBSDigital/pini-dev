@@ -463,7 +463,7 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
         if (
                 isinstance(_root, QtCore.QPointF) or
                 isinstance(_size, QtCore.QSizeF)):
-            _class = QtCore.QRectF
+            _class = qt.CRectF
         else:
             _class = QtCore.QRect
 

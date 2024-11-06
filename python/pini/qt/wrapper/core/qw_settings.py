@@ -162,7 +162,7 @@ class CSettings(QtCore.QSettings, File):
         """
         from pini import testing, qt
 
-        # Check for deprecated disable save settings
+        # Check for deprecated disable save settings 04/11/24
         if (
                 testing.dev_mode() and
                 getattr(widget, 'disable_save_settings', False)):

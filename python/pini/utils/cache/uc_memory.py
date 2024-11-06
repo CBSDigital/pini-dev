@@ -155,7 +155,7 @@ def _get_args_key(func, args, kwargs, use_args=None):
     _LOGGER.debug('[cache_result] GET ARGS KEY %s %s %s',
                   func.__name__, args, kwargs)
 
-    _arg_spec = _get_args(func)  # pylint: disable=deprecated-method
+    _arg_spec = _get_args(func)
     _defaults = _arg_spec.defaults or []
     _args = list(_arg_spec.args)
 

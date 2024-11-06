@@ -98,9 +98,9 @@ class _CSGHandler(shotgun_api3.Shotgun):
                 _bad_fields = sorted(set(fields) - set(_type_fields))
                 if _bad_fields:
                     _LOGGER.info('FIELDS %s', self.find_fields(entity_type))
+                    _bad_fields_s = '/'.join(_bad_fields)
                     raise RuntimeError(
-                        'Bad field{} {}'.format(
-                            plural(_bad_fields), '/'.join(_bad_fields)))
+                        f'Bad field{plural(_bad_fields)} {_bad_fields_s}')
 
         _start = time.time()
         _result = super().find(
@@ -182,7 +182,8 @@ def find(
 
     _filters = list(filters) if filters else []
     if job:
-        _filters.append(shotgrid.to_job_filter(job))
+        _proj_s = shotgrid.SGC.find_proj(job)
+        _filters.append(_proj_s.to_filter())
     if id_ is not None:
         _filters.append(('id', 'is', id_))
     _results = to_handler().find(

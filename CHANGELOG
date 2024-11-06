@@ -1,3 +1,28 @@
+## [6.10.0] - Wed 2024-11-06 12:40
+### Summary
+ - Sanity Check:
+    - check render res bugfix error on apply res in arnold (eehemann),
+ - Pini Helper:
+    - bugfix right-click on render output,
+### Updated
+ - pini.dcc.pipe_ref.CMayaShadersRef.attach_to removed legacy ai_override_sets handling,
+ - pini.pipe_2 removed legacy code,
+ - pini.pipe.CPJob find_template/find_templates updated dcc_ default None -> EMPTY,
+ - pini.pipe.CPJobSG.find_shot bugfix catch arg not working,
+ - pini.pipe.cache.CCPOutputBase.stream added,
+ - pini.pipe.shotgrid.find bugfix error on job arg,
+ - pini.pipe.shotgrid.SGCProj.find_shot added catch arg,
+ - pini.pipe.shotgrid.SGCRoot.find_pub_file removed job arg,
+ - pini.qt.CRectF added,
+ - pini.qt.CPixmap.save_as disabled apply_cmyk flag,
+ - pini.qt.to_rect use CRectF for float rects by default,
+ - pini.tools.helper implement jump_to for shot + non-latest outputs,
+ - pini.icons bugfix leaving html file open,
+ - maya_pini.set_render_res added arnold handling,
+ - maya_pini.open_maya.CBaseTransform.find_children bugfix error on filter,
+ - maya_pini.tex.Shader apply_to/unapply removed deprecated methods,
+
+
 ## [6.9.0] - Wed 2024-10-30 14:52
 ### Summary
  - Sanity Check:

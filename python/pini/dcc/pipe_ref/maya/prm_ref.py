@@ -322,9 +322,6 @@ class CMayaShadersRef(CMayaRef):
 
         # Obtain override sets from shd data
         _sets = self.shd_data.get('override_sets', {})
-        if not _sets:
-            # Legacy format - deprecated 10/07/24
-            _sets = self.shd_data.get('ai_override_sets', {})
 
         # Rebuild sets with geo from this ref
         for _set_name, _clean_geos in _sets.items():

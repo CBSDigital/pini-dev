@@ -51,8 +51,10 @@ class CLSceneTab(object):
         _tab = None
         if self.target and isinstance(self.target, pipe.CPOutputBase):
             _LOGGER.debug(' - TARGET %s', self.target)
-            if self.target.basic_type == 'publish':
+            if self.target.profile == 'asset':
                 _tab = 'Asset'
+            elif self.target.basic_type == 'cache':
+                _tab = 'Cache'
         elif switch_tabs:
             _task = pipe.cur_task(fmt='pini')
             _map = {'anim': 'Asset',
@@ -190,25 +192,25 @@ class CLSceneTab(object):
             _data.append([
                 _out for _out in _outs if _output_to_task_label(_out) == _task])
 
-        # Select default
+        # Determine selection
         if self.target in _outs:
-            _select = single([
+            _sel = single([
                 _task for _task, _task_outs in safe_zip(_tasks, _data)
                 if self.target in _task_outs])
             _LOGGER.debug(
-                '   - FIND SELECTED TASK FROM TARGET %s %s', _select,
+                '   - FIND SELECTED TASK FROM TARGET %s %s', _sel,
                 self.target)
         elif _mode == 'render':
-            _select = 'lighting'
+            _sel = 'lighting'
         elif 'rig' in _tasks:  # Select default before add all
-            _select = 'rig'
+            _sel = 'rig'
         elif _tasks:
-            _select = _tasks[0]
+            _sel = _tasks[0]
         else:
-            _select = None
-        if not _select:
-            _select = {'anim': 'rig'}.get(pipe.cur_task(), _select)
-        _LOGGER.debug('   - SELECT %s', _select)
+            _sel = None
+        if not _sel:
+            _sel = {'anim': 'rig'}.get(pipe.cur_task(), _sel)
+        _LOGGER.debug('   - SELECT %s', _sel)
 
         if len(_tasks) > 1:
             _tasks.insert(0, 'all')
@@ -216,43 +218,45 @@ class CLSceneTab(object):
 
         # Update ui
         self.ui.SOutputTask.set_items(
-            _tasks, data=_data, emit=False, select=_select)
+            _tasks, data=_data, emit=False, select=_sel)
         self.ui.SOutputTask.setEnabled(bool(_tasks))
         for _elem in [self.ui.SOutputTask, self.ui.SOutputTaskLabel]:
             _elem.setVisible(_type != 'plate')
         self.ui.SOutputTask.setEnabled(len(_tasks) > 1)
-        if not _select:
+        if not _sel:
             self.settings.apply_to_widget(self.ui.SOutputTask, emit=False)
 
         self.ui.SOutputTag.redraw()
 
     def _redraw__SOutputTag(self):
 
-        _select = None
         _outs = self.ui.SOutputTask.selected_data() or []
         _tags = sorted({_out.tag for _out in _outs}, key=pipe.tag_sort)
         _data = [
             [_out for _out in _outs if _out.tag == _tag]
             for _tag in _tags]
+        _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
+
+        # Determine selections
+        _sel = None
         if len(_tags) > 1:
             _tags.insert(0, 'all')
             _data.insert(0, _outs)
-            _select = 'all'
+            _sel = 'all'
         if (
                 isinstance(self.target, pipe.CPOutputBase) and
                 self.target.tag in _tags):
-            _select = self.target.tag
-        _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
+            _sel = self.target.tag
 
         self.ui.SOutputTag.set_items(
-            _labels, data=_data, emit=True, select=_select)
+            _labels, data=_data, emit=True, select=_sel)
         self.ui.SOutputTag.setEnabled(len(_labels) > 1)
 
     def _redraw__SOutputFormat(self):
 
         _pane = self.ui.SOutputsPane.current_tab_text()
 
-        _select = None
+        _sel = None
         _outs = self.ui.SOutputTag.selected_data() or []
         _extns = sorted({_out.extn for _out in _outs})
         _data = [
@@ -261,7 +265,7 @@ class CLSceneTab(object):
         if len(_extns) > 1:
             _extns.insert(0, 'all')
             _data.insert(0, _outs)
-            _select = 'all'
+            _sel = 'all'
 
         # Apply default format
         _fmts_order = []
@@ -271,11 +275,11 @@ class CLSceneTab(object):
             _fmts_order = ['abc']
         for _fmt in _fmts_order:
             if _fmt in _extns:
-                _select = _fmt
+                _sel = _fmt
                 break
 
         self.ui.SOutputFormat.set_items(
-            _extns, data=_data, emit=True, select=_select)
+            _extns, data=_data, emit=True, select=_sel)
         self.ui.SOutputFormat.setEnabled(len(_extns) > 1)
 
     def _redraw__SOutputVers(self):
@@ -290,7 +294,14 @@ class CLSceneTab(object):
         _opts.append("latest")
         _opts.append("all")
 
+        # Determine selection
         _sel = _cur if _cur in _opts else "latest"
+        if (
+                isinstance(self.target, pipe.CPOutputBase) and
+                self.target in _outs and
+                not self.target.is_latest()):
+            _sel = 'all'
+
         self.ui.SOutputVers.set_items(_opts, select=_sel, emit=True)
         self.ui.SOutputVers.setEnabled(bool(_outs))
 
@@ -365,10 +376,10 @@ class CLSceneTab(object):
 
             _LOGGER.debug(' - READ OUTPUT %s', _out)
             if _out.owner:
-                _text += 'Owner: {}\n'.format(_out.updated_by)
+                _text += f'Owner: {_out.updated_by}\n'
             if _out.updated_at:
-                _text += 'Exported: {}\n'.format(
-                    strftime('%a %d %b %H:%M', _out.updated_at))
+                _t_str = strftime('%a %d %b %H:%M', _out.updated_at)
+                _text += f'Exported: {_t_str}\n'
 
             # Add range
             if not _out.range_:
@@ -400,8 +411,8 @@ class CLSceneTab(object):
         _outs = [_out for _out in self.ui.SOutputs.selected_datas()
                  if dcc.can_reference_output(_out)]
         _mode = self.ui.SOutputsPane.current_tab_text()
-        self.ui.SAdd.setText('Add {:d} {}{}'.format(
-            len(_outs), _mode.lower(), plural(_outs)))
+        self.ui.SAdd.setText(
+            f'Add {len(_outs):d} {_mode.lower()}{plural(_outs)}')
         self.ui.SAdd.setEnabled(bool(_outs))
 
     def _redraw__SSceneRefs(self):
@@ -493,8 +504,8 @@ class CLSceneTab(object):
                     len(self._staged_updates) +
                     len(self._staged_renames))
         self.ui.SApply.setEnabled(bool(_updates))
-        self.ui.SApply.setText('Apply {:d} update{}'.format(
-            _updates, plural(_updates)))
+        self.ui.SApply.setText(
+            f'Apply {_updates:d} update{plural(_updates)}')
 
     def _callback__SOutputsPane(self):
 
@@ -659,8 +670,7 @@ class CLSceneTab(object):
         # Execute updates
         if not force:
             qt.ok_cancel(
-                'Apply {:d} scene update{}?'.format(
-                    len(_updates), plural(_updates)),
+                f'Apply {len(_updates):d} scene update{plural(_updates)}?',
                 parent=self, icon=icons.find('Gear'))
         for _update in qt.progress_bar(
                 _updates, 'Applying {:d} update{}', parent=self):
@@ -726,9 +736,9 @@ class CLSceneTab(object):
                     ('viewport', _view_refs),
                     ('helper', _helper_refs),
             ]:
+                _trg_label = _out.output_name or _out.asset
                 menu.add_action(
-                    'Swap {} selection to {}'.format(
-                        _label, _out.output_name or _out.asset),
+                    f'Swap {_label} selection to {_trg_label}',
                     wrap_fn(self._stage_replace_refs, output=_out, refs=_refs),
                     enabled=bool(_refs), icon=_REPLACE_ICON)
 
@@ -880,7 +890,7 @@ class CLSceneTab(object):
             if not _ver.ver_n:
                 _label = 'versionless'
             else:
-                _label = 'v{:03d}'.format(_ver.ver_n)
+                _label = f'v{_ver.ver_n:03d}'
             _fn = wrap_fn(self._stage_update, ref=ref, output=_ver)
             _vers_menu.add_action(_label, _fn, icon=_icon, enabled=_enabled)
             if not _idx and not _ver.ver_n:
@@ -913,7 +923,7 @@ class CLSceneTab(object):
             menu (QMenu): menu to add items to
             refs (CPipeRef list): references
         """
-        menu.add_label('{:d} refs selected'.format(len(refs)))
+        menu.add_label(f'{len(refs):d} refs selected')
         menu.add_separator()
 
         # Add delete option
@@ -1148,9 +1158,9 @@ def _output_to_label(out):
     if out.tag:
         _label += ' '+out.tag
     if isinstance(out, pipe.CPOutputSeq):
-        _fmt = ' ({})'.format(out.extn)
+        _fmt = f' ({out.extn})'
     if out.ver_n:
-        _label += ' v{:03d}{}'.format(out.ver_n, _fmt)
+        _label += f' v{out.ver_n:03d}{_fmt}'
     return _label
 
 
@@ -1164,7 +1174,7 @@ def _output_to_task_label(out):
         (str): task label (eg. rig, surf/dev)
     """
     if out.step:
-        return '{}/{}'.format(out.step, out.task)
+        return f'{out.step}/{out.task}'
     return out.task
 
 
@@ -1184,7 +1194,7 @@ class _StagedRef(pipe_ref.CPipeRef):  # pylint: disable=abstract-method
                 executed (this is used to display lookdev attaches which
                 will be imported as part of an abc import)
         """
-        super(_StagedRef, self).__init__(output, namespace=namespace)
+        super().__init__(output, namespace=namespace)
         self.attach = attach
         self.ignore_on_apply = ignore_on_apply
 

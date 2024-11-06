@@ -131,6 +131,17 @@ class CCPOutputBase(elem.CPOutputBase):
             self.metadata.get('asset'))  # Legacy 18/10/24 (from Cache)
 
     @property
+    def stream(self):
+        """Obtain stream path for this output.
+
+        This is the path to version zero of this output.
+
+        Returns:
+            (str): version zero path
+        """
+        return self.to_stream()
+
+    @property
     def updated_at(self):
         """Obtain time when this output was last updated.
 

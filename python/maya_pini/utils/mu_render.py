@@ -35,7 +35,7 @@ def _apply_globals_settings(path, col_mgt=None, animation=False):
     cmds.setAttr('defaultArnoldDriver.aiTranslator', _extn, type='string')
     cmds.setAttr("defaultArnoldDriver.colorManagement", int(_col_mgt))
     cmds.setAttr('defaultArnoldDriver.prefix',
-                 "{}/{}".format(path.dir, path.base), type='string')
+                 f"{path.dir}/{path.base}", type='string')
     _LOGGER.debug(' - COL MGT %d', _col_mgt)
 
     cmds.setAttr("defaultRenderGlobals.animation", animation)
@@ -389,7 +389,7 @@ def set_render_res(res: tuple):
         res (tuple): width/height to apply
     """
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-    if _ren in ('mayaSoftware', 'redshift'):
+    if _ren in ('mayaSoftware', 'redshift', 'arnold'):
         cmds.setAttr('defaultResolution.width', res[0])
         cmds.setAttr('defaultResolution.height', res[1])
     elif _ren == 'vray':

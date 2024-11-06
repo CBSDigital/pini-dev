@@ -183,12 +183,13 @@ class SGCProj(sgc_elem.SGCElem):
             _etys += self.find_shots(force=force, **kwargs)
         return _etys
 
-    def find_shot(self, match=None, filter_=None):
+    def find_shot(self, match=None, filter_=None, catch=False):
         """Find shot in this job.
 
         Args:
             match (str): match by name/path
             filter_ (str): apply shot name filter
+            catch (bool): no error if fail to find shot
 
         Returns:
             (SGCShot): matching shot
@@ -213,6 +214,8 @@ class SGCProj(sgc_elem.SGCElem):
         if len(_match_shots):
             return single(_match_shots)
 
+        if catch:
+            return None
         raise ValueError(match, filter_)
 
     def find_shots(self, filter_=None, force=False, **kwargs):

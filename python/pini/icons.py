@@ -33,7 +33,7 @@ class _Emoji(File):
             name (str): file label
             url (str): emojipedia download url
         """
-        super(_Emoji, self).__init__(file_)
+        super().__init__(file_)
         self.name = name
         self.url = url
         self.index = int(self.path.split('.')[-2])
@@ -45,11 +45,11 @@ class _Emoji(File):
             (unicode): unicode char
         """
         _hash = (re.split('[_.]', self.url.upper())[-2]).split('-')[0]
-        return eval(r"u'\U000{}'".format(_hash))  # pylint: disable=eval-used
+        return eval(fr"u'\U000{_hash}'")  # pylint: disable=eval-used
 
     def __repr__(self):
-        return '<{}[{:d}]:{}>'.format(
-            type(self).__name__.strip('_'), self.index, self.name)
+        _type = type(self).__name__.strip('_')
+        return f'<{_type}[{self.index:d}]:{self.name}>'
 
 
 class _EmojiIndexParser(HTMLParser):
@@ -99,8 +99,8 @@ class _EmojiSet(Seq):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(_EmojiSet, self).__init__(*args, **kwargs)
-        self.index = '{}/index.html'.format(self.dir)
+        super().__init__(*args, **kwargs)
+        self.index = f'{self.dir}/index.html'
         self._matches = {}
 
     def find(self, match, catch=False, verbose=0):
@@ -161,10 +161,8 @@ class _EmojiSet(Seq):
                     if verbose:
                         for _emoji in sorted(_emojis):
                             _LOGGER.info(' - %s', _emoji.name)
-                    raise ValueError(
-                        'Failed to match {} - {}'.format(
-                            match, sorted([
-                                _emoji.name for _emoji in _emojis])))
+                    _emojis = sorted([_emoji.name for _emoji in _emojis])
+                    raise ValueError(f'Failed to match {match} - {_emojis}')
 
             self._matches[match] = _emoji
 
@@ -211,7 +209,9 @@ class _EmojiSet(Seq):
         Returns:
             (EmojiIndexParser): parser
         """
-        _body = codecs.open(self.index, encoding='utf-8').read()
+        _hook = codecs.open(self.index, encoding='utf-8')
+        _body = _hook.read()
+        _hook.close()
         _parser = _EmojiIndexParser()
         _parser.feed(_body)
         return _parser

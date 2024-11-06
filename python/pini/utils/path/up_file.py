@@ -130,7 +130,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         shutil.copyfile(self.path, _trg.path)
 
     def delete(
-            self, wording='Delete', execute=True, icon=None, force=False,
+            self, wording='delete', execute=True, icon=None, force=False,
             verbose=True):
         """Delete this file.
 
@@ -292,7 +292,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """
         up_utils.error_on_file_system_disabled()
         _trg = File(target)
-        _trg.delete(force=force, wording='Replace')
+        _trg.delete(force=force, wording='replace')
         _trg.test_dir()
         shutil.move(self.path, _trg.path)
 

@@ -5,14 +5,14 @@ import os
 import sys
 
 from pini.utils import (
-    File, TMP_PATH, abs_path, basic_repr, error_on_file_system_disabled,
+    File, abs_path, basic_repr, error_on_file_system_disabled,
     single, TMP)
 
 from .qw_painter import CPainter
 from ...q_mgr import QtGui, Qt, QtCore
 
 _LOGGER = logging.getLogger(__name__)
-TEST_IMG = TMP_PATH+'/test.jpg'
+TEST_IMG = TMP.to_file('test.jpg')
 
 # Set pixmap formats
 if sys.version_info.major == 3:
@@ -518,14 +518,15 @@ class CPixmap(QtGui.QPixmap):
                   format=_fmt, quality=quality)
 
         if apply_cmyk:
-            import PIL
-            _LOGGER.info(' - APPLY CMYK %s', _file)
-            _tmp = TMP.to_file(f'tmp.{_file.extn}')
-            _LOGGER.info(' - TMP IMG %s', _tmp)
-            _file.move_to(_tmp, force=True)
-            _fmt = {'jpg': 'JPEG'}.get(_file.extn, _file.extn.upper())
-            _cmyk = PIL.Image.open(_tmp.path).convert('CMYK')
-            _cmyk.save(_file.path, _fmt, optimize=True)
+            # import PIL
+            # _LOGGER.info(' - APPLY CMYK %s', _file)
+            # _tmp = TMP.to_file(f'tmp.{_file.extn}')
+            # _LOGGER.info(' - TMP IMG %s', _tmp)
+            # _file.move_to(_tmp, force=True)
+            # _fmt = {'jpg': 'JPEG'}.get(_file.extn, _file.extn.upper())
+            # _cmyk = PIL.Image.open(_tmp.path).convert('CMYK')
+            # _cmyk.save(_file.path, _fmt, optimize=True)
+            raise NotImplementedError
 
         assert _file.exists()
 
