@@ -158,3 +158,111 @@ def check_test_asset(force=False):
         extn='ma')
 
     _check_lookdev(force=force, model_pub=_mdl_pub)
+
+
+def find_test_abc(force=False):
+    """Find test abc output, creating if needed.
+
+    Args:
+        force (bool): lose unsaved changes without confirmation
+
+    Returns:
+        (CCPOutputFile): abc
+    """
+    from maya_pini import m_pipe
+    _ns = 'test01'
+    _ety = pipe.CACHE.obt(TEST_SHOT)
+    _abc = _ety.find_output(
+        task='anim', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='abc',
+        output_name=_ns, versionless=False, catch=True)
+    if not _abc:
+        _rig = find_test_rig()
+        assert not _ety.find_outputs(
+            extn='abc', tag=pipe.DEFAULT_TAG, output_name=_ns,
+            task='anim')
+        dcc.new_scene(force=force)
+        _work = _ety.to_work(task='anim', ver_n=1)
+        _LOGGER.info(' - WORK %s', _work)
+        _ref = dcc.create_ref(_rig, namespace=_ns)
+        dcc.set_range(1001, 1005)
+        _work.save(force=True)
+        _cbls = m_pipe.find_cacheables()
+        assert len(_cbls) == 1
+        m_pipe.cache(_cbls)
+        _abc = _ety.find_output(
+            task='anim', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='abc',
+            output_name=_ns, versionless=False, catch=True)
+        assert _abc
+    return _abc
+
+
+def find_test_lookdev():
+    """Find test lookdev output.
+
+    Returns:
+        (CCPOutputFile): lookdev publish
+    """
+    _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
+        task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma',
+        versionless=False, content_type='ShadersMa')
+    return pipe.CACHE.obt(_pub)
+
+
+def find_test_model():
+    """Find test model output.
+
+    Returns:
+        (CCPOutputFile): model publish
+    """
+    _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
+        task='model', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma',
+        versionless=False)
+    return pipe.CACHE.obt(_pub)
+
+
+def find_test_render(force=False):
+    """Find test render output, creating if needed.
+
+    Args:
+        force (bool): lose unsaved changes without confirmation
+
+    Returns:
+        (CCPOutputSeq): render
+    """
+    from maya_pini.utils import render
+    _ety = pipe.CACHE.obt(TEST_SHOT)
+    _ren = _ety.find_output(
+        task='lighting', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='jpg',
+        versionless=False, catch=True)
+    if not _ren:
+        dcc.new_scene(force=force)
+        _work_dir = _ety.find_work_dir('lighting', catch=True)
+        if _work_dir:
+            _work = _work_dir.to_work(ver_n=1)
+        else:
+            _work = _ety.to_work(task='lighting', ver_n=1)
+        dcc.set_range(1001, 1005)
+        _work.save(force=True)
+        _out = _work.to_output('render', output_name='masterLayer', extn='jpg')
+        if not _out.exists():
+            render(_out)
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file(_out)
+        _ren = _ety.find_output(
+            task='lighting', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='jpg',
+            versionless=False, catch=True, force=True)
+        assert _ren
+    return _ren
+
+
+def find_test_rig():
+    """Find test rig output.
+
+    Returns:
+        (CCPOutputFile): rig publish
+    """
+    _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
+        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        extn='ma')
+    return pipe.CACHE.obt(_pub)

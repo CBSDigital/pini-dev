@@ -2082,21 +2082,21 @@
                  <property name="currentIndex">
                   <number>2</number>
                  </property>
-                 <widget class="QWidget" name="SAssetTab">
+                 <widget class="QWidget" name="SAssetsTab">
                   <attribute name="title">
-                   <string>Asset</string>
+                   <string>Assets</string>
                   </attribute>
                   <layout class="QVBoxLayout" name="verticalLayout_7"/>
                  </widget>
-                 <widget class="QWidget" name="SCacheTab">
+                 <widget class="QWidget" name="SEntityTab">
                   <attribute name="title">
-                   <string>Cache</string>
+                   <string>Entity</string>
                   </attribute>
                   <layout class="QGridLayout" name="OCacheTabLayout"/>
                  </widget>
-                 <widget class="QWidget" name="SRenderTab">
+                 <widget class="QWidget" name="SMediaTab">
                   <attribute name="title">
-                   <string>Render</string>
+                   <string>Media</string>
                   </attribute>
                   <layout class="QGridLayout" name="ORenderTabLayout" rowstretch="0"/>
                  </widget>

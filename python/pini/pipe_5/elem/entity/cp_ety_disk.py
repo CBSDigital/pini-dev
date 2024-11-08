@@ -13,12 +13,15 @@ _LOGGER = logging.getLogger(__name__)
 class CPEntityDisk(cp_ety_base.CPEntityBase):
     """Represents an entity in a disk-based pipelined."""
 
-    def _read_outputs(self):
+    def _read_outputs(self, read_work_dirs=True):
         """Read outputs in this entity.
 
         This uses glob data to construct output file and sequence dir objects.
         The sequence dirs are then used to find output sequences. This is
         constructed like this to facilitate caching (see pini.pipe.cache).
+
+        Args:
+            read_work_dirs (bool): read work dir outputs
 
         Returns:
             (CPOutput list): entity outputs
@@ -42,6 +45,9 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
             'BUILT OUTPUTS %s outs=%d globs=%d files=%d seq_dirs=%d seqs=%d',
             self, len(_outs), len(_globs), len(_files), len(_seq_dirs),
             len(_seqs))
+
+        if read_work_dirs:
+            _outs += self._read_work_dir_outputs()
 
         return _outs
 
@@ -235,6 +241,17 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
             _work_dirs.append(_work_dir)
 
         return sorted(_work_dirs)
+
+    def _read_work_dir_outputs(self):
+        """Read work dir outputs in this entity.
+
+        Returns:
+            (CPOutput list): outputs
+        """
+        _outs = []
+        for _work_dir in self.find_work_dirs():
+            _outs += _work_dir.find_outputs()
+        return _outs
 
 
 def _tmpl_in_seq_dir(tmpl, seq_dir_tmpls):

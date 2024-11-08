@@ -7,13 +7,13 @@ import os
 import sys
 
 from pini.utils import (
-    cache_result, single, HOME_PATH, passes_filter, check_heart,
-    basic_repr, File, build_cache_fmt, check_logging_level)
+    cache_result, single, passes_filter, check_heart,
+    basic_repr, File, build_cache_fmt, check_logging_level, HOME)
 
 from .q_mgr import QtWidgets, QtCore, QtGui
 
 _LOGGER = logging.getLogger(__name__)
-SETTINGS_DIR = '{}/.pini/settings'.format(HOME_PATH)
+SETTINGS_DIR = HOME.to_subdir('.pini/settings').path
 
 X_AXIS = QtCore.QPoint(1, 0)
 Y_AXIS = QtCore.QPoint(0, 1)
@@ -465,7 +465,7 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
                 isinstance(_size, QtCore.QSizeF)):
             _class = qt.CRectF
         else:
-            _class = QtCore.QRect
+            _class = qt.CRect
 
     return _class(_root, _size)
 

@@ -25,6 +25,14 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
             _tabs.append(self.tabText(_idx))
         return _tabs
 
+    def current_tab_name(self):
+        """Read name of current tab.
+
+        Returns:
+            (str): tab name
+        """
+        return self.currentWidget().objectName()
+
     def current_tab_text(self):
         """Read text from current tab.
 
@@ -51,7 +59,11 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
         """
         for _idx in range(self.count()):
 
-            if match != self.tabText(_idx):
+            _text = self.tabText(_idx)
+            _widget = self.widget(_idx)
+            _name = _widget.objectName()
+
+            if match not in (_text, _name, _widget):
                 continue
 
             _signals = self.signalsBlocked()

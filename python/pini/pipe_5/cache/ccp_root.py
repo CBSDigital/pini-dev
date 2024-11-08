@@ -163,8 +163,8 @@ class CCPRoot(elem.CPRoot):
                 _result = single(_job for _job in self.jobs if _job == _match)
             except ValueError:
                 raise ValueError(
-                    'Job {} is missing from jobs list (maybe missing config '
-                    'file?)'.format(_match.name))
+                    f'Job {_match.name} is missing from jobs list (maybe '
+                    f'missing config file?)')
             _LOGGER.debug(' - FOUND EXISTING JOB %s', _result)
             return _result
 
@@ -345,11 +345,12 @@ class CCPRoot(elem.CPRoot):
 
         raise NotImplementedError(match)
 
-    def obt_work_dir(self, match, catch=False):
+    def obt_work_dir(self, match, force=False, catch=False):
         """Find the given work dir object.
 
         Args:
             match (any): work dir to match
+            force (bool): force reread work dir list
             catch (bool): no error if fail to find work dir
 
         Returns:
@@ -373,17 +374,19 @@ class CCPRoot(elem.CPRoot):
 
         # Obtain work dir
         if isinstance(_match, elem.CPWorkDir):
-            _cbl = self._obt_work_dir_cacheable(_match, catch=catch)
+            _cbl = self._obt_work_dir_cacheable(
+                _match, force=force, catch=catch)
             return _cbl
 
         _LOGGER.debug(' - FAILED TO CONVERT MATCH %s', _match)
         raise NotImplementedError(match)
 
-    def _obt_work_dir_cacheable(self, work_dir, catch=False):
+    def _obt_work_dir_cacheable(self, work_dir, force=False, catch=False):
         """Obtain cacheable work dir from work dir object.
 
         Args:
             work_dir (CPWorkDir): work dir to read
+            force (bool): force reread work dir list
             catch (bool): no error if fail to find work dir
 
         Returns:
@@ -393,7 +396,7 @@ class CCPRoot(elem.CPRoot):
         _ety = self.obt_entity(work_dir.entity)
         assert isinstance(_ety, cache.CCPEntity)
         return single([
-            _work_dir for _work_dir in _ety.work_dirs
+            _work_dir for _work_dir in _ety.find_work_dirs(force=force)
             if _work_dir == work_dir], catch=catch)
 
     def obt_work(self, match, catch=False):
@@ -415,7 +418,10 @@ class CCPRoot(elem.CPRoot):
 
         if isinstance(_match, elem.CPWork):
             _LOGGER.debug(' - WORK %s', _match)
-            _work_dir = self.obt_work_dir(_match.work_dir, catch=catch)
+            _work_dir = self.obt_work_dir(_match.work_dir, catch=True)
+            if not _work_dir:
+                _work_dir = self.obt_work_dir(
+                    _match.work_dir, force=True, catch=True)
             _LOGGER.debug(' - WORK DIR %s', _work_dir)
             if not _work_dir:
                 return None
@@ -443,63 +449,6 @@ class CCPRoot(elem.CPRoot):
         """
         _ety = self.obt_entity(match)
         return _ety.obt_output(match, catch=catch, force=force)
-
-        # from .. import cache
-
-        # _LOGGER.debug('FIND OUTPUT %s', match)
-
-        # # Try to map match to an output object
-        # _match = match
-        # if isinstance(_match, cache.CCPOutputGhost):
-        #     _match = _match.path
-        # if (
-        #         not isinstance(_match, elem.CPOutputBase) and
-        #         isinstance(_match, Path)):
-        #     _match = _match.path
-        #     _LOGGER.debug(' - CONVERT TO STRING %s', match)
-
-        # # Convert a string to an output
-        # if isinstance(_match, str):
-        #     _LOGGER.debug(' - CONVERT TO OUTPUT')
-        #     try:
-        #         _match = elem.to_output(_match)
-        #     except ValueError:
-        #         _LOGGER.debug(' - FAILED TO CONVERT TO OUTPUT')
-        #         if '/' in _match:
-        #             raise ValueError('Path is not output '+_match)
-        #         if not _match:
-        #             raise ValueError('Empty path')
-        #         raise NotImplementedError(match)
-
-        # # Map an output object to a cacheable
-        # if isinstance(_match, elem.CPOutputBase):
-        #     _LOGGER.debug(' - OBTAINED OUTPUT %s', _match)
-
-        #     # Try as work dir output
-        #     if _match.work_dir:
-        #         _work_dir = self.obt_work_dir(_match.work_dir)
-        #         if not _work_dir:
-        #             return None
-        #         _LOGGER.debug(' - WORK DIR %s', _work_dir)
-        #         assert isinstance(_work_dir, cache.CCPWorkDir)
-        #         assert isinstance(_work_dir.entity, cache.CCPEntity)
-        #         _out = _work_dir.obt_output(_match, catch=catch, force=force)
-        #         assert isinstance(_out.entity, cache.CCPEntity)
-
-        #     # Must be entity level output
-        #     else:
-        #         _ety = self.obt_entity(_match.entity)
-        #         _LOGGER.debug(' - ENTITY %s', _ety)
-        #         assert isinstance(_ety, cache.CCPEntity)
-        #         _out = _ety.obt_output(_match, catch=catch, force=force)
-
-        #     if _out:
-        #         _LOGGER.debug(' - FOUND OUTPUT %s', _out)
-        #         assert isinstance(_out, cache.CCPOutputBase)
-
-        #     return _out
-
-        # raise NotImplementedError(match)
 
     def obt_output_seq_dir(self, dir_, force=False):
         """Obtain an output sequence directory from the cache.
@@ -542,4 +491,4 @@ class CCPRoot(elem.CPRoot):
         self.ctime = time.time()
 
     def __repr__(self):
-        return '<{}>'.format(type(self).__name__)
+        return f'<{type(self).__name__}>'

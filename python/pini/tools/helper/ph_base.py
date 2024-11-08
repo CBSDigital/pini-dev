@@ -242,9 +242,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
         # Add header
         if header:
-            menu.add_label('{}: {}'.format(
-                output.type_.capitalize(),
-                output.asset or output.filename))
+            _type = output.type_.capitalize()
+            _name = output.asset or output.filename
+            menu.add_label(f'{_type}: {_name}')
             menu.add_separator()
 
         # Add actions based on file type
@@ -290,8 +290,9 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             wrap_fn(_print_metadata, output),
             icon=icons.PRINT)
         if output.range_ and len(set(output.range_)) > 1:
+            _start, _end = output.range_
             menu.add_action(
-                'Apply range ({:.00f}-{:.00f})'.format(*output.range_),
+                f'Apply range ({_start:.00f}-{_end:.00f})',
                 wrap_fn(dcc.set_range, output.range_[0], output.range_[1]),
                 icon=icons.find('Left-Right Arrow'),
                 enabled=output.range_ != dcc.t_range(int))
@@ -434,7 +435,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             'Edit shaders yaml', wrap_fn(_shd_yml_edit, lookdev),
             icon=icons.EDIT)
         menu.add_action(
-            'Print shaders data', _shd_yml_print, icon=icons.PRINT)
+            'Print shaders data', wrap_fn(_shd_yml_print, lookdev),
+            icon=icons.PRINT)
         menu.add_separator()
 
         # Add reapply to target option
@@ -505,6 +507,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def _redraw__EntityType(self):
 
+        _cur = self.ui.EntityType.selected_text()
         _job = self.ui.Job.selected_data()
         _profile = self.ui.Profile.selected_text()
 
@@ -521,18 +524,25 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 for _seq in _data]
         else:
             raise ValueError(_profile)
+        _LOGGER.debug('REDRAW ENTITY TYPE %s %s', _job.name, _types)
 
         # Determine default selection
-        _select = None
+        _sel = None
         if self.target:
-            _ety = pipe.to_entity(self.target)
-            if _ety:
-                _select = _ety.entity_type
-                _LOGGER.debug('APPLY TARGET ETY TYPE %s', _select)
+            _trg_ety = pipe.to_entity(self.target)
+            if (  # No need to jump to asset outputs
+                    isinstance(self.target, pipe.CPOutputBase) and
+                    self.target.profile == 'asset'):
+                _trg_ety = None
+            _LOGGER.debug(' - TRG ENTITY TYPE %s', _trg_ety)
+            if _trg_ety:
+                _sel = _trg_ety.entity_type
+                _LOGGER.debug('APPLY TARGET ETY TYPE %s', _sel)
+        if not _sel:
+            _sel = _cur
 
-        _LOGGER.debug('REDRAW ENTITY TYPE %s %s', _job.name, _types)
         self.ui.EntityType.setEditable(self._admin_mode)
-        self.ui.EntityType.set_items(_types, data=_data, select=_select)
+        self.ui.EntityType.set_items(_types, data=_data, select=_sel)
 
     def _redraw__EntityTypeCreate(self):
         _LOGGER.debug('REDRAW EntityTypeCreate')
@@ -573,6 +583,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         # Determine default selection
         _select = None
         _trg_ety = pipe.to_entity(self.target, catch=True)
+        if (  # No need to jump to asset outputs
+                isinstance(self.target, pipe.CPOutputBase) and
+                self.target.profile == 'asset'):
+            _trg_ety = None
         if _trg_ety:
             _select = _trg_ety
         elif pipe.cur_entity():
@@ -630,12 +644,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _LOGGER.debug('CALLBACK JOB')
 
         # Apply target profile
+        _trg_ety = None
         if self.target:
-            _ety = pipe.to_entity(self.target)
-            if _ety:
-                _profile = _ety.profile+'s'
-                _LOGGER.debug('APPLY TARGET PROFILE %s', _profile)
-                self.ui.Profile.select_text(_profile)
+            _trg_ety = pipe.to_entity(self.target)
+            if (  # No need to jump to asset outputs
+                    isinstance(self.target, pipe.CPOutputBase) and
+                    self.target.profile == 'asset'):
+                _trg_ety = None
+        if _trg_ety:
+            _profile = _trg_ety.profile+'s'
+            _LOGGER.debug(' - APPLY TARGET PROFILE %s', _profile)
+            self.ui.Profile.select_text(_profile)
 
         self.ui.JobIcon.redraw()
         self._redraw__EntityType()
@@ -778,7 +797,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 self._reread_entity_outputs,
                 icon=icons.REFRESH)
             menu.add_action(
-                'Archive {}'.format(self.entity.profile),
+                f'Archive {self.entity.profile}',
                 self._archive_entity, enabled=pipe.admin_mode(),
                 icon=_ARCHIVE_ICON)
             menu.add_separator()
@@ -817,16 +836,17 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _LOGGER.info('ARCHIVE %s', self.entity)
 
         qt.ok_cancel(
-            "Are you sure you want to archive this {}?\n\n{}\n\n"
-            "It will have an underscore prepended to its name and "
-            "will no longer be visible in the pipeline.".format(
-                self.entity.profile, self.entity.path),
+            f"Are you sure you want to archive this {self.entity.profile}?"
+            f"\n\n{self.entity.path}\n\n"
+            f"It will have an underscore prepended to its name and "
+            f"will no longer be visible in the pipeline.",
             icon=_ARCHIVE_ICON,
             title='Archive '+self.entity.profile.capitalize())
 
         # Record who archived
-        _file = self.entity.to_file('.pini/archived/{}_{}.file'.format(
-            strftime('%y%m%d_%H%M%S'), get_user()))
+        _t_str = strftime('%y%m%d_%H%M%S')
+        _file = self.entity.to_file(
+            f'.pini/archived/{_t_str}_{get_user()}.file')
         _file.touch()
 
         # Execute the archiving

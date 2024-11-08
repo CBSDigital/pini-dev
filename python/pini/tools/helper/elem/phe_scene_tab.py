@@ -21,7 +21,7 @@ _LATEST_ICON = icons.find('Light Bulb')
 _REPLACE_ICON = icons.find('Right Arrow Curving Left')
 
 
-class CLSceneTab(object):
+class CLSceneTab:
     """Class for grouping together elements of pini helper Outputs tabs."""
 
     all_outs = ()
@@ -47,36 +47,66 @@ class CLSceneTab(object):
         """
         _LOGGER.debug('INIT UI switch=%d', switch_tabs)
 
-        # Choose selected tab
-        _tab = None
-        if self.target and isinstance(self.target, pipe.CPOutputBase):
-            _LOGGER.debug(' - TARGET %s', self.target)
-            if self.target.profile == 'asset':
-                _tab = 'Asset'
-            elif self.target.basic_type == 'cache':
-                _tab = 'Cache'
-        elif switch_tabs:
-            _task = pipe.cur_task(fmt='pini')
-            _map = {'anim': 'Asset',
-                    'fx': 'Cache',
-                    'lighting': 'Cache',
-                    'lsc': 'Render',
-                    'comp': 'Render'}
-            _tab = _map.get(_task)
-        _LOGGER.debug(' - SELECT TAB %s', _tab)
-        if _tab:
-            self.ui.SOutputsPane.select_tab(_tab)
+        # Update entity tab label based on profile
+        if not self.entity:
+            _label = '-'
         else:
-            self.settings.apply_to_widget(self.ui.SOutputsPane)
+            _label = self.entity.profile.capitalize()
+        self.ui.SOutputsPane.setTabText(1, _label)
+        _LOGGER.debug(' - SET ENTITY TAB TEXT %s', _label)
+
+        self._select_default_output_tab(switch_tabs=switch_tabs)
 
         self.settings.apply_to_widget(self.ui.SLookdev)
         self._callback__SOutputsPane()
-
         self.ui.SSceneRefs.redraw()
 
         # Fix OOutputsPane on 4k monitors
         _tab_height = self.ui.MainPane.tabBar().height()
         self.ui.SOutputsPane.setFixedHeight(_tab_height+1)
+
+    def _select_default_output_tab(self, switch_tabs):
+        """Select default tab for outputs pane.
+
+        Args:
+            switch_tabs (bool): whether we are switching to this tab
+        """
+
+        # Find a tab to select
+        _tab = None
+        if self.target and isinstance(self.target, pipe.CPOutputBase):
+            _LOGGER.debug(' - TARGET %s', self.target)
+            if self.target.profile == 'asset':
+                _LOGGER.debug(
+                    ' - TARGET COMPARE trg=%s cur=%s', self.target.entity,
+                    self.entity)
+                if self.target.entity == self.entity:
+                    _tab = self.ui.SEntityTab
+                else:
+                    _tab = self.ui.SAssetsTab
+            elif self.target.profile == 'shot':
+                if not self.target.is_media():
+                    _tab = self.ui.SEntityTab
+                else:
+                    _tab = self.ui.SMediaTab
+            else:
+                raise ValueError(self.target)
+        elif switch_tabs:
+            _task = pipe.cur_task(fmt='pini')
+            _map = {'anim': self.ui.SAssetsTab,
+                    'fx': self.ui.SEntityTab,
+                    'lighting': self.ui.SEntityTab,
+                    'lsc': self.ui.SMediaTab,
+                    'comp': self.ui.SMediaTab}
+            _tab = _map.get(_task)
+        _LOGGER.debug(' - SELECT TAB %s', _tab)
+
+        # Apply selection
+        if _tab:
+            _LOGGER.debug(' - SELECT TAB NAME %s', _tab.objectName())
+            self.ui.SOutputsPane.select_tab(_tab)
+        else:
+            self.settings.apply_to_widget(self.ui.SOutputsPane)
 
     def _read_all_outs(self):
         """Read outputs for the current outputs tab selection.
@@ -86,22 +116,22 @@ class CLSceneTab(object):
         Returns:
             (CPOutput list): outputs
         """
-        _tab = self.ui.SOutputsPane.current_tab_text()
+        _tab = self.ui.SOutputsPane.currentWidget()
+        _ren_basic_types = ['render', 'blast', 'plate']
 
         _outs = []
-        if _tab == 'Asset':
+        if _tab == self.ui.SAssetsTab:
             _outs = self.job.find_publishes(extns=dcc.REF_EXTNS)
-        elif _tab == 'Cache':
+        elif _tab == self.ui.SEntityTab:
             if self.entity:
-                _outs += self.entity.find_outputs('cache')
-                _outs += self.entity.find_outputs('cache_seq')
-                _outs += self.entity.find_outputs('ass_gz')
-        elif _tab == 'Render':
+                _outs += [
+                    _out for _out in self.entity.find_outputs()
+                    if not _out.is_media()]
+        elif _tab == self.ui.SMediaTab:
             if self.entity:
-                _outs += self.entity.find_outputs('render')
-                _outs += self.entity.find_outputs('render_mov')
-                _outs += self.entity.find_outputs('plate')
-                _outs += self.entity.find_outputs('blast')
+                _outs += [
+                    _out for _out in self.entity.find_outputs()
+                    if _out.is_media()]
         else:
             raise ValueError(_tab)
 
@@ -109,19 +139,23 @@ class CLSceneTab(object):
 
     def _redraw__SOutputType(self):
 
+        _LOGGER.debug(' - REDRAW SOutputType outs=%d', len(self.all_outs))
+
         # Set lists + data based on outputs mode
-        _mode = self.ui.SOutputsPane.current_tab_text()
+        _tab = self.ui.SOutputsPane.currentWidget()
         _add_all = True
-        if _mode == 'Asset':
+        if _tab == self.ui.SAssetsTab:
             _label, _types, _data, _select = self._redraw_out_type_asset()
-        elif _mode == 'Cache':
+        elif _tab == self.ui.SEntityTab:
             _label = 'Type'
-            _types = sorted({_out.output_type for _out in self.all_outs})
+            _types = {
+                _out.output_type for _out in self.all_outs}
             _data = [
                 [_out for _out in self.all_outs if _out.output_type == _type]
                 for _type in _types]
+            _types = sorted({_type or '' for _type in _types})
             _select = 'all'
-        elif _mode == 'Render':
+        elif _tab == self.ui.SMediaTab:
             _label = 'Template'
             _types = sorted({_out.type_ for _out in self.all_outs})
             _data = [
@@ -130,7 +164,8 @@ class CLSceneTab(object):
             _add_all = False
             _select = 'render'
         else:
-            raise ValueError(_mode)
+            raise ValueError(_tab)
+        _LOGGER.debug('   - TYPES %s', _types)
 
         # Add all
         if _add_all and len(_types) > 1:
@@ -183,6 +218,7 @@ class CLSceneTab(object):
         _mode = self.ui.SOutputsPane.current_tab_text()
         _type = self.ui.SOutputType.selected_text()
         _outs = self.ui.SOutputType.selected_data() or []
+        _LOGGER.debug('   - FOUND %d OUTS', len(_outs))
 
         # Build list of tasks/data
         _tasks, _data = [], []
@@ -316,7 +352,7 @@ class CLSceneTab(object):
         _version_mode = self.ui.SOutputVers.currentText()
 
         # Get list of outputs
-        _LOGGER.debug('   - CHECKING %d OUTS %s', len(_outs), _outs)
+        _LOGGER.log(9, '   - CHECKING %d OUTS %s', len(_outs), _outs)
         if _filter:
             _outs = apply_filter(
                 _outs, _filter, key=operator.attrgetter('path'))

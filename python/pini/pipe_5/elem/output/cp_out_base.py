@@ -20,7 +20,7 @@ OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
 OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
 
 
-class CPOutputBase(object):
+class CPOutputBase:
     """Base class for any output.
 
     This provides features shared between File outputs and Seq outputs.
@@ -457,6 +457,14 @@ class CPOutputBase(object):
         _latest = _vers[-1]
         _LOGGER.debug(' - LATEST %s', _latest)
         return self == _latest
+
+    def is_media(self):
+        """Test whether this output is media.
+
+        Returns:
+            (bool): whether media (eg. render/blast)
+        """
+        return self.basic_type in ['render', 'blast', 'plate']
 
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.

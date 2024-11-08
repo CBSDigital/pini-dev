@@ -10,19 +10,13 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestHelper(unittest.TestCase):
 
-    # def setUp(self):
-    #     assert not error.TRIGGERED
-    #     if not helper.is_active():
-    #         helper.launch(reset_cache=False)
-    #     assert not error.TRIGGERED
-
     def test_for_cyclical_import(self):
 
         # NOTE: doesn't seem to give output for some reason (could pipe out
         # to file if wanted)
         _cmd = 'print("HELLO"); from pini.tools import helper; print(helper)'
         _out, _err = system(
-            ['python', '-c', '"""{}"""'.format(_cmd)], result='out/err')
+            ['python', '-c', f'"""{_cmd}"""'], result='out/err')
         print(_out)
         print(_err)
         assert not _err
@@ -61,19 +55,19 @@ class TestHelper(unittest.TestCase):
 
             _helper.ui.MainPane.select_tab('Scene')
             if dcc.NAME == 'maya':
-                _types = ['Asset', 'Cache', 'Render']
+                _tabs = ['SAssetsTab', 'SEntityTab', 'SMediaTab']
             elif dcc.NAME in ('nuke', 'hou'):
-                _types = ['Cache', 'Render']
+                _tabs = ['SEntityTab', 'SMediaTab']
             else:
                 raise NotImplementedError(dcc.NAME)
-            _LOGGER.info(' - CHECKING TYPES %s', _types)
+            _LOGGER.info(' - CHECKING TYPES %s', _tabs)
 
-            for _type in _types:
-                _LOGGER.info(' - CHECKING TYPE %s %s', _type, _helper.entity)
-                _helper.ui.SOutputsPane.select_tab(_type)
+            for _tab in _tabs:
+                _LOGGER.info(' - CHECKING TYPE %s %s', _tab, _helper.entity)
+                _helper.ui.SOutputsPane.select_tab(_tab)
                 _helper.ui.SOutputVers.select_text('latest')
                 assert _helper.ui.SOutputs.all_data()
-                assert _helper.ui.SOutputsPane.current_tab_text() == _type
+                assert _helper.ui.SOutputsPane.current_tab_name() == _tab
                 _outs = _helper.ui.SOutputs.all_data()
                 _LOGGER.info('   - TASK %s', _helper.ui.SOutputTask.currentText())
                 _LOGGER.info('   - TAG %s', _helper.ui.SOutputTag.currentText())

@@ -56,8 +56,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                     not len(self.frame_expr) == 4 or
                     not self.frame_expr.startswith('%0') or
                     not self.frame_expr.endswith('d')):
-                raise ValueError('Bad frame expr {} - {}'.format(
-                    self.frame_expr, path))
+                raise ValueError(
+                    f'Bad frame expr {self.frame_expr} - {path}')
         else:
             for _expr in [
                     '%04d', '%d',
@@ -186,8 +186,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _frames = frames or self.frames
         if target.exists():
             qt.ok_cancel(
-                'Replace existing frames {:d}-{:d}?\n\n{}'.format(
-                    min(_frames), max(_frames), target.path))
+                f'Replace existing frames {min(_frames):d}-{max(_frames):d}?'
+                f'\n\n{target.path}')
             target.delete(frames=_frames, force=True)
         for _frame in qt.progress_bar(
                 _frames, 'Copying {:d} frame{}', stack_key='CopyFrames'):
@@ -213,12 +213,12 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             if len(_frames) == 1:
                 _fr_str = str(single(_frames))
             else:
-                _fr_str = '{:d}-{:d}'.format(_frames[0], _frames[-1])
+                _fr_str = f'{_frames[0]:d}-{_frames[-1]:d}'
             qt.ok_cancel(
-                'Are you sure you want to {} frame{} {} of this '
-                'image sequence?\n\n{}'.format(
-                    wording.lower(), plural(_frames), _fr_str, self.path),
-                title='Confirm {}'.format(wording.capitalize()),
+                f'Are you sure you want to {wording.lower()} '
+                f'frame{plural(_frames)} {_fr_str} of this '
+                f'image sequence?\n\n{self.path}',
+                title=f'Confirm {wording}',
                 icon=icon or icons.find('Sponge'), parent=parent)
         for _frame in qt.progress_bar(
                 _frames, 'Deleting {:d} file{}', stack_key='DeleteFrames',
@@ -449,7 +449,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Returns:
             (File): file using this seq's attributes
         """
-        _path = '{}/{}.{}'.format(self.dir, self.base, self.extn)
+        _path = f'{self.dir}/{self.base}.{self.extn}'
         return File(_path).to_file(**kwargs)
 
     def to_frame_file(self, frame=None):
@@ -532,9 +532,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Returns:
             (Seq): new sequence object
         """
-        _path = '{dir}/{base}.{frame_expr}.{extn}'.format(
-            dir=self.dir, base=self.base, frame_expr=self.frame_expr,
-            extn=extn or self.extn)
+        _path = f'{self.dir}/{self.base}.{self.frame_expr}.{extn or self.extn}'
         return Seq(_path)
 
     def to_start(self):
@@ -636,9 +634,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _colspace = "scene_linear" if self.extn == 'exr' else "color_picking"
         _read = nuke.createNode(
             'Read',
-            "name TMP_READ file {path} first {first:d} last {last:d} "
-            "colorspace {colspace}".format(
-                path=self.path, first=_start, last=_end, colspace=_colspace))
+            f"name TMP_READ file {self.path} first {_start:d} last {_end:d} "
+            f"colorspace {_colspace}")
         _to_clean.append(_read)
 
         # Reformat if width larger than 4096
@@ -656,8 +653,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         # Build write
         _write = nuke.createNode(
             'Write',
-            "name TMP_WRITE file {path} file_type mov mov64_codec h264 "
-            "colorspace color_picking".format(path=_video.path))
+            f"name TMP_WRITE file {_video.path} file_type mov mov64_codec h264 "
+            f"colorspace color_picking")
         _to_clean.append(_write)
 
         nuke.render(_write, start=_start, end=_end)
@@ -686,7 +683,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         return self.path < other.path
 
     def __repr__(self):
-        return '<{}|{}>'.format(type(self).__name__.strip('_'), self.path)
+        _type = type(self).__name__.strip('_')
+        return f'<{_type}|{self.path}>'
 
 
 class CacheSeq(Seq):
@@ -699,8 +697,7 @@ class CacheSeq(Seq):
         Returns:
             (str): cache format
         """
-        _path = '{dir}/.pini/{base}_{extn}_{{func}}.pkl'.format(
-            dir=self.dir, base=self.base, extn=self.extn)
+        _path = f'{self.dir}/.pini/{self.base}_{self.extn}_{{func}}.pkl'
         return _path
 
     @cache_method_to_file
@@ -713,7 +710,7 @@ class CacheSeq(Seq):
         Returns:
             (int list): frames
         """
-        return super(CacheSeq, self).to_frames(force=force)
+        return super().to_frames(force=force)
 
 
 def find_seqs(
@@ -772,7 +769,7 @@ def find_seqs(
 
         # Convert to frame expression + seq
         _frame = int(_frame_str)
-        _frame_expr = '%0{:d}d'.format(len(_frame_str))
+        _frame_expr = f'%0{len(_frame_str):d}d'
         _LOGGER.debug('   - FRAME EXPR %s', _frame_expr)
         _seq_base = _file.base[:-len(_frame_str)]+_frame_expr
         _seq_path = _file.to_file(base=_seq_base).path
@@ -860,9 +857,9 @@ def file_to_seq(file_, safe=True, catch=False):
         if catch:
             return None
         raise ValueError(_f_str)
-    _f_expr = '%0{:d}d'.format(len(_f_str))
+    _f_expr = f'%0{len(_f_str):d}d'
 
-    _path = '{}/{}.{}.{}'.format(_file.dir, _base, _f_expr, _extn)
+    _path = f'{_file.dir}/{_base}.{_f_expr}.{_extn}'
     return Seq(_path)
 
 

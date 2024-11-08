@@ -40,6 +40,67 @@ class TestHelper(unittest.TestCase):
         assert _default_lyr.is_renderable()
         assert not _blah_lyr.is_renderable()
 
+    def test_output_tab_names(self):
+
+        _lookdev = testing.find_test_lookdev()
+        _rig = testing.find_test_rig()
+        _abc = testing.find_test_abc()
+        _ren = testing.find_test_render()
+
+        assert not _lookdev.is_media()
+        assert not _rig.is_media()
+        assert not _abc.is_media()
+        assert _ren.is_media()
+
+        _helper = helper.obt_helper()
+        _helper.ui.MainPane.select_tab('Scene')
+        _helper.jump_to(testing.TEST_ASSET)
+
+        assert _helper.ui.SOutputsPane.tabText(0) == 'Assets'
+        assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
+
+        _helper.jump_to(testing.TEST_SHOT)
+        assert _helper.ui.SOutputsPane.tabText(1) == 'Shot'
+        assert _helper.entity == testing.TEST_SHOT
+
+        print()
+        print('TEST JUMP TO LOOKDEV')
+        _helper.jump_to(_lookdev)
+        assert _helper.entity == testing.TEST_SHOT
+        assert _helper.ui.SOutputsPane.current_tab_text() == 'Assets'
+        assert _helper.ui.SOutputs.selected_data() == _lookdev
+
+        # Test jump to lookdev from test asset - should select lookdev
+        # in entity tab (not assets tab)
+        assert _lookdev.entity == testing.TEST_ASSET
+        _helper.jump_to(testing.TEST_ASSET)
+        assert _helper.entity == testing.TEST_ASSET
+        print()
+        print('TEST JUMP TO LOOKDEV FROM ASSET')
+        _helper.jump_to(_lookdev)
+        assert _helper.entity == testing.TEST_ASSET
+        assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
+        assert _helper.ui.SOutputsPane.current_tab_text() == 'Asset'
+        assert _helper.ui.SOutputs.selected_data() == _lookdev
+
+        print()
+        print('TEST JUMP TO RIG')
+        _helper.jump_to(_rig)
+        assert _helper.ui.SOutputsPane.current_tab_text() == 'Asset'
+        assert _helper.ui.SOutputs.selected_data() == _rig
+
+        print()
+        print('TEST JUMP TO ABC')
+        _helper.jump_to(_abc)
+        assert _helper.ui.SOutputsPane.current_tab_text() == 'Shot'
+        assert _helper.ui.SOutputs.selected_data() == _abc
+
+        print()
+        print('TEST JUMP TO RENDER')
+        _helper.jump_to(_ren)
+        assert _helper.ui.SOutputsPane.current_tab_text() == 'Media'
+        assert _helper.ui.SOutputs.selected_data() == _ren
+
     def test_shot_workflow(self, show_ctx=False, force=True):
 
         _progress = qt.progress_dialog('Testing shot workflow')
@@ -273,7 +334,7 @@ def _test_lighting_workflow(progress, force, show_ctx):
 
     # Test lookdev publish ctx
     progress.set_pc(70)
-    _helper.ui.SOutputsPane.select_tab('Asset')
+    _helper.ui.SOutputsPane.select_tab(_helper.ui.SAssetsTab)
     _helper.jump_to(_lookdev_pub)
     assert _helper.ui.SOutputs.selected_data() == _lookdev_pub
     _test_ctx(

@@ -7,7 +7,8 @@ from .t_env import (
     print_sys_paths)
 from .t_pipe import (
     TEST_JOB, TEST_ASSET, TEST_SHOT, TMP_SHOT, TMP_ASSET,
-    TEST_SEQUENCE, check_test_asset)
+    TEST_SEQUENCE, check_test_asset, find_test_rig, find_test_lookdev,
+    find_test_model, find_test_abc, find_test_render)
 from .t_profile import (
     profile, profile_start, profile_stop, PROFILE_FILE, PROFILE_TXT,
     to_profiler, PROFILE_TXT_FMT)

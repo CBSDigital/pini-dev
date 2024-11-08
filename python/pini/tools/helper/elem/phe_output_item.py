@@ -38,7 +38,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         self.icon = output_to_icon(self.output)
 
-        super(PHOutputItem, self).__init__(
+        super().__init__(
             list_view, col='Transparent', data=self.output)
 
     @property
@@ -67,18 +67,20 @@ class PHOutputItem(qt.CListViewPixmapItem):
             (str): label
         """
         _out = self.output
+        _ety_name = _out.asset or _out.shot
 
         # Handle restCache abcs
         if _out.extn == 'abc' and _out.output_name == 'restCache':
-            return '{} ({} restCache)'.format(_out.entity.name, _out.task)
+            _out_c = pipe.CACHE.obt(_out)
+            return f'{_ety_name} ({_out.task} restCache)'
 
         # Handle shdCache ass.gz
         if _out.extn == 'gz' and _out.output_name == 'shdCache':
-            return '{} ({} ass.gz)'.format(_out.entity.name,  _out.task)
+            return f'{_ety_name} ({_out.task} ass.gz)'
 
         _label = _out.output_name or _out.asset or _out.shot
         if isinstance(_out, (Seq, Video)):
-            _label += ' '+self.output.extn
+            _label += ' '+_out.extn
         return _label
 
     @property
@@ -117,7 +119,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        super(PHOutputItem, self).draw_pixmap(pix)
+        super().draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
         self.set_height(self.size_y)

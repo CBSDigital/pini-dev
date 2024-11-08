@@ -1,3 +1,29 @@
+## [6.11.0] - Fri 2024-11-08 07:38
+### Summary
+ - Pini Helper:
+    - scene/outputs tab displays publishes (mkim/eehemann) [PT-305],
+    - scene/outputs renamed tab Assets -> Asset,
+    - scene/outputs renamed tab Cache -> Asset/Shot,
+    - scene/outputs renamed tab Render -> Media,,
+    - bugfix lookdev right-click print shaders data,
+### Updated
+ - pini.pipe.CPEntityDisk.find_outputs include work dir outputs,
+ - pini.pipe.CPOutputBase.is_media added,
+ - pini.pipe.cache.CCPRoot.obt_work_dir added force arg,
+ - pini.pipe.cache.CCPRoot.obt_work added handling for uncached work dir,
+ - pini.qt.CTabWidget.current_tab_name added,
+ - pini.qt.CTabWidget.select_tab allow match as widget or widget name,
+ - pini.qt.CRect added,
+ - pini.tools.helper scene/outputs show all entity outputs in entity tab,
+ - pini.tools.helper scene/outputs renamed Asset -> Assets,
+ - pini.tools.helper scene/outputs renamed Cache -> Asset/Shot,
+ - pini.tools.helper scene/outputs renamed Render -> Media,
+ - pini.tools.helper.PHOutputItem.label bugfix error on restCache/ass.gz,
+ - pini.tools.helper bugfix lookdev output ctx print shaders data,
+ - pini.tools.helper bugfix jump to entity + non-latest outputs,
+ - pini.testing added find_test_rig/find_test_lookdev/find_test_model/find_test_abc/find_test_render,
+
+
 ## [6.10.0] - Wed 2024-11-06 12:40
 ### Summary
  - Sanity Check:
