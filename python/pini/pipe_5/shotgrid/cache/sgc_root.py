@@ -75,7 +75,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         """
         return self.find_proj(job).find_assets()
 
-    def find_entity(self, match):
+    def find_entity(self, match=None):
         """Find an entity within the cache.
 
         Args:
@@ -84,9 +84,9 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         Returns:
             (SGCAsset|SGCShot): matching entity
         """
-        _job = pipe.to_job(match)
-        _sg_proj = self.find_proj(_job)
-        return _sg_proj.find_entity(match)
+        _ety = pipe.to_entity(match) if match else pipe.cur_entity()
+        _sg_proj = self.find_proj(_ety.job)
+        return _sg_proj.find_entity(_ety)
 
     def find_proj(self, match=None, catch=False, force=False):
         """Find a job.

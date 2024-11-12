@@ -15,7 +15,7 @@ from pini.utils import (
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
     merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image, TMP, search_dict_for_key)
+    Image, TMP, search_dict_for_key, find_ffmpeg_exe)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ class TestUtils(unittest.TestCase):
     def test_find_exe(self):
 
         assert find_exe('ffmpeg')
+        assert find_ffmpeg_exe()
         # assert find_exe('maya')
         # assert find_exe('mayapy')
 
@@ -81,7 +82,7 @@ class TestUtils(unittest.TestCase):
 
     def test_method_to_file_cacher(self):
 
-        class _Test(object):
+        class _Test:
 
             cache_fmt = Dir(TMP_PATH).to_file('{func}.yml').path
 
@@ -179,7 +180,7 @@ class TestCache(unittest.TestCase):
         assert _test(1, 2) == _test(1, 2)
         assert _test(1, 2) != _test(1, 2, force=True)
 
-        class _Test(object):
+        class _Test:
 
             @cache_result
             def func(self):
@@ -202,7 +203,7 @@ class TestCache(unittest.TestCase):
 
             @cache_result
             def func_3(self):
-                return super(_Test2, self).func_3()
+                return super().func_3()
 
         _test_2 = _Test2()
         print(_test_2.func_3())
@@ -216,9 +217,9 @@ class TestPath(unittest.TestCase):
         _LOGGER.info('TMP DIR %s', TMP_PATH)
         _user = getpass.getuser()
         _tmp_fmts = [
-            'C:/users/{}/appdata/local/temp'.format(_user),
-            'C:/Users/{}~1/AppData/Local/Temp'.format(_user[:6].upper()),
-            'C:/Users/{}/AppData/Local/Temp'.format(_user),
+            f'C:/users/{_user}/appdata/local/temp',
+            f'C:/Users/{_user[:6].upper()}~1/AppData/Local/Temp',
+            f'C:/Users/{_user}/AppData/Local/Temp',
             '/usr/tmp',
             '/tmp',
         ]
@@ -447,14 +448,14 @@ class TestSeq(unittest.TestCase):
 
     def test(self):
 
-        _path = abs_path('{}/test/image.0000.txt'.format(TMP_PATH))
+        _path = abs_path(f'{TMP_PATH}/test/image.0000.txt')
         try:
             _seq = Seq(_path)
         except ValueError:
             pass
         else:
             raise AssertionError
-        _path = abs_path('{}/test/image.%04d.txt'.format(TMP_PATH))
+        _path = abs_path('{TMP_PATH}/test/image.%04d.txt')
         _seq = Seq(_path)
         _dir = File(_path).to_dir()
         print(_path)

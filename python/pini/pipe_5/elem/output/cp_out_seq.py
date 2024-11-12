@@ -5,7 +5,7 @@ import subprocess
 import time
 
 from pini import icons
-from pini.utils import File, Seq, Image, find_exe
+from pini.utils import File, Seq, Image, find_ffmpeg_exe
 
 from . import cp_out_base
 
@@ -44,36 +44,7 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
             template=template, templates=templates, latest=latest,
             types=types or cp_out_base.OUTPUT_SEQ_TYPES)
         self._dir = dir_
-        self._thumb = File('{}/.pini/{}_thumb.jpg'.format(self.dir, self.base))
-
-    # @classmethod
-    # def from_yaml(cls, loader, node):
-    #     """Build output seq object from yaml.
-
-    #     Args:
-    #         loader (Loader): yaml loader
-    #         node (Node): yaml data
-
-    #     Returns:
-    #         (CPOutputSeq): output seq
-    #     """
-    #     del loader  # for linter
-    #     _path, _frames = node.value
-    #     return CPOutputSeq(_path.value, frames=str_to_ints(_frames.value))
-
-    # @classmethod
-    # def to_yaml(cls, dumper, data):
-    #     """Convert this output seq to yaml.
-
-    #     Args:
-    #         dumper (Dumper): yaml dumper
-    #         data (CPOutput): output seq being exported
-
-    #     Returns:
-    #         (str): output seq as yaml
-    #     """
-    #     _data = [data.path, ints_to_str(data.frames)]
-    #     return dumper.represent_sequence(cls.yaml_tag, _data)
+        self._thumb = File(f'{self.dir}/.pini/{self.base}_thumb.jpg')
 
     def to_thumb(self, force=False):
         """Obtain thumbnail for this image sequence, building it if needed.
@@ -108,10 +79,10 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
         _out_w = int(_out_h*_aspect)
         _out_res = _out_w, _out_h
         _LOGGER.debug(' - RES %s -> %s', _res, _out_res)
-        _out_res_s = '{:d}x{:d}'.format(*_out_res)
+        _out_res_s = f'{_out_w:d}x{_out_h:d}'
 
         # Build ffmpeg cmds
-        _ffmpeg = find_exe('ffmpeg')
+        _ffmpeg = find_ffmpeg_exe()
         _cmds = [_ffmpeg.path, '-y',
                  '-i', _img.path,
                  '-s', _out_res_s,

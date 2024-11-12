@@ -5,6 +5,7 @@ import re
 
 from .path import File
 from .u_exe import find_exe
+from .clip import find_ffmpeg_exe
 from .u_misc import single, system
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,8 +38,7 @@ class Image(File):
         elif not _fmts - set(qt.PIXMAP_EXTNS):
             _convert_file_qt(self, _file, force=force)
         else:
-            raise NotImplementedError(
-                'Convert {} -> {}'.format(self.extn, _file.extn))
+            raise NotImplementedError(f'Convert {self.extn} -> {_file.extn}')
 
     def to_aspect(self):
         """Obtain aspect ration of this image.
@@ -104,7 +104,7 @@ class Image(File):
             _LOGGER.warning(' - FAILED TO PARSE FFPROBE %s', self.path)
             if catch:
                 return None
-            raise RuntimeError('Invalid image {}'.format(self.path))
+            raise RuntimeError(f'Invalid image {self.path}')
 
         # Parse stream
         _LOGGER.debug(' - STREAM %s', _stream)
@@ -121,7 +121,7 @@ class Image(File):
         if not _res_token:
             if catch:
                 return None
-            raise RuntimeError('Failed to read res {}'.format(self.path))
+            raise RuntimeError(f'Failed to read res {self.path}')
         _res = tuple(int(_token) for _token in _res_token.split('x'))
 
         return _res
@@ -147,7 +147,7 @@ def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
         catch (bool): no error if conversion fails
         force (bool): replace existing without confirmation
     """
-    _ffmpeg = find_exe('ffmpeg', catch=True)
+    _ffmpeg = find_ffmpeg_exe()
     _cmds = [_ffmpeg]
     if colspace:
         _cmds += ['-apply_trc', colspace]

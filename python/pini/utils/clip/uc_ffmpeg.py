@@ -1,14 +1,33 @@
 """Tools for managing ffmpeg conversions."""
 
 import logging
+import os
 import time
 
 from ..u_misc import strftime
 from ..u_exe import find_exe
+from ..cache import cache_result
 from ..path import Dir, File, TMP_PATH, abs_path
 from ..u_misc import system, nice_age, to_str
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@cache_result
+def find_ffmpeg_exe():
+    """Find ffmpeg executable.
+
+    In cases where it can't simply be added to $PATH (eg. if you don't want
+    to override another ffmpeg version which is being used), the path can
+    be forced us $FFMPEG_EXE.
+
+    Returns:
+        (File): ffmpeg executable
+    """
+    _env_path = os.environ.get('FFMPEG_EXE')
+    if _env_path and File(_env_path).exists():
+        return File(_env_path)
+    return find_exe('ffmpeg')
 
 
 def play_sound(file_, start=None, end=None, verbose=0):
@@ -141,19 +160,19 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
         ]:
             _pos = qt.to_p(_x_pos, height/2)
             _pix.draw_text(
-                '{:04d}'.format(_num), pos=_pos, anchor='C', font=_font)
+                f'{_num:04d}', pos=_pos, anchor='C', font=_font)
         for _x_pos in [height*2, height*4]:
             _pos = qt.to_p(_x_pos, height/2)
             _pix.draw_text('-', pos=_pos, anchor='C', font=_font)
         _pix.save_as(_frame_ns[_frame], force=True, verbose=0)
 
     # Build flags
+    _over_w = _seq_w - _frames_overlay_w - inset + 10
+    _over_h = _seq_h - height + 1
     _filters = [
         'overlay=0:0[header]',
-        '[header]overlay=0:{:d}[footer]'.format(_res[1]-height),
-        '[footer]overlay={:d}:{:d}'.format(
-            _seq_w - _frames_overlay_w - inset + 10,
-            _seq_h - height + 1),
+        f'[header]overlay=0:{_res[1]-height:d}[footer]',
+        f'[footer]overlay={_over_w:d}:{_over_h:d}',
     ]
     _filter_complex = ';'.join(_filters)
     _flags = [
@@ -218,7 +237,7 @@ def seq_to_video(
     from pini import dcc
 
     _video = File(abs_path(to_str(video)))
-    _ffmpeg = find_exe('ffmpeg')
+    _ffmpeg = find_ffmpeg_exe()
     _fps = fps or dcc.get_fps()
     _start, _ = seq.to_range(force=True)
     assert _ffmpeg
@@ -246,9 +265,9 @@ def seq_to_video(
     if tune:
         _args += ['-tune', tune]
     if denoise:
-        _args += ['-vf', "nlmeans='{:.01f}:7:5:3:3'".format(denoise)]
+        _args += ['-vf', f"nlmeans='{denoise:.01f}:7:5:3:3'"]
     if res:
-        _args += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+        _args += ['-vf', f'scale={res[0]:d}:{res[1]:d}']
     _args += [_video]
 
     # Execute ffmpeg
@@ -286,9 +305,8 @@ def _handle_conversion_fail(seq, video, err):
             'width not divisible by 2' in err):
         _res = seq.to_res()
         raise RuntimeError(
-            'Unsupported resolution {:d}x{:d} (H264 requires width and '
-            'height be divisible by two) - {}'.format(
-                _res[0], _res[1], seq.path))
+            f'Unsupported resolution {_res[0]:d}x{_res[1]:d} (H264 requires '
+            f'width and height be divisible by two) - {seq.path}')
 
     raise RuntimeError('Conversion failed '+seq.path)
 
@@ -318,14 +336,14 @@ def video_to_frame(video, file_, res=None, frame=None, force=False):
     _LOGGER.info(' - TIME %f', _time)
 
     # Build ffmpeg commands
-    _ffmpeg = find_exe('ffmpeg')
+    _ffmpeg = find_ffmpeg_exe()
     _cmds = [
         _ffmpeg,
         '-ss', _time,
         '-i', video,
         '-frames:v', 1]
     if res:
-        _cmds += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+        _cmds += ['-vf', f'scale={res[0]:d}:{res[1]:d}']
     _cmds += [_img]
 
     assert not _img.exists()
@@ -366,13 +384,13 @@ def video_to_seq(video, seq, fps=None, res=None, force=False, verbose=1):
     seq.test_dir()
 
     # Build ffmpeg commands
-    _ffmpeg = find_exe('ffmpeg')
+    _ffmpeg = find_ffmpeg_exe()
     _cmds = [
         _ffmpeg,
         '-i', video,
         '-r', _fps]
     if res:
-        _cmds += ['-vf', 'scale={:d}:{:d}'.format(*res)]
+        _cmds += ['-vf', f'scale={res[0]:d}:{res[1]:d}']
     _cmds += [seq]
 
     # Execute ffmpeg
