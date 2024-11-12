@@ -266,18 +266,22 @@ class CLSceneTab:
 
     def _redraw__SOutputTag(self):
 
+        _LOGGER.debug('REDRAW SOutputTag')
         _outs = self.ui.SOutputTask.selected_data() or []
+
+        # Build list of tags
         _tags = sorted({_out.tag for _out in _outs}, key=pipe.tag_sort)
         _data = [
             [_out for _out in _outs if _out.tag == _tag]
             for _tag in _tags]
-        _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
-
-        # Determine selections
-        _sel = None
         if len(_tags) > 1:
             _tags.insert(0, 'all')
             _data.insert(0, _outs)
+        _labels = [{None: '<default>'}.get(_tag, _tag) for _tag in _tags]
+
+        # Determine selection
+        _sel = None
+        if len(_tags) > 1:
             _sel = 'all'
         if (
                 isinstance(self.target, pipe.CPOutputBase) and

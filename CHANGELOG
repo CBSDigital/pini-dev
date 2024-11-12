@@ -1,3 +1,12 @@
+## [6.12.1] - Tue 2024-11-12 10:34
+### Summary
+ - Pini Helper:
+    - scene tab output tags bugfix filtering out of sync (mkim),
+### Updated
+ - pini.qt.CComboBox.set_item check data/labels lists are same length,
+ - pini.tools.helper scene outputs bugfix output tag list not showing all,
+
+
 ## [6.12.0] - Mon 2024-11-11 17:00
 ### Summary
  - Ffmpeg processing:

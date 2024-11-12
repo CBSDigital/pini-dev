@@ -76,7 +76,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
                 break
         else:
             if not catch:
-                raise ValueError('Failed to select {}'.format(text))
+                raise ValueError(f'Failed to select {text}')
 
         # Apply emit
         if emit and not _updated:
@@ -129,6 +129,8 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         _LOGGER.debug('SET DATA %s %s', self, labels)
         _blocked = self.signalsBlocked()
         _cur_text = self.currentText()
+        if data:
+            assert len(labels) == len(data)
         self.blockSignals(True)
 
         # Populate list
