@@ -455,7 +455,7 @@ class TestSeq(unittest.TestCase):
             pass
         else:
             raise AssertionError
-        _path = abs_path('{TMP_PATH}/test/image.%04d.txt')
+        _path = abs_path(f'{TMP_PATH}/test/image.%04d.txt')
         _seq = Seq(_path)
         _dir = File(_path).to_dir()
         print(_path)

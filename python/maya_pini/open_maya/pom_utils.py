@@ -266,22 +266,10 @@ def find_nodes(
     Returns:
         (CBaseNode list): nodes in scene
     """
-    from maya_pini import open_maya as pom
-
-    # Read nodes
-    _args = [pattern] if pattern else []
-    _kwargs = {}
-    if type_:
-        _kwargs['type'] = type_
-    if selected:
-        _kwargs['selection'] = True
-    _dag_only = dag_only or top_node
-    if _dag_only:
-        _kwargs['dagObjects'] = True
-    _results = pom.CMDS.ls(*_args, **_kwargs)
-
-    _nodes = []
-    for _node in _results:
+    _nodes = set()
+    for _node in _read_ls_results(
+            pattern=pattern, selected=selected, type_=type_, dag_only=dag_only,
+            top_node=top_node):
 
         # Apply filters
         if filter_ and not passes_filter(str(_node), filter_):
@@ -292,8 +280,12 @@ def find_nodes(
             continue
         if clean_name and _node.clean_name != clean_name:
             continue
-        if default is not None and (_node in DEFAULT_NODES) != default:
-            continue
+        if default is not None:
+            _is_default = (
+                _node in DEFAULT_NODES or
+                str(_node).lstrip('|') in DEFAULT_NODES)
+            if _is_default != default:
+                continue
         if top_node and to_parent(_node):
             continue
         if name and _node != name:
@@ -305,9 +297,37 @@ def find_nodes(
         except ValueError as _exc:
             _LOGGER.warning(' - FAILED TO CAST NODE %s: %s', _node, _exc)
             continue
-        _nodes.append(_node)
+        _nodes.add(_node)
 
-    return _nodes
+    return sorted(_nodes)
+
+
+def _read_ls_results(pattern, selected, type_, dag_only, top_node):
+    """Read ls results for find nodes command.
+
+    Args:
+        pattern (str): apply filter pattern to ls comment (eg. "camera*")
+        selected (bool): apply selection flag to ls command
+        type_ (str): filter by node type
+        dag_only (bool): apply dagObject flag to ls command
+        top_node (bool): return only top nodes
+
+    Returns:
+        (str list): ls results
+    """
+    from maya_pini import open_maya as pom
+
+    _args = [pattern] if pattern else []
+    _kwargs = {}
+    if type_:
+        _kwargs['type'] = type_
+    if selected:
+        _kwargs['selection'] = True
+    _dag_only = dag_only or top_node
+    if _dag_only:
+        _kwargs['dagObjects'] = True
+
+    return pom.CMDS.ls(*_args, **_kwargs)
 
 
 def get_selected(class_=None, multi=False):
@@ -325,7 +345,7 @@ def get_selected(class_=None, multi=False):
     _sel = cmds.ls(selection=True)
     if multi:
         return [cast_node(_item, class_=class_) for _item in _sel]
-    _node = single(_sel, error='{:d} items selected'.format(len(_sel)))
+    _node = single(_sel, error=f'{len(_sel):d} items selected')
     return cast_node(_node, class_=class_)
 
 
@@ -477,7 +497,7 @@ def to_mobject(node):
     except RuntimeError as _exc:
         _LOGGER.debug(' - EXC %s', _exc)
         if str(_exc).endswith('Object does not exist'):
-            raise RuntimeError('Missing node {}'.format(node))
+            raise RuntimeError(f'Missing node {node}')
         raise _exc
     _obj = _tmp.getDependNode(0)
     return _obj

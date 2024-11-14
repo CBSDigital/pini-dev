@@ -1,3 +1,18 @@
+## [6.13.0] - Thu 2024-11-14 09:40
+### Summary
+ - Pini Helper:
+    - bugfix error on blast due to missing ffprobe (nle),
+    - bugfix not using publish cache,
+ - Sanity Check:
+    - check asset hierarchy bugfix bad grouping due to top mesh clashing with camera (mkim),
+### Updated
+ - pini.utils.find_ffmpeg_exe added exe override flag for ffprobe,
+ - pini.utils.clip.read_ffprobe bugfix error if ffprobe not in $PATH,
+ - pini.pipe.shotgrid.CSGHandler.requests_limit allow set via $PINI_SG_REQUESTS_LIMIT,
+ - pini.tools.helper bugfix unnecessary request for output cacheable in output item,
+ - maya_pini.open_maya.find_nodes bugfix default filter on full node paths,
+
+
 ## [6.12.1] - Tue 2024-11-12 10:34
 ### Summary
  - Pini Helper:

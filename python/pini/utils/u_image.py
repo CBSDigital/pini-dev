@@ -4,7 +4,6 @@ import logging
 import re
 
 from .path import File
-from .u_exe import find_exe
 from .clip import find_ffmpeg_exe
 from .u_misc import single, system
 
@@ -77,7 +76,7 @@ class Image(File):
         Returns:
             (str list): ffprobe result lines
         """
-        _ffprobe_exe = find_exe('ffprobe')
+        _ffprobe_exe = find_ffmpeg_exe(exe='ffprobe')
         assert _ffprobe_exe
         _cmds = [_ffprobe_exe.path, self.path]
         _LOGGER.debug(' - CMD %s', ' '.join(_cmds))

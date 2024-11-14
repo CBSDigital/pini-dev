@@ -16,7 +16,7 @@ from . import phe_output_item
 _LOGGER = logging.getLogger(__name__)
 
 
-class CLExportTab(object):
+class CLExportTab:
     """Class for grouping together elements of the carb helper Export tab."""
 
     pipe = None
@@ -155,6 +155,7 @@ class CLExportTab(object):
         self.ui.ERenderFramesLabel.setText(_text)
 
     def _redraw__ESubmitTemplate(self):
+        _LOGGER.debug('REDRAW ESubmitTemplate %s', self.entity)
         _outs = self.entity.find_outputs() if self.entity else []
         _outs = [_out for _out in _outs if _out.submittable]
 
@@ -298,8 +299,8 @@ class CLExportTab(object):
         _cur_work = pipe.CACHE.cur_work
         if not _cur_work:
             qt.notify(
-                'No current work found.\n\nPlease save your scene using '
-                '{}.'.format(helper.TITLE), title='No current work',
+                f'No current work found.\n\nPlease save your scene using '
+                f'{helper.TITLE}.', title='No current work',
                 icon=icons.find('Vomit'))
             return None
 
@@ -368,7 +369,7 @@ class CLExportTab(object):
     def _callback__ERenderFramesReset(self):
         self.ui.ERenderFramesLabel.redraw()
         _rng = dcc.t_range(int)
-        _rng_str = '{:d}-{:d}'.format(*_rng)
+        _rng_str = f'{_rng[0]:d}-{_rng[1]:d}'
         self.ui.ERenderFramesText.setText(_rng_str)
 
     def _get_render_frames(self):
@@ -465,8 +466,8 @@ class CLExportTab(object):
         # Notify
         if not force and shotgrid.SUBMITTER.is_direct:
             qt.notify(
-                'Submitted {:d} versions to shotgrid.\n\nSee script editor '
-                'for details.'.format(len(_outs)),
+                f'Submitted {len(_outs):d} versions to shotgrid.\n\n'
+                f'See script editor for details.',
                 title='Versions Submitted', icon=shotgrid.ICON)
 
         self.ui.ESubmitOutputs.redraw()
@@ -474,7 +475,7 @@ class CLExportTab(object):
     def _context__ECacheRefs(self, menu):
         _cacheable = self.ui.ECacheRefs.selected_data(catch=True)
         if _cacheable:
-            menu.add_label('Cacheable {}'.format(_cacheable.output_name))
+            menu.add_label(f'Cacheable {_cacheable.output_name}')
             menu.add_separator()
             menu.add_action('Select in scene', _cacheable.select_in_scene,
                             icon=icons.find('Hook'))

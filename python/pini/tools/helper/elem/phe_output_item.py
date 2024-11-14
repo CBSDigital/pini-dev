@@ -71,7 +71,6 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         # Handle restCache abcs
         if _out.extn == 'abc' and _out.output_name == 'restCache':
-            _out_c = pipe.CACHE.obt(_out)
             return f'{_ety_name} ({_out.task} restCache)'
 
         # Handle shdCache ass.gz

@@ -33,7 +33,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
     request_t = 0.0  # Time spent on requests
 
     # Error if number of requests gets higher (for debugging)
-    requests_limit = 0
+    requests_limit = int(os.environ.get('PINI_SG_REQUESTS_LIMIT', 0))
 
     @sg_utils.sg_cache_result
     def _read_entity_types(self):

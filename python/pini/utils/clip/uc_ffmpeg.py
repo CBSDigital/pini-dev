@@ -14,20 +14,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @cache_result
-def find_ffmpeg_exe():
+def find_ffmpeg_exe(exe='ffmpeg'):
     """Find ffmpeg executable.
 
     In cases where it can't simply be added to $PATH (eg. if you don't want
     to override another ffmpeg version which is being used), the path can
     be forced us $FFMPEG_EXE.
 
+    Args:
+        exe (str): override ffmpeg exe to find (eg. ffprobe)
+
     Returns:
         (File): ffmpeg executable
     """
     _env_path = os.environ.get('FFMPEG_EXE')
-    if _env_path and File(_env_path).exists():
-        return File(_env_path)
-    return find_exe('ffmpeg')
+    if _env_path:
+        _exe = File(_env_path).to_file(base=exe)
+        assert _exe.exists()
+        return _exe
+    return find_exe(exe)
 
 
 def play_sound(file_, start=None, end=None, verbose=0):
@@ -196,7 +201,7 @@ def read_ffprobe(video):
     Returns:
         (str): ffprobe result
     """
-    _ffprobe_exe = find_exe('ffprobe')
+    _ffprobe_exe = find_ffmpeg_exe(exe='ffprobe')
 
     _cmds = [_ffprobe_exe.path, video.path]
     _LOGGER.debug(' - CMD %s', ' '.join(_cmds))
