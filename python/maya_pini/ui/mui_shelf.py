@@ -74,7 +74,7 @@ def _get_separator_icon(icon='Fleur-de-lis'):
     """
     from pini import qt
 
-    _file = TMP.to_file('pini/spacer_icon_{}.png'.format(icon))
+    _file = TMP.to_file(f'pini/spacer_icon_{icon}.png')
     _pix = qt.CPixmap(70, 100)
     _pix.fill('Transparent')
 
@@ -105,7 +105,7 @@ def add_shelf_separator(name, parent, style='Fleur-de-lis'):
         _LOGGER.debug('ADD DIVIDER %s', name)
         _icon = _get_separator_icon()
         add_shelf_button(
-            name, image=_icon, command='# {}\npass'.format(name),
+            name, image=_icon, command=f'# {name}\npass',
             width=10, parent=parent, annotation='** Separator **',
             enable=False, flush_key='command')
     else:
@@ -197,3 +197,15 @@ def obtain_shelf(name):
         _layout_name = cmds.shelfLayout(name, parent=_parent)
 
     return _layout_name
+
+
+def select_shelf(shelf):
+    """Select the given shelf.
+
+    Args:
+        shelf (str): name of shelf to select
+    """
+    _shelves = cmds.layout('ShelfLayout', query=True, childArray=True)
+    _idx = _shelves.index(shelf) + 1
+    _LOGGER.debug(' - SELECT IDX %d', _idx)
+    cmds.shelfTabLayout('ShelfLayout', edit=True, selectTabIndex=_idx)

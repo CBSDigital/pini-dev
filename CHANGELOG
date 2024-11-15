@@ -1,3 +1,12 @@
+## [6.14.0] - Fri 2024-11-15 05:18
+### Summary
+ - Pipeline Module:
+    - allow job filtering via $PINI_PIPE_JOBS_FILTER,
+### Updated
+ - pini.pipe.CPJob._read_jobs allow filter via $PINI_PIPE_JOBS_FILTER,
+ - maya_pini.ui.select_shelf added,
+
+
 ## [6.13.0] - Thu 2024-11-14 09:40
 ### Summary
  - Pini Helper:

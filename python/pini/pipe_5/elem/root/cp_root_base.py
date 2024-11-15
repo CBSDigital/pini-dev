@@ -2,6 +2,7 @@
 
 import logging
 import operator
+import os
 
 from pini.utils import Dir, passes_filter, single, apply_filter
 
@@ -122,12 +123,15 @@ class CPRootBase(Dir):
         from pini import pipe
 
         _class = class_ or pipe.CPJob
+        _filter = os.environ.get('PINI_PIPE_JOBS_FILTER')
         _LOGGER.debug('READ JOBS %s %s', _class, self.path)
 
         _jobs = []
         for _dir in self._read_job_dirs():
             _LOGGER.debug(' - TESTING DIR %s', _dir)
             _job = _class(_dir)
+            if _filter and not passes_filter(_job.name, _filter):
+                continue
             if _job.name not in self._JOBS_CACHE:
                 self._JOBS_CACHE[_job.name] = _job
             _jobs.append(_job)
