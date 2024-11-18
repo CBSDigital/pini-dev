@@ -256,6 +256,7 @@ class CLExportTab:
                 raise ValueError(_ver)
 
             # Add output
+            _LOGGER.debug(' - BUILD PHOutputItem %s', _out)
             _item = phe_output_item.PHOutputItem(
                 list_view=self.ui.ESubmitOutputs,
                 output=_out, helper=self, highlight=not _submitted)

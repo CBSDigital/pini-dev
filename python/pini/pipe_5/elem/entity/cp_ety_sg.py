@@ -46,7 +46,7 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
 
         # Build output objects
         _latest_map = {}
-        _outs = []
+        _outs = {}  # Accomodate many pubs with same path (just use latest)
         for _sg_pub_file in self.sg_entity.find_pub_files(
                 validated=True, omitted=False):
             _LOGGER.debug(' - PUB FILE %s', _sg_pub_file)
@@ -59,8 +59,9 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
                 latest=_sg_pub_file.latest)
             _out.sg_pub_file = _sg_pub_file
             _LOGGER.debug('   - OUT %s', _out)
-            _outs.append(_out)
+            _outs[_out.path] = _out
             _latest_map[_sg_pub_file.stream] = _out
+        _outs = sorted(_outs.values())
 
         # Need to reapply latest to take account of omissions
         for _out in _outs:

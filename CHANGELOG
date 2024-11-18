@@ -1,3 +1,13 @@
+## [6.15.1] - Mon 2024-11-18 09:51
+### Summary
+ - Pini Helper:
+    - accommodate for multiple pub files with matching paths (tvoll),,
+    - bugfix error on display version zero outputs (tvoll),
+### Updated
+ - pini.pipe.CPEntitySG._read_outputs crop duplicate pub files,
+ - pipe.tools.helper.PHOutputItem bugfix error on draw ver 0,
+
+
 ## [6.15.0] - Mon 2024-11-18 08:28
 ### Summary
  - Pini Qt Wrapper:

@@ -42,7 +42,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
         self.text = text
         self.col = col or random.choice(qt.PASTEL_COLS)
 
-        super(CListViewPixmapItem, self).__init__(
+        super().__init__(
             list_view=list_view, height=height, widget=_widget, data=data)
 
         self.redraw()
@@ -142,7 +142,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
 
         # Draw pixmap
         self.pixmap = self.widget.redraw()
-        super(CListViewPixmapItem, self).redraw(size=_size_hint)
+        super().redraw(size=_size_hint)
         _LOGGER.debug(
             ' - REDRAW COMPLETE %dx%d widget_w=%d', _size_hint.width(),
             _size_hint.height(), self.widget.width())
@@ -159,7 +159,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
             event (QResizeEvent): triggered event
         """
         _LOGGER.debug('RESIZE %s', self)
-        super(CListViewPixmapItem, self).resizeEvent(event)
+        super().resizeEvent(event)
         self.redraw()
 
     def __repr__(self):
