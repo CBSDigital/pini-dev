@@ -172,7 +172,7 @@ class TestHelper(unittest.TestCase):
         _helper.close()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
-        assert _helper.ui.EExportPane.current_tab_text() == _tab
+        assert_eq(_helper.ui.EExportPane.current_tab_text(), _tab)
 
 
 class TestDiskPiniHelper(TestHelper):

@@ -15,7 +15,7 @@ from . import eh_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class CExportHandler(object):
+class CExportHandler:
     """Base class for any export handler."""
 
     NAME = None
@@ -44,7 +44,7 @@ class CExportHandler(object):
         assert self.ACTION
         _name = self.NAME or type(self).__name__
         _name = _name.lower().replace(' ', '_')
-        self._settings_file = '{}/{}.ini'.format(qt.SETTINGS_DIR, _name)
+        self._settings_file = f'{qt.SETTINGS_DIR}/{_name}.ini'
 
     def _add_elem(
             self, elem, name, disable_save_settings=False, save_policy=None,
@@ -68,7 +68,6 @@ class CExportHandler(object):
         _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         if disable_save_settings:
             _save_policy = qt.SavePolicy.NO_SAVE
-        elem.disable_save_settings = disable_save_settings
         _settings_key = settings_key or _to_settings_key(
             name=name, handler=self)
         elem.set_settings_key(_settings_key)
@@ -422,7 +421,8 @@ class CExportHandler(object):
         return -self.priority < -other.priority
 
     def __repr__(self):
-        return '<{}>'.format(type(self).__name__.strip('_'))
+        _name = type(self).__name__.strip('_')
+        return f'<{_name}>'
 
 
 def _to_settings_key(handler, name):
@@ -435,4 +435,5 @@ def _to_settings_key(handler, name):
     Returns:
         (str): scene settings key (eg. PiniQt.CMayaModelPublish.References)
     """
-    return 'PiniQt.{}.{}'.format(type(handler).__name__, name)
+    _handler = type(handler).__name__
+    return f'PiniQt.{_handler}.{name}'

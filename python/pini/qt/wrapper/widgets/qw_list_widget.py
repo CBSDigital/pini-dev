@@ -7,6 +7,7 @@ from pini.utils import single, EMPTY
 from .qw_base_widget import CBaseWidget
 from .qw_list_widget_item import CListWidgetItem
 from ...q_mgr import QtWidgets, Qt
+from ... import q_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
 
     is_empty = False
     empty_marker = None  # Item used to show list is empty
+    save_policy = q_utils.SavePolicy.NO_SAVE
 
     __repr__ = CBaseWidget.__repr__
 
@@ -67,7 +69,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                 self.select_row(_idx, emit=emit, replace=replace)
                 return
         if not catch:
-            raise ValueError('failed to select {}'.format(match))
+            raise ValueError(f'Failed to select {match}')
 
     def select_data(self, data, emit=True, catch=False):
         """Select item by its data.
@@ -82,7 +84,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                 self.select_row(_idx, emit=emit)
                 return
         if not catch:
-            raise ValueError('failed to select {}'.format(data))
+            raise ValueError(f'Failed to select {data}')
 
     def select_item(self, item, emit=True, catch=False):
         """Select the given item.
@@ -97,7 +99,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                 self.select_row(_idx, emit=emit)
                 return
         if not catch:
-            raise ValueError('failed to select {}'.format(item))
+            raise ValueError(f'Failed to select {item}')
 
     def select_row(self, idx, replace=False, emit=True):
         """Set current row.
@@ -293,11 +295,11 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             event (QMouseEvent): triggered event
         """
         _LOGGER.debug('MOUSE MOVE %s', event)
-        super(CListWidget, self).mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
 
     def selectAll(self):
         """Select all items."""
         if self.is_empty:
             self.clearSelection()
         else:
-            super(CListWidget, self).selectAll()
+            super().selectAll()

@@ -337,9 +337,8 @@ def to_ftn(base, ver_n=None, extn='jpg'):
         (File): file texture name
     """
     _base = base.replace(':', '_')
-    return to_ftn_root().to_file('{base}{ver}.{extn}'.format(
-        base=_base, extn=extn,
-        ver='_v{:03d}'.format(ver_n) if ver_n else ''))
+    _ver = f'_v{ver_n:03d}' if ver_n else ''
+    return to_ftn_root().to_file(f'{_base}{_ver}.{extn}')
 
 
 def to_ftn_root():
@@ -404,3 +403,6 @@ def to_shd(obj):
             _shd = _class(_shd)
 
     return _shd
+
+
+DEFAULT_SHD = to_shd('lambert1')

@@ -34,6 +34,7 @@ class SavePolicy(enum.IntEnum):
     NO_SAVE = 2
     SAVE_ON_CHANGE = 3
     SAVE_IN_SCENE = 4
+    SAVE_ON_CLOSE = 5
 
 
 def build_tmp_icon(

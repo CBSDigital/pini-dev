@@ -15,7 +15,9 @@ def apply_deprecation(date, msg):
         msg (str): deprecation message
     """
     from pini import testing
+    from pini.tools import error
     if not testing.dev_mode():
         return
+    error.TRIGGERED = True
     _mtime = time.strptime(date, '%d/%m/%y')  # Check date is valid
-    raise DeprecationWarning('{} ({})'.format(msg, date))
+    raise DeprecationWarning(f'{msg} ({date})')

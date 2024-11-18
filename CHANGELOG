@@ -1,3 +1,21 @@
+## [6.15.0] - Mon 2024-11-18 08:28
+### Summary
+ - Pini Qt Wrapper:
+    - cleaned up ui save settings handling,
+### Updated
+ - pini.utils.Path.__str__ added,
+ - pini.dcc.CBaseExportHandler._add_elem removed deprecated disable_save_settings attr,
+ - pini.qt.CListView inherits from CListView to access set_save_policy method,
+ - pini.qt.CSettings apply deprecation to disable_save_settings attr,
+ - pini.qt.SavePolicy.SAVE_ON_CLOSE added,
+ - pini.tools.helper bugfix switch shots on toggle admin mode,
+ - pini.tools.release apply error.TRIGGERED on dev mode deprecation fail,
+ - pini.icons.BUILD added,
+ - maya_pini.utils.set_col bugfix error on X11 col name passed,
+ - maya_pini.open_maya.find_nodes bugfix duplicate mesh nodes on mesh filter,
+ - maya_pini.tex.DEFAULT_SHD added,
+
+
 ## [6.14.0] - Fri 2024-11-15 05:18
 ### Summary
  - Pipeline Module:

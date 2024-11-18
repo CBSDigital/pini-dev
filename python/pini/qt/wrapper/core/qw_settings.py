@@ -24,7 +24,7 @@ class CSettings(QtCore.QSettings, File):
             file_ (str): path to settings file
         """
         File.__init__(self, file_)
-        super(CSettings, self).__init__(self.path, QtCore.QSettings.IniFormat)  # pylint: disable=too-many-function-args
+        super().__init__(self.path, QtCore.QSettings.IniFormat)  # pylint: disable=too-many-function-args
 
     def apply_to_ui(self, ui, filter_=None, type_filter=None):
         """Apply these settings to the given ui object.
@@ -35,6 +35,7 @@ class CSettings(QtCore.QSettings, File):
             type_filter (str): filter by widget type name
         """
         from pini import qt
+        from pini.tools import release
 
         _keys = [_key for _key in self.allKeys()
                  if _key.startswith('widgets/')]
@@ -67,6 +68,7 @@ class CSettings(QtCore.QSettings, File):
             _disable_save_settings = getattr(
                 _widget, 'disable_save_settings', False)
             if _disable_save_settings:
+                release.apply_deprecation('15/11/24', 'Use save_policy attr')
                 _LOGGER.debug('   - DISABLED')
                 continue
 
@@ -97,7 +99,7 @@ class CSettings(QtCore.QSettings, File):
         # Obtain value
         _val = value
         if _val is EMPTY:
-            _key = 'widgets/{}'.format(widget.objectName())
+            _key = f'widgets/{widget.objectName()}'
             if _key not in self.allKeys():
                 _LOGGER.debug(' - FAILED TO FIND SETTING %s', widget)
                 return
@@ -171,9 +173,11 @@ class CSettings(QtCore.QSettings, File):
         # Make sure save policy is default or save on change
         _save_policy = getattr(widget, 'save_policy', qt.SavePolicy.DEFAULT)
         if _save_policy not in (
-                qt.SavePolicy.DEFAULT, qt.SavePolicy.SAVE_ON_CHANGE):
+                qt.SavePolicy.DEFAULT,
+                qt.SavePolicy.NO_SAVE,
+                qt.SavePolicy.SAVE_ON_CHANGE):
             _LOGGER.info(' - SAVE POLICY %s %s', widget, _save_policy)
-            raise RuntimeError(widget)
+            raise RuntimeError(widget, _save_policy)
 
     def save_ui(self, ui, filter_=None):
         """Save widgets in the given ui to this settings file.
@@ -193,12 +197,15 @@ class CSettings(QtCore.QSettings, File):
         Args:
             widget (QWidget): widget to save
         """
+        from pini.tools import release
         _LOGGER.debug('SAVE WIDGET %s', widget)
 
         # Check for disabled
         if (
                 hasattr(widget, 'disable_save_settings') and
                 widget.disable_save_settings):
+            _LOGGER.info(' - LEGACY SAVE DISABLED %s', widget)
+            release.apply_deprecation('15/11/24', 'Use save_policy attr')
             _LOGGER.debug(' - DISABLED')
             return
 

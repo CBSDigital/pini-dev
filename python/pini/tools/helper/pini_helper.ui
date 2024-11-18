@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -53,7 +53,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="WTaskText"/>
+                <widget class="CLineEdit" name="WTaskText"/>
                </item>
               </layout>
              </item>
@@ -97,7 +97,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="WTagText">
+                <widget class="CLineEdit" name="WTagText">
                  <property name="text">
                   <string/>
                  </property>
@@ -509,7 +509,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>2</number>
+          <number>4</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -2016,7 +2016,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="ESubmitComment"/>
+                  <widget class="CLineEdit" name="ESubmitComment"/>
                  </item>
                 </layout>
                </item>
@@ -2289,7 +2289,7 @@ Range: 1-10</string>
                 </widget>
                </item>
                <item>
-                <widget class="QLineEdit" name="SOutputsFilter"/>
+                <widget class="CLineEdit" name="SOutputsFilter"/>
                </item>
                <item>
                 <widget class="QPushButton" name="SOutputsFilterClear">
@@ -2908,7 +2908,7 @@ Range: 1-10</string>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="SSceneRefsFilter"/>
+                <widget class="CLineEdit" name="SSceneRefsFilter"/>
                </item>
               </layout>
              </item>
@@ -3368,6 +3368,11 @@ icon</string>
    <class>CPixmapLabel</class>
    <extends>QLabel</extends>
    <header>cpixmaplabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>clineedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -30,7 +30,7 @@ class CReference(om.MFnReference, ref.FileRef):
             allow_no_namespace (bool): no error if ref has no namespace
         """
         _LOGGER.log(9, 'CReference INIT %s', node)
-        super(CReference, self).__init__()  # pylint: disable=no-value-for-parameter
+        super().__init__()  # pylint: disable=no-value-for-parameter
 
         # Apply node's reference to this object
         _m_obj = pom_utils.to_mobject(node)
@@ -60,7 +60,7 @@ class CReference(om.MFnReference, ref.FileRef):
             _iter.next()
 
         else:
-            raise ValueError('Failed to match reference {}'.format(node))
+            raise ValueError(f'Failed to match reference {node}')
         _LOGGER.log(9, ' - LOCATED REF')
 
         _ref_node = pom_node.CNode(self.name())
@@ -183,10 +183,10 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CBaseNode list): nodes
         """
-        _nodes = super(CReference, self).find_nodes(
+        _nodes = super().find_nodes(
             type_=type_, dag_only=dag_only, full_path=full_path,
             filter_=filter_)
-        return [pom_utils.cast_node(_node) for _node in _nodes]
+        return sorted({pom_utils.cast_node(_node) for _node in _nodes})
 
     def find_skeleton(self, catch=True):
         """Find this node's skeleton.
@@ -204,7 +204,7 @@ class CReference(om.MFnReference, ref.FileRef):
                 return None
             raise ValueError(self)
         assert str(_jnts[0]).count('|') != str(_jnts[1]).count('|')
-        _root = str(_jnts[0]).split('|')[-1]
+        _root = str(_jnts[0]).rsplit('|', 1)[-1]
         return pom.CSkeleton(_root)
 
     def find_top_nodes(self):
@@ -232,7 +232,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CBaseNode|str): matching node
         """
-        _node = super(CReference, self).to_node(name, clean=clean)
+        _node = super().to_node(name, clean=clean)
 
         if fmt == 'str':
             pass
@@ -269,7 +269,7 @@ class CReference(om.MFnReference, ref.FileRef):
         if isinstance(_plug, pom.CPlug):
             _plug = str(_plug)
         assert '.' in _plug
-        return pom.CPlug('{}:{}'.format(self.namespace, to_clean(_plug)))
+        return pom.CPlug(f'{self.namespace}:{to_clean(_plug)}')
 
     def __str__(self):
         return str(self.ref_node)

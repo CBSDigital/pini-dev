@@ -11,7 +11,7 @@ from ..u_misc import nice_size, nice_id, strftime
 _LOGGER = logging.getLogger(__name__)
 
 
-class Path(object):
+class Path:
     """Represents a path on disk."""
 
     def __init__(self, path):
@@ -24,7 +24,7 @@ class Path(object):
 
         self.path = _path
 
-        self.filename = self.path.split('/')[-1]
+        self.filename = self.path.rsplit('/', 1)[-1]
         self.dir = up_utils.norm_path(str(self._pathlib.parent))
         self.base = self._pathlib.stem
         self.extn = self._pathlib.suffix[1:]
@@ -273,9 +273,12 @@ class Path(object):
     def __repr__(self):
         _tag = ''
         if os.environ.get('PINI_REPR_NICE_IDS'):
-            _tag = '[{}]'.format(nice_id(self))
-        return '<{}{}|{}>'.format(
-            type(self).__name__.lstrip('_'), _tag, self.path)
+            _tag = f'[{nice_id(self)}]'
+        _name = type(self).__name__.lstrip('_')
+        return f'<{_name}{_tag}|{self.path}>'
+
+    def __str__(self):
+        return self.path
 
 
 def _get_owner_nt(path):

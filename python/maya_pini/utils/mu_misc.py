@@ -124,7 +124,7 @@ def create_attr(plug, value):
         (str): attribute created
     """
     _node, _attr = plug.split('.')
-    _plug = '{}.{}'.format(_node, _attr)
+    _plug = f'{_node}.{_attr}'
 
     # Handle attr already exists
     if cmds.objExists(plug):
@@ -198,7 +198,7 @@ def set_col(node, col, force=False):
         if col.lower() in COLS:
             _col = col.lower()
         else:
-            _q_col = qt.to_col(_col)
+            _q_col = qt.to_col(col)
     elif isinstance(col, QtGui.QColor):
         _q_col = col
     else:
@@ -292,7 +292,7 @@ def to_clean(node):
     Returns:
         (str): clean name
     """
-    return str(node).split('|')[-1].split(':')[-1]
+    return str(node).rsplit('|', 1)[-1].rsplit(':', 1)[-1]
 
 
 def to_long(node):
@@ -333,13 +333,12 @@ def to_node(name, shorten=True, namespace=None, class_=None, clean=True):
     """
     _node = str(name)
     if shorten:
-        _node = _node.split('|')[-1]
-    _node = _node.split('->')[-1]
-    _node = _node.split('.')[0]
+        _node = _node.rsplit('|', 1)[-1]
+    _node = _node.rsplit('->', 1)[-1]
+    _node = _node.split('.', 1)[0]
     if namespace:
-        _node = '{}:{}'.format(
-            namespace,
-            to_clean(_node) if clean else _node)
+        _name = to_clean(_node) if clean else _node
+        _node = f'{namespace}:{_name}'
     if class_:
         _node = class_(_node)
     return _node
@@ -376,7 +375,7 @@ def to_shp(node, catch=False, type_=None):
     try:
         return single(to_shps(node, type_=type_), catch=catch)
     except ValueError:
-        raise ValueError('Failed to find shape - {}'.format(node))
+        raise ValueError(f'Failed to find shape - {node}')
 
 
 def to_shps(node, type_=None):
@@ -390,7 +389,7 @@ def to_shps(node, type_=None):
         (str list): shapes
     """
     if not isinstance(node, str):
-        raise TypeError('Bad type {} - {}'.format(type(node), node))
+        raise TypeError(f'Bad type {type(node)} - {node}')
     _kwargs = {}
     if type_:
         _kwargs['type'] = type_

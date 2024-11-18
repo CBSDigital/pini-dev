@@ -77,16 +77,16 @@ class _EmojiIndexParser(HTMLParser):
         if not _title:
             return
         for _find, _replace in [
-                (u'\u201c', '"'),
-                (u'\u201d', '"'),
-                (u'\u2019', "'"),
-                (u'\xc5', ''),
-                (u'\xe9', 'e'),
-                (u'\xe3', 'a'),
-                (u'\xed', 'i'),
-                (u'\xf4', 'o'),
-                (u'\xe7', 'c'),
-                (u'\xf1', 'n'),
+                ('\u201c', '"'),
+                ('\u201d', '"'),
+                ('\u2019', "'"),
+                ('\xc5', ''),
+                ('\xe9', 'e'),
+                ('\xe3', 'a'),
+                ('\xed', 'i'),
+                ('\xf4', 'o'),
+                ('\xe7', 'c'),
+                ('\xf1', 'n'),
         ]:
             _title = _title.replace(_find, _replace)
         self.names[_title] = self._count
@@ -612,6 +612,7 @@ SKIN_TONES = (
     'Medium-Dark Skin Tone',
     'Dark Skin Tone')
 
+BUILD = EMOJI.find('Hammer')
 BROWSER = EMOJI.find('Open File Folder')
 COPY = EMOJI.find('Spiral Notepad')
 CLEAN = EMOJI.find('Sponge')

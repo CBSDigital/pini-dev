@@ -75,7 +75,7 @@ class CLExportTab:
         from pini.pipe import shotgrid
 
         # Set up comments
-        self.ui.ESubmitComment.disable_save_settings = True
+        self.ui.ESubmitComment.set_save_policy(qt.SavePolicy.NO_SAVE)
         for _elem in [
                 self.ui.ESubmitComment,
                 self.ui.ESubmitCommentLabel,

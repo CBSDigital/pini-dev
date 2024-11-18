@@ -195,13 +195,17 @@ def _test_anim_workflow(progress, force, show_ctx):
     dcc.set_range(1001, 1005)
     _helper.ui.Refresh.click()
     _helper.jump_to(_shot)
+    assert _helper.entity == _shot
+    assert _helper.entity == testing.TMP_SHOT
     _work_dir = _shot.find_work_dir('anim', dcc_=dcc.NAME, catch=True)
+    _LOGGER.info('WORK DIR %s', _work_dir)
     if _work_dir:
         _helper.ui.WTasks.select_data(_work_dir)
     else:
         if not _helper.ui.ToggleAdmin.isChecked():
             _helper.ui.ToggleAdmin.click()
         _helper.ui.WTaskText.setText('anim')
+    assert _helper.entity == testing.TMP_SHOT
     _helper.ui.WTagText.setText('test')
     _helper.ui.WWorks.select_item(_helper.ui.WWorks.all_items()[-1])
     assert _helper.work.entity == testing.TMP_SHOT

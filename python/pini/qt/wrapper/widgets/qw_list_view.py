@@ -6,12 +6,16 @@ import operator
 from pini.utils import basic_repr, single, EMPTY
 
 from ...q_mgr import QtWidgets, QtGui, Qt, QtCore
+from ... import q_utils
+from . import qw_base_widget
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CListView(QtWidgets.QListView):
+class CListView(QtWidgets.QListView, qw_base_widget.CBaseWidget):
     """Wrapper for QListView widget."""
+
+    save_policy = q_utils.SavePolicy.NO_SAVE
 
     def __init__(self, *args):
         """Constructor."""
@@ -25,61 +29,6 @@ class CListView(QtWidgets.QListView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.redraw_items()
-
-    def get_draw_width(self):
-        """Calculate width to draw contents in.
-
-        Returns:
-            (int): width in pixels
-        """
-        _vsb = self.verticalScrollBar()
-        _draw_width = self.width() - 4
-        if _vsb.isVisible():
-            _draw_width -= _vsb.width()
-        _LOGGER.log(9, ' - GET DRAW WIDTH vsb=%d w=%d, draw_w=%d',
-                    _vsb.isVisible(), self.width(), _draw_width)
-        return _draw_width
-
-    def set_items(self, items, select=EMPTY, emit=True):
-        """Set current list of items.
-
-        Args:
-            items (QStandardItem list): items to add
-            select (QStandardItem): item to select
-            emit (bool): emit signal on update
-        """
-        _LOGGER.debug('SET ITEMS %s', items)
-
-        _width = self.get_draw_width()
-        _sel_model = self.selectionModel()
-        _model = self.model()
-
-        _signals = _sel_model.signalsBlocked()
-        _sel_model.blockSignals(True)
-
-        # Populate list
-        _model.clear()
-        for _idx, _item in enumerate(items):
-            _model.appendRow(_item)
-            self.setIndexWidget(_item.index(), _item.widget)
-            _model.setData(
-                _model.index(_idx, 0), _item.sizeHint(), Qt.SizeHintRole)
-        self.redraw_items()
-
-        # Apply selection
-        if select is EMPTY or (not select and isinstance(select, list)):
-            if items:
-                self.select(items[0])
-        elif select:
-            self.select(select, catch=True)
-        elif select is None:
-            _sel_model.clearSelection()
-        else:
-            raise ValueError(select)
-
-        _sel_model.blockSignals(_signals)
-        if emit:
-            _sel_model.selectionChanged.emit(0, 0)
 
     def all_data(self):
         """Retrieve data from all elements.
@@ -100,6 +49,75 @@ class CListView(QtWidgets.QListView):
             _item = self.model().item(_idx, 0)
             _items.append(_item)
         return _items
+
+    def get_draw_width(self):
+        """Calculate width to draw contents in.
+
+        Returns:
+            (int): width in pixels
+        """
+        _vsb = self.verticalScrollBar()
+        _draw_width = self.width() - 4
+        if _vsb.isVisible():
+            _draw_width -= _vsb.width()
+        _LOGGER.log(9, ' - GET DRAW WIDTH vsb=%d w=%d, draw_w=%d',
+                    _vsb.isVisible(), self.width(), _draw_width)
+        return _draw_width
+
+    def get_val(self):
+        """Get selected text.
+
+        Returns:
+            (str): selected text
+        """
+        return self.selected_item().text()
+
+    def redraw_items(self):
+        """Redraw contents.
+
+        This allows contents to respond dynamically to changes in size
+        of this list view.
+
+        Triggered by resize.
+        """
+        from pini import qt
+
+        _LOGGER.debug('REDRAW ITEMS %s %s', self, self.size())
+
+        # Calculate max item height
+        _height = 0
+        for _idx, _item in enumerate(self.all_items()):
+            _item.redraw()
+            _height = max(_height, _item.sizeHint().height())
+
+        # Apply icon size using max height
+        _cur_icon_size = self.iconSize()
+        _icon_size = qt.to_size(self.get_draw_width(), _height)
+        _LOGGER.debug(' - ICON SIZE %s -> %s height=%d visible=%d',
+                      _cur_icon_size, _icon_size, _height, self.isVisible())
+        if _cur_icon_size.height() == _icon_size.height():
+            _LOGGER.debug(' - NO HEIGHT CHANGE - REDRAW NOT NEEDED')
+            return
+        self.setIconSize(_icon_size)
+
+        # Redraw child items
+        _draw_width = self.get_draw_width()
+        _LOGGER.debug(' - DRAW WIDTH %d', _draw_width)
+        _model = self.model()
+        for _idx, _item in enumerate(self.all_items()):
+            _size_hint = qt.to_size(_draw_width, _item.height)
+            _item.setSizeHint(_size_hint)
+            _model.setData(_model.index(_idx, 0), _size_hint, Qt.SizeHintRole)
+        for _idx, _item in enumerate(self.all_items()):
+            _item.redraw()
+
+    def remove_item(self, item):
+        """Remove the given item from the list.
+
+        Args:
+            item (QStandardItem): item to remove
+        """
+        self.model().removeRow(item.row())
 
     def select(self, obj, replace=True, catch=False):
         """Select the given object or objects.
@@ -218,52 +236,54 @@ class CListView(QtWidgets.QListView):
         _idxs.sort(key=operator.methodcaller('row'))
         return [self.model().item(_idx.row(), 0) for _idx in _idxs]
 
-    def redraw_items(self):
-        """Redraw contents.
-
-        This allows contents to respond dynamically to changes in size
-        of this list view.
-
-        Triggered by resize.
-        """
-        from pini import qt
-
-        _LOGGER.debug('REDRAW ITEMS %s %s', self, self.size())
-
-        # Calculate max item height
-        _height = 0
-        for _idx, _item in enumerate(self.all_items()):
-            _item.redraw()
-            _height = max(_height, _item.sizeHint().height())
-
-        # Apply icon size using max height
-        _cur_icon_size = self.iconSize()
-        _icon_size = qt.to_size(self.get_draw_width(), _height)
-        _LOGGER.debug(' - ICON SIZE %s -> %s height=%d visible=%d',
-                      _cur_icon_size, _icon_size, _height, self.isVisible())
-        if _cur_icon_size.height() == _icon_size.height():
-            _LOGGER.debug(' - NO HEIGHT CHANGE - REDRAW NOT NEEDED')
-            return
-        self.setIconSize(_icon_size)
-
-        # Redraw child items
-        _draw_width = self.get_draw_width()
-        _LOGGER.debug(' - DRAW WIDTH %d', _draw_width)
-        _model = self.model()
-        for _idx, _item in enumerate(self.all_items()):
-            _size_hint = qt.to_size(_draw_width, _item.height)
-            _item.setSizeHint(_size_hint)
-            _model.setData(_model.index(_idx, 0), _size_hint, Qt.SizeHintRole)
-        for _idx, _item in enumerate(self.all_items()):
-            _item.redraw()
-
-    def remove_item(self, item):
-        """Remove the given item from the list.
+    def set_items(self, items, select=EMPTY, emit=True):
+        """Set current list of items.
 
         Args:
-            item (QStandardItem): item to remove
+            items (QStandardItem list): items to add
+            select (QStandardItem): item to select
+            emit (bool): emit signal on update
         """
-        self.model().removeRow(item.row())
+        _LOGGER.debug('SET ITEMS %s', items)
+
+        _width = self.get_draw_width()
+        _sel_model = self.selectionModel()
+        _model = self.model()
+
+        _signals = _sel_model.signalsBlocked()
+        _sel_model.blockSignals(True)
+
+        # Populate list
+        _model.clear()
+        for _idx, _item in enumerate(items):
+            _model.appendRow(_item)
+            self.setIndexWidget(_item.index(), _item.widget)
+            _model.setData(
+                _model.index(_idx, 0), _item.sizeHint(), Qt.SizeHintRole)
+        self.redraw_items()
+
+        # Apply selection
+        if select is EMPTY or (not select and isinstance(select, list)):
+            if items:
+                self.select(items[0])
+        elif select:
+            self.select(select, catch=True)
+        elif select is None:
+            _sel_model.clearSelection()
+        else:
+            raise ValueError(select)
+
+        _sel_model.blockSignals(_signals)
+        if emit:
+            _sel_model.selectionChanged.emit(0, 0)
+
+    def set_val(self, val):
+        """Apply value to this element.
+
+        Args:
+            val (str): text to select
+        """
+        self.select(val)
 
     def resizeEvent(self, event=None):
         """Triggered by resize.

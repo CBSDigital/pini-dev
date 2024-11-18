@@ -109,6 +109,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def init_ui(self):
         """Build ui elements."""
+        _LOGGER.debug('INIT UI')
         self.ui.JobIcon.draw_pixmap_func = self._draw__JobIcon
 
         # Disable save settings on pipe elements
@@ -128,10 +129,11 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                 self.ui.SOutputsFilter,
                 self.ui.SSceneRefsFilter,
         ]:
-            _elem.disable_save_settings = True
+            _LOGGER.debug(' - DISABLE SAVE %s', _elem)
+            _elem.set_save_policy(qt.SavePolicy.NO_SAVE)
 
-        self.ui.EExportPane.save_policy = qt.SavePolicy.SAVE_IN_SCENE
-        self.ui.ERenderHandler.save_policy = qt.SavePolicy.SAVE_ON_CHANGE
+        self.ui.EExportPane.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
+        self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
 
     @property
     def job(self):
@@ -563,6 +565,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
 
     def _redraw__Entity(self):
 
+        _cur_ety = self.entity
         _profile = self.ui.Profile.selected_text()
         _type = self.ui.EntityType.selected_text()
         _LOGGER.debug('REDRAW ENTITY job=%s type=%s', self.job, _type)
@@ -591,6 +594,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             _select = _trg_ety
         elif pipe.cur_entity():
             _select = pipe.cur_entity()
+        elif _cur_ety:
+            _select = _cur_ety
 
         self.ui.Entity.setEditable(self._admin_mode)
         self.ui.Entity.set_items(_labels, data=_etys, select=_select)
@@ -689,6 +694,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self._redraw__EntityType()
 
     def _callback__ToggleAdmin(self, admin=None):
+        _cur_ety = self.entity
         if admin is not None:
             self._admin_mode = admin
         else:
@@ -696,6 +702,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         for _elem in [self.ui.WTaskText, self.ui.EntityCreate,
                       self.ui.EntityTypeCreate]:
             _elem.setVisible(self._admin_mode)
+        self._set_target(_cur_ety)
         self.ui.EntityType.redraw()
         self.ui.Entity.redraw()
 
