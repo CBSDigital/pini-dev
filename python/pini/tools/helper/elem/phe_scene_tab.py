@@ -340,7 +340,7 @@ class CLSceneTab:
         _sel = _cur if _cur in _opts else "latest"
         _LOGGER.debug(
             ' - TARGET %s %d', self.target,
-            0 if isinstance(self.target, pipe.CPOutputBase)
+            0 if not isinstance(self.target, pipe.CPOutputBase)
             else self.target.is_latest())
         if (
                 isinstance(self.target, pipe.CPOutputBase) and
