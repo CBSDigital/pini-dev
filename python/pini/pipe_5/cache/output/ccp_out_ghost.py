@@ -26,7 +26,7 @@ class CCPOutputGhost(File):
             ver_n, ver: str, latest: bool,
             output_name: str, output_type: str, content_type: str,
             updated_at: float, updated_by: str, range_: tuple,
-            submittable: bool, handler: str):
+            submittable: bool, handler: str, status: str):
         """Constructor.
 
         Args:
@@ -59,6 +59,7 @@ class CCPOutputGhost(File):
             range_ (tuple|None): output range
             submittable (bool): whether this output is submittable
             handler (str): export handler
+            status (str): output status (eg. cmpt/lapr)
         """
         assert isinstance(updated_by, str) or updated_by is None
         super().__init__(path)
@@ -97,6 +98,7 @@ class CCPOutputGhost(File):
         self.range_ = range_
         self.submittable = submittable
         self.handler = handler
+        self.status = status
 
     def is_latest(self):
         """Test whether this is the latest version.

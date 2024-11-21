@@ -134,7 +134,7 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         if status == 'omt':
             _desc = strftime('Omitted %d/%m/%y %H:%M:%S')
             _data['description'] = _desc
-        elif status in 'wtg':
+        elif status in ('wtg', 'apr', 'lapr'):
             pass
         else:
             raise NotImplementedError(status)
@@ -162,8 +162,8 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         Returns:
             (str): entry url
         """
-        return '{}/detail/{}/{}'.format(
-            os.environ.get('PINI_SG_URL'), self.ENTITY_TYPE, self.id_)
+        _url = os.environ.get('PINI_SG_URL')
+        return f'{_url}/detail/{self.ENTITY_TYPE}/{self.id_}'
 
     def __eq__(self, other):
         if hasattr(other, 'cmp_key'):

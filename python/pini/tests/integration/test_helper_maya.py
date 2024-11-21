@@ -105,7 +105,13 @@ class TestHelper(unittest.TestCase):
 
         _progress = qt.progress_dialog('Testing shot workflow')
 
+        _LOGGER.info('TMP SHOT %s', testing.TMP_SHOT)
         _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+        if not _ety:
+            testing.TMP_SHOT.create(force=True)
+            pipe.CACHE.reset()
+            _ety = pipe.CACHE.obt(testing.TMP_SHOT)
+            assert _ety
         _ety.flush(force=True)
 
         _test_anim_workflow(

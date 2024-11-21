@@ -85,7 +85,7 @@ class TestPublish(unittest.TestCase):
         # Test create work object
         _LOGGER.info('TESTING SAVE WORK')
         dcc.new_scene(force=True)
-        helper.obt_helper(reset_cache=False)
+        _helper = helper.obt_helper(reset_cache=False)
         assert _work_1.job is _job_c
         _work_1.save(force=True)
         _work_1 = pipe.CACHE.obt_work(_work_1, catch=False)
@@ -124,6 +124,7 @@ class TestPublish(unittest.TestCase):
         if not _basic_pub:
             assert dcc.NAME in ['hou', 'nuke']
         else:
+            _helper.ui.MainPane.select_tab(_helper.ui.ExportTab)
             assert _work_1.job is _job_c
             assert _work_1.job is pipe.CACHE.cur_job
             _basic_pub.publish(work=_work_1, force=True, version_up=False)

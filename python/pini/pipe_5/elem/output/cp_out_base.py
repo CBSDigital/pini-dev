@@ -18,6 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz']
 OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
 OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
+STATUS_ORDER = ['cmpt', 'apr', 'lapr']
 
 
 class CPOutputBase:
@@ -55,6 +56,7 @@ class CPOutputBase:
     ver = None
     ver_n = None
 
+    status = None
     data = None
     template = None
 
@@ -241,18 +243,27 @@ class CPOutputBase:
 
         Makes sure that outputs without tags are always sorted first.
 
+        Sort by entity -> task -> dir -> tag -> filename
+
         Returns:
             (tuple): sort key
         """
-        from pini import pipe
         if not self._cmp_key:
-            self._cmp_key = (
-                self.entity.path,
-                pipe.task_sort(self.pini_task),
-                self.dir,
-                pipe.tag_sort(self.tag),
-                self.filename)
+            self._cmp_key = tuple(self._build_cmp_key())
         return self._cmp_key
+
+    def _build_cmp_key(self):
+        """Build key to use for sorting/comparison.
+
+        Returns:
+            (tuple): sort key
+        """
+        _stream = self.to_stream()
+        if self.status in STATUS_ORDER:
+            _status_idx = 1 + STATUS_ORDER.index(self.status)
+        else:
+            _status_idx = 0
+        return [_stream, _status_idx, self.ver_n]
 
     @property
     def metadata(self):
@@ -447,7 +458,7 @@ class CPOutputBase:
             (bool): whether latest
         """
         _LOGGER.debug('IS LATEST %s', self)
-        if not self.ver_n:
+        if self.ver_n is None:
             return True
         if self._latest is not None:
             return self._latest
@@ -465,6 +476,15 @@ class CPOutputBase:
             (bool): whether media (eg. render/blast)
         """
         return self.basic_type in ['render', 'blast', 'plate']
+
+    def set_latest(self, latest):
+        """Set latest status of this output.
+
+        Args:
+            latest (bool): latest status
+        """
+        assert isinstance(latest, bool)
+        self._latest = latest
 
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.

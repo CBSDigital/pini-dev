@@ -16,7 +16,7 @@ from .entity import (
 from .output import (
     CPOutputFile, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
     to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
-    CPOutputBase, cur_output, CPOutputSeqDir)
+    CPOutputBase, cur_output, CPOutputSeqDir, STATUS_ORDER)
 
 from .work_dir import (
     CPWorkDir, cur_work_dir, to_work_dir, cur_task, map_task)

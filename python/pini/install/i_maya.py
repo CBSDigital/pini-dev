@@ -40,8 +40,7 @@ class PIMayaShelfInstaller(i_installer.PIInstaller):
         """
 
         # Build reload button
-        _refresh, _items = super(
-            PIMayaShelfInstaller, self)._gather_reload_tools(items)
+        _refresh, _items = super()._gather_reload_tools(items)
         _refresh.add_divider('MayaRefresh1')
 
         # Add reset windows
@@ -129,7 +128,7 @@ class PIMayaShelfInstaller(i_installer.PIInstaller):
         self.shelf = ui.obtain_shelf(_shelf_name)
         if flush:
             ui.flush_shelf(self.shelf)
-        super(PIMayaShelfInstaller, self).run(parent=parent)
+        super().run(parent=parent)
 
 
 class PIMayaInstaller(i_installer.PIInstaller):
@@ -142,7 +141,7 @@ class PIMayaInstaller(i_installer.PIInstaller):
             menu_installer (PIInstaller): menu installer
             shelf_installer (PIInstaller): shelf installer
         """
-        super(PIMayaInstaller, self).__init__()
+        super().__init__()
 
         self.menu_installer = menu_installer or PIMayaMenuInstaller()
         self.shelf_installer = shelf_installer or PIMayaShelfInstaller()
@@ -176,7 +175,7 @@ class PIMayaInstaller(i_installer.PIInstaller):
         self.shelf_installer.run(parent=parent)
         if launch_helper:
             _LOGGER.info(' - LAUNCHING HELPER %s', helper)
-            helper.launch()
+            helper.obt_helper()
 
 
 INSTALLER = PIMayaInstaller()

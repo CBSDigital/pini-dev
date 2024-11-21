@@ -10,7 +10,9 @@ import os
 _LOGGER = logging.getLogger(__name__)
 
 DCC = None
-DCCS = ['maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal', 'terragen']
+DCCS = [
+    'maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal', 'terragen',
+    'substance']
 
 _LOGGER.debug('IMPORT DCC')
 
@@ -66,6 +68,13 @@ if not DCC:
         DCC = UnrealDCC()
     except ImportError as _exc:
         _LOGGER.debug(' - UNREAL REJECTED %s', _exc)
+
+if not DCC:
+    try:
+        from .d_substance import SubstanceDCC
+        DCC = SubstanceDCC()
+    except ImportError as _exc:
+        _LOGGER.debug(' - SUBSTANCE REJECTED %s', _exc)
 
 if not DCC:
     from . import d_base

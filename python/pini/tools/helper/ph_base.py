@@ -201,7 +201,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             if self.target:
                 _tab = 'Work'
         if not self.target:
-            self.target = pipe.to_output(path, catch=True)
+            _out = pipe.to_output(path, catch=True)
+            if _out:
+                _out = pipe.CACHE.obt(_out)
+            self.target = _out
             if self.target:
                 _tab = 'Scene'
         if not self.target:

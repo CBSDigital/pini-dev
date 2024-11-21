@@ -1,3 +1,32 @@
+## [6.16.0] - Thu 2024-11-21 04:08
+### Summary
+ - Pini Helper:
+    - mark latest approved output version,
+    - take status into account for latest output version,
+    - improved icon consistency in outputs list,
+### Updated
+ - pini.dcc added substance,
+ - pini.pipe updated VERSION 5 -> 6,
+ - pini.pipe shotgrid moved latest tracking SGC -> elem,
+ - pini.pipe latest takes account of status,
+ - pini.pipe.STATUS_ORDER added,
+ - pini.pipe.CPOutputBase.status added attr,
+ - pini.pipe.CPOutputBase.cmp_key simply stream/status/ver,
+ - pini.pipe.CPOutputBase.set_latest added,
+ - pini.pipe.CACHE.CCPOutputBase fix not passing sg_pub_file from src elem,
+ - pini.pipe.CACHE.CCPOutputBase.content_type added Image type,
+ - pini.pipe.CACHE.CCPOutputGhost.status added attr,
+ - pini.pipe.shotgrid.SGC.SGCElem.set_status added apr/larp statuses,
+ - pini.pipe.shotgrid.SGC.SGCPubFile.latest removed,
+ - pini.qt working with PySide6/py311,
+ - pini.qt CSettings/CUiDialog/CUiMainWindow use dummy 2nd parent to fix PySide6/py311 inheritance issues,
+ - pini.tools.helper outputs added image icons,
+ - pini.tools.helper improved consistency of output icons,
+ - pini.tools.helper outputs display non-latest with red/grey shade,
+ - pini.tools.helper bugfix v00 marked as versionless,
+ - pini.tools.release.PRTest bugfix sort by completed age / last dur,
+
+
 ## [6.15.1] - Mon 2024-11-18 09:51
 ### Summary
  - Pini Helper:

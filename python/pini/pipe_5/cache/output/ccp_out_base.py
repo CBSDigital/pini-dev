@@ -3,7 +3,7 @@
 import logging
 
 from pini import pipe
-from pini.utils import single, Seq, is_pascal
+from pini.utils import single, Seq, is_pascal, File
 
 from . import ccp_out_ghost
 from ..ccp_utils import pipe_cache_on_obj
@@ -83,6 +83,8 @@ class CCPOutputBase(elem.CPOutputBase):
                 raise ValueError(self.path, _pub_type, self.basic_type)
         elif self.extn in ('mov', 'mp4'):
             _c_type = 'Video'
+        elif self.extn in ('jpg', 'exr') and isinstance(self, File):
+            _c_type = 'Image'
         else:
             _c_type = self.extn.capitalize()
         assert is_pascal(_c_type) or _c_type[0].isdigit()
@@ -312,7 +314,7 @@ class CCPOutputBase(elem.CPOutputBase):
             basic_type=self.basic_type, profile=self.profile, ver=self.ver,
             range_=self.range_, submittable=self.submittable,
             src=self.src, src_ref=self.src_ref, handler=self.handler,
-            stream=self.to_stream())
+            stream=self.to_stream(), status=self.status)
 
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.

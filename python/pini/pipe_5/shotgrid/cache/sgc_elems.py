@@ -174,7 +174,6 @@ class SGCPubFile(SGCPath):
         self.task_long = _task_data.get('name')
 
         # These are set after init
-        self.latest = None
         self.validated = None
         self.template = None
         self.stream = None

@@ -48,7 +48,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         raise ValueError(match)
 
     @pipe_cache_on_obj
-    def _read_outputs(self, force=False):
+    def _read_outputs(self, force=False):  # pylint: disable=arguments-renamed
         """Read outputs in this entity.
 
         Args:
@@ -80,7 +80,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
                 'template': _out_u.template,
                 'entity': self,
                 'work_dir': _work_dir,
-                'latest': _out_u.sg_pub_file.latest}
+                'latest': _out_u.is_latest()}
 
             # Build cacheable
             if isinstance(_out_u, pipe.CPOutputVideo):
@@ -94,6 +94,8 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             else:
                 raise ValueError(_out_u)
             _LOGGER.debug('     - OUT C %s', _out_c)
+            _out_c.sg_pub_file = _out_u.sg_pub_file
+            _out_c.status = _out_u.status
             _out_cs.append(_out_c)
 
         _LOGGER.debug(' - FOUND %d OUTS', len(_out_cs))

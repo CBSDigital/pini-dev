@@ -10,7 +10,19 @@ from ...q_mgr import QtCore, QtWidgets
 _LOGGER = logging.getLogger(__name__)
 
 
-class CSettings(QtCore.QSettings, File):
+class _FileDummy(File):
+    """Dummy class to fix PySide6/py11 inheritance.
+
+    In this configuration qt seems to call __init__ on all parent classes
+    when __init__ is called on the QObject class - this dummy allows the
+    parent __init__ to be disabled so that it can be called manually.
+    """
+
+    def __init__(self, **kwargs):  # pylint: disable=super-init-not-called
+        """Constructor."""
+
+
+class CSettings(QtCore.QSettings, _FileDummy):
     """Wrapper for QSettings object.
 
     Settings are managed cumulatively, ie. if you save one setting,
@@ -23,7 +35,7 @@ class CSettings(QtCore.QSettings, File):
         Args:
             file_ (str): path to settings file
         """
-        File.__init__(self, file_)
+        File.__init__(self, file_)  # pylint: disable=non-parent-init-called
         super().__init__(self.path, QtCore.QSettings.IniFormat)  # pylint: disable=too-many-function-args
 
     def apply_to_ui(self, ui, filter_=None, type_filter=None):

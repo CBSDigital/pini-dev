@@ -258,7 +258,6 @@ class _SGCEntity(sgc_elem.SGCElem):
             _pub_file.updated_at for _pub_file in _pub_files))
 
         # Validate output path
-        _latest_map = {}
         for _pub_file in sorted(
                 _pub_files, key=operator.attrgetter('path')):
             _LOGGER.debug(' - CHECKING PUB FILE %s', _pub_file)
@@ -275,12 +274,6 @@ class _SGCEntity(sgc_elem.SGCElem):
                 _pub_file.stream = _out.to_stream()
                 _pub_file.template = _out.template.source.pattern
                 _pub_file.task = _out.task
-                _latest_map[_pub_file.stream] = _pub_file
-
-        # Mark latest
-        for _pub_file in _pub_files:
-            if _pub_file.stream:
-                _pub_file.latest = _pub_file is _latest_map[_pub_file.stream]
 
         _LOGGER.debug(' - COMPLETE')
 

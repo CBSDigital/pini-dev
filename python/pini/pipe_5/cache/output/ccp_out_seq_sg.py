@@ -2,7 +2,6 @@
 
 import logging
 
-from pini.pipe import shotgrid
 
 from . import ccp_out_seq_base
 from ..ccp_utils import pipe_cache_to_file
@@ -19,6 +18,8 @@ class CCPOutputSeqSG(ccp_out_seq_base.CCPOutputSeqBase):
         Args:
             force (bool): delete files without confirmation
         """
+        from pini.pipe import shotgrid
+
         super().delete(force=force)
 
         _pub_file = shotgrid.SGC.find_pub_file(self)

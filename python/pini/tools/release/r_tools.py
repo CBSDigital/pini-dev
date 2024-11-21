@@ -50,8 +50,14 @@ def find_tests(mode=None, repos=(), filter_=None):
     return _tests
 
 
-def _test_sort_key(test, mode='mca/dur'):
+def _test_sort_key(test, mode='sca/dur'):
     """Sort function for release tests.
+
+        MCA - modulo completed age
+        SCA - stepped completed age
+
+    Aims to run the tests that were passes least recently first (at ten
+    minute age steps), and then sorted with fastest tests first.
 
     Args:
         test (PRTest): release test to sort
@@ -60,14 +66,16 @@ def _test_sort_key(test, mode='mca/dur'):
     Returns:
         (tuple): sort key
     """
-    if mode == 'mca/dur':
+    if mode == 'sca/dur':
         _c_time = test.last_complete_time()
         _c_age = time.time() - _c_time
+        assert _c_age > 0
         _dur = test.last_exec_dur()
-        if not _dur:
+        if _dur is None:
             return -sys.maxsize, 0
-        _mod_c_age = _c_age % (10*60*60)
-        _key = -_mod_c_age, _dur
+        _mod_c_age = _c_age % (10*60)
+        _stepped_c_age = int(_c_age - _mod_c_age)
+        _key = -_stepped_c_age, round(_dur, 2)
     elif mode == 'completed':
         _key = test.last_complete_time()
     elif mode == 'type/completed':

@@ -1,6 +1,7 @@
 """Tools for managing simple QMessageBox wrappers."""
 
 import logging
+import sys
 
 from pini import icons
 from pini.utils import lprint, assert_eq
@@ -31,7 +32,7 @@ class _CMessageBox(QtWidgets.QMessageBox):
 
         _parent = parent or dcc.get_main_window_ptr()
         _args = [_parent] if _parent else []
-        super(_CMessageBox, self).__init__(*_args)
+        super().__init__(*_args)
         self.setWindowTitle(title)
         self.setText(text)
 
@@ -107,7 +108,14 @@ class _CMessageBox(QtWidgets.QMessageBox):
         Returns:
             (str): label of button that was clicked
         """
+        _LOGGER.debug('GET RESULT %s force=%s', self, self._force_result)
         _exec_result = self.exec_()
+        _LOGGER.debug(
+            ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
+        if sys.version_info.minor >= 11:
+            _exec_result -= 2
+            _LOGGER.debug(
+                ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
         if self._force_result:
             _result = self._force_result
         else:

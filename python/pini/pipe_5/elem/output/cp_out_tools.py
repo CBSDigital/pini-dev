@@ -5,8 +5,6 @@ import logging
 from pini import dcc
 from pini.utils import File, abs_path, to_str
 
-from . import cp_out_seq, cp_out_file, cp_out_video
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -44,6 +42,7 @@ def to_output(
     """
     _LOGGER.log(9, 'TO OUTPUT %s', path)
     _kwargs = locals()
+    from pini import pipe
 
     # Handle catch
     if catch:
@@ -60,11 +59,11 @@ def to_output(
     _file = File(_path)
     _LOGGER.log(9, ' - PATH %s', _file.path)
     if '%' in _file.path:
-        _class = cp_out_seq.CPOutputSeq
+        _class = pipe.CPOutputSeq
     elif _file.extn and _file.extn.lower() in ('mp4', 'mov'):
-        _class = cp_out_video.CPOutputVideo
+        _class = pipe.CPOutputVideo
     else:
-        _class = cp_out_file.CPOutputFile
+        _class = pipe.CPOutputFile
     return _class(
         _path, job=job, entity=entity, template=template, work_dir=work_dir,
         latest=latest)

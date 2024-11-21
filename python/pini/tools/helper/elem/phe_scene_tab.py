@@ -214,6 +214,7 @@ class CLSceneTab:
     def _redraw__SOutputTask(self):
 
         _LOGGER.debug(' - REDRAW SOutputTask')
+        _LOGGER.debug('   - TARGET %s', self.target)
 
         _mode = self.ui.SOutputsPane.current_tab_text()
         _type = self.ui.SOutputType.selected_text()
@@ -324,18 +325,23 @@ class CLSceneTab:
 
     def _redraw__SOutputVers(self):
 
+        _LOGGER.debug('REDRAW SOutputVers')
         _cur = self.ui.SOutputVers.currentText()
         _outs = self.ui.SOutputFormat.selected_data() or []
 
         # Build opts list
         _opts = []
-        if [_out for _out in _outs if not _out.ver_n]:
+        if [_out for _out in _outs if _out.ver_n is None]:
             _opts.append("versionless")
         _opts.append("latest")
         _opts.append("all")
 
         # Determine selection
         _sel = _cur if _cur in _opts else "latest"
+        _LOGGER.debug(
+            ' - TARGET %s %d', self.target,
+            0 if isinstance(self.target, pipe.CPOutputBase)
+            else self.target.is_latest())
         if (
                 isinstance(self.target, pipe.CPOutputBase) and
                 self.target in _outs and
@@ -450,9 +456,9 @@ class CLSceneTab:
     def _redraw__SAdd(self):
         _outs = [_out for _out in self.ui.SOutputs.selected_datas()
                  if dcc.can_reference_output(_out)]
-        _mode = self.ui.SOutputsPane.current_tab_text()
+        _type = single({_out.basic_type for _out in _outs}, catch=True)
         self.ui.SAdd.setText(
-            f'Add {len(_outs):d} {_mode.lower()}{plural(_outs)}')
+            f'Add {len(_outs):d} {_type or "output"}{plural(_outs)}')
         self.ui.SAdd.setEnabled(bool(_outs))
 
     def _redraw__SSceneRefs(self):

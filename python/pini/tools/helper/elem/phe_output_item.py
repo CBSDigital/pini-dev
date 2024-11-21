@@ -2,13 +2,16 @@
 
 # pylint: disable=too-many-instance-attributes
 
-from pini import qt, pipe
+from pini import qt, pipe, icons
 from pini.qt import QtGui
 from pini.utils import basic_repr, Seq, Video
 
 from ..ph_utils import output_to_icon, output_to_type_icon, obt_pixmap
 
 _FONT = QtGui.QFont()
+_HIGHLIGHT_BG_COL = qt.CColor('White', alpha=0.1)
+_OUTDATED_TEXT_COL = qt.CColor('LightPink', alpha=0.8).whiten(0.2)
+_APPROVED_ICON = icons.find('Star')
 
 
 class PHOutputItem(qt.CListViewPixmapItem):
@@ -24,22 +27,25 @@ class PHOutputItem(qt.CListViewPixmapItem):
             output (CPOutput): output to display
             helper (PiniHelper): pini helper
             highlight (bool): highlight this item
+                (ie. it's in the current scene)
         """
         self.output = output
         self.helper = helper
         self.highlight = highlight
 
         if highlight:
-            self.bg_col = qt.CColor('White', alpha=0.1)
+            self.bg_col = _HIGHLIGHT_BG_COL
             self.text_col = 'White'
-        else:
+        elif output.is_latest():
             self.text_col = 'LightGrey'
+            self.bg_col = None
+        else:
+            self.text_col = _OUTDATED_TEXT_COL
             self.bg_col = None
 
         self.icon = output_to_icon(self.output)
 
-        super().__init__(
-            list_view, col='Transparent', data=self.output)
+        super().__init__(list_view, col='Transparent', data=self.output)
 
     @property
     def info_font_size(self):
@@ -218,6 +224,10 @@ class PHOutputItem(qt.CListViewPixmapItem):
             _over = obt_pixmap(_icon, size=_icon_w)
             _pix = pix.draw_overlay(
                 _over, pos=(_right_m+3, _text_y), anchor='R')
+        if self.output.status == pipe.STATUS_ORDER[-1]:
+            pix.draw_overlay(
+                _APPROVED_ICON, pos=qt.to_p(pix.size()) - qt.to_p(0, 5),
+                anchor='BR', size=pix.height()*0.33)
 
         # Draw version text
         if self.output.ver_n is not None:
@@ -226,6 +236,11 @@ class PHOutputItem(qt.CListViewPixmapItem):
             _out_c = pipe.CACHE.obt(self.output)
             _ver_n = _out_c.find_latest().ver_n
             _ver_text = f'* v{_ver_n:03d}'
+        _status = self.output.status
+        if _status == 'cmpt':
+            _status = None
+        # if _status:
+        #     _ver_text = f'({_status}) {_ver_text}'
         _rect = pix.draw_text(
             _ver_text, pos=(_text_x, _text_y),
             col=self.text_col, anchor='R', font=_font)

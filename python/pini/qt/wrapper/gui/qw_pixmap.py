@@ -38,7 +38,7 @@ class CPixmap(QtGui.QPixmap):
         if len(_args) == 1 and isinstance(_args[0], str):
             error_on_file_system_disabled(path=_args[0])
 
-        super(CPixmap, self).__init__(*_args)
+        super().__init__(*_args)
 
     def aspect(self):
         """Obtain aspect ratio for this pixmap.
@@ -309,7 +309,9 @@ class CPixmap(QtGui.QPixmap):
         _pnt.setPen(_pen)
         _pnt.setBrush(_brush)
         if operation:
-            _mode = getattr(_pnt, 'CompositionMode_'+operation)
+            _name = 'CompositionMode_'+operation
+            _LOGGER.debug(' - OBT COMP MODE %s "%s"', _pnt, _name)
+            _mode = getattr(_pnt, _name, qt.CPainter.CompositionMode_Clear)
             _pnt.setCompositionMode(_mode)
         _pnt.drawRect(_rect)
         _pnt.end()
@@ -422,7 +424,7 @@ class CPixmap(QtGui.QPixmap):
         """
         from pini import qt
         _col = qt.to_col(col)
-        super(CPixmap, self).fill(_col)
+        super().fill(_col)
 
     def resize(self, *args, **kwargs):
         """Resize this image.
@@ -591,5 +593,6 @@ class CPixmap(QtGui.QPixmap):
         return self
 
     def __repr__(self):
-        _label = '{:d}x{:d}'.format(self.width(), self.height())
+        _width, _height = self.width(), self.height()
+        _label = f'{_width:d}x{_height:d}'
         return basic_repr(self, _label)

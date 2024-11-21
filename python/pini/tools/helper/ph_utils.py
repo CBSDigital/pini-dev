@@ -17,6 +17,7 @@ ASS_ICON = icons.find('Peach')
 CAM_ICON = icons.find('Movie Camera')
 CSET_ICON = icons.find('Urn')
 FBX_ICON = icons.find('Worm')
+IMG_FILE_ICON = icons.find('Framed Picture')
 MAYA_FILE_ICON = icons.find('Moai')
 MISSING_FROM_CACHE_ICON = icons.find('Adhesive Bandage')
 NUKE_FILE_ICON = icons.find('Radioactive')
@@ -26,11 +27,13 @@ VIDEO_ICON = icons.find('Videocassette')
 
 ABC_BG_ICON = icons.find('Blue Square')
 FBX_BG_ICON = icons.find('Green Square')
-LOOKDEV_BG_ICON = icons.find('Green circle')
+LOOKDEV_BG_ICON = icons.find('Green Circle')
 RS_BG_ICON = icons.find('Red Circle')
-VRMESH_BG_ICON = icons.find('Orange circle')
+VRMESH_BG_ICON = icons.find('Orange Circle')
 
 ARCHIVE_TYPE_ICON = icons.find('Red Paper Lantern')
+DEFAULT_ICON = icons.find('Black Medium-Small Square')
+DEFAULT_BASE_ICON = icons.find('White Large Square')
 BLAST_TYPE_ICON = icons.find('Collision')
 CURVES_TYPE_ICON = icons.find('Thread')
 LOOKDEV_TYPE_ICON = icons.find('Palette')
@@ -141,28 +144,34 @@ def _cache_to_icon(output):
     Returns:
         (str|QPixmap): icon
     """
-    _bg_icon = _EXTN_BG_MAP.get(output.extn) or EXTN_ICONS.get(output.extn)
-    _LOGGER.debug(' - BG ICON %s %s', output.extn, _bg_icon)
-    _fmt = output.extn
-    _fmt_icon = {
-        'abc': ABC_ICON,
-        'fbx': FBX_ICON}.get(output.extn)
 
-    # Find overlay path
+    # Find overlay path (eg. icon from from a source entity)
     _over_path = None
     if output.src_ref:
         _asset = pipe.CPOutputFile(output.src_ref)
         _over_path = output_to_icon(_asset)
-    elif output.content_type == 'CameraAbc':
+    elif output.content_type == 'CameraAbc' or output.task == 'cam':
         _over_path = CAM_ICON
     elif output.type_ == 'CPCacheableSet':
         _over_path = CSET_ICON
-
-    # Build icon
-    if _over_path:
-        _icon = _add_icon_overlay(_bg_icon, overlay=_over_path, mode='C')
     else:
-        _icon = _fmt_icon
+        _over_path = DEFAULT_ICON
+    _LOGGER.debug(' - OVER PATH %s', _over_path)
+
+    # Determine base icon
+    if _over_path:
+        _base_icon = (
+            _EXTN_BG_MAP.get(output.extn) or
+            DEFAULT_BASE_ICON)
+        _LOGGER.debug(' - BASE ICON extn=%s %s', output.extn, _base_icon)
+        _icon = _add_icon_overlay(_base_icon, overlay=_over_path, mode='C')
+    else:
+        _icon = None
+        if output.pini_task == 'cam':
+            _icon = CAM_ICON
+        if not _icon:
+            _icon = DEFAULT_ICON
+        _LOGGER.debug(' - ICON task=%s %s', output.pini_task, _icon)
 
     return _icon
 
@@ -435,6 +444,10 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         return RS_TYPE_ICON
     if output.content_type == 'CurvesMa':
         return CURVES_TYPE_ICON
+    if output.content_type == 'BasicMa':
+        return MAYA_FILE_ICON
+    if output.content_type == 'Image':
+        return IMG_FILE_ICON
 
     if (
             output.extn not in ('ma', 'mb') and

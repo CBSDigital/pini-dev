@@ -1,7 +1,9 @@
 """Tools for managing entities in a shotgrid-based pipeline."""
 
+import collections
 import logging
 
+from pini.utils import last
 from . import cp_ety_base
 
 _LOGGER = logging.getLogger(__name__)
@@ -45,31 +47,31 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         _LOGGER.debug('READ OUTPUTS')
 
         # Build output objects
-        _latest_map = {}
         _outs = {}  # Accomodate many pubs with same path (just use latest)
         for _sg_pub_file in self.sg_entity.find_pub_files(
                 validated=True, omitted=False):
             _LOGGER.debug(' - PUB FILE %s', _sg_pub_file)
             assert _sg_pub_file.validated
-            assert _sg_pub_file.latest is not None
             _tmpl = self.job.find_template_by_pattern(_sg_pub_file.template)
             _LOGGER.debug('   - TMPL %s', _sg_pub_file.template)
             _out = pipe.to_output(
-                _sg_pub_file.path, template=_tmpl, entity=self,
-                latest=_sg_pub_file.latest)
+                _sg_pub_file.path, template=_tmpl, entity=self)
             _out.sg_pub_file = _sg_pub_file
+            _out.status = _sg_pub_file.status
             _LOGGER.debug('   - OUT %s', _out)
             _outs[_out.path] = _out
-            _latest_map[_sg_pub_file.stream] = _out
         _outs = sorted(_outs.values())
 
-        # Need to reapply latest to take account of omissions
+        # Read + apply latest
+        _latest_map = collections.defaultdict(list)
         for _out in _outs:
-            _stream = _out.sg_pub_file.stream
-            _out.latest = _latest_map[_stream] == _out
-            _LOGGER.debug(' - APPLY LATEST %d %s', _out.latest, _out.path)
-            _LOGGER.debug('   - STREAM %s', _out.sg_pub_file.stream)
-            _LOGGER.debug('   - LATEST %s', _latest_map[_stream])
+            _latest_map[_out.sg_pub_file.stream].append(_out)
+        _latest_map = dict(_latest_map)
+        for _stream in _latest_map.values():
+            _stream.sort()
+            for _latest, _out in last(_stream):
+                _LOGGER.debug(' - APPLY LATEST %d %s', _latest, _out)
+                _out.set_latest(_latest)
 
         return _outs
 

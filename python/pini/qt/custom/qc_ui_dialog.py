@@ -13,7 +13,7 @@ from ..q_mgr import QtWidgets
 _LOGGER = logging.getLogger(__name__)
 
 
-class CUiDialog(QtWidgets.QDialog, qc_ui_base.CUiBase):
+class CUiDialog(QtWidgets.QDialog, qc_ui_base.CUiBaseDummy):
     """Base class for any managed ui dialog."""
 
     keyPressEvent = qc_ui_base.CUiBase.keyPressEvent
@@ -37,7 +37,7 @@ class CUiDialog(QtWidgets.QDialog, qc_ui_base.CUiBase):
 
         _LOGGER.debug('INIT')
         _parent = parent or dcc.get_main_window_ptr()
-        super(CUiDialog, self).__init__(_parent)
+        super().__init__(_parent)  # pylint: disable=too-many-function-args
         qc_ui_base.CUiBase.__init__(self, ui_file, **kwargs)
 
     def closeEvent(self, event=None):
@@ -46,7 +46,7 @@ class CUiDialog(QtWidgets.QDialog, qc_ui_base.CUiBase):
         Args:
             event (QCloseEvent): close event
         """
-        super(CUiDialog, self).closeEvent(event)
+        super().closeEvent(event)
         qc_ui_base.CUiBase.closeEvent(self, event)
 
     def timerEvent(self, event=None):
@@ -55,5 +55,5 @@ class CUiDialog(QtWidgets.QDialog, qc_ui_base.CUiBase):
         Args:
             event (QTimerEvent): triggered event
         """
-        super(CUiDialog, self).timerEvent(event)
+        super().timerEvent(event)
         qc_ui_base.CUiBase.timerEvent(self, event)

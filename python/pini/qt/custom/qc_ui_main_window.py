@@ -12,7 +12,7 @@ from . import qc_ui_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBase):
+class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBaseDummy):
     """Wrapper for QMainWindow class."""
 
     keyPressEvent = qc_ui_base.CUiBase.keyPressEvent
@@ -30,7 +30,7 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBase):
             settings_file (str): override default settings file path
             load_settings (bool): load settings on launch
         """
-        super(CUiMainWindow, self).__init__()  # pylint: disable=no-value-for-parameter
+        super().__init__()  # pylint: disable=no-value-for-parameter
         qc_ui_base.CUiBase.__init__(
             self, ui_file=ui_file, ui_loader=ui_loader, title=title, fps=fps,
             settings_file=settings_file, load_settings=load_settings)
@@ -43,10 +43,10 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBase):
         """
         _LOGGER.info('CLOSE EVENT %s', self)
         qc_ui_base.CUiBase.closeEvent(self, event)
-        super(CUiMainWindow, self).closeEvent(event)
+        super().closeEvent(event)
 
     def deleteLater(self):
         """Delete this dialog."""
         _name = str(self)
         _LOGGER.info('DELETE LATER %s', _name)
-        super(CUiMainWindow, self).deleteLater()
+        super().deleteLater()

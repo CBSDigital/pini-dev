@@ -356,8 +356,8 @@ def _reload_mod(mod, sort, catch=False, verbose=0):
         if not catch:
             from pini import qt
             qt.ok_cancel(
-                'Failed to reload "{}".\n\nRemove from '
-                'sys.path?'.format(_name),
+                f'Failed to reload "{_name}".\n\nRemove from '
+                f'sys.path?',
                 verbose=0)
             del sys.modules[_name]
         return
@@ -367,8 +367,8 @@ def _reload_mod(mod, sort, catch=False, verbose=0):
     if len(_name) > 53:
         _name = _name[:50]+' ...'
     lprint(
-        '{:<7.02f} {:<55} {:5.02f}s    {}'.format(
-            sort(_name), _name, _dur, abs_path(mod.__file__)),
+        f'{sort(_name):<7.02f} {_name:<55} {_dur:5.02f}s    '
+        f'{abs_path(mod.__file__)}',
         verbose=verbose > 1)
 
 
@@ -475,7 +475,7 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
         _LOGGER.info(
             ' - RELOADING MODS attempt=%d fails=%d %s %s',
             _attempt, len(_fails),
-            'dur={:.01f}s'.format(_dur) if _dur else '',
+            f'dur={_dur:.01f}s' if _dur else '',
             sorted([_mod.__name__ for _mod in _fails]) if verbose > 1 else '')
         reload_libs(mods=_mods, verbose=0)
         _dur = time.time() - _start

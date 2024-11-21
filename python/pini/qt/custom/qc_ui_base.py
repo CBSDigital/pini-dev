@@ -20,7 +20,7 @@ from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 _LOGGER = logging.getLogger(__name__)
 
 
-class CUiBase(object):
+class CUiBase:
     """Base class for any managed ui interface."""
 
     timer = None
@@ -259,16 +259,19 @@ class CUiBase(object):
             # Check for duplicate tooltips
             if _tooltip:
                 if _tooltip in _tooltips:
-                    raise RuntimeError('Duplicate tooltips in {} and {}'.format(
-                        _tooltips[_tooltip], _widget.objectName()))
+                    _widget_a = _tooltips[_tooltip]
+                    _widget_b = _widget.objectName()
+                    raise RuntimeError(
+                        f'Duplicate tooltips in {_widget_a} and {_widget_b}')
                 _tooltips[_tooltip] = _widget.objectName()
 
             # Check image buttons have tooltip
             if isinstance(_widget, QtWidgets.QPushButton):
                 _LOGGER.debug(' - TEXT %s', _widget.text())
                 if not _widget.text() and not _tooltip:
-                    raise RuntimeError('No tooltip for image button {}'.format(
-                        _widget.objectName()))
+                    _widget = _widget.objectName()
+                    raise RuntimeError(
+                        f'No tooltip for image button {_widget}')
 
     def _connect_callback(self, callback, disconnect=False):
         """Connect a callback to its widget.
@@ -388,8 +391,8 @@ class CUiBase(object):
             _widget = getattr(self.ui, _widget_name, None)
             if not _widget:
                 raise RuntimeError(
-                    'Redraw method {} is missing widget ({})'.format(
-                        _redraw.__name__, _widget_name))
+                    f'Redraw method {_redraw.__name__} is missing '
+                    f'widget ({_widget_name})')
 
             # Connnect redraw callback
             _widget.redraw = _redraw
@@ -464,9 +467,9 @@ class CUiBase(object):
             (QSettings): settings
         """
         from pini import qt
-        _settings_file = self._settings_file or abs_path('{}/{}{}.ini'.format(
-            SETTINGS_DIR, self._settings_name,
-            '_'+dcc.NAME if dcc.NAME else ''))
+        _dcc = '_'+dcc.NAME if dcc.NAME else ''
+        _settings_file = self._settings_file or abs_path(
+            f'{SETTINGS_DIR}/{self._settings_name}{_dcc}.ini')
         File(_settings_file).touch()  # Check settings writable
         return qt.CSettings(_settings_file)
 
@@ -608,7 +611,20 @@ class CUiBase(object):
                 event, self.timer, self.isVisible())
 
     def __repr__(self):
-        return '<{}>'.format(type(self).__name__.strip('_'))
+        _name = type(self).__name__.strip('_')
+        return f'<{_name}>'
+
+
+class CUiBaseDummy(CUiBase):
+    """Dummy class to fix PySide6/py11 inheritance.
+
+    In this configuration qt seems to call __init__ on all parent classes
+    when __init__ is called on the QObject class - this dummy allows the
+    parent __init__ to be disabled so that it can be called manually.
+    """
+
+    def __init__(self, **kwargs):  # pylint: disable=super-init-not-called
+        """Constructor."""
 
 
 def _rebuild_ui_on_error(func):
@@ -645,7 +661,7 @@ def _rebuild_ui_on_error(func):
     return _rebuild_ui_func
 
 
-class _UiHandler(object):
+class _UiHandler:
     """Handler for ui object.
 
     Sometimes the garbage collector in PySide in maya will delete elements
@@ -827,8 +843,8 @@ def _fix_icon_paths(ui_file, force=False):
     _LOGGER.debug('FIX ICON PATHS %s', ui_file)
 
     _ui_file = File(ui_file)
-    _fixed_ui = File('{}/pini/{}'.format(
-        TMP_PATH, abs_path(ui_file).replace(':', '')))
+    _path_cpnt = abs_path(ui_file).replace(':', '')
+    _fixed_ui = File(f'{TMP_PATH}/pini/{_path_cpnt}')
 
     # Check if fixed file is outdated
     _fixed_exists = _fixed_ui.exists()
@@ -855,7 +871,7 @@ def _fix_icon_paths(ui_file, force=False):
             _path = pipe.map_path(_path)
             if '/pini-icons/' in _path:
                 _, _tail = _path.split('/pini-icons/')
-                _path = '{}/{}'.format(icons.ICONS_ROOT, _tail)
+                _path = f'{icons.ICONS_ROOT}/{_tail}'
             _LOGGER.debug(' - PATH %s', _path)
             if not os.path.exists(_path):
                 raise RuntimeError('Missing path '+_path)

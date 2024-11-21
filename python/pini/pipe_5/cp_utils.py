@@ -24,6 +24,7 @@ EXTN_TO_DCC = {
     'nknc': 'nuke',
     'ma': 'maya',
     'mb': 'maya',
+    'spp': 'substance',
     'tgd': 'terragen',
 }
 
@@ -153,7 +154,7 @@ def expand_pattern_variations(fmt):
     # Handle single opt (could be removed but remains for clarity)
     if len(_opts) == 1:
         _opt = single(_opts)
-        _token = '[{}]'.format(_opt)
+        _token = f'[{_opt}]'
         return fmt.replace(_token, ''), fmt.replace(_token, _opt)
 
     # Expand all possible combinations of option toggles
@@ -174,7 +175,7 @@ def expand_pattern_variations(fmt):
                 _replace = ''
             else:
                 _replace = _opt
-            _token = '[{}]'.format(_opt)
+            _token = f'[{_opt}]'
             _fmt = _fmt.replace(_token, _replace)
         _fmts.append(norm_path(_fmt))
 
@@ -503,8 +504,7 @@ def validate_token(value, token, job):
     _allowed = _cfg.get('allowed')
     if _allowed and value not in _allowed:
         raise ValueError(
-            'Token "{}" as "{}" not in allowed values'.format(
-                token, value))
+            f'Token "{token}" as "{value}" not in allowed values')
 
     # Apply length filter
     _len = _cfg.get('len')
@@ -513,39 +513,36 @@ def validate_token(value, token, job):
     if _strict_len and _len:
         _lens = _len if isinstance(_len, list) else [_len]
         if len(value) not in _lens:
-            raise ValueError('Token "{}" as "{}" fails len'.format(
-                token, value))
+            raise ValueError(
+                f'Token "{token}" as "{value}" fails len')
 
     # Apply isdigit filter
     _is_digit = _cfg.get('isdigit')
     _LOGGER.debug(' - IS DIGIT %s', _is_digit)
     if _is_digit and value.isdigit() != _is_digit:
         raise ValueError(
-            'Token "{}" as "{}" fails as it is non-numeric'.format(
-                token, value))
+            f'Token "{token}" as "{value}" fails as it is non-numeric')
 
     # Apply nospace filter
     _no_space = _cfg.get('nospace')
     _LOGGER.debug(' - NO SPACE %s', _no_space)
     if _no_space and ' ' in value:
         raise ValueError(
-            'Token "{}" as "{}" fails as it contains spaces'.format(
-                token, value))
+            f'Token "{token}" as "{value}" fails as it contains spaces')
 
     # Apply nounderscore filter
     _no_underscore = _cfg.get('nounderscore')
     _LOGGER.debug(' - NO UNDERSCORE %s', _no_underscore)
     if _no_underscore and '_' in value:
         raise ValueError(
-            'Token "{}" as "{}" fails as it contains underscores'.format(
-                token, value))
+            f'Token "{token}" as "{value}" fails as it contains underscores')
 
     # Apply text filter
     _filter = _cfg.get('filter')
     _LOGGER.debug(' - FILTER %s', _filter)
     if _filter and not passes_filter(value, _filter):
-        raise ValueError('Token "{}" as "{}" fails filter'.format(
-            token, value))
+        raise ValueError(
+            f'Token "{token}" as "{value}" fails filter')
 
 
 def validate_tokens(data, job):
