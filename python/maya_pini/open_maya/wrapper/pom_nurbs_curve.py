@@ -28,8 +28,8 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             raise ValueError(node)
         _shp = to_shp(str(_tfm), catch=True)
         if not _shp:
-            raise ValueError('Missing shape {}'.format(_tfm))
-        super(CNurbsCurve, self).__init__(_tfm)
+            raise ValueError(f'Missing shape {_tfm}')
+        super().__init__(_tfm)
         _mobj = to_mobject(_shp)
         om.MFnNurbsCurve.__init__(self, _mobj)
 
@@ -202,7 +202,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             (str): cv attribute (eg. nurbCurve1Shape.cv[10])
         """
         from maya_pini import open_maya as pom
-        _attr = self.shp.attr['cv[{:d}]'.format(idx)]
+        _attr = self.shp.attr[f'cv[{idx:d}]']
         if mode == 'attr':
             return _attr
         if mode == 'pos':

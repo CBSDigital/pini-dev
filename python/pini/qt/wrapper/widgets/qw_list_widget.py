@@ -64,8 +64,18 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             emit (bool): emit changed signals on selection
             catch (bool): no error if fail to select data
         """
+
+        # Apply multi select
+        if isinstance(match, (list, tuple)):
+            self.clearSelection()
+            for _item in match:
+                self.select(_item, replace=False, catch=True)
+            return
+
+        # Apply single selection
         for _idx, _item in enumerate(self.all_items()):
-            if match in (_item, _item.data(), _item.text()):
+            if match in (
+                    _item, _item.data(Qt.UserRole), _item.text()):
                 self.select_row(_idx, emit=emit, replace=replace)
                 return
         if not catch:
@@ -113,7 +123,8 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             self.blockSignals(True)
         if replace:
             self.clearSelection()
-        self.setCurrentRow(idx)
+        _item = self.item(idx)
+        self.setItemSelected(_item, True)
         if not emit:
             self.blockSignals(False)
 

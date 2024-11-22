@@ -11,7 +11,7 @@ from .. import ph_dialog
 _LOGGER = logging.getLogger(__name__)
 
 
-class NukePiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method
+class NukePiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
     """PiniHelper for nuke."""
 
     def __init__(self, parent=None):
@@ -20,14 +20,14 @@ class NukePiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method
         Args:
             parent (QWidget): parent widget
         """
-        super(NukePiniHelper, self).__init__(parent=parent, show=False)
+        super().__init__(parent=parent, show=False)
 
     def delete(self):
         """Delete this pini helper instance."""
         _LOGGER.info('DELETE %s', self)
         _remove_existing_helper_panel()
         try:
-            super(NukePiniHelper, self).delete()
+            super().delete()
         except TypeError:
             _LOGGER.info('FAILED TO DELETE %s', self)
 

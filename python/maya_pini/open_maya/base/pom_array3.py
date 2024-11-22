@@ -5,7 +5,7 @@ from maya import cmds
 from maya_pini.utils import to_unique, to_clean
 
 
-class CArray3(object):
+class CArray3:
     """Base class for any 3D array object (eg. CPoint, CVector)."""
 
     def apply_to(self, obj):
@@ -24,7 +24,8 @@ class CArray3(object):
         Returns:
             (str): formatted value string
         """
-        _str = '<{:.01f}, {:.02f}, {:.01f}>'.format(*self.to_tuple())
+        _vals = self.to_tuple()
+        _str = f'<{_vals[0]:.01f}, {_vals[1]:.02f}, {_vals[2]:.01f}>'
         return _str
 
     def to_loc(self, name='point', scale=None, col=None):
@@ -68,13 +69,13 @@ class CArray3(object):
 
     def __add__(self, other):
         from maya_pini import open_maya as pom
-        _result = super(CArray3, self).__add__(other)  # pylint: disable=no-member
+        _result = super().__add__(other)  # pylint: disable=no-member
         return pom.CVector(_result)
 
     def __div__(self, other):
-        _result = super(CArray3, self).__div__(other)  # pylint: disable=no-member
+        _result = super().__div__(other)  # pylint: disable=no-member
         return self.__class__(_result)
 
     def __repr__(self):
-        return '<{}({:.03f}, {:.03f}, {:.03f})>'.format(
-            type(self).__name__, self.x, self.y, self.z)  # pylint: disable=no-member
+        _type = type(self).__name__
+        return f'<{_type}({self.x:.03f}, {self.y:.03f}, {self.z:.03f})>'  # pylint: disable=no-member

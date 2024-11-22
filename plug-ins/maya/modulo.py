@@ -97,8 +97,7 @@ def initializePlugin(plugin):
         _plugin.registerNode(
             kPluginNodeName, kPluginNodeId, nodeCreator, nodeInitializer)
     except Exception as _exc:
-        sys.stderr.write('Failed to register node: {}\n'.format(
-            kPluginNodeName))
+        sys.stderr.write(f'Failed to register node: {kPluginNodeName}\n')
         raise _exc
 
 
@@ -112,6 +111,5 @@ def uninitializePlugin(plugin):
     try:
         _plugin.deregisterNode(kPluginNodeId)
     except Exception as _exc:
-        sys.stderr.write('Failed to deregister node: {}\n'.format(
-            kPluginNodeName))
+        sys.stderr.write(f'Failed to deregister node: {kPluginNodeName}\n')
         raise _exc

@@ -16,7 +16,7 @@ def chain_fns(*args):
                  types.BuiltinMethodType)
     for _arg in args:
         if not isinstance(_arg, _fn_types):
-            raise TypeError('Arg is not function - {}'.format(_arg))
+            raise TypeError(f'Arg is not function - {_arg}')
 
     def _chained_fn(*xargs):
         del xargs

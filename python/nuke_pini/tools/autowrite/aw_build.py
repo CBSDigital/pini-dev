@@ -49,7 +49,7 @@ def _build_header(node):
     # Build reset
     _cmd = '\n'.join([
         'from pini.tools import error',
-        'import {} as _mod'.format(aw_node.__name__),
+        f'import {aw_node.__name__} as _mod',
         '_node = _mod.CAutowrite2(nuke.thisNode())',
         '_func = error.catch(_node.reset)',
         '_func()'])
@@ -144,7 +144,7 @@ def _build_output_name(node):
     node.addKnob(_grade)
 
     # Add layer line
-    _layers = ['L{:02d}'.format(_idx) for _idx in range(1, 11)] + ['Disable']
+    _layers = [f'L{_idx:02d}' for _idx in range(1, 11)] + ['Disable']
     _layer = nuke.Enumeration_Knob('aw_layer', 'layer', _layers)
     node.addKnob(_layer)
 
@@ -192,14 +192,14 @@ def _check_compatibility():
     _job = pipe.cur_job()
     if not _job:
         raise error.HandledError(
-            'No current job found.\n\nPlease save your scene '
-            'with {} to use this node.'.format(helper.TITLE))
+            f'No current job found.\n\nPlease save your scene '
+            f'with {helper.TITLE} to use this node.')
     if not pipe.is_valid_token(
             value='blah_blah', token='output_name', job=_job):
         raise error.HandledError(
-            'Current job {} is not compatible with Autowrite2 as the '
-            'structure does not allow underscores in output names.\n\n'
-            'Please use the legacy Autowrite node.'.format(_job.name))
+            f'Current job {_job.name} is not compatible with Autowrite2 as '
+            f'the structure does not allow underscores in output names.\n\n'
+            f'Please use the legacy Autowrite node.')
 
 
 @error.catch

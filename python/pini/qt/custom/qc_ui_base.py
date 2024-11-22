@@ -13,7 +13,7 @@ from pini.utils import (
     passes_filter, single, strftime, check_logging_level)
 
 from ..q_ui_container import CUiContainer
-from ..q_utils import SETTINGS_DIR, find_widget_children
+from ..q_utils import SETTINGS_DIR, find_widget_children, get_application
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
@@ -492,16 +492,44 @@ class CUiBase:
 
         # Apply window settings
         if geometry:
-            _pos = self.settings.value('window/pos')
-            if _pos:
-                _LOGGER.debug(' - APPLYING POS %s', _pos)
-                self.move(_pos)
-            _size = self.settings.value('window/size')
-            if _size:
-                _LOGGER.debug(' - APPLYING SIZE %s', _size)
-                self.resize(_size)
+            self._load_geometry_settings()
 
         self.settings.apply_to_ui(self.ui, type_filter=type_filter)
+
+    def _load_geometry_settings(self):
+        """Load geometry settings (ie. pos/size).
+
+        Load geometry is blocked if the saved position is outside any of
+        the current screen regions. This can occur if screens are added or
+        removed, and can cause dccs to become locked if modal interfaces
+        are not visible.
+
+        Returns:
+            (bool): whether geometry settings were loaded successfully
+        """
+        _LOGGER.debug(' - LOAD GEOMETRY SETTINGS')
+
+        # Read pos/size
+        _pos = self.settings.value('window/pos')
+        _size = self.settings.value('window/size')
+        if not _pos or not _size:
+            _LOGGER.debug('   - POS/SIZE SETTINGS NOT FOUND')
+            return False
+        _LOGGER.debug('   - POS/SIZE %s %s', _pos, _size)
+
+        # Check target will be onscreen
+        _screens = get_application().screens()
+        _LOGGER.debug('   - SCREENS %s', _screens)
+        _rects = [_screen.geometry() for _screen in _screens]
+        _LOGGER.debug('   - RECTS %s', _rects)
+        if not [_rect for _rect in _rects if _rect.contains(_pos)]:
+            _LOGGER.debug('   - REJECTING LOAD GEOMETRY, POS IS OFFSCREEN')
+            return False
+
+        _LOGGER.debug('   - APPLYING GEOMETRY')
+        self.move(_pos)
+        self.resize(_size)
+        return True
 
     def save_settings(self, filter_=None, pos=None):
         """Save settings to disk.

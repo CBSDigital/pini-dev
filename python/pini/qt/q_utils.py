@@ -323,9 +323,12 @@ def to_icon(arg):
     Returns:
         (QIcon): icon
     """
-    if isinstance(arg, QtGui.QIcon):
-        return arg
-    return QtGui.QIcon(arg)
+    _arg = arg
+    if isinstance(_arg, QtGui.QIcon):
+        return _arg
+    if isinstance(_arg, (str, File)):
+        _arg = to_pixmap(_arg)
+    return QtGui.QIcon(_arg)
 
 
 def to_p(*args, **kwargs):

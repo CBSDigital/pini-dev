@@ -2,10 +2,10 @@
 
 from .cache import cache_property
 from .path import File
-from .u_misc import single, last
+from .u_misc import single, last, basic_repr
 
 
-class _MelExpr(object):
+class _MelExpr:
     """Represents an expressing in a mel file."""
 
     def __init__(self, text):
@@ -28,7 +28,7 @@ class _MelExpr(object):
         Returns:
             (str): flag value
         """
-        _flag = ' -{} '.format(flag)
+        _flag = f' -{flag} '
         if _flag not in self.text:
             if default != -1:
                 return default
@@ -53,8 +53,7 @@ class _MelExpr(object):
         return _val
 
     def __repr__(self):
-        return '<{}:{}>'.format(
-            type(self).__name__.strip('_'), self.func)
+        return basic_repr(self, self.func)
 
 
 class MelFile(File):

@@ -69,7 +69,7 @@ def _build_tmp_export_preset(out):
     _cur_name, _ = _cur_name.split('</namePattern>')
 
     # Update the body
-    _new_name = '{base}.'.format(base=out.base)
+    _new_name = f'{out.base}.'
     _body = _body.replace(_cur_name, _new_name)
     _tmp_preset.write(_body, force=True)
 

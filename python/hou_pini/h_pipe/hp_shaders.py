@@ -34,7 +34,7 @@ def import_assgz_shaders(out, parent=None, force=False):
     if _net:
         if not force:
             qt.ok_cancel(
-                'Replace existing shaders?\n\n{}'.format(_net.path()),
+                f'Replace existing shaders?\n\n{_net.path()}',
                 title='Confirm Replace', icon=icons.find('Palette'),
                 parent=parent)
         _net.destroy()

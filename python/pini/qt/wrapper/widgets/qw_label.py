@@ -13,6 +13,10 @@ class CLabel(QtWidgets.QLabel, qw_base_widget.CBaseWidget):
 
     callback = None
 
+    def get_val(self):
+        """Read value of this widget."""
+        raise NotImplementedError(self)
+
     def set_col(self, col):
         """Set text colour.
 
@@ -29,6 +33,6 @@ class CLabel(QtWidgets.QLabel, qw_base_widget.CBaseWidget):
         Args:
             event (QMouseEvent): triggered event
         """
-        super(CLabel, self).mousePressEvent(event)
+        super().mousePressEvent(event)
         if self.callback:
             self.callback()  # pylint: disable=not-callable

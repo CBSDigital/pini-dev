@@ -23,23 +23,24 @@ class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
             stack_key (str): override dialog stack key
             title (str): override title
         """
-        super(CUiDockableMixin, self).__init__(
+        super().__init__(
             parent=parent, show=show, title=title)
         qc_ui_base.CUiBase.__init__(
             self, ui_file=ui_file, show=False, catch_errors=catch_errors,
             load_settings=load_settings, stack_key=stack_key)
 
-    def load_settings(self, geometry=False):
+    def load_settings(self, geometry=True, type_filter=None):
         """Load interface settings.
 
         Args:
             geometry (bool): load window position/size
+            type_filter (str): apply widget type name filter
         """
-        super(CUiDockableMixin, self).load_settings(geometry=geometry)
+        super().load_settings(geometry=geometry, type_filter=type_filter)
 
     def delete(self):
         """Delete this interface."""
         _LOGGER.debug('DELETE')
-        super(CUiDockableMixin, self).delete()
+        super().delete()
         qc_ui_base.CUiBase.delete(self)
         _LOGGER.debug(' - DELETE COMPLETE')

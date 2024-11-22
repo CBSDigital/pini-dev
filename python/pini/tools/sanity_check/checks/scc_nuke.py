@@ -35,7 +35,7 @@ class CheckColorManagement(SCCheck):
         if _val != self.config:
             _fix = wrap_fn(_knob.setValue, self.config)
             self.add_fail(
-                'OCIO config not set to {}'.format(self.config), fix=_fix)
+                f'OCIO config not set to {self.config}', fix=_fix)
 
 
 class CheckConnectedReadsLatest(scc_generic.CheckRefsLatest):
@@ -81,9 +81,8 @@ class CheckUnmappedPaths(SCCheck):
 
             if _cur_path != _map_path:
                 _msg = (
-                    'Read node "{}" has a path which can be updated for '
-                    '{}: {}'.format(
-                        _read.name(), platform.system(), _cur_path))
+                    f'Read node "{_read.name()}" has a path which can be '
+                    f'updated for {platform.system()}: {_cur_path}')
                 _fix = wrap_fn(_knob.setValue, _map_path)
                 self.add_fail(_msg, fix=_fix, node=_read)
 
@@ -104,8 +103,9 @@ class CheckReadsInJob(SCCheck):
             except ValueError:
                 _job = None
             if _job != _cur_job:
-                _msg = 'Read node pointing outside current job: {}'.format(
-                    _read.name())
+                _msg = (
+                    f'Read node pointing outside current job: '
+                    f'{_read.name()}')
                 self.add_fail(_msg, node=_read)
 
 

@@ -20,7 +20,7 @@ class CTileWidget(qw_list_widget.CListWidget):
             parent (QWidget): parent widget
             grid_size (int): tile grid size
         """
-        super(CTileWidget, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         self.setResizeMode(QtWidgets.QListView.Adjust)
         self.setWrapping(True)
@@ -69,13 +69,13 @@ class CTileWidget(qw_list_widget.CListWidget):
 
         # Apply name/label/colour
         for _idx, _item in enumerate(items, start=1):
-            _item.name = _item.name or 'tile{:02}'.format(_idx)
+            _item.name = _item.name or f'tile{_idx:02}'
             if update_labels:
                 _item.label = _item.label or _item.name
             _item.col = _item.col or _rand.choice(_cols)
             _item.redraw()
 
-        super(CTileWidget, self).set_items(
+        super().set_items(
             items, select=select, emit=emit, use_empty_marker=use_empty_marker)
 
     def visible_items(self):

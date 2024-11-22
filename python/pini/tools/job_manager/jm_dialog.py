@@ -35,7 +35,7 @@ class _JobManager(qt.CUiDialog):
         self._seq_prefix = None
         self._valid_prefix = None
 
-        super(_JobManager, self).__init__(ui_file=UI_FILE)
+        super().__init__(ui_file=UI_FILE)
         self.ui.ShotsTree.clear()
         self.set_window_icon(ICON)
 
@@ -154,7 +154,7 @@ class _JobManager(qt.CUiDialog):
 
         _sel = self.ui.ShotsTree.selected_data()
         if isinstance(_sel, (pipe.CPJob, pipe.CPSequence, pipe.CPShot)):
-            _text = 'Set {} config'.format(_sel.name)
+            _text = f'Set {_sel.name} config'
             self.level = _sel
         else:
             _text = 'Select job, sequence or shot to apply config'
@@ -162,7 +162,6 @@ class _JobManager(qt.CUiDialog):
 
     def _callback__ShotsTabs(self):
         _tab = self.ui.ShotsTabs.current_tab_text()
-        # print 'CALLBACK SHOTS TAB', _tab
         self.ui.ShotsTree.redraw()
         if _tab == 'Settings':
             self.ui.SSettingsTab.redraw()
@@ -253,8 +252,8 @@ class _JobManager(qt.CUiDialog):
         self._staged_shots = []
         if _prefix and self._valid_prefix:
             for _idx in _idxs:
-                _shot = _job.to_shot(sequence=_seq, shot='{}{:03d}'.format(
-                    _prefix, _idx))
+                _shot = _job.to_shot(
+                    sequence=_seq, shot=f'{_prefix}{_idx:03d}')
                 if not _shot or _shot in _job.shots:
                     continue
                 self._staged_shots.append(_shot)
@@ -295,9 +294,9 @@ class _JobManager(qt.CUiDialog):
 
         # Build shots
         qt.ok_cancel(
-            msg='Create {:d} shot{} in {}/{}?'.format(
-                len(self._staged_shots), plural(self._staged_shots),
-                _job.name, _seq),
+            msg=(
+                f'Create {len(self._staged_shots):d} '
+                f'shot{plural(self._staged_shots)} in {_job.name}/{_seq}?'),
             parent=self, title='Create Shots', icon=icons.find('Plus'))
         _LOGGER.info('CREATE SHOTS %s', self._staged_shots)
         for _shot in qt.progress_bar(
@@ -318,11 +317,11 @@ class _JobManager(qt.CUiDialog):
             return
 
         if isinstance(_dir, pipe.CPJob):
-            _label = 'Job {}'.format(_dir.name)
+            _label = f'Job {_dir.name}'
         elif isinstance(_dir, pipe.CPSequence):
-            _label = 'Sequence {}'.format(_dir.name)
+            _label = f'Sequence {_dir.name}'
         elif isinstance(_dir, pipe.CPShot):
-            _label = 'Shot {}'.format(_dir.name)
+            _label = f'Shot {_dir.name}'
         else:
             raise ValueError(_dir)
         menu.add_label(_label)
@@ -355,15 +354,15 @@ def _validate_prefix(prefix, sequence):
     if not prefix.islower():
         raise ValueError('Prefix must be lower case')
     if len(prefix) != 3:
-        raise ValueError('Prefix must be 3 chars ({} is {:d})'.format(
-            prefix, len(prefix)))
+        raise ValueError(
+            f'Prefix must be 3 chars ({prefix} is {len(prefix):d})')
     if prefix[-1].isdigit():
         raise ValueError('Prefix cannot end with a number')
     if prefix[0].isdigit():
         raise ValueError('Prefix cannot start with a number')
 
     # Validate token
-    _shot = '{}000'.format(prefix)
+    _shot = f'{prefix}000'
     pipe.validate_token(token='shot', value=_shot, job=_job)
 
     # Check for name clash
@@ -372,8 +371,8 @@ def _validate_prefix(prefix, sequence):
             continue
         if _shot.prefix == prefix:
             raise ValueError(
-                'Prefix {} is already used in sequence {}'.format(
-                    prefix, _shot.sequence))
+                f'Prefix {prefix} is already used in '
+                f'sequence {_shot.sequence}')
 
 
 @error.catch

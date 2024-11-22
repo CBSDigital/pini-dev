@@ -74,7 +74,7 @@ class CVector(base.CArray3, om.MVector):
 
         This overloads the caret (^) operator.
         """
-        _cross = super(CVector, self).__rxor__(other)
+        _cross = super().__rxor__(other)
         return CVector(_cross)
 
     def __xor__(self, other):
@@ -82,7 +82,7 @@ class CVector(base.CArray3, om.MVector):
 
         This overloads the caret (^) operator.
         """
-        _cross = super(CVector, self).__xor__(other)
+        _cross = super().__xor__(other)
         return CVector(_cross)
 
 

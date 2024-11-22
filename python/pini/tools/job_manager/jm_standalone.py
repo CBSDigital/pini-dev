@@ -16,12 +16,12 @@ def launch_standalone():
     """Launch ShotManager standalone application."""
     assert sys.version_info.major == 3
 
-    print('LAUNCH SHOT MANAGER STANDALONE {}'.format(os.name))
+    print(f'LAUNCH SHOT MANAGER STANDALONE {os.name}')
 
     # Prepare icon - needs to happen before ui displayed
     if os.name == 'nt':
         import ctypes
-        _name = u'ShotManagerB'  # Must be unicode
+        _name = 'ShotManagerB'
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(_name)
 
     _app = qt.get_application()

@@ -33,7 +33,7 @@ class _NamespaceClashUi(qt.CUiDialog):
         self.namespace = None
         self.input_namespace = namespace
         self.file_ = File(file_)
-        super(_NamespaceClashUi, self).__init__(
+        super().__init__(
             modal=True, ui_file=_UI_FILE, load_settings=False)
 
     def init_ui(self):
@@ -50,11 +50,11 @@ class _NamespaceClashUi(qt.CUiDialog):
         if not _valid:
             _text = 'Select a valid namespace'
         elif cmds.namespace(exists=_ns):
-            _text = 'Replace existing nodes in {} namespace'.format(_ns)
+            _text = f'Replace existing nodes in {_ns} namespace'
         elif cmds.objExists(_ns):
-            _text = 'Replace existing {} node'.format(_ns)
+            _text = f'Replace existing {_ns} node'
         else:
-            _text = 'Reference file using {} namespace'.format(_ns)
+            _text = f'Reference file using {_ns} namespace'
         self.ui.Execute.setText(_text)
         self.ui.Execute.setEnabled(_is_valid_namespace(_ns))
 

@@ -24,7 +24,7 @@ class EntitySelectUi(qt.CUiDialog):
         self.target = target
         self.executed = False
 
-        super(EntitySelectUi, self).__init__(_ENTITY_SELECT_UI)
+        super().__init__(_ENTITY_SELECT_UI)
 
         self.setWindowTitle(title)
         self.ui.Execute.setText(execute)

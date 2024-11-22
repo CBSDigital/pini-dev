@@ -88,7 +88,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
             _LOGGER.debug('   - APPLYING %s %s', _name, _val)
             self.apply_to_widget(widget=_widget, value=_val)
 
-    def apply_to_widget(self, widget, value=EMPTY, emit=True):  # pylint: disable=too-many-branches
+    def apply_to_widget(self, widget, value=EMPTY, emit=True):  # pylint: disable=too-many-branches,too-many-statements
         """Apply a setting to a widget.
 
         If the value is not set, the value is read from the
@@ -135,9 +135,11 @@ class CSettings(QtCore.QSettings, _FileDummy):
             widget.select_text(_val)
         elif isinstance(widget, QtWidgets.QComboBox):
             widget.setCurrentText(_val)
-
         elif isinstance(widget, QtWidgets.QLineEdit):
             widget.setText(_val)
+        elif isinstance(widget, QtWidgets.QListWidget):
+            _vals = _val.split('~~~')
+            widget.select(_vals, catch=True)
         elif isinstance(widget, QtWidgets.QSlider):
             _val = int(_val or 0)
             widget.setValue(_val)
@@ -209,6 +211,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
         Args:
             widget (QWidget): widget to save
         """
+        from pini import qt
         from pini.tools import release
         _LOGGER.debug('SAVE WIDGET %s', widget)
 
@@ -240,6 +243,8 @@ class CSettings(QtCore.QSettings, _FileDummy):
             _val = widget.currentText()
         elif isinstance(widget, QtWidgets.QLineEdit):
             _val = widget.text()
+        elif isinstance(widget, qt.CListWidget):
+            _val = '~~~'.join(widget.selected_texts())
         elif isinstance(widget, QtWidgets.QSlider):
             _val = widget.value()
         elif isinstance(widget, QtWidgets.QSpinBox):

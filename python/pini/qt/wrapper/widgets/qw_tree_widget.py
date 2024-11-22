@@ -12,7 +12,7 @@ class CTreeWidget(QtWidgets.QTreeWidget, CBaseWidget):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CTreeWidget, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.itemCollapsed.connect(self._collapse_callback)
         self.itemExpanded.connect(self._expand_callback)
 
@@ -44,6 +44,10 @@ class CTreeWidget(QtWidgets.QTreeWidget, CBaseWidget):
             if recursive:
                 _items += _root.find_children()
         return _items
+
+    def get_val(self):
+        """Read value of this widget."""
+        raise NotImplementedError(self)
 
     def selected_data(self):
         """Read data from the currently selected item.

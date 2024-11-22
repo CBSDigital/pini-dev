@@ -69,7 +69,8 @@ def _test_sort_key(test, mode='sca/dur'):
     if mode == 'sca/dur':
         _c_time = test.last_complete_time()
         _c_age = time.time() - _c_time
-        assert _c_age > 0
+        if _c_age < 0:
+            raise RuntimeError(test)
         _dur = test.last_exec_dur()
         if _dur is None:
             return -sys.maxsize, 0

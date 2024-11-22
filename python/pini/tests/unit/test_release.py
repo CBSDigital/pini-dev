@@ -7,8 +7,8 @@ from pini.tools import release
 class TestRelease(unittest.TestCase):
 
     def test_repo(self):
-
-        _path = '{}/pini-dev'.format(os.environ['DEV'])
+        _dev = os.environ['DEV']
+        _path = f'{_dev}/pini-dev'
         _repo = release.PRRepo(_path)
         print(_repo)
         print(_repo.read_version())

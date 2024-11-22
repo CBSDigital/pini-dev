@@ -15,5 +15,5 @@ class CPoint(base.CArray3, om.MPoint):
 
     def __sub__(self, other):
         from maya_pini import open_maya as pom
-        _result = super(CPoint, self).__sub__(other)
+        _result = super().__sub__(other)
         return pom.CVector(_result)

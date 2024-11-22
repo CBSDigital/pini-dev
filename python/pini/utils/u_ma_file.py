@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 _COL = 'PowderBlue'
 
 
-class _MaExpr(object):  # pylint: disable=too-many-instance-attributes
+class _MaExpr:  # pylint: disable=too-many-instance-attributes
     """Represents an expression in an ma file."""
 
     def __init__(self, body, line_n, tokens=None, cmd=None):
@@ -92,8 +92,8 @@ class _MaCreateNode(_MaExpr):
         return self.tokens[1]
 
     def __repr__(self):
-        return '<{}[{}]:{}>'.format(
-            type(self).__name__.strip('_'), self.type_, self.name)
+        _type = type(self).__name__.strip('_')
+        return f'<{_type}[{self.type_}]:{self.name}>'
 
 
 class MaFile(MetadataFile):
@@ -107,7 +107,7 @@ class MaFile(MetadataFile):
         Args:
             file_ (str): path to ma file
         """
-        super(MaFile, self).__init__(file_)
+        super().__init__(file_)
         self.body = self.read()
         if self.extn != 'ma':
             raise ValueError(file_)
@@ -127,7 +127,6 @@ class MaFile(MetadataFile):
             if cmd and _expr.cmd != cmd:
                 continue
             _exprs.append(_expr)
-
         return _exprs
 
     def find_node(self, catch=True, **kwargs):
@@ -186,8 +185,7 @@ class MaFile(MetadataFile):
             _lines = self.body.split(';\n')
             if progress:
                 _lines = qt.progress_bar(
-                    _lines, 'Reading MaFile {}'.format(
-                        self.nice_size()),
+                    _lines, f'Reading MaFile {self.nice_size()}',
                     col=_COL)
 
             # Convert to expressions

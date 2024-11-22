@@ -18,7 +18,7 @@ class CListWidgetItem(QtWidgets.QListWidgetItem):
             icon (str): path to item icon
             col (str|tuple|QColor): item text colour
         """
-        super(CListWidgetItem, self).__init__(text)
+        super().__init__(text)
         if data is not EMPTY:
             self.setData(Qt.UserRole, data)
         if icon:
@@ -35,7 +35,7 @@ class CListWidgetItem(QtWidgets.QListWidgetItem):
         Returns:
             (any): stored data
         """
-        return super(CListWidgetItem, self).data(role)
+        return super().data(role)
 
     def set_col(self, col):
         """Set text colour.
@@ -64,4 +64,5 @@ class CListWidgetItem(QtWidgets.QListWidgetItem):
         self.setIcon(_icon)
 
     def __repr__(self):
-        return '<{}>'.format(type(self).__name__.strip("_"))
+        _name = type(self).__name__.strip("_")
+        return f'<{_name}>'

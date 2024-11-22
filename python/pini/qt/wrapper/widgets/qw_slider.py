@@ -15,6 +15,10 @@ class CSlider(QtWidgets.QSlider, CBaseWidget):
 
     __repr__ = CBaseWidget.__repr__
 
+    def get_val(self):
+        """Read value of this widget."""
+        raise NotImplementedError(self)
+
     def set_fr(self, fraction):
         """Set fractional value.
 

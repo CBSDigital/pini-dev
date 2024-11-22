@@ -1,5 +1,7 @@
 """Tools for managing the QTreeWidgetItem wrapper."""
 
+from pini.utils import basic_repr
+
 from ...q_mgr import QtWidgets, Qt, QtGui
 from ...q_utils import to_col
 
@@ -15,7 +17,7 @@ class CTreeWidgetItem(QtWidgets.QTreeWidgetItem):
             data (any): item data
             col (QColor): item colour
         """
-        super(CTreeWidgetItem, self).__init__()
+        super().__init__()
         if text:
             self.setText(0, text)
         if data:
@@ -46,4 +48,4 @@ class CTreeWidgetItem(QtWidgets.QTreeWidgetItem):
         return self.data(0, Qt.UserRole)
 
     def __repr__(self):
-        return '<{}:{}>'.format(type(self).__name__, self.text(0))
+        return basic_repr(self, self.text(0))

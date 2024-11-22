@@ -1,7 +1,7 @@
 """Tools for managing the base reference class."""
 
 
-class PathRef(object):
+class PathRef:
     """Represents a reference to a path on disk."""
 
     cmp_str = None
