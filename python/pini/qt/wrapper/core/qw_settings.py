@@ -75,7 +75,9 @@ class CSettings(QtCore.QSettings, _FileDummy):
             # Check for disabled
             _save_policy = getattr(
                 _widget, 'save_policy', qt.SavePolicy.DEFAULT)
-            if _save_policy == qt.SavePolicy.SAVE_IN_SCENE:
+            if _save_policy in (
+                    qt.SavePolicy.SAVE_IN_SCENE,
+                    qt.SavePolicy.NO_SAVE):
                 continue
             _disable_save_settings = getattr(
                 _widget, 'disable_save_settings', False)
@@ -134,7 +136,8 @@ class CSettings(QtCore.QSettings, _FileDummy):
         elif isinstance(widget, qt.CComboBox):
             widget.select_text(_val)
         elif isinstance(widget, QtWidgets.QComboBox):
-            widget.setCurrentText(_val)
+            if isinstance(_val, str):
+                widget.setCurrentText(_val)
         elif isinstance(widget, QtWidgets.QLineEdit):
             widget.setText(_val)
         elif isinstance(widget, QtWidgets.QListWidget):

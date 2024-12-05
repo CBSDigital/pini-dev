@@ -11,6 +11,7 @@ def build_ui_loader():
     from .q_mgr import QtUiTools
 
     _loader = QtUiTools.QUiLoader()
+    _loader.registerCustomWidget(qt.CCheckBox)
     _loader.registerCustomWidget(qt.CComboBox)
     _loader.registerCustomWidget(qt.CGraphSpace)
     _loader.registerCustomWidget(qt.CLabel)

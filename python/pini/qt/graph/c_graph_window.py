@@ -29,7 +29,7 @@ class CGraphWindow(custom.CUiMainWindow):
             load_settings (bool): load graph settings
             settings_file (str): override path to graph settings file
         """
-        super(CGraphWindow, self).__init__(
+        super().__init__(
             ui_file=_UI_FILE, title=title, fps=fps)
         if settings_file:
             self.ui.Graph.set_settings_file(settings_file)
@@ -104,7 +104,7 @@ class CGraphWindow(custom.CUiMainWindow):
         """
         _LOGGER.info(' - CLOSE %s', self)
         self.ui.Graph.save_settings()
-        super(CGraphWindow, self).closeEvent(event)
+        super().closeEvent(event)
 
     @q_utils.safe_timer_event
     def timerEvent(self, event):

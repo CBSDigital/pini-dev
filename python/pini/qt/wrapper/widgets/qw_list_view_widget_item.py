@@ -23,7 +23,7 @@ class CListViewWidgetItem(QtGui.QStandardItem):
         self.widget = widget or QtWidgets.QWidget()
         self.list_view = list_view
 
-        super(CListViewWidgetItem, self).__init__()
+        super().__init__()
         if data:
             self.setData(data, Qt.UserRole)
         _size = qt.to_size(self.list_view.get_draw_width(), height)
@@ -56,7 +56,7 @@ class CListViewWidgetItem(QtGui.QStandardItem):
         Returns:
             (any): embedded data
         """
-        return super(CListViewWidgetItem, self).data(role)
+        return super().data(role)
 
     def get_data(self):
         """Obtain any data stored with this item.

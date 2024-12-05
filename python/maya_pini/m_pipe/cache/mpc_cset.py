@@ -28,7 +28,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
 
         if cmds.referenceQuery(cache_set, isNodeReferenced=True):
             raise ValueError(
-                'Referenced CSETs not supported {}'.format(cache_set))
+                f'Referenced CSETs not supported {cache_set}')
         self.cache_set = cache_set
         self.output_name = self.cache_set.replace('_CSET', '')
         self.label = self.output_name+' (CSET)'

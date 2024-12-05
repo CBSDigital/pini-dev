@@ -1,7 +1,7 @@
 """Tools for managing the base class for render farms."""
 
 
-class CFarm(object):
+class CFarm:
     """Base class for all render farms."""
 
     NAME = None

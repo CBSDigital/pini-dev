@@ -12,7 +12,7 @@ class TestCache(unittest.TestCase):
 
     def test_max_ages(self):
 
-        class _Blah(object):
+        class _Blah:
 
             @property
             def cache_fmt(self):

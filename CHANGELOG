@@ -1,3 +1,20 @@
+## [6.18.0] - Thu 2024-12-05 10:14
+### Summary
+ - Pini Helper:
+    - bugfix error on lookdev publish rig with boolean custom attrs (mkim),
+### Updated
+ - pini.icons.to_icon added,
+ - pini.icons refactor broken into submodules,
+ - pini.qt.CBaseWidget.set_col added,
+ - pini.qt.CListWidget.select allow select from item,
+ - pini.qt.CSettings.apply_to_widget bugfix error on int setting applied to QComboBox,
+ - pini.qt.CSettings.apply_to_widget bugfix SavePolicy.NO_SAVE not being applied,
+ - pini.qt.build_ui_loader added CCheckBox,
+ - pini.qt.multi_select added data arg,
+ - maya_pini.open_maya.CPlug get_max/get_min added handling for no range,
+ - maya_pini.open_maya.CReference.add_to_grp added handling for multiple top nodes,
+
+
 ## [6.17.0] - Fri 2024-11-22 06:37
 ### Summary
  - Sanity Check:

@@ -139,7 +139,10 @@ class CReference(om.MFnReference, ref.FileRef):
         Args:
             grp (str): name of group
         """
-        return self.top_node.add_to_grp(grp)
+        _grp = None
+        for _top_node in self.find_top_nodes():
+            _grp = _top_node.add_to_grp(grp)
+        return _grp
 
     def bake(self, range_=None, simulation=True, add_offs=None):
         """Bake animation onto this reference.

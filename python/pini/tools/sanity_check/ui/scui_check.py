@@ -23,7 +23,7 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
         self.icon = _rand.choice(_ICONS)
         self.check = check
         self.default_col = 'CornflowerBlue'
-        super(SCUiCheckItem, self).__init__(
+        super().__init__(
             list_view, data=check, col=self.default_col, height=50)
 
     @property
@@ -88,7 +88,7 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
             'running': 'LightSteelBlue',
         }[self.check.status]
 
-        super(SCUiCheckItem, self).draw_pixmap(pix)
+        super().draw_pixmap(pix)
 
         pix.draw_text(
             self.check.label, pos=(45, self.height/3), anchor='L')
@@ -99,7 +99,7 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
             _pc_text = ''
         else:
             _pc = self.check.progress
-            _pc_text = '{:.00f}%'.format(self.check.progress)
+            _pc_text = f'{self.check.progress:.00f}%'
         pix.draw_text(_pc_text, pos=(45, 2*self.height/3), anchor='L')
         _icon_idx = int(val_map(_pc, in_max=100, out_max=len(icons.MOONS)-1))
         _icon = icons.MOONS[_icon_idx]

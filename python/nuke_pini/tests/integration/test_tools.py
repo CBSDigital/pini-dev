@@ -20,7 +20,7 @@ class TestTools(unittest.TestCase):
         for _idx in range(1, 4):
             for _seq in ['TestingA', 'TestingB']:
                 _suffix = _seq[-1].lower()
-                _name = 'test{}{:03d}'.format(_suffix, _idx*10)
+                _name = f'test{_suffix}{_idx*10:03d}'
                 _shot = _job.to_shot(sequence=_seq, shot=_name)
                 if not _shot.exists():
                     _shot.create(force=True, shotgrid_=False)

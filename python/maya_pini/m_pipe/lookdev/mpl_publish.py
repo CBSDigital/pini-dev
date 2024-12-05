@@ -78,12 +78,13 @@ def _build_dummy_top_node():
     _LOGGER.info(' - DUMMY TOP NODE')
     for _attr in _read_map_top_node_attrs():
         _top_attr = _top_node.plug[_attr]
+        _LOGGER.info(' - TOP NODE ATTR %s', _top_attr)
         _dummy_attr = _dummy.add_attr(
             _attr, _top_attr.get_val(), min_val=_top_attr.get_min(),
             max_val=_top_attr.get_max())
-        _LOGGER.info(' - MAP %s -> %s', _top_node, _dummy_attr)
+        _LOGGER.info('   - MAP %s -> %s', _top_node, _dummy_attr)
         _conns = _top_attr.find_outgoing()
-        _LOGGER.info('   - CONNS %s', _conns)
+        _LOGGER.info('     - CONNS %s', _conns)
         for _trg in _conns:
             _dummy_attr.connect(_trg, force=True)
     return str(_dummy)
@@ -176,7 +177,7 @@ def _read_custom_aovs(sgs):
             _src, _dest = _conn
             _, _idx, _ = re.split(r'[\[\]]', str(_dest))
             _idx = int(_idx)
-            _name = _sg.attr['aiCustomAOVs[{:d}].aovName'.format(_idx)]
+            _name = _sg.attr[f'aiCustomAOVs[{_idx:d}].aovName']
             _aov = str(cmds.getAttr(_name))
             _custom_aovs.append((str(_src), str(_aov)))
 

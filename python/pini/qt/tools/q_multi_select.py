@@ -15,7 +15,7 @@ _UI_FILE = _DIR.to_file('multi_select.ui')
 class _MultiSelect(custom.CUiDialog):
     """Modal dialog for selecting items from a list."""
 
-    def __init__(self, msg, title, multi, items, select):
+    def __init__(self, msg, title, multi, items, select, data):
         """Constructor.
 
         Args:
@@ -24,14 +24,18 @@ class _MultiSelect(custom.CUiDialog):
             multi (bool): allow multiple selections
             items (list): list of items to select from
             select (any|list): item/items to select by default
+            data (list): data items to override result(s)
         """
         self.selected = False
         self.items = items
+        self.data = data
+        if data:
+            assert len(items) == len(data)
         self.msg = msg
         self.multi = multi
         self.select = select
 
-        super(_MultiSelect, self).__init__(
+        super().__init__(
             title=title, ui_file=_UI_FILE, modal=True, load_settings=False)
 
     def init_ui(self):
@@ -41,8 +45,12 @@ class _MultiSelect(custom.CUiDialog):
         self.ui.Message.setText(self.msg)
 
         # Populate items
-        _items = [
-            qt.CListWidgetItem(str(_item), data=_item) for _item in self.items]
+        _items = []
+        for _idx, _item_r in enumerate(self.items):
+            _item_s = str(_item_r)
+            _data = self.data[_idx] if self.data else _item_r
+            _item = qt.CListWidgetItem(_item_s, data=_data)
+            _items.append(_item)
         self.ui.Items.set_items(_items)
         self.ui.Items.doubleClicked.connect(self._callback__Select)
 
@@ -72,7 +80,7 @@ class _MultiSelect(custom.CUiDialog):
 
 def multi_select(
         items, msg='Select items:', multi=True, title='Multi select',
-        select=None):
+        data=None, select=None):
     """Launch multi select dialog.
 
     Args:
@@ -80,13 +88,15 @@ def multi_select(
         msg (str): dialog message
         multi (bool): allow multiple selections
         title (str): dialog title
+        data (list): data items to override result(s)
         select (any|list): item/items to select by default
 
     Returns:
         (any): selected item
     """
     _dialog = _MultiSelect(
-        items=items, msg=msg, multi=multi, title=title, select=select)
+        items=items, msg=msg, multi=multi, title=title, select=select,
+        data=data)
 
     # Obtain result
     if not _dialog.selected:

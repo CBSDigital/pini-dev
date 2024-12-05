@@ -50,7 +50,7 @@ class TestHelper(unittest.TestCase):
         for _en in (True, False):
 
             print()
-            _LOGGER.info(' - APPLYING SCENE TAB %s', _helper.job)
+            _LOGGER.info(' - APPLYING SCENE TAB %s en=%d', _helper.job, _en)
             testing.enable_file_system(_en)
 
             _helper.ui.MainPane.select_tab('Scene')

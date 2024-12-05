@@ -266,6 +266,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                     _sel_idx = _idx
                 elif isinstance(select, (list, set)) and (
                         (_data and _data in select) or
+                        _item in select or
                         _text in select):
                     _sel_idxs.append(_idx)
             elif _cur_text and _text == _cur_text:

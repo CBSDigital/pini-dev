@@ -48,7 +48,7 @@ def check_heart(heart=None):
 
     if not _heart.exists():
         _heart.touch()
-        raise RuntimeError("Missing heart {}".format(_heart.path))
+        raise RuntimeError(f"Missing heart {_heart.path}")
 
     _LAST_CHECK[_heart] = time.time()
     _LOGGER.log(9, ' - CHECKED')

@@ -3,13 +3,14 @@
 import logging
 
 from pini import dcc
+from pini.utils import basic_repr
 
 from ... import q_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBaseWidget(object):
+class CBaseWidget:
     """Virtual base class for wrapped widgets."""
 
     disable_save_settings = False
@@ -26,8 +27,9 @@ class CBaseWidget(object):
         Returns:
             (str): settings key
         """
-        return self._settings_key or 'PiniQt.{parent}.{widget}'.format(
-            parent=self.parent().objectName(), widget=self.objectName())
+        _parent = self.parent().objectName()
+        _widget = self.objectName()
+        return self._settings_key or f'PiniQt.{_parent}.{_widget}'
 
     def apply_save_policy_on_change(self, settings):
         """Apply save policy on widget value changed.
@@ -87,7 +89,7 @@ class CBaseWidget(object):
         else:
             _settings = getattr(self.parent(), 'settings', None)
             if _settings:
-                _key = 'widgets/{}'.format(self.objectName())
+                _key = f'widgets/{self.objectName()}'
                 _val = _settings.value(_key)
         return _val
 
@@ -109,6 +111,18 @@ class CBaseWidget(object):
         assert key.startswith('PiniQt.')
         self._settings_key = key
 
+    def set_col(self, col):
+        """Set text colour.
+
+        Args:
+            col (str): colour to apply
+        """
+        _pal = self.palette()
+        _pal.setColor(self.foregroundRole(), col)
+        self.setPalette(_pal)
+
+        # self.setStyleSheet(f"color : {col}")
+
     def set_val(self, val):
         """Apply value to this widget.
 
@@ -118,4 +132,4 @@ class CBaseWidget(object):
         raise NotImplementedError(self)
 
     def __repr__(self):
-        return '<{}:{}>'.format(type(self).__name__, self.objectName())
+        return basic_repr(self, self.objectName())

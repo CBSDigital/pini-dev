@@ -140,12 +140,12 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             if verbose:
                 _LOGGER.info(' - ERROR %s', _exc)
             if not cmds.objExists(name):
-                _err = 'Attribute not found {}'.format(_name)
+                _err = f'Attribute not found {_name}'
             else:
-                _err = 'Failed to build mplug {}'.format(_name)
+                _err = f'Failed to build mplug {_name}'
             raise RuntimeError(_err)
 
-        super(CPlug, self).__init__(_plug)
+        super().__init__(_plug)
 
     @property
     def anim(self):
@@ -273,6 +273,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (float|None): maximum
         """
+        if not self.attribute_query(rangeExists=True):
+            return None
         return single(self.attribute_query(maximum=True), catch=True)
 
     def get_min(self):
@@ -281,6 +283,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (float|None): minimum
         """
+        if not self.attribute_query(rangeExists=True):
+            return None
         return single(self.attribute_query(minimum=True), catch=True)
 
     def get_size(self):
@@ -743,7 +747,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
     _LOGGER.debug(' - SIZE %d type=%s', _size, _type)
 
     # Connect/set input0
-    _attr_0 = '{}.input{:d}D[0]'.format(_add, _size)
+    _attr_0 = f'{_add}.input{_size:d}D[0]'
     _LOGGER.debug(' - ATTR 0 %s', _attr_0)
     if isinstance(input1, _connect_types):
         cmds.connectAttr(input1, _attr_0)
@@ -751,7 +755,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
         cmds.setAttr(_attr_0, input1)
 
     # Connect/set input1
-    _attr_1 = '{}.input{:d}D[1]'.format(_add, _size)
+    _attr_1 = f'{_add}.input{_size:d}D[1]'
     _LOGGER.debug(' - ATTR 1 %s', _attr_1)
     if isinstance(input2, _connect_types):
         cmds.connectAttr(input2, _attr_1)
@@ -759,7 +763,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
         cmds.setAttr(_attr_1, input2)
 
     # Connect output
-    _output = '{}.output{:d}D'.format(_add, _size)
+    _output = f'{_add}.output{_size:d}D'
     _LOGGER.debug(' - OUTPUT %s', _output)
     if output:
         cmds.connectAttr(_output, output, force=force)

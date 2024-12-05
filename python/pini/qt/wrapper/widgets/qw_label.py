@@ -17,16 +17,6 @@ class CLabel(QtWidgets.QLabel, qw_base_widget.CBaseWidget):
         """Read value of this widget."""
         raise NotImplementedError(self)
 
-    def set_col(self, col):
-        """Set text colour.
-
-        Args:
-            col (str): colour to apply
-        """
-        _pal = self.palette()
-        _pal.setColor(self.foregroundRole(), col)
-        self.setPalette(_pal)
-
     def mousePressEvent(self, event):
         """Triggered by mouse press.
 

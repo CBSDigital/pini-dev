@@ -1,233 +1,31 @@
-"""Tools for managing sets of icons."""
+"""Constants for the icons library."""
 
-import codecs
-import functools
 import logging
 import os
-import re
-
-try:
-    from HTMLParser import HTMLParser
-except ImportError:
-    from html.parser import HTMLParser
 
 import pini_icons
-from pini.utils import (
-    abs_path, Dir, Seq, cache_property, File, single, to_snake,
-    passes_filter, cache_result)
+from pini.utils import abs_path, Dir
+
+from . import i_set
 
 _LOGGER = logging.getLogger(__name__)
+
+
 ICONS_ROOT = os.environ.get(
     'PINI_ICONS_ROOT',
     Dir(abs_path(pini_icons.__file__)).to_dir().to_dir().path)
 
-
-class _Emoji(File):
-    """Represents an emoji image file as part of a set."""
-
-    def __init__(self, file_, name, url):
-        """Constructor.
-
-        Args:
-            file_ (str): path to image file
-            name (str): file label
-            url (str): emojipedia download url
-        """
-        super().__init__(file_)
-        self.name = name
-        self.url = url
-        self.index = int(self.path.split('.')[-2])
-
-    def to_unicode(self):
-        """Get unicode characters for this emoji.
-
-        Returns:
-            (unicode): unicode char
-        """
-        _hash = (re.split('[_.]', self.url.upper())[-2]).split('-')[0]
-        return eval(fr"u'\U000{_hash}'")  # pylint: disable=eval-used
-
-    def __repr__(self):
-        _type = type(self).__name__.strip('_')
-        return f'<{_type}[{self.index:d}]:{self.name}>'
-
-
-class _EmojiIndexParser(HTMLParser):
-    """Parser for emoji set's index.html file."""
-
-    _count = 0
-    names = {}
-    urls = {}
-
-    def handle_starttag(self, tag, attrs):
-        """Handle html tag.
-
-        Args:
-            tag (str): name of tag
-            attrs (list): tag attrs
-        """
-        if not tag == 'img':
-            return
-        _title = _url = None
-        for _key, _val in attrs:
-            if _key == 'title':
-                _title = _val
-            elif _key == 'data-src':
-                _url = _val
-        if not _title:
-            return
-        for _find, _replace in [
-                ('\u201c', '"'),
-                ('\u201d', '"'),
-                ('\u2019', "'"),
-                ('\xc5', ''),
-                ('\xe9', 'e'),
-                ('\xe3', 'a'),
-                ('\xed', 'i'),
-                ('\xf4', 'o'),
-                ('\xe7', 'c'),
-                ('\xf1', 'n'),
-        ]:
-            _title = _title.replace(_find, _replace)
-        self.names[_title] = self._count
-        self.urls[_title] = _url
-        self._count += 1
-
-
-class _EmojiSet(Seq):
-    """Represents a set of emojis with an index.html descriptor."""
-
-    def __init__(self, *args, **kwargs):
-        """Constructor."""
-        super().__init__(*args, **kwargs)
-        self.index = f'{self.dir}/index.html'
-        self._matches = {}
-
-    def find(self, match, catch=False, verbose=0):
-        """Find the path to an emoji in this set.
-
-        Args:
-            match (str|int): match by name or index
-            catch (bool): no error if exactly one emoji is not found
-            verbose (int): print process data
-
-        Returns:
-            (str): path to emoji
-        """
-        _emoji = self.find_emoji(match=match, catch=catch, verbose=verbose)
-        if not _emoji:
-            return None
-        return _emoji.path
-
-    def find_emoji(self, match, catch=False, verbose=0):
-        """Find an emoji in this set.
-
-        Args:
-            match (str|int): match by name or index
-            catch (bool): no error if exactly one emoji is not found
-            verbose (int): print process data
-
-        Returns:
-            (Emoji): matching emoji
-        """
-        _emoji = self._matches.get(match)
-        if not _emoji:
-            _emojis = []
-
-            # Find index to match
-            _idx = None
-            if isinstance(match, int):
-                _idx = match
-            elif isinstance(match, str) and match.isdigit():
-                _idx = int(match)
-
-            # Match by index/name/filter
-            for _o_emoji in self._emojis:  # pylint: disable=not-an-iterable
-                if isinstance(match, str):
-                    if _o_emoji.name.lower() == match.lower():
-                        _emoji = _o_emoji
-                        break
-                    if passes_filter(_o_emoji.name.lower(), match.lower()):
-                        _emojis.append(_o_emoji)
-                if _idx is not None and _o_emoji.index == _idx:
-                    _emoji = _o_emoji
-                    break
-
-            # Handle fail
-            if not _emoji:
-                try:
-                    _emoji = single(_emojis, catch=catch)
-                except ValueError:
-                    if verbose:
-                        for _emoji in sorted(_emojis):
-                            _LOGGER.info(' - %s', _emoji.name)
-                    _emojis = sorted([_emoji.name for _emoji in _emojis])
-                    raise ValueError(f'Failed to match {match} - {_emojis}')
-
-            self._matches[match] = _emoji
-
-        return _emoji
-
-    @cache_result
-    def find_grp(self, name):
-        """Find named group of emojis within this set.
-
-        Args:
-            name (str): name of group (eg. fruit)
-
-        Returns:
-            (str list): list of emoji paths
-        """
-        _name = name
-        if not _name.isupper():
-            _name = to_snake(name)
-        _name = '_'+_name.upper()
-        _names = globals()[_name]
-        return tuple(self.find(_name) for _name in _names)
-
-    @cache_property
-    def _emojis(self):
-        """Retrieve full emoji list.
-
-        Returns:
-            (Emoji list): all emojis
-        """
-        # pylint: disable=no-member
-
-        _emojis = []
-        for _name, _idx in self._html_parser.names.items():
-            _url = self._html_parser.urls[_name]
-            _emoji = _Emoji(file_=self[_idx], name=_name, url=_url)
-            _emojis.append(_emoji)
-
-        return tuple(_emojis)
-
-    @cache_property
-    def _html_parser(self):
-        """Retrieve emoji index parser object.
-
-        Returns:
-            (EmojiIndexParser): parser
-        """
-        _hook = codecs.open(self.index, encoding='utf-8')
-        _body = _hook.read()
-        _hook.close()
-        _parser = _EmojiIndexParser()
-        _parser.feed(_body)
-        return _parser
-
-
 _ANDROID_PATH = Dir(ICONS_ROOT).to_file(
     'icons/android_12l/icon.%04d.png')
-ANDROID = _EmojiSet(_ANDROID_PATH)
+ANDROID = i_set.EmojiSet(_ANDROID_PATH)
 
 _JOYPIXELS_PATH = Dir(ICONS_ROOT).to_file(
     'icons/joypixels_4.5/icon.%04d.png')
-_JOYPIXELS = _EmojiSet(_JOYPIXELS_PATH)
+_JOYPIXELS = i_set.EmojiSet(_JOYPIXELS_PATH)
 
 _OPENMOJI_PATH = Dir(ICONS_ROOT).to_file(
     'icons/openmoji_13.1/icon.%04d.png')
-_OPENMOJI = _EmojiSet(_OPENMOJI_PATH)
+_OPENMOJI = i_set.EmojiSet(_OPENMOJI_PATH)
 
 EMOJI = ANDROID
 
@@ -641,33 +439,3 @@ MOONS = [EMOJI.find(_name) for _name in (
     'Waxing Gibbous Moon',
     'Full Moon',
 )]
-
-
-@functools.wraps(EMOJI.find)
-def find(*args, **kwargs):
-    """Find an emoji path from the default set.
-
-    Returns:
-        (str): path to matching emoji
-    """
-    return EMOJI.find(*args, **kwargs)
-
-
-@functools.wraps(EMOJI.find_emoji)
-def find_emoji(*args, **kwargs):
-    """Find an emoji from the default set.
-
-    Returns:
-        (Emoji): path to matching emoji
-    """
-    return EMOJI.find_emoji(*args, **kwargs)
-
-
-@functools.wraps(EMOJI.find_grp)
-def find_grp(*args, **kwargs):
-    """Find a group of emojis (eg. fruit).
-
-    Returns:
-        (str list): emojis in group
-    """
-    return EMOJI.find_grp(*args, **kwargs)
