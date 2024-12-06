@@ -1,3 +1,13 @@
+## [6.19.0] - Fri 2024-12-06 09:36
+### Summary
+ - Pini Code:
+    - added object for managing image resolutions,
+### Updated
+ - pini.utils.Res added,
+ - pini.utils.Image.convert added size arg,
+ - pini.qt.CPixmap.resize allow size as Res,
+
+
 ## [6.18.0] - Thu 2024-12-05 10:14
 ### Summary
  - Pini Helper:

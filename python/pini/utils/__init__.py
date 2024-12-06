@@ -23,6 +23,7 @@ from .u_mel_file import MelFile
 from .u_ma_file import MaFile
 
 from .u_image import Image
+from .u_res import Res
 from .u_yaml import register_custom_yaml_handler
 
 from .path import (

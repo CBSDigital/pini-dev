@@ -21,10 +21,10 @@ class PyFile(File, PyElem):
         Args:
             file_ (str): path to py file
         """
-        super(PyFile, self).__init__(file_)
+        super().__init__(file_)
 
         if self.extn == 'pyc':
-            super(PyFile, self).__init__(self.to_file(extn='py'))
+            super().__init__(self.to_file(extn='py'))
         if self.extn != 'py':
             raise ValueError(self.extn)
 

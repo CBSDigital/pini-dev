@@ -6,6 +6,7 @@ import re
 from .path import File
 from .clip import find_ffmpeg_exe
 from .u_misc import single, system
+from . import u_res
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,11 +14,12 @@ _LOGGER = logging.getLogger(__name__)
 class Image(File):
     """Represents an image file on disk."""
 
-    def convert(self, file_, catch=False, force=False):
+    def convert(self, file_, size=None, catch=False, force=False):
         """Convert this image to a different format.
 
         Args:
             file_ (File): target file
+            size (Res): apply resize
             catch (bool): no error if conversion fails
             force (bool): overwrite existsing without confirmation
         """
@@ -26,18 +28,20 @@ class Image(File):
         assert _file != self
         _LOGGER.info('CONVERT %s -> %s', self.extn, _file.extn)
         _fmts = {self.extn.lower(), _file.extn.lower()}
-        if self.extn == _file.extn:
+        if self.extn == _file.extn and not size:
             self.copy_to(_file, force=force)
         elif 'exr' in _fmts:
             _colspace = {
                 ('exr', 'jpg'): 'iec61966_2_1',
             }.get((self.extn, _file.extn))
             _convert_file_ffmpeg(
-                self, _file, colspace=_colspace, catch=catch, force=force)
+                self, _file, colspace=_colspace, size=size,
+                catch=catch, force=force)
         elif not _fmts - set(qt.PIXMAP_EXTNS):
-            _convert_file_qt(self, _file, force=force)
+            _convert_file_qt(self, _file, size=size, force=force)
         else:
             raise NotImplementedError(f'Convert {self.extn} -> {_file.extn}')
+        return Image(_file)
 
     def to_aspect(self):
         """Obtain aspect ration of this image.
@@ -123,7 +127,7 @@ class Image(File):
             raise RuntimeError(f'Failed to read res {self.path}')
         _res = tuple(int(_token) for _token in _res_token.split('x'))
 
-        return _res
+        return u_res.Res(*_res)
 
     def _read_res_qt(self):
         """Read this image's resolution using qt.
@@ -133,16 +137,18 @@ class Image(File):
         """
         from pini import qt
         _pix = qt.CPixmap(self.path)
-        return _pix.width(), _pix.height()
+        return u_res.Res(_pix.width(), _pix.height())
 
 
-def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
+def _convert_file_ffmpeg(
+        src, trg, colspace=None,  size=None, catch=False, force=False):
     """Convert image file to a different format using ffmpeg.
 
     Args:
         src (File): source file
         trg (File): output file
         colspace (str): apply colourspace via -apply_trc flag
+        size (Res): apply resize
         catch (bool): no error if conversion fails
         force (bool): replace existing without confirmation
     """
@@ -150,7 +156,10 @@ def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
     _cmds = [_ffmpeg]
     if colspace:
         _cmds += ['-apply_trc', colspace]
-    _cmds += ['-i', src, trg]
+    _cmds += ['-i', src]
+    if size:
+        _cmds += ['-vf', f'scale={size.width}:{size.height}']
+    _cmds += [trg]
 
     trg.delete(force=force, wording='Replace')
     assert not trg.exists()
@@ -164,14 +173,20 @@ def _convert_file_ffmpeg(src, trg, colspace=None, catch=False, force=False):
         _LOGGER.warning(_msg)
 
 
-def _convert_file_qt(src, trg, force=False):
+def _convert_file_qt(src, trg, size=None, force=False):
     """Convert image file to a different format using qt.
 
     Args:
         src (File): source file
         trg (File): output file
+        size (Res): apply resize
         force (bool): replace existing without confirmation
     """
+    _LOGGER.debug(' - CONVERT FILE QT %s', src)
     from pini import qt
     trg.delete(force=force, wording='replace')
-    qt.CPixmap(src).save_as(trg)
+    _pix = qt.CPixmap(src)
+    if size:
+        _pix = _pix.resize(size)
+        _LOGGER.debug(' - APPLY SIZE %s %s', size, _pix.size())
+    _pix.save_as(trg)

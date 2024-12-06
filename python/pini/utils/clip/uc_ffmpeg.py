@@ -111,7 +111,7 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _job = pipe.to_job(video.path, catch=True)
     _start, _end = seq.to_range(force=True)
     _res = seq.to_res()
-    _seq_w, _seq_h = _res
+    _seq_w, _seq_h = _res.to_tuple()
     _fade = qt.to_col(1, 1, 1, 0.5)
     _transparent = qt.to_col('Transparent')
     _LOGGER.info(' - RES %s', _res)

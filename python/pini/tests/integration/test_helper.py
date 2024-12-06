@@ -75,6 +75,7 @@ class TestHelper(unittest.TestCase):
                 _LOGGER.info('   - DISPLAYING %d OUTS %s', len(_outs), _outs)
 
             _LOGGER.info(' - REVERTING TO EXPORT TAB')
+            _helper.ui.EExportPane.select_tab('Publish')
             _helper.ui.MainPane.select_tab('Export')
 
             assert not error.TRIGGERED

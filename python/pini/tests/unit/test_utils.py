@@ -13,7 +13,7 @@ from pini.utils import (
     Path, File, Dir, assert_eq, abs_path, norm_path, HOME_PATH, str_to_ints,
     TMP_PATH, single, find, passes_filter, Seq, cache_result, path, to_nice,
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
-    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile,
+    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, Res,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
     Image, TMP, search_dict_for_key, find_ffmpeg_exe)
 from pini.utils.u_mel_file import _MelExpr
@@ -107,6 +107,32 @@ class TestUtils(unittest.TestCase):
     def test_nice_age(self):
         assert nice_age(60*60+1, pad=2) == '01h00m'
         assert nice_age(24*60*60+1, pad=2, depth=2) == '01d00h'
+
+    def test_res(self):
+
+        _res = Res(640, 480)
+        assert _res.width == 640
+        assert _res[0] == 640
+        assert _res.height == 480
+        assert _res[1] == 480
+        assert str(_res) == '640x480'
+
+        _half = _res*0.5
+        assert _half.width == 320
+        assert _half[0] == 320
+        assert _half.height == 240
+        assert _half[1] == 240
+
+        _img = Image(icons.find('brain'))
+        assert isinstance(_img.to_res(), Res)
+
+        _a = Res(640, 480)
+        _b = Res(640, 480)
+        assert _a == _b
+        assert _a is not _b
+        assert len({_a, _b}) == 1
+
+        assert _half < _res
 
     def test_search_dict_for_keys(self):
         _data = {'test': {
@@ -441,7 +467,7 @@ class TestImage(unittest.TestCase):
     def test(self):
 
         _path = icons.find('Green Apple')
-        assert Image(_path).to_res() == (144, 144)
+        assert Image(_path).to_res() == Res(144, 144)
 
 
 class TestSeq(unittest.TestCase):

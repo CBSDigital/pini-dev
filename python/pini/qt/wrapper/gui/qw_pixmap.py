@@ -6,7 +6,7 @@ import sys
 
 from pini.utils import (
     File, abs_path, basic_repr, error_on_file_system_disabled,
-    single, TMP)
+    single, TMP, Res)
 
 from .qw_painter import CPainter
 from ...q_mgr import QtGui, Qt, QtCore
@@ -458,6 +458,8 @@ class CPixmap(QtGui.QPixmap):
                 _height = _arg.height()
             elif isinstance(_arg, (tuple, list)) and len(_arg) == 2:
                 _width, _height = _arg
+            elif isinstance(_arg, Res):
+                _width, _height = _arg.to_tuple()
             elif len(args) == 2:
                 _width, _height = args
             else:
