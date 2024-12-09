@@ -71,7 +71,7 @@ def flipbook_frame(file_, force=False):
         (File): written file
     """
     _file = File(file_)
-    _file.delete(force=force, wording='Replace')
+    _file.delete(force=force, wording='replace')
     _tmp_seq = TMP.to_seq('pini/tmp.%04d.jpg')
     _tmp_seq.delete(force=True)
     assert not _tmp_seq.frames

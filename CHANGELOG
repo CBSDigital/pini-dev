@@ -1,3 +1,11 @@
+## [6.19.1] - Mon 2024-12-09 12:03
+### Summary
+ - Pini Helper:
+    - bugfix error on launch (nwray),
+### Updated
+ - pini.icons.ICONS_ROOT bugfix not public,
+
+
 ## [6.19.0] - Fri 2024-12-06 09:36
 ### Summary
  - Pini Code:

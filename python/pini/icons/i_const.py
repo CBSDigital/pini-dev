@@ -10,7 +10,6 @@ from . import i_set
 
 _LOGGER = logging.getLogger(__name__)
 
-
 ICONS_ROOT = os.environ.get(
     'PINI_ICONS_ROOT',
     Dir(abs_path(pini_icons.__file__)).to_dir().to_dir().path)
