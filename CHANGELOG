@@ -1,3 +1,17 @@
+## [6.19.2] - Tue 2024-12-10 13:52
+### Summary
+ - Pini Helper:
+    - basic maya publish better description in label (nwray),
+    - bugfix missing video output opts,
+### Updated
+ - pini.utils.VIDEO_EXTNS added,
+ - pini.dcc.export.CMayaBasicPublish better explanation in label,
+ - pini.pipe.CPJobDisk.find_shots added handling for legacy non-seq-dir shows,
+ - pini.pipe.cur_task added previs handling,
+ - pini.tools.helper default exporters is cache for previs,
+ - pini.tools.helper fix missing video options,
+
+
 ## [6.19.1] - Mon 2024-12-09 12:03
 ### Summary
  - Pini Helper:

@@ -7,6 +7,8 @@ from pini import dcc, pipe
 _LOGGER = logging.getLogger(__name__)
 
 _TASK_MAP = {
+    'prev': 'previs',
+    'previz': 'previs',
     'animation': 'anim',
     'ani': 'anim',
     'anm': 'anim',
@@ -41,7 +43,7 @@ def cur_task(fmt='local'):
         if not _work_dir:
             return None
         if _step:
-            return '{}/{}'.format(_step, _task)
+            return f'{_step}/{_task}'
         return _work_dir.task
 
     return map_task(_task, step=_step, fmt=fmt)
@@ -78,7 +80,7 @@ def map_task(task, step=None, fmt='pini'):
         _task = task
     elif fmt == 'pini':
         _task = (
-            _TASK_MAP.get('{}/{}'.format(step, task)) or
+            _TASK_MAP.get(f'{step}/{task}') or
             _TASK_MAP.get(step) or
             _TASK_MAP.get(task) or
             task)

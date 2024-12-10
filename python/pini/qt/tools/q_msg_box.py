@@ -192,6 +192,7 @@ def raise_dialog(
     Returns:
         (str): text from selected button
     """
+    _LOGGER.debug('RAISE DIALOG %s', msg)
     from pini import dcc, qt, testing
 
     # Avoid farm qt seg fault
@@ -212,7 +213,9 @@ def raise_dialog(
     if verbose:
         _LOGGER.info(msg)
 
-    return _box.get_result()
+    _result = _box.get_result()
+    _LOGGER.debug(' - OBTAINED RESULT %s', _result)
+    return _result
 
 
 def warning(msg, title='Warning', icon=None):

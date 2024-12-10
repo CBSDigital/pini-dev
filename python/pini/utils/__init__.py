@@ -38,7 +38,7 @@ from .cache import (
     build_cache_fmt, flush_caches)
 from .clip import (
     Seq, CacheSeq, find_seqs, Video, find_viewers, find_viewer, file_to_seq,
-    play_sound, to_seq, find_ffmpeg_exe)
+    play_sound, to_seq, find_ffmpeg_exe, VIDEO_EXTNS)
 
 from .py_file import (
     PyFile, to_py_file, PyDef, PyClass, PyArg, PyElem, PyDefDocs)

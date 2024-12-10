@@ -33,7 +33,11 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
 
     NAME = 'Maya Basic Publish'
     LABEL = '\n'.join([
-        'Copies this scene to the publish directory.',
+        'Copies this scene to the publish directory - this is generally '
+        'used to pass a rig/model/lookdev asset down the pipeline for '
+        'use in shots.',
+        '',
+        'Here are some tips:',
         '',
         ' - The top node should be GEO/RIG/MDL',
         ' - All the geometry should be added to a set named cache_SET',
@@ -52,7 +56,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             add_footer (bool): add footer elements
         """
         _LOGGER.debug('BUILD UI %s', self)
-        super(CMayaBasicPublish, self).build_ui(
+        super().build_ui(
             parent=parent, layout=layout, add_footer=False)
 
         self.add_separator_elem()

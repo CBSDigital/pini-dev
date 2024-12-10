@@ -57,10 +57,13 @@ class CLExportTab:
             else:
                 _task = pipe.map_task(_work.task if _work else None)
                 _tab = {
+                    'previs': 'Cache',
                     'anim': 'Cache',
                     'lighting': 'Render',
                 }.get(_task)
                 _LOGGER.debug(' - SELECT TAB (B) %s task=%s', _tab, _task)
+        if not _tab and _work:
+            _tab = {'asset': 'Publish', 'shot': 'Cache'}[_work.profile]
         if _tab:
             _LOGGER.debug(' - SELECT TAB (Z) %s', _tab)
             self.ui.EExportPane.select_tab(_tab, emit=False)

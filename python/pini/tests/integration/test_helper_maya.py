@@ -293,6 +293,9 @@ def _test_anim_workflow(progress, force, show_ctx):
     # Test cache
     progress.set_pc(40)
     assert not _helper.work.find_outputs(extn='abc')
+    assert (
+        _helper.ui.ECacheRefs.all_data() ==
+        _helper.ui.ECacheRefs.selected_data())
     _helper.ui.EExportPane.select_tab('Cache')
     _helper.ui.ECacheVersionUp.setChecked(False)
     _helper.ui.ECache.click()

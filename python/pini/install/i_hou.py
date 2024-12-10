@@ -52,8 +52,8 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         Returns:
             (str): path to shelf file
         """
-        return '{}/toolbar/{}.shelf'.format(
-            os.environ['HOUDINI_USER_PREF_DIR'], self.name)
+        _prefs = os.environ['HOUDINI_USER_PREF_DIR']
+        return f'{_prefs}/toolbar/{self.name}.shelf'
 
     def _build_context_item(self, item, parent):
         """Build a context (right-click) item.
@@ -138,7 +138,7 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
                 file_path=self.shelf_file, name=self.name, label=self.label)
         _shelf = hou.shelves.shelves()[self.name]
 
-        _tools = super(PIHouShelfInstaller, self).run()
+        _tools = super().run()
 
         _LOGGER.debug(' - TOOLS %d %s', len(_tools), _tools)
         _shelf.setTools(_tools)
@@ -177,8 +177,7 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
         Returns:
             (list): updated items list
         """
-        _tool, _items = super(
-            PIHouMenuInstaller, self)._gather_reload_tools(items)
+        _tool, _items = super()._gather_reload_tools(items)
 
         _install_shelf = i_tool.PITool(
             name='InstallShelf',

@@ -10,7 +10,7 @@ from ..u_misc import single
 from . import uc_clip, uc_ffmpeg
 
 _LOGGER = logging.getLogger(__name__)
-_VIDEO_FMTS = ['mov', 'mp4', 'avi', 'cine']
+VIDEO_EXTNS = ['mov', 'mp4', 'avi', 'cine']
 
 
 class Video(path.MetadataFile, uc_clip.Clip):
@@ -22,12 +22,12 @@ class Video(path.MetadataFile, uc_clip.Clip):
         Args:
             file_ (str): path to file
         """
-        super(Video, self).__init__(file_)
+        super().__init__(file_)
 
         # Check format
-        if self.extn and self.extn.lower() not in _VIDEO_FMTS:
+        if self.extn and self.extn.lower() not in VIDEO_EXTNS:
             _LOGGER.debug('BAD VIDEO FILE %s', self.path)
-            raise ValueError("Bad extension {}".format(self.extn))
+            raise ValueError(f"Bad extension {self.extn}")
 
     def read_metadata(self):
         """Read metadata for this video.
@@ -107,7 +107,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
             'Video:' in _line], catch=True)
         _LOGGER.debug(' - STREAM %s', _stream)
         if not _stream:
-            raise RuntimeError('Invalid video {}'.format(self.path))
+            raise RuntimeError(f'Invalid video {self.path}')
         _fps_token = single([
             _token for _token in _stream.split(', ')
             if _token.endswith(' fps')], catch=True)
@@ -193,7 +193,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
             'Video:' in _line], catch=True)
         _LOGGER.debug(' - STREAM %s', _stream)
         if not _stream:
-            raise RuntimeError('Invalid video {}'.format(self.path))
+            raise RuntimeError(f'Invalid video {self.path}')
         _res_token = single([
             _token for _token in re.split('[ ,]', _stream)
             if _token.count('x') == 1 and

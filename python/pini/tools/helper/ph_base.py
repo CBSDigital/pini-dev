@@ -12,7 +12,8 @@ from pini.dcc import pipe_ref
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import (
-    File, wrap_fn, chain_fns, copied_path, get_user, strftime, Video, Seq)
+    File, wrap_fn, chain_fns, copied_path, get_user, strftime, Video, Seq,
+    VIDEO_EXTNS)
 
 from .elem import CLWorkTab, CLExportTab, CLSceneTab
 from .ph_utils import LOOKDEV_BG_ICON, obt_recent_work, obt_pixmap
@@ -320,7 +321,7 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         """
         _delete_callback = delete_callback or self.ui.SOutputs.redraw
 
-        if isinstance(output, Video):
+        if isinstance(output, Video) or output.extn in VIDEO_EXTNS:
             menu.add_video_actions(
                 output, delete_callback=_delete_callback, delete=delete)
         elif isinstance(output, Seq):
