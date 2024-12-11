@@ -23,9 +23,9 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Args:
             node (str): anim curve node name
         """
-        super(CAnimCurve, self).__init__(node)
-        _mobj = to_mobject(node)
-        oma.MFnAnimCurve.__init__(self, _mobj)
+        super().__init__(node)
+        _m_obj = to_mobject(node)
+        oma.MFnAnimCurve.__init__(self, _m_obj)
 
     @property
     def input(self):
@@ -190,6 +190,14 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             (tuple): start/end frames
         """
         return self.t_start(class_=class_), self.t_end(class_=class_)
+
+    def t_frames(self):
+        """Get list of frames in this curve.
+
+        Returns:
+            (float list): frames
+        """
+        return [_frame for _frame, _ in self.get_ktvs()]
 
 
 def find_anim():

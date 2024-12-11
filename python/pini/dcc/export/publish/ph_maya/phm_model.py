@@ -6,6 +6,7 @@ from maya import cmds
 
 from pini import pipe, qt
 from maya_pini import open_maya as pom, m_pipe
+from maya_pini.utils import to_long
 
 from . import phm_basic
 
@@ -30,7 +31,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
-        super(CMayaModelPublish, self).build_ui(
+        super().build_ui(
             parent=parent, layout=layout, add_footer=False)
 
         self.ui.FreezeTfms = self.add_checkbox_elem(
@@ -67,8 +68,9 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _work = work or pipe.cur_work()
         if not _work.job.find_templates('publish'):
             qt.notify(
-                'No publish template found in this job:\n\n{}\n\n'
-                'Unable to publish.'.format(_work.job.path),
+                f'No publish template found in this job:'
+                f'\n\n{_work.job.path}\n\n'
+                f'Unable to publish.',
                 title='Warning', parent=self.parent)
             return None
 
@@ -76,7 +78,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             work=work, force=force, sanity_check_=sanity_check_, task='model')
 
         # Execute publish
-        _outs = super(CMayaModelPublish, self).publish(
+        _outs = super().publish(
             work=work, force=force, revert=False, metadata=_data,
             export_abc=export_abc, export_fbx=export_fbx,
             references=references, version_up=False)
@@ -93,7 +95,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         Args:
             references (str): how to handle references (eg. Remove)
         """
-        super(CMayaModelPublish, self)._clean_scene(references=references)
+        super()._clean_scene(references=references)
 
         _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
         _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True
@@ -118,13 +120,13 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
 
         _tfms = m_pipe.read_cache_set(mode='transforms')
         _LOGGER.info(' - TFMS %s', _tfms)
-        for _tfm in _tfms:
+        for _tfm in sorted(_tfms, key=to_long, reverse=True):
             if not _tfm.exists():
                 continue
             if delete_history:
                 _tfm.delete_history()
             if freeze_tfms:
-                _tfm.freeze_tfms()
+                _tfm.freeze_tfms(force=True)
 
         if setup_pref:
             _geos = pom.set_to_geos('cache_SET')

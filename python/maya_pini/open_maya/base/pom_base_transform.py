@@ -234,14 +234,21 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             _LOGGER.debug(' - APPLYING FIX')
             self.shp.rename(_name)
 
-    def freeze_tfms(self, translate=True, rotate=True, scale=True):
+    def freeze_tfms(
+            self, translate=True, rotate=True, scale=True, force=False):
         """Freeze transforms on this node.
 
         Args:
             translate (bool): freeze translation
             rotate (bool): freeze rotation
             scale (bool): freeze scale
+            force (bool): break connections before freeze
         """
+        _LOGGER.debug('FREEZE TFMS %s', self)
+        if force:
+            for _plug in self.tfm_plugs:
+                _LOGGER.debug(' - BREAK CONNS %s', _plug)
+                _plug.break_connections()
         cmds.makeIdentity(
             self, apply=True, translate=translate, rotate=rotate, scale=scale,
             normal=False, preserveNormals=True)
@@ -419,8 +426,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             _plug.hide()
             if _plug.get_val() != _plug.get_default():
                 raise RuntimeError(
-                    'Failed to solidify non-default value '
-                    '{}'.format(_plug))
+                    f'Failed to solidify non-default value {_plug}')
 
     def to_tfm_plugs(self, translate=True, rotate=True, scale=True):
         """Find transformation plugs.

@@ -1,3 +1,16 @@
+## [6.20.0] - Wed 2024-12-11 14:04
+### Summary
+ - Pini Helper:
+    - maya model publish bugfix error on freeze transforms with keyed attrs (eehemanmn),
+    - bugfix bad stretching on some elements,
+### Updated
+ - pini.dcc.export.CMayaModelPublish apply force to freeze transforms,
+ - pini.tools.helper fix PySide6/py311 spacing issues,
+ - maya_pini.open_maya.find_node type_ is first arg,
+ - maya_pini.open_maya.CBaseTransform.freeze_tfms added force flag,
+ - maya_pini.open_maya.CAnimCurve.t_frames added,
+
+
 ## [6.19.3] - Tue 2024-12-10 15:26
 ### Summary
  - Pini Helper:

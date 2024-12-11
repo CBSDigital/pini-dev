@@ -232,16 +232,17 @@ def find_connections(
     return _results
 
 
-def find_node(catch=False, **kwargs):
+def find_node(type_=None, catch=False, **kwargs):
     """Find node a node in the current scene.
 
     Args:
+        type_ (str): filter by node type
         catch (bool): no error if failed to match exactly one node
 
     Returns:
         (CNode): matching node
     """
-    return single(find_nodes(**kwargs), catch=catch)
+    return single(find_nodes(type_=type_, **kwargs), catch=catch)
 
 
 def find_nodes(
