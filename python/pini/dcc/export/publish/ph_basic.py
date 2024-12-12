@@ -2,7 +2,7 @@
 
 import logging
 
-from pini import pipe, qt
+from pini import pipe
 from pini.pipe import cache
 from pini.qt import QtWidgets
 from pini.utils import last
@@ -33,7 +33,7 @@ class CBasicPublish(eh_base.CExportHandler):
         Returns:
             (dict): metadata
         """
-        _data = super(CBasicPublish, self).build_metadata(
+        _data = super().build_metadata(
             work=work, sanity_check_=sanity_check_, task=task, force=force)
         _data['publish_type'] = type(self).__name__
         return _data
@@ -133,14 +133,8 @@ class CBasicPublish(eh_base.CExportHandler):
             _thumb = work.image if work.image.exists() else None
             for _last, _out in last(outs):
                 _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
-                try:
-                    shotgrid.create_pub_file(
-                        _out, thumb=_thumb, force=True, update_cache=_last)
-                except shotgrid.MissingPipelineStep:
-                    qt.notify(
-                        'Failed to find pipeline step for output:\n\n{}'.format(
-                            _out.path),
-                        title='Shotgrid Register Failed', icon=shotgrid.ICON)
+                shotgrid.create_pub_file(
+                    _out, thumb=_thumb, force=True, update_cache=_last)
 
         # Update cache
         _LOGGER.info(' - UPDATING CACHE')

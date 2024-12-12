@@ -41,7 +41,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
-        super(CMayaLookdevPublish, self).build_ui(
+        super().build_ui(
             parent=parent, layout=layout, add_footer=False)
 
         self.add_separator_elem()
@@ -95,7 +95,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         Returns:
             (dict): metadata
         """
-        _data = super(CMayaLookdevPublish, self).build_metadata(
+        _data = super().build_metadata(
             work=work, sanity_check_=sanity_check_, task=task, force=force)
         del _data['range']
         if self.shd_yml:

@@ -46,7 +46,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
     def publish(
             self, work=None, force=False, revert=True, metadata=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None):
+            references=None, version_up=None, progress=None):
         """Execute this publish.
 
         Args:
@@ -59,6 +59,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             export_fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
             version_up (bool): whether to version up on publish
+            progress (ProgressDialog): override progress dialog
 
         Returns:
             (CPOutput): publish file
@@ -76,16 +77,20 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
 
         _data = metadata or self.build_metadata(
             work=work, force=force, sanity_check_=sanity_check_, task='model')
+        _progress = progress or qt.progress_dialog(
+            'Publishing model', col='CornflowerBlue', stack_key='Publish')
 
         # Execute publish
         _outs = super().publish(
             work=work, force=force, revert=False, metadata=_data,
             export_abc=export_abc, export_fbx=export_fbx,
-            references=references, version_up=False)
+            references=references, version_up=False, progress=_progress)
+        _progress.set_pc(90)
 
         if revert:
             _work.load(force=True)
             self._apply_version_up(version_up=version_up)
+        _progress.close()
 
         return _outs
 

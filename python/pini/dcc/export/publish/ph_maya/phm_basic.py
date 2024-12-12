@@ -67,6 +67,8 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             val=True, name='RemoveSets', label='Remove unused sets')
         self.ui.RemoveDLayers = self.add_checkbox_elem(
             val=True, name='RemoveDLayers', label='Remove display layers')
+        self.ui.RemoveALayers = self.add_checkbox_elem(
+            val=True, name='RemoveALayers', label='Remove anim layers')
         self.add_separator_elem()
 
         self.ui.ExportAbc = self.add_checkbox_elem(
@@ -96,7 +98,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
     def publish(
             self, work=None, force=False, revert=True, metadata=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None):
+            references=None, version_up=None, progress=None):
         """Execute this publish.
 
         Args:
@@ -109,6 +111,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             export_fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
             version_up (bool): whether to version up on publish
+            progress (ProgressDialog): override progress dialog
 
         Returns:
             (CPOutput): publish file
@@ -124,6 +127,8 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         _work = work or pipe.CACHE.cur_work
         _metadata = metadata or self.build_metadata(
             work=_work, force=force, sanity_check_=sanity_check_)
+        _progress = progress or qt.progress_dialog(
+            'Publishing', stack_key='Publish')
         _LOGGER.info(' - OBTAINED METADATA %s', _metadata)
         _pub = _work.to_output('publish', output_type=None, extn='ma')
         _LOGGER.info(' - OUTPUT %s', _pub.path)
@@ -132,19 +137,23 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             self.ui.save_settings()
         _pub.delete(wording='replace', force=force)
         _work.save(reason='publish', force=True, update_outputs=False)
+        _progress.set_pc(20)
 
         self._clean_scene(references=references)
+        _progress.set_pc(30)
 
         # Save publish
         dcc.save(_pub)
         _outs = [_pub]
         _pub.set_metadata(_metadata)
+        _progress.set_pc(50)
 
         # Export versionless
         _pub_vl = self.create_versionless(
             work=_work, publish=_pub, metadata=_metadata)
         if _pub_vl:
             _outs.append(_pub_vl)
+        _progress.set_pc(60)
 
         # Export abc
         _export_abc = export_abc
@@ -156,6 +165,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             _abc = _exec_export_abc(work=_work, metadata=_metadata, force=force)
             if _abc:
                 _outs.append(_abc)
+        _progress.set_pc(70)
 
         # Export fbx
         _export_fbx = export_fbx
@@ -165,11 +175,13 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             _fbx = _exec_export_fbx(work=_work, metadata=_metadata, force=force)
             if _fbx:
                 _outs.append(_fbx)
+        _progress.set_pc(75)
 
         if revert:
             _work.load(force=True)
 
         self.post_publish(work=_work, outs=_outs, version_up=version_up)
+        _progress.set_pc(80 if progress else 100)
 
         return _outs
 
@@ -185,28 +197,10 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             self.ui.RemoveSets.isChecked() if self.ui_is_active() else True)
         _remove_dlayers = (
             self.ui.RemoveDLayers.isChecked() if self.ui_is_active() else True)
+        _remove_alayers = (
+            self.ui.RemoveALayers.isChecked() if self.ui_is_active() else True)
 
-        # Apply reference option
-        _refs = references
-        if _refs is None and self.ui:
-            _refs = self.ui.References.currentText()
-        if _refs is None:
-            _refs = 'Remove'
-        _LOGGER.info(' - REFS OPT %s', _refs)
-        if _refs == 'Remove':
-            for _ref in ref.find_refs():
-                _ref.delete(force=True, delete_foster_parent=True)
-        elif _refs == 'Leave intact':
-            pass
-        elif _refs == 'Import into root namespace':
-            for _ref in ref.find_refs():
-                _LOGGER.info(' - IMPORT REF %s', _ref)
-                _ns = _ref.namespace  # Need to read before import
-                _ref.import_()
-                cmds.namespace(moveNamespace=(_ns, ':'), force=True)
-                del_namespace(_ns, force=True)
-        else:
-            raise ValueError(_refs)
+        self._apply_refs_opt(references)
 
         # Remove JUNK
         if _remove_junk and cmds.objExists('JUNK'):
@@ -230,6 +224,40 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
             _lyrs = pom.find_nodes(
                 type_='displayLayer', referenced=False, default=False)
             cmds.delete(_lyrs)
+
+        if _remove_alayers:
+            cmds.delete(cmds.ls(type='animLayer'))
+
+    def _apply_refs_opt(self, references):
+        """Apply references option.
+
+        Args:
+            references (str): how to handle references (eg. Remove)
+        """
+
+        # Determine references option
+        _refs = references
+        if _refs is None and self.ui:
+            _refs = self.ui.References.currentText()
+        if _refs is None:
+            _refs = 'Remove'
+        _LOGGER.info(' - REFS OPT %s', _refs)
+
+        # Apply reference option
+        if _refs == 'Remove':
+            for _ref in ref.find_refs():
+                _ref.delete(force=True, delete_foster_parent=True)
+        elif _refs == 'Leave intact':
+            pass
+        elif _refs == 'Import into root namespace':
+            for _ref in ref.find_refs():
+                _LOGGER.info(' - IMPORT REF %s', _ref)
+                _ns = _ref.namespace  # Need to read before import
+                _ref.import_()
+                cmds.namespace(moveNamespace=(_ns, ':'), force=True)
+                del_namespace(_ns, force=True)
+        else:
+            raise ValueError(_refs)
 
 
 def _exec_export_abc(work, metadata, force=False):

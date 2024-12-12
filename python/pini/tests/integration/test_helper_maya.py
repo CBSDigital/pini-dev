@@ -2,6 +2,8 @@ import logging
 import pprint
 import unittest
 
+from maya import cmds
+
 from pini import dcc, pipe, testing, qt
 from pini.dcc import export
 from pini.tools import helper
@@ -17,6 +19,8 @@ class TestHelper(unittest.TestCase):
 
     def test_farm_render_handler(self):
 
+        if cmds.objExists('blah'):
+            cmds.delete('blah')
         _farm_rh = dcc.find_export_handler('render', filter_='farm', catch=True)
         if not _farm_rh:
             return

@@ -40,7 +40,7 @@ def to_output(
     Returns:
         (CPOutput|CPOutputSeq): output or output seq
     """
-    _LOGGER.log(9, 'TO OUTPUT %s', path)
+    _LOGGER.debug('TO OUTPUT %s', path)
     _kwargs = locals()
     from pini import pipe
 

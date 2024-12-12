@@ -52,7 +52,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             if self.filename.count('.') < 2:
                 raise ValueError(self.path)
             self.base, self.frame_expr, self.extn = self.filename.rsplit('.', 2)
-            if (
+            if self.frame_expr != '%d' and (
                     not len(self.frame_expr) == 4 or
                     not self.frame_expr.startswith('%0') or
                     not self.frame_expr.endswith('d')):
