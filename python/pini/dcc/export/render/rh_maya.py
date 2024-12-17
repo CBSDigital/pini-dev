@@ -7,7 +7,7 @@ from maya import cmds
 from pini import pipe, farm, qt, icons
 from pini.qt import QtWidgets
 from pini.tools import helper, error, sanity_check
-from pini.utils import TMP_PATH, strftime, Seq, cache_result, wrap_fn
+from pini.utils import strftime, Seq, cache_result, wrap_fn, TMP
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import (
@@ -44,7 +44,7 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
             layout (QLayout): layout to add widgets to
         """
         _LOGGER.debug('BUILD UI')
-        super(CMayaRenderHandler, self).build_ui(parent=parent, layout=layout)
+        super().build_ui(parent=parent, layout=layout)
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
@@ -89,7 +89,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             parent (QWidget): parent widget
             layout (QLayout): layout to add widgets to
         """
-        super(CMayaLocalRender, self).build_ui(parent=parent, layout=layout)
+        super().build_ui(parent=parent, layout=layout)
 
         self.ui.View = self.add_checkbox_elem(
             name='View', val=True,
@@ -117,7 +117,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             render_ (bool): execute render
             force (bool): replace existing without confirmation
         """
-        _data = self.build_metadata()
+        _data = self.build_metadata(force=force)
         _cam = self.ui.Camera.currentText()
         _mov = self.ui.Mov.isChecked()
         _cleanup = self.ui.Cleanup.isChecked()
@@ -128,22 +128,23 @@ class CMayaLocalRender(CMayaRenderHandler):
         if _mov:
             if not _work.find_template('mov', catch=True):
                 qt.notify(
-                    'No mov template found in this job:\n\n{}\n\n'
-                    'Unable to render.'.format(_work.job.path),
+                    f'No mov template found in this job:'
+                    f'\n\n{_work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.parent)
                 return
             _out = _work.to_output(
                 'mov', output_name=_output_name, extn='mp4')
-            _tmp_path = '{}/pini/render/PiniHelper_{}/render.%04d.jpg'.format(
-                TMP_PATH, strftime('%y%m%d_%H%M%S'))
+            _t_stamp = strftime("%y%m%d_%H%M%S")
+            _tmp_path = TMP.to_seq(
+                f'pini/render/PiniHelper_{_t_stamp}/render.%04d.jpg')
             _LOGGER.info('TMP PATH %s', _tmp_path)
             _out_seq = Seq(_tmp_path)
             _out.delete(wording='Replace', force=force)
         else:
             if not _work.find_template('render', catch=True):
                 qt.notify(
-                    'No render template found in this job:\n\n{}\n\n'
-                    'Unable to render.'.format(_work.job.path),
+                    f'No render template found in this job:'
+                    f'\n\n{_work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.parent)
                 return
             _fmt = cmds.getAttr(
@@ -205,8 +206,7 @@ class CMayaFarmRender(CMayaRenderHandler):
     NAME = 'Maya Farm'
     ICON = farm.ICON
 
-    description = 'Renders the current scene to {}.'.format(
-        farm.NAME)
+    description = f'Renders the current scene to {farm.NAME}.'
 
     def __init__(self, priority=60, label_w=80):
         """Constructor.
@@ -216,8 +216,7 @@ class CMayaFarmRender(CMayaRenderHandler):
                 are sorted to top of option lists)
             label_w (int): label width in ui
         """
-        super(CMayaFarmRender, self).__init__(
-            priority=priority, label_w=label_w)
+        super().__init__(priority=priority, label_w=label_w)
 
     def build_ui(self, parent=None, layout=None):
         """Build basic render interface into the given layout.
@@ -227,7 +226,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             layout (QLayout): layout to add widgets to
         """
         _LOGGER.debug('BUILD UI')
-        super(CMayaFarmRender, self).build_ui(parent=parent, layout=layout)
+        super().build_ui(parent=parent, layout=layout)
 
         self.ui.Comment = self.add_lineedit_elem(
             name='Comment', disable_save_settings=True)

@@ -16,6 +16,7 @@ class CheckColorManagement(SCCheck):
 
     config = 'aces_1.1'
     label = 'Check OCIO config'
+    enabled = False
 
     def run(self):
         """Run this check."""

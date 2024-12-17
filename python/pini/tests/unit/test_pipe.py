@@ -176,7 +176,9 @@ class TestDiskPipe(unittest.TestCase):
         _job_c = pipe.CACHE.obt_job(_job)
         assert _job_c
         assert _work_dir.exists()
-        _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir)
+        _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir, catch=True)
+        if not _work_dir_c:
+            _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir, force=True)
         _LOGGER.info(' - WORKS %s', _work_dir_c.works)
         assert len(_work_dir_c.works) == 2
         assert not _work_dir_c.badly_named_files

@@ -196,26 +196,38 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         _LOGGER.debug('JUMP TO %s', path)
 
         # Assign target
-        self.target = _tab = None
+        self.target = _tab = _trg_ety = None
         if not self.target:
             self.target = pipe.to_work(path)
             if self.target:
                 _tab = 'Work'
+                _trg_ety = self.target.entity
         if not self.target:
             _out = pipe.to_output(path, catch=True)
             if _out:
                 _out = pipe.CACHE.obt(_out)
-            self.target = _out
-            if self.target:
+                self.target = _out
                 _tab = 'Scene'
+                if _out.profile == 'shot':
+                    _trg_ety = _out.entity
         if not self.target:
             self.target = pipe.to_entity(path, catch=True)
+            _trg_ety = self.target
         _LOGGER.debug(' - TARGET tab=%s %s', _tab, self.target)
+        if not self.target:
+            return
 
         # Update ui
-        if _tab:
-            self.ui.MainPane.select_tab(_tab)
+
         self.ui.Job.redraw()
+        _LOGGER.debug(' - TRG ETY %s', _trg_ety)
+        if _trg_ety:
+            self.ui.Profile.select_text(_trg_ety.profile+'s', catch=False)
+            self.ui.EntityType.select_text(_trg_ety.entity_type)
+            self.ui.Entity.select_text(_trg_ety.name)
+        if _tab:
+            _LOGGER.debug(' - SELECT PANE  %s', _tab)
+            self.ui.MainPane.select_tab(_tab, emit=True)
 
         self.target = None
 

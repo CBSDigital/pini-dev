@@ -506,7 +506,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -1040,13 +1040,16 @@
                    <property name="text">
                     <string>Range  </string>
                    </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QSpinBox" name="ECacheStart">
                    <property name="minimumSize">
                     <size>
-                     <width>40</width>
+                     <width>60</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1095,7 +1098,7 @@
                   <widget class="QSpinBox" name="ECacheEnd">
                    <property name="minimumSize">
                     <size>
-                     <width>40</width>
+                     <width>60</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -2303,10 +2306,13 @@ Range: 1-10</string>
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="0,1">
+              <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,0">
                <property name="spacing">
                 <number>2</number>
                </property>
+               <item>
+                <widget class="CComboBox" name="SViewer"/>
+               </item>
                <item>
                 <widget class="QPushButton" name="SView">
                  <property name="sizePolicy">
@@ -2341,9 +2347,6 @@ Range: 1-10</string>
                   <bool>true</bool>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <widget class="CComboBox" name="SViewer"/>
                </item>
               </layout>
              </item>
@@ -3087,7 +3090,7 @@ Range: 1-10</string>
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../../../../../pini-icons/icons/android_12l/icon.3257.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3257.png</iconset>
+             <normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -3149,7 +3152,7 @@ Range: 1-10</string>
            </property>
            <property name="icon">
             <iconset>
-             <normaloff>../../../../../pini-icons/icons/android_12l/icon.3257.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3257.png</iconset>
+             <normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</iconset>
            </property>
            <property name="iconSize">
             <size>

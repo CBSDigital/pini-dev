@@ -390,11 +390,7 @@ class CLSceneTab:
                 helper=self, output=_out, list_view=self.ui.SOutputs,
                 highlight=_out in _scene_outs)
             _items.append(_item)
-        self.ui.SOutputs.set_items(_items, select=_select)
-
-        # Update dependent elements
-        self.ui.SOutputInfo.redraw()
-        self.ui.SViewer.redraw()
+        self.ui.SOutputs.set_items(_items, select=_select, emit=True)
 
     def _redraw__SViewer(self):
 
@@ -403,10 +399,14 @@ class CLSceneTab:
         _plays_seqs = None
         if isinstance(_out, (clip.Seq, clip.Video)):
             _enabled = True
-            _plays_seqs = isinstance(_out, clip.Seq)
+        if isinstance(_out, clip.Seq):
+            _plays_seqs = True
+        _LOGGER.debug(
+            'REDRAW SViewer en=%d seq=%s %s', _enabled, _plays_seqs, _out)
         _viewer = clip.find_viewer()
         _viewers = clip.find_viewers(plays_seqs=_plays_seqs)
         _enabled = _enabled and bool(_viewers)
+        _LOGGER.debug(' - VIEWERS %s', _viewers)
 
         self.ui.SViewer.set_items(
             labels=[_viewer.NAME for _viewer in _viewers],
@@ -557,11 +557,11 @@ class CLSceneTab:
 
         self.settings.save_widget(self.ui.SOutputsPane)
 
-        _tab = self.ui.SOutputsPane.current_tab_text()
+        _tab = self.ui.SOutputsPane.currentWidget()
         self.all_outs = self._read_all_outs()
 
-        _viewer = _tab == 'Render'
-        _maya_cache = dcc.NAME == 'maya' and _tab == 'Cache'
+        _viewer = _tab is self.ui.SMediaTab
+        _maya_cache = dcc.NAME == 'maya' and _tab is self.ui.SEntityTab
         for _tgl, _elems in [
                 (_maya_cache, [
                     self.ui.SLookdev, self.ui.SLookdevSpacer,
@@ -593,7 +593,7 @@ class CLSceneTab:
     def _callback__SOutputs(self):
         self.ui.SAdd.redraw()
         self.ui.SOutputInfo.redraw()
-        if self.ui.SOutputsPane.current_tab_text() == 'Render':
+        if self.ui.SOutputsPane.currentWidget() is self.ui.SMediaTab:
             self.ui.SViewer.redraw()
 
     def _callback__SOutputsFilter(self):

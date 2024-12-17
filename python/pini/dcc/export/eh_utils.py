@@ -2,14 +2,14 @@
 
 import time
 
-from pini import pipe, dcc
+from pini import pipe, dcc, qt
 from pini.utils import get_user
 
 
 def build_metadata(
         handler, action=None, work=None, sanity_check_=False, checks_data=None,
         range_=None, notes=None, task=None, src=None, content_type=None,
-        src_ref=None, force=False):
+        src_ref=None, require_notes=False, force=False):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -25,6 +25,7 @@ def build_metadata(
         src (str): path to source file
         content_type (str): apply content type data (eg. ShadersMa/VrmeshMa)
         src_ref (str): path to source reference (eg. rig path)
+        require_notes (bool): request notes if none are provided
         force (bool): force completion without any confirmations
 
     Returns:
@@ -55,10 +56,16 @@ def build_metadata(
     _data['dcc_version'] = dcc.to_version()
     _data['pini'] = release.cur_ver().to_str()
     _data['submitted'] = False
-    if notes:
-        _data['notes'] = notes
     if content_type:
         _data['content_type'] = content_type
+
+    # Apply notes
+    _notes = notes
+    if not _notes and require_notes and not force:
+        _notes = qt.input_dialog(
+            'Please enter notes for this export:', title='Notes')
+    if _notes:
+        _data['notes'] = _notes
 
     # Add sanity checks data
     if checks_data:

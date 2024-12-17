@@ -30,7 +30,7 @@ class CBoundingBox(om.MBoundingBox):
             (CPoint): max
         """
         from maya_pini import open_maya as pom
-        _max = super(CBoundingBox, self).max
+        _max = super().max
         return pom.CPoint(_max)
 
     @property
@@ -41,7 +41,7 @@ class CBoundingBox(om.MBoundingBox):
             (CPoint): min
         """
         from maya_pini import open_maya as pom
-        _min = super(CBoundingBox, self).min
+        _min = super().min
         return pom.CPoint(_min)
 
     @property
@@ -66,6 +66,9 @@ class CBoundingBox(om.MBoundingBox):
         self.min.apply_to(_cube)
         _cube.scale.set_val(self.size)
         return _cube
+
+    def __repr__(self):
+        return f'<{type(self).__name__}'
 
 
 def to_bbox(obj):

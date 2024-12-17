@@ -1,8 +1,37 @@
+## [6.22.0] - Tue 2024-12-17 15:59
+### Summary
+ - Pini Helper:
+    - publish pass notes to work file if none already set (eehemann),
+    - publish requires notes,
+ - Sanity Check:
+    - fps check working if fps set in shotgrid (nhoyt),
+    - disabled colour management check in nuke,
+### Updated
+ - pini.utils.Clip.view bugfix djv,
+ - pini.utils.Res added optional name attr,
+ - pini.dcc.export.CBaseExport.build_metadata added require_notes flag,
+ - pini.dcc.export.CBasicPublish.post_publish apply out notes to work if none set,
+ - pini.dcc.export.CMayaLocalRender.render bugfix not passing force to build_metadata,
+ - pini.pipe.install_read_job_res_callback added,
+ - pini.pipe.CPJobBase build settings apply res if callback set,
+ - pini.pipe.CPJobShotgrid build settings apply fps from sg_proj,
+ - pini.tools.pyui bugfix error ib saved combobbox setting not in opts,
+ - pini.tools.sanity_check.CheckColorManagement (nuke) disable by default,
+ - pini.tools.helper bugfix not showing play button for media,
+ - pini.tools.helper bugfix missing media players,
+ - pini.tools.helper allow default tag override via env,
+ - maya_pini.open_maya.add_anim_off added reset arg,
+ - maya_pini.open_maya.CMDS sets/listSets use node casting,
+ - maya_pini.open_maya.CAnimCurve.disconnect added,
+ - maya_pini.open_maya.CAnimCurve deprecated get_ktvs -> to_ktvs,
+ - maya_pini.open_maya.CAnimCurve.v_offset added,
+ - maya_pini.open_maya.CSkeleton.zero added break_conns arg,
+
+
 ## [6.21.0] - Thu 2024-12-12 10:34
 ### Summary
  - Pini Helper:
-    - maya model publish bugfix error on freeze transforms with keyed attrs (eehemanmn),
-    - bugfix bad stretching on some elements,
+    - maya model/rig publish added option to remove anim layers (mkim),
 ### Updated
  - pini.utils.Seq allow %d format,,
  - pini.dcc.CMayaBasicPublish added progress bar,

@@ -156,10 +156,13 @@ class TestDCC(unittest.TestCase):
         _LOGGER.info(' - CUR WORK OUTS %s', _work_c.find_outputs())
         if _work_c.outputs:
             _work_c.find_outputs(force=True)
+        assert pipe.CACHE.cur_job is _ety_c.job
         _LOGGER.info(' - WORK C OUTS %s', _work_c.find_outputs())
         assert not _work_c.find_outputs()
         assert not _work_c.outputs
         _outs = _handler.publish(force=True, version_up=False)
+        _ety_c = pipe.CACHE.obt(_ety_c)
+        assert pipe.CACHE.cur_job is _ety_c.job
         _LOGGER.info(' - OUTS %s', _outs)
         _out = single([_out for _out in _outs if _out.extn == 'ma'])
         _LOGGER.info(' - OUT %s', _outs)
@@ -180,20 +183,35 @@ class TestDCC(unittest.TestCase):
         assert _out in _work_c.outputs
 
         # Version up
+        print('\nTEST VERSION UP')
+        assert pipe.CACHE.cur_job is _ety_c.job
         _progress.set_pc(40)
         _next = pipe.version_up()
+        _ety_c = pipe.CACHE.obt(_ety_c)
+        assert pipe.CACHE.cur_job is _ety_c.job
         assert isinstance(_next, pipe.CPWork)
         assert not isinstance(_next, cache.CCPWork)
         assert pipe.CACHE.cur_work
         assert pipe.CACHE.cur_work.ver_n == 2
         _work_c = pipe.CACHE.obt_work(_next)
+        _LOGGER.info(' - JOB %s %s', pipe.CACHE.cur_job, _ety_c.job)
+        assert pipe.CACHE.cur_job is _ety_c.job
 
         # Test publish with PiniHelper
+        print('\nTEST PUBLISH')
         _progress.set_pc(50)
-        _helper = helper.obt_helper()
+        _LOGGER.info(' - LAUNCH HELPER')
+        _helper = helper.obt_helper(reset_cache=False)
         _helper.jump_to(_work_c)
+        _LOGGER.info(' - JOB %s %s', _helper.job, pipe.CACHE.cur_job)
+        assert pipe.CACHE.cur_job is _ety_c.job
+        assert pipe.CACHE.cur_job is _helper.job
+        assert _helper.job == pipe.CACHE.cur_job
+        assert _helper.job is pipe.CACHE.cur_job
         assert _helper.work.exists()
         assert _helper.work == pipe.cur_work()
+        _LOGGER.info(' - ETY %s %s', _helper.entity, pipe.CACHE.cur_entity)
+        assert _helper.entity == pipe.CACHE.cur_entity
         assert _helper.entity is pipe.CACHE.cur_entity
         assert _helper.work_dir is pipe.CACHE.cur_work_dir
         assert _helper.work is pipe.CACHE.cur_work

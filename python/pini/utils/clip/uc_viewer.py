@@ -19,7 +19,7 @@ from ..u_misc import single, system
 _LOGGER = logging.getLogger(__name__)
 
 
-class _Viewer(object):
+class _Viewer:
     """Base class for any viewer."""
 
     NAME = None
@@ -48,7 +48,7 @@ class _Viewer(object):
         raise NotImplementedError
 
     def __repr__(self):
-        return '<Viewer:{}>'.format(self.NAME)
+        return f'<Viewer:{self.NAME}>'
 
 
 class _DjvView(_Viewer):
@@ -91,7 +91,7 @@ class _DJV(_Viewer):
 
     NAME = 'djv'
 
-    PLAYS_AUDIO = False
+    PLAYS_AUDIO = True
 
     def view(self, clip_, fps=None):
         """View the given clip in djv_view.
@@ -109,7 +109,7 @@ class _DJV(_Viewer):
             _path = _file.path
         _cmds = [self.exe.path, _path]
         _LOGGER.info('VIEW CLIP %s', ' '.join(_cmds))
-        subprocess.Popen(_cmds, env={}, shell=True)
+        system(_cmds, result=False)
 
 
 class _MPlay(_Viewer):

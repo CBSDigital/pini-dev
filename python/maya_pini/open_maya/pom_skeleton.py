@@ -23,7 +23,7 @@ if _NAME_MAPPINGS_YML:
     _NAME_MAPPINGS_YML = File(_NAME_MAPPINGS_YML)
 
 
-class CSkeleton(object):  # pylint: disable=too-many-public-methods
+class CSkeleton:  # pylint: disable=too-many-public-methods
     """Represents a skeleton consisting of a number of joints."""
 
     def __init__(self, root):
@@ -160,8 +160,8 @@ class CSkeleton(object):  # pylint: disable=too-many-public-methods
                 _LOGGER.debug('   - TARGET %s', _src_jnt)
                 if not _src_jnt:
                     raise RuntimeError(
-                        'Target skeleton {} is missing joint {}'.format(
-                            skel, _trg_jnt.clean_name))
+                        f'Target skeleton {skel} is missing joint '
+                        f'{_trg_jnt.clean_name}')
                 _to_connect.append((_src_jnt, _trg_jnt, _cons_fn, _attr))
 
         # Build connections
@@ -407,13 +407,19 @@ class CSkeleton(object):  # pylint: disable=too-many-public-methods
         """Show this skelton via its root joint."""
         self.root.unhide()
 
-    def zero(self):
-        """Zero out this skeleton."""
+    def zero(self, break_conns=False):
+        """Zero out this skeleton.
+
+        Args:
+            break_conns (bool): break connections
+        """
         for _jnt in self.joints:
             for _plug in [_jnt.rx, _jnt.ry, _jnt.rz]:
                 if _plug.is_locked():
                     continue
                 _plug.set_val(0)
+                if break_conns:
+                    _plug.break_connections()
 
     def __repr__(self):
         return basic_repr(self, str(self.root), separator='|')
@@ -451,7 +457,7 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
     if len(_ns_filter_matches) == 1:
         return single(_ns_filter_matches)
 
-    raise ValueError('Failed to find skeleton {}'.format(match or namespace))
+    raise ValueError(f'Failed to find skeleton {match or namespace}')
 
 
 def find_skeletons(namespace=EMPTY, filter_=None, referenced=None):

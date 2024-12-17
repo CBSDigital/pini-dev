@@ -347,7 +347,8 @@ class CExportHandler:
         _LOGGER.debug('NOTES %s', _notes)
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,
-            force=force, handler=self.NAME, task=task, notes=_notes)
+            force=force, handler=self.NAME, task=task, notes=_notes,
+            require_notes=True)
         return _data
 
     @cache_result

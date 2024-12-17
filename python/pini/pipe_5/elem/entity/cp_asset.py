@@ -67,8 +67,7 @@ class CPAsset(cp_ety.CPEntity):
         self.type_ = self.asset_type
         self.entity_type = self.asset_type
 
-        self.label = '{}/{}.{}'.format(
-            self.job.name, self.asset_type, self.name)
+        self.label = f'{self.job.name}/{self.asset_type}.{self.name}'
 
         super().__init__(_path)
 
@@ -102,9 +101,9 @@ class CPAsset(cp_ety.CPEntity):
         # Confirm
         if not force and not self.exists():
             qt.ok_cancel(
-                'Create new asset {} in {}?\n\n{}'.format(
-                    self.name, self.job.name, self.path),
-                icon=icons.find('Plus'), title='Create Asset',
+                f'Create new asset {self.name} in {self.job.name}?'
+                f'\n\n{self.path}',
+                icon=icons.find('Plus'), title='Create asset',
                 parent=parent)
 
         self.mkdir()

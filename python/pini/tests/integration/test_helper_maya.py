@@ -63,14 +63,15 @@ class TestHelper(unittest.TestCase):
         assert _helper.ui.SOutputsPane.tabText(0) == 'Assets'
         assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
 
+        print()
+        print('TEST JUMP TO TEST SHOT '+testing.TEST_SHOT.path)
         _helper.jump_to(testing.TEST_SHOT)
-        assert _helper.ui.SOutputsPane.tabText(1) == 'Shot'
         assert _helper.entity == testing.TEST_SHOT
+        assert _helper.ui.SOutputsPane.tabText(1) == 'Shot'
 
         print()
         print('TEST JUMP TO LOOKDEV')
         _helper.jump_to(_lookdev)
-        # assert _helper.entity == testing.TEST_SHOT
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Assets'
         assert _helper.ui.SOutputs.selected_data() == _lookdev
 
@@ -80,7 +81,7 @@ class TestHelper(unittest.TestCase):
         _helper.jump_to(testing.TEST_ASSET)
         assert _helper.entity == testing.TEST_ASSET
         print()
-        print('TEST JUMP TO LOOKDEV FROM ASSET')
+        print('TEST JUMP TO LOOKDEV FROM ASSET '+_lookdev.path)
         _helper.jump_to(_lookdev)
         assert _helper.entity == testing.TEST_ASSET
         assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
@@ -205,6 +206,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     dcc.set_range(1001, 1005)
     _helper.ui.Refresh.click()
     _helper.jump_to(_shot)
+    _helper.ui.MainPane.select_tab('Work')
     assert _helper.entity == _shot
     assert _helper.entity == testing.TMP_SHOT
     _work_dir = _shot.find_work_dir('anim', dcc_=dcc.NAME, catch=True)

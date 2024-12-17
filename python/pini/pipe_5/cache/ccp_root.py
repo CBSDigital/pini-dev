@@ -100,7 +100,8 @@ class CCPRoot(elem.CPRoot):
         _work_dir = elem.cur_work_dir(entity=self.cur_entity)
         if not _work_dir:
             return None
-        return self.obt_work_dir(_work_dir, catch=True)
+        _work_dir_c = self.obt_work_dir(_work_dir, catch=True)
+        return _work_dir_c
 
     @property
     def cur_work(self):
@@ -115,7 +116,7 @@ class CCPRoot(elem.CPRoot):
             _LOGGER.debug(' - NO CUR WORK')
             return None
         _work_c = self.obt_work(_work, catch=True)
-        _LOGGER.debug(' - CUR WORK %s', _work_c)
+        _LOGGER.debug(' - CUR WORK C %s', _work_c)
         return _work_c
 
     @property
@@ -394,6 +395,7 @@ class CCPRoot(elem.CPRoot):
         """
         from .. import cache
         _ety = self.obt_entity(work_dir.entity)
+        _LOGGER.debug(' - ETY %s', _ety)
         assert isinstance(_ety, cache.CCPEntity)
         return single([
             _work_dir for _work_dir in _ety.find_work_dirs(force=force)

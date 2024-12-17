@@ -83,6 +83,18 @@ class TestHelper(unittest.TestCase):
         testing.enable_file_system(True)
         _helper.ui.MainPane.select_tab('Scene')
 
+    def test_jump_to(self):
+        """Test jump to."""
+        _helper = helper.obt_helper()
+        _path = testing.find_test_lookdev().path
+        _ety = pipe.to_entity(_path)
+        _helper.jump_to(_ety)
+        assert _helper.entity == _ety
+        print()
+        _out = pipe.to_output(_path)
+        _helper.jump_to(_out)
+        assert _helper.entity == _ety
+
     def test_save_new_tag(self):
 
         _LOGGER.info('TEST SAVE NEW TAG')

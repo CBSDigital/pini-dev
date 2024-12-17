@@ -8,7 +8,7 @@ import os
 
 from pini import dcc, icons
 from pini.utils import (
-    Dir, abs_path, single, norm_path, merge_dicts, to_str,
+    Dir, abs_path, single, norm_path, merge_dicts, to_str, Res,
     apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result,
     is_abs)
 
@@ -18,6 +18,7 @@ from ...cp_utils import map_path
 from .. import root
 
 _LOGGER = logging.getLogger(__name__)
+_READ_JOB_RES_CALLBACK = None
 
 _DEFAULT_CFG_NAME = "Quirinus"
 _DEFAULT_CFG = {
@@ -801,5 +802,37 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         _LOGGER.info('FOUND EMPTY FILE %s', _file.path)
         return _file
 
+    @cache_on_obj
+    def _read_this_settings(self, force=False):
+        """Read settings at this level.
+
+        NOTE: these are cached on first read.
+
+        Args:
+            force (bool): reread from disk
+
+        Returns:
+            (dict): setting at this level
+        """
+        _settings = super()._read_this_settings(force=True)
+        if _READ_JOB_RES_CALLBACK:
+            _res = _READ_JOB_RES_CALLBACK(job=self)
+            assert isinstance(_res, Res)
+            _settings['res'] = _res.to_tuple()
+        return _settings
+
     def __lt__(self, other):
         return self.name.lower() < other.name.lower()
+
+
+def install_read_job_res_callback(func):
+    """Install callback for reading job resolution.
+
+    This allows pipeline-specific job resolutions to be used (eg. using
+    custom shotgrid entities).
+
+    Args:
+        func (fn): function to read job resolution
+    """
+    global _READ_JOB_RES_CALLBACK
+    _READ_JOB_RES_CALLBACK = func

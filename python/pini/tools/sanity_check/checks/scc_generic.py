@@ -4,7 +4,7 @@ import time
 import logging
 
 from pini import dcc, pipe
-from pini.utils import wrap_fn, chain_fns
+from pini.utils import wrap_fn, chain_fns, Res
 
 from ..core import SCCheck, SCPipeCheck
 
@@ -26,12 +26,10 @@ class CheckRefsLatest(SCPipeCheck):
             if _ref.is_latest():
                 continue
             _latest = _ref.output.find_latest()
+            _out_s = f'v{_latest.ver_n:03d}' if _latest.ver_n else 'versionless'
             _msg = (
-                'Reference {} (v{:03d}) is not using latest output '
-                '({})'.format(
-                    _ref.namespace, _ref.output.ver_n,
-                    'v{:03d}'.format(_latest.ver_n) if _latest.ver_n
-                    else 'versionless'))
+                f'Reference {_ref.namespace} (v{_ref.output.ver_n:03d}) is '
+                f'not using latest output ({_out_s})')
             _fix = wrap_fn(self.update_ref, ref_=_ref, path=_latest)
             self.add_fail(_msg, fix=_fix, node=_ref.node)
 
@@ -75,9 +73,8 @@ class CheckAbcFpsMatchesScene(SCPipeCheck):
                 continue
             if _abc_fps != _fps:
                 self.add_fail(
-                    'Frame rate of abc {} ({:.01f}) does not match scene '
-                    'frame rate ({:.01f})'.format(
-                        _abc.namespace, _abc_fps, _fps))
+                    f'Frame rate of abc {_abc.namespace} ({_abc_fps:.01f}) '
+                    f'does not match scene frame rate ({_fps:.01f})')
 
 
 class CheckRenderRes(SCCheck):
@@ -91,19 +88,19 @@ class CheckRenderRes(SCCheck):
         if not _ety:
             self.write_log('No current entity found')
             return
-        _cfg_res = _ety.settings.get('res')
-        if not _cfg_res:
+        _setting_res = _ety.settings.get('res')
+        if not _setting_res:
             self.write_log('No res found in '+_ety.name)
             return
-        _cfg_res = tuple(_cfg_res)
+        _setting_res = tuple(_setting_res)
+        self.write_log('Settings res %s', _setting_res)
         _cur_res = dcc.get_res()
-        if _cfg_res != _cur_res:
-            _fix = wrap_fn(dcc.set_res, _cfg_res[0], _cfg_res[1])
+        self.write_log('Cur res %s', _cur_res)
+        if _setting_res != _cur_res:
+            _fix = wrap_fn(dcc.set_res, _setting_res[0], _setting_res[1])
             _msg = (
-                "Current resolution {:d}x{:d} doesn't match {} "
-                "resolution {:d}x{:d}".format(
-                    _cur_res[0], _cur_res[1], _ety.name, _cfg_res[0],
-                    _cfg_res[1]))
+                f"Current resolution {Res(*_cur_res)} doesn't match "
+                f"{_ety.name} settings resolution {Res(*_setting_res)}")
             self.add_fail(_msg, fix=_fix)
 
 
@@ -120,12 +117,14 @@ class CheckFps(SCCheck):
         if not _cfg_fps:
             self.write_log('No fps found in '+_ety.name)
             return
+        self.write_log('Entity fps %s %s', _cfg_fps, _ety)
         _cur_fps = dcc.get_fps()
+        self.write_log('Cur fps %s', _cur_fps)
         if _cfg_fps != _cur_fps:
             _fix = wrap_fn(dcc.set_fps, _cfg_fps)
             _msg = (
-                "Current fps {:.02f} doesn't match {} "
-                "fps {:.02f}".format(_cur_fps, _ety.name, _cfg_fps))
+                f"Current fps {_cur_fps:.02f} doesn't match {_ety.name} "
+                f"fps {_cfg_fps:.02f}")
             self.add_fail(_msg, fix=_fix)
 
 
@@ -149,10 +148,9 @@ class CheckFrameRange(SCCheck):
         _cur_rng = dcc.t_range(int)
         if _sg_rng != _cur_rng:
             _msg = (
-                'Current frame range ({:d}-{:d}) does not match shotgrid '
-                'range for {} ({:d}-{:d}).'.format(
-                    _cur_rng[0], _cur_rng[1], _ety.name, _sg_rng[0],
-                    _sg_rng[1]))
+                f'Current frame range ({_cur_rng[0]:d}-{_cur_rng[1]:d}) does '
+                f'not match shotgrid range for {_ety.name} '
+                f'({_sg_rng[0]:d}-{_sg_rng[1]:d}).')
             _fix = wrap_fn(dcc.set_range, *_sg_rng)
             _fail = self.add_fail(_msg, fix=_fix)
             _update = wrap_fn(

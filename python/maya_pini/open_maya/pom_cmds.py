@@ -20,7 +20,7 @@ from .pom_utils import cast_node
 _LOGGER = logging.getLogger(__name__)
 
 
-class CmdsMapper(object):
+class CmdsMapper:
     """Maps commands to wrapped maya.cmds functions.
 
     eg. CmdsMapper().camera maps to a function which returns a
@@ -115,7 +115,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
         elif _name == 'listRelatives':
             _result = _clean_list_relatives(_result, **_kwargs)
         elif _name in ('listSets', 'sets'):
-            _result = _clean_list(_result, class_=pom.CNode)
+            _result = _clean_list(_result)
         elif _name == 'ls':
             _result = _clean_ls(_result, **_kwargs)
 
@@ -141,7 +141,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
     return _map_results_func
 
 
-def _clean_list(results, class_):
+def _clean_list(results, class_=None):
     """Generic clean function for list results.
 
     Replaces None result for empty list and casts each item to the
@@ -154,8 +154,14 @@ def _clean_list(results, class_):
     Returns:
         (CNode list): cast results
     """
-    _results = results or []
-    return [class_(_result) for _result in _results]
+    _results = []
+    for _result in results or []:
+        if class_:
+            _result = class_(_result)
+        else:
+            _result = cast_node(_result)
+        _results.append(_result)
+    return _results
 
 
 def _clean_list_connections(results, plugs=False, type=None, **kwargs):  # pylint: disable=redefined-builtin,unused-argument

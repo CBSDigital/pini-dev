@@ -5,7 +5,7 @@ import logging
 from pini import pipe
 from pini.pipe import cache
 from pini.qt import QtWidgets
-from pini.utils import last
+from pini.utils import last, single
 
 from .. import eh_base
 
@@ -148,6 +148,11 @@ class CBasicPublish(eh_base.CExportHandler):
         for _out in outs:
             assert _out in _work_c.outputs
         _LOGGER.info(' - UPDATED CACHE')
+
+        # Apply notes to work
+        _notes = single([_out.metadata['notes'] for _out in outs], catch=True)
+        if _notes and not _work_c.notes:
+            _work_c.set_notes(_notes)
 
         self._apply_version_up(version_up=version_up)
 

@@ -48,8 +48,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.checks = checks or sanity_check.find_checks(
             filter_=filter_, task=self.task, action=action)
 
-        super(SanityCheckUi, self).__init__(
-            ui_file=UI_FILE, show=False)
+        super().__init__(ui_file=UI_FILE, show=False)
 
         # Embed error catcher
         self.error_ui = error.launch_ui(
@@ -173,11 +172,11 @@ class SanityCheckUi(qt.CUiDialog):
         if self.action:
             _msg = 'ignore '
             if _failed:
-                _msg += '{:d} fail{} '.format(len(_failed), plural(_failed))
+                _msg += f'{len(_failed):d} fail{plural(_failed)} '
             if _errored:
                 if _failed:
                     _msg += 'and '
-                _msg += '{:d} error{} '.format(len(_errored), plural(_errored))
+                _msg += f'{len(_errored):d} error{plural(_errored)} '
             _msg = _msg.strip()
             for _fmt, _elem in [
                     ('{action_label} ({msg})', self.ui.Continue),
@@ -266,9 +265,8 @@ class SanityCheckUi(qt.CUiDialog):
         self.ui.Fails.set_items(_items)
         self.ui.FixAll.setEnabled(bool(_fixes))
         self.ui.FailInfo.setText(
-            'Found {:d} fail{} with {:d} fix{}'.format(
-                len(_fails), plural(_fails),
-                _fixes, plural(_fixes, plural_='es')))
+            f'Found {len(_fails):d} fail{plural(_fails)} with '
+            f'{_fixes:d} fix{plural(_fixes, plural_="es")}')
 
     def _redraw__TaskLabel(self):
         _label = 'NONE'
@@ -298,7 +296,7 @@ class SanityCheckUi(qt.CUiDialog):
         _tab = 'Log'
         _error = _fails = False
         if self.check:
-            _msg = 'Selected check: {}'.format(self.check.label)
+            _msg = f'Selected check: {self.check.label}'
             if self.check.status == 'failed':
                 _tab = 'Fails'
                 _fails = True

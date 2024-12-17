@@ -2,7 +2,7 @@
 
 import logging
 
-from pini.utils import passes_filter
+from pini.utils import passes_filter, cache_on_obj
 
 from . import cp_job_base
 
@@ -25,14 +25,6 @@ class CPJobSG(cp_job_base.CPJobBase):
         if not self._sg_proj:
             self._sg_proj = shotgrid.SGC.find_proj(self)
         return self._sg_proj
-
-    def to_prefix(self):
-        """Obtain prefix for this job.
-
-        Returns:
-            (str): job prefix
-        """
-        return self.sg_proj.prefix
 
     def find_assets(self, asset_type=None, filter_=None):
         """Find assets in this job.
@@ -111,14 +103,9 @@ class CPJobSG(cp_job_base.CPJobBase):
         _tmpl = self.find_template('entity_path', profile='asset')
         _tmpl = _tmpl.crop_to_token('asset_type', name='asset_type')
         _names = sorted({_asset.asset_type for _asset in self.sg_proj.assets})
-        # _LOGGER.debug(' - SEQS %s', _names)
         return [
             _tmpl.format(job_path=self.path, asset_type=_name)
             for _name in _names]
-
-        # return [
-        #     _asset for _asset in self._read_assets()
-        #     if _asset.asset_type == asset_type]
 
     def _find_sequence_paths(self):
         """Find paths to all sequences.
@@ -187,3 +174,30 @@ class CPJobSG(cp_job_base.CPJobBase):
         _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
 
         return _shots
+
+    @cache_on_obj
+    def _read_this_settings(self, force=False):
+        """Read settings at this level.
+
+        NOTE: these are cached on first read.
+
+        Args:
+            force (bool): reread from disk
+
+        Returns:
+            (dict): setting at this level
+        """
+        _settings = super()._read_this_settings(force=True)
+        _fps = self.sg_proj.data.get('sg_frame_rate') or None
+        if _fps:
+            _fps = float(_fps)
+        _settings['fps'] = _fps
+        return _settings
+
+    def to_prefix(self):
+        """Obtain prefix for this job.
+
+        Returns:
+            (str): job prefix
+        """
+        return self.sg_proj.prefix

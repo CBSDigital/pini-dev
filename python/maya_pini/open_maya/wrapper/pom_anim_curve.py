@@ -74,6 +74,10 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         _LOGGER.debug('DELETE KEYS %s', self)
         cmds.cutKey(self, time=range_)
 
+    def disconnect(self):
+        """Disconnect this anim curve."""
+        self.target.break_connections()
+
     def fix_name(self):
         """Fix name to match target channel.
 
@@ -94,7 +98,9 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (float/float list): frame/value data list
         """
-        return cmds.getAttr(self.attr['keyTimeValue[:]'])
+        from pini.tools import release
+        release.apply_deprecation('12/12/24', 'Use CAnimCurve.to_ktvs')
+        return self.to_ktvs()
 
     def loop(self, offset=False):
         """Loop this animation curve.
@@ -149,7 +155,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (float): start frame
         """
-        _ktvs = self.get_ktvs()
+        _ktvs = self.to_ktvs()
         _ts = [_t for _t, _ in _ktvs]
         _start = min(_ts)
         if class_ is float or class_ is None:
@@ -169,7 +175,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (float): end frame
         """
-        _ktvs = self.get_ktvs()
+        _ktvs = self.to_ktvs()
         _ts = [_t for _t, _ in _ktvs]
         _end = max(_ts)
         if class_ is float or class_ is None:
@@ -197,7 +203,25 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (float list): frames
         """
-        return [_frame for _frame, _ in self.get_ktvs()]
+        return [_frame for _frame, _ in self.to_ktvs()]
+
+    def to_ktvs(self):
+        """Read keyframe time/value list from this curve.
+
+        Returns:
+            (float/float list): frame/value data list
+        """
+        return cmds.getAttr(self.attr['keyTimeValue[:]'])
+
+    def v_offset(self, offset):
+        """Apply value offset to this animation.
+
+        Args:
+            offset (float): value to apply
+        """
+        cmds.keyframe(
+            self, edit=True, option='over', valueChange=offset,
+            includeUpperBound=True, relative=True)
 
 
 def find_anim():

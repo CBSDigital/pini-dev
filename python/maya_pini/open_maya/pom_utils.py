@@ -13,18 +13,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @restore_sel
-def add_anim_offs(tfm, anim):
+def add_anim_offs(tfm, anim, reset=False):
     """Build animation offset controls.
 
     Args:
         tfm (CTransform): node to apply offset controls on
         anim (CAnimCurve list): animation to offset
+        reset (bool): reset any existing offset settings
     """
     from maya_pini import open_maya as pom
 
     # Create attrs
-    _mult = tfm.add_attr('animMult', 1.0)
-    _offs = tfm.add_attr('animOffset', 0.0)
+    _mult = tfm.add_attr('animMult', 1.0, force=reset)
+    _offs = tfm.add_attr('animOffset', 0.0, force=reset)
     _anim_t = tfm.add_attr('animTime', 0.0)
 
     # Connect nodes

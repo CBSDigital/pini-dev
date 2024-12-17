@@ -129,8 +129,10 @@ def obt_helper(reset_cache=False):
     Returns:
         (PiniHelper): helper instance
     """
+    _LOGGER.debug('OBT HELPER %d', reset_cache)
     from pini.tools import helper
     if not helper.is_active():
+        _LOGGER.debug(' - LAUNCHING HELPER')
         helper.launch(reset_cache=reset_cache)
     return helper.DIALOG
 

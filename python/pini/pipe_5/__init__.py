@@ -25,7 +25,8 @@ from .elem import (
     install_set_work_callback, recent_work, load_recent, to_work,
     CPOutputFile, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
     to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
-    CPOutputBase, cur_output, CPOutputSeqDir, STATUS_ORDER)
+    CPOutputBase, cur_output, CPOutputSeqDir, STATUS_ORDER,
+    install_read_job_res_callback)
 
 from .cp_template import CPTemplate, glob_templates, glob_template
 from .cp_utils import (

@@ -191,7 +191,7 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
                 [str(_choice) for _choice in arg.choices],
                 data=arg.choices, select=arg.default)
             _read_fn = _field.selected_data
-            _set_fn = _field.select_data
+            _set_fn = _to_lazy_combobox_select(_field)
         elif isinstance(arg.default, str) or arg.default is None:
             _field = QtWidgets.QLineEdit()
             if arg.default:
@@ -544,3 +544,19 @@ def _set_btn_col(btn, col):
 
     btn.setAutoFillBackground(True)
     btn.setPalette(_pal)
+
+
+def _to_lazy_combobox_select(field):
+    """Build a lazy combobox select function.
+
+    This selects an item but won't error if the item is not available.
+
+    Args:
+        field (CComboBox): combobox to update
+
+    Returns:
+        (fn): lazy selection function
+    """
+    def _lazy_select(val):
+        field.select_data(val, catch=True)
+    return _lazy_select

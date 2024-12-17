@@ -21,7 +21,7 @@ _STAR = icons.find('Star')
 _WARNING_RED = qt.CColor('Red').whiten(0.45)
 
 
-class CLWorkTab(object):
+class CLWorkTab:
     """Class for grouping together elements of the carb helper Work tab."""
 
     entity = None
@@ -128,10 +128,18 @@ class CLWorkTab(object):
         _LOGGER.debug(' - SELECT TASK %s', _select)
         self.ui.WTasks.set_items(_items, select=_select)
 
+    def _to_default_tag(self):
+        """Obtain default tag for the current job.
+
+        Returns:
+            (str): default tag
+        """
+        return pipe.DEFAULT_TAG or self.job.cfg['tokens']['tag']['default']
+
     def _redraw__WTags(self):
 
-        _default_tag = self.job.cfg['tokens']['tag']['default']
-        _LOGGER.debug('REDRAW TAGS')
+        _default_tag = self._to_default_tag()
+        _LOGGER.debug('REDRAW TAGS default=%s', _default_tag)
 
         _tags, _select, _default_exists = self._build_tags_list()
         _LOGGER.debug(' - TAGS %s select=%s', _tags, _select)
@@ -164,7 +172,7 @@ class CLWorkTab(object):
         """
         _cur_work = pipe.cur_work()
         _ui_tag = self.ui.WTagText.text()
-        _default_tag = self.job.cfg['tokens']['tag']['default']
+        _default_tag = self._to_default_tag()
         _existing_tags = set()
 
         # Build tag list
@@ -234,13 +242,11 @@ class CLWorkTab(object):
             _elem.setVisible(bool(_n_bad_files))
 
         # Update label text
+        _verb = plural(_n_bad_files, singular='is', plural_='are')
         _text = (
-            'Warning - there {} {:d} badly named file{} in this\n'
-            'directory which {} not shown in the versions list'.format(
-                plural(_n_bad_files, singular='is', plural_='are'),
-                _n_bad_files,
-                plural(_n_bad_files),
-                plural(_n_bad_files, singular='is', plural_='are')))
+            f'Warning - there {_verb} {_n_bad_files:d} badly named '
+            f'file{plural(_n_bad_files)} in this\ndirectory which '
+            f'{_verb} not shown in the versions list')
         self.ui.WWorkBadFilesLabel.setText(_text)
         self.ui.WWorkBadFilesLabel.set_col(_WARNING_RED)
 
@@ -334,7 +340,7 @@ class CLWorkTab(object):
         _items = []
         for _work in ph_utils.obt_recent_work():
             _ety = _work.shot or (_work.asset_type+'/'+_work.asset)
-            _uid = '{}/{}/{}'.format(_work.job.name, _ety, _work.task)
+            _uid = f'{_work.job.name}/{_ety}/{_work.task}'
             if _work.tag:
                 _uid += '/'+_work.tag
             if _uid in _items:
@@ -581,7 +587,7 @@ class CLWorkTab(object):
         from pini.tools import helper
 
         _work = self.ui.WWorks.selected_data()
-        menu.add_label('Work: {}'.format(_work.filename))
+        menu.add_label(f'Work: {_work.filename}')
         menu.add_separator()
         menu.add_file_actions(
             _work, delete_callback=self._callback__WWorksRefresh)
@@ -600,12 +606,12 @@ class CLWorkTab(object):
         else:
             _bkps_menu = menu.add_menu('Backups', icon=helper.BKPS_ICON)
             for _bkp in _bkps:
-                _label = '{} - {}'.format(
-                    strftime('%a %d %b %H:%M', _bkp.mtime()), _bkp.reason)
+                _t_stamp = strftime('%a %d %b %H:%M', _bkp.mtime())
+                _label = f'{_t_stamp} - {_bkp.reason}'
                 _rand = str_to_seed(_bkp.reason)
                 _icon = icons.find(_rand.choice(icons.FRUIT_NAMES))
                 _bkp_menu = _bkps_menu.add_menu(_label, icon=_icon)
-                _bkp_menu.add_label('Backup: {}'.format(_bkp.filename))
+                _bkp_menu.add_label(f'Backup: {_bkp.filename}')
                 _bkp_menu.add_separator()
                 _bkp_menu.add_file_actions(_bkp)
 
@@ -649,14 +655,13 @@ class CLWorkTab(object):
 
         # Set label/header
         _icon = None
-        _header = '{}: {}'.format(
-            out.type_.capitalize(), out.filename)
-        _label = '{} - {}'.format(out.basic_type.capitalize(), out.filename)
+        _header = f'{out.type_.capitalize()}: {out.filename}'
+        _label = f'{out.basic_type.capitalize()} - {out.filename}'
         if out.type_ in ('publish', 'publish_seq'):
             _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
-            _label = 'Cache - {} ({})'.format(out.output_name, out.extn)
+            _label = f'Cache - {out.output_name} ({out.extn})'
         elif isinstance(out, pipe.CPOutputSeq):
             _header += ' '+ints_to_str(out.frames)
             _label += ' '+ints_to_str(out.frames)
