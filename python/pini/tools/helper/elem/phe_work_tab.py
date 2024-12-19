@@ -56,7 +56,7 @@ class CLWorkTab:
         Returns:
             (CPWorkDir): work dir (if any)
         """
-        _LOGGER.debug('WORK DIR %s', self.entity)
+        _LOGGER.log(9, 'WORK DIR %s', self.entity)
         if not self.entity:
             return None
 
@@ -104,11 +104,13 @@ class CLWorkTab:
             _work_dirs = self.entity.find_work_dirs(dcc_=dcc.NAME)
             for _work_dir in sorted(_work_dirs):
                 _col = 'Grey'
-                if _work_dir.works:
+                _LOGGER.debug(
+                    ' - ADDING WORK DIR %d %s', _work_dir.has_works(),
+                    _work_dir)
+                if _work_dir.has_works():
                     _col = None
                     if not _task_in_use:
                         _task_in_use = _work_dir.task_label
-
                 _item = qt.CListWidgetItem(
                     _work_dir.task_label, col=_col, data=_work_dir)
                 _items.append(_item)
@@ -119,11 +121,13 @@ class CLWorkTab:
                 if _work_dir:
                     _select = _work_dir.task_label
                     _LOGGER.debug(' - USING TARGET TASK')
-            if not _select:
-                _select = pipe.cur_task(fmt='full')
+            _cur_task = pipe.cur_task(fmt='full')
+            if not _select and _cur_task and not _select:
+                _select = _cur_task
                 _LOGGER.debug(' - USING CURRENT TASK')
-            if not _task_in_use:
+            if not _select and _task_in_use:
                 _select = _task_in_use
+                _LOGGER.debug(' - USING TASK IN USE')
 
         _LOGGER.debug(' - SELECT TASK %s', _select)
         self.ui.WTasks.set_items(_items, select=_select)
@@ -421,8 +425,12 @@ class CLWorkTab:
         self.ui.WWorkPathCopy.setEnabled(bool(_work))
         self.ui.WWorkPathBrowser.setEnabled(bool(_work))
 
-        _loadable = bool(_work and _work is not self.next_work)
+        # Update load button
+        _loadable = bool(_work)
+        _load_text = "Load" if _work is not self.next_work else "New Scene"
         self.ui.WLoad.setEnabled(_loadable)
+        self.ui.WLoad.setText(_load_text)
+
         _saveable = bool(
             _work and _work.user in (None, get_user(), pipe.cur_user()))
         self.ui.WSave.setEnabled(_saveable)

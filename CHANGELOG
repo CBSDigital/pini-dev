@@ -1,3 +1,14 @@
+## [6.23.0] - Thu 2024-12-19 14:56
+### Summary
+ - Pini Helper:
+    - bugfix not selecting tasks in use by default,
+    - load button becomes new scene if next version selected,
+### Updated
+ - pini.pipe.CPWorkDirSG.sg_task added,
+ - pini.tools.helper draw tasks bugfix not applying task in use,
+ - pini.tools.helper enable load button on next ver selected with new scene label,
+
+
 ## [6.22.0] - Tue 2024-12-17 15:59
 ### Summary
  - Pini Helper:

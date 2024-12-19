@@ -113,11 +113,10 @@ def load_scene(
         _LOGGER.info('######### LOAD ERROR END #########')
 
         # Notify
-        _tail = str(_exc).strip().split('\n')[-1]
+        _tail = str(_exc).strip().rsplit('\n', 1)[-1]
         qt.notify(
-            'Maya errored loading this file:\n\n{}\n\n{}\n\n'
-            'See the script editor for more details.'.format(
-                _file.path, _tail),
+            f'Maya errored loading this file:\n\n{_file.path}\n\n{_tail}\n\n'
+            f'See the script editor for more details.',
             title='Load Error', icon=icons.find('Hot Pepper'), verbose=0)
 
     if _revert:
@@ -177,11 +176,10 @@ def load_redshift_proxy(path, name='proxy'):
     # Create proxy node
     cmds.loadPlugin('redshift4maya', quiet=True)
     cmds.select(clear=True)
+    _cmd_path = _path.path.replace('.%04d.', '.####.')
     _cmd = (
-        'redshiftProxyDoCreate("{proxy}", "{shape}", "{path}", '
-        '"{transform}")'.format(
-            path=_path.path.replace('.%04d.', '.####.'),
-            transform=_name, proxy=_pxy_name, shape=_shp_name))
+        f'redshiftProxyDoCreate("{_pxy_name}", "{_shp_name}", '
+        f'"{_cmd_path}", "{_name}")')
     _LOGGER.debug(' - CMD %s', _cmd)
     _pxy, _shp = mel.eval(_cmd)
     _LOGGER.debug(' - PXY %s', _pxy)
@@ -227,13 +225,13 @@ def save_scene(file_=None, selection=False, revert=None, force=False):
         raise RuntimeError('Unable to determine save path')
     _file = File(_file)
     _file.test_dir()
-    _file.delete(wording='Replace', force=force)
+    _file.delete(wording='replace', force=force)
 
     _apply_auto_workspace_update(_file)
 
     # Apply save
     if not force and _file.exists():
-        qt.ok_cancel('Overwrite existing file?\n\n{}'.format(_file.path))
+        qt.ok_cancel(f'Overwrite existing file?\n\n{_file.path}')
     _type = {'ma': 'mayaAscii', 'mb': 'mayaBinary'}[_file.extn]
     cmds.file(rename=_file.path)
     if selection:
@@ -291,7 +289,7 @@ def save_abc(  # pylint: disable=too-many-branches
         _job_arg = ""
         _geos = geo if isinstance(geo, list) else [geo]
         _LOGGER.debug(' - GEOS %s', _geos)
-        _job_arg += "-dataFormat {} ".format(format_)
+        _job_arg += f"-dataFormat {format_} "
         _job_arg += '-eulerFilter '
         if strip_namespaces:
             _job_arg += '-stripNamespaces '
@@ -299,7 +297,7 @@ def save_abc(  # pylint: disable=too-many-branches
             _start, _end = range_
             _start -= 1
             _end += 1
-            _job_arg += '-frameRange {:d} {:d} '.format(_start, _end)
+            _job_arg += f'-frameRange {_start:d} {_end:d} '
         if uv_write:
             _job_arg += '-uvWrite '
         if write_visibility:
@@ -311,14 +309,14 @@ def save_abc(  # pylint: disable=too-many-branches
         if renderable_only:
             _job_arg += '-renderableOnly '
         if step:
-            _job_arg += '-step {:f} '.format(step)
+            _job_arg += f'-step {step:f} '
         for _attr in attrs:
-            _job_arg += '-attr {} '.format(_attr)
+            _job_arg += f'-attr {_attr} '
         for _geo in _geos:
-            _job_arg += "-root {} ".format(_geo)
+            _job_arg += f"-root {_geo} "
             if check_geo:
                 assert cmds.objExists(_geo)
-        _job_arg += "-file '{}'".format(_abc.path)
+        _job_arg += f"-file '{_abc.path}'"
         _job_arg = _job_arg.strip()
     _LOGGER.debug(' - JOB ARG %s', _job_arg)
 
@@ -439,22 +437,22 @@ def save_fbx(
 
     cmds.FBXProperty('Export|AdvOptGrp|UI|ShowWarningsManager', '-v', 0)
 
-    _mel('FBXExportFileVersion -v "{}"'.format(version))
+    _mel(f'FBXExportFileVersion -v "{version}"')
     _mel('FBXExportSmoothingGroups -v true')
     _mel('FBXExportShapes -v true')
     _mel('FBXExportSkins -v true')
     _mel('FBXExportTangents -v true')
     _mel('FBXExportSmoothMesh -v false')
 
-    _mel('FBXExportBakeComplexAnimation -v {}'.format(_bool_to_mel(animation)))
-    _mel('FBXExportConstraints -v {}'.format(_bool_to_mel(constraints)))
+    _mel(f'FBXExportBakeComplexAnimation -v {_bool_to_mel(animation)}')
+    _mel(f'FBXExportConstraints -v {_bool_to_mel(constraints)}')
 
     _range = range_ or dcc.t_range()
-    _mel('FBXExportBakeComplexStart -v {:f}'.format(_range[0]))
-    _mel('FBXExportBakeComplexEnd -v {:f}'.format(_range[1]))
-    _mel('FBXExportBakeComplexStep -v {:f}'.format(step))
+    _mel(f'FBXExportBakeComplexStart -v {_range[0]:f}')
+    _mel(f'FBXExportBakeComplexEnd -v {_range[1]:f}')
+    _mel(f'FBXExportBakeComplexStep -v {step:f}')
 
-    _mel('FBXExport -f "{}" -s'.format(_file.path))
+    _mel(f'FBXExport -f "{_file.path}" -s')
 
     assert _file.exists()
 
@@ -479,11 +477,11 @@ def save_obj(file_, selection=True, materials=True, force=False):
     _file = File(file_)
     _file.delete(force=force)
     _opts = ';'.join([
-        'groups={:d}'.format(True),
-        'ptgroups={:d}'.format(True),
-        'materials={:d}'.format(materials),
-        'smoothing={:d}'.format(True),
-        'normals={:d}'.format(True),
+        'groups=1',
+        'ptgroups=1',
+        f'materials={materials:d}',
+        'smoothing=1',
+        'normals=1',
     ])
 
     # Export obj
@@ -514,13 +512,11 @@ def save_redshift_proxy(path, selection=True, animation=False, force=False):
         _path = File(path)
         _export_path = _path.path
     else:
-        _opts += "startFrame={start:d};endFrame={end:d};frameStep=1".format(
-            start=dcc.t_start(int), end=dcc.t_end(int))
+        _start, _end = dcc.t_range(int)
+        _opts += f"startFrame={_start:d};endFrame={_end:d};frameStep=1"
         _path = Seq(path)
         assert isinstance(_path, Seq)
-        _export_path = '{}/{}.{}'.format(_path.dir, _path.base, _path.extn)
-        _export_path = '{}/{}'.format(_path.dir, _path.base)
-        _export_path = '{}/{}.####.{}'.format(_path.dir, _path.base, _path.extn)
+        _export_path = f'{_path.dir}/{_path.base}.####.{_path.extn}'
     _LOGGER.info(' - EXPORT PATH %s', _export_path)
 
     _path.delete(wording='Replace', force=force)
