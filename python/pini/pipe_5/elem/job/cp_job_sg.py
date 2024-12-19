@@ -1,6 +1,7 @@
 """Tools for managing jobs in a sg-based pipeline."""
 
 import logging
+import os
 
 from pini.utils import passes_filter, cache_on_obj
 
@@ -191,6 +192,8 @@ class CPJobSG(cp_job_base.CPJobBase):
         _fps = self.sg_proj.data.get('sg_frame_rate') or None
         if _fps:
             _fps = float(_fps)
+        if os.environ.get('PINI_PIPE_USE_ROUNDED_FPS'):
+            _fps = round(_fps)
         _settings['fps'] = _fps
         return _settings
 

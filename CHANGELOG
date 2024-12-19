@@ -1,3 +1,11 @@
+## [6.24.0] - Thu 2024-12-19 15:28
+### Summary
+ - Pini Install:
+    - allow fps rounding via $PINI_PIPE_USE_ROUNDED_FPS,
+### Updated
+ - pini.pipe.CPJobSG.settings set fps from sg allow rounding via $PINI_PIPE_USE_ROUNDED_FPS,
+
+
 ## [6.23.0] - Thu 2024-12-19 14:56
 ### Summary
  - Pini Helper:
