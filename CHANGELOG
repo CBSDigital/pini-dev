@@ -1,3 +1,12 @@
+## [6.25.0] - Fri 2024-12-20 10:13
+### Summary
+ - Pini Helper:
+    - new scene applies res/fps from settings (nhoyt),
+### Updated
+ - pini.pipe create asset/shot updated build icons,
+ - pini.pipe.CPWork.load apply res/fps from settings on new scene,
+
+
 ## [6.24.0] - Thu 2024-12-19 15:28
 ### Summary
  - Pini Install:

@@ -60,7 +60,7 @@ class CPShot(cp_ety.CPEntity):
         validate_tokens(data=self.data, job=self.job)
         self.shot = self.data['shot']
         self.name = self.shot
-        self.label = '{}/{}'.format(self.job.name, self.name)
+        self.label = f'{self.job.name}/{self.name}'
 
         # Determine prefix
         self.prefix = self.name
@@ -108,9 +108,9 @@ class CPShot(cp_ety.CPEntity):
         # Confirm
         if not force:
             qt.ok_cancel(
-                'Create new shot {} in {}?\n\n{}'.format(
-                    self.name, self.job.name, self.path),
-                icon=icons.find('Plus'), title='Create Shot',
+                f'Create new shot {self.name} in {self.job.name}?'
+                f'\n\n{self.path}',
+                icon=icons.BUILD, title='Create Shot',
                 parent=parent)
 
         super().create(force=True, parent=parent, shotgrid_=shotgrid_)

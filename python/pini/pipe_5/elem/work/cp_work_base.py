@@ -114,11 +114,11 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         self.sequence = self.entity.sequence
 
         self.metadata_yml = self.to_dir().to_file(
-            '.pini/metadata/{}.yml'.format(self.base))
+            f'.pini/metadata/{self.base}.yml')
         self.thumb = self.to_dir().to_file(
-            '.pini/thumb/{}.jpg'.format(self.base))
+            f'.pini/thumb/{self.base}.jpg')
         self.image = self.to_dir().to_file(
-            '.pini/image/{}.jpg'.format(self.base))
+            f'.pini/image/{self.base}.jpg')
 
     @property
     def cmp_key(self):
@@ -304,8 +304,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         """
         _mtime = mtime or time.time()
         _extn = extn or self.extn
-        return self.to_dir().to_file('.pini/bkp/{}/{}.{}'.format(
-            self.base, strftime(cp_work_bkp.BKP_TSTAMP_FMT, _mtime), _extn))
+        _t_stamp = strftime(cp_work_bkp.BKP_TSTAMP_FMT, _mtime)
+        return self.to_dir().to_file(
+            f'.pini/bkp/{self.base}/{_t_stamp}.{_extn}')
 
     def find_bkps(self):
         """Find backup files belonging to this work.
@@ -549,7 +550,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         _data = {}
         _data['fps'] = dcc.get_fps()
-        _data['dcc'] = '{}-{}'.format(dcc.NAME, dcc.to_version(str))
+        _data['dcc'] = f'{dcc.NAME}-{dcc.to_version(str)}'
         _data['machine'] = platform.node()
         _data['mtime'] = mtime
         _data['notes'] = notes
@@ -642,6 +643,11 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             dcc.load(_file, parent=parent, force=force, lazy=lazy)
         else:
             dcc.new_scene(force=force, parent=parent)
+            _settings = self.entity.settings
+            if 'res' in _settings:
+                dcc.set_res(*_settings['res'])
+            if 'fps' in _settings:
+                dcc.set_fps(_settings['fps'])
         if _save:
             self.save()
 
@@ -708,8 +714,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             _missing_keys.remove('job_prefix')
             assert _data['job_prefix']
         if _missing_keys:
-            raise ValueError('Missing key{} {}'.format(
-                plural(_missing_keys), '/'.join(_missing_keys)))
+            raise ValueError(
+                f'Missing key{plural(_missing_keys)} '
+                f'{"/".join(_missing_keys)}')
         _path = _tmpl.format(_data)
         _LOGGER.debug(' - PATH %s', _path)
 

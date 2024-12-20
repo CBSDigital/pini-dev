@@ -103,7 +103,7 @@ class CPAsset(cp_ety.CPEntity):
             qt.ok_cancel(
                 f'Create new asset {self.name} in {self.job.name}?'
                 f'\n\n{self.path}',
-                icon=icons.find('Plus'), title='Create asset',
+                icon=icons.BUILD, title='Create asset',
                 parent=parent)
 
         self.mkdir()
