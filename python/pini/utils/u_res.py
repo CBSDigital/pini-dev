@@ -18,6 +18,7 @@ class Res:
         self.height = int(height)
         self.name = name
 
+        self.aspect = self.width / self.height
         self.uid = self.width, self.height, self.name
 
     def to_tuple(self):

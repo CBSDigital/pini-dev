@@ -1,3 +1,13 @@
+## [6.25.1] - Mon 2024-12-23 12:21
+### Summary
+ - Pini Helper:
+    - bugfix error on save due to bad shotgrid project fps (skay/rcalderon),
+### Updated
+ - pini.utils.Image.to_aspect bugfix not updated to work with new res object,
+ - pini.utils.Res.aspect added,
+ - pini.pipe.CPJobSG bugfix error on invalid fps on job,
+
+
 ## [6.25.0] - Fri 2024-12-20 10:13
 ### Summary
  - Pini Helper:

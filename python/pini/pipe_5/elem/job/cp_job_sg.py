@@ -189,12 +189,17 @@ class CPJobSG(cp_job_base.CPJobBase):
             (dict): setting at this level
         """
         _settings = super()._read_this_settings(force=True)
-        _fps = self.sg_proj.data.get('sg_frame_rate') or None
-        if _fps:
-            _fps = float(_fps)
-        if os.environ.get('PINI_PIPE_USE_ROUNDED_FPS'):
-            _fps = round(_fps)
-        _settings['fps'] = _fps
+        if 'fps' not in _settings:
+            _fps = self.sg_proj.data.get('sg_frame_rate') or None
+            if _fps:
+                try:
+                    _fps = float(_fps)
+                except ValueError:
+                    _fps = None
+            if _fps and os.environ.get('PINI_PIPE_USE_ROUNDED_FPS'):
+                _fps = round(_fps)
+            if _fps:
+                _settings['fps'] = _fps
         return _settings
 
     def to_prefix(self):

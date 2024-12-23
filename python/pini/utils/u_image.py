@@ -49,8 +49,7 @@ class Image(File):
         Returns:
             (float): aspect ratio
         """
-        _width, _height = self.to_res()
-        return 1.0 * _width / _height
+        return self.to_res().aspect
 
     def to_res(self, catch=True):
         """Read resolution of this image using ffprobe.
