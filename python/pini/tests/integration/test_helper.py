@@ -85,6 +85,7 @@ class TestHelper(unittest.TestCase):
 
     def test_jump_to(self):
         """Test jump to."""
+        dcc.new_scene(force=True)
         _helper = helper.obt_helper()
         _path = testing.find_test_lookdev().path
         _ety = pipe.to_entity(_path)

@@ -17,7 +17,7 @@ from .u_misc import (
     str_to_seed, dprint, system, str_to_ints, val_map, safe_zip,
     nice_age, get_user, last, ints_to_str, basic_repr, nice_id,
     fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size, merge_dicts,
-    null_dec, to_str, read_func_kwargs, check_logging_level)
+    null_dec, to_str, read_func_kwargs, check_logging_level, first)
 
 from .u_mel_file import MelFile
 from .u_ma_file import MaFile

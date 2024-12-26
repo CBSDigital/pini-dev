@@ -8,7 +8,7 @@ import logging
 import lucidity
 
 from pini import dcc
-from pini.utils import EMPTY, single
+from pini.utils import EMPTY, single, strftime
 
 from ..entity import to_entity
 from ... import cp_utils
@@ -485,6 +485,17 @@ class CPOutputBase:
         """
         assert isinstance(latest, bool)
         self._latest = latest
+
+    def strftime(self, fmt=None):
+        """Get mtime as formatted string.
+
+        Args:
+            fmt (str): format to apply
+
+        Returns:
+            (str): formatted time string
+        """
+        return strftime(fmt=fmt, time_=self.updated_at)  # pylint: disable=no-member
 
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.

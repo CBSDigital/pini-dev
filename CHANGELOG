@@ -1,3 +1,13 @@
+## [6.26.0] - Thu 2024-12-26 14:58
+### Summary
+ - Pini Helper:
+    - bugfix error on display info for output with deleted file (rcalderon),
+### Updated
+ - pini.utils.first added,
+ - pini.utils.bytes_to_str added,
+ - pini.pipe.cache.CCPOutputBase.strftime added using updated_at,
+
+
 ## [6.25.1] - Mon 2024-12-23 12:21
 ### Summary
  - Pini Helper:

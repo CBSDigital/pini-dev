@@ -19,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 _EXES = {}
 
 
-class SimpleNamespace(object):
+class SimpleNamespace:
     """A simple empty object which can have attributes added.
 
     Keyword arguments are added as attributes on init - eg:
@@ -40,7 +40,7 @@ class SimpleNamespace(object):
 
     def __repr__(self):
         _name = getattr(self, 'name', type(self).__name__)
-        return '<{}>'.format(_name)
+        return f'<{_name}>'
 
 
 # Empty object used to denote a variable not having been set - this is useful
@@ -83,7 +83,7 @@ def basic_repr(obj, label, show_nice_id=None, separator=':'):
     # Build string
     _str = '<' + type(obj).__name__.strip('_')
     if _show_nice_id:
-        _str += '[{}]'.format(nice_id(obj))
+        _str += f'[{nice_id(obj)}]'
     if label:
         _str += separator+str(label)
     _str += '>'
@@ -91,38 +91,29 @@ def basic_repr(obj, label, show_nice_id=None, separator=':'):
     return _str
 
 
-def bytes_to_str(bytes_):
-    """Convert a number of bytes to a readable string.
-
-    eg. 2000 -> 2k
-
-    Args:
-        bytes_ (int): number of bytes
-
-    Returns:
-        (str): bytes as readable string
-    """
-    from pini.tools import release
-    release.apply_deprecation('17/05/24', 'Use nice_size')
-    _size = float(bytes_)
-    _labels = ["B", "K", "M", "G", "T", "P"]
-    _factor = 0
-    while _size > 1000:
-        _factor += 1
-        _size /= 1000
-        if _factor > 5:
-            raise RuntimeError("Could not convert: {:d}".format(bytes_))
-    if _size == 0:
-        return "0"
-    _size = "{:.02f}".format(_size)
-    return _size + _labels[_factor]
-
-
 def dprint(*args, **kwargs):
     """Print the given data with a clock prefix."""
     if not kwargs.get('verbose', True):
         return
     print(strftime('[%H:%M:%S] ') + ' '.join([str(_arg) for _arg in args]))
+
+
+def first(items):
+    """Enumerator which marks the first item of a list of items.
+
+    eg. first([1, 2, 3]) -> [(True, 1), (False, 2), (False, 3)]
+
+    Args:
+        items (list): list of items
+
+    Returns:
+        (list): list of data pairs
+    """
+    _items = items
+    if isinstance(_items, (enumerate, collections.abc.Iterable)):
+        _items = list(_items)
+    _last_idx = len(_items) - 1
+    return [(not bool(_idx), _item) for _idx, _item in enumerate(_items)]
 
 
 def fr_enumerate(data, last_=True):
@@ -206,14 +197,14 @@ def ints_to_str(ints):
             if not _idx:
                 _str += str(_int)
             elif ints[_idx-1] != _int-1:
-                _str += ',{}'.format(_int)
+                _str += f',{_int}'
             elif (  # Range use hypen
                     not _last and
                     ints[_idx-1] == _int-1 and
                     ints[_idx+1] == _int+1):
                 pass
             else:
-                _str += '-{}'.format(_int)
+                _str += f'-{_int}'
             _LOGGER.debug('   - STR %s', _str)
     _LOGGER.debug('STR %s', _str)
     return _str
@@ -306,7 +297,7 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     """
     _LOGGER.debug('NICE AGE %s', age)
     _secs = int(age)
-    _fmt = '{:d}' if not pad else '{{:0{:d}d}}'.format(pad)
+    _fmt = '{:d}' if not pad else f'{{:0{pad:d}d}}'
     _vals = []
 
     # Add weeks
@@ -445,8 +436,8 @@ def read_func_kwargs(func, args, kwargs):
             _LOGGER.info('ARGS %s %s', _spec.args, _args)
             _LOGGER.info('DEFAULTS %s %s', _spec.defaults, _defaults)
             raise TypeError(
-                'It looks like some of the required args are '
-                'missing {}'.format(func.__name__))
+                f'It looks like some of the required args are '
+                f'missing {func.__name__}')
         else:
             _val = _defaults[_arg_idx]
 
@@ -472,8 +463,8 @@ def safe_zip(*lists):
     for _idx, _list in enumerate(lists[1:]):
         if not len(lists[0]) == len(_list):
             raise ValueError(
-                'Length of list {:d} ({:d}) does not match length of list 1 '
-                '({:d})'.format(_idx+2, len(_list), len(lists[0])))
+                f'Length of list {_idx+2:d} ({len(_list):d}) does not match '
+                f'length of list 1 ({len(lists[0]):d})')
 
     return zip(*lists)
 
@@ -572,11 +563,11 @@ def single(
         if not _items:
             _error = (
                 zero_error or error or
-                'No {} found'.format(items_label))
+                f'No {items_label} found')
         else:
             _error = (
                 multi_error or error or
-                'Multiple {} found'.format(items_label))
+                f'Multiple {items_label} found')
         raise ValueError(_error)
     return _items[0]
 
@@ -619,7 +610,7 @@ def strftime(fmt=None, time_=None):
     _time = time_ or time.time()
     if '%D' in _fmt:
         _day = int(time.strftime('%d', to_time_t(_time)))
-        _nice_day = '{:d}{}'.format(_day, to_ord(_day))
+        _nice_day = f'{_day:d}{to_ord(_day)}'
         _fmt = _fmt.replace('%D', _nice_day)
     if '%P' in _fmt:
         _token = strftime('%p', time_).lower()
@@ -704,7 +695,7 @@ class _RandFromStr(random.Random):
             string (str): seed string
             offset (int): seed offset
         """
-        super(_RandFromStr, self).__init__()
+        super().__init__()
 
         self.string = string
         self.offset = offset
@@ -772,8 +763,7 @@ def system(
         for _item in _cmds]
     if verbose:
         _LOGGER.info(' '.join([
-            '"{}"'.format(_cmd) if ' ' in _cmd else _cmd
-            for _cmd in _cmds]))
+            f'"{_cmd}"' if ' ' in _cmd else _cmd for _cmd in _cmds]))
 
     # Build args/kwargs
     _si = None
@@ -838,8 +828,7 @@ def to_str(obj):
     if isinstance(obj, types.ModuleType):
         return abs_path(obj.__file__)
 
-    raise NotImplementedError(
-        '{} ({})'.format(obj, type(obj).__name__))
+    raise NotImplementedError(f'{obj} ({type(obj).__name__})')
 
 
 def to_time_f(val):
@@ -863,8 +852,7 @@ def to_time_f(val):
         raise NotImplementedError(sys.version_info.major)
     if isinstance(val, str):
         return to_time_f(to_time_t(val))
-    raise NotImplementedError('Failed to map {} - {}'.format(
-        type(val).__name__, val))
+    raise NotImplementedError(f'Failed to map {type(val).__name__} - {val}')
 
 
 def to_time_t(val=None):

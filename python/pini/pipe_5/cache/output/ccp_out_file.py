@@ -16,48 +16,9 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
 
     get_metadata = ccp_out_base.CCPOutputBase.get_metadata
     set_metadata = ccp_out_base.CCPOutputBase.set_metadata
+    strftime = ccp_out_base.CCPOutputBase.strftime
+
     _exists = True
-
-    # yaml_tag = '!CCPOutputFile'
-
-    # @classmethod
-    # def from_yaml(cls, loader, node):
-    #     """Build output object from yaml.
-
-    #     Args:
-    #         cls (class): output class
-    #         loader (Loader): yaml loader
-    #         node (Node): yaml data
-
-    #     Returns:
-    #         (CPOutput): output
-    #     """
-    #     from pini import pipe
-
-    #     _LOGGER.debug('FROM YAML cls=%s loader=%s node=%s', cls, loader, node)
-    #     del loader  # for linter
-    #     _path = pipe.map_path(node.value)
-    #     _LOGGER.debug(' - PATH %s', _path)
-
-    #     # Allocate work dir
-    #     _work_dir_c = None
-    #     _work_dir = pipe.to_work_dir(_path)
-    #     if _work_dir:
-    #         _work_dir_c = pipe.CACHE.obt_work_dir(_work_dir)
-    #     _LOGGER.debug(' - WORK DIR %s', _work_dir_c)
-
-    #     # Allocate entity
-    #     _ety_c = None
-    #     if _work_dir_c:
-    #         _ety_c = _work_dir_c.entity
-    #     else:
-    #         _ety = pipe.to_entity(_path)
-    #         _ety_c = pipe.CACHE.obt_entity(_ety)
-    #     _LOGGER.debug(' - ENTITY %s', _ety_c)
-
-    #     _out_c = cls(_path, work_dir=_work_dir_c, entity=_ety_c)
-    #     _LOGGER.debug(' - OUT %s', _out_c)
-    #     return _out_c
 
     def delete(self, force=False):  # pylint: disable=arguments-differ
         """Delete this output file and update parent caches.
