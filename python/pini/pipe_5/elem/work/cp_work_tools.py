@@ -33,11 +33,12 @@ def add_recent_work(work):
     _RECENT_WORK_YAML.write_yml(_paths, force=True)
 
 
-def cur_work(work_dir=None):
+def cur_work(work_dir=None, catch=True):
     """Get a work file object for the current scene.
 
     Args:
         work_dir (CPWorkDir): force parent work dir (to faciliate caching)
+        catch (bool): no error if no current work found
 
     Returns:
         (CPWork|None): current work (if any)
@@ -49,6 +50,8 @@ def cur_work(work_dir=None):
     try:
         return pipe.CPWork(_file, work_dir=work_dir)
     except (ValueError, TypeError):
+        if not catch:
+            raise ValueError('No current work')
         return None
 
 

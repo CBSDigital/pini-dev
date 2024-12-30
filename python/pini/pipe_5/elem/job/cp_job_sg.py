@@ -1,9 +1,8 @@
 """Tools for managing jobs in a sg-based pipeline."""
 
 import logging
-import os
 
-from pini.utils import passes_filter, cache_on_obj
+from pini.utils import passes_filter
 
 from . import cp_job_base
 
@@ -175,32 +174,6 @@ class CPJobSG(cp_job_base.CPJobBase):
         _LOGGER.debug(' - MAPPED %d SHOTS', len(_shots))
 
         return _shots
-
-    @cache_on_obj
-    def _read_this_settings(self, force=False):
-        """Read settings at this level.
-
-        NOTE: these are cached on first read.
-
-        Args:
-            force (bool): reread from disk
-
-        Returns:
-            (dict): setting at this level
-        """
-        _settings = super()._read_this_settings(force=True)
-        if 'fps' not in _settings:
-            _fps = self.sg_proj.data.get('sg_frame_rate') or None
-            if _fps:
-                try:
-                    _fps = float(_fps)
-                except ValueError:
-                    _fps = None
-            if _fps and os.environ.get('PINI_PIPE_USE_ROUNDED_FPS'):
-                _fps = round(_fps)
-            if _fps:
-                _settings['fps'] = _fps
-        return _settings
 
     def to_prefix(self):
         """Obtain prefix for this job.

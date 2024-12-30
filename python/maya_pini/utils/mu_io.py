@@ -523,6 +523,8 @@ def save_redshift_proxy(path, selection=True, animation=False, force=False):
     _path.test_dir()
     assert not _path.exists()
     assert _path.to_dir().exists()
+    if selection and not cmds.ls(selection=True):
+        raise RuntimeError('Nothing selected')
     cmds.file(
          _export_path, force=True, preserveReferences=True, options=_opts,
          exportSelected=selection, type="Redshift Proxy")

@@ -225,29 +225,36 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             _tgl_export_rs_pxy = 'redshift' in dcc.allowed_renderers()
             _anim = False
 
-        _rs_pxy = None
-        if _tgl_export_rs_pxy:
+        if not _tgl_export_rs_pxy:
+            return None
 
-            _tmpl = 'publish' if not _anim else 'publish_seq'
-            _rs_pxy = work.to_output(
-                _tmpl, output_type='redshiftProxy', extn='rs')
-            _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
+        _tmpl = 'publish' if not _anim else 'publish_seq'
+        _rs_pxy = work.to_output(
+            _tmpl, output_type='redshiftProxy', extn='rs')
+        _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
 
-            # Select export geo
-            _select = m_pipe.find_cache_set()
-            if not _select:
-                _assigns = lookdev.read_shader_assignments()
-                _select = sorted(set(sum(
-                    [_item['geos'] for _item in _assigns.values()], [])))
-            if not _select:
-                raise RuntimeError('No geo found')
-            cmds.select(_select)
+        # Select export geo
+        _select = m_pipe.find_cache_set()
+        if not _select:
+            _assigns = lookdev.read_shader_assignments()
+            _select = sorted(set(sum(
+                [_item['geos'] for _item in _assigns.values()], [])))
+        if not _select:
+            raise RuntimeError('No geo found')
+        _LOGGER.info(' - RS SELECT GEO %s', _select)
+        cmds.select(_select)
 
+        # Execute export
+        try:
             save_redshift_proxy(
                 _rs_pxy, selection=True, animation=_anim, force=force)
-            _metadata = copy.deepcopy(metadata)
-            _metadata['animated'] = _anim
-            _rs_pxy.set_metadata(_metadata)
+        except RuntimeError as _exc:
+            _LOGGER.error('FAILED TO EXPORT REDSHIFT PROXY %s', _exc)
+            return None
+
+        _metadata = copy.deepcopy(metadata)
+        _metadata['animated'] = _anim
+        _rs_pxy.set_metadata(_metadata)
 
         return _rs_pxy
 

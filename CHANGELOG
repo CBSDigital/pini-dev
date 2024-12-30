@@ -1,3 +1,27 @@
+## [6.27.0] - Mon 2024-12-30 10:05
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on generate redshift proxy if cache set empty (rcalderon),
+    - maya farm render catch no renderable layers (rcalderon/lcayo),
+    - maya farm render bugfix masterlayer selected if not renderable,
+    - bugfix recent work not selected on launch,
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish catch error on fail to generate rs proxy,
+ - pini.dcc.export.CMayaFarmRender catch no renderable layers,
+ - pini.pipe.install_read_settings_callback added,
+ - pini.pipe.DEFAULT_SETTINGS added res/fps,
+ - pini.pipe.install_read_job_res_callback removed,
+ - pini.pipe.CPJobSG removed read sg res + apply $PINI_PIPE_USE_ROUNDED_FPS,
+ - pini.pipe.CPWork.load added handling for res/fps as None on new scene,
+ - pini.pipe.cur_work added catch,
+ - pini.pipe.CACHE.obt_cur_work added catch,
+ - pini.qt.CListWidget.set_items bugfix not applying empty selection for select as empty list,
+ - pini.qt.raise_dialog allow icon as File,
+ - pini.farm.deadline.submit_maya_render catch no renderable layers,
+ - pini.tools.helper bugfix not jumping to recent work on launch,
+ - maya_pini.utils.save_redshift_proxy better error on no selection,
+
+
 ## [6.26.0] - Thu 2024-12-26 14:58
 ### Summary
  - Pini Helper:

@@ -11,17 +11,34 @@ from pini.utils import (
     cache_on_obj, Dir, single, File, cache_result, merge_dicts)
 
 _LOGGER = logging.getLogger(__name__)
+_READ_SETTINGS_CALLBACK = None
 _DEFAULT_SETTINGS = {
-    'shotgrid': {
-        'disable': False,
-        'only_3d': False},
+    'col': None,
+    'fps': None,
+    'icon': None,
+    'maya': {
+        'pub_refs_mode': 'Import'},
+    'res': None,
     'sanity_check': {
         'ExampleCheck': {
             'enabled': True}},
-    'maya': {
-        'pub_refs_mode': 'Import'},
-    'icon': None,
-    'col': None}
+    'shotgrid': {
+        'disable': False,
+        'only_3d': False},
+}
+
+
+def install_read_settings_callback(func):
+    """Install callback for reading job resolution.
+
+    This allows pipeline-specific job resolutions to be used (eg. using
+    custom shotgrid entities).
+
+    Args:
+        func (fn): function to read job resolution
+    """
+    global _READ_SETTINGS_CALLBACK
+    _READ_SETTINGS_CALLBACK = func
 
 
 @cache_result
@@ -136,7 +153,12 @@ class CPSettingsLevel(Dir):
         Returns:
             (dict): setting at this level
         """
-        return self.settings_file.read_yml(catch=True) or {}
+        _settings = self.settings_file.read_yml(catch=True) or {}
+        if _READ_SETTINGS_CALLBACK:
+            _cb_settings = _READ_SETTINGS_CALLBACK(self)
+            if _cb_settings:
+                _settings = merge_dicts(_settings, _cb_settings)
+        return _settings
 
     def set_setting(self, **kwargs):
         """Set the value of the given setting at this level.

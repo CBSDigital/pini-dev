@@ -5,7 +5,8 @@
 from .root import (
     CPRoot, ROOT, find_jobs, find_job, obt_job)
 
-from .job import CPJob, cur_job, to_job, install_read_job_res_callback
+from .cp_settings_elem import install_read_settings_callback
+from .job import CPJob, cur_job, to_job
 
 from .entity_type import CPSequence, cur_sequence
 

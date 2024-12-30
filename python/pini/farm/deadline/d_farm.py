@@ -138,17 +138,16 @@ class CDFarm(base.CFarm):
         for _cbl in _cbls:
             _lines = [
                 'from maya_pini import m_pipe',
-                '_cbl = m_pipe.{}("{}")'.format(
-                    type(_cbl).__name__, str(_cbl.node)),
-                '_checks_data = {}'.format(_checks_data),
-                '_flags = {}'.format(flags or {}),
-                '_extn = "{}"'.format(extn),
+                f'_cbl = m_pipe.{type(_cbl).__name__}("{_cbl.node}")',
+                f'_checks_data = {_checks_data}',
+                f'_flags = {flags or {}}',
+                f'_extn = "{extn}"',
                 'm_pipe.cache('
                 '    [_cbl], checks_data=_checks_data, extn=_extn, force=True,'
                 '    **_flags)',
             ]
             _py = '\n'.join(_lines)
-            _name = '{} - {} [cache]'.format(_batch, _cbl.output_name)
+            _name = f'{_batch} - {_cbl.output_name} [cache]'
             _job = d_maya_job.CDMayaPyJob(
                 py=_py, comment=comment, priority=priority, work=_work,
                 machine_limit=machine_limit, stime=_stime, error_limit=1,
@@ -199,6 +198,8 @@ class CDFarm(base.CFarm):
         _work = pipe.CACHE.obt_cur_work()
         _batch = _work.base
         _lyrs = pom.find_render_layers(renderable=True)
+        if not _lyrs:
+            raise RuntimeError('No renderable layers')
 
         _render_scene = _work.save(
             force=True, reason='deadline render', result='bkp')
@@ -220,6 +221,7 @@ class CDFarm(base.CFarm):
             _render_jobs.append(_job)
             _LOGGER.info(' - SCENE %s', _job.scene)
             assert _job.scene == _render_scene
+
         assert not _render_jobs[0].jid
         if submit:
             self.submit_jobs(_render_jobs, name='render')
@@ -240,8 +242,8 @@ class CDFarm(base.CFarm):
 
         if not force:
             qt.notify(
-                'Submitted {:d} layer{} to deadline.\n\nBatch name:\n{}'.format(
-                    len(_lyrs), plural(_lyrs), _batch),
+                f'Submitted {len(_lyrs):d} layer{plural(_lyrs)} to deadline.'
+                f'\n\nBatch name:\n{_batch}',
                 title='Render submitted', icon=d_utils.ICON)
 
         return _render_jobs + [_update_job]
@@ -321,7 +323,7 @@ class CDFarm(base.CFarm):
         _py = _build_update_job_py(
             outputs=outputs, metadata=metadata, work=work)
         _update_job = d_job.CDPyJob(
-            name='{} [update cache]'.format(work.base), comment=comment,
+            name=f'{work.base} [update cache]', comment=comment,
             py=_py, batch_name=batch_name, dependencies=dependencies,
             stime=stime, priority=priority)
         assert not _update_job.jid
@@ -355,7 +357,7 @@ def _build_update_job_py(outputs, metadata, work):
             '# Build output objects',
             '_outs = [']
         for _out in outputs:
-            _lines += ['    pipe.to_output("{}"),'.format(_out.path)]
+            _lines += [f'    pipe.to_output("{_out.path}"),']
         _lines += [']', '']
 
         # Register shotgrid
@@ -375,7 +377,7 @@ def _build_update_job_py(outputs, metadata, work):
             _lines += [
                 '# Update metadata',
                 '_LOGGER.info("UPDATE METADATA")',
-                '_metadata = {}'.format(metadata),
+                f'_metadata = {metadata}',
                 'for _out in _outs:',
                 '    if not _out.exists():',
                 '        raise RuntimeError(_out.path)',
@@ -386,7 +388,7 @@ def _build_update_job_py(outputs, metadata, work):
     _lines += [
         '# Update work outputs cache',
         '_LOGGER.info("UPDATE CACHE")',
-        '_work_c = pipe.CACHE.obt_work("{}")'.format(work.path),
+        f'_work_c = pipe.CACHE.obt_work("{work.path}")',
         '_work_c.find_outputs(force=True)',
         '',
         '_LOGGER.info("UPDATE CACHE COMPLETE")',

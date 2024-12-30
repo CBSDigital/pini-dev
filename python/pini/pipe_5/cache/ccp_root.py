@@ -466,11 +466,14 @@ class CCPRoot(elem.CPRoot):
         _ety_c = self.obt_entity(dir_)
         return _ety_c.obt_output_seq_dir(dir_, force=force)
 
-    def obt_cur_work(self):
+    def obt_cur_work(self, catch=True):
         """Obtain current work file.
 
         Provided to accomodate for an artist opening a new scene outside pini,
         leaving the cache out of date.
+
+        Args:
+            catch (bool): no error if no current work found
 
         Returns:
             (CPWork|None): current work file if any
@@ -482,6 +485,8 @@ class CCPRoot(elem.CPRoot):
             self.reset()
             assert self.cur_work
             return self.cur_work
+        if not catch:
+            raise ValueError('No current work')
         return None
 
     def reset(self):

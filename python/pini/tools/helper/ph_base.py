@@ -86,10 +86,14 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.set_window_icon(ICON)
 
         self.ui.Job.redraw()
-        _LOGGER.debug(' - REDREW JOB %s', self.job)
+        _LOGGER.debug(' - REDREW JOB %s trg=%s', self.job, self.target)
+        _LOGGER.debug(' - TRIGGERING ADMIN trg=%s', self.target)
         self._callback__ToggleAdmin(admin=False)
+        _LOGGER.debug(' - TRIGGERED ADMIN trg=%s', self.target)
         self._callback__Profile()
+        _LOGGER.debug(' - TRIGGERED PROFILE trg=%s', self.target)
         self._callback__MainPane(save=False)
+        _LOGGER.debug(' - RAN CALLBACKS %s', self.target)
 
         self.ui.WTags.doubleClicked.connect(
             wrap_fn(self._load_latest_tag_version))
@@ -552,10 +556,10 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
                     isinstance(self.target, pipe.CPOutputBase) and
                     self.target.profile == 'asset'):
                 _trg_ety = None
-            _LOGGER.debug(' - TRG ENTITY TYPE %s', _trg_ety)
+            _LOGGER.debug(' - TRG ENTITY TYPE %s %s', _trg_ety, self.target)
             if _trg_ety:
                 _sel = _trg_ety.entity_type
-                _LOGGER.debug('APPLY TARGET ETY TYPE %s', _sel)
+                _LOGGER.debug(' - APPLY TARGET ETY TYPE %s', _sel)
         if not _sel:
             _sel = _cur
 
@@ -638,11 +642,12 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         self.ui.EntityCreate.setEnabled(_en)
 
     def _callback__MainPane(self, index=None, save=True, switch_tabs=True):
+
         self.setMinimumWidth(400)
         self.flush_notes_stack()
         _LOGGER.debug(
-            'CALLBACK MAIN PANE index=%s blocked=%d save=%d',
-            index, self.ui.WWorkPath.signalsBlocked(), save)
+            'CALLBACK MAIN PANE index=%s blocked=%d save=%d %s',
+            index, self.ui.WWorkPath.signalsBlocked(), save, self.target)
         _tab = self.ui.MainPane.current_tab_text()
         if _tab == 'Work':
             CLWorkTab.init_ui(self)
@@ -718,7 +723,8 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
         for _elem in [self.ui.WTaskText, self.ui.EntityCreate,
                       self.ui.EntityTypeCreate]:
             _elem.setVisible(self._admin_mode)
-        self._set_target(_cur_ety)
+        if not self.target:
+            self._set_target(_cur_ety)
         self.ui.EntityType.redraw()
         self.ui.Entity.redraw()
 

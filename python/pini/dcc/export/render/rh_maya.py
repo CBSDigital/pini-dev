@@ -297,6 +297,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             if _lyr.is_renderable():
                 _select.append(_lyr)
             _items.append(_item)
+        _LOGGER.info(' - SELECT LAYERS %s', _select)
         self.ui.Layers.set_items(_items, select=_select)
         self.ui.Layers.setIconSize(qt.to_size(30))
         self.ui.Layers.setSizePolicy(
@@ -336,6 +337,9 @@ class CMayaFarmRender(CMayaRenderHandler):
             render_ (bool): execute render
             force (bool): replace existing frames without confirmation
         """
+        _lyrs = pom.find_render_layers(renderable=True)
+        if not _lyrs:
+            raise error.HandledError('No renderable layers')
         _work = pipe.cur_work()
         if not _work:
             raise error.HandledError('No current work')

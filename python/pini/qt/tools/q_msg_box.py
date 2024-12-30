@@ -6,7 +6,7 @@ import sys
 from pini import icons
 from pini.utils import lprint, assert_eq
 
-from ..q_mgr import QtWidgets, QtGui, QtCore
+from ..q_mgr import QtWidgets, QtCore
 from .. import q_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,17 +88,12 @@ class _CMessageBox(QtWidgets.QMessageBox):
             icon (str): path to icon
             icon_size (tuple): icon size
         """
-        if isinstance(icon, str):
-            _pixmap = QtGui.QPixmap(icon)
-        elif isinstance(icon, QtGui.QPixmap):
-            _pixmap = icon
-        else:
-            raise ValueError(_pixmap)
+        from pini import qt
+        _pixmap = qt.to_pixmap(icon)
         if icon_size is None:
             if _pixmap.width() == 144 and _pixmap.height() == 144:
                 icon_size = 72
         if icon_size:
-            from pini import qt
             _pixmap = qt.CPixmap(_pixmap).resize(icon_size)
         self.setIconPixmap(_pixmap)
 

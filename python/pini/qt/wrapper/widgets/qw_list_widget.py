@@ -276,7 +276,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         _LOGGER.debug(' - APPLY SEL %s', _sel_idxs)
         if _sel_idxs:
             self.select_rows(_sel_idxs)
-        elif items and select is not EMPTY:
+        elif items and select not in ([], EMPTY):
             self.select_row(_sel_idx)
 
         # Disable and addd <None> marker if empty

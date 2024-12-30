@@ -644,10 +644,12 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         else:
             dcc.new_scene(force=force, parent=parent)
             _settings = self.entity.settings
-            if 'res' in _settings:
-                dcc.set_res(*_settings['res'])
-            if 'fps' in _settings:
-                dcc.set_fps(_settings['fps'])
+            _res = _settings.get('res')
+            if _res:
+                dcc.set_res(*_res)
+            _fps = _settings.get('fps')
+            if _fps:
+                dcc.set_fps(_fps)
         if _save:
             self.save()
 

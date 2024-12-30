@@ -118,6 +118,7 @@ class CLWorkTab:
             # Determine initial selection
             if self.target:
                 _work_dir = pipe.to_work_dir(self.target)
+                _LOGGER.debug(' - APPLYING TARGET %s', self.target)
                 if _work_dir:
                     _select = _work_dir.task_label
                     _LOGGER.debug(' - USING TARGET TASK')
