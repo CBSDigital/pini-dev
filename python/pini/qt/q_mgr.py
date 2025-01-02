@@ -9,17 +9,20 @@ _LOGGER = logging.getLogger(__name__)
 _FORCE = os.environ.get('PINI_QT_LIB')
 _SUCCESS = False
 LIB = None
+LIB_VERSION = None
 
 # Try to import qt mods from PySide2
 if (_FORCE and _FORCE == 'PySide2') or not _SUCCESS:
     try:
         from PySide2 import QtUiTools, QtCore, QtGui, QtWidgets
         from PySide2.QtCore import Qt
+        import PySide2
     except ImportError as _exc:
         _LOGGER.debug('FAILED TO LOAD PySide2 %s', _exc)
     else:
         _SUCCESS = True
         LIB = 'PySide2'
+        LIB_VERSION = PySide2.__version__
 
 # Try to import qt mods from PySide
 if (_FORCE and _FORCE == 'PySide') or not _SUCCESS:
@@ -41,12 +44,14 @@ if (_FORCE and _FORCE == 'PySide6') or not _SUCCESS:
     try:
         from PySide6 import QtUiTools, QtWidgets, QtCore, QtGui
         from PySide6.QtCore import Qt
+        import PySide6
         _LOGGER.debug('LOADED Qt')
     except ImportError as _exc:
         _LOGGER.debug('FAILED TO LOAD PySide6 %s', _exc)
     else:
         _SUCCESS = True
         LIB = 'PySide6'
+        LIB_VERSION = PySide6.__version__
 
 # Try to import qt mods from PyQt5
 if (_FORCE and _FORCE == 'PyQt5') or not _SUCCESS:

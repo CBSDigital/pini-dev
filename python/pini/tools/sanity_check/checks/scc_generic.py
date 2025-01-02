@@ -90,7 +90,7 @@ class CheckRenderRes(SCCheck):
             return
         _setting_res = _ety.settings.get('res')
         if not _setting_res:
-            self.write_log('No res found in '+_ety.name)
+            self.write_log(f'No res found in "{_ety.label}"')
             return
         _setting_res = tuple(_setting_res)
         self.write_log('Settings res %s', _setting_res)

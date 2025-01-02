@@ -12,7 +12,7 @@ from pini.utils import File, single, passes_filter, is_pascal
 _LOGGER = logging.getLogger(__name__)
 
 
-class BaseDCC(object):
+class BaseDCC:
     """Base class managing interaction with any dcc."""
 
     DEFAULT_EXTN = None
@@ -378,8 +378,7 @@ class BaseDCC(object):
             return
 
         # Offer to save unsaved changes
-        _msg = 'Lose unsaved changes in the current scene?\n\n{}'.format(
-            _file)
+        _msg = f'Lose unsaved changes in the current scene?\n\n{_file}'
         _icon = icons.find('Tiger Face')
         _result = qt.raise_dialog(
             msg=_msg, buttons=('Save', "Don't Save", 'Cancel'),
@@ -476,8 +475,9 @@ class BaseDCC(object):
             _file.test_dir()
             if not force and _file.exists() and _file != self.cur_file():
                 from pini import qt
-                qt.ok_cancel('Overwrite existing file?\n\n{}'.format(
-                    _file.path), parent=parent)
+                qt.ok_cancel(
+                    f'Overwrite existing file?\n\n{_file.path}',
+                    parent=parent)
             self._force_save(file_=_file)
         else:
             self._force_save()
@@ -514,14 +514,14 @@ class BaseDCC(object):
         """
         raise NotImplementedError
 
-    def set_res(self, width, height):
+    def set_res(self, width, height):  # pylint: disable=unused-argument
         """Set current image resolution.
 
         Args:
             width (int): image width
             height (int): image height
         """
-        raise NotImplementedError
+        _LOGGER.warning('SET RES NOT IMPLEMENTED %s', self.NAME)
 
     def set_scene_data(self, key, val):
         """Store data within this scene.
@@ -639,8 +639,8 @@ class BaseDCC(object):
             return _major+0.1*_minor
         if type_ is str:
             if _patch is None:
-                return '{:d}.{:d}'.format(_major, _minor)
-            return '{:d}.{:d}.{:d}'.format(_major, _minor, _patch)
+                return f'{_major:d}.{_minor:d}'
+            return f'{_major:d}.{_minor:d}.{_patch:d}'
         raise NotImplementedError(type_)
 
     def unsaved_changes(self):

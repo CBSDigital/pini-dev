@@ -6,7 +6,7 @@ import sys
 from pini import icons
 from pini.utils import lprint, assert_eq
 
-from ..q_mgr import QtWidgets, QtCore
+from ..q_mgr import QtWidgets, QtCore, LIB, LIB_VERSION
 from .. import q_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -104,11 +104,15 @@ class _CMessageBox(QtWidgets.QMessageBox):
             (str): label of button that was clicked
         """
         _LOGGER.debug('GET RESULT %s force=%s', self, self._force_result)
+        _LOGGER.debug(
+            ' - VER py-%d.%d %s-%s', sys.version_info.major,
+            sys.version_info.minor, LIB, LIB_VERSION)
         _exec_result = self.exec_()
         _LOGGER.debug(
             ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
-        if sys.version_info.minor >= 11:
+        if LIB == 'PySide6':
             _exec_result -= 2
+            _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
             _LOGGER.debug(
                 ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
         if self._force_result:
