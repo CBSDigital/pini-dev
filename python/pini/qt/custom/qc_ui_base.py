@@ -13,7 +13,7 @@ from pini.utils import (
     passes_filter, single, strftime, check_logging_level)
 
 from ..q_ui_container import CUiContainer
-from ..q_utils import SETTINGS_DIR, find_widget_children, get_application
+from ..q_utils import SETTINGS_DIR, find_widget_children, p_is_onscreen
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
@@ -516,13 +516,7 @@ class CUiBase:
             _LOGGER.debug('   - POS/SIZE SETTINGS NOT FOUND')
             return False
         _LOGGER.debug('   - POS/SIZE %s %s', _pos, _size)
-
-        # Check target will be onscreen
-        _screens = get_application().screens()
-        _LOGGER.debug('   - SCREENS %s', _screens)
-        _rects = [_screen.geometry() for _screen in _screens]
-        _LOGGER.debug('   - RECTS %s', _rects)
-        if not [_rect for _rect in _rects if _rect.contains(_pos)]:
+        if not p_is_onscreen(_pos):
             _LOGGER.debug('   - REJECTING LOAD GEOMETRY, POS IS OFFSCREEN')
             return False
 

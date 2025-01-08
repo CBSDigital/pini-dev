@@ -4,6 +4,7 @@
 
 import logging
 import os
+import webbrowser
 
 from pini.utils import strftime, basic_repr
 
@@ -114,6 +115,10 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         if cls.FIELDS and 'sg_status_list' in cls.FIELDS:
             _filters.append(('sg_status_list', 'is_not', 'omt'))
         return _filters
+
+    def browser(self):
+        """Open this element in a web browser."""
+        webbrowser.open(self.url)
 
     def omit(self):
         """Omit this entry by setting status to 'omt'."""

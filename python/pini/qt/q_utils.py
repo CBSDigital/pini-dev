@@ -210,6 +210,23 @@ def obt_pixmap(file_: str):
     return to_pixmap(file_)
 
 
+def p_is_onscreen(pos):
+    """Check whether the given point is on a screen.
+
+    Args:
+        pos (QPoint): point to test
+
+    Returns:
+        (bool): whether pos is onscreen
+    """
+    _pos = to_p(pos)
+    _screens = get_application().screens()
+    _LOGGER.debug('   - SCREENS %s', _screens)
+    _rects = [_screen.geometry() for _screen in _screens]
+    _LOGGER.debug('   - RECTS %s', _rects)
+    return bool([_rect for _rect in _rects if _rect.contains(_pos)])
+
+
 def safe_timer_event(func):
     """Decorator to catch timer event errors caused by reloading.
 

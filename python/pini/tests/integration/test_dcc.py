@@ -2,7 +2,7 @@ import logging
 import unittest
 
 from pini import dcc, pipe, testing
-from pini.tools import helper
+from pini.tools import helper, error
 from pini.pipe import cache
 from pini.utils import TMP_PATH, Dir
 
@@ -47,6 +47,7 @@ class TestPublish(unittest.TestCase):
         assert not pipe.CACHE.obt(testing.TMP_ASSET).outputs
         assert not pipe.CACHE.obt(testing.TEST_JOB).find_publishes(asset='tmp')
         _LOGGER.info(' - FLUSHED TMP ASSET')
+        assert not error.TRIGGERED
         print()
 
         # Check job + entity objects
@@ -62,6 +63,7 @@ class TestPublish(unittest.TestCase):
         assert not _ety_c.find_outputs()
         assert isinstance(_ety_c, pipe.CPAsset)
         assert isinstance(_ety_c, cache.CCPEntity)
+        assert not error.TRIGGERED
 
         # Check work_dir + work objects
         _work_dir_c = _ety_c.to_work_dir(task='rig')
@@ -80,6 +82,7 @@ class TestPublish(unittest.TestCase):
         assert not pipe.CACHE.cur_work
         assert _work_1 not in _work_dir_c.works
         assert not _work_dir_c.works
+        assert not error.TRIGGERED
         print('')
 
         # Test create work object
@@ -105,6 +108,7 @@ class TestPublish(unittest.TestCase):
         _work_dir_c = _ety_c.to_work_dir(task='rig', dcc_=dcc.NAME)
         assert _work_dir_c == _work_1.work_dir
         assert _work_dir_c is _work_1.work_dir
+        assert not error.TRIGGERED
 
         # Test object integrity
         assert _work_1 in _work_dir_c.works
@@ -116,16 +120,20 @@ class TestPublish(unittest.TestCase):
         assert pipe.CACHE.cur_work_dir
         assert pipe.CACHE.cur_work
         assert not _work_1.find_outputs()
+        assert not error.TRIGGERED
         print('')
 
         # Test publish
         _LOGGER.info('TESTING PUBLISH')
         _basic_pub = dcc.find_export_handler('BasicPublish', catch=True)
+        assert not error.TRIGGERED
         if not _basic_pub:
             assert dcc.NAME in ['hou', 'nuke']
         else:
             _helper.ui.MainPane.select_tab(_helper.ui.ExportTab)
             assert _work_1.job is _job_c
             assert _work_1.job is pipe.CACHE.cur_job
+            assert not error.TRIGGERED
             _basic_pub.publish(work=_work_1, force=True, version_up=False)
             assert pipe.CACHE.obt(testing.TEST_JOB).find_publishes(asset='tmp')
+        assert not error.TRIGGERED

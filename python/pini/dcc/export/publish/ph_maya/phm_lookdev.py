@@ -331,7 +331,7 @@ def _export_ass(metadata, force):
         return None
 
     # Export ass
-    _ass.delete(wording='Replace', force=force)
+    _ass.delete(wording='replace', force=force)
     assert not _ass.exists()
     _ass.test_dir()
     cmds.arnoldExportAss(

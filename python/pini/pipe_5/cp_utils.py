@@ -251,7 +251,7 @@ def output_clip_sort(output):
 
 
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
-        obj, type_=None, path=None,
+        obj, type_=None, path=None, status=None,
         entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
@@ -262,6 +262,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         obj (CPOutput|any): pipeline object being tested
         type_ (str): match type (eg. cache, shot, render)
         path (str): apply path filter
+        status (str): apply status filter
         entity (CPEntity): match entity
         asset (str): match asset name
         asset_type (str): match asset type
@@ -320,6 +321,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     if output_name and obj.output_name != output_name:
         return False
     if content_type and obj.content_type != content_type:
+        return False
+    if status and obj.status != status:
         return False
     if extn is not EMPTY and obj.extn != extn:
         return False

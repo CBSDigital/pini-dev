@@ -17,6 +17,7 @@ def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
     Returns:
         (PUBaseUi): interface instance
     """
+    from ... import pyui
     _path = to_str(py_file)
 
     # Determine mode
@@ -39,4 +40,5 @@ def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
     # Build interface
     _pyui = _class(
         _path, title=title, base_col=base_col, load_settings=load_settings)
+    pyui.UIS[_path] = _pyui
     return _pyui

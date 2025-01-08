@@ -76,13 +76,17 @@ class TestDCC(unittest.TestCase):
 
         # Test mapping
         _model_g = _asset_c.find_publish(
-            task='model', ver_n='latest', tag=_tag, versionless=False)
+            task='model', ver_n='latest', tag=_tag, versionless=False,
+            extn='ma')
         _LOGGER.info('MODEL G %s', _model_g)
         _model = pipe.CACHE.obt(_model_g)
         assert _model
         assert _model.find_reps()
         _ass_gz = _model.find_rep(extn='gz')
+        assert _ass_gz
+        _LOGGER.info('ASS GZ %s', _ass_gz.path)
         _rig = _ass_gz.find_rep(task='rig')
+        assert _rig
         _LOGGER.info('MODEL %s', _rig.find_rep(task='model'))
         assert _rig.find_rep(task='model') == _model
         assert _ass_gz.find_rep(task='model') == _model

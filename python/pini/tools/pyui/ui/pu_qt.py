@@ -21,6 +21,8 @@ _LOGGER = logging.getLogger(__name__)
 class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
     """Qt interface built from a python file."""
 
+    __repr__ = pu_base.PUBaseUi.__repr__
+
     def __init__(self, py_file, **kwargs):
         """Constructor.
 
@@ -357,10 +359,13 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
         if _geom:
             self.setFixedWidth(_geom['width'])
             _pos = _geom['x'], _geom['y']
-            self.move(*_pos)
-            _LOGGER.info(
-                ' - UPDATE POS (%d, %d) / (%d, %d)', _pos[0], _pos[1],
-                self.pos().x(), self.pos().y())
+            if qt.p_is_onscreen(_pos):
+                self.move(*_pos)
+                _LOGGER.info(
+                    ' - UPDATE POS (%d, %d) / (%d, %d)', _pos[0], _pos[1],
+                    self.pos().x(), self.pos().y())
+            else:
+                _LOGGER.info(' - BLOCKED APPLY OFFSCREEN POS %s', _pos)
 
         return _data
 

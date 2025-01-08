@@ -371,7 +371,7 @@ def save_ass(geo, ass, force=False):
         raise ValueError(ass)
     cmds.select(geo)
 
-    _ass.delete(wording='Replace', force=force, icon=icons.find('Peach'))
+    _ass.delete(wording='replace', force=force, icon=icons.find('Peach'))
     assert not _ass.exists()
     _ass.test_dir()
     cmds.arnoldExportAss(
@@ -519,7 +519,7 @@ def save_redshift_proxy(path, selection=True, animation=False, force=False):
         _export_path = f'{_path.dir}/{_path.base}.####.{_path.extn}'
     _LOGGER.info(' - EXPORT PATH %s', _export_path)
 
-    _path.delete(wording='Replace', force=force)
+    _path.delete(wording='replace', force=force)
     _path.test_dir()
     assert not _path.exists()
     assert _path.to_dir().exists()

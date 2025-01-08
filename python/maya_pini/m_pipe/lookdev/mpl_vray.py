@@ -109,7 +109,7 @@ def export_vrmesh_ma(metadata, animation=False, force=False):
         'publish', output_type='vrmesh', extn='ma')
     _LOGGER.info(' - MA %s', _vrm_ma)
     for _file in [_vrm, _vrm_ma]:
-        _file.delete(wording='Replace', force=force)
+        _file.delete(wording='replace', force=force)
 
     # Setup metadata
     _data = copy.copy(metadata)

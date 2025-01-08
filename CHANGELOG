@@ -1,3 +1,24 @@
+## [6.28.0] - Wed 2025-01-08 08:24
+### Summary
+ - Pini Helper:
+    - bugfix scene outputs list latest marker in bad position if showing info,
+    - bugfix not showing right-click View option for videos + image sequences,
+### Updated
+ - pini.pipe.passes_filters added status arg,
+ - pini.pipe.CPJob create/create_asset_type use BUILD icon,
+ - pini.pipe.cache.CCPOutputBase.content_type added ass.gz handling,
+ - pini.pipe.shotgrid.SGC.SGCElem.browser added,
+ - pini.pipe.shotgrid.SGC added ass.gz handling,
+ - pini.qt.p_is_onscreen added,
+ - pini.tools.pyui block load settings to offscreen,
+ - pini.tools.pyui.UIS added,
+ - pini.tools.pyui.PUBase.__repr__ added,
+ - pini.tools.helper scene outputs bugfix bad position of latest marker in info mode,
+ - pini.tools.helper output ctx bugfix not applying seq/video opts,
+ - pini.tools.error set error apply TRIGGERED global,
+ - pini.refresh removed pipe_2 sorting,
+
+
 ## [6.27.1] - Thu 2025-01-02 09:41
 ### Summary
  - Pini Helper:

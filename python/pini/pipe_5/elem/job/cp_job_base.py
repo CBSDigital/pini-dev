@@ -94,7 +94,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         qt.ok_cancel(
             f'Create new job using <i>{cfg_name}</i> structure?'
             f'<br><br>{self.path}',
-            icon=icons.find('Rosette'), title='Create Job')
+            icon=icons.find('Rosette'), title='Create job')
         self.mkdir()
         self.setup_cfg(cfg_name)
         return self
@@ -352,7 +352,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             qt.ok_cancel(
                 f'Create new asset type {asset_type} in {self.name}?'
                 f'\n\n{_type_dir.path}',
-                icon=icons.find('Plus'), title='Create Asset Type',
+                icon=icons.BUILD, title='Create asset type',
                 parent=parent)
 
         _type_dir.mkdir()

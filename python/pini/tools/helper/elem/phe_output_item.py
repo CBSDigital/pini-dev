@@ -220,14 +220,16 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _text_y = self.font_size*2.2
 
         _icon = output_to_type_icon(self.output)
+        _over_p = qt.to_p(_right_m+3, _text_y)
         if _icon:
             _over = obt_pixmap(_icon, size=_icon_w)
             _pix = pix.draw_overlay(
-                _over, pos=(_right_m+3, _text_y), anchor='R')
+                _over, pos=_over_p, anchor='R')
         if self.output.status == pipe.STATUS_ORDER[-1]:
             pix.draw_overlay(
-                _APPROVED_ICON, pos=qt.to_p(pix.size()) - qt.to_p(0, 5),
-                anchor='BR', size=pix.height()*0.33)
+                _APPROVED_ICON,
+                pos=_over_p + qt.to_p(-0.2*_icon_w, 0),
+                anchor='T', size=_icon_w*0.8)
 
         # Draw version text
         if self.output.ver_n is not None:

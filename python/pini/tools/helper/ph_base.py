@@ -335,17 +335,18 @@ class BasePiniHelper(CLWorkTab, CLExportTab, CLSceneTab):
             delete (bool): include delete option
             delete_callback (fn): callback to execute on output deletion
         """
+        _LOGGER.debug(' - ADD OUTPUT PATH OPTS %s', output)
         _delete_callback = delete_callback or self.ui.SOutputs.redraw
 
-        if isinstance(output, Video) or output.extn in VIDEO_EXTNS:
+        if isinstance(output_c, Video) or output.extn in VIDEO_EXTNS:
             menu.add_video_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output, Seq):
+                output_c, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(output_c, Seq):
             menu.add_seq_actions(
-                output, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output, File):
+                output_c, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(output_c, File):
             menu.add_file_actions(
-                output, delete_callback=_delete_callback, delete=delete)
+                output_c, delete_callback=_delete_callback, delete=delete)
         else:
             raise ValueError(output)
 

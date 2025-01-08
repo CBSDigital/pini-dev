@@ -11,7 +11,8 @@ import time
 from pini import icons, qt
 from pini.tools import error
 from pini.utils import (
-    PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime)
+    PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime,
+    basic_repr)
 
 from .. import cpnt
 
@@ -32,7 +33,7 @@ _NICE_COLS = [
 INFO_ICON = icons.find('Information')
 
 
-class PUBaseUi(object):
+class PUBaseUi:
     """Base class for all pyui interfaces."""
 
     label_w = 70
@@ -255,7 +256,7 @@ class PUBaseUi(object):
         Args:
             def_ (PUDef): function being execute
         """
-        _h_print('Execute {}'.format(def_.name))
+        _h_print(f'Execute {def_.name}')
 
         self.save_settings()
 
@@ -277,7 +278,7 @@ class PUBaseUi(object):
             return
         _dur = time.time() - _start
 
-        _h_print('Completed {} ({:.01f}s)'.format(def_.name, _dur))
+        _h_print(f'Completed {def_.name} ({_dur:.01f}s)')
 
     def set_section(self, section):
         """Set current collapsable section.
@@ -438,6 +439,9 @@ class PUBaseUi(object):
         """Called when interface is closed."""
         _LOGGER.debug('CLOSE EVENT %s', self)
         self.save_settings()
+
+    def __repr__(self):
+        return basic_repr(self, self.title)
 
 
 def _h_print(msg, length=80):

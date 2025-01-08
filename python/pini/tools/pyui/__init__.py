@@ -3,3 +3,5 @@
 from .cpnt import PUFile, set_section, PUSection, PUDef, PUChoiceMgr
 from .ui import build
 from .pu_install import install
+
+UIS = {}

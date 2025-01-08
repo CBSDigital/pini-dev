@@ -205,6 +205,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             'mov': 'Movie',
             'rs': 'Redshift Proxy',
             'exr': 'Exr File',
+            'gz': 'Ass Proxy',
         }
         _map_matches = [
             _type for _type in _types

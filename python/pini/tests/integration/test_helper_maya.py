@@ -46,6 +46,8 @@ class TestHelper(unittest.TestCase):
 
     def test_output_tab_names(self):
 
+        dcc.new_scene(force=True)
+
         _lookdev = testing.find_test_lookdev()
         _rig = testing.find_test_rig()
         _abc = testing.find_test_abc()
@@ -289,6 +291,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper.ui.EExportPane.select_tab('Blast')
     _blast_h = _helper.ui.EBlastHandler.selected_data()
     assert _blast_h
+    _blast_h.ui.Format.select_text('mov')
     _blast_h.ui.Force.setChecked(True)
     _blast_h.ui.View.setChecked(False)
     _helper.ui.EBlast.click()

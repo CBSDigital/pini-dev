@@ -198,6 +198,8 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _redraw__ErrorTab(self):
         if self.check and self.check.error:
+            _LOGGER.debug(
+                ' - APPLYING ERROR %s %s', self.check, self.check.error)
             self.error_ui.set_error(self.check.error)
 
     def _redraw__Checks(self, autorun=False):

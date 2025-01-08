@@ -7,7 +7,7 @@ from pini.utils import strftime, basic_repr
 _LOGGER = logging.getLogger(__name__)
 
 
-class PRNotes(object):
+class PRNotes:
     """Represents release notes.
 
     These consist of a summary and a more detail tech notes.
@@ -43,7 +43,7 @@ class PRNotes(object):
                 if (
                         not (_line[0].isalpha() or _line[0] in '.') and
                         not _line.startswith(' - ')):
-                    raise ValueError(_line)
+                    raise ValueError(f'Bad line head "{_line}"')
                 if (
                         _start_upper and
                         _line[0].isalpha() and
@@ -79,7 +79,8 @@ class PRNotes(object):
         for _line in self._summary_lines:
             if '(' not in _line:
                 continue
-            _users |= set(str(_line).split('(')[-1].split(')')[0].split('/'))
+            _u_str = str(_line).split('(', 1)[-1].split(')', 1)[0]
+            _users |= set(_u_str.split('/'))
         for _user in _users:
             assert _user.islower()
             assert _user.isalpha()
@@ -96,19 +97,18 @@ class PRNotes(object):
             (str): notes in CHANGELOG format
         """
         _lines = [
-            strftime('## [{}] - %a %Y-%m-%d %H:%M'.format(
-                ver.string), mtime),
+            strftime(f'## [{ver.string}] - %a %Y-%m-%d %H:%M', mtime),
             '### Summary']
         for _line in self._summary_lines:
             if _line.startswith(' - '):
-                _lines += ['   {},'.format(_line)]
+                _lines += [f'   {_line},']
             elif _line.endswith(':'):
-                _lines += [' - {}'.format(_line)]
+                _lines += [f' - {_line}']
             else:
-                _lines += [' - {},'.format(_line)]
+                _lines += [f' - {_line},']
         _lines.append('### Updated')
         for _line in self._tech_lines:
-            _lines.append(' - {},'.format(_line))
+            _lines.append(f' - {_line},')
         return '\n'.join(_lines)
 
     def to_cmdline(self, repo, ver):
@@ -121,10 +121,9 @@ class PRNotes(object):
         Returns:
             (str): notes in command line format
         """
-        return '{}:{} - {} | {}'.format(
-            repo.name, ver.string,
-            _to_cmdline(self._summary_lines),
-            _to_cmdline(self._tech_lines))
+        _sum_s = _to_cmdline(self._summary_lines)
+        _tech_s = _to_cmdline(self._tech_lines)
+        return f'{repo.name}:{ver.string} - {_sum_s} | {_tech_s}'
 
     def to_email(
             self, repo, ver, mtime, diffs_link=None, links=(),
@@ -144,11 +143,11 @@ class PRNotes(object):
         """
         _vers = repo.find_versions()
         _prev = _vers[-2]
-
+        _date_s = strftime('%a %b %m - %H:%M %p PST', mtime)
         _lines = [
-            '<b>Repo</b>: {}'.format(repo.name),
-            '<b>Update</b>: {} (from {})'.format(ver.string, _prev.string),
-            '<b>Date</b>: '+strftime('%a %b %m - %H:%M %p PST', mtime),
+            f'<b>Repo</b>: {repo.name}',
+            f'<b>Update</b>: {ver.string} (from {_prev.string})',
+            f'<b>Date</b>: {_date_s}',
         ]
 
         # Add notes
@@ -156,18 +155,18 @@ class PRNotes(object):
         for _line in self._summary_lines:
             _line = _link_tickets(_line, get_ticket_url=get_ticket_url)
             if _line.startswith(' - '):
-                _lines += ['   {},'.format(_line)]
+                _lines += [f'   {_line},']
             elif _line.strip().endswith(':'):
-                _lines += [' - {}'.format(_line)]
+                _lines += [f' - {_line}']
             else:
-                _lines += [' - {},'.format(_line)]
+                _lines += [f' - {_line},']
         _lines += ['', '<b>Tech notes:</b>']
         for _line in self._tech_lines:
-            _lines += [' - {},'.format(_line)]
+            _lines += [f' - {_line},']
 
         # Add show diffs
         if diffs_link:
-            _diffs = '<a href={}>View diffs</a>'.format(diffs_link)
+            _diffs = f'<a href={diffs_link}>View diffs</a>'
             _lines += ['', _diffs]
         for _label, _link in links:
             _diffs = f'<a href={_link}>{_label}</a>'
@@ -219,8 +218,8 @@ def _link_tickets(line, get_ticket_url):
         return line
     for _chunk in line.split('[')[1:]:
         _ticket = _chunk.split(']')[0]
-        _ticket_str = '[{}]'.format(_ticket)
+        _ticket_str = f'[{_ticket}]'
         _url = get_ticket_url(_ticket)
-        _link = '<a href={}>{}</a>'.format(_url, _ticket_str)
+        _link = f'<a href={_url}>{_ticket_str}</a>'
         _line = _line.replace(_ticket_str, _link)
     return _line

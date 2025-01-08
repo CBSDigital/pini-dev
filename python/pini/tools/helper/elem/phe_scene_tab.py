@@ -456,7 +456,7 @@ class CLSceneTab:
     def _redraw__SAdd(self):
         _outs = [_out for _out in self.ui.SOutputs.selected_datas()
                  if dcc.can_reference_output(_out)]
-        _type = single({_out.basic_type for _out in _outs}, catch=True)
+        _type = single({_out.content_type for _out in _outs}, catch=True)
         self.ui.SAdd.setText(
             f'Add {len(_outs):d} {_type or "output"}{plural(_outs)}')
         self.ui.SAdd.setEnabled(bool(_outs))

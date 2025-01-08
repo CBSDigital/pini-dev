@@ -85,6 +85,8 @@ class CCPOutputBase(elem.CPOutputBase):
             _c_type = 'Video'
         elif self.extn in ('jpg', 'exr') and isinstance(self, File):
             _c_type = 'Image'
+        elif self.extn == 'gz' and self.filename.endswith('.ass.gz'):
+            _c_type = 'AssArchive'
         else:
             _c_type = self.extn.capitalize()
         assert is_pascal(_c_type) or _c_type[0].isdigit()
@@ -217,6 +219,7 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (CPOutput list): representations
         """
+        _LOGGER.debug('FIND REPS %s', self)
         _reps = []
         for _rep in self._read_reps():
             if extn and _rep.extn != extn:
@@ -238,7 +241,7 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (CPOutput list): representations
         """
-        _LOGGER.debug('FIND REPS %s', self)
+        _LOGGER.debug('READ REPS %s', self)
         _LOGGER.debug(' - TASK %s', self.task)
         _LOGGER.debug(' - EXTN %s', self.extn)
 
@@ -252,7 +255,7 @@ class CCPOutputBase(elem.CPOutputBase):
                     continue
                 _pub_g = self.entity.find_publish(
                     ver_n='latest', tag=self.tag, versionless=False,
-                    task=_task, catch=True)
+                    task=_task, extn='ma', catch=True)
                 _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub_g)
                 if _pub_g:
                     _pub = pipe.CACHE.obt(_pub_g)
@@ -260,8 +263,12 @@ class CCPOutputBase(elem.CPOutputBase):
 
         # Add ass.gz for model refs
         if self.pini_task in ('model', 'rig'):
+            _LOGGER.debug(
+                ' - CHECKING FOR AssArchive tag=%s ety=%s', self.tag,
+                self.entity)
             _ass = self.entity.find_output(
-                type_='ass_gz', ver_n='latest', tag=self.tag, catch=True)
+                content_type='AssArchive', ver_n='latest', tag=self.tag,
+                catch=True)
             if _ass:
                 _reps.append(_ass)
 

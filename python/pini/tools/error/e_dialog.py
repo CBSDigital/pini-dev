@@ -1,13 +1,17 @@
 """Tools for managing the error catcher dialog."""
 
+import logging
+
 from pini import icons, qt
 from pini.utils import File, email
 
 from . import e_error
 
+_LOGGER = logging.getLogger(__name__)
+_DIR = File(__file__).to_dir()
+
 EMOJI = icons.EMOJI.find_emoji("Lemon")
 ICON = EMOJI.path
-_DIR = File(__file__).to_dir()
 UI_FILE = _DIR.to_file('error_catcher.ui')
 
 
@@ -26,20 +30,26 @@ class _ErrorCatcherUi(qt.CUiDialog):
             stack_key (str): override stack key
                 (to allow multiple error dialogs)
         """
-        super(_ErrorCatcherUi, self).__init__(
+        super().__init__(
             ui_file=UI_FILE, load_settings=False, parent=parent,
             catch_errors=False, show=show, stack_key=stack_key)
         self.set_window_icon(ICON)
 
-        self.set_error(error or e_error.PEError())
+        self.set_error(error or e_error.PEError(), trigger=False)
 
-    def set_error(self, error):
+    def set_error(self, error_, trigger=True):
         """Apply the given error to the ui.
 
         Args:
-            error (PEError): error to apply
+            error_ (PEError): error to apply
+            trigger (bool): apply triggered global
         """
-        self.error = error
+        _LOGGER.warning('APPLYING ERROR %s', error_)
+        from pini.tools import error
+        if trigger:
+            error.TRIGGERED = True
+
+        self.error = error_
 
         self._redraw__Label()
         self.ui.Lines.redraw()
@@ -50,10 +60,9 @@ class _ErrorCatcherUi(qt.CUiDialog):
     def _redraw__Label(self):
         if self.error.type_name:
             _text = '\n'.join([
-                'There has been an error ({}):'.format(
-                    self.error.type_name),
+                f'There has been an error ({self.error.type_name}):'
                 '',
-                str(self.error.message),
+                f'{self.error.message}',
             ])
         else:
             _text = ''
