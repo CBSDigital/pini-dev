@@ -18,7 +18,7 @@ class PRTestFile(PyFile):
         Args:
             file_ (str): path to test file
         """
-        super(PRTestFile, self).__init__(file_)
+        super().__init__(file_)
 
         if '/integration/' in self.path:
             self.test_type = 'integration'
@@ -53,11 +53,12 @@ class PRTestFile(PyFile):
 
         raise ValueError(match)
 
-    def find_tests(self, filter_=None):
+    def find_tests(self, filter_=None, strict=True):
         """Find unit/integration tests in this file.
 
         Args:
             filter_ (str): apply test name filter
+            strict (bool): check test naming
 
         Returns:
             (PRTest list): unit/integration tests
@@ -86,6 +87,9 @@ class PRTestFile(PyFile):
                     continue
                 _test = r_test.PRTest(
                     method=_def, class_=_p_class, py_file=self)
+                if strict and not _test.clean_name.startswith('test'):
+                    _test.edit()
+                    raise RuntimeError(f'Bad test name {self}')
                 _tests.append(_test)
 
         return _tests

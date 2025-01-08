@@ -355,7 +355,8 @@ class CPOutputBase:
         Returns:
             (dict): metadata
         """
-        return self.metadata_yml.read_yml(catch=True) or {}
+        _data = self.metadata_yml.read_yml(catch=True) or {}
+        return _data
 
     def _find_templates(self, types):
         """Find templates of the given list of types.

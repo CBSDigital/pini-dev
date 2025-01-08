@@ -432,6 +432,9 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     Returns:
         (str): path to icon
     """
+    _LOGGER.debug('OUTPUT TO TYPE ICON %s', output)
+    _LOGGER.debug(
+        ' - BASIC/CONTENT TYPES %s %s', output.basic_type, output.content_type)
     if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
         return _NO_CACHE_TYPE_ICON
     if output.basic_type == 'render':

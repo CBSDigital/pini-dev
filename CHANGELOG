@@ -1,3 +1,13 @@
+## [6.29.0] - Wed 2025-01-08 14:42
+### Summary
+ - Pini Helper:
+    - apply shotgrid range on new scene,
+### Updated
+ - pini.pipe.CPWork.load apply range setting on new scene,
+ - pini.tools.release.PRTest.edit added,
+ - pini.tools.release.find_tests added strict arg to enforce test prefix,
+
+
 ## [6.28.0] - Wed 2025-01-08 08:24
 ### Summary
  - Pini Helper:

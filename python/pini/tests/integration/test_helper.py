@@ -144,6 +144,7 @@ class TestHelper(unittest.TestCase):
     def test_scene_refs_filter(self):
 
         _helper = helper.obt_helper()
+        _helper.ui.MainPane.select_tab('Scene')
 
         _filters = [_helper.ui.SSceneRefsShowLookdevs,
                     _helper.ui.SSceneRefsShowRigs,
@@ -176,7 +177,8 @@ class TestHelper(unittest.TestCase):
         _tab = _helper.ui.EExportPane.find_tabs(enabled=True)[-1]
         _LOGGER.info(' - TAB %s', _tab)
         assert _helper.ui.EExportPane.save_policy == qt.SavePolicy.SAVE_IN_SCENE
-        _LOGGER.info(' - SCENE SETTINGS KEY %s', _helper.ui.EExportPane.settings_key)
+        _LOGGER.info(
+            ' - SCENE SETTINGS KEY %s', _helper.ui.EExportPane.settings_key)
         _helper.ui.EExportPane.select_tab(_tab, emit=True)
         assert _helper.ui.EExportPane.current_tab_text() == _tab
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane')

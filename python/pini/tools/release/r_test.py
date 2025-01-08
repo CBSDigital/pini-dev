@@ -10,7 +10,7 @@ from pini.utils import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class PRTest(object):
+class PRTest:
     """Represents a unit/integration test."""
 
     def __init__(self, method, class_, py_file):
@@ -45,6 +45,10 @@ class PRTest(object):
         _LOGGER.debug(' - CACHE FMT %s', _cache_fmt)
         return _cache_fmt
 
+    def edit(self):
+        """Edit this test in a text editor."""
+        self.method.edit()
+
     def execute(self):
         """Execute this test."""
         from pini.tools import error
@@ -55,7 +59,7 @@ class PRTest(object):
         _last_complete_time = self.last_complete_time()
 
         # Print header
-        _title = '------------- EXECUTE {} -------------'.format(self)
+        _title = f'------------- EXECUTE {self} -------------'
         print('\n'+'-'*len(_title))
         print(_title)
         print('-'*len(_title)+'\n')
@@ -90,8 +94,7 @@ class PRTest(object):
         self.last_complete_time(complete_time=time.time(), force=True)
 
         # Print tail
-        _tail = '---------- COMPLETE {} ({:.01f}s) ----------'.format(
-            self, _dur)
+        _tail = f'---------- COMPLETE {self} ({_dur:.01f}s) ----------'
         print('\n'+'-'*len(_tail))
         print(_tail)
         print('-'*len(_tail)+'\n')
@@ -162,5 +165,6 @@ class PRTest(object):
         return complete_time or time.time()
 
     def __repr__(self):
-        return '<{}({}):{}>'.format(
-            type(self).__name__, self.test_type[0].upper(), self.name)
+        _type = type(self).__name__
+        _type_chr = self.test_type[0].upper()
+        return f'<{_type}({_type_chr}):{self.name}>'

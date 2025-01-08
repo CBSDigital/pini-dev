@@ -627,6 +627,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             lazy (bool): don't load the file if it's already open
             load_func (fn): override load function
         """
+        _LOGGER.debug('LOAD WORK %s', self)
 
         # Obtain file to load - if this work file does not exist then
         # load the job empty file (if any)
@@ -642,14 +643,22 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         elif _file:
             dcc.load(_file, parent=parent, force=force, lazy=lazy)
         else:
+            _LOGGER.debug(' - NEW SCENE')
             dcc.new_scene(force=force, parent=parent)
             _settings = self.entity.settings
+            _LOGGER.debug(' - SETTINGS %s', _settings)
             _res = _settings.get('res')
+            _LOGGER.debug(' - RES %s', _res)
             if _res:
                 dcc.set_res(*_res)
             _fps = _settings.get('fps')
+            _LOGGER.debug(' - FPS %s', _fps)
             if _fps:
                 dcc.set_fps(_fps)
+            _rng = _settings.get('range')
+            _LOGGER.debug(' - RNG %s', _rng)
+            if _rng:
+                dcc.set_range(*_rng)
         if _save:
             self.save()
 
