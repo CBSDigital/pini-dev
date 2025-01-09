@@ -774,6 +774,14 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         raise ValueError(template)
 
+    def to_stream(self):
+        """Obtain path to version zero of this stream.
+
+        Returns:
+            (str): stream key
+        """
+        return self.to_work(ver_n=0).path
+
     def to_work(
             self, task=None, tag=EMPTY, user=EMPTY, ver_n=None,
             dcc_=None, extn=EMPTY, class_=None):

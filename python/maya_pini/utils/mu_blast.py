@@ -37,9 +37,13 @@ def _build_tmp_blast_cam(cam):
 
     set_namespace(":"+_BLAST_TMP_NS, clean=True)
 
-    # Duplicate camera + move dulplicate to world
+    # Duplicate camera + remove unwanted childre + move dulplicate to world
     _src = pom.CCamera(cam)
     _cam = _src.duplicate(upstream_nodes=True)
+    for _node in _cam.find_children():
+        if _node != _cam.shp:
+            _node.delete()
+    _LOGGER.debug(' - TMP BLAST CAM %s %s', _cam, type(_cam))
     for _plug in [_cam.plug[_attr] for _attr in 'trs']+_cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
@@ -137,6 +141,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
         'overscan': 1,
         'displayResolution': False,
         'panZoomEnabled': False})
+    _LOGGER.debug(' - APPLY CAM %s %s %s', _editor, camera, type(camera))
     cmds.modelEditor(_editor, edit=True, camera=camera)
     if show:
         cmds.showWindow(_window)
@@ -189,7 +194,7 @@ def _exec_blast(
         'jpg': "JPEG",
     }.get(seq.extn, seq.extn.upper()))
 
-    _filename = '{}/{}'.format(seq.dir, seq.base)
+    _filename = f'{seq.dir}/{seq.base}'
     _LOGGER.debug(' - BLAST FILENAME %s', _filename)
     _LOGGER.debug(' - START/END %d/%d', _start, _end)
     cmds.playblast(
@@ -340,9 +345,9 @@ def blast(
         _clip.delete(force=force, wording='Replace')
     except OSError:
         raise error.HandledError(
-            'Unable to delete existing file:\n\n{}\n\n'
-            'This could be caused by having the file open already in a '
-            'viewing application (eg. rv).'.format(_clip.path))
+            f'Unable to delete existing file:\n\n{_clip.path}\n\n'
+            f'This could be caused by having the file open already in a '
+            f'viewing application (eg. rv).')
     _clip.test_dir()
     _seq = _tmp_seq or _clip
     _LOGGER.debug(' - SEQ %s', _seq)

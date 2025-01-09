@@ -8,6 +8,7 @@ from pini.qt import QtGui
 from pini.utils import str_to_seed, cache_result, Seq, Video, File, to_str
 
 _LOGGER = logging.getLogger(__name__)
+_WORK_ICON_FUNC = None
 
 CURRENT_ICON = icons.find('Star')
 UPDATE_ICON = icons.find('Gear')
@@ -105,6 +106,16 @@ _NAME_MAP = {
     'xmastrees': 'Christmas Tree',
 }
 _ICON_CACHE = {}
+
+
+def install_work_icon_func(func):
+    """Install function to obtain an icon for a work file.
+
+    Args:
+        func (fn): work to icon function to apply
+    """
+    global _WORK_ICON_FUNC
+    _WORK_ICON_FUNC = func
 
 
 def is_active():
@@ -468,6 +479,23 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
     return _task_map.get(_step) or _task_map.get(_task)
 
 
+def _basic_work_icon(work):
+    """Basic work to icon function.
+
+    Args:
+        work (CCPWork): work file to read icon for
+
+    Returns:
+        (CPixmap): icon pixmap
+    """
+    if work.ver_n == 8:
+        return _8_BALL_ICON
+    _icons = list(_WORK_ICONS)
+    str_to_seed(work.work_dir.path+str(work.tag)).shuffle(_icons)
+    return _icons[work.ver_n % len(_icons)]
+
+
+@cache_result
 def work_to_icon(work):
     """Obtain icon for the given work file.
 
@@ -477,8 +505,6 @@ def work_to_icon(work):
     Returns:
         (str): path to icon
     """
-    if work.ver_n == 8:
-        return _8_BALL_ICON
-    _icons = list(_WORK_ICONS)
-    str_to_seed(work.work_dir.path+str(work.tag)).shuffle(_icons)
-    return _icons[work.ver_n % len(_icons)]
+    if _WORK_ICON_FUNC:
+        return _WORK_ICON_FUNC(work)
+    return _basic_work_icon(work)

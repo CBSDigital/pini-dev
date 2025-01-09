@@ -158,8 +158,35 @@ def create(entity_type, data):
     return to_handler().create(entity_type, data)
 
 
+def _to_filters(filters, job=None, entity=None, id_=None):
+    """Build filters list.
+
+    Args:
+        filters (list): specified filters
+        job (CPJob): add job filter
+        entity (CPEntity): add entity filter
+        id_ (int): add id filter
+
+    Returns:
+        (tuple list): filters list
+    """
+    from pini.pipe import shotgrid
+
+    _filters = list(filters) if filters else []
+    if job:
+        _proj_s = shotgrid.SGC.find_proj(job)
+        _filters.append(_proj_s.to_filter())
+    if entity:
+        _ety_s = shotgrid.SGC.find_entity(entity)
+        _filters.append(_ety_s.to_filter())
+    if id_ is not None:
+        _filters.append(('id', 'is', id_))
+    return _filters
+
+
 def find(
-        entity_type, filters=(), fields=(), fmt='list', job=None, id_=None,
+        entity_type, filters=(), fields=(), fmt='list',
+        job=None, entity=None, id_=None,
         limit=0, order=None):
     """Wrapper for Shotgrid.find command.
 
@@ -171,6 +198,7 @@ def find(
             list - default results list
             dict - sort results into dict with id as key
         job (CPJob): apply job filter
+        entity (CPEntity): add entity filter
         id_ (int): apply id filter
         limit (int): limit number of results (see sg docs)
         order (dict list): apply sorting (see sg docs)
@@ -178,14 +206,7 @@ def find(
     Returns:
         (dict list): results
     """
-    from pini.pipe import shotgrid
-
-    _filters = list(filters) if filters else []
-    if job:
-        _proj_s = shotgrid.SGC.find_proj(job)
-        _filters.append(_proj_s.to_filter())
-    if id_ is not None:
-        _filters.append(('id', 'is', id_))
+    _filters = _to_filters(filters, job=job, entity=entity, id_=id_)
     _results = to_handler().find(
         entity_type, filters=_filters, fields=fields, limit=limit,
         order=order)
@@ -233,21 +254,20 @@ def find_fields(entity_type):
     return to_handler().find_fields(entity_type)
 
 
-def find_one(entity_type, filters=(), fields=(), id_=None):
+def find_one(entity_type, filters=(), fields=(), entity=None, id_=None):
     """Wrapper for Shotgrid.find_one command.
 
     Args:
         entity_type (str): type of entity to find
         filters (list): filter the results
         fields (tuple): fields to return
+        entity (CPEntity): add entity filter
         id_ (int): filter by entity id
 
     Returns:
         (dict): matching entry
     """
-    _filters = list(filters)
-    if id_:
-        _filters.append(('id', 'is', id_))
+    _filters = _to_filters(filters, id_=id_, entity=entity)
     return to_handler().find_one(
         entity_type, filters=_filters, fields=fields)
 

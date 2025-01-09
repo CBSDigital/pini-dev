@@ -7,6 +7,7 @@ import logging
 import time
 
 from pini import qt, icons
+from pini.qt import QtGui
 from pini.utils import strftime, cache_result, get_user
 
 from .. import ph_utils
@@ -69,9 +70,14 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             self._mtime = self.work.mtime()
             self._has_thumb = bool(self.work.obt_image())
             self.set_notes(self.work.notes, redraw=False)
-        self.icon = ph_utils.obt_pixmap(_icon)
 
-        super(PHWorkItem, self).__init__(
+        # Obtain icon
+        if not isinstance(_icon, QtGui.QPixmap):
+            _icon = ph_utils.obt_pixmap(_icon)
+        assert isinstance(_icon, QtGui.QPixmap)
+        self.icon = _icon
+
+        super().__init__(
             list_view=list_view, col='Transparent', data=work,
             height=max(self.text_h, self.thumb_h+20 if self._has_thumb else 0))
 
@@ -165,9 +171,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         # Draw icon
         _icon_size = 35
-        pix.draw_overlay(
-            self.icon, pos=(8, pix.height()/2), anchor='L',
-            size=_icon_size)
+        pix.draw_overlay(self.icon, pos=(8, 8), size=_icon_size)
 
         # Draw text
         _text = self._to_text()
