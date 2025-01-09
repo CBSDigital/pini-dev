@@ -626,7 +626,7 @@ class CLSceneTab:
             _ref for _ref in _refs
             if _ref.output and not _ref.output.is_latest()]
         for _ref in _updateables:
-            self._stage_update(_ref, _ref.output.find_latest())
+            self.stage_ref_update(_ref, _ref.output.find_latest())
 
     def _callback__SDelete(self):
 
@@ -849,7 +849,7 @@ class CLSceneTab:
             _latest = ref.output.find_latest()
             menu.add_action(
                 'Update to latest',
-                wrap_fn(self._stage_update, ref, _latest),
+                wrap_fn(self.stage_ref_update, ref, _latest),
                 icon=_LATEST_ICON, enabled=not _out.is_latest())
             menu.add_action(
                 'Update name to match tag',
@@ -906,7 +906,7 @@ class CLSceneTab:
             # Build update func
             _funcs = []
             for _ref in refs:
-                _fn = wrap_fn(self._stage_update, ref=_ref, output=_latest)
+                _fn = wrap_fn(self.stage_ref_update, ref=_ref, output=_latest)
                 _funcs.append(_fn)
 
             _tags_menu.add_action(
@@ -937,7 +937,7 @@ class CLSceneTab:
                 _label = 'versionless'
             else:
                 _label = f'v{_ver.ver_n:03d}'
-            _fn = wrap_fn(self._stage_update, ref=ref, output=_ver)
+            _fn = wrap_fn(self.stage_ref_update, ref=ref, output=_ver)
             _vers_menu.add_action(_label, _fn, icon=_icon, enabled=_enabled)
             if not _idx and not _ver.ver_n:
                 _vers_menu.add_separator()
@@ -958,7 +958,7 @@ class CLSceneTab:
             _label = to_nice(_rep.content_type)
             _fns = []
             for _ref in refs:
-                _fn = wrap_fn(self._stage_update, ref=_ref, output=_rep)
+                _fn = wrap_fn(self.stage_ref_update, ref=_ref, output=_rep)
                 _fns.append(_fn)
             _reps_menu.add_action(_label, chain_fns(*_fns), icon=UPDATE_ICON)
 
@@ -991,7 +991,7 @@ class CLSceneTab:
                     _ref.is_latest()):
                 continue
             _latest = _ref.output.find_latest()
-            _fn = wrap_fn(self._stage_update, ref=_ref, output=_latest)
+            _fn = wrap_fn(self.stage_ref_update, ref=_ref, output=_latest)
             _actions.append(_fn)
         if _actions:
             _actions += [self.ui.SSceneRefs.redraw]
@@ -1082,9 +1082,9 @@ class CLSceneTab:
             refs (CPipeRef list): references to update
         """
         for _ref in refs:
-            self._stage_update(ref=_ref, output=output)
+            self.stage_ref_update(ref=_ref, output=output)
 
-    def _stage_update(self, ref, output):
+    def stage_ref_update(self, ref, output):
         """Stage a reference update.
 
         Args:

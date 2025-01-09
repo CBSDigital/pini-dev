@@ -32,8 +32,8 @@ def _check_for_output_clash(cacheables, extn):
         _LOGGER.debug('   - OUTPUT %s', _out.path)
         if _out in _outs:
             raise RuntimeError(
-                'Multiple {} cacheables writing to same path: {}'.format(
-                    _cbl.output_name, _out.path))
+                f'Multiple {_cbl.output_name} cacheables writing to same '
+                f'path: {_out.path}')
         _outs.append(_out)
 
 
@@ -59,11 +59,11 @@ def _check_for_overwrite(cacheables, extn, force):
                 len(_to_replace), extn, plural(_to_replace),
                 '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
-                _msg += '\n\n(and {:d} other abc{})'.format(
-                    len(_to_replace)-10, plural(_to_replace[10:]))
+                _n_over = len(_to_replace)-10
+                _msg += f'\n\n(and {_n_over:d} other abc{plural(_n_over)})'
             _icon = icons.find('Bear')
             qt.ok_cancel(
-                _msg, title='Replace Existing', icon=_icon, verbose=0)
+                _msg, title='Replace existing', icon=_icon, verbose=0)
     for _out in _to_replace:
         _out.delete(force=True)
 
@@ -157,8 +157,8 @@ def cache(
     # Warn on no cache template set up
     if not _work.job.find_templates('cache'):
         qt.notify(
-            'No cache template found in this job:\n\n{}\n\n'
-            'Unable to cache.'.format(_work.job.path),
+            f'No cache template found in this job:\n\n{_work.job.path}\n\n'
+            f'Unable to cache.',
             title='Warning')
         return None
 
@@ -198,8 +198,8 @@ def cache(
 
     if use_farm:
         qt.notify(
-            'Submitted {:d} caches to {}.\n\nBatch name:\n{}'.format(
-                len(cacheables), farm.NAME, _work.base),
+            f'Submitted {len(cacheables):d} caches to {farm.NAME}.\n\n'
+            f'Batch name:\n{_work.base}',
             title='Cache Submitted', icon=farm.ICON)
 
     return _outs

@@ -1,3 +1,11 @@
+## [6.30.0] - Thu 2025-01-09 08:02
+### Summary
+ - Pini Helper:
+    - added API call for updating references,
+### Updated
+ - pini.tools.helper.stage_ref_update made public,
+
+
 ## [6.29.0] - Wed 2025-01-08 14:42
 ### Summary
  - Pini Helper:
