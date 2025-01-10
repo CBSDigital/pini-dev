@@ -4,6 +4,7 @@
 
 import logging
 import os
+import sys
 import time
 
 from pini import pipe
@@ -332,7 +333,7 @@ class CDPyJob(CDJob):
         """
         _py_ver = os.environ.get(
             'PINI_DEADLINE_PYVER',
-            '{sys.version_info.major:d}.{sys.version_info.minor:d}')
+            f'{sys.version_info.major:d}.{sys.version_info.minor:d}')
         _data = {
             'Arguments': '',
             'Version': str(_py_ver),

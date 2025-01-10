@@ -1,3 +1,11 @@
+## [6.32.1] - Fri 2025-01-10 11:51
+### Summary
+ - Pini Helper:
+    - bugfix error on may deadline render upate cache,
+### Updated
+ - pini.farm.deadline.CDPyJob bugfix bad py ver due to missing f-string,
+
+
 ## [6.32.0] - Fri 2025-01-10 11:39
 ### Summary
  - Pini Helper:
