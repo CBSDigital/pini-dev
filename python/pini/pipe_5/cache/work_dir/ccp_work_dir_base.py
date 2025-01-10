@@ -193,6 +193,15 @@ class CCPWorkDirBase(CPWorkDir):
 
         return _outs
 
+    @pipe_cache_on_obj
+    def to_stream(self):
+        """Obtain path to version zero of this stream.
+
+        Returns:
+            (str): stream key
+        """
+        return self.to_work(ver_n=0).path
+
     @functools.wraps(CPWorkDir.to_work)
     def to_work(self, **kwargs):
         """Build a work object using this work dir's data.

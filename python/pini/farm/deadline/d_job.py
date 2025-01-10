@@ -4,7 +4,6 @@
 
 import logging
 import os
-import sys
 import time
 
 from pini import pipe
@@ -15,7 +14,7 @@ from . import d_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class CDJob(object):
+class CDJob:
     """Represents a deadline job submission."""
 
     stype = None
@@ -76,10 +75,10 @@ class CDJob(object):
 
         _group = group or os.environ.get('PINI_DEADLINE_GROUP')
         if _group not in farm.find_groups():
-            raise RuntimeError('Bad group {}'.format(_group))
+            raise RuntimeError(f'Bad group {_group}')
         self.group = _group
         if limit_groups:
-            _LOGGER.info(' - LIMIT GROUPS %s', limit_groups)
+            _LOGGER.debug(' - LIMIT GROUPS %s', limit_groups)
             if not isinstance(limit_groups, (list, tuple)):
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:
@@ -179,7 +178,7 @@ class CDJob(object):
             'ChunkSize': str(self.chunk_size),
             'ExtraInfo0': self.job.name,
         }
-        _LOGGER.info(
+        _LOGGER.debug(
             ' - LIMIT GROUPS %s %s', self.limit_groups, _data['LimitGroups'])
 
         if self.batch_name:
@@ -203,7 +202,7 @@ class CDJob(object):
         """Write job submission files to disk."""
 
         # Write info file
-        _LOGGER.info(' - INFO FILE %s', self.info_file.path)
+        _LOGGER.debug(' - INFO FILE %s', self.info_file.path)
         assert not self.info_file.exists()
         _info_data = self._build_info_data()
         d_utils.write_deadline_data(
@@ -218,7 +217,7 @@ class CDJob(object):
             data=_job_data, file_=self.job_file,
             sort=d_utils.job_key_sort)
         _LOGGER.debug(' - JOB DATA %s', _job_data)
-        _LOGGER.info(' - JOB %s', self.job_file.path)
+        _LOGGER.debug(' - JOB %s', self.job_file.path)
 
     def submit(self, submit=True, name=None):
         """Submit this job to deadline.
@@ -277,7 +276,7 @@ class CDCmdlineJob(CDJob):
 
         # Write tmp py file
         self.sh_file.write(' '.join(self.cmds), force=True)
-        _LOGGER.info(' - SH FILE %s', self.sh_file.path)
+        _LOGGER.debug(' - SH FILE %s', self.sh_file.path)
 
         super().write_submission_files()
 
@@ -331,11 +330,12 @@ class CDPyJob(CDJob):
         Returns:
             (dict): submission job data
         """
-        _py_ver = os.environ.get('PINI_DEADLINE_PYVER', '{:d}.{:d}'.format(
-            sys.version_info.major, sys.version_info.minor))
+        _py_ver = os.environ.get(
+            'PINI_DEADLINE_PYVER',
+            '{sys.version_info.major:d}.{sys.version_info.minor:d}')
         _data = {
             'Arguments': '',
-            'Version': '{}'.format(_py_ver),
+            'Version': str(_py_ver),
             'SingleFramesOnly': 'False',
         }
         return _data
@@ -345,6 +345,6 @@ class CDPyJob(CDJob):
 
         # Write tmp py file
         self.py_file.write(self.py, force=True)
-        _LOGGER.info(' - PY FILE %s', self.py_file.path)
+        _LOGGER.debug(' - PY FILE %s', self.py_file.path)
 
         super().write_submission_files()

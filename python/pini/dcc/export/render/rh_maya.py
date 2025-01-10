@@ -105,6 +105,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             label='Version up on render')
 
         self.layout.addStretch()
+        self._callback__Mov()
 
     def _callback__Mov(self):
         self.ui.Cleanup.setVisible(self.ui.Mov.isChecked())
@@ -139,7 +140,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                 f'pini/render/PiniHelper_{_t_stamp}/render.%04d.jpg')
             _LOGGER.info('TMP PATH %s', _tmp_path)
             _out_seq = Seq(_tmp_path)
-            _out.delete(wording='Replace', force=force)
+            _out.delete(wording='replace', force=force)
         else:
             if not _work.find_template('render', catch=True):
                 qt.notify(
@@ -155,7 +156,8 @@ class CMayaLocalRender(CMayaRenderHandler):
             _out_seq = _out
 
         # Execute render
-        _work.save(reason='render', force=force)
+        _bkp = _work.save(reason='render', result='bkp', force=True)
+        _data['bkp'] = _bkp.path
         if not render_:
             return
         render(seq=_out_seq, frames=frames, camera=_cam)

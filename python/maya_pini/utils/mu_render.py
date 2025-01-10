@@ -271,7 +271,7 @@ def render(
     # Prepare output path
     if seq.exists(frames=_frames):
         _LOGGER.info(' - CUR FRAMES %s', seq.to_range())
-        seq.delete(wording='Replace', icon=icons.find('Sponge'), frames=_frames)
+        seq.delete(wording='replace', icon=icons.find('Sponge'), frames=_frames)
 
     # Execute render
     if _mode in ['api', 'mel']:

@@ -1,3 +1,18 @@
+## [6.32.0] - Fri 2025-01-10 11:39
+### Summary
+ - Pini Helper:
+    - export apply path/sg_slotname/sg_scene_file on shotgrid register (nhoyt/blee) [PT-369],
+### Updated
+ - pini.utils.File.write apply utf-8 as default encoding for pep8,
+ - pini.dcc.export.CMayaLocalRender apply bkp to metadata,
+ - pini.dcc.export.build_metadata added bkp arg,
+ - pini.pipe.cache.CCPWork.to_stream added cache,
+ - pini.pipe.shotgrid.SGC.find_pub_type added hip -> Houdini Scene handling,
+ - pini.pipe.shotgrid.create_pub_file apply path/sg_slotname/sg_scene_file data,
+ - pini.farm.deadline.submit_maya_render apply bkp to metadata,
+ - hou_pini.h_pipe.flipbook apply metadata to output,
+
+
 ## [6.31.0] - Thu 2025-01-09 14:43
 ### Summary
  - Pini Helper:

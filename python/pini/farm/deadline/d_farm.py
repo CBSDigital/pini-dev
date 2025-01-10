@@ -205,7 +205,7 @@ class CDFarm(base.CFarm):
             force=True, reason='deadline render', result='bkp')
         _metadata = export.build_metadata(
             'render', sanity_check_=True, checks_data=checks_data,
-            task=_work.task, force=force)
+            task=_work.task, force=force, bkp=_render_scene.path)
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')

@@ -8,8 +8,8 @@ from pini.utils import get_user
 
 def build_metadata(
         handler, action=None, work=None, sanity_check_=False, checks_data=None,
-        range_=None, notes=None, task=None, src=None, content_type=None,
-        src_ref=None, require_notes=False, force=False):
+        range_=None, notes=None, task=None, src=None, bkp=None,
+        content_type=None, src_ref=None, require_notes=False, force=False):
     """Obtain metadata to apply to a generated export.
 
     Args:
@@ -23,6 +23,8 @@ def build_metadata(
         notes (str): export notes
         task (str): task to pass to sanity check
         src (str): path to source file
+        bkp (str): path to bkp file for this export (ie. timestamped copy
+            of scene file)
         content_type (str): apply content type data (eg. ShadersMa/VrmeshMa)
         src_ref (str): path to source reference (eg. rig path)
         require_notes (bool): request notes if none are provided
@@ -37,6 +39,8 @@ def build_metadata(
     _data['handler'] = handler
     if src:
         _data['src'] = src
+    if bkp:
+        _data['bkp'] = bkp
     if src_ref:
         _data['src_ref'] = src_ref
 

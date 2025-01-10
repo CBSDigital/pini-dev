@@ -2,10 +2,10 @@
 
 import logging
 import operator
+import platform
 
 from pini import pipe
-from pini.utils import (
-    Seq, Video, TMP, Image, single)
+from pini.utils import Seq, Video, TMP, Image, single, File
 
 from . import sg_handler
 
@@ -52,26 +52,18 @@ def create_pub_file(
     _sg_type = shotgrid.SGC.find_pub_type(
         output.extn, type_='Sequence' if isinstance(output, Seq) else 'File')
     _sg_user = shotgrid.SGC.find_user()
+    _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
 
     # Build data
-    _data = {
-        'code': output.filename,
-        'created_by': _sg_user.to_entry(),
-        'description': _notes,
-        'entity': _sg_ety.to_entry(),
-        'name': output.filename,
-        'path_cache': pipe.ROOT.rel_path(output.path),
-        'project': _sg_proj.to_entry(),
-        'published_file_type': _sg_type.to_entry(),
-        'sg_status_list': status,
-        'updated_by': _sg_user.to_entry(),
-        'version_number': output.ver_n,
-    }
-
-    # Add task (if applicable)
-    _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
-    if _sg_task:
-        _data['task'] = _sg_task.to_entry()
+    _data = _build_pub_data(
+        output, ver_n=output.ver_n, job=output.job, entity=output.entity,
+        task=_sg_task, user=_sg_user, type_=_sg_type, status=status,
+        notes=_notes)
+    _data['sg_slotname'] = output.output_name
+    _scene_entry = _obt_scene_entry(
+        output, user=_sg_user, task=_sg_task, notes=_notes)
+    if _scene_entry:
+        _data['sg_scene_file'] = _scene_entry
 
     # Apply to shotgrid
     if not _sg_pub:
@@ -113,6 +105,73 @@ def create_pub_file(
             'PublishedFile', _id, _thumb.path)
 
     return _sg_pub
+
+
+def _build_path_data(file_, name=None):
+    """Build the given path into shotgrid path data.
+
+    Args:
+        file_ (File): file to convert
+        name (str): override name token
+
+    Returns:
+        (dict): path data
+    """
+    if platform.system() == 'Windows':
+        _local_path_key = 'local_path_windows'
+    else:
+        raise NotImplementedError(platform.system())
+
+    return {
+        'link_type': 'local',
+        'local_path': file_.path,
+        _local_path_key: file_.path,
+        'name': name or file_.filename,
+    }
+
+
+def _build_pub_data(
+        path, user, task, entity, job, ver_n, notes, type_=None, status='cmpt',
+        name=None):
+    """Build pub data dict.
+
+    Args:
+        path (Path): object being published
+        user (SGCUser): publishing user
+        task (SGCTask): parent task
+        entity (CPEntity): parent entity
+        job (CPJob): parent job
+        ver_n (int): publish version number
+        notes (str): publish notes
+        type_ (SGCPubType): override publish type
+        status (str): override status
+        name (str): override path name
+
+    Returns:
+        (dict): publish data
+    """
+    from pini.pipe import shotgrid
+
+    _type = type_ or shotgrid.SGC.find_pub_type(path.extn)
+    _path_cache = pipe.ROOT.rel_path(path)
+    _name = name or path.filename
+    _data = {
+        'code': _name,
+        'created_by': user.to_entry(),
+        'description': notes,
+        'entity': entity.sg_entity.to_entry(),
+        'name': _name,
+        'path': _build_path_data(path, name=_name),
+        'path_cache': _path_cache,
+        'project': job.sg_proj.to_entry(),
+        'published_file_type': _type.to_entry(),
+        'sg_status_list': status,
+        'updated_by': user.to_entry(),
+        'version_number': ver_n,
+    }
+    if task:
+        _data['task'] = task.to_entry()
+    return _data
 
 
 def _find_sg_pub(output, sg_ety):
@@ -164,3 +223,49 @@ def _find_sg_pub(output, sg_ety):
         _pub.omit()
     _sg_pub.set_status('wtg')
     return _sg_pub
+
+
+def _obt_scene_entry(output, user, task, notes):
+    """Obtain PublishedFile data for the given output.
+
+    Args:
+        output (CCPOutput): output file
+        user (SGCUser): output user
+        task (SGCTask): output task
+        notes (str): publish notes
+
+    Returns:
+        (dict): scene file data
+    """
+    from pini.pipe import shotgrid
+
+    # Obtain scene path + name
+    _scene = _name = None
+    _bkp = output.metadata.get('bkp')
+    if _bkp:
+        _scene = _bkp
+        _file = File(_scene)
+        _name = f'{_file.to_dir().filename}/{_file.filename}'
+    _scene = _scene or output.metadata.get('src') or pipe.cur_work()
+    _LOGGER.info(' - SCENE %s', _scene)
+    if not _scene:
+        return None
+
+    # Try to find existing
+    _path_cache = pipe.ROOT.rel_path(_scene)
+    _scene_entry = shotgrid.find_one(
+        'PublishedFile', entity=output.entity,
+        filters=[('path_cache', 'is', _path_cache)])
+
+    # Create entry if required
+    if not _scene_entry:
+        _LOGGER.info(' - CREATE PublishedFile %s', _scene)
+        _file = File(_scene)
+        _data = _build_pub_data(
+            _file, name=_name, job=output.job, entity=output.entity,
+            user=user, task=task, ver_n=output.ver_n, notes=notes)
+        _LOGGER.info(' - SCENE DATA %s', _data)
+        _scene_entry = shotgrid.create('PublishedFile', _data)
+        _LOGGER.info(' - SCENE ENTRY %s', _scene_entry)
+
+    return _scene_entry

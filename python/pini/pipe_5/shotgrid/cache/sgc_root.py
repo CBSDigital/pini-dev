@@ -201,6 +201,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
 
         # Try using mapping
         _map = {
+            'hip': 'Houdini Scene',
             'mp4': 'Movie',
             'mov': 'Movie',
             'rs': 'Redshift Proxy',

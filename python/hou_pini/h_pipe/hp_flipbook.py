@@ -6,6 +6,7 @@ import os
 import toolutils  # pylint: disable=import-error
 
 from pini import pipe, dcc
+from pini.dcc import export
 from pini.tools import error, usage
 from pini.utils import find_exe, find_viewer, TMP
 
@@ -85,9 +86,10 @@ def flipbook(
     _work = pipe.CACHE.obt_cur_work()
     _fps = dcc.get_fps()
     _LOGGER.info(' - CAM %s', _cam)
-
+    _bkp = None
     if save:
-        _work.save(reason='blast')
+        _bkp = _work.save(reason='blast', result='bkp')
+    _data = export.build_metadata('Flipbook', work=_work, bkp=_bkp)
     u_flipbook(_seq, force=True, view=False, range_=range_)
 
     # Post processing
@@ -103,7 +105,7 @@ def flipbook(
     if view:
         _LOGGER.info(' - MPLAY %s', _mplay)
         _viewer.view(_out)
-
+    _out.set_metadata(_data, force=True)
     if pipe.MASTER == 'shotgrid':
         from pini.pipe import shotgrid
         shotgrid.create_pub_file(_out, thumb=_thumb, status='ip', force=True)

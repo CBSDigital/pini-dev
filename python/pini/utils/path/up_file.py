@@ -53,7 +53,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         Returns:
             (File): updated file
         """
-        _path = '{}/{}.{}'.format(self.dir, self.base, extn)
+        _path = f'{self.dir}/{self.base}.{extn}'
         return File(_path)
 
     def bkp(self, force=True, verbose=1):
@@ -120,8 +120,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             if not force:
                 from pini import qt, icons
                 _result = qt.yes_no_cancel(
-                    'Replace existing file:\n\n{}\n\nwith this '
-                    'one?\n\n{}'.format(_trg.path, self.path),
+                    f'Replace existing file:\n\n{_trg.path}\n\nwith this '
+                    f'one?\n\n{self.path}',
                     icon=icons.find('Spider'))
                 if not _result:
                     return
@@ -194,7 +194,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _subl = _subl or 'subl'
         _arg = self.path
         if line_n is not None:
-            _arg += ':{:d}'.format(line_n)
+            _arg += f':{line_n:d}'
         _LOGGER.debug('EXE %s', _subl)
         _cmds = [_subl, _arg]
         system(_cmds, verbose=verbose, result=False)
@@ -300,7 +300,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """Read contents of this file as text.
 
         Args:
-            encoding (str): force encoding (eg. utf8)
+            encoding (str): force encoding (eg. utf-8)
             catch (bool): no error if file missing
 
         Returns:
@@ -314,7 +314,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             raise OSError('File does not exist '+self.path)
 
         if not encoding:
-            with open(self.path, 'r') as _hook:
+            with open(self.path, 'r', encoding='utf-8') as _hook:
                 _body = _hook.read()
         else:
             with codecs.open(self.path, encoding=encoding) as _hook:
@@ -360,7 +360,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             if catch:
                 return {}
             _handle.close()
-            raise ReadDataError('{} {}'.format(_exc, self.path))
+            raise ReadDataError(f'{_exc} {self.path}')
         _handle.close()
         return _obj
 
@@ -382,7 +382,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """Read this file as yaml.
 
         Args:
-            encoding (str): force encoding (eg. utf8)
+            encoding (str): force encoding (eg. utf-8)
             catch (bool): no error on file missing or yaml parse fail
 
         Returns:
@@ -457,11 +457,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             if not _extn:
                 _filename = _base
             else:
-                _filename = '{}.{}'.format(_base, _extn)
+                _filename = f'{_base}.{_extn}'
         if hidden:
             _filename = '.'+_filename
         _LOGGER.debug(' - FILENAME %s', _filename)
-        _path = '{}/{}'.format(Dir(dir_ or self.dir).path, _filename)
+        _path = f'{Dir(dir_ or self.dir).path}/{_filename}'
         _LOGGER.debug(' - PATH %s', _path)
         return File(_path)
 
@@ -475,7 +475,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         self.test_dir()
         self._pathlib.touch()
 
-    def write(self, text, force=False, wording='Overwrite', encoding=None):
+    def write(self, text, force=False, wording='Overwrite', encoding='utf-8'):
         """Write text to this file.
 
         Args:
@@ -490,16 +490,12 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if self.exists():
             if not force:
                 from pini import qt
-                qt.ok_cancel('{} existing file?\n\n{}'.format(
-                    wording, self.path))
+                qt.ok_cancel(f'{wording} existing file?\n\n{self.path}')
             os.remove(self.path)
 
         # Write file
-        _kwargs = {}
-        if encoding:
-            _kwargs['encoding'] = encoding
         self.test_dir()
-        with open(self.path, 'w', **_kwargs) as _file:
+        with open(self.path, 'w', encoding=encoding) as _file:
             _file.write(text)
 
     def write_json(self, data):
@@ -535,7 +531,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
     def write_yml(
             self, data, force=False, mode='w', fix_unicode=False,
-            wording='Replace'):
+            wording='replace'):
         """Write yaml data to this file.
 
         Args:
@@ -551,7 +547,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if mode != 'a':
             self.delete(force=force, wording=wording)
         self.to_dir().mkdir()
-        with open(self.path, mode=mode) as _hook:
+        with open(self.path, mode=mode, encoding='utf-8') as _hook:
             if not fix_unicode:
                 yaml.dump(data, _hook, default_flow_style=False)
             else:

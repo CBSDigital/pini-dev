@@ -53,6 +53,8 @@ class TestHelper(unittest.TestCase):
             _LOGGER.info(' - APPLYING SCENE TAB %s en=%d', _helper.job, _en)
             testing.enable_file_system(_en)
 
+            assert not error.TRIGGERED
+
             _helper.ui.MainPane.select_tab('Scene')
             if dcc.NAME == 'maya':
                 _tabs = ['SAssetsTab', 'SEntityTab', 'SMediaTab']
@@ -62,8 +64,12 @@ class TestHelper(unittest.TestCase):
                 raise NotImplementedError(dcc.NAME)
             _LOGGER.info(' - CHECKING TYPES %s', _tabs)
 
+            assert not error.TRIGGERED
+
             for _tab in _tabs:
+
                 _LOGGER.info(' - CHECKING TYPE %s %s', _tab, _helper.entity)
+
                 _helper.ui.SOutputsPane.select_tab(_tab)
                 _helper.ui.SOutputVers.select_text('latest')
                 assert _helper.ui.SOutputs.all_data()
@@ -73,6 +79,8 @@ class TestHelper(unittest.TestCase):
                 _LOGGER.info('   - TAG %s', _helper.ui.SOutputTag.currentText())
                 _LOGGER.info('   - VERS %s', _helper.ui.SOutputVers.currentText())
                 _LOGGER.info('   - DISPLAYING %d OUTS %s', len(_outs), _outs)
+
+                assert not error.TRIGGERED
 
             _LOGGER.info(' - REVERTING TO EXPORT TAB')
             _helper.ui.EExportPane.select_tab('Publish')
