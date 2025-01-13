@@ -1,3 +1,12 @@
+## [6.33.1] - Mon 2025-01-13 10:32
+### Summary
+ - Pini Helper:
+    - bugfix bugfix error on stage abc import (farnold/eehemann/nwray),
+### Updated
+ - pini.tools.helper bugfix error on stage abc import,
+ - pini.tools.helper disable fx task abc -> aiStandIn casting,
+
+
 ## [6.33.0] - Mon 2025-01-13 09:41
 ### Summary
  - Pini Helper:

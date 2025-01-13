@@ -1011,9 +1011,10 @@ class PHSceneTab:
         """
         _LOGGER.debug('STAGE IMPORT')
 
+        _out = pipe.CACHE.obt(output)
         _ignore = [_ref.namespace for _ref in self._staged_imports]
         _ns = output_to_namespace(
-            output, attach=attach, ignore=_ignore, base=base)
+            _out, attach=attach, ignore=_ignore, base=base)
         _ref = _StagedRef(output=output, namespace=_ns, attach=attach)
         if attach:
             _existing = dcc.find_pipe_ref(_ns, catch=True)
@@ -1025,7 +1026,7 @@ class PHSceneTab:
         _lookdev_mode = self.ui.SLookdev.currentText()
         if (
                 dcc.NAME == 'maya' and
-                output.type_ == 'cache' and
+                _out.type_ == 'cache' and
                 _lookdev_mode == 'Reference'):
 
             _LOGGER.debug(' - CHECKING FOR LOOKDEV')
@@ -1033,10 +1034,10 @@ class PHSceneTab:
             # Apply abc mode filter
             _abc_mode = self.ui.SAbcMode.currentText()
             if _abc_mode == 'Auto':
-                _abc_mode = 'aiStandIn' if output.task == 'fx' else 'Reference'
+                _abc_mode = 'Reference'
 
             # Add lookdev if available
-            _lookdev = output.find_lookdev_shaders()
+            _lookdev = _out.find_lookdev_shaders()
             if _lookdev and _abc_mode == 'Reference':
                 _lookdev_ns = _ns+'_shd'
                 _lookdev_ref = _StagedRef(
