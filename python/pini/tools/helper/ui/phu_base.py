@@ -334,17 +334,18 @@ class PHUiBase(
         _LOGGER.debug(' - ADD OUTPUT PATH OPTS %s', output)
         _delete_callback = delete_callback or self.ui.SOutputs.redraw
 
-        if isinstance(output_c, Video) or output.extn in VIDEO_EXTNS:
+        _path = output_c or output
+        if isinstance(_path, Video) or output.extn in VIDEO_EXTNS:
             menu.add_video_actions(
-                output_c, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output_c, Seq):
+                _path, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(_path or output, Seq):
             menu.add_seq_actions(
-                output_c, delete_callback=_delete_callback, delete=delete)
-        elif isinstance(output_c, File):
+                _path, delete_callback=_delete_callback, delete=delete)
+        elif isinstance(_path, File):
             menu.add_file_actions(
-                output_c, delete_callback=_delete_callback, delete=delete)
+                _path, delete_callback=_delete_callback, delete=delete)
         else:
-            raise ValueError(output)
+            raise ValueError(_path)
 
         if (
                 output_c and

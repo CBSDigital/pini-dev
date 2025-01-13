@@ -1,3 +1,15 @@
+## [6.33.3] - Mon 2025-01-13 14:08
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click scene ref missing from shotgrid,
+    - bugfix reload tools not updating helper code,
+### Updated
+ - pini.pipe.shotgrid.create_pub_file cache scene file to entry,
+ - pini.pipe.shotgrid.create_pub_file only use cur work as scene file if entity matches output,
+ - pini.tools.helper scene ref ctx bugfix error on output missing from cache,
+ - pini.refresh bugfix helper module sorting,
+
+
 ## [6.33.2] - Mon 2025-01-13 12:38
 ### Summary
  - Pini Helper:

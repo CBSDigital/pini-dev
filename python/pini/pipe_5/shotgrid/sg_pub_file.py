@@ -5,7 +5,7 @@ import operator
 import platform
 
 from pini import pipe
-from pini.utils import Seq, Video, TMP, Image, single, File
+from pini.utils import Seq, Video, TMP, Image, single, File, get_result_cacher
 
 from . import sg_handler
 
@@ -237,7 +237,6 @@ def _obt_scene_entry(output, user, task, notes):
     Returns:
         (dict): scene file data
     """
-    from pini.pipe import shotgrid
 
     # Obtain scene path + name
     _scene = _name = None
@@ -246,23 +245,48 @@ def _obt_scene_entry(output, user, task, notes):
         _scene = _bkp
         _file = File(_scene)
         _name = f'{_file.to_dir().filename}/{_file.filename}'
-    _scene = _scene or output.metadata.get('src') or pipe.cur_work()
+    _scene = _scene or output.metadata.get('src')
+    if not _scene and output.entity == pipe.cur_entity():
+        _scene = pipe.cur_work()
     _LOGGER.info(' - SCENE %s', _scene)
     if not _scene:
         return None
 
+    return _scene_to_entry(
+        scene=_scene, output=output, user=user, task=task, notes=notes,
+        name=_name)
+
+
+@get_result_cacher(use_args=['scene'])
+def _scene_to_entry(scene, output, user, task, notes, name):
+    """Obtain scene file entry for given scene path.
+
+    Args:
+        scene (str): path to scene file
+        output (CCPOutput): output file
+        user (SGCUser): output user
+        task (SGCTask): output task
+        notes (str): publish notes
+        name (str): pub file name overide
+
+    Returns:
+        (dict): scene file data
+    """
+    from pini.pipe import shotgrid
+    assert isinstance(scene, str)
+
     # Try to find existing
-    _path_cache = pipe.ROOT.rel_path(_scene)
+    _path_cache = pipe.ROOT.rel_path(scene)
     _scene_entry = shotgrid.find_one(
         'PublishedFile', entity=output.entity,
         filters=[('path_cache', 'is', _path_cache)])
 
     # Create entry if required
     if not _scene_entry:
-        _LOGGER.info(' - CREATE PublishedFile %s', _scene)
-        _file = File(_scene)
+        _LOGGER.info(' - CREATE PublishedFile %s', scene)
+        _file = File(scene)
         _data = _build_pub_data(
-            _file, name=_name, job=output.job, entity=output.entity,
+            _file, name=name, job=output.job, entity=output.entity,
             user=user, task=task, ver_n=output.ver_n, notes=notes)
         _LOGGER.info(' - SCENE DATA %s', _data)
         _scene_entry = shotgrid.create('PublishedFile', _data)
