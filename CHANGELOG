@@ -1,3 +1,11 @@
+## [6.33.2] - Mon 2025-01-13 12:38
+### Summary
+ - Pini Helper:
+    - bugfix error on launch due to out of date cache (lcayo),
+### Updated
+ - pini.tools.helper.output_to_type_icon bugfix logging error on non-cache output,
+
+
 ## [6.33.1] - Mon 2025-01-13 10:32
 ### Summary
  - Pini Helper:
