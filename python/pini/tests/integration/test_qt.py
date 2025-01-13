@@ -65,11 +65,6 @@ class TestQt(unittest.TestCase):
 
     def test_block_load_offscreen_geometry(self):
 
-        def _pos_is_onscreen(pos):
-            return bool([
-                _screen for _screen in qt.get_application().screens()
-                if _screen.geometry().contains(pos)])
-
         _ui_file = release.PINI.to_file('python/pini/tests/unit/settings_test.ui')
         assert _ui_file.exists()
         _ui = qt.CUiDialog(ui_file=_ui_file)
@@ -77,23 +72,17 @@ class TestQt(unittest.TestCase):
         # Make sure ui onscreen + settings load
         _main = dcc.get_main_window_ptr()
         _on_pos = _main.pos() + qt.to_p(100)
-        assert _pos_is_onscreen(_on_pos)
+        assert qt.p_is_onscreen(_on_pos)
         _ui.move(_on_pos)
         _ui.resize(1000, 700)
         _ui.save_settings()
         print()
-        assert _ui._load_geometry_settings()
+        assert _ui._load_geometry_settings(screen='N/A')
 
         # Check load geometry rejected of offscreen
         _off_pos = _main.pos() - qt.to_p(200)
-        assert not _pos_is_onscreen(_off_pos)
+        assert not qt.p_is_onscreen(_off_pos)
         _ui.move(_off_pos)
         _ui.save_settings()
-        assert not _ui._load_geometry_settings()
-
-        # Reset
-        _ui.close()
-        _ui = qt.CUiDialog(ui_file=_ui_file)
-        assert _pos_is_onscreen(_ui.pos())
-        _ui.hide()
+        assert not _ui._load_geometry_settings(screen='N/A')
         _ui.close()

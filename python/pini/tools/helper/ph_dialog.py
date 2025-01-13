@@ -1,20 +1,20 @@
 """Tools for managing basic standalone PiniHelper interface."""
 
-# pylint: disable=abstract-method
+# pylint: disable=abstract-method,too-many-ancestors
 
 import logging
 
 from pini import qt
-from . import ph_base
+from . import ui
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class PiniHelper(qt.CUiDialog, ph_base.BasePiniHelper):
+class PiniHelper(qt.CUiDialog, ui.PHUiBase):
     """Basic standalone Pini Helper dialog."""
 
-    init_ui = ph_base.BasePiniHelper.init_ui
-    timerEvent = ph_base.BasePiniHelper.timerEvent
+    init_ui = ui.PHUiBase.init_ui
+    timerEvent = ui.PHUiBase.timerEvent
 
     def __init__(
             self, jump_to=None, admin=None, parent=None,
@@ -30,10 +30,10 @@ class PiniHelper(qt.CUiDialog, ph_base.BasePiniHelper):
             reset_cache (bool): reset pipeline cache on launch
             title (str): override helper window title
         """
-        super(PiniHelper, self).__init__(
-            ui_file=ph_base.UI_FILE, load_settings=False, show=False,
+        super().__init__(
+            ui_file=ui.UI_FILE, load_settings=False, show=False,
             parent=parent)
-        ph_base.BasePiniHelper.__init__(
+        ui.PHUiBase.__init__(
             self, jump_to=jump_to, admin=admin, load_settings=load_settings,
             show=show, reset_cache=reset_cache, title=title)
 
@@ -44,7 +44,7 @@ class PiniHelper(qt.CUiDialog, ph_base.BasePiniHelper):
             event (QEvent): close event
         """
         _LOGGER.debug('CLOSE EVENT %s', self.pos())
-        super(PiniHelper, self).closeEvent(event)
+        super().closeEvent(event)
         _LOGGER.debug(' - CLOSED DIALOG %s', self.pos())
-        ph_base.BasePiniHelper.closeEvent(self, event)
+        ui.PHUiBase.closeEvent(self, event)
         _LOGGER.debug(' - CLOSED BASE %s', self.pos())

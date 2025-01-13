@@ -156,7 +156,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _outs.append(_pub)
 
         _work.load(force=True)
-        self.post_publish(work=_work, outs=_outs, version_up=version_up)
+        self.post_export(work=_work, outs=_outs, version_up=version_up)
 
         return _outs
 

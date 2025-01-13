@@ -1,3 +1,26 @@
+## [6.33.0] - Mon 2025-01-13 09:41
+### Summary
+ - Pini Helper:
+    - bugfix missing shotgrid metadata on deadline render [PT-369],
+    - bugfix error on read cache on config update,
+### Updated
+ - pini.utils.File.read don't use codecs.read,
+ - pini.dcc.export moved some publish code up to export,
+ - pini.dcc.export.CExportHandler added post_export/_update_pipe_cache/_apply_snapshot,
+ - pini.pipe.CPJob.find_template_by_pattern bugfix bad error message on fail,
+ - pini.pipe.cache.CCPJob.cache_fmt match entity format,
+ - pini.pipe.cache.CCPEntity.cache_fmt include job cfg name,
+ - pini.qt nice_screen/screen_is_available added,
+ - pini.qt.CUiDialog.save_settings save screen name in geometry settings,
+ - pini.qt.CUiDialog.load_settings allow offscreen pos if matching screen,
+ - pini.farm.deadline.wrap_py print orig py file path,
+ - pini.farm.deadline.submit_maya_render_job require notes on render,
+ - pini.farm.deadline.submit_maya_render_job bugfix not applying metadata before sg register,
+ - pini.tools.helper renamed submodule elem -> ui,
+ - pini.tools.helper separated header elems into submodule,
+ - pini.tools.helper BasePiniHelper -> PHUiBase,
+
+
 ## [6.32.1] - Fri 2025-01-10 11:51
 ### Summary
  - Pini Helper:

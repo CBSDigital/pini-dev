@@ -7,8 +7,8 @@ from .ph_utils import (
     ABC_ICON, UPDATE_ICON, is_active, output_to_namespace, obt_recent_work,
     obt_pixmap, output_to_type_icon, obt_helper, PLATE_TYPE_ICON,
     install_work_icon_func)
-from .ph_base import (
-    TITLE, UI_FILE, ICON, EMOJI, BasePiniHelper, BKPS_ICON,
+from .ui import (
+    TITLE, UI_FILE, ICON, EMOJI, PHUiBase, BKPS_ICON,
     OUTS_ICON)
 from .ph_dialog import PiniHelper
 from .ph_launch import launch

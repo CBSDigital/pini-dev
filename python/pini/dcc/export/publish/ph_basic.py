@@ -1,11 +1,12 @@
 """Tools for managing basic publishes."""
 
+# pylint: disable=abstract-method
+
 import logging
 
 from pini import pipe
 from pini.pipe import cache
 from pini.qt import QtWidgets
-from pini.utils import last, single
 
 from .. import eh_base
 
@@ -83,7 +84,7 @@ class CBasicPublish(eh_base.CExportHandler):
 
         self.create_versionless(work=_work, metadata=_metadata, publish=_pub)
 
-        self.post_publish(work=_work, outs=[_pub])
+        self.post_export(work=_work, outs=[_pub])
 
         return _pub
 
@@ -108,58 +109,21 @@ class CBasicPublish(eh_base.CExportHandler):
 
         return _versionless
 
-    def post_publish(self, work, outs, version_up=None):
-        """Execute post publish code.
-
-        This manages updating the shot publish cache and cache and can
-        also be extended in subclasses.
+    def _update_pipe_cache(self, work, outs):
+        """Update pipeline cache.
 
         Args:
-            work (CPWork): source work file
-            outs (CPOutput list): outputs that were generated
-            version_up (bool): whether to version up on publish
+            work (CPWork): work file being published
+            outs (CPOutput list): outputs being published
         """
-        _LOGGER.info('POST PUBLISH %s', work.path)
-        _LOGGER.info(' - OUTS %d %s', len(outs), outs)
-
         _job_c = work.job
         _ety_c = work.entity
 
-        self._apply_snapshot(work=work)
-
-        # Register in shotgrid
-        if pipe.SHOTGRID_AVAILABLE:
-            from pini.pipe import shotgrid
-            _thumb = work.image if work.image.exists() else None
-            for _last, _out in last(outs):
-                _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
-                shotgrid.create_pub_file(
-                    _out, thumb=_thumb, force=True, update_cache=_last)
-
-        # Update cache
         _LOGGER.info(' - UPDATING CACHE')
         if not isinstance(work.entity, cache.CCPEntity):
             _ety_c = pipe.CACHE.obt_entity(_ety_c)
         _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
         _ety_c.find_publishes(force=True)
         _job_c.find_publishes(force=True)
-        _work_c = pipe.CACHE.obt(work)  # Has been rebuilt
-        _work_c.find_outputs(force=True)
-        for _out in outs:
-            assert _out in _work_c.outputs
-        _LOGGER.info(' - UPDATED CACHE')
 
-        # Apply notes to work
-        _notes = single([_out.metadata['notes'] for _out in outs], catch=True)
-        if _notes and not _work_c.notes:
-            _work_c.set_notes(_notes)
-
-        self._apply_version_up(version_up=version_up)
-
-    def _apply_snapshot(self, work):
-        """Apply take snapshot setting.
-
-        Args:
-            work (CPWork): work file
-        """
-        raise NotImplementedError
+        super()._update_pipe_cache(work=work, outs=outs)

@@ -13,12 +13,12 @@ from pini.utils import wrap_fn, MaFile
 from maya_pini import m_pipe
 from maya_pini.utils import load_scene
 
-from .. import ph_base
+from .. import ui
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
+class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
     """Pini Helper in maya which docks to the main ui."""
 
     def __init__(
@@ -42,14 +42,14 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
 
         # Set title - linux can't handle unicode emojis
         if platform.system() == 'Linux':
-            _title = ph_base.TITLE
+            _title = ui.TITLE
         else:
-            _title = ph_base.EMOJI.to_unicode()+' '+ph_base.TITLE
+            _title = ui.EMOJI.to_unicode()+' '+ui.TITLE
         super().__init__(
-            show=False, ui_file=ph_base.UI_FILE, load_settings=False,
+            show=False, ui_file=ui.UI_FILE, load_settings=False,
             parent=parent, title=_title)
 
-        ph_base.BasePiniHelper.__init__(
+        ui.PHUiBase.__init__(
             self, admin=admin, load_settings=load_settings, show=False,
             jump_to=jump_to, reset_cache=reset_cache, title=title)
 
@@ -59,7 +59,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
 
     def init_ui(self):
         """Setup ui elements."""
-        ph_base.BasePiniHelper.init_ui(self)
+        ui.PHUiBase.init_ui(self)
 
         # Apply farm option if available
         _locs = ['Local']
@@ -157,7 +157,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             event (QEvent): close event
         """
         super().closeEvent(event)
-        ph_base.BasePiniHelper.closeEvent(self, event)
+        ui.PHUiBase.closeEvent(self, event)
 
     @qt.safe_timer_event
     def timerEvent(self, event):
@@ -167,7 +167,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ph_base.BasePiniHelper):
             event (QTimerEvent): triggered event
         """
         super().timerEvent(event)
-        ph_base.BasePiniHelper.timerEvent(self, event)
+        ui.PHUiBase.timerEvent(self, event)
 
 
 class _MaWork(pipe.CPWork, MaFile):
@@ -179,7 +179,7 @@ class _MaWork(pipe.CPWork, MaFile):
         Args:
             file_ (str): path to ma file
         """
-        super(_MaWork, self).__init__(file_)
+        super().__init__(file_)
         MaFile.__init__(self, file_)
 
     def save(self, force=False):  # pylint: disable=arguments-differ

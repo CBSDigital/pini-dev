@@ -8,7 +8,8 @@ import logging
 
 from pini import qt, icons, pipe
 from pini.qt import QtWidgets, QtGui, Qt
-from pini.utils import to_nice, cache_result, str_to_seed, wrap_fn
+from pini.utils import (
+    to_nice, cache_result, str_to_seed, wrap_fn, last, single)
 
 from . import eh_utils
 
@@ -402,6 +403,62 @@ class CExportHandler:
         qt.flush_layout(layout)
         self.build_ui(parent=parent, layout=layout)
         self.ui.load_settings()
+
+    def post_export(self, work, outs, version_up=None):
+        """Execute post export code.
+
+        This manages updating the shot publish cache and cache and can
+        also be extended in subclasses.
+
+        Args:
+            work (CPWork): source work file
+            outs (CPOutput list): outputs that were generated
+            version_up (bool): whether to version up on publish
+        """
+        _LOGGER.info('POST EXPORT %s', work.path)
+        _LOGGER.info(' - OUTS %d %s', len(outs), outs)
+
+        self._apply_snapshot(work=work)
+
+        # Register in shotgrid
+        if pipe.SHOTGRID_AVAILABLE:
+            from pini.pipe import shotgrid
+            _thumb = work.image if work.image.exists() else None
+            for _last, _out in last(outs):
+                _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
+                shotgrid.create_pub_file(
+                    _out, thumb=_thumb, force=True, update_cache=_last)
+
+        self._update_pipe_cache(work, outs)
+
+        # Apply notes to work
+        _work_c = pipe.CACHE.obt(work)  # May have been rebuilt on update cache
+        _notes = single({_out.metadata['notes'] for _out in outs}, catch=True)
+        if _notes and not _work_c.notes:
+            _work_c.set_notes(_notes)
+
+        self._apply_version_up(version_up=version_up)
+
+    def _update_pipe_cache(self, work, outs):
+        """Update pipeline cache.
+
+        Args:
+            work (CPWork): work file being published
+            outs (CPOutput list): outputs being exported
+        """
+        _work_c = pipe.CACHE.obt(work)  # Has been rebuilt
+        _work_c.find_outputs(force=True)
+        for _out in outs:
+            assert _out in _work_c.outputs
+        _LOGGER.info(' - UPDATED CACHE')
+
+    def _apply_snapshot(self, work):
+        """Apply take snapshot setting.
+
+        Args:
+            work (CPWork): work file
+        """
+        raise NotImplementedError
 
     def _apply_version_up(self, version_up=None):
         """Apply version up setting.

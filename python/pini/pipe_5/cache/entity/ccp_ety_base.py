@@ -23,7 +23,8 @@ class CCPEntityBase(CPEntity):
         """
         from pini import pipe
         _ver = pipe.VERSION
-        return f'{self.path}/.pini/cache/pipe_{_ver:d}/{{func}}.pkl'
+        _cfg_name = self.job.cfg['name']
+        return f'{self.path}/.pini/cache/P{_ver:d}_{_cfg_name}/{{func}}.pkl'
 
     @property
     def outputs(self):

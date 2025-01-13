@@ -64,9 +64,9 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
     else:
         if not force:
             qt.ok_cancel(
-                'Flush {:d} old submission{}?'.format(
-                    len(_to_delete), plural(_to_delete)),
-                title="Clean Submissions", icon=icons.CLEAN)
+                f'Flush {len(_to_delete):d} old '
+                f'submission{plural(_to_delete)}?',
+                title="Clean submissions", icon=icons.CLEAN)
         for _sub in qt.progress_bar(_to_delete):
             _sub.delete(force=True)
 
@@ -186,17 +186,17 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
             'import sys',
             'for _path in [']
         for _path in paths:
-            _lines += ['        "{}",'.format(_path)]
+            _lines += [f'        "{_path}",']
         _lines += [
             ']:',
             '    sys.path.append(_path)']
         _lines += [
             'import pini_startup',
-            'pini_startup.init(user="{}")'.format(get_user())]
+            f'pini_startup.init(user="{get_user()}")']
         if update_root:
             _lines += [
                 'from pini import refresh',
-                'refresh.update_libs(check_root="{}")'.format(update_root)]
+                f'refresh.update_libs(check_root="{update_root}")']
 
         # Build py + apply to env
         _py = '\n'.join(_lines)
@@ -205,12 +205,13 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
             print('DEADLINE INIT PY:\n'+_py)
 
 
-def wrap_py(py, name, work=None, maya=False):
+def wrap_py(py, name, py_file, work=None, maya=False):
     """Wrap mayapy code to be executed on deadline.
 
     Args:
         py (str): python code to execute
         name (str): task name
+        py_file (PyFile): py file being written to
         work (File): work file
         maya (bool): apply maya init to wrapper
 
@@ -260,12 +261,13 @@ def wrap_py(py, name, work=None, maya=False):
         '    from pini import testing, dcc, qt',
         '    testing.setup_logging()',
         '    qt.get_application()',
-        '    _LOGGER.info("RUNNING {} %s", _FILE)'.format(name),
+        f'    _LOGGER.info("RUNNING {name} {py_file.path}")',
+        '    _LOGGER.info(" - FILE %s", _FILE)',
         '']
     if maya and work:
         _lines += [
             '    # Load scene (deadline manages this but need for standalone)',
-            '    dcc.load("{}", lazy=True, force=True)'.format(to_str(work)),
+            f'    dcc.load("{to_str(work)}", lazy=True, force=True)',
             '']
     _lines += ['']
 
@@ -317,6 +319,6 @@ def write_deadline_data(file_, data, sort=None):
     _text = ''
     for _key in sorted(data.keys(), key=sort):
         _val = data[_key]
-        _text += '{}={}\n'.format(_key, _val)
+        _text += f'{_key}={_val}\n'
         _LOGGER.debug(' - WRITE TEXT %s', _text)
     file_.write(_text, encoding='utf8')

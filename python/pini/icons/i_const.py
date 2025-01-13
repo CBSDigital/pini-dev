@@ -428,6 +428,7 @@ SAVE = EMOJI.find('Floppy Disk')
 SELECT = EMOJI.find('Down-Left Arrow')
 TEST = EMOJI.find('Alembic')
 UNLOCKED = EMOJI.find('Unlocked')
+URL = EMOJI.find('Globe Showing Europe-Africa')
 
 FRUIT = EMOJI.find_grp('fruit')
 

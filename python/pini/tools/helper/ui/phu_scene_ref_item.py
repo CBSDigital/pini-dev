@@ -80,8 +80,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             _overlay = File(_overlay)
         self.icon = output_to_icon(self.output, overlay=_overlay)
 
-        super(PHSceneRefItem, self).__init__(
-            list_view, col='Transparent', data=self.ref)
+        super().__init__(list_view, col='Transparent', data=self.ref)
 
     @property
     def info_font_size(self):
@@ -126,7 +125,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        super(PHSceneRefItem, self).draw_pixmap(pix)
+        super().draw_pixmap(pix)
         self.info = self.helper.ui.SInfo.isChecked()
 
         self.set_height(self.size_y)

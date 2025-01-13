@@ -180,7 +180,7 @@ class CMayaBasicPublish(phm_base.CMayaBasePublish):
         if revert:
             _work.load(force=True)
 
-        self.post_publish(work=_work, outs=_outs, version_up=version_up)
+        self.post_export(work=_work, outs=_outs, version_up=version_up)
         _progress.set_pc(80 if progress else 100)
 
         return _outs

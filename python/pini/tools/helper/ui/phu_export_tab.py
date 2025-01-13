@@ -11,12 +11,12 @@ from pini.tools import usage, error
 from pini.utils import (
     single, str_to_ints, passes_filter, wrap_fn, ints_to_str)
 
-from . import phe_output_item
+from . import phu_output_item
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CLExportTab:
+class PHExportTab:
     """Class for grouping together elements of the carb helper Export tab."""
 
     pipe = None
@@ -260,7 +260,7 @@ class CLExportTab:
 
             # Add output
             _LOGGER.debug(' - BUILD PHOutputItem %s', _out)
-            _item = phe_output_item.PHOutputItem(
+            _item = phu_output_item.PHOutputItem(
                 list_view=self.ui.ESubmitOutputs,
                 output=_out, helper=self, highlight=not _submitted)
             _items.append(_item)

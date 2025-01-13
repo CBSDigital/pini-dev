@@ -205,7 +205,8 @@ class CDFarm(base.CFarm):
             force=True, reason='deadline render', result='bkp')
         _metadata = export.build_metadata(
             'render', sanity_check_=True, checks_data=checks_data,
-            task=_work.task, force=force, bkp=_render_scene.path)
+            task=_work.task, force=force, bkp=_render_scene.path,
+            require_notes=True)
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')
@@ -360,18 +361,6 @@ def _build_update_job_py(outputs, metadata, work):
             _lines += [f'    pipe.to_output("{_out.path}"),']
         _lines += [']', '']
 
-        # Register shotgrid
-        if pipe.MASTER == 'shotgrid':
-            _lines += [
-                '# Register outputs in shotgrid',
-                '_LOGGER.info("REGISTER OUTPUTS")',
-                'from pini.pipe import shotgrid',
-                'for _last, _out in last(_outs):',
-                '    assert _out.exists()',
-                '    shotgrid.create_pub_file(',
-                '        _out, force=True, update_cache=_last)',
-                '']
-
         # Apply metadata
         if metadata:
             _lines += [
@@ -382,6 +371,18 @@ def _build_update_job_py(outputs, metadata, work):
                 '    if not _out.exists():',
                 '        raise RuntimeError(_out.path)',
                 '    _out.set_metadata(_metadata)',
+                '']
+
+        # Register shotgrid
+        if pipe.MASTER == 'shotgrid':
+            _lines += [
+                '# Register outputs in shotgrid',
+                '_LOGGER.info("REGISTER OUTPUTS")',
+                'from pini.pipe import shotgrid',
+                'for _last, _out in last(_outs):',
+                '    assert _out.exists()',
+                '    shotgrid.create_pub_file(',
+                '        _out, force=True, update_cache=_last)',
                 '']
 
     # Update workfile output cache

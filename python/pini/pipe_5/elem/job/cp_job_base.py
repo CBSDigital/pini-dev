@@ -208,7 +208,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         _tmpl = single(self.find_templates(pattern=pattern), catch=True)
         if not _tmpl:
-            raise ValueError('Failed to match pattern {pattern}')
+            raise ValueError(f'Failed to match pattern {pattern}')
         return _tmpl
 
     def find_templates(

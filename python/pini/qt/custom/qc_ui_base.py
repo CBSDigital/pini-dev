@@ -13,7 +13,9 @@ from pini.utils import (
     passes_filter, single, strftime, check_logging_level)
 
 from ..q_ui_container import CUiContainer
-from ..q_utils import SETTINGS_DIR, find_widget_children, p_is_onscreen
+from ..q_utils import (
+    SETTINGS_DIR, find_widget_children, p_is_onscreen, nice_screen,
+    screen_is_available)
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
@@ -496,13 +498,16 @@ class CUiBase:
 
         self.settings.apply_to_ui(self.ui, type_filter=type_filter)
 
-    def _load_geometry_settings(self):
+    def _load_geometry_settings(self, screen=None):
         """Load geometry settings (ie. pos/size).
 
         Load geometry is blocked if the saved position is outside any of
         the current screen regions. This can occur if screens are added or
         removed, and can cause dccs to become locked if modal interfaces
         are not visible.
+
+        Args:
+            screen (str): override screen
 
         Returns:
             (bool): whether geometry settings were loaded successfully
@@ -515,8 +520,10 @@ class CUiBase:
         if not _pos or not _size:
             _LOGGER.debug('   - POS/SIZE SETTINGS NOT FOUND')
             return False
-        _LOGGER.debug('   - POS/SIZE %s %s', _pos, _size)
-        if not p_is_onscreen(_pos):
+
+        _screen = screen or self.settings.value('window/screen')
+        _LOGGER.debug('   - GEO pos=%s size=%s screen=%s', _pos, _size, _screen)
+        if not p_is_onscreen(_pos) and not screen_is_available(_screen):
             _LOGGER.debug('   - REJECTING LOAD GEOMETRY, POS IS OFFSCREEN')
             return False
 
@@ -537,12 +544,21 @@ class CUiBase:
                 that from happening
         """
         _LOGGER.debug('SAVE SETTINGS %s', self.settings.fileName())
+
+        # Save pos
         _pos = pos if pos is not None else self.isVisible()
         if _pos:
             self.settings.setValue('window/pos', self.pos())
             _LOGGER.debug(' - SAVING POS %s', self.pos())
+
+        # Save size
         self.settings.setValue('window/size', self.size())
         _LOGGER.debug(' - SAVING SIZE %s', self.size())
+
+        # Save screen
+        _screen = nice_screen(self.screen())
+        _LOGGER.debug(' - SAVING SCREEN %s', _screen)
+        self.settings.setValue('window/screen', _screen)
 
         self.settings.save_ui(self.ui, filter_=filter_)
 

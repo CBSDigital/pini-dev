@@ -12,8 +12,7 @@ from pini.utils import (
     wrap_fn, plural, chain_fns, strftime, clip, passes_filter, safe_zip,
     apply_filter, single, split_base_index, to_nice)
 
-from .phe_output_item import PHOutputItem
-from .phe_scene_ref_item import PHSceneRefItem
+from . import phu_output_item, phu_scene_ref_item
 from ..ph_utils import UPDATE_ICON, CURRENT_ICON, output_to_namespace
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ _LATEST_ICON = icons.find('Light Bulb')
 _REPLACE_ICON = icons.find('Right Arrow Curving Left')
 
 
-class CLSceneTab:
+class PHSceneTab:
     """Class for grouping together elements of pini helper Outputs tabs."""
 
     all_outs = ()
@@ -386,7 +385,7 @@ class CLSceneTab:
         # Build items
         _items = []
         for _out in sorted(_outs):
-            _item = PHOutputItem(
+            _item = phu_output_item.PHOutputItem(
                 helper=self, output=_out, list_view=self.ui.SOutputs,
                 highlight=_out in _scene_outs)
             _items.append(_item)
@@ -485,7 +484,7 @@ class CLSceneTab:
             else:
                 _status = None
             _LOGGER.debug(' - ADDING REF %s status=%s', _ref, _status)
-            _item = PHSceneRefItem(
+            _item = phu_scene_ref_item.PHSceneRefItem(
                 self.ui.SSceneRefs, ref=_ref, status=_status, output=_output,
                 helper=self, namespace=_namespace)
             _items.append(_item)

@@ -13,7 +13,7 @@ from pini.utils import (
     wrap_fn, get_user)
 
 from .. import ph_utils
-from . import phe_work_item
+from . import phu_work_item
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ _STAR = icons.find('Star')
 _WARNING_RED = qt.CColor('Red').whiten(0.45)
 
 
-class CLWorkTab:
+class PHWorkTab:
     """Class for grouping together elements of the carb helper Work tab."""
 
     entity = None
@@ -311,7 +311,7 @@ class CLWorkTab:
 
         # Build items
         for _work in _works:
-            _item = phe_work_item.PHWorkItem(
+            _item = phu_work_item.PHWorkItem(
                 list_view=self.ui.WWorks, work=_work, helper=self)
             _items.append(_item)
 

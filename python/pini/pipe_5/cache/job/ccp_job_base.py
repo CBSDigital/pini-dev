@@ -54,9 +54,9 @@ class CCPJobBase(CPJob):
             (str): cache format
         """
         from pini import pipe
-        _name = self.cfg['name']
+        _cfg_name = self.cfg['name']
         _ver = pipe.VERSION
-        _rel_path = f'.pini/cache/pipe_{_ver:d}/{_name}/{{func}}.pkl'
+        _rel_path = f'.pini/cache/P{_ver:d}_{_cfg_name}/{{func}}.pkl'
         return self.to_file(_rel_path).path
 
     @property

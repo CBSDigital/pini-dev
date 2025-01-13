@@ -1,6 +1,5 @@
 """Tools for managing the base File object."""
 
-import codecs
 import filecmp
 import logging
 import json
@@ -296,11 +295,11 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _trg.test_dir()
         shutil.move(self.path, _trg.path)
 
-    def read(self, encoding=None, catch=False):
+    def read(self, encoding='utf-8', catch=False):
         """Read contents of this file as text.
 
         Args:
-            encoding (str): force encoding (eg. utf-8)
+            encoding (str): override default encoding (utf-8)
             catch (bool): no error if file missing
 
         Returns:
@@ -313,12 +312,8 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 return None
             raise OSError('File does not exist '+self.path)
 
-        if not encoding:
-            with open(self.path, 'r', encoding='utf-8') as _hook:
-                _body = _hook.read()
-        else:
-            with codecs.open(self.path, encoding=encoding) as _hook:
-                _body = _hook.read()
+        with open(self.path, 'r', encoding=encoding) as _hook:
+            _body = _hook.read()
 
         return _body
 
@@ -331,13 +326,16 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _body = self.read()
         return json.loads(_body)
 
-    def read_lines(self):
+    def read_lines(self, encoding='utf-8'):
         """Read lines of this file.
+
+        Args:
+            encoding (str): override default encoding (utf-8)
 
         Returns:
             (str list): text lines
         """
-        return self.read().split('\n')
+        return self.read(encoding=encoding).split('\n')
 
     def read_pkl(self, catch=False):
         """Read pickle file.

@@ -312,10 +312,12 @@ class CDPyJob(CDJob):
         self.stime = stime
 
         # Setup python
-        self.py = d_utils.wrap_py(py, name=self.name) if wrap_py else py
         if not self.job:
             raise RuntimeError('No current job found')
         self.py_file = File(tmp_py or self._to_submission_file(extn='py'))
+        self.py = py
+        if wrap_py:
+            self.py = d_utils.wrap_py(py, py_file=self.py_file, name=self.name)
         if edit_py:
             self.py_file.edit()
 

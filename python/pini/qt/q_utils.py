@@ -194,6 +194,18 @@ def get_application(force=False):
     return _app
 
 
+def nice_screen(screen):
+    """Convert a screen name to a readable string.
+
+    Args:
+        screen (str): screen name
+
+    Returns:
+        (str): readable screen name
+    """
+    return screen.name().strip('/.\\')
+
+
 @cache_result
 def obt_pixmap(file_: str):
     """Obtain a cached version of the given pixmap.
@@ -248,7 +260,8 @@ def safe_timer_event(func):
             _stop = True
 
         check_logging_level()
-        _LOGGER.debug('SAFE TIMER EVENT %d vis=%d', _stop, self.isVisible())
+        _LOGGER.debug(
+            'SAFE TIMER EVENT %d vis=%d %s', _stop, self.isVisible(), self)
 
         _stop = _stop or not self.isVisible()
         if _stop:
@@ -259,6 +272,22 @@ def safe_timer_event(func):
         return _result
 
     return _safe_timer_method
+
+
+def screen_is_available(screen):
+    """Test whether the given screen is available.
+
+    This is used to avoid loading settings from one screen to a different one,
+    resulting in an interface being hidden or off-screen.
+
+    Args:
+        screen (str): name of screen to test
+
+    Returns:
+        (bool): whether screen is available
+    """
+    return screen in [
+        nice_screen(_screen) for _screen in get_application().screens()]
 
 
 def set_application_icon(icon, name=None):

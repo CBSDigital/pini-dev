@@ -57,13 +57,15 @@ def to_output(
 
     _path = abs_path(to_str(path))
     _file = File(_path)
-    _LOGGER.log(9, ' - PATH %s', _file.path)
+    _LOGGER.debug(' - PATH %s', _file.path)
     if '%' in _file.path:
         _class = pipe.CPOutputSeq
     elif _file.extn and _file.extn.lower() in ('mp4', 'mov'):
         _class = pipe.CPOutputVideo
     else:
         _class = pipe.CPOutputFile
+    _LOGGER.debug(' - APPLY CLASS %s', _class)
+
     return _class(
         _path, job=job, entity=entity, template=template, work_dir=work_dir,
         latest=latest)

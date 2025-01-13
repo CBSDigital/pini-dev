@@ -72,6 +72,7 @@ class PRTest:
                 nice_age(_age))
         _LOGGER.info(' - PY FILE %s', self.py_file.path)
         _mod = self.py_file.to_module(reload_=True)
+        _LOGGER.info(' - REL PATH %s.py', '/'.join(_mod.__name__.split('.')))
         _case = getattr(_mod, self.class_.name)
         _LOGGER.info(' - CASE %s', _case)
         assert issubclass(_case, unittest.TestCase)
