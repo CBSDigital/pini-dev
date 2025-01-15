@@ -622,7 +622,8 @@ class CUiBase:
         Args:
             event (QEvent): key press event
         """
-        _LOGGER.debug('KEY PRESS EVENT %s', event.text())
+        _LOGGER.debug(
+            'KEY PRESS EVENT text=%s key=%s', event.text(), event.key())
         for _key, (_action, _label) in self.shortcuts.items():
             if event.text() == _key or event.key() == _key:
                 _LOGGER.info(' - APPLYING SHORTCUT %s %s', _label, _action)

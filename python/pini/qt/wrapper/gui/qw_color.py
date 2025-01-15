@@ -5,8 +5,9 @@ from pini.utils import val_map, basic_repr, single
 from ...q_mgr import QtGui
 
 _EXTENDED_COLS = {
-    'bottlegreen': (0, 106, 78),
-    'plumred': (124, 41, 70),
+    'BottleGreen': (0, 106, 78),
+    'PlumRed': (124, 41, 70),
+    'NavyBlue': (25, 49, 120),
 }
 
 
@@ -15,7 +16,6 @@ class CColor(QtGui.QColor):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
-
         _alpha = kwargs.pop('alpha', None)
 
         # Apply extended colour names

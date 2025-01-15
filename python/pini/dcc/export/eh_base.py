@@ -4,6 +4,8 @@ An export handler is a plugin to facilitate exporting (eg rendering,
 publishing) to pipeline by a dcc.
 """
 
+# pylint: disable=too-many-instance-attributes
+
 import logging
 
 from pini import qt, icons, pipe
@@ -25,7 +27,9 @@ class CExportHandler:
     ICON = None
 
     description = None
+
     notes_elem = None
+    snapshot_elem = None
 
     # For building ui
     parent = None
@@ -292,17 +296,20 @@ class CExportHandler:
 
         return _spinbox
 
-    def add_footer_elems(self):
-        """Add footer publish ui elements.
+    def add_footer_elems(self, snapshot=True):
+        """Add footer ui elements.
 
-        These appear at the bottom of the publish interface.
+        These appear at the bottom of the export interface.
+
+        Args:
+            snapshot (bool): add snapshot option
         """
-
-        self.ui.Snapshot = self.add_checkbox_elem(
-            'Snapshot', label='Take snapshot')
+        if snapshot:
+            self.ui.Snapshot = self.add_checkbox_elem(
+                'Snapshot', label='Take snapshot')
+            self.snapshot_elem = self.ui.Snapshot
         self.ui.VersionUp = self.add_checkbox_elem(
             'VersionUp', label='Version up')
-
         self.add_notes_elem()
 
     def add_notes_elem(self):
@@ -327,7 +334,7 @@ class CExportHandler:
         _LOGGER.debug('BUILD UI %s %s', parent, layout)
 
     def build_metadata(
-            self, work=None, sanity_check_=False, task=None, force=False):
+            self, work=None, sanity_check_=True, task=None, force=False):
         """Obtain metadata to apply to a generated export.
 
         Args:
@@ -340,16 +347,24 @@ class CExportHandler:
             (dict): metadata
         """
 
+        # Handle notes
         if self.ui and self.ui.is_active() and self.notes_elem:
             _notes = self.notes_elem.text()
         else:
             _notes = None
+        if not force and not _notes:
+            _notes = qt.input_dialog(
+                'Please enter notes for this export:', title='Notes')
+            if self.notes_elem:
+                _LOGGER.debug(' - APPLY NOTES %s %s', _notes, self.notes_elem)
+                self.notes_elem.setText(_notes)
 
         _LOGGER.debug('NOTES %s', _notes)
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=work, sanity_check_=sanity_check_,
             force=force, handler=self.NAME, task=task, notes=_notes,
             require_notes=True)
+
         return _data
 
     @cache_result
@@ -404,7 +419,9 @@ class CExportHandler:
         self.build_ui(parent=parent, layout=layout)
         self.ui.load_settings()
 
-    def post_export(self, work, outs, version_up=None):
+    def post_export(
+            self, work, outs=(), version_up=None, update_cache=True,
+            notes=None):
         """Execute post export code.
 
         This manages updating the shot publish cache and cache and can
@@ -414,26 +431,29 @@ class CExportHandler:
             work (CPWork): source work file
             outs (CPOutput list): outputs that were generated
             version_up (bool): whether to version up on publish
+            update_cache (bool): update work file cache
+            notes (str): export notes
         """
         _LOGGER.info('POST EXPORT %s', work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
 
-        self._apply_snapshot(work=work)
+        if self.snapshot_elem:
+            self._apply_snapshot(work=work)
 
-        # Register in shotgrid
-        if pipe.SHOTGRID_AVAILABLE:
-            from pini.pipe import shotgrid
-            _thumb = work.image if work.image.exists() else None
-            for _last, _out in last(outs):
-                _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
-                shotgrid.create_pub_file(
-                    _out, thumb=_thumb, force=True, update_cache=_last)
-
-        self._update_pipe_cache(work, outs)
+        if update_cache:
+            if pipe.SHOTGRID_AVAILABLE:
+                from pini.pipe import shotgrid
+                _thumb = work.image if work.image.exists() else None
+                for _last, _out in last(outs):
+                    _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
+                    shotgrid.create_pub_file(
+                        _out, thumb=_thumb, force=True, update_cache=_last)
+            self._update_pipe_cache(work, outs)
 
         # Apply notes to work
         _work_c = pipe.CACHE.obt(work)  # May have been rebuilt on update cache
-        _notes = single({_out.metadata['notes'] for _out in outs}, catch=True)
+        _notes = notes or single(
+            {_out.metadata['notes'] for _out in outs}, catch=True)
         if _notes and not _work_c.notes:
             _work_c.set_notes(_notes)
 
@@ -447,9 +467,12 @@ class CExportHandler:
             outs (CPOutput list): outputs being exported
         """
         _work_c = pipe.CACHE.obt(work)  # Has been rebuilt
-        _work_c.find_outputs(force=True)
+        _work_c.update_outputs()
+        _out_paths = [_out.path for _out in _work_c.outputs]
         for _out in outs:
-            assert _out in _work_c.outputs
+            if _out.path not in _out_paths:
+                raise RuntimeError(
+                    f'Missing output {_out.path} - {_out_paths})')
         _LOGGER.info(' - UPDATED CACHE')
 
     def _apply_snapshot(self, work):

@@ -428,8 +428,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             user=get_user())
         return self.to_file(base=_base, extn=self.extn)
 
-    def to_file(self, filename=None, dir_=None, base=None, extn=None,
-                hidden=False):
+    def to_file(
+            self, filename=None, dir_=None, base=None, extn=None,
+            hidden=False, class_=None):
         """Build a file object with matching attributes to this one.
 
         Args:
@@ -438,12 +439,14 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             base (str): update filename base
             extn (str): update extension
             hidden (bool): make file hidden (add . prefix to filename)
+            class_ (class): override file class
 
         Returns:
             (File): updated file object
         """
         _LOGGER.debug('TO FILE')
         from pini.utils import Dir
+        _class = class_ or File
         if filename:
             assert not base and not extn
             _filename = filename
@@ -461,7 +464,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _LOGGER.debug(' - FILENAME %s', _filename)
         _path = f'{Dir(dir_ or self.dir).path}/{_filename}'
         _LOGGER.debug(' - PATH %s', _path)
-        return File(_path)
+        return _class(_path)
 
     def touch(self):
         """Touch this file.

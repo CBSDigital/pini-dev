@@ -26,8 +26,7 @@ class CRenderHandler(eh_base.CExportHandler):
                 are sorted to top of option lists)
             label_w (int): label width in ui
         """
-        super(CRenderHandler, self).__init__(
-            label_w=label_w, priority=priority)
+        super().__init__(label_w=label_w, priority=priority)
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.

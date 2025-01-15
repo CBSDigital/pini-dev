@@ -1,3 +1,24 @@
+## [6.34.0] - Wed 2025-01-15 11:00
+### Summary
+ - Pini Helper:
+    - maya render bugfix notes not being passed back to work file (cstewart/eehemann),
+### Updated
+ - pini.File.to_file added class_ arg,
+ - pini.dcc.export.CBaseExportHandler.snapshot_elem added,
+ - pini.dcc.export.CBaseExportHandler.add_footer_elems added snapshot arg,
+ - pini.dcc.export.CBaseExportHandler.build_metadata sanity_check_ is true by default,
+ - pini.dcc.export.CBaseExportHandler.build_metadata request notes if missing,
+ - pini.dcc.export.CBaseExportHandler.build_metadata apply notes to work,
+ - pini.dcc.export.CBaseExportHandler.post_export added update_cache/notes args,
+ - pini.dcc.export.CBaseExportHandler.post_export block snapshot if no elem,
+ - pini.dcc.export.CBaseExportHandler.post_export better error on missing output,
+ - pini.dcc.export render handlers use VersionUp/Notes from parent class,
+ - pini.qt added NavyBlue colour,
+ - pini.qt.CGraphSpace added direction arrow shortcut handling,
+ - pini.farm.deadline.submit_maya_render added metadata/result args,
+ - maya_pini.utils.render revert render window on complete,
+
+
 ## [6.33.3] - Mon 2025-01-13 14:08
 ### Summary
  - Pini Helper:

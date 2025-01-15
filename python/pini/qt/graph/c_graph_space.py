@@ -35,7 +35,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             col (str): base colour
             legend (str): legend text (displayed in top left)
         """
-        super(CGraphSpace, self).__init__(parent, col=col, margin=0)
+        super().__init__(parent, col=col, margin=0)
 
         self.elems = []
         self.draw_callbacks = []
@@ -76,8 +76,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         """
         _settings_name = type(self.window).__name__.strip('_')
         return self._settings_file or HOME.to_file(
-            '.pini/GraphSpace/{}_{}.yml'.format(
-                _settings_name, self.objectName()))
+            f'.pini/GraphSpace/{_settings_name}_{self.objectName()}.yml')
 
     def setup_shortcuts(self):
         """Apply shortcuts to the graph's window."""
@@ -119,7 +118,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             grid (bool): draw background grid
             shortcuts (bool): list shortcuts in the bottom right
         """
-        super(CGraphSpace, self).draw_pixmap(pix)
+        super().draw_pixmap(pix)
 
         # Draw background grid
         if grid:
@@ -186,8 +185,9 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             pix (CPixmap): pixmap to draw on
         """
-        _text = 'offset=({:.02f}, {:.02f}) zoom={:.02f}'.format(
-            self.offset_p.x(), self.offset_p.y(), self.zoom)
+        _text = (
+            f'offset=({self.offset_p.x():.02f}, {self.offset_p.y():.02f}) '
+            f'zoom={self.zoom:.02f}')
         pix.draw_text(
             _text, pix.rect().bottomLeft() + q_utils.to_p(10, -10),
             anchor='BL')
@@ -203,11 +203,23 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         # Organise into actions
         _key_map = {
             Qt.Key_Escape: 'Esc',
-            ' ': 'Space'}
+            Qt.Key_Up: 'Arrow Up',
+            Qt.Key_Down: 'Arrow Down',
+            Qt.Key_Left: 'Arrow Left',
+            Qt.Key_Right: 'Arrow Right',
+            Qt.Key_Space: 'Space',
+            ' ': 'Space',
+        }
         _actions = collections.defaultdict(list)
         for _key, (_, _action) in sorted(
                 self.window.shortcuts.items(), key=str):
-            _key = _key_map.get(_key, _key).capitalize()
+            _key = _key_map.get(_key, _key)
+            if isinstance(_key, Qt.Key):
+                _key = _key.name.decode('utf-8').split('_', 1)[-1]
+            if not isinstance(_key, str):
+                raise NotImplementedError(_key)
+            if len(_key) == 1:
+                _key = _key.capitalize()
             _actions[_action].append(_key)
 
         # Build actions into text
@@ -215,7 +227,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             (tuple(_keys), _action) for _action, _keys in _actions.items()]
         _keys_actions.sort()
         for _keys, _action in sorted(_keys_actions):
-            _text += '\n{}: {}'.format('/'.join(_keys), _action)
+            _text += f'\n{"/".join(_keys)}: {_action}'
 
         pix.draw_text(
             _text, pix.rect().bottomRight() - q_utils.to_p(10, 10),
@@ -486,8 +498,8 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
 
         _event = event
         _pos_g = self.p2g(_event.pos())
-        _LOGGER.info('MOUSE PRESS %s %s', event, strftime('%H%M%S'))
-        _LOGGER.info(' - POS G %s', _pos_g)
+        _LOGGER.debug('MOUSE PRESS %s %s', event, strftime('%H%M%S'))
+        _LOGGER.debug(' - POS G %s', _pos_g)
 
         self.offset_anchor_p = self.offset_target_p = _event.pos()
         self.offset_p_start = self.offset_p
@@ -506,21 +518,21 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         # Pass click down through elements until one blocks it
         for _elem in _click_elems:
             _event = _elem.mousePressEvent(event=_event)
-            _LOGGER.info(
+            _LOGGER.debug(
                 ' - PRESS IN ELEM %s level=%d event=%s %d', _elem,
                 _elem.level, _elem.rect_g,
                 _elem.rect_g.contains(_pos_g))
             if not _event:
-                _LOGGER.info(' - EVENT NOT PASSED THROUGH')
+                _LOGGER.debug(' - EVENT NOT PASSED THROUGH')
                 if _elem.draggable:
                     self.drag_elem = _elem
                 break
             _elem.mouseReleaseEvent(event)
 
-        _LOGGER.info(' - CLICK ELEMS %s', _click_elems)
+        _LOGGER.debug(' - CLICK ELEMS %s', _click_elems)
         if event.button() == Qt.LeftButton and not _click_elems:
             self.clear_selection()
-        _LOGGER.info(' - DRAG ELEM %s', self.drag_elem)
+        _LOGGER.debug(' - DRAG ELEM %s', self.drag_elem)
 
     def mouseMoveEvent(self, event):
         """Triggered by mouse move.
@@ -556,7 +568,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         Args:
             event (QMouseEvent): triggered event
         """
-        _LOGGER.info('MOUSE RELEASE %s %s', event, strftime('%H%M%S'))
+        _LOGGER.debug('MOUSE RELEASE %s %s', event, strftime('%H%M%S'))
 
         self.offset_anchor_p = self.offset_target_p = None
         if self.drag_elem:
@@ -582,7 +594,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         """
         _LOGGER.debug('RESIZE EVENT %s', event)
 
-        super(CGraphSpace, self).resizeEvent(event)
+        super().resizeEvent(event)
 
         if apply_centering:
             _cur_size = self.size()

@@ -3315,14 +3315,14 @@ icon</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CComboBox</class>
-   <extends>QComboBox</extends>
-   <header>ccombobox.h</header>
-  </customwidget>
-  <customwidget>
    <class>CListWidget</class>
    <extends>QListWidget</extends>
    <header>clistwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ccombobox.h</header>
   </customwidget>
   <customwidget>
    <class>CTabWidget</class>

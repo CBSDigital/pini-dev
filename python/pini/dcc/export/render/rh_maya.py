@@ -1,12 +1,14 @@
 """Tools for managing maya render handlers."""
 
+# pylint: disable=abstract-method
+
 import logging
 
 from maya import cmds
 
 from pini import pipe, farm, qt, icons
 from pini.qt import QtWidgets
-from pini.tools import helper, error, sanity_check
+from pini.tools import helper, error
 from pini.utils import strftime, Seq, cache_result, wrap_fn, TMP
 
 from maya_pini import open_maya as pom
@@ -93,16 +95,17 @@ class CMayaLocalRender(CMayaRenderHandler):
 
         self.ui.View = self.add_checkbox_elem(
             name='View', val=True,
-            label='View render on completion')
+            label='View render')
         self.ui.Mov = self.add_checkbox_elem(
             name='Mov', val=False,
             label='Convert to mov')
         self.ui.Cleanup = self.add_checkbox_elem(
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
-        self.ui.VersionUp = self.add_checkbox_elem(
-            name='VersionUp', val=True,
-            label='Version up on render')
+
+        self.add_separator_elem()
+        self.add_footer_elems(snapshot=False)
+        self.add_separator_elem()
 
         self.layout.addStretch()
         self._callback__Mov()
@@ -140,7 +143,6 @@ class CMayaLocalRender(CMayaRenderHandler):
                 f'pini/render/PiniHelper_{_t_stamp}/render.%04d.jpg')
             _LOGGER.info('TMP PATH %s', _tmp_path)
             _out_seq = Seq(_tmp_path)
-            _out.delete(wording='replace', force=force)
         else:
             if not _work.find_template('render', catch=True):
                 qt.notify(
@@ -154,6 +156,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             _out = _work.to_output(
                 'render', output_name=_output_name, extn=_extn)
             _out_seq = _out
+        _out.delete(wording='replace', force=force)
 
         # Execute render
         _bkp = _work.save(reason='render', result='bkp', force=True)
@@ -177,11 +180,7 @@ class CMayaLocalRender(CMayaRenderHandler):
         _out.set_metadata(_data, force=True)
 
         # Update pipeline
-        if pipe.MASTER == 'shotgrid':
-            from pini.pipe import shotgrid
-            shotgrid.create_pub_file(_out)
-        _work.update_outputs()
-        self._apply_version_up()
+        self.post_export(work=_work, outs=[_out])
 
 
 def _compile_video_with_scene_audio(seq, video):
@@ -230,8 +229,6 @@ class CMayaFarmRender(CMayaRenderHandler):
         _LOGGER.debug('BUILD UI')
         super().build_ui(parent=parent, layout=layout)
 
-        self.ui.Comment = self.add_lineedit_elem(
-            name='Comment', disable_save_settings=True)
         self.ui.Priority = self.add_spinbox_elem(
             name='Priority', val=50)
         self.ui.ChunkSize = self.add_spinbox_elem(
@@ -247,11 +244,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             name='HideImgPlanes', val=False,
             label='Hide image planes',
             tooltip='Hide image planes before submission')
-        self.ui.VersionUp = self.add_checkbox_elem(
-            name='VersionUp', val=True,
-            save_policy=qt.SavePolicy.SAVE_ON_CHANGE,
-            label='Version up on render',
-            tooltip='Version up scene file after render submitted')
+        self.add_footer_elems(snapshot=False)
         self.add_separator_elem()
 
     def _build_limit_groups_elems(self):
@@ -364,24 +357,25 @@ class CMayaFarmRender(CMayaRenderHandler):
                 _reverts.append(_revert)
 
         _prepare_scene_for_render()
-        _checks_data = sanity_check.launch_export_ui(
-            action='Render', force=force)
+        _metadata = self.build_metadata(force=force)
         _limit_groups_s = self.ui.LimitGroups.text()
         _limit_groups = [_grp for _grp in _limit_groups_s.split(',') if _grp]
 
-        farm.submit_maya_render(
-            submit=render_, force=force,
-            checks_data=_checks_data,
-            frames=frames, camera=_cam,
+        _msg = farm.submit_maya_render(
+            submit=render_, force=True, result='msg',
+            metadata=_metadata, frames=frames, camera=_cam,
             chunk_size=self.ui.ChunkSize.value(),
-            comment=self.ui.Comment.text(),
+            comment=_metadata['notes'],
             priority=self.ui.Priority.value(),
             machine_limit=self.ui.MachineLimit.value(),
-            limit_groups=_limit_groups,
-            version_up=self.ui.VersionUp.isChecked())
+            limit_groups=_limit_groups)
 
         for _revert in _reverts:
             _revert()
+        self.post_export(
+            work=_work, notes=_metadata['notes'], update_cache=False)
+        if not force:
+            qt.notify(_msg, icon=farm.ICON, title='Render submitted')
 
     @cache_result
     def to_icon(self):

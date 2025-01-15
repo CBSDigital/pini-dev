@@ -1,6 +1,7 @@
 """Utilities for rendering."""
 
 import collections
+import functools
 import logging
 import time
 
@@ -11,6 +12,28 @@ from pini.utils import File, single, find_exe, system, check_heart
 
 _LOGGER = logging.getLogger(__name__)
 _REN_FMTS_MAP = {}
+
+
+def _revert_render_window(func):
+    """Decorator to revert render window .
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _revert_render_window_func(*args, **kwargs):
+        _win = cmds.window('renderViewWindow', query=True, exists=True)
+        _result = func(*args, **kwargs)
+        if not _win and cmds.window(
+                'renderViewWindow', query=True, exists=True):
+            cmds.deleteUI('renderViewWindow')
+        return _result
+
+    return _revert_render_window_func
 
 
 def _apply_globals_settings(path, col_mgt=None, animation=False):
@@ -233,6 +256,7 @@ def _exec_cmdline_render(
     _LOGGER.info(' - COMPLETED IN %.01fs', time.time() - _start)
 
 
+@_revert_render_window
 def render(
         seq, camera=None, frames=None, view=False, mode=None,
         pre_frame=None, pre_frame_mel=None,

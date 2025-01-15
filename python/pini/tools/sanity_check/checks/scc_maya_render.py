@@ -85,8 +85,9 @@ class CheckLookdevAssign(SCMayaCheck):
             try:
                 _geo = pom.CNode(_geo)
             except RuntimeError:
-                _msg = 'Failed to apply lookdev {} to missing node {}'.format(
-                    lookdev_ref.namespace, _geo)
+                _msg = (
+                    f'Failed to apply lookdev {lookdev_ref.namespace} to '
+                    f'missing node {_geo}')
                 _node = geo_ref.find_top_node(catch=True)
                 self.add_fail(_msg, node=_node)
                 continue
@@ -96,15 +97,14 @@ class CheckLookdevAssign(SCMayaCheck):
                 _geo_s = _geo.to_shp(catch=True)
                 if not _geo_s:
                     _msg = (
-                        'Geo "{}" is missing a shape node - failed to apply '
-                        'to lookdev "{}" (shading group "{}")'.format(
-                            _geo, lookdev_ref.namespace, _sg))
+                        f'Geo "{_geo}" is missing a shape node - failed to '
+                        f'apply to lookdev "{lookdev_ref.namespace}" (shading '
+                        f'group "{_sg}")')
                     self.add_fail(_msg, node=_geo)
                 else:
                     _msg = (
-                        'Lookdev "{}" not applied to "{}" (shading group '
-                        '"{}")'.format(
-                            lookdev_ref.namespace, _geo, _sg))
+                        f'Lookdev "{lookdev_ref.namespace}" not applied to '
+                        f'"{_geo}" (shading group "{_sg}")')
                     _fix = wrap_fn(cmds.sets, _geo_s, forceElement=_sg)
                     self.add_fail(_msg, node=_geo, fix=_fix)
 
@@ -123,9 +123,8 @@ def _check_lookdev_node(ref_, node):
     if cmds.objExists(_node):
         return None
     _msg = (
-        'Node {} is missing from the lookdev reference {} which means '
-        'that there is something wrong with the publish'.format(
-            _node, ref_.namespace))
+        f'Node {_node} is missing from the lookdev reference {ref_.namespace} '
+        f'which means that there is something wrong with the publish')
     _fail = SCFail(_msg, node=ref_.ref_node)
     return _fail
 
@@ -209,8 +208,8 @@ class CheckAOVs(SCMayaCheck):
             self.write_log(' - checking aov: %s', _aov)
             _shd_plug = _aov.plug['defaultValue']
             if not _shd_plug.find_incoming():
-                _msg = 'AOV "{}" not connected to shader "{}"'.format(
-                    _aov.plug['name'].get_val(), _shd)
+                _aov_name = _aov.plug['name'].get_val()
+                _msg = f'AOV "{_aov_name}" not connected to shader "{_shd}"'
                 _fix = wrap_fn(_shd_col.connect, _shd_plug)
                 self.add_fail(_msg, fix=_fix, node=_aov)
 
@@ -321,7 +320,7 @@ class CheckCustomAovConnections(SCMayaCheck):
         _idx = int(_idx)
         _sg = pom.to_node(_cur_trg)
         _name_attr = _sg.to_attr(
-            'aiCustomAOVs[{:d}].aovName'.format(_idx))
+            f'aiCustomAOVs[{_idx:d}].aovName')
         _cur_aov = cmds.getAttr(_name_attr)
         if _cur_aov == aov:
             self.write_log(' - connected correctly')
@@ -332,25 +331,23 @@ class CheckCustomAovConnections(SCMayaCheck):
         for _idx in cmds.getAttr(
                 _sg.to_plug('aiCustomAOVs'), multiIndices=True):
             _name_attr = _sg.to_attr(
-                'aiCustomAOVs[{:d}].aovName'.format(_idx))
+                f'aiCustomAOVs[{_idx:d}].aovName')
             _name = cmds.getAttr(_name_attr)
             if _name == aov:
                 _idxs.append(_idx)
         _idx = single(_idxs, catch=True)
         if not _idx:
             _msg = (
-                'Custom aov {aov} is wrongly connected to {cur_aov} in '
-                '{sg} - no {aov} aov was found to connect to'.format(
-                    aov=aov, cur_aov=_cur_aov, sg=_sg))
+                f'Custom AOV {aov} is wrongly connected to {_cur_aov} in '
+                f'{_sg} - no {aov} aov was found to connect to')
             self.add_fail(_msg, node=_sg)
             return
 
         # Build fix with new target
-        _new_trg = _sg.to_attr('aiCustomAOVs[{:d}].aovInput'.format(_idx))
+        _new_trg = _sg.to_attr(f'aiCustomAOVs[{_idx:d}].aovInput')
         _cur_conn = src, _cur_trg
         _new_conn = src, _new_trg
-        _msg = ('Custom aov {} is wrongly connected to {} in {}'.format(
-            aov, _cur_aov, _sg))
+        _msg = f'Custom AOV {aov} is wrongly connected to {_cur_aov} in {_sg}'
         _fix = wrap_fn(
             _fix_bad_aov_conn, disconnect=_cur_conn, connect=_new_conn)
         self.add_fail(_msg, node=_sg, fix=_fix)
@@ -418,7 +415,8 @@ class CheckRenderGlobals(SCMayaCheck):
         self.write_log('check format %s', _fmt)
         if _fmt != img_fmt:
             _fix = wrap_fn(set_render_extn, img_fmt)
-            _msg = f'Image format is not "{img_fmt}" (set to "{_fmt}")'
+            _msg = (
+                f'Image format is not "{img_fmt}" (currently set to "{_fmt}")')
             self.add_fail(_msg, fix=_fix)
 
         for _attr, _val in _attrs_to_check:
@@ -474,10 +472,11 @@ class CheckRenderLayers(SCMayaCheck):
 
             # Check prefix
             if _prefix not in _prefixes:
+                _prefixes = str(_prefixes).strip('[]')
                 _msg = (
-                    'Render layer "{}" has prefix "{}" which is not in the '
-                    'list of approved prefixes: {}'.format(
-                        _lyr.pass_name, _prefix, str(_prefixes).strip('[]')))
+                    f'Render layer "{_lyr.pass_name}" has prefix "{_prefix}" '
+                    f'which is not in the list of approved prefixes: '
+                    f'{_prefixes}')
                 _fail = SCFail(_msg)
                 _fail.add_action('Open layers', renderSetup.createUI)
                 self.add_fail(_fail)
@@ -486,11 +485,10 @@ class CheckRenderLayers(SCMayaCheck):
             # Check suffix
             if _suffix and not is_camel(_suffix):
                 _new_suffix = to_camel(_suffix)
-                _new_name = '{}_{}'.format(_prefix, _new_suffix)
+                _new_name = f'{_prefix}_{_new_suffix}'
                 _msg = (
-                    'Render layer "{}" has suffix "{}" which is not camel '
-                    'case (should be "{}")'.format(
-                        _lyr.pass_name, _suffix, _new_name))
+                    f'Render layer "{_lyr.pass_name}" has suffix "{_suffix}" '
+                    f'which is not camel case (should be "{_new_name}")')
                 _fix = wrap_fn(_lyr.set_pass_name, _new_name)
                 self.add_fail(_msg, fix=_fix)
                 continue

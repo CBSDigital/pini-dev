@@ -168,7 +168,8 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, group=None, chunk_size=1, version_up=False,
-            limit_groups=None, checks_data=None, submit=True, force=False):
+            limit_groups=None, checks_data=None, submit=True,
+            metadata=None, result='jobs', force=False):
         """Submit maya render job to the farm.
 
         Args:
@@ -184,6 +185,10 @@ class CDFarm(base.CFarm):
                 (eg. maya-2023,vray)
             checks_data (dict): override sanity checks data
             submit (bool): submit render to deadline (disable for debugging)
+            metadata (dict): override render metadata
+            result (str): what to return
+                jobs - list of submitted jobs
+                msg - submit message
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -203,10 +208,10 @@ class CDFarm(base.CFarm):
 
         _render_scene = _work.save(
             force=True, reason='deadline render', result='bkp')
-        _metadata = export.build_metadata(
+        _metadata = metadata or export.build_metadata(
             'render', sanity_check_=True, checks_data=checks_data,
-            task=_work.task, force=force, bkp=_render_scene.path,
-            require_notes=True)
+            task=_work.task, force=force, require_notes=True)
+        _metadata['bkp'] = _render_scene.path
         _progress = qt.progress_dialog(
             title='Submitting Render', stack_key='SubmitRender',
             col='OrangeRed')
@@ -241,13 +246,20 @@ class CDFarm(base.CFarm):
         if version_up:
             pipe.version_up()
 
+        # Notify on submission
+        _submit_msg = (
+            f'Submitted {len(_lyrs):d} layer{plural(_lyrs)} to deadline.'
+            f'\n\nBatch name:\n{_batch}')
         if not force:
-            qt.notify(
-                f'Submitted {len(_lyrs):d} layer{plural(_lyrs)} to deadline.'
-                f'\n\nBatch name:\n{_batch}',
-                title='Render submitted', icon=d_utils.ICON)
+            qt.notify(_submit_msg, title='Render submitted', icon=d_utils.ICON)
 
-        return _render_jobs + [_update_job]
+        if result == 'jobs':
+            _result = _render_jobs + [_update_job]
+        elif result == 'msg':
+            _result = _submit_msg
+        else:
+            raise ValueError(result)
+        return _result
 
     def submit_maya_py(
             self, name, py, comment='', priority=50, machine_limit=0,

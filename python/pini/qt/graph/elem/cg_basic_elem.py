@@ -161,7 +161,7 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         """
         if not self.parent:
             return self.name
-        return '{}.{}'.format(self.parent.full_name, self.name)
+        return f'{self.parent.full_name}.{self.name}'
 
     @property
     def pos_g(self):
@@ -367,22 +367,32 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
                 continue
             _child.draw(pix)
 
-    def _draw_selection(self, pix, rect=None):
+    def _draw_selection(self, pix, rect=None, style='basic'):
         """Draw selection highlighting for this element.
 
         Args:
             pix (CPixmap): pixmap to draw on
             rect (CRectF): override draw rect (in pixmap space)
+            style (str): draw style
         """
         _rect_p = rect or self.rect_p
-        _offs = _SEL_PEN_W*0.45
-        _rect_p = q_utils.to_rect(
-            pos=_rect_p.topLeft() + q_utils.to_p(_offs, _offs),
-            size=_rect_p.size() - q_utils.to_size(_offs*2))
-        pix.draw_rounded_rect(
-            col=_SEL_COL, outline=_SEL_PEN,
-            pos=_rect_p.topLeft(), size=_rect_p.size(), anchor='TL',
-            bevel=self.graph.g2p(self.bevel_g))
+
+        if style == 'basic':
+            _offs = _SEL_PEN_W*0.25
+            _rect_p = q_utils.to_rect(
+                pos=_rect_p.topLeft() + q_utils.to_p(_offs, _offs),
+                size=_rect_p.size() - q_utils.to_size(_offs*2))
+            pix.draw_rounded_rect(
+                col=_SEL_COL, outline=_SEL_PEN,
+                pos=_rect_p.topLeft(), size=_rect_p.size(), anchor='TL',
+                bevel=self.graph.g2p(self.bevel_g))
+        # elif style == 'over':
+        #     pix.draw_rounded_rect(
+        #         col='Yellow',
+        #         pos=_rect_p.topLeft(), size=_rect_p.size(), anchor='TL',
+        #         outline=None, bevel=self.graph.g2p(self.bevel_g))
+        else:
+            raise NotImplementedError(style)
 
     def is_tiny(self):
         """Check whether this element is too small to display.
@@ -513,7 +523,7 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
                 self.graph.clear_selection()
             if not _sel:
                 self.selected = not self.selected
-            _LOGGER.info(' - TOGGLE SELECTED %s ctrl=%d', self.selected, _ctrl)
+            _LOGGER.debug(' - TOGGLE SELECTED %s ctrl=%d', self.selected, _ctrl)
 
     def resizeEvent(self, event=None):
         """Triggered by resize.

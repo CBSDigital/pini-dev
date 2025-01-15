@@ -459,8 +459,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         # Determine globals
         _mtime = mtime or int(time.time())
-        _LOGGER.debug(' - MTIME %s %s %s', _mtime, strftime('%H:%M:%S', _mtime),
-                      mtime)
+        _LOGGER.debug(
+            ' - MTIME %s %s %s', _mtime, strftime('%H:%M:%S', _mtime), mtime)
         _reason = reason
         _notes = notes or self.notes
         if _notes:
