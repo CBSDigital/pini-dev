@@ -1,3 +1,14 @@
+## [6.34.2] - Thu 2025-01-16 13:56
+### Summary
+ - Pini Helper:
+    - catch segfault on version up due to buggy image plane nodes in scene (mkim),
+### Updated
+ - pini.dcc.pipe_ref maya catch error on buggy image plane nodes,
+ - pini.pipe.shotgrid wip deprecate create_pub_file,
+ - maya_pini.ref.find_attr_refs catch buggy image planes,
+ - maya_pini.CMDS.ls catch buggy image planes,
+
+
 ## [6.34.1] - Thu 2025-01-16 11:13
 ### Summary
  - Pini Helper:

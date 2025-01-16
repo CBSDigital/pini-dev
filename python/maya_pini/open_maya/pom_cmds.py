@@ -241,7 +241,15 @@ def _clean_ls(results, type=None, **kwargs):   # pylint: disable=redefined-built
     else:
         _class = pom.CNode
 
-    return [_class(_node) for _node in _results]
+    _nodes = []
+    for _node in _results:
+        try:
+            _node = _class(_node)
+        except RuntimeError as _exc:
+            _LOGGER.warning(' - FAILED TO CAST NODE %s %s', _node, _exc)
+            continue
+        _nodes.append(_node)
+    return _nodes
 
 
 CMDS = CmdsMapper()

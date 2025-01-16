@@ -168,7 +168,7 @@ class CMayaImgPlaneRef(_CMayaNodeRef):
         if not _out:
             raise ValueError
         _top_node = img.to_parent()
-        _name = str(_top_node).split('->')[-1]
+        _name = str(_top_node).rsplit('->', 1)[-1]
         super().__init__(
             node=img, top_node=_top_node, path=_seq.path, namespace=_name)
 
@@ -429,7 +429,7 @@ def _read_type_nodes(class_, selected):
     for _node in pom.find_nodes(type_=class_.TYPE):
         try:
             _pxy = class_(_node)
-        except ValueError:
+        except (ValueError, RuntimeError):
             continue
         if selected and _pxy.top_node not in _sel and _pxy.node not in _sel:
             continue

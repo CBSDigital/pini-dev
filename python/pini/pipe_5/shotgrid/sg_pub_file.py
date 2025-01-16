@@ -5,6 +5,7 @@ import operator
 import platform
 
 from pini import pipe
+# from pini.tools import release
 from pini.utils import Seq, Video, TMP, Image, single, File, get_result_cacher
 
 from . import sg_handler
@@ -15,7 +16,7 @@ _PUB_FILE_FIELDS = [
 _TMP_THUMB = TMP.to_file('PiniTmp/thumb_tmp.jpg')
 
 
-def create_pub_file(
+def register_output(
         output, thumb=None, status='cmpt', update_cache=True, force=False):
     """Create PublishedFile entry in shotgrid.
 
@@ -105,6 +106,21 @@ def create_pub_file(
             'PublishedFile', _id, _thumb.path)
 
     return _sg_pub
+
+
+def create_pub_file(output, **kwargs):
+    """Create PublishedFile entry in shotgrid.
+
+    NOTE: to be deprecated
+
+    Args:
+        output (CPOutput): output to register
+
+    Returns:
+        (dict): registered data
+    """
+    # release.apply_deprecation('16/01/24', 'Use shotgrid.register_output')
+    return register_output(output, **kwargs)
 
 
 def _build_path_data(file_, name=None):

@@ -94,7 +94,9 @@ def find_attr_refs(types=()):
             continue
         for _node in cmds.ls(type=_type):
             _node = _node.split('->')[-1]  # Fix weird image planes
-            _a_ref = AttrRef('{}.{}'.format(_node, _attr))
+            if not cmds.objExists(_node):  # Ignore weird missing image planes
+                continue
+            _a_ref = AttrRef(f'{_node}.{_attr}')
             if not _a_ref.path:
                 continue
             _a_refs.append(_a_ref)

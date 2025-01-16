@@ -15,7 +15,7 @@ class CNode(base.CBaseNode, om.MFnDependencyNode):
         Args:
             node (str): node name (eg. persp)
         """
-        super(CNode, self).__init__(node)
+        super().__init__(node)
         _mobj = to_mobject(node)
         om.MFnDependencyNode.__init__(self, _mobj)
 
