@@ -158,14 +158,15 @@ def create(entity_type, data):
     return to_handler().create(entity_type, data)
 
 
-def _to_filters(filters, job=None, entity=None, id_=None):
+def _to_filters(filters, job=None, entity=None, id_=None, path=None):
     """Build filters list.
 
     Args:
         filters (list): specified filters
         job (CPJob): add job filter
         entity (CPEntity): add entity filter
-        id_ (int): add id filter
+        id_ (int): match by id
+        path (str): match by path (relative path in path_cache field is used)
 
     Returns:
         (tuple list): filters list
@@ -181,6 +182,9 @@ def _to_filters(filters, job=None, entity=None, id_=None):
         _filters.append(_ety_s.to_filter())
     if id_ is not None:
         _filters.append(('id', 'is', id_))
+    if path:
+        _rel_path = pipe.ROOT.rel_path(path)
+        _filters.append(('path_cache', 'is', _rel_path))
     return _filters
 
 
@@ -254,20 +258,25 @@ def find_fields(entity_type):
     return to_handler().find_fields(entity_type)
 
 
-def find_one(entity_type, filters=(), fields=(), entity=None, id_=None):
+def find_one(
+        entity_type, filters=(), fields=(), job=None, entity=None, id_=None,
+        path=None):
     """Wrapper for Shotgrid.find_one command.
 
     Args:
         entity_type (str): type of entity to find
         filters (list): filter the results
         fields (tuple): fields to return
+        job (CPJob): apply job filter
         entity (CPEntity): add entity filter
         id_ (int): filter by entity id
+        path (str): match by path (relative path in path_cache field is used)
 
     Returns:
         (dict): matching entry
     """
-    _filters = _to_filters(filters, id_=id_, entity=entity)
+    _filters = _to_filters(
+        filters, id_=id_, entity=entity, path=path, job=job)
     return to_handler().find_one(
         entity_type, filters=_filters, fields=fields)
 

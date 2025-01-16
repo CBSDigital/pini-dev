@@ -4,10 +4,11 @@ from pini.utils import val_map, basic_repr, single
 
 from ...q_mgr import QtGui
 
+# Added cols - note: case is ignored so much be lower
 _EXTENDED_COLS = {
-    'BottleGreen': (0, 106, 78),
-    'PlumRed': (124, 41, 70),
-    'NavyBlue': (25, 49, 120),
+    'bottlegreen': (0, 106, 78),
+    'plumred': (124, 41, 70),
+    'navyblue': (25, 49, 120),
 }
 
 

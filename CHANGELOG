@@ -1,3 +1,14 @@
+## [6.34.1] - Thu 2025-01-16 11:13
+### Summary
+ - Pini Helper:
+    - maya model publish bugfix error on freeze locked transforms (eehemann),
+### Updated
+ - pini.pipe.shotgrid.find_one added job/path filter,
+ - pini.pipe.shotgrid.create_pub_file scene file ver_n is optional,
+ - pini.qt bugfix custom cols not working,
+ - maya_pini.open_maya.CBaseTransform.freeze_tfm unlock on force,
+
+
 ## [6.34.0] - Wed 2025-01-15 11:00
 ### Summary
  - Pini Helper:

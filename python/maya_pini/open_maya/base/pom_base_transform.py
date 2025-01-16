@@ -249,6 +249,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             for _plug in self.tfm_plugs:
                 _LOGGER.debug(' - BREAK CONNS %s', _plug)
                 _plug.break_connections()
+                _plug.unlock()
         cmds.makeIdentity(
             self, apply=True, translate=translate, rotate=rotate, scale=scale,
             normal=False, preserveNormals=True)

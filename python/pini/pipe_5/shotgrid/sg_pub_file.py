@@ -131,18 +131,18 @@ def _build_path_data(file_, name=None):
 
 
 def _build_pub_data(
-        path, user, task, entity, job, ver_n, notes, type_=None, status='cmpt',
-        name=None):
+        path, user, task, job, entity, notes, ver_n=None, type_=None,
+        status='cmpt', name=None):
     """Build pub data dict.
 
     Args:
         path (Path): object being published
         user (SGCUser): publishing user
         task (SGCTask): parent task
-        entity (CPEntity): parent entity
         job (CPJob): parent job
-        ver_n (int): publish version number
+        entity (CPEntity): parent entity
         notes (str): publish notes
+        ver_n (int): publish version number
         type_ (SGCPubType): override publish type
         status (str): override status
         name (str): override path name
@@ -167,8 +167,9 @@ def _build_pub_data(
         'published_file_type': _type.to_entry(),
         'sg_status_list': status,
         'updated_by': user.to_entry(),
-        'version_number': ver_n,
     }
+    if ver_n is not None:
+        _data['version_number'] = ver_n
     if task:
         _data['task'] = task.to_entry()
     return _data
