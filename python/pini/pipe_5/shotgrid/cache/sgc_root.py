@@ -207,6 +207,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             'rs': 'Redshift Proxy',
             'exr': 'Exr File',
             'gz': 'Ass Proxy',
+            'vdb': 'VDB File',
         }
         _map_matches = [
             _type for _type in _types

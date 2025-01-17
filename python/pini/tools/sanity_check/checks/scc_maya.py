@@ -57,16 +57,14 @@ class CheckUnmappedPaths(core.SCMayaCheck):
                 # Check map path exists
                 if _is_file and not _map_path.exists():
                     _msg = (
-                        'Reference {} has a path which can be updated for '
-                        '{} but the new path is missing: {}'.format(
-                            _name, platform.system(),
-                            _cur_path.path))
+                        f'Reference {_name} has a path which can be updated '
+                        f'for {platform.system()} but the new path is missing: '
+                        f'{_cur_path.path}')
                     self.add_fail(_msg, node=_node)
                 else:
                     _msg = (
-                        'Reference {} has a path which can be updated for '
-                        '{}: {}'.format(
-                            _name, platform.system(), _cur_path.path))
+                        f'Reference {_name} has a path which can be updated '
+                        f'for {platform.system()}: {_cur_path.path}')
                     _fix = wrap_fn(_ref.update, _map_path.path)
                     self.add_fail(_msg, fix=_fix, node=_node)
 
@@ -79,10 +77,13 @@ class CleanBadSceneNodes(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _types = cmds.allNodeTypes()
         _whitelist = []
         if 'redshift' in dcc.allowed_renderers():
             _whitelist += ['defaultRedshiftPostEffects', 'redshiftOptions']
+
+        # Get list of nodes
+        _nodes = []
+        _types = cmds.allNodeTypes()
         for _type in [
                 # 'RedshiftOptions',
                 # 'RedshiftPostEffects',
@@ -92,32 +93,26 @@ class CleanBadSceneNodes(core.SCMayaCheck):
             if _type not in _types:
                 self.write_log('Type %s does not exist', _type)
                 continue
-            _nodes = cmds.ls(type=_type) or []
-            self.write_log('Found %d %s nodes - %s', len(_nodes), _type, _nodes)
-            for _node in _nodes:
-                self.write_log('Checking node %s', _node)
+            _type_nodes = cmds.ls(type=_type) or []
+            self.write_log(
+                'Found %d %s nodes - %s', len(_type_nodes), _type, _type_nodes)
+            _nodes += _type_nodes
 
-                # Ignore whitelisted
-                if _node in _whitelist:
-                    self.write_log(' - whitelisted')
-                    continue
+        # Check nodes
+        for _node in self.update_progress(_nodes):
+            self.write_log('Checking node %s', _node)
 
-                # Add fail
-                if cmds.referenceQuery(_node, isNodeReferenced=True):
-                    _ref_node = cmds.referenceQuery(_node, referenceNode=True)
-                    _ref = ref.FileRef(_ref_node)
-                    _msg = 'Bad {} node {} in ref {}'.format(
-                        _type, _node, _ref.namespace)
-                    _fail = core.SCFail(_msg, node=_node)
-                    _top_node = _ref.find_top_node(catch=True)
-                    if _top_node:
-                        _action = wrap_fn(cmds.select, _top_node)
-                        _fail.add_action('Select ref', _action)
-                    self.add_fail(_fail)
-                else:
-                    _msg = 'Bad {} node {}'.format(_type, _node)
-                    _fix = wrap_fn(self._delete_node, _node)
-                    self.add_fail(_msg, node=_node, fix=_fix)
+            # Ignore whitelisted
+            if _node in _whitelist:
+                self.write_log(' - whitelisted')
+                continue
+
+            # Add fail
+            if cmds.referenceQuery(_node, isNodeReferenced=True):
+                continue
+            _msg = f'Bad {_type} node {_node}'
+            _fix = wrap_fn(self._delete_node, _node)
+            self.add_fail(_msg, node=_node, fix=_fix)
 
     def _delete_node(self, node):
         """Delete the given node.
@@ -128,6 +123,7 @@ class CleanBadSceneNodes(core.SCMayaCheck):
             node (str): node to delete
         """
         if cmds.objExists(node):
+            cmds.lockNode(node, lock=False)
             cmds.delete(node)
 
 
@@ -202,8 +198,8 @@ class RemoveBadPlugins(core.SCMayaCheck):
         """
         if not force:
             _result = qt.yes_no_cancel(
-                'Force unload bad plugin {}?\n\nThis can cause instablity - '
-                'you may want to save first.'.format(plugin))
+                f'Force unload bad plugin {plugin}?\n\nThis can cause '
+                f'instablity - you may want to save first.')
             if _result == 'No':
                 return
         cmds.unloadPlugin(plugin, force=True)
@@ -218,13 +214,14 @@ class FixRefNodeNames(core.SCMayaCheck):
             self.write_log('Checking ref %s %s', _ref.ref_node, _ref.namespace)
             _good_name = _ref.namespace+'RN'
             if _ref.ref_node == _good_name:
-                self.write_log('Checked {} namespace={}'.format(
-                    _ref.ref_node, _ref.namespace))
+                self.write_log(
+                    'Checked %s namespace=%s', _ref.ref_node, _ref.namespace)
                 continue
             _fix = wrap_fn(
                 self.fix_ref_node_name, _ref.ref_node, _good_name)
-            _msg = 'Reference namespace {} does not match node name {}'.format(
-                _ref.namespace, _ref.ref_node)
+            _msg = (
+                f'Reference namespace {_ref.namespace} does not match node '
+                f'name {_ref.ref_node}')
             self.add_fail(_msg, node=_ref.ref_node, fix=_fix)
 
     def fix_ref_node_name(self, node, name):
@@ -279,8 +276,7 @@ class FixViewportCallbacks(core.SCMayaCheck):
                     raise NotImplementedError
                 _fix = wrap_fn(
                     cmds.modelEditor, _model_panel, edit=True, editorChanged="")
-                _msg = 'Found {} callback in modelPanel {}'.format(
-                    callback, _model_panel)
+                _msg = f'Found {callback} callback in modelPanel {_model_panel}'
                 self.add_fail(_msg, fix=_fix)
 
     def _check_for_cgab_blast_callback(self):
@@ -296,8 +292,9 @@ class FixViewportCallbacks(core.SCMayaCheck):
             if not _before or _replace not in _before:
                 continue
             _before = _before.replace(_replace, '')
-            _msg = ('Found DCF_updateViewportList callback in scriptNode '
-                    '{}'.format(_node))
+            _msg = (
+                f'Found DCF_updateViewportList callback in scriptNode '
+                f'"{_node}"')
             _fix = wrap_fn(
                 cmds.scriptNode, _node, edit=True, beforeScript=_before)
             self.add_fail(_msg, node=_node, fix=_fix)
@@ -364,8 +361,8 @@ class CheckReferences(core.SCMayaCheck):
             # Check for no namespace
             if not _ref.namespace:
                 _msg = (
-                    'Reference "{}" has no namespace which can make maya '
-                    'unstable.'.format(_ref.ref_node))
+                    f'Reference "{_ref.ref_node}" has no namespace which '
+                    f'can make maya unstable.')
                 _fail = core.SCFail(_msg, node=_ref.ref_node)
                 _fail.add_action('Import nodes', _ref.import_, is_fix=True)
                 _fail.add_action('Remove', _ref.delete, is_fix=True)
@@ -383,9 +380,10 @@ class CheckReferences(core.SCMayaCheck):
             self.write_log(' - checking size %d %s',
                            _size, nice_size(_size))
             if _size > 500*1000*1000:
+                _size_s = nice_size(_size)
                 _msg = (
-                    'Reference {} is large ({}) - this may cause '
-                    'issues'.format(_ref.namespace, nice_size(_size)))
+                    f'Reference {_ref.namespace} is large ({_size_s}) - '
+                    f'this may cause issues')
                 self.add_fail(_msg, node=_top_node)
 
             # Check models/rigs have cache sets
@@ -393,18 +391,17 @@ class CheckReferences(core.SCMayaCheck):
                     _ref_needs_cache_set(_ref) and
                     not cmds.objExists(_ref.to_node('cache_SET', fmt='str'))):
                 _msg = (
-                    'Reference "{}" is a {} but it has no cache_SET'.format(
-                        _ref.namespace, _out.task))
+                    f'Reference "{_ref.namespace}" is a {_out.task} but it '
+                    f'has no cache_SET')
                 self.add_fail(_msg, node=_top_node)
 
             # Check maya ver
             _ref_ver = _out.metadata.get('dcc_version')
             if _ref_ver and _ref_ver > _cur_ver:
+                _ver = '.'.join([str(_digit) for _digit in _ref_ver])
                 _msg = (
-                    'Reference "{}" is from a newer version of maya ({}) which '
-                    'can cause issues'.format(
-                        _ref.namespace,
-                        '.'.join([str(_digit) for _digit in _ref_ver])))
+                    f'Reference "{_ref.namespace}" is from a newer version '
+                    f'of maya ({_ver}) which can cause issues')
                 self.add_fail(_msg, node=_top_node)
 
 

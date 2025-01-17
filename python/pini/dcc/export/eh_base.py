@@ -442,13 +442,8 @@ class CExportHandler:
 
         if update_cache:
             if pipe.SHOTGRID_AVAILABLE:
-                from pini.pipe import shotgrid
-                _thumb = work.image if work.image.exists() else None
-                for _last, _out in last(outs):
-                    _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
-                    shotgrid.create_pub_file(
-                        _out, thumb=_thumb, force=True, update_cache=_last)
-            self._update_pipe_cache(work, outs)
+                self._register_in_shotgrid(work=work, outs=outs)
+            self._update_pipe_cache(work=work, outs=outs)
 
         # Apply notes to work
         _work_c = pipe.CACHE.obt(work)  # May have been rebuilt on update cache
@@ -458,6 +453,22 @@ class CExportHandler:
             _work_c.set_notes(_notes)
 
         self._apply_version_up(version_up=version_up)
+
+    def _register_in_shotgrid(self, work, outs, upstream_files=None):
+        """Register outputs in shotgrid.
+
+        Args:
+            work (CPWork): source work file
+            outs (CPOutput list): outputs that were generated
+            upstream_files (list): list of upstream files
+        """
+        from pini.pipe import shotgrid
+        _thumb = work.image if work.image.exists() else None
+        for _last, _out in last(outs):
+            _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
+            shotgrid.create_pub_file_from_output(
+                _out, thumb=_thumb, force=True, update_cache=_last,
+                upstream_files=upstream_files)
 
     def _update_pipe_cache(self, work, outs):
         """Update pipeline cache.

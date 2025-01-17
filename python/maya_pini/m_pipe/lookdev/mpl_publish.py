@@ -380,7 +380,11 @@ def _read_se(engine, referenced, allow_face_assign, filter_):
             return None, None
 
     # Find geos
-    _geo_ss = _shd.to_assignments()
+    try:
+        _geo_ss = _shd.to_assignments()
+    except RuntimeError:
+        _LOGGER.error('Failed to read shader assignments %s', _shd)
+        return None, None
     _LOGGER.debug(' - GEO SHPS (A) %d %s', len(_geo_ss), _geo_ss)
     _geo_ss = sorted(set(
         _geo_s for _geo_s in _geo_ss

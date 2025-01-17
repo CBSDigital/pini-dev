@@ -393,7 +393,7 @@ def _build_update_job_py(outputs, metadata, work):
                 'from pini.pipe import shotgrid',
                 'for _last, _out in last(_outs):',
                 '    assert _out.exists()',
-                '    shotgrid.create_pub_file(',
+                '    shotgrid.create_pub_file_from_output(',
                 '        _out, force=True, update_cache=_last)',
                 '']
 

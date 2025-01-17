@@ -5,8 +5,9 @@ import operator
 import platform
 
 from pini import pipe
-# from pini.tools import release
-from pini.utils import Seq, Video, TMP, Image, single, File, get_result_cacher
+from pini.tools import release
+from pini.utils import (
+    Seq, Video, TMP, Image, single, File, get_result_cacher, to_str)
 
 from . import sg_handler
 
@@ -16,8 +17,27 @@ _PUB_FILE_FIELDS = [
 _TMP_THUMB = TMP.to_file('PiniTmp/thumb_tmp.jpg')
 
 
-def register_output(
-        output, thumb=None, status='cmpt', update_cache=True, force=False):
+def create_pub_file(path, **kwargs):
+    """Create PublishedFile entry in shotgrid.
+
+    Args:
+        path (CPOutput): path to register
+
+    Returns:
+        (dict): registered data
+    """
+    if kwargs:
+        release.apply_deprecation('16/01/25', 'Use create_pub_file_from_output')
+    if isinstance(path, pipe.CPOutputBase):
+        return create_pub_file_from_output(path, **kwargs)
+    if isinstance(path, File):
+        return create_pub_file_from_path(path)
+    raise ValueError(path)
+
+
+def create_pub_file_from_output(
+        output, thumb=None, status='cmpt', update_cache=True,
+        upstream_files=None, force=False):
     """Create PublishedFile entry in shotgrid.
 
     Args:
@@ -26,6 +46,7 @@ def register_output(
         status (str): status for entry (default is complete)
         update_cache (bool): update cache on create
             (disable for multiple creates)
+        upstream_files (dict list): list of upstream published file entries
         force (bool): if an entry exists, update data
 
     Returns:
@@ -59,7 +80,7 @@ def register_output(
     _data = _build_pub_data(
         output, ver_n=output.ver_n, job=output.job, entity=output.entity,
         task=_sg_task, user=_sg_user, type_=_sg_type, status=status,
-        notes=_notes)
+        notes=_notes, upstream_files=upstream_files)
     _data['sg_slotname'] = output.output_name
     _scene_entry = _obt_scene_entry(
         output, user=_sg_user, task=_sg_task, notes=_notes)
@@ -91,7 +112,7 @@ def register_output(
     # Apply thumb
     _thumb = thumb
     if not _thumb:
-        if isinstance(output, Seq):
+        if isinstance(output, Seq) and output.extn not in ('obj', 'vdb'):
             _thumb = Image(output.to_frame_file())
             if _thumb.extn not in ('png', 'jpg'):
                 _thumb.convert(_TMP_THUMB, force=True)
@@ -106,21 +127,6 @@ def register_output(
             'PublishedFile', _id, _thumb.path)
 
     return _sg_pub
-
-
-def create_pub_file(output, **kwargs):
-    """Create PublishedFile entry in shotgrid.
-
-    NOTE: to be deprecated
-
-    Args:
-        output (CPOutput): output to register
-
-    Returns:
-        (dict): registered data
-    """
-    # release.apply_deprecation('16/01/24', 'Use shotgrid.register_output')
-    return register_output(output, **kwargs)
 
 
 def _build_path_data(file_, name=None):
@@ -148,7 +154,7 @@ def _build_path_data(file_, name=None):
 
 def _build_pub_data(
         path, user, task, job, entity, notes, ver_n=None, type_=None,
-        status='cmpt', name=None):
+        status='cmpt', upstream_files=None, name=None):
     """Build pub data dict.
 
     Args:
@@ -161,6 +167,7 @@ def _build_pub_data(
         ver_n (int): publish version number
         type_ (SGCPubType): override publish type
         status (str): override status
+        upstream_files (dict list): list of upstream published file entries
         name (str): override path name
 
     Returns:
@@ -169,25 +176,42 @@ def _build_pub_data(
     from pini.pipe import shotgrid
 
     _type = type_ or shotgrid.SGC.find_pub_type(path.extn)
+    _LOGGER.debug(' - TYPE %s', _type)
     _path_cache = pipe.ROOT.rel_path(path)
     _name = name or path.filename
+    _user = user or shotgrid.SGC.find_user()
+
+    _ety = entity
+    if not _ety:
+        _ety = pipe.CACHE.obt_entity(path)
+    assert _ety
+
+    _job = job
+    if not _job:
+        _job = _ety.job
+    assert _job
+    assert _job == _ety.job
+
     _data = {
         'code': _name,
-        'created_by': user.to_entry(),
+        'created_by': _user.to_entry(),
         'description': notes,
-        'entity': entity.sg_entity.to_entry(),
+        'entity': _ety.sg_entity.to_entry(),
         'name': _name,
         'path': _build_path_data(path, name=_name),
         'path_cache': _path_cache,
-        'project': job.sg_proj.to_entry(),
+        'project': _job.sg_proj.to_entry(),
         'published_file_type': _type.to_entry(),
         'sg_status_list': status,
-        'updated_by': user.to_entry(),
+        'updated_by': _user.to_entry(),
     }
     if ver_n is not None:
         _data['version_number'] = ver_n
     if task:
         _data['task'] = task.to_entry()
+    if upstream_files:
+        _data['upstream_published_files'] = upstream_files
+
     return _data
 
 
@@ -269,44 +293,51 @@ def _obt_scene_entry(output, user, task, notes):
     if not _scene:
         return None
 
-    return _scene_to_entry(
-        scene=_scene, output=output, user=user, task=task, notes=notes,
-        name=_name)
+    return create_pub_file_from_path(
+        _scene, job=output.job, entity=output.entity, user=user, task=task,
+        notes=notes, ver_n=output.ver_n, name=_name)
 
 
-@get_result_cacher(use_args=['scene'])
-def _scene_to_entry(scene, output, user, task, notes, name):
+@get_result_cacher(use_args=['path'])
+def create_pub_file_from_path(
+        path, job=None, entity=None, task=None, user=None, ver_n=None,
+        type_=None, notes=None, name=None, thumb=None):
     """Obtain scene file entry for given scene path.
 
     Args:
-        scene (str): path to scene file
-        output (CCPOutput): output file
-        user (SGCUser): output user
-        task (SGCTask): output task
+        path (str): path to register
+        job (CPJob): parent job of path
+        entity (CPEntity): parent entity of path
+        task (SGCTask): parent task of path
+        user (SGCUser): path owner
+        ver_n (int): version number associated with path
+        type_ (SGCPubType): override published file type
         notes (str): publish notes
         name (str): pub file name overide
+        thumb (str): path to thumbnail
 
     Returns:
         (dict): scene file data
     """
     from pini.pipe import shotgrid
-    assert isinstance(scene, str)
+    assert isinstance(path, str)
 
     # Try to find existing
-    _path_cache = pipe.ROOT.rel_path(scene)
-    _scene_entry = shotgrid.find_one(
-        'PublishedFile', entity=output.entity,
-        filters=[('path_cache', 'is', _path_cache)])
+    _pub = shotgrid.find_one(
+        'PublishedFile', entity=entity, job=job, path=path)
 
     # Create entry if required
-    if not _scene_entry:
-        _LOGGER.info(' - CREATE PublishedFile %s', scene)
-        _file = File(scene)
+    if not _pub:
+        _LOGGER.info(' - CREATE PublishedFile %s', path)
+        _file = File(path)
         _data = _build_pub_data(
-            _file, name=name, job=output.job, entity=output.entity,
-            user=user, task=task, ver_n=output.ver_n, notes=notes)
+            _file, name=name, job=job, entity=entity, type_=type_,
+            user=user, task=task, ver_n=ver_n, notes=notes)
         _LOGGER.info(' - SCENE DATA %s', _data)
-        _scene_entry = shotgrid.create('PublishedFile', _data)
-        _LOGGER.info(' - SCENE ENTRY %s', _scene_entry)
+        _pub = shotgrid.create('PublishedFile', _data)
+        _LOGGER.info(' - SCENE ENTRY %s', _pub)
+        if thumb:
+            shotgrid.upload_thumbnail(
+                'PublishedFile', _pub['id'], to_str(thumb))
 
-    return _scene_entry
+    return _pub

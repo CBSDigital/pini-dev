@@ -1,3 +1,22 @@
+## [6.35.0] - Fri 2025-01-17 10:47
+### Summary
+ - Pini Helper:
+    - bugfix error on launch in shot with vdb output (acheprakov),
+### Updated
+ - pini.dcc.export.CBaseExportHandler._register_in_shotgrid moved to separate method,
+ - pini.dcc.export.CMayaLookdevPublish ignore referenced shaders,
+ - pini.dcc.export.CMayaLookdevPublish added shotgrid texture linking (disabled),
+ - pini.pipe.cache.CCPOutputBase.content_type added vdb handling,
+ - pini.pipe.shotgrid.SGC.find_pub_type added vdb handling,
+ - pini.pipe.shotgrid create_pub_file_from_output/create_pub_file_from_output added,
+ - pini.pipe.shotgrid.create_pub_file_from_output added upstream files handling,
+ - pini.pipe.shotgrid.create_pub_file_from_output bugfix error register vdb create thumb,
+ - pini.tools.sanity_check.CleanBadSceneNodes added progress,
+ - pini.tools.sanity_check.CleanBadSceneNodes ignore referenced nodes,
+ - pini.tools.sanity_check.CleanBadSceneNodes added handling for locked nodes,
+ - maya_pini.m_pipe.read_shader_assignments catch error on unknown shaders,
+
+
 ## [6.34.2] - Thu 2025-01-16 13:56
 ### Summary
  - Pini Helper:

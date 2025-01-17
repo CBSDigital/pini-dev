@@ -78,7 +78,7 @@ def blast(
             _update_shotgrid_range(entity=_work.entity, range_=_rng)
         elif pipe.MASTER == 'shotgrid':
             from pini.pipe import shotgrid
-            shotgrid.create_pub_file(
+            shotgrid.create_pub_file_from_output(
                 _out, thumb=_work.image, force=True, status='ip')
         else:
             raise ValueError(pipe.MASTER)
@@ -128,10 +128,9 @@ def _update_shotgrid_range(entity=None, range_=None, force=False):
     _LOGGER.debug(' - CUR RANGE %s', _cur_rng)
 
     # Read range from shotgrid
-    _job_filter = shotgrid.to_job_filter(_ety)
     _data = shotgrid.find_one(
         _ety.profile.capitalize(),
-        filters=[_job_filter, ('code', 'is', _ety.name)],
+        job=_ety.job,
         fields=['sg_work_in', 'sg_work_out'])
     _sg_rng = _data.get('sg_work_in'), _data.get('sg_work_out')
     _LOGGER.debug(' - SHOTGRID RANGE %s', _sg_rng)

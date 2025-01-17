@@ -108,6 +108,7 @@ def flipbook(
     _out.set_metadata(_data, force=True)
     if pipe.MASTER == 'shotgrid':
         from pini.pipe import shotgrid
-        shotgrid.create_pub_file(_out, thumb=_thumb, status='ip', force=True)
+        shotgrid.create_pub_file_from_output(
+            _out, thumb=_thumb, status='ip', force=True)
 
     _work.update_outputs()

@@ -73,6 +73,8 @@ class CCPOutputBase(elem.CPOutputBase):
         elif isinstance(self, Seq):
             if self.extn == 'obj':
                 _c_type = 'ObjSeq'
+            elif self.extn == 'vdb':
+                _c_type = 'VdbSeq'
             elif self.basic_type == 'blast':
                 _c_type = 'Blast'
             elif self.basic_type == 'render':

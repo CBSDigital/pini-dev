@@ -5,10 +5,10 @@ import logging
 
 from maya import cmds
 
-from pini import pipe, dcc
-from pini.utils import single
+from pini import pipe, dcc, qt
+from pini.utils import single, File, abs_path
 
-from maya_pini import ref, m_pipe
+from maya_pini import ref, m_pipe, open_maya as pom
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
@@ -32,6 +32,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
     ACTION = 'LookdevPublish'
 
     shd_yml = None
+    textures = None
 
     def build_ui(self, parent=None, layout=None, add_footer=True):
         """Build basic render interface into the given layout.
@@ -129,7 +130,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
 
         # Check scene
         _clean_junk()
-        _assignments = lookdev.read_shader_assignments()
+        _assignments = lookdev.read_shader_assignments(referenced=False)
         if not _assignments:
             if lookdev.read_shader_assignments(referenced=True):
                 raise RuntimeError('Referenced shaders are not supported')
@@ -137,6 +138,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         for _shd in _assignments:
             if to_namespace(_shd):
                 raise RuntimeError('Shader has namespace '+_shd)
+        self.textures = _read_textures()
 
         # Generate outputs
         _outs = []
@@ -289,6 +291,53 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         _metadata['shd_yml'] = self.shd_yml.path
         output.set_metadata(_metadata)
 
+    def _register_in_shotgrid(
+            self, work, outs, upstream_files=None, link_textures=False):
+        """Register outputs in shotgrid.
+
+        Args:
+            work (CPWork): source work file
+            outs (CPOutput list): outputs that were generated
+            upstream_files (list): list of upstream files
+            link_textures (bool): register + link texture files in shotgrid
+        """
+        _upstream_files = upstream_files
+        if link_textures:
+            _upstream_files = upstream_files or _build_upstream_files(
+                files=self.textures, work=work)
+        super()._register_in_shotgrid(
+            work=work, outs=outs, upstream_files=_upstream_files)
+
+
+def _build_upstream_files(files, work):
+    """Build upstream published files list.
+
+    Used to link textures to publish in shotgrid.
+
+    Args:
+        files (File list): upstream files
+        work (CCPWork): work file
+
+    Returns:
+        (dict list): list of upstream published file entries
+    """
+    from pini.pipe import shotgrid
+
+    # _work = pipe.CACHE.obt_cur_work()
+    _type = shotgrid.SGC.find_pub_type('Texture')
+    _user = shotgrid.SGC.find_user(work.owner())
+
+    _up_pubs = []
+    for _file in qt.progress_bar(
+            files, "Registering {:d} texture{}",
+            stack_key='RegisterTextures'):
+        _pub = shotgrid.create_pub_file_from_path(
+            _file.path, type_=_type, task=work.work_dir.sg_task, user=_user,
+            ver_n=work.ver_n, thumb=_file)
+        _up_pubs.append(_pub)
+
+    return _up_pubs
+
 
 def _clean_junk():
     """Clean junk from current scene."""
@@ -407,3 +456,20 @@ def _flush_scene(keep_nodes=None):
     _unknown_nodes = cmds.ls(type='unknown') or []
     _LOGGER.debug(' - UNKNOWN NODES %s', _unknown_nodes)
     cmds.delete(_dag_nodes + _unknown_nodes)
+
+
+def _read_textures():
+    """Read textures from current scene.
+
+    Returns:
+        (File list): textures
+    """
+    _ftns = set()
+    for _file in pom.find_nodes('file'):
+        _LOGGER.debug('FILE %s', _file)
+        _ftn = File(abs_path(_file.plug['fileTextureName'].get_val()))
+        _LOGGER.debug(' - FTN %s', _ftn)
+        if not _ftn.exists():
+            continue
+        _ftns.add(_ftn)
+    return sorted(_ftns)

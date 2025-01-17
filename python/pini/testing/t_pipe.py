@@ -248,7 +248,7 @@ def find_test_render(force=False):
             render(_out)
         if pipe.MASTER == 'shotgrid':
             from pini.pipe import shotgrid
-            shotgrid.create_pub_file(_out)
+            shotgrid.create_pub_file_from_output(_out)
         _ren = _ety.find_output(
             task='lighting', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='jpg',
             versionless=False, catch=True, force=True)

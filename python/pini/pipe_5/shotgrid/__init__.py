@@ -14,7 +14,8 @@ from .sg_entity import (
     SHOT_TEMPLATE, ASSET_TEMPLATE, create_entity, set_entity_range)
 from .sg_task import create_task, task_to_step_name
 from .sg_version import create_version
-from .sg_pub_file import create_pub_file, register_output
+from .sg_pub_file import (
+    create_pub_file, create_pub_file_from_output, create_pub_file_from_path)
 
 from .sg_tools import update_work_task
 from .sg_submit import submit, set_submitter, CPSubmitter, SUBMITTER
