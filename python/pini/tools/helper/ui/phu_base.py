@@ -255,8 +255,10 @@ class PHUiBase(
             parent (QWidget): widget to update if outputs change
             delete_callback (fn): callback to execute on output deletion
         """
+        _LOGGER.debug(' - ADD OUT OPTS %s', output)
         _out = output
         _out_c = pipe.CACHE.obt_output(_out, catch=True)
+        _LOGGER.debug('   - OUT C %s', _out_c)
 
         # Add header
         if header:

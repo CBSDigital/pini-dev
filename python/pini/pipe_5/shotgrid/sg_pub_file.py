@@ -86,9 +86,11 @@ def create_pub_file_from_output(
         output, user=_sg_user, task=_sg_task, notes=_notes)
     if _scene_entry:
         _data['sg_scene_file'] = _scene_entry
+        _LOGGER.debug(' - SCENE ENTRY %s', _scene_entry)
 
     # Apply to shotgrid
     if not _sg_pub:
+        _LOGGER.log(9, ' - PUBLISH DATA %s', _data)
         _result = shotgrid.create('PublishedFile', _data)
         _LOGGER.debug(' - RESULT %s', _result)
         _id = _result['id']
@@ -97,6 +99,7 @@ def create_pub_file_from_output(
             _data.pop(_field)
         sg_handler.update('PublishedFile', _sg_pub.id_, _data)
         _id = _sg_pub.id_
+    _apply_thumb(path=output, thumb=thumb, id_=_id)
 
     # Update cache
     if update_cache:
@@ -109,24 +112,36 @@ def create_pub_file_from_output(
         _sg_pub = shotgrid.SGC.find_pub_file(output)
         assert _sg_pub
 
-    # Apply thumb
+    return _sg_pub
+
+
+def _apply_thumb(path, thumb, id_):
+    """Apply thumbnail image.
+
+    Args:
+        path (Path): path being registered
+        thumb (File): apply thumbnail image
+        id_ (id): publish id
+    """
+    from pini.pipe import shotgrid
+
+    # Obtain thumb
     _thumb = thumb
     if not _thumb:
-        if isinstance(output, Seq) and output.extn not in ('obj', 'vdb'):
-            _thumb = Image(output.to_frame_file())
+        if isinstance(path, Seq) and path.extn not in ('obj', 'vdb'):
+            _thumb = Image(path.to_frame_file())
             if _thumb.extn not in ('png', 'jpg'):
                 _thumb.convert(_TMP_THUMB, force=True)
                 _thumb = _TMP_THUMB
-        elif isinstance(output, Video):
-            output.build_thumbnail(_TMP_THUMB, width=None, force=True)
+        elif isinstance(path, Video):
+            path.build_thumbnail(_TMP_THUMB, width=None, force=True)
             _thumb = _TMP_THUMB
+
+    # Apply thumb
     if _thumb:
         _LOGGER.debug(' - APPLY THUMB %s', _thumb)
         assert _thumb.exists()
-        shotgrid.upload_thumbnail(
-            'PublishedFile', _id, _thumb.path)
-
-    return _sg_pub
+        shotgrid.upload_thumbnail('PublishedFile', id_, _thumb.path)
 
 
 def _build_path_data(file_, name=None):
@@ -287,9 +302,17 @@ def _obt_scene_entry(output, user, task, notes):
         _file = File(_scene)
         _name = f'{_file.to_dir().filename}/{_file.filename}'
     _scene = _scene or output.metadata.get('src')
-    if not _scene and output.entity == pipe.cur_entity():
-        _scene = pipe.cur_work()
+
+    # Try using current work as scene file
+    _work = pipe.cur_work()
+    if not _scene and _work and (  # pylint: disable=too-many-boolean-expressions
+            _work.entity == output.entity and
+            _work.step == output.step and
+            _work.task == output.task and
+            _work.ver_n == output.ver_n):
+        _scene = _work.path
     _LOGGER.info(' - SCENE %s', _scene)
+
     if not _scene:
         return None
 

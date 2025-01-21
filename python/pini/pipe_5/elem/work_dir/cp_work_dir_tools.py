@@ -19,7 +19,7 @@ _TASK_MAP = {
     'trk': 'tracking',
 
     'ani/rig': 'rig',
-    'lgt/mod': 'model',
+    'lgt/mod': 'lighting',
     'lgt/surf': 'lookdev',
 }
 

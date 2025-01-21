@@ -514,7 +514,7 @@ def _sort_by_attr(items, attr, key=None):
     """
     _bins = collections.defaultdict(list)
     for _item in items:
-        _val = getattr(_item, attr)
+        _val = getattr(_item, attr) or ''
         _bins[_val].append(_item)
     _vals, _data = [], []
     for _val in sorted(_bins, key=key):

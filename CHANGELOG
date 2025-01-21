@@ -1,3 +1,19 @@
+## [6.36.0] - Tue 2025-01-21 09:24
+### Summary
+ - Pini Helper:
+    - apply lighting checks to lgt/mod task (lcayo),
+    - bugfix error on populate export/submit tab if outputs without task,
+ - Pipe API:
+    - bugfix error on register vdb sequence without metadata (acheprakov),
+### Updated
+ - pini.utils.safe_zip better error on bad lists,
+ - pini.dcc.pipe_ref added RedshiftVolumeShape handling wip,
+ - pini.pipe.CPEntity find_work_dir/find_work_dirs uses kwargs + passes_filters,
+ - pini.pipe.CPWorkDir apply lgt/mod in task map,
+ - pini.pipe.create_pub_file bugfix error on use cur work as scene file,
+ - pini.tools.helper export/submit bugfix error on sort outs w/o task,
+
+
 ## [6.35.0] - Fri 2025-01-17 10:47
 ### Summary
  - Pini Helper:

@@ -329,10 +329,11 @@ def _test_lighting_workflow(progress, force, show_ctx):
     dcc.new_scene(force=force)
     dcc.set_range(1001, 1005)
     progress.set_pc(50)
-    _work_dir = _shot.find_work_dir(task='lighting', catch=True)
+    _work_dir = _shot.find_work_dir(task='lighting', filter_='-mod', catch=True)
     if _work_dir:
         _helper.ui.WTasks.select_data(_work_dir)
     else:
+        assert pipe.MASTER == 'disk'
         if not _helper.ui.ToggleAdmin.isChecked():
             _helper.ui.ToggleAdmin.click()
         _helper.ui.WTaskText.setText('lighting')

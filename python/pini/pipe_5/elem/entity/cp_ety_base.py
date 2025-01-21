@@ -110,8 +110,8 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             (str list): tasks
         """
         _defaults = self.job.cfg['tasks']
-        _dcc_key = '{}_{}s'.format(dcc_, self.profile)
-        _generic_key = '{}s'.format(self.profile)
+        _dcc_key = f'{dcc_}_{self.profile}s'
+        _generic_key = f'{self.profile}s'
         if _dcc_key in _defaults:
             _tasks = _defaults[_dcc_key]
         else:
@@ -131,15 +131,12 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
                 _work_dir = self.to_work_dir(task=_task, dcc_=_dcc)
                 _work_dir.mkdir()
 
-    def find_work_dir(
-            self, match=None, task=None, step=None, dcc_=None, catch=False):
+    def find_work_dir(self, match=None, task=None, catch=False, **kwargs):
         """Find a work dir in this entity.
 
         Args:
             match (str): token to match (task/step)
             task (str): match by task
-            step (str): match by step
-            dcc_ (str): match by dcc
             catch (bool): no error if no work dir found
 
         Returns:
@@ -151,7 +148,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         from pini import pipe
 
         _LOGGER.debug('FIND WORK DIR')
-        _work_dirs = self.find_work_dirs(step=step, task=task, dcc_=dcc_)
+        _work_dirs = self.find_work_dirs(task=task, **kwargs)
         _LOGGER.debug(' - FOUND %d WORK DIRS', len(_work_dirs))
         if len(_work_dirs) == 1:
             return single(_work_dirs)
@@ -181,20 +178,20 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         if catch:
             return None
-        raise ValueError(match, task, step, dcc_)
+        raise ValueError(match, task, kwargs)
 
-    def find_work_dirs(self, task=None, step=None, dcc_=None):
+    def find_work_dirs(self, dcc_=None, **kwargs):
         """Find work dirs within this entity.
 
         Args:
-            task (str): filter by task
-            step (str): filter by step
             dcc_ (str): match by dcc
 
         Returns:
             (CPWorkDir list): matching work dirs
         """
-        _LOGGER.debug('FIND WORK DIRS task=%s dcc_=%s', task, dcc_)
+        from pini import pipe
+        _LOGGER.debug('FIND WORK DIRS dcc_=%s', dcc_, **kwargs)
+
         _all_work_dirs = self._read_work_dirs()
         _LOGGER.debug(
             ' - READ %d WORK DIRS %s', len(_all_work_dirs), _all_work_dirs)
@@ -205,9 +202,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         for _work_dir in _all_work_dirs:
             if _filter and not passes_filter(_work_dir.task_label, _filter):
                 continue
-            if task and task not in (_work_dir.task, _work_dir.pini_task):
-                continue
-            if step and _work_dir.step != step:
+            if not pipe.passes_filters(_work_dir, **kwargs):
                 continue
             _work_dirs.append(_work_dir)
 
@@ -535,7 +530,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             if _key not in _data or not _data[_key]:
                 _missing.append(_key)
         if _missing:
-            raise RuntimeError('Missing keys {}'.format('/'.join(_missing)))
+            raise RuntimeError(f'Missing keys {"/".join(_missing)}')
 
         # Construct output
         _path = _tmpl.format(_data)

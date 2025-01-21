@@ -460,12 +460,12 @@ def safe_zip(*lists):
         (ValueError): if lists are not all the same length
     """
     assert len(lists) >= 2
-    for _idx, _list in enumerate(lists[1:]):
+    for _idx, _list in enumerate(lists[1:], start=1):
         if not len(lists[0]) == len(_list):
+            _chr = chr(ord('a')+_idx)
             raise ValueError(
-                f'Length of list {_idx+2:d} ({len(_list):d}) does not match '
-                f'length of list 1 ({len(lists[0]):d})')
-
+                f'Length of list a ({len(lists[0]):d}) does not match '
+                f'length of list {_chr} ({len(_list):d})')
     return zip(*lists)
 
 

@@ -185,6 +185,33 @@ class CMayaImgPlaneRef(_CMayaNodeRef):
         self.node.plug['imageName'].set_val(_path)
 
 
+class CMayaRsDomeLight(_CMayaNodeRef):
+    """A RedshiftDomeLight node referencing a pipelined output."""
+
+    TYPE = 'RedshiftDomeLight'
+
+    def __init__(self, node):
+        """Constructor.
+
+        Args:
+            node (CNode): CMayaRsDomeLight node
+        """
+        _LOGGER.debug('INIT CMayaRsDomeLight %s', node)
+        _tfm = node.to_parent()
+        _path = to_seq(node.plug['tex1'].get_val())
+        super().__init__(
+            node=node, top_node=_tfm, path=_path, namespace=str(_tfm))
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutput|CPOutputSeq): output to apply
+        """
+        _path = out[out.frames[0]]
+        self.node.plug['tex1'].set_val(_path)
+
+
 class CMayaRsProxyRef(_CMayaNodeRef):
     """A RedshiftProxyMesh node referencing a pipelined output."""
 
@@ -217,22 +244,25 @@ class CMayaRsProxyRef(_CMayaNodeRef):
         raise NotImplementedError
 
 
-class CMayaRsDomeLight(_CMayaNodeRef):
-    """A RedshiftDomeLight node referencing a pipelined output."""
+class CMayaRsVolume(_CMayaNodeRef):
+    """A RedshiftProxyMesh node referencing a pipelined output."""
 
-    TYPE = 'RedshiftDomeLight'
+    TYPE = 'RedshiftVolumeShape'
 
     def __init__(self, node):
         """Constructor.
 
         Args:
-            node (CNode): CMayaRsDomeLight node
+            node (CNode): RedshiftVolumeShape node
         """
-        _LOGGER.debug('INIT CMayaRsDomeLight %s', node)
+        _LOGGER.debug('INIT CMayaRsVolume %s', node)
+
         _tfm = node.to_parent()
-        _path = to_seq(node.plug['tex1'].get_val())
+        _LOGGER.debug(' - TFM %s', _tfm)
+        _path = node.plug['fileName'].get_val()
+        _path = file_to_seq(_path)
         super().__init__(
-            node=node, top_node=_tfm, path=_path, namespace=str(_tfm))
+            path=_path, namespace=str(_tfm), node=node, top_node=_tfm)
 
     def update(self, out):
         """Update this node to a new output.
@@ -240,8 +270,7 @@ class CMayaRsDomeLight(_CMayaNodeRef):
         Args:
             out (CPOutput|CPOutputSeq): output to apply
         """
-        _path = out[out.frames[0]]
-        self.node.plug['tex1'].set_val(_path)
+        raise NotImplementedError
 
 
 def create_ai_standin(path, namespace):
@@ -450,6 +479,18 @@ def read_img_planes(selected=False):
     return _read_type_nodes(class_=CMayaImgPlaneRef, selected=selected)
 
 
+def read_rs_dome_lights(selected=False):
+    """Read RedshiftDomeLight references in the current scene.
+
+    Args:
+        selected (bool): return selected only
+
+    Returns:
+        (CMayaRsProxyRef list): redshift dome lights
+    """
+    return _read_type_nodes(class_=CMayaRsDomeLight, selected=selected)
+
+
 def read_rs_pxys(selected=False):
     """Read RedshiftProxyMesh references in the current scene.
 
@@ -462,13 +503,13 @@ def read_rs_pxys(selected=False):
     return _read_type_nodes(class_=CMayaRsProxyRef, selected=selected)
 
 
-def read_rs_dome_lights(selected=False):
-    """Read RedshiftDomeLight references in the current scene.
+def read_rs_volumes(selected=False):
+    """Read RedshiftVolumeShape references in the current scene.
 
     Args:
         selected (bool): return selected only
 
     Returns:
-        (CMayaRsProxyRef list): redshift dome lights
+        (CMayaRsProxyRef list): redshift volumes
     """
-    return _read_type_nodes(class_=CMayaRsDomeLight, selected=selected)
+    return _read_type_nodes(class_=CMayaRsVolume, selected=selected)
