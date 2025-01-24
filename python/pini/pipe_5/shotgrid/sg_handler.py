@@ -5,6 +5,7 @@ This managing iteraction with the shotgrid via the shotgun_api3 api.
 
 import logging
 import os
+import pprint
 import time
 
 import shotgun_api3
@@ -57,7 +58,13 @@ class _CSGHandler(shotgun_api3.Shotgun):
         """
         if safe:
             assert entity_type in self._read_entity_types()
-        return super().create(entity_type, data)
+        try:
+            _result = super().create(entity_type, data)
+        except shotgun_api3.Fault as _exc:
+            _LOGGER.warning('SHOTGRID CREATE FAILED')
+            pprint.pprint(data)
+            raise _exc
+        return _result
 
     def find(
             self, entity_type, filters=(), fields=(), order=None,

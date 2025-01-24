@@ -877,9 +877,16 @@ def to_seq(obj, catch=True):
     Returns:
         (Seq): sequence
     """
+    _LOGGER.debug('TO SEQ %s', obj)
     if isinstance(obj, Seq):
         return obj
     if isinstance(obj, str):
+        _seq = norm_path(obj)
+        for _token in ('.####.', '.$F4.'):
+            _seq = _seq.replace(_token, '.%04d.')
+        _LOGGER.debug(' - STR %s', _seq)
+        if '.%04d.' in _seq:
+            return Seq(_seq)
         _seq = file_to_seq(obj, catch=True)
         if _seq:
             return _seq

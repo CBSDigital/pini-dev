@@ -491,6 +491,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
                 _LOGGER.debug(' - EXISTING FILE HAS BKP')
             _reason = reason or 'save over'
 
+        self._apply_sanity_check_on_new_entity(force=force)
+
         # Save file + bkp + metadata
         _LOGGER.debug(' - SAVE SCENE %s', self.path)
         dcc.save(file_=self.path, force=_force, parent=parent)
@@ -502,6 +504,21 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         self.set_env()
 
         return _bkp
+
+    def _apply_sanity_check_on_new_entity(self, force, enabled=False):
+        """Apply sanity check on new entity.
+
+        Args:
+            force (bool): ignore checks
+            enabled (bool): enable this feature
+        """
+        _ety_path = dcc.get_scene_data('EntityPath')
+        if not force and enabled:
+            raise NotImplementedError
+            # from pini.tools import sanity_check
+            # sanity_check.launch_new_scene_ui(
+
+        dcc.set_scene_data('EntityPath', self.entity.path)
 
     def _save_bkp(
             self, reason, source=None, mtime=None, owner=None, notes=None):

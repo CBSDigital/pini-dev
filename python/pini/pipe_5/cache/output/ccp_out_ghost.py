@@ -7,6 +7,8 @@ This is a container class which is only used for caching.
 
 from pini.utils import basic_repr, File
 
+from ... import elem
+
 
 class CCPOutputGhost(File):
     """Represents an output on disk in a cache.
@@ -107,6 +109,14 @@ class CCPOutputGhost(File):
             (bool): whether latest
         """
         return self.latest
+
+    def is_media(self):
+        """Test whether this output is media.
+
+        Returns:
+            (bool): whether media (eg. render/blast)
+        """
+        return self.content_type in elem.OUTPUT_MEDIA_TYPES
 
     def __lt__(self, other):
         return self.path < other.path

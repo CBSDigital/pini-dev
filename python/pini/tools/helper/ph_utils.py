@@ -391,12 +391,12 @@ def output_to_icon(output, overlay=None, force=False):
     return _icon
 
 
-def output_to_namespace(output, attach=None, ignore=(), base=None):
+def output_to_namespace(output, attach_to=None, ignore=(), base=None):
     """Get namespace for the given output.
 
     Args:
         output (CPOutput): output being referenced
-        attach (CPOutput): target output which this output is being
+        attach_to (CPOutput): target output which this output is being
             attached to (eg. lookdev attach to abc)
         ignore (str list): namespaces to ignore (ie. namespaces which
             have already be allocated for staged imports)
@@ -405,8 +405,8 @@ def output_to_namespace(output, attach=None, ignore=(), base=None):
     Returns:
         (str): namespace for this output
     """
-    if attach:
-        return attach.namespace+'_shd'
+    if attach_to:
+        return attach_to.namespace+'_shd'
 
     _mode = 'asset'
     _ety_name = output.asset or output.shot

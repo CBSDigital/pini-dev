@@ -352,6 +352,7 @@ def _test_lighting_workflow(progress, force, show_ctx):
     pprint.pprint(_shot.find_outputs(extn='abc', tag='test'))
     _abc = _shot.find_output(extn='abc', tag='test', ver_n='latest')
     _helper.ui.SOutputs.select_data(_abc)
+    _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()
     assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
     _helper._callback__SApply(force=True)

@@ -6,7 +6,10 @@ import logging
 import platform
 import time
 
-from pini import icons, qt, pipe, farm
+from maya import cmds
+
+from pini import icons, qt, pipe, farm, dcc
+from pini.dcc import pipe_ref
 from pini.tools import usage
 from pini.utils import wrap_fn, MaFile
 
@@ -20,6 +23,10 @@ _LOGGER = logging.getLogger(__name__)
 
 class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
     """Pini Helper in maya which docks to the main ui."""
+
+    abc_lookdev_attach = True
+    abc_modes = ('Auto', 'aiStandIn')
+    abc_cam_plates = True
 
     def __init__(
             self, admin=None, load_settings=True, jump_to=None,
@@ -48,6 +55,10 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
         super().__init__(
             show=False, ui_file=ui.UI_FILE, load_settings=False,
             parent=parent, title=_title)
+
+        self.vdb_modes = ['Auto', 'aiVolume']
+        if 'redshift' in dcc.allowed_renderers():
+            self.vdb_modes.append('RedshiftVolume')
 
         ui.PHUiBase.__init__(
             self, admin=admin, load_settings=load_settings, show=False,
@@ -149,6 +160,57 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
         menu.add_action(
             'Load scene without refs', _func,
             icon=icons.LOAD, enabled=bool(_work))
+
+    def _create_abc_ref(self, output, namespace):
+        """Create abc reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        _mode = self.ui.SAbcMode.currentText()
+        if _mode == 'Auto':
+            _mode = 'Reference'
+
+        if _mode == 'Reference':
+            dcc.create_ref(output, namespace=namespace)
+        elif _mode == 'aiStandIn':
+            pipe_ref.create_ai_standin(output, namespace=namespace)
+        else:
+            raise NotImplementedError(_mode)
+
+    def _create_cam_ref(self, output, namespace):
+        """Create camera reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        _plates = self.ui.SCamPlates.isChecked()
+        pipe_ref.create_cam_ref(
+            output, namespace=namespace, build_plates=_plates)
+
+    def _create_vdb_ref(self, output, namespace):
+        """Create vdb reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        _mode = self.ui.SVdbMode.currentText()
+        if _mode == 'Auto':
+            _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+            _mode = {
+                'arnold': 'aiVolume',
+                'redshift': 'RedshiftVolume',
+            }[_ren]
+
+        if _mode == 'aiVolume':
+            pipe_ref.create_ai_vol(output, namespace=namespace)
+        elif _mode == 'RedshiftVolume':
+            pipe_ref.create_rs_vol(output, namespace=namespace)
+        else:
+            raise NotImplementedError(_mode)
 
     def closeEvent(self, event=None):
         """Triggered by close.

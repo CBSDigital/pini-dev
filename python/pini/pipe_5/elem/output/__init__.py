@@ -2,7 +2,7 @@
 
 from .cp_out_base import (
     CPOutputBase, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES, OUTPUT_VIDEO_TYPES,
-    ver_sort, STATUS_ORDER)
+    ver_sort, STATUS_ORDER, OUTPUT_MEDIA_TYPES)
 
 from .cp_out_file import CPOutputFile
 from .cp_out_seq import CPOutputSeq

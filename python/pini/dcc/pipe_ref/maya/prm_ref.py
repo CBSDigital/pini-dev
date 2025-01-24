@@ -33,7 +33,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
             ref_ (FileRef): reference
         """
         self.ref = ref_
-        super(CMayaRef, self).__init__(
+        super().__init__(
             path=ref_.path, namespace=ref_.namespace)
 
     @property
@@ -210,6 +210,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
             out (str): output to apply
             reset (bool): make clean copy of reference (loses ref edits)
         """
+        from pini.dcc import pipe_ref
         _LOGGER.debug(' - UPDATE %s', self)
         _LOGGER.debug('   - OUTPUT %s', out)
 
@@ -255,10 +256,10 @@ class CMayaRef(prm_base.CMayaPipeRef):
             _ns = self.namespace
             _grp = self.node.to_parent()
             _mtx = self.ref.top_node.to_m()
-            _LOGGER.debug(' - MTX %s', _mtx)
+            _LOGGER.debug('   - MTX %s', _mtx)
             self.delete(force=True)
-            _ref = dcc.create_ref(out, namespace=_ns, group=_grp)
-            _LOGGER.debug(' - REF %s', _ref)
+            _ref = pipe_ref.create_ai_standin(out, namespace=_ns, group=_grp)
+            _LOGGER.debug('   - REF %s', _ref)
             _mtx.apply_to(_ref.top_node)
             return _ref
 
@@ -583,14 +584,14 @@ class CMayaShadersRef(CMayaRef):
                 with stale edits)
         """
         _LOGGER.info('UPDATE %s %s', self, out)
-        _result = super(CMayaShadersRef, self).update(out, reset=reset)
+        _result = super().update(out, reset=reset)
         for _trg in self.find_targets():
             _LOGGER.info(' - ATTACH TO %s', _trg)
             _result.attach_to(_trg)
         return _result
 
 
-def read_reference_pipe_refs(selected=False):
+def find_reference_pipe_refs(selected=False):
     """Read pipeline refs in references.
 
     Args:

@@ -27,7 +27,7 @@ class CBlastHandler(eh_base.CExportHandler):
         Args:
             label_w (int): label width in ui
         """
-        super(CBlastHandler, self).__init__(label_w=label_w)
+        super().__init__(label_w=label_w)
 
     def _build_range_elems(self):
         """Build range elements.
@@ -67,7 +67,7 @@ class CBlastHandler(eh_base.CExportHandler):
         self.ui.RangeManReset = QtWidgets.QPushButton()
         self.ui.RangeManReset.setObjectName('RangeManReset')
         self.ui.RangeManReset.setFixedWidth(23)
-        self.ui.RangeManReset.setIcon(qt.to_icon(icons.RESET))
+        self.ui.RangeManReset.setIcon(qt.obt_icon(icons.RESET))
         self.ui.RangeLayout.addWidget(self.ui.RangeManReset)
 
         self._manual_range_elems = [

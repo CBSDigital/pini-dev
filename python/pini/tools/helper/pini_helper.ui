@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>841</height>
+    <width>470</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -2032,7 +2032,7 @@
             <number>10</number>
            </property>
            <widget class="QWidget" name="layoutWidget">
-            <layout class="QVBoxLayout" name="SOutputsLayout" stretch="0,0,0,0,0,0,0,0,0,0">
+            <layout class="QVBoxLayout" name="SOutputsLayout" stretch="0,0,0,0,0,0,0,0,0,0,0,0">
              <property name="spacing">
               <number>4</number>
              </property>
@@ -2351,7 +2351,14 @@ Range: 1-10</string>
               </layout>
              </item>
              <item>
-              <widget class="QCheckBox" name="SBuildPlates">
+              <widget class="Line" name="line_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="SCamPlates">
                <property name="text">
                 <string>Rebuild camera plates</string>
                </property>
@@ -2362,22 +2369,10 @@ Range: 1-10</string>
              </item>
              <item>
               <layout class="QGridLayout" name="SAbcModeLyt">
-               <item row="0" column="0">
-                <widget class="QLabel" name="SAbcModeLabel">
-                 <property name="minimumSize">
-                  <size>
-                   <width>50</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>50</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
+               <item row="0" column="2">
+                <widget class="QLabel" name="SAbcModeSpacer">
                  <property name="text">
-                  <string>Abc mode</string>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -2403,10 +2398,74 @@ Range: 1-10</string>
                  </item>
                 </widget>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="SAbcModeLabel">
+                 <property name="minimumSize">
+                  <size>
+                   <width>55</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>55</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Abc mode</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="SVdbModeLyt">
                <item row="0" column="2">
-                <widget class="QLabel" name="SAbcModeSpacer">
+                <widget class="QLabel" name="SVdbModeSpacer">
                  <property name="text">
                   <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="CComboBox" name="SVdbMode">
+                 <property name="currentIndex">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Auto</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Arnold</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Redshift</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="SVdbModeLabel">
+                 <property name="minimumSize">
+                  <size>
+                   <width>55</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>55</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Vdb mode</string>
                  </property>
                 </widget>
                </item>
@@ -2414,17 +2473,24 @@ Range: 1-10</string>
              </item>
              <item>
               <layout class="QGridLayout" name="SLookdevLyt">
+               <item row="0" column="2">
+                <widget class="QLabel" name="SLookdevSpacer">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="SLookdevLabel">
                  <property name="minimumSize">
                   <size>
-                   <width>50</width>
+                   <width>55</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>50</width>
+                   <width>55</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -2453,13 +2519,6 @@ Range: 1-10</string>
                    <string>Import</string>
                   </property>
                  </item>
-                </widget>
-               </item>
-               <item row="0" column="2">
-                <widget class="QLabel" name="SLookdevSpacer">
-                 <property name="text">
-                  <string/>
-                 </property>
                 </widget>
                </item>
               </layout>

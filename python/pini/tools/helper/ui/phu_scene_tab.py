@@ -25,6 +25,11 @@ class PHSceneTab:
 
     all_outs = ()
 
+    abc_cam_plates = False
+    abc_lookdev_attach = False
+    abc_modes = ()
+    vdb_modes = ()
+
     def __init__(self):
         """Constructor."""
 
@@ -45,6 +50,14 @@ class PHSceneTab:
                 internally)
         """
         _LOGGER.debug('INIT UI switch=%d', switch_tabs)
+
+        # Update abc/vdb options based on dcc
+        for _elem, _opts in [
+                (self.ui.SAbcMode, self.abc_modes),
+                (self.ui.SVdbMode, self.vdb_modes),
+        ]:
+            _elem.set_items(_opts)
+            _elem.setVisible(bool(_opts))
 
         # Update entity tab label based on profile
         if not self.entity:
@@ -391,6 +404,40 @@ class PHSceneTab:
             _items.append(_item)
         self.ui.SOutputs.set_items(_items, select=_select, emit=True)
 
+        self._update_out_mode_elems()
+
+    def _update_out_mode_elems(self):
+        """Update output mode elements.
+
+        These are elements whose visiblity depends on what outputs are being
+        displayed, eg. abc mode, vdb mode, etc.
+        """
+        _outs = self.ui.SOutputs.all_data()
+        _LOGGER.debug(' - UPDATE OUT MODE ELEMS %s', _outs)
+
+        _abcs = self.abc_modes and any(
+            _out for _out in _outs if _out.extn == 'abc')
+        _cams = self.abc_cam_plates and any(
+            _out for _out in _outs if _out.content_type == 'CameraAbc')
+        _vdbs = self.vdb_modes and any(
+            _out for _out in _outs if _out.content_type == 'VdbSeq')
+        _media = any(_out for _out in _outs if _out.is_media())
+
+        for _tgl, _elems in [
+                (_abcs, [
+                    self.ui.SLookdev, self.ui.SLookdevSpacer,
+                    self.ui.SLookdevLabel,
+                    self.ui.SAbcMode, self.ui.SAbcModeSpacer,
+                    self.ui.SAbcModeLabel]),
+                (_vdbs, [
+                    self.ui.SVdbMode, self.ui.SVdbModeSpacer,
+                    self.ui.SVdbModeLabel]),
+                (_cams, [self.ui.SCamPlates]),
+                (_media, [self.ui.SViewer, self.ui.SView])]:
+            _LOGGER.debug('   - UPDATE ELEMS %d %s', _tgl, _elems)
+            for _elem in _elems:
+                _elem.setVisible(bool(_tgl))
+
     def _redraw__SViewer(self):
 
         _out = self.ui.SOutputs.selected_data(catch=True)
@@ -559,18 +606,6 @@ class PHSceneTab:
         _tab = self.ui.SOutputsPane.currentWidget()
         self.all_outs = self._read_all_outs()
 
-        _viewer = _tab is self.ui.SMediaTab
-        _maya_cache = dcc.NAME == 'maya' and _tab is self.ui.SEntityTab
-        for _tgl, _elems in [
-                (_maya_cache, [
-                    self.ui.SLookdev, self.ui.SLookdevSpacer,
-                    self.ui.SLookdevLabel, self.ui.SBuildPlates,
-                    self.ui.SAbcMode, self.ui.SAbcModeSpacer,
-                    self.ui.SAbcModeLabel]),
-                (_viewer, [self.ui.SViewer, self.ui.SView])]:
-            for _elem in _elems:
-                _elem.setVisible(_tgl)
-
         self.ui.SOutputType.redraw()
 
     def _callback__SOutputType(self):
@@ -614,7 +649,7 @@ class PHSceneTab:
         for _out in _outs:
             if not dcc.can_reference_output(_out):
                 continue
-            self._stage_import(_out)
+            self.stage_import(_out)
         self.ui.SSceneRefs.redraw()
 
     def _callback__SUpdateToLatest(self):
@@ -692,6 +727,33 @@ class PHSceneTab:
     def _callback__SSceneRefsFilterClear(self):
         self.ui.SSceneRefsFilter.setText('')
 
+    def _create_abc_ref(self, output, namespace):
+        """Create abc reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        raise NotImplementedError
+
+    def _create_cam_ref(self, output, namespace):
+        """Create camera reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        raise NotImplementedError
+
+    def _create_vdb_ref(self, output, namespace):
+        """Create vdb reference.
+
+        Args:
+            output (CPOutput): output being referenced
+            namespace (str): reference namespace
+        """
+        raise NotImplementedError
+
     @usage.get_tracker(name='PiniHelper.RefOutputs')
     def _callback__SApply(self, force=False):
 
@@ -738,28 +800,27 @@ class PHSceneTab:
         while self._staged_imports:
 
             _ref = self._staged_imports.pop(0)
-            if _ref.ignore_on_apply:
-                continue
-
-            _lookdev = self.ui.SLookdev.currentText()
-            _abc_mode = self.ui.SAbcMode.currentText()
-            _build_plates = self.ui.SBuildPlates.isChecked()
 
             _LOGGER.info(' - BUILDING IMPORT UPDATE %s', _ref)
-            if (
-                    dcc.NAME == 'maya' and
-                    _ref.output.extn == 'abc' and
-                    _lookdev != 'None'):
+            if dcc.NAME == 'maya' and _ref.output.content_type == 'CameraAbc':
                 _import_fn = wrap_fn(
-                    dcc.create_cache_ref, namespace=_ref.namespace,
-                    cache=_ref.output, attach_mode=_lookdev,
-                    build_plates=_build_plates, abc_mode=_abc_mode)
-            elif _ref.attach:
+                    self._create_cam_ref, namespace=_ref.namespace,
+                    output=_ref.output)
+            elif dcc.NAME == 'maya' and _ref.output.extn == 'abc':
                 _import_fn = wrap_fn(
-                    _apply_lookdev, ref=_ref.attach, lookdev=_ref.output)
+                    self._create_abc_ref, namespace=_ref.namespace,
+                    output=_ref.output)
+            elif dcc.NAME == 'maya' and _ref.output.extn == 'vdb':
+                _import_fn = wrap_fn(
+                    self._create_vdb_ref, namespace=_ref.namespace,
+                    output=_ref.output)
+            elif _ref.attach_to:
+                _import_fn = wrap_fn(
+                    _apply_lookdev, ref=_ref.attach_to, lookdev=_ref.output)
             else:
                 _import_fn = wrap_fn(
                     dcc.create_ref, namespace=_ref.namespace, path=_ref.output)
+
             _updates.append(_import_fn)
 
         return _updates
@@ -828,7 +889,7 @@ class PHSceneTab:
             icon=icons.EDIT)
         menu.add_action(
             'Duplicate',
-            wrap_fn(self._stage_import, _out_c, base=_base, redraw=True),
+            wrap_fn(self.stage_import, _out_c, base=_base, redraw=True),
             icon=icons.DUPLICATE)
         menu.add_separator()
 
@@ -998,25 +1059,28 @@ class PHSceneTab:
         menu.add_action('Update to latest', _fn,
                         icon=_LATEST_ICON, enabled=bool(_actions))
 
-    def _stage_import(self, output, attach=None, redraw=False, base=None):
+    def stage_import(
+            self, output, attach_to=None, redraw=False, base=None,
+            namespace=None):
         """Stage a reference to be imported.
 
         Args:
             output (CPOutput): output to be referenced
-            attach (CPipeRef): attach the given output to this
+            attach_to (CPipeRef): attach the given output to this
                 existing scene reference (ie. attach a lookdev
                 to an existing abc in the scene)
             redraw (bool): update scene refs list
             base (str): override namespace base
+            namespace (str): force namespace of import
         """
         _LOGGER.debug('STAGE IMPORT')
 
         _out = pipe.CACHE.obt(output)
         _ignore = [_ref.namespace for _ref in self._staged_imports]
-        _ns = output_to_namespace(
-            _out, attach=attach, ignore=_ignore, base=base)
-        _ref = _StagedRef(output=output, namespace=_ns, attach=attach)
-        if attach:
+        _ns = namespace or output_to_namespace(
+            _out, attach_to=attach_to, ignore=_ignore, base=base)
+        _ref = _StagedRef(output=output, namespace=_ns, attach_to=attach_to)
+        if attach_to:
             _existing = dcc.find_pipe_ref(_ns, catch=True)
             if _existing:
                 self._stage_delete(_existing, redraw=False)
@@ -1042,7 +1106,7 @@ class PHSceneTab:
                 _lookdev_ns = _ns+'_shd'
                 _lookdev_ref = _StagedRef(
                     output=_lookdev, namespace=_lookdev_ns,
-                    ignore_on_apply=True)
+                    attach_to=_ref)
                 self._staged_imports.append(_lookdev_ref)
 
         if redraw:
@@ -1227,22 +1291,16 @@ def _output_to_task_label(out):
 class _StagedRef(pipe_ref.CPipeRef):  # pylint: disable=abstract-method
     """Represents a reference ready to be brought into the current scene."""
 
-    def __init__(self, output, namespace, attach=None, ignore_on_apply=False):
+    def __init__(self, output, namespace, attach_to=None):
         """Constructor.
 
         Args:
             output (CPOutput): output to reference
             namespace (str): namespace to use
-            attach (CPipeRef): mark this output as one to be attached
-                to this scene ref (only relevant to a lookdev being
-                applied to an existing abc in the scene)
-            ignore_on_apply (bool): ignore this reference when apply is
-                executed (this is used to display lookdev attaches which
-                will be imported as part of an abc import)
+            attach_to (StagedRef): reference to lookdev attach this ref to
         """
         super().__init__(output, namespace=namespace)
-        self.attach = attach
-        self.ignore_on_apply = ignore_on_apply
+        self.attach_to = attach_to
 
     def rename(self, namespace):
         """Rename this reference.

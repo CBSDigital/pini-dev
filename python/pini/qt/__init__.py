@@ -23,7 +23,7 @@ from .q_utils import (
     to_p, safe_timer_event, to_size, to_rect, to_font, SavePolicy,
     get_application, close_all_interfaces, to_col, to_pixmap,
     X_AXIS, Y_AXIS, SETTINGS_DIR, to_icon, find_widget_children,
-    set_application_icon, DialogCancelled, widget_to_signal,
+    set_application_icon, DialogCancelled, widget_to_signal, obt_icon,
     flush_dialog_stack, obt_pixmap, build_tmp_icon, p_is_onscreen)
 
 from .tools import (

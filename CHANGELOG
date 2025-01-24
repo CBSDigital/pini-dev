@@ -1,3 +1,29 @@
+## [6.37.0] - Fri 2025-01-24 10:42
+### Summary
+ - Pini Helper:
+    - maya added RedshiftVolume vdb handling (rcalderon),
+### Updated
+ - pini.utils.to_seq added #### + $F4 + %04d handling,
+ - pini.dcc.create_cache_ref deprecated,
+ - pini.dcc.create_ref apply grouping in aiVoume/aiStandIn handler,
+ - pini.dcc.pipe_ref added find_ai_vols/create_rs_vol/create_cam_ref,
+ - pini.dcc.pipe_ref updated func prefixes read_ -> find_ for symmetry,
+ - pini.dcc.pipe_ref maya enabled rs vol ref search,
+ - pini.pipe.CPWork.save store EntityPath scene data -> sanity check on new scene wip,
+ - pini.pipe.OUTPUT_MEDIA_TYPES added,
+ - pini.pipe.cache.CCPOutputGhost.is_media added,
+ - pini.pipe.shotgrid.create pprint data on fail,
+ - pini.qt.obt_icon added,
+ - pini.tools.pyui bugfix error on func to icon in pyinstaller wrapper,
+ - pini.tools.helper refactored ref staging for clarity,
+ - pini.tools.helper added rs vdb handling,
+ - pini.tools.helper.stage_import made public,
+ - pini.tools.helper.stage_import renamed arg attach -> attach_to,
+ - pini.tools.helper.stage_import added namespace arg,
+ - pini.tools.helper added _create_cam_ref/_create_vdb_ref/_create_abc_ref,
+ - pini.tools.error.PEError added handling for py3 style ^^^ errors,
+
+
 ## [6.36.0] - Tue 2025-01-21 09:24
 ### Summary
  - Pini Helper:

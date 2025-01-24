@@ -293,7 +293,7 @@ class PHUiBase(
         if add:
             _func = chain_fns(
                 wrap_fn(self.ui.MainPane.select_tab, 'Scene'),
-                wrap_fn(self._stage_import, output),
+                wrap_fn(self.stage_import, output),
                 self.ui.SSceneRefs.redraw)
             menu.add_action(
                 'Add to scene', _func, icon=icons.find('Plus'),
@@ -399,7 +399,7 @@ class PHUiBase(
                 'Find lookdev', wrap_fn(self.jump_to, _lookdev),
                 icon=icons.FIND, enabled=bool(_lookdev))
             _attach = chain_fns(
-                wrap_fn(self._stage_import, _lookdev, attach=ref),
+                wrap_fn(self.stage_import, _lookdev, attach=ref),
                 self.ui.SSceneRefs.redraw)
             menu.add_action(
                 'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
@@ -498,7 +498,7 @@ class PHUiBase(
             else:  # Bring in new ref
                 _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
                 _funcs = [_select_outs]
-                _funcs += [wrap_fn(self._stage_import, lookdev, attach=_ref)
+                _funcs += [wrap_fn(self.stage_import, lookdev, attach=_ref)
                            for _ref in _refs]
                 _funcs += [self.ui.SSceneRefs.redraw]
                 _func = chain_fns(*_funcs)

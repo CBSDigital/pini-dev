@@ -241,6 +241,7 @@ def _func_to_icon(func):
             '/system32/',
             '/OneDrive/Desktop/',
             '/System32/',
+            '/install/'
     ]:
         if _splitter in _path:
             _, _rel_path = _path.rsplit(_splitter, 1)

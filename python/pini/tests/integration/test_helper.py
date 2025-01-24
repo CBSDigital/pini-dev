@@ -2,6 +2,7 @@ import unittest
 import logging
 
 from pini import testing, dcc, pipe, qt
+from pini.dcc import pipe_ref
 from pini.tools import helper, error
 from pini.utils import File, assert_eq, system, strftime
 
@@ -103,6 +104,70 @@ class TestHelper(unittest.TestCase):
         _out = pipe.to_output(_path)
         _helper.jump_to(_out)
         assert _helper.entity == _ety
+
+    def test_output_referencing(self):
+
+        _ety = pipe.CACHE.obt(testing.TEST_SHOT)
+        _abc = _ety.find_outputs(
+            extn='abc', task='anim', tag=pipe.DEFAULT_TAG, ver_n='latest',
+            content_type='PipeAbc', output_name='test01')[0]
+        _LOGGER.info(' - ABC %s', _abc)
+        _cam = _ety.find_outputs(
+            extn='abc', task='anim', tag=pipe.DEFAULT_TAG, ver_n='latest',
+            content_type='CameraAbc')[0]
+        _LOGGER.info(' - CAM %s', _cam)
+        _vdb = _ety.find_outputs(extn='vdb', task='fx', ver_n='latest')[0]
+        _LOGGER.info(' - VDB %s', _vdb)
+
+        dcc.new_scene(force=True)
+        dcc.set_range(*_abc.metadata['range'])
+
+        # Test pipe ref funcs
+        dcc.create_ref(_abc, namespace='RefAbc')
+        if dcc.NAME == 'maya':
+            pipe_ref.create_cam_ref(_cam, namespace='AutoAbc', build_plates=True)
+        if 'arnold' in dcc.allowed_renderers():
+            pipe_ref.create_ai_standin(_abc, namespace='StandInAbc')
+            assert not pipe_ref.find_ai_vols()
+            pipe_ref.create_ai_vol(_vdb, namespace='ArnoldVdb')
+            assert pipe_ref.find_ai_vols()
+        if 'redshift' in dcc.allowed_renderers():
+            pipe_ref.create_rs_vol(_vdb, namespace='RedshiftVdb')
+
+        # Test helper abc import
+        _helper = helper.obt_helper()
+        for _tgl, _elem, _out in [
+                (True, _helper.ui.SAbcMode, _abc),
+                (dcc.NAME == 'maya', _helper.ui.SVdbMode, _vdb),
+        ]:
+            if not _tgl:
+                continue
+            print()
+            _LOGGER.info(' - TEST IMPORT %s %s', _out.content_type, _out)
+            _modes = _elem.all_text()
+            for _mode in _modes:
+                _LOGGER.info('   - TEST MODE %s %s', _mode, _out.extn)
+                _elem.select_text(_mode)
+                _helper.jump_to(_out)
+                assert _helper.ui.SOutputs.selected_data() == _out
+                _helper.ui.SAdd.click()
+                assert _helper._staged_imports
+                _n_refs = len(dcc.find_pipe_refs())
+                _helper._callback__SApply(force=True)
+                assert _n_refs != len(dcc.find_pipe_refs())
+            _elem.select_text('Auto')
+
+        # Test camera import
+        print()
+        _LOGGER.info('TEST CAM IMPORT %s', _cam)
+        assert _cam.content_type == 'CameraAbc'
+        _helper.jump_to(_cam)
+        assert _helper.ui.SOutputs.selected_data() == _cam
+        _helper.ui.SAdd.click()
+        assert _helper._staged_imports
+        _n_refs = len(dcc.find_pipe_refs())
+        _helper._callback__SApply(force=True)
+        assert _n_refs != len(dcc.find_pipe_refs())
 
     def test_save_new_tag(self):
 

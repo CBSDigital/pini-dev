@@ -207,6 +207,20 @@ def nice_screen(screen):
 
 
 @cache_result
+def obt_icon(file_: str):
+    """Obtain a cached version of the given icon.
+
+    Args:
+        file_ (str): path to icon
+
+    Returns:
+        (QIcon): icon
+    """
+    assert isinstance(file_, str)
+    return to_icon(file_)
+
+
+@cache_result
 def obt_pixmap(file_: str):
     """Obtain a cached version of the given pixmap.
 

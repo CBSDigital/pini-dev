@@ -5,12 +5,12 @@ import logging
 from maya import cmds
 
 from pini import dcc, pipe
-from pini.utils import single, Seq, file_to_seq, to_seq
+from pini.utils import single, Seq, file_to_seq, to_seq, abs_path
 
 from maya_pini import open_maya as pom, ui
 from maya_pini.utils import load_redshift_proxy
 
-from . import prm_base
+from . import prm_base, prm_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,12 +128,13 @@ class CMayaAiVolume(_CMayaNodeRef):
         assert isinstance(node, pom.CTransform)
         assert node.shp.object_type() == 'aiVolume'
         _path = node.shp.plug['filename'].get_val() or ''
-        _path = _path.replace('.####.', '.%04d.')
         if not _path:
             raise ValueError('Empty path')
+        _path = abs_path(_path)
+        _path = to_seq(_path)
 
         super().__init__(
-            path or _path, namespace=str(self.node), node=node.shp,
+            path or _path, namespace=str(node), node=node.shp,
             top_node=node)
 
     def update(self, out):
@@ -260,7 +261,9 @@ class CMayaRsVolume(_CMayaNodeRef):
         _tfm = node.to_parent()
         _LOGGER.debug(' - TFM %s', _tfm)
         _path = node.plug['fileName'].get_val()
-        _path = file_to_seq(_path)
+        _path = to_seq(_path)
+        if not _path:
+            raise ValueError('No path set')
         super().__init__(
             path=_path, namespace=str(_tfm), node=node, top_node=_tfm)
 
@@ -273,12 +276,13 @@ class CMayaRsVolume(_CMayaNodeRef):
         raise NotImplementedError
 
 
-def create_ai_standin(path, namespace):
+def create_ai_standin(path, namespace, group=None):
     """Create aiStandIn reference from the given path.
 
     Args:
         path (File|Seq): path to apply
         namespace (str): namespace to use
+        group (str): override parent group
 
     Returns:
         (CMayaAiStandIn): reference
@@ -303,15 +307,18 @@ def create_ai_standin(path, namespace):
         ui.raise_attribute_editor()
         cmds.refresh()
 
+    prm_utils.apply_grouping(top_node=_tfm, output=_ref.output, group=group)
+
     return _ref
 
 
-def create_ai_vol(output, namespace):
+def create_ai_vol(output, namespace, group=None):
     """Create vdb reference.
 
     Args:
         output (CPOutput): output to reference in vdb
         namespace (str): node name
+        group (str): override parent group
 
     Returns:
         (CMayaAiVolume): vdb reference
@@ -327,10 +334,33 @@ def create_ai_vol(output, namespace):
     _shp.plug['useFrameExtension'].set_val(True)
     _ref = CMayaAiVolume(_tfm, path=_seq.path)
 
+    prm_utils.apply_grouping(top_node=_tfm, output=_ref.output, group=group)
+
     return _ref
 
 
-def create_rs_pxy(output, namespace):
+def create_rs_pxy(output, namespace, group=None):
+    """Create redshift proxy reference.
+
+    Args:
+        output (CPOutput): path to proxy
+        namespace (str): name for transform
+        group (str): override parent group
+
+    Returns:
+        (CMayaRsProxyRef): proxy reference
+    """
+    _LOGGER.info('CREATE RS PXY %s', output)
+    _node = load_redshift_proxy(output, name=namespace)
+    _ref = CMayaRsProxyRef(_node.proxy)
+    _LOGGER.info(' - NODE %s', _node)
+    prm_utils.apply_grouping(
+        top_node=_ref.top_node, output=_ref.output, group=group)
+
+    return _ref
+
+
+def create_rs_vol(output, namespace):
     """Create redshift proxy reference.
 
     Args:
@@ -340,13 +370,22 @@ def create_rs_pxy(output, namespace):
     Returns:
         (CMayaRsProxyRef): proxy reference
     """
-    _LOGGER.info('CREATE RS PXY %s', output)
-    _node = load_redshift_proxy(output, name=namespace)
-    _LOGGER.info(' - NODE %s', _node)
-    return CMayaRsProxyRef(_node.proxy)
+    cmds.loadPlugin('redshift4maya', quiet=True)
+    _vol = pom.CMDS.createNode("RedshiftVolumeShape")
+    _vol.plug['fileName'].set_val(output.path.replace('.%04d.', '.####.'))
+    _vol.plug['useFrameExtension'].set_val(True)
+
+    # Fix name
+    _vol = _vol.rename(f'{namespace}Shape')
+    _vol.to_parent().rename(namespace)
+
+    ui.raise_attribute_editor()
+    cmds.refresh()
+
+    return CMayaRsVolume(_vol)
 
 
-def read_ai_standins(selected=False):
+def find_ai_standins(selected=False):
     """Find pipelined aiStandIn references in the current scene.
 
     Args:
@@ -395,7 +434,7 @@ def read_ai_standins(selected=False):
     return _asses
 
 
-def read_ai_vols(selected=False):
+def find_ai_vols(selected=False):
     """Read pipeline vdb refs.
 
     Args:
@@ -407,6 +446,7 @@ def read_ai_vols(selected=False):
     _LOGGER.log(9, 'READ VDB PIPE REFS')
 
     if 'aiVolume' not in cmds.allNodeTypes():
+        _LOGGER.log(9, ' - aiVolume NOT AVAILABLE')
         return []
 
     # Get list of aiVolume nodes
@@ -426,6 +466,7 @@ def read_ai_vols(selected=False):
                         _aivs.append(_shp)
     else:
         _aivs = pom.CMDS.ls(type='aiVolume')
+    _LOGGER.log(9, ' - FOUND %d aiVolume NODES', len(_aivs))
 
     # Map to CMayaAiVolume objects
     _vdbs = []
@@ -433,13 +474,14 @@ def read_ai_vols(selected=False):
         _aiv = _aiv_s.to_parent()
         try:
             _vdb = CMayaAiVolume(_aiv)
-        except ValueError:
+        except ValueError as _exc:
+            _LOGGER.log(9, ' - REJECTED %s %s', _aiv, _exc)
             continue
         _vdbs.append(_vdb)
     return _vdbs
 
 
-def _read_type_nodes(class_, selected):
+def _find_type_nodes(class_, selected=False):
     """Read nodes of the given class in the current scene.
 
     Args:
@@ -449,25 +491,30 @@ def _read_type_nodes(class_, selected):
     Returns:
         (CMayaNodeRef list): matching node ref objects
     """
+    _LOGGER.debug('READ TYPE NODES %s', class_)
     if class_.TYPE not in cmds.allNodeTypes():
         return []
     _sel = cmds.ls(selection=True)
 
-    _pxys = []
+    _refs = []
     assert class_.TYPE
     for _node in pom.find_nodes(type_=class_.TYPE):
+        _LOGGER.debug(' - ADDING NODE %s', _node)
         try:
-            _pxy = class_(_node)
-        except (ValueError, RuntimeError):
+            _ref = class_(_node)
+        except (ValueError, RuntimeError) as _exc:
+            _LOGGER.debug('   - FAILED TO BUILD REF %s', _exc)
             continue
-        if selected and _pxy.top_node not in _sel and _pxy.node not in _sel:
+        if selected and _ref.top_node not in _sel and _ref.node not in _sel:
+            _LOGGER.debug('   - SELECTION FILTER REJECTED %s', _ref)
             continue
-        _pxys.append(_pxy)
+        _LOGGER.debug('   - CREATED REF %s', _ref)
+        _refs.append(_ref)
 
-    return _pxys
+    return _refs
 
 
-def read_img_planes(selected=False):
+def find_img_planes(selected=False):
     """Read image planes from the current scene.
 
     Args:
@@ -476,10 +523,10 @@ def read_img_planes(selected=False):
     Returns:
         (CMayaImgPlaneRef list): image plane refs
     """
-    return _read_type_nodes(class_=CMayaImgPlaneRef, selected=selected)
+    return _find_type_nodes(class_=CMayaImgPlaneRef, selected=selected)
 
 
-def read_rs_dome_lights(selected=False):
+def find_rs_dome_lights(selected=False):
     """Read RedshiftDomeLight references in the current scene.
 
     Args:
@@ -488,10 +535,10 @@ def read_rs_dome_lights(selected=False):
     Returns:
         (CMayaRsProxyRef list): redshift dome lights
     """
-    return _read_type_nodes(class_=CMayaRsDomeLight, selected=selected)
+    return _find_type_nodes(class_=CMayaRsDomeLight, selected=selected)
 
 
-def read_rs_pxys(selected=False):
+def find_rs_pxys(selected=False):
     """Read RedshiftProxyMesh references in the current scene.
 
     Args:
@@ -500,10 +547,10 @@ def read_rs_pxys(selected=False):
     Returns:
         (CMayaRsProxyRef list): redshift proxy refs
     """
-    return _read_type_nodes(class_=CMayaRsProxyRef, selected=selected)
+    return _find_type_nodes(class_=CMayaRsProxyRef, selected=selected)
 
 
-def read_rs_volumes(selected=False):
+def find_rs_volumes(selected=False):
     """Read RedshiftVolumeShape references in the current scene.
 
     Args:
@@ -512,4 +559,4 @@ def read_rs_volumes(selected=False):
     Returns:
         (CMayaRsProxyRef list): redshift volumes
     """
-    return _read_type_nodes(class_=CMayaRsVolume, selected=selected)
+    return _find_type_nodes(class_=CMayaRsVolume, selected=selected)

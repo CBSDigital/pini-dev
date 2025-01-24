@@ -93,6 +93,9 @@ class MayaDCC(BaseDCC):
             abc_mode (str): how to reference abcs (Reference/aiStandIn)
             force (bool): replace existing without confirmation
         """
+        from pini.tools import release
+        release.apply_deprecation('22/01/25', 'Use pipe_ref.create_abc_ref')
+
         from pini import pipe
         from pini.dcc import pipe_ref
         _LOGGER.debug('CREATE CACHE REF')
@@ -152,24 +155,24 @@ class MayaDCC(BaseDCC):
 
         # Bring in reference
         if _path.extn == 'vdb':
-            _ref = pipe_ref.create_ai_vol(_path, namespace=namespace)
+            _ref = pipe_ref.create_ai_vol(
+                _path, namespace=namespace, group=group)
         elif _path.extn in ('ass', 'usd', 'gz'):
             _ref = pipe_ref.create_ai_standin(
-                path=_path, namespace=namespace)
+                path=_path, namespace=namespace, group=group)
         elif _path.extn in ('rs', ):
-            _ref = pipe_ref.create_rs_pxy(_path, namespace=namespace)
+            _ref = pipe_ref.create_rs_pxy(
+                _path, namespace=namespace, group=group)
         else:
             _pom_ref = pom.create_ref(_path, namespace=namespace, force=force)
             _ns = _pom_ref.namespace
             _ref = self.find_pipe_ref(_ns, catch=True)
+            if _ref.top_node:
+                pipe_ref.apply_grouping(
+                    top_node=_ref.top_node, output=_ref.output, group=group)
             pipe_ref.lock_cams(_pom_ref)
 
         _LOGGER.debug(' - REF %s', _ref)
-
-        # Organise into group
-        if _ref.top_node:
-            pipe_ref.apply_grouping(
-                top_node=_ref.top_node, output=_ref.output, group=group)
 
         return _ref
 
@@ -280,8 +283,8 @@ class MayaDCC(BaseDCC):
         # Add 2-padded index suffix (eg. deadHorse -> deadHorse01)
         if mode == 'asset':
             for _idx in range(1, 1000):
-                _ns = ':{}{}{:02d}'.format(
-                    _base, '_' if _base[-1].isdigit() else '', _idx)
+                _score = '_' if _base[-1].isdigit() else ''
+                _ns = f':{_base}{_score}{_idx:02d}'
                 _LOGGER.debug(' - TESTING %s', _ns)
                 if (
                         not cmds.namespace(exists=_ns) and
@@ -412,7 +415,7 @@ class MayaDCC(BaseDCC):
             if _fps == fps:
                 break
         else:
-            _name = '{}fps'.format(fps)
+            _name = f'{fps}fps'
         cmds.currentUnit(time=_name)
 
     def set_range(self, start, end):
@@ -476,7 +479,7 @@ class MayaDCC(BaseDCC):
             _end = int(cmds.getAttr('defaultRenderGlobals.endFrame'))
             _step = int(cmds.getAttr('defaultRenderGlobals.byFrameStep'))
             return list(range(_start, _end+1, _step))
-        return super(MayaDCC, self).t_frames()
+        return super().t_frames()
 
     def t_start(self, class_=float):
         """Get timeline start frame.
