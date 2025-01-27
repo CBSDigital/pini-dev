@@ -1,3 +1,11 @@
+## [6.37.1] - Mon 2025-01-27 09:11
+### Summary
+ - Pini Helper:
+    - bugfix error on manual lookdev attach (lcayo),
+### Updated
+ - pini.tools.helper updated outdated call to lookdev attach,
+
+
 ## [6.37.0] - Fri 2025-01-24 10:42
 ### Summary
  - Pini Helper:
