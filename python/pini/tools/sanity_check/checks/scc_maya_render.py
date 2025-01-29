@@ -403,8 +403,6 @@ class CheckRenderGlobals(SCMayaCheck):
                     ('defaultArnoldDriver.halfPrecision', True)]
 
         elif _ren == 'redshift':
-            if not self._redshift_globals_initialised():
-                return False
             _attrs_to_check += [
                 # ('redshiftOptions.autocrop', True),
                 ('redshiftOptions.exrForceMultilayer', True),
@@ -414,6 +412,8 @@ class CheckRenderGlobals(SCMayaCheck):
         _fmt = to_render_extn()
         self.write_log('check format %s', _fmt)
         if _fmt != img_fmt:
+            if not self._check_render_globals():
+                return False
             _fix = wrap_fn(set_render_extn, img_fmt)
             _msg = (
                 f'Image format is not "{img_fmt}" (currently set to "{_fmt}")')
@@ -422,9 +422,9 @@ class CheckRenderGlobals(SCMayaCheck):
         for _attr, _val in _attrs_to_check:
             self._check_attr(_attr, _val)
 
-        return True
+        return not self.fails
 
-    def _redshift_globals_initialised(self):
+    def _check_render_globals(self):
         """Check redshift globals have been initialised.
 
         If they haven't then image format update callbacks will fail.
@@ -432,6 +432,9 @@ class CheckRenderGlobals(SCMayaCheck):
         Returns:
             (bool): whether globals have been initialised
         """
+        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+        if _ren != 'redshift':
+            return True
         try:
             mel.eval('redshiftImageFormatChanged')
         except RuntimeError:
@@ -441,8 +444,15 @@ class CheckRenderGlobals(SCMayaCheck):
         self.add_fail(
             'Redshift render globals need to be set up by opening render '
             'globals window',
-            fix=wrap_fn(mel.eval, 'unifiedRenderGlobalsWindow;'))
+            fix=_init_render_globals)
         return False
+
+
+def _init_render_globals():
+    """Pop open render globals window and then close it."""
+    mel.eval('unifiedRenderGlobalsWindow')
+    _close_window = wrap_fn(cmds.deleteUI, 'unifiedRenderGlobalsWindow')
+    cmds.evalDeferred(_close_window, lowestPriority=True)
 
 
 class CheckRenderLayers(SCMayaCheck):

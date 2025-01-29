@@ -197,20 +197,20 @@ class CCPRoot(elem.CPRoot):
 
         raise NotImplementedError(match)
 
-    def find_jobs(self, filter_=None, cfg_name=None, force=False):
+    def find_jobs(self, cfg_name=None, force=False, **kwargs):
         """Find jobs on the current pipeline.
 
         Args:
-            filter_ (str): filter by job name
             cfg_name (str): filter by config name (eg. Acis/Satan/Pluto)
             force (bool): force reread from disk
 
         Returns:
             (CCPJob list): jobs
         """
+        from pini import pipe
         _jobs = []
         for _job in self._read_jobs(force=force):
-            if not passes_filter(_job.name, filter_):
+            if not pipe.passes_filters(_job, filter_attr='name', **kwargs):
                 continue
             if cfg_name and _job.cfg['name'] != cfg_name:
                 continue

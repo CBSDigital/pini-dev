@@ -94,7 +94,7 @@ class SGCProj(sgc_elem.SGCElem):
 
         return single([
             _asset for _asset in _assets
-            if match in (_asset.name, _asset.uid)])
+            if match in (_asset.name, _asset.uid, _asset.id_)])
 
     def find_assets(self, filter_=None, force=False, **kwargs):
         """Search assets within this job.

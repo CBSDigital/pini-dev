@@ -15,6 +15,15 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
     _sg_entity = None
 
     @property
+    def id_(self):
+        """Obtain shotgrid asset id.
+
+        Returns:
+            (int): asset id
+        """
+        return self.sg_entity.id_
+
+    @property
     def sg_entity(self):
         """Obtain shotgrid cache entity for this entity.
 

@@ -308,17 +308,18 @@ def wrap_py(py, name, py_file, work=None, maya=False):
     return _py
 
 
-def write_deadline_data(file_, data, sort=None):
+def write_deadline_data(file_, data, sort=None, force=False):
     """Write data in deadline format to the given file.
 
     Args:
         file_ (File): file to write data to
         data (dict): data to write
         sort (fn): sort key for data
+        force (bool): replace existing without confirmation
     """
     _text = ''
     for _key in sorted(data.keys(), key=sort):
         _val = data[_key]
         _text += f'{_key}={_val}\n'
         _LOGGER.debug(' - WRITE TEXT %s', _text)
-    file_.write(_text, encoding='utf8')
+    file_.write(_text, encoding='utf8', force=force)

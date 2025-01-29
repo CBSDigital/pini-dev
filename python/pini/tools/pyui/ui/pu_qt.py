@@ -267,12 +267,6 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
         _policy.setVerticalPolicy(QtWidgets.QSizePolicy.Expanding)
         _policy.setHorizontalStretch(100)
         _btn.setSizePolicy(_policy)
-        # _pal = _btn.palette()
-        # _pal.setColor(_pal.Button, _col)
-        # _text_col = QtGui.QColor('black' if _col.valueF() > 0.55 else 'white')
-        # _pal.setColor(_pal.ButtonText, _text_col)
-        # _btn.setAutoFillBackground(True)
-        # _btn.setPalette(_pal)
         _h_layout.addWidget(_btn)
 
         # Info button

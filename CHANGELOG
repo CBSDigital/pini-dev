@@ -1,3 +1,32 @@
+## [6.38.0] - Wed 2025-01-29 10:38
+### Summary
+ - Pini Helper:
+    - maya lookdev publish added shotgrid register textures (blee/nhoyt),
+### Updated
+ - pini.utils.Seq.to_frame_file use frames to find default central frame,
+ - pini.utils.to_seq added Path handling,
+ - pini.dcc bugfix false nuke matching due to frozen module,
+ - pini.dcc.export.CBaseExportHandler._apply_snapshot implemented in base class for maya,
+ - pini.dcc.export removed CMayaBasePublish intermediate class,
+ - pini.dcc.export.CMayaLookdevPublish bugfix bkp not stored in metadata,
+ - pini.dcc.export.CMayaLookdevPublish enabled texture register,
+ - pini.pipe.passes_filters added id_ arg,
+ - pini.pipe.CPRoot find_job/find_jobs updated to use passes_filter/kwargs,
+ - pini.pipe.CPJob find_asset/find_assets updated to use passes_filter/kwargs,
+ - pini.pipe CPJobSG/CPEntitySG added id_ property,
+ - pini.pipe.shotgrid.SGC.SGCProj.find_asset allow match by id_,
+ - pini.farm.deadline.write_deadline_data added force flag,
+ - pini.farm.deadline.CDJob added output arg,
+ - pini.farm.deadline.CDJob assign batch name based on work,
+ - pini.farm.deadline.CDJob._build_info_data added OutputDirectory0,
+ - pini.farm.deadline.CDJob._build_job_data implemented with Version/SceneFile,
+ - pini.farm.deadline.CDMayaJob simplified args using kwargs,
+ - pini.tools.pyui added catch on load setting,
+ - pini.tools.sanity_check added ctx edit opt,
+ - pini.tools.sanity_check.CheckRenderGlobals only init rs if fmt change required,
+ - pini.tools.sanity_check.launch_export_ui bugfix bad button labels,
+
+
 ## [6.37.1] - Mon 2025-01-27 09:11
 ### Summary
  - Pini Helper:

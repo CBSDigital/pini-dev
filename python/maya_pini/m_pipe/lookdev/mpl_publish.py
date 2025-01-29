@@ -224,7 +224,7 @@ def _read_geo_settings():
             _attrs += [
                 'rsEnableSubdivision',
                 'rsEnableDisplacement']
-            _LOGGER.info(' - RS ATTRS %s', _attrs)
+            _LOGGER.debug(' - RS ATTRS %s', _attrs)
 
         # Read non-default settings
         for _attr in _attrs:

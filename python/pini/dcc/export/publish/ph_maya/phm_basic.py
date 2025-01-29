@@ -14,7 +14,7 @@ from maya_pini.utils import (
     restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean,
     save_fbx)
 
-from . import phm_base
+from .. import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
 _PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
@@ -28,7 +28,7 @@ class PubRefsMode(enum.Enum):
     IMPORT_TO_ROOT = "Import into root namespace"
 
 
-class CMayaBasicPublish(phm_base.CMayaBasePublish):
+class CMayaBasicPublish(ph_basic.CBasicPublish):
     """Manages a basic maya publish."""
 
     NAME = 'Maya Basic Publish'

@@ -12,6 +12,9 @@ from nuke_pini.utils import clear_selection
 
 from .d_base import BaseDCC
 
+if not nuke.__file__:
+    raise ImportError('Bad nuke module')
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -108,12 +111,12 @@ class NukeDCC(BaseDCC):
         _LOGGER.info('CREATE REF %s', path)
         from pini import pipe
 
-        _knobs = 'file "{}" name {}'.format(path.path, namespace)
+        _knobs = f'file "{path.path}" name {namespace}'
         if isinstance(path, Seq):
             _seq = path
             _start, _end = _seq.to_range(force=True)
             _LOGGER.info(' - SEQ %d-%d', _start, _end)
-            _knobs += ' first {:d} last {:d}'.format(_start, _end)
+            _knobs += f' first {_start:d} last {_end:d}'
             _type = 'Read'
         elif path.extn in ['mov', 'mp4']:
             _knobs += ' colorspace color_picking'
@@ -126,7 +129,7 @@ class NukeDCC(BaseDCC):
                 _type = 'Camera2'
                 _knobs += ' read_from_file true'
                 if _fps:
-                    _knobs += ' frame_rate {:f}'.format(_fps)
+                    _knobs += f' frame_rate {_fps:f}'
             else:
                 _type = 'ReadGeo2'
         else:
@@ -191,9 +194,9 @@ class NukeDCC(BaseDCC):
                 _file_ver = _msg.split('is for nuke')[1].split()[0].strip(';')
                 _this_ver = _msg.split()[-1].replace('nuke', '')
                 _msg = (
-                    'Nuke errored on load because the file was saved in '
-                    'nuke-{} and this is nuke-{}:\n\n{}'.format(
-                        _file_ver, _this_ver, _file))
+                    f'Nuke errored on load because the file was saved in '
+                    f'nuke-{_file_ver} and this is nuke-{_this_ver}:'
+                    f'\n\n{_file}')
                 raise error.HandledError(_msg, title='Version Mismatch')
             raise _exc
 
@@ -249,7 +252,7 @@ class NukeDCC(BaseDCC):
         _count = 1
         while nuke.toNode(_name):
             check_heart()
-            _name = '{}_{:d}'.format(base, _count)
+            _name = f'{base}_{_count:d}'
             _count += 1
         return _name
 
@@ -387,8 +390,8 @@ class NukeDCC(BaseDCC):
             if _fmt_res == _res:
                 break
         else:
-            raise ValueError('Failed to find format {:d}x{:d}'.format(
-                width, height))
+            raise ValueError(
+                f'Failed to find format {width:d}x{height:d}')
         _LOGGER.info('APPLY FORMAT %s', _fmt)
         nuke.Root()['format'].setValue(_fmt)
         assert self.get_res() == _res

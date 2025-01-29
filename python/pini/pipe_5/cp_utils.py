@@ -253,7 +253,7 @@ def output_clip_sort(output):
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
         obj, type_=None, path=None, status=None,
         entity=None, asset=None, asset_type=None, profile=None,
-        output_name=None, output_type=EMPTY, content_type=None,
+        output_name=None, output_type=EMPTY, content_type=None, id_=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
         extn=EMPTY, extns=None, filter_=None, filter_attr='path'):
     """Check whether the given object passes pipeline filters.
@@ -270,6 +270,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         output_name (str): match output name
         output_type (str):  match output type
         content_type (str): filter by content type
+        id_ (int): match by id (for shotgrid elements)
         step (str): apply step filter
         task (str): match task (or pini task)
         tag (str): match tag
@@ -329,6 +330,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     if extns and obj.extn not in extns:
         return False
     if versionless is not None and bool(obj.ver_n) == versionless:
+        return False
+    if id_ is not None and id_ != obj.id_:
         return False
 
     # Could be expensive so run last

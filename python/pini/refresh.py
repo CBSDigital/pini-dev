@@ -111,8 +111,9 @@ _RELOAD_ORDER = [
 
     'pini.farm.base',
     'pini.farm.deadline.d_utils',
-    'pini.farm.deadline.d_farm',
     'pini.farm.deadline.d_job',
+    'pini.farm.deadline.d_maya_job',
+    'pini.farm.deadline.d_farm',
     'pini.farm.deadline',
     'pini.farm',
 

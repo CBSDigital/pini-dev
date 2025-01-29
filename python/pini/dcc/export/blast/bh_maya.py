@@ -24,7 +24,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         Args:
             label_w (int): label width in ui
         """
-        super(CMayaPlayblast, self).__init__(label_w=label_w)
+        super().__init__(label_w=label_w)
 
     def build_ui(self, parent=None, layout=None):
         """Build ui elements for this handler.
@@ -33,7 +33,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             parent (QWidget): parent widget
             layout (QLayout): parent layout
         """
-        super(CMayaPlayblast, self).build_ui(parent=parent, layout=layout)
+        super().build_ui(parent=parent, layout=layout)
 
         # Read cams
         _cams = [str(_cam) for _cam in pom.find_cams()]
@@ -95,7 +95,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         return _work.find_template(_tmpl_name, catch=True)
 
     def _callback__Format(self):
-        super(CMayaPlayblast, self)._callback__Format()
+        super()._callback__Format()
         _en = False
         if self.template:
             _en = 'output_name' in self.template.keys()
@@ -109,9 +109,9 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             self.output
         except ValueError:
             raise error.HandledError(
-                'You have chosen "{}" as the output name which is not '
-                'valid within the pipeline.\n\nPlease select another '
-                'output name.'.format(self.output_name))
+                f'You have chosen "{self.output_name}" as the output name '
+                f'which is not valid within the pipeline.\n\nPlease select '
+                f'another output name.')
 
     def blast(self):
         """Excute blast."""
@@ -126,8 +126,8 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             return
         if not _work.find_template('blast', catch=True):
             qt.notify(
-                'No blast template found in this job:\n\n{}\n\n'
-                'Unable to blast.'.format(_work.job.path),
+                f'No blast template found in this job:\n\n{_work.job.path}\n\n'
+                f'Unable to blast.',
                 title='Warning', parent=self.parent)
             return
 

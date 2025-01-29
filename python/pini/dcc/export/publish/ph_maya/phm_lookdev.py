@@ -2,11 +2,12 @@
 
 import copy
 import logging
+import os
 
 from maya import cmds
 
 from pini import pipe, dcc, qt
-from pini.utils import single, File, abs_path
+from pini.utils import single, File, abs_path, passes_filter, to_seq, Seq, TMP
 
 from maya_pini import ref, m_pipe, open_maya as pom
 from maya_pini.m_pipe import lookdev
@@ -14,12 +15,12 @@ from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
     save_redshift_proxy, disable_scanner_callbacks)
 
-from . import phm_base
+from .. import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMayaLookdevPublish(phm_base.CMayaBasePublish):
+class CMayaLookdevPublish(ph_basic.CBasicPublish):
     """Manages a maya lookdev publish."""
 
     NAME = 'Maya Lookdev Publish'
@@ -117,7 +118,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         """
         _LOGGER.info('LOOKDEV PUBLISH')
 
-        _work = work or pipe.CACHE.cur_work
+        _work = work or pipe.CACHE.obt_cur_work()
         _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
         _data_dir = _pub.to_dir().to_subdir('data')
         _metadata = self.build_metadata(force=force)
@@ -126,7 +127,9 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             dir_=_data_dir,  base=_pub.base+'_shaders', extn='yml')
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
 
-        _work.save(reason='lookdev publish', force=True, update_outputs=False)
+        _bkp = _work.save(
+            reason='lookdev publish', force=True, update_outputs=False)
+        _metadata['bkp'] = _bkp.path
 
         # Check scene
         _clean_junk()
@@ -292,7 +295,7 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
         output.set_metadata(_metadata)
 
     def _register_in_shotgrid(
-            self, work, outs, upstream_files=None, link_textures=False):
+            self, work, outs, upstream_files=None, link_textures=True):
         """Register outputs in shotgrid.
 
         Args:
@@ -301,39 +304,63 @@ class CMayaLookdevPublish(phm_base.CMayaBasePublish):
             upstream_files (list): list of upstream files
             link_textures (bool): register + link texture files in shotgrid
         """
-        _upstream_files = upstream_files
-        if link_textures:
-            _upstream_files = upstream_files or _build_upstream_files(
-                files=self.textures, work=work)
+        _upstream_files = upstream_files or []
+
+        # Apply texture linking
+        _link_textures = link_textures
+        if os.environ.get('PINI_SG_DISABLE_REGISTER_TEX'):
+            _link_textures = False
+        if _link_textures:
+            _upstream_files += _build_upstream_textures(
+                paths=self.textures, work=work)
+
         super()._register_in_shotgrid(
             work=work, outs=outs, upstream_files=_upstream_files)
 
 
-def _build_upstream_files(files, work):
+def _build_upstream_textures(paths, work=None):
     """Build upstream published files list.
 
     Used to link textures to publish in shotgrid.
 
     Args:
-        files (File list): upstream files
+        paths (File list): upstream files
         work (CCPWork): work file
 
     Returns:
         (dict list): list of upstream published file entries
     """
+    _LOGGER.info('BUILD UPSTREAM FILES')
     from pini.pipe import shotgrid
 
-    # _work = pipe.CACHE.obt_cur_work()
+    _work = work or pipe.CACHE.obt_cur_work()
     _type = shotgrid.SGC.find_pub_type('Texture')
-    _user = shotgrid.SGC.find_user(work.owner())
+    _user = shotgrid.SGC.find_user(_work.owner())
 
+    _to_pub = paths
     _up_pubs = []
-    for _file in qt.progress_bar(
-            files, "Registering {:d} texture{}",
+
+    # Find already registered
+    _rel_paths = {pipe.ROOT.rel_path(_path): _path for _path in paths}
+    _filters = [('path_cache', 'in', list(_rel_paths.keys()))]
+    for _pub in shotgrid.find(
+            'PublishedFile', filters=_filters, fields=['path_cache']):
+        _LOGGER.info(' - ALREADY PUBLISHED %s', _pub)
+        _to_pub.remove(_rel_paths[_pub['path_cache']])
+        _up_pubs.append(_pub)
+
+    # Register remaining files
+    for _path in qt.progress_bar(
+            _to_pub, "Registering {:d} texture{}",
             stack_key='RegisterTextures'):
+        if isinstance(_path, Seq):
+            _thumb = TMP.to_file('pini/tmp.jpg')
+            _path.build_thumbnail(_thumb, force=True)
+        else:
+            _thumb = _path
         _pub = shotgrid.create_pub_file_from_path(
-            _file.path, type_=_type, task=work.work_dir.sg_task, user=_user,
-            ver_n=work.ver_n, thumb=_file)
+            _path.path, type_=_type, task=_work.work_dir.sg_task, user=_user,
+            ver_n=_work.ver_n, thumb=_thumb)
         _up_pubs.append(_pub)
 
     return _up_pubs
@@ -458,18 +485,29 @@ def _flush_scene(keep_nodes=None):
     cmds.delete(_dag_nodes + _unknown_nodes)
 
 
-def _read_textures():
+def _read_textures(filter_=None):
     """Read textures from current scene.
+
+    Args:
+        filter_ (str): apply path filter (for debugging)
 
     Returns:
         (File list): textures
     """
     _ftns = set()
     for _file in pom.find_nodes('file'):
-        _LOGGER.debug('FILE %s', _file)
-        _ftn = File(abs_path(_file.plug['fileTextureName'].get_val()))
-        _LOGGER.debug(' - FTN %s', _ftn)
-        if not _ftn.exists():
+        _ftn = _file.plug['fileTextureName'].get_val()
+        if not _ftn:
             continue
-        _ftns.add(_ftn)
+        _path = File(abs_path(_ftn))
+        if filter_ and not passes_filter(_path.path, filter_):
+            continue
+        _LOGGER.debug('FILE %s', _file)
+        _LOGGER.debug(' - FTN %s', _path)
+        if _file.plug['uvTilingMode'].get_val():
+            _LOGGER.debug(' - CONVERT TO SEQ')
+            _path = to_seq(_path)
+        if not _path.exists():
+            continue
+        _ftns.add(_path)
     return sorted(_ftns)

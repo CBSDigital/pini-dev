@@ -23,39 +23,17 @@ _EMPTY_SCENE = File(
 class _CDMayaJob(d_job.CDJob):
     """Base class for all deadline maya jobs."""
 
-    def __init__(
-            self, stime, work, output, scene=None, name=None, camera=None,
-            priority=50, machine_limit=0, comment=None, frames=None,
-            error_limit=None, group=None, chunk_size=1, limit_groups=None):
+    def __init__(self, output, name=None, camera=None, **kwargs):
         """Constructor.
 
         Args:
-            stime (float): job submission time
-            work (CPWork): work file
             output (CPOutput): output file
-            scene (File): render scene (if not work file)
             name (str): job name
             camera (CCamera): job camera
-            priority (int): job priority (0-100)
-            machine_limit (int): job machine limit
-            comment (str): job comment
-            frames (int list): job frame list
-            error_limit (int): job error limit
-            group (str): submission group
-            chunk_size (int): apply job chunk size
-            limit_groups (str): comma separated limit groups
-                (eg. maya-2023,vray)
         """
-        self.output = output
         self.camera = camera
-        self.work = pipe.CACHE.cur_work
-
-        _name = name or self.output.output_name
-        super(_CDMayaJob, self).__init__(
-            stime=stime, comment=comment, priority=priority, name=_name,
-            machine_limit=machine_limit, work=work, frames=frames, group=group,
-            error_limit=error_limit, batch_name=self.work.base, scene=scene,
-            chunk_size=chunk_size, limit_groups=limit_groups)
+        _name = name or output.output_name
+        super().__init__(name=_name, output=output, **kwargs)
 
     def _build_info_data(self, output_filename=None):
         """Build info data for this job.
@@ -69,10 +47,10 @@ class _CDMayaJob(d_job.CDJob):
         from pini import farm
 
         if not self.group:
-            raise RuntimeError('No group specified - {}'.format(
-                '/'.join(farm.find_groups())))
+            raise RuntimeError(
+                f'No group specified - {farm.find_groups()}')
 
-        _data = super(_CDMayaJob, self)._build_info_data()
+        _data = super()._build_info_data()
 
         _data.update({
             'ChunkSize': str(self.chunk_size),
@@ -88,7 +66,7 @@ class _CDMayaJob(d_job.CDJob):
             'ExtraInfoKeyValue5': 'DraftColorSpaceIn=Draft sRGB',
             'ExtraInfoKeyValue6': 'DraftColorSpaceOut=Draft sRGB',
             'ExtraInfoKeyValue7': 'DraftResolution=1',
-            'ExtraInfoKeyValue8': 'SubmitQuickDraft={}'.format(self.draft),
+            'ExtraInfoKeyValue8': f'SubmitQuickDraft={self.draft}',
             'Frames': str(self.frames).strip('[]').replace(' ', ''),
             'Group': self.group,
             'MinRenderTimeMinutes': '0',
@@ -113,7 +91,7 @@ class _CDMayaJob(d_job.CDJob):
                 _tx = File(_ref.path).to_file(extn='tx')
                 _paths.add(_tx.path)
         for _idx, _path in enumerate(sorted(_paths)):
-            _data['AWSAssetFile{:d}'.format(_idx)] = _path
+            _data[f'AWSAssetFile{_idx:d}'] = _path
 
         return _data
 
@@ -127,12 +105,12 @@ class _CDMayaJob(d_job.CDJob):
             (dict): submission job data
         """
         _width, _height = dcc.get_res()
-        _ver, _ = dcc.to_version()
         _output_file_path = output_file_path or self.output.dir
         _col_policy = cmds.colorManagementPrefs(query=True, policyFileName=True)
         _col_cfg = cmds.colorManagementPrefs(query=True, configFilePath=True)
 
-        _data = {
+        _data = super()._build_job_data()
+        _data.update({
             'Animation': '1',
             'Build': '64bit',
             'CountRenderableCameras': '1',
@@ -149,14 +127,12 @@ class _CDMayaJob(d_job.CDJob):
             'StartupScript': '',
             'UseLegacyRenderLayers': '0',
             'UseLocalAssetCaching': '0',
-            'Version': str(_ver),
-        }
-
+        })
         _data['Camera'] = str(self.camera or '')
         _data['Camera0'] = ''
         for _idx, _cam in enumerate(
                 pom.find_cams(default=None), start=1):
-            _data['Camera{:d}'.format(_idx)] = str(_cam)
+            _data[f'Camera{_idx:d}'] = str(_cam)
 
         return _data
 
@@ -171,7 +147,7 @@ class _CDMayaJob(d_job.CDJob):
             (str): job id
         """
         self.output.test_dir()
-        return super(_CDMayaJob, self).submit(submit=submit, name=name)
+        return super().submit(submit=submit, name=name)
 
 
 class CDMayaRenderJob(_CDMayaJob):
@@ -207,14 +183,15 @@ class CDMayaRenderJob(_CDMayaJob):
         _fmt = to_render_extn()
         _output = pipe.CACHE.cur_work.to_output(
             'render', output_name=self.layer, extn=_fmt, work=work)
-        _name = '{} - {} - {}'.format(work.base, layer, camera)
+        _name = f'{work.base} - {layer} - {camera}'
 
-        super(CDMayaRenderJob, self).__init__(
+        super().__init__(
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
             frames=frames or dcc.t_frames(), name=_name, group=group,
             scene=scene, chunk_size=chunk_size, limit_groups=limit_groups)
 
+        assert self.output
         assert self.batch_name
 
     def _build_info_data(self, output_filename=None):
@@ -226,11 +203,13 @@ class CDMayaRenderJob(_CDMayaJob):
         Returns:
             (dict): submission info data
         """
-        _name = '{} - {} - {}'.format(
-            self.work, self.output.output_name, str(self.camera).strip('|'))
+        assert self.work
+        assert self.output
+        _cam = str(self.camera).strip('|')
+        _name = f'{self.work} - {self.output.output_name} - {_cam}'
         _output_filename = output_filename or self.output.path.replace(
             '.%04d.', '.####.')
-        return super(CDMayaRenderJob, self)._build_info_data(
+        return super()._build_info_data(
             output_filename=_output_filename)
 
     def _build_job_data(self, output_file_path=None):
@@ -247,7 +226,7 @@ class CDMayaRenderJob(_CDMayaJob):
         _output_file_path = output_file_path or _imgs_dir.path+'/'
         _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
 
-        _data = super(CDMayaRenderJob, self)._build_job_data(
+        _data = super()._build_job_data(
             output_file_path=_output_file_path)
 
         _shared_data = {
@@ -303,8 +282,9 @@ class CDMayaPyJob(d_job.CDPyJob):
         _work = work or _EMPTY_SCENE
         assert isinstance(_work, File)
         ast.parse(py)
-        _py = d_utils.wrap_py(py=py, name=name, work=_work, maya=True)
-        super(CDMayaPyJob, self).__init__(
+        _py = d_utils.wrap_py(
+            py=py, name=name, work=_work, py_file=tmp_py, maya=True)
+        super().__init__(
             name=name, py=_py, stime=stime, priority=priority, tmp_py=tmp_py,
             machine_limit=machine_limit, batch_name=batch_name,
             comment=comment, error_limit=error_limit, wrap_py=False,
@@ -320,7 +300,7 @@ class CDMayaPyJob(d_job.CDPyJob):
         """
         _ver, _ = dcc.to_version()
 
-        _data = super(CDMayaPyJob, self)._build_job_data()
+        _data = super()._build_job_data()
         _data['Build'] = 'None'
         _data['ProjectPath'] = 'None'
         _data['RenderSetupIncludeLights'] = '1'

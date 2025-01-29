@@ -8,7 +8,7 @@ publishing) to pipeline by a dcc.
 
 import logging
 
-from pini import qt, icons, pipe
+from pini import qt, icons, pipe, dcc
 from pini.qt import QtWidgets, QtGui, Qt
 from pini.utils import (
     to_nice, cache_result, str_to_seed, wrap_fn, last, single)
@@ -492,7 +492,18 @@ class CExportHandler:
         Args:
             work (CPWork): work file
         """
-        raise NotImplementedError
+        if (
+                not self.ui or
+                not self.snapshot_elem or
+                not self.snapshot_elem.isChecked()):
+            return
+
+        _LOGGER.info(' - BLAST FRAME %s', work.image)
+        if dcc.NAME == 'maya':
+            from maya_pini.utils import blast_frame
+            blast_frame(work.image, force=True)
+        else:
+            raise NotImplementedError(dcc.NAME)
 
     def _apply_version_up(self, version_up=None):
         """Apply version up setting.

@@ -7,8 +7,8 @@ import os
 import sys
 import time
 
-from pini import pipe
-from pini.utils import strftime, get_user, to_pascal, File
+from pini import pipe, dcc
+from pini.utils import strftime, get_user, to_pascal, File, ints_to_str
 
 from . import d_utils
 
@@ -35,7 +35,7 @@ class CDJob:
             self, name, work=None, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
             dependencies=(), group=None, chunk_size=1, limit_groups=None,
-            scene=None):
+            scene=None, output=None):
         """Constructor.
 
         Args:
@@ -54,6 +54,7 @@ class CDJob:
             limit_groups (str): comma separated limit groups
                 (eg. maya-2023,vray)
             scene (File): render scene (if not work file)
+            output (CPOutput): output for this job
         """
         from pini import farm
 
@@ -65,7 +66,10 @@ class CDJob:
         self.work = work
         self.error_limit = error_limit
         self.batch_name = batch_name
+        if not self.batch_name and work:
+            self.batch_name = work.base
         self.scene = scene or self.work
+        self.output = output
 
         self.chunk_size = chunk_size
 
@@ -156,6 +160,7 @@ class CDJob:
         _dep_str = ','.join(_job.jid for _job in self.dependencies)
         assert 'None' not in _dep_str
 
+        _frames_s = ints_to_str(self.frames)
         _data = {
             'Plugin': self.plugin,
             'Name': self.name,
@@ -175,7 +180,7 @@ class CDJob:
             'JobDependencies': _dep_str,
             'OnJobComplete': 'Nothing',
             'InitialStatus': 'Active',
-            'Frames': str(list(self.frames)).strip('[]').replace(' ', ''),
+            'Frames': _frames_s,
             'ChunkSize': str(self.chunk_size),
             'ExtraInfo0': self.job.name,
         }
@@ -184,6 +189,8 @@ class CDJob:
 
         if self.batch_name:
             _data['BatchName'] = self.batch_name
+        if self.output:
+            _data['OutputDirectory0'] = self.output.to_dir().path
 
         if self.error_limit:
             _data['OverrideJobFailureDetection'] = 'True'
@@ -197,7 +204,13 @@ class CDJob:
         Returns:
             (dict): submission job data
         """
-        raise NotImplementedError
+        # _ver, _ = dcc.to_version(str)
+        _data = {}
+        if dcc.NAME:
+            _data['Version'] = dcc.to_version(str)
+        if self.scene:
+            _data['SceneFile'] = self.scene
+        return _data
 
     def write_submission_files(self):
         """Write job submission files to disk."""

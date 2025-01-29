@@ -383,20 +383,21 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         raise NotImplementedError
 
-    def find_asset(self, match, asset_type=None, catch=False):
+    def find_asset(self, match=None, catch=False, **kwargs):
         """Find an asset in this job.
 
         Args:
             match (str): match by name or label (eg. char.robot)
-            asset_type (str): filter by asset type
             catch (bool): no error if asset not found
 
         Returns:
             (CPAsset): matching asset
         """
         _LOGGER.debug('FIND ASSET %s', match)
-        _assets = self.find_assets(asset_type=asset_type)
+        _assets = self.find_assets(**kwargs)
         _LOGGER.debug(' - FOUND %d ASSETS', len(_assets))
+        if len(_assets) == 1:
+            return single(_assets)
 
         # Match by name
         _name_assets = [_asset for _asset in _assets if _asset.name == match]

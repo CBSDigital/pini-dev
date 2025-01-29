@@ -181,9 +181,9 @@ class SanityCheckUi(qt.CUiDialog):
             for _fmt, _elem in [
                     ('{action_label} ({msg})', self.ui.Continue),
                     (
-                        'Cancel {action} and keep SanityCheck',
+                        'Cancel {action_label} and keep SanityCheck',
                         self.ui.CancelAndKeep),
-                    ('Cancel {action}', self.ui.CancelAndClose),
+                    ('Cancel {action_label}', self.ui.CancelAndClose),
             ]:
                 if self.action.endswith('Publish'):
                     _action_label = 'Publish'
@@ -391,3 +391,9 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _callback__CancelAndClose(self):
         self.delete()
+
+    def _context__Checks(self, menu):
+        _check = self.ui.Checks.selected_data()
+        if _check:
+            menu.add_action(
+                'Edit check code', _check.edit, icon=icons.EDIT)

@@ -381,7 +381,11 @@ class PUBaseUi:
             for _arg_name, _arg_val in _arg_data.items():
                 _set_fn = _set_callbacks.get(_arg_name)
                 if _set_fn:
-                    _set_fn(_arg_val)
+                    try:
+                        _set_fn(_arg_val)
+                    except RuntimeError:
+                        _LOGGER.warning(
+                            'FAILED TO LOAD SETTING %s %s', _arg_name, _arg_val)
 
         # Load sections (collapse)
         for _sect_name, _sect_val in _data.get('sections', {}).items():

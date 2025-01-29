@@ -225,7 +225,12 @@ def _build_pub_data(
     if task:
         _data['task'] = task.to_entry()
     if upstream_files:
-        _data['upstream_published_files'] = upstream_files
+        for _file in upstream_files:
+            if isinstance(_file, dict):
+                _f_data = _file
+            else:
+                raise NotImplementedError(_file)
+            _data['upstream_published_files'] = upstream_files
 
     return _data
 

@@ -2,8 +2,6 @@
 
 import logging
 
-from pini.utils import passes_filter
-
 from . import cp_job_base
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,6 +11,15 @@ class CPJobSG(cp_job_base.CPJobBase):
     """Represents a job in a sg-based pipeline."""
 
     _sg_proj = None
+
+    @property
+    def id_(self):
+        """Obtain shotgrid project id.
+
+        Returns:
+            (int): project id
+        """
+        return self.sg_proj.id_
 
     @property
     def sg_proj(self):
@@ -26,7 +33,7 @@ class CPJobSG(cp_job_base.CPJobBase):
             self._sg_proj = shotgrid.SGC.find_proj(self)
         return self._sg_proj
 
-    def find_assets(self, asset_type=None, filter_=None):
+    def find_assets(self, **kwargs):
         """Find assets in this job.
 
         Args:
@@ -36,18 +43,14 @@ class CPJobSG(cp_job_base.CPJobBase):
         Returns:
             (CPAsset list): matching assets
         """
+        from pini import pipe
         _LOGGER.debug('FIND ASSETS')
-
         _assets = []
         for _asset in self._read_assets():
-            if asset_type and _asset.type_ != asset_type:
-                continue
-            if filter_ and not passes_filter(_asset.path, filter_):
+            if not pipe.passes_filters(_asset, **kwargs):
                 continue
             _assets.append(_asset)
-
         _LOGGER.debug(' - FOUND %d ASSETS', len(_assets))
-
         return _assets
 
     def _read_all_asset_types(self):

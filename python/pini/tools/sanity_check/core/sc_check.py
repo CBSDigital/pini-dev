@@ -1,18 +1,21 @@
 """Tools for managing the base sanity check class."""
 
+# pylint: disable=too-many-public-methods
+
+import inspect
 import logging
 import time
 
 from pini import dcc, pipe
 from pini.tools import error
-from pini.utils import to_nice, strftime, nice_age, check_heart
+from pini.utils import to_nice, strftime, nice_age, check_heart, PyFile
 
 from . import sc_fail
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SCCheck(object):
+class SCCheck:
     """Base class for all sanity checks."""
 
     _label = None
@@ -36,8 +39,7 @@ class SCCheck(object):
 
     def __init__(self):
         """Constructor."""
-        self.disable_key = 'Pini.SanityCheck.{}.Disable'.format(
-            type(self).__name__)
+        self.disable_key = f'Pini.SanityCheck.{type(self).__name__}.Disable'
         self.reset()
 
     @property
@@ -161,6 +163,15 @@ class SCCheck(object):
         self.fails.append(_fail)
 
         return _fail
+
+    def edit(self):
+        """Edit this check's code."""
+        _name = type(self).__name__
+        _LOGGER.info('EDIT %s %s', self, _name)
+        _path = inspect.getfile(self.run)
+        _LOGGER.info(' - PATH %s', _path)
+        _check = PyFile(_path).find_class(_name)
+        _check.edit()
 
     def execute(self, catch=True, update_ui=None):
         """Execute this check.
@@ -308,7 +319,8 @@ class SCCheck(object):
             text (str): text to log
         """
         _text = text % args
-        self.log += '{} {}\n'.format(strftime('[%H:%M:%S]'), _text)
+        _t_stamp = strftime('[%H:%M:%S]')
+        self.log += f'{_t_stamp} {_text}\n'
 
     def __eq__(self, other):
         return self.name == other.name
@@ -317,7 +329,8 @@ class SCCheck(object):
         return self.sort_key < other.sort_key
 
     def __repr__(self):
-        return '<SCCheck:{}>'.format(type(self).__name__.strip('_'))
+        _type = type(self).__name__.strip('_')
+        return f'<SCCheck:{_type}>'
 
 
 class SCPipeCheck(SCCheck):
@@ -334,7 +347,7 @@ class SCPipeCheck(SCCheck):
         self.write_log('Found cache %s age=%s', pipe.CACHE, nice_age(_age))
         if _age > _max_age*60:
             self.add_fail(
-                'Cache is more than {:d} minutes old'.format(_max_age),
+                f'Cache is more than {_max_age:d} minutes old',
                 fix=pipe.CACHE.reset)
             return False
         return True
@@ -347,7 +360,7 @@ class SCPipeCheck(SCCheck):
         raise NotImplementedError
 
 
-class _ProgressUpdater(object):
+class _ProgressUpdater:
     """Iterator for updating check progress."""
 
     def __init__(self, items, check):

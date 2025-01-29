@@ -133,6 +133,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
         # Build pixmap
         _frame = self.to_frame_file(frame=frame)
+        _LOGGER.debug(' - FRAME %s', _frame)
+        assert _frame.exists()
         if _frame.extn in qt.PIXMAP_EXTNS:
             _pix = qt.CPixmap(_frame)
         elif _frame.extn in ('exr', ):
@@ -464,8 +466,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         _frame = frame
         if not _frame:
-            _start, _end = self.to_range()
-            _frame = int((_start+_end)/2)
+            _frames = self.to_frames()
+            _frame = _frames[int(len(_frames)/2)]
         return File(self[_frame])
 
     def to_frame_files(self):
@@ -877,17 +879,20 @@ def to_seq(obj, catch=True):
     Returns:
         (Seq): sequence
     """
-    _LOGGER.debug('TO SEQ %s', obj)
-    if isinstance(obj, Seq):
-        return obj
-    if isinstance(obj, str):
-        _seq = norm_path(obj)
+    _obj = obj
+    _LOGGER.debug('TO SEQ %s', _obj)
+    if isinstance(_obj, Seq):
+        return _obj
+    if isinstance(_obj, Path):
+        _obj = _obj.path
+    if isinstance(_obj, str):
+        _seq = norm_path(_obj)
         for _token in ('.####.', '.$F4.'):
             _seq = _seq.replace(_token, '.%04d.')
         _LOGGER.debug(' - STR %s', _seq)
         if '.%04d.' in _seq:
             return Seq(_seq)
-        _seq = file_to_seq(obj, catch=True)
+        _seq = file_to_seq(_obj, catch=True)
         if _seq:
             return _seq
     if catch:

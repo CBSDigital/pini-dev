@@ -3,8 +3,9 @@
 from pini import dcc
 
 from .d_farm import CDFarm
-from .d_job import CDPyJob, CDCmdlineJob
-from .d_utils import setup_deadline_submit, flush_old_submissions
+from .d_job import CDPyJob, CDCmdlineJob, CDJob
+from .d_utils import (
+    setup_deadline_submit, flush_old_submissions, write_deadline_data)
 
 if dcc.NAME == 'maya':
     from .d_maya_job import CDMayaPyJob
