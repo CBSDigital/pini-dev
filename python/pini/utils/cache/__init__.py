@@ -5,4 +5,4 @@ from .uc_memory import (
     obtain_results_cache)
 from .uc_disk import (
     get_file_cacher, cache_method_to_file, get_method_to_file_cacher)
-from .uc_tools import cache_property, build_cache_fmt
+from .uc_tools import cache_property, build_cache_fmt, CacheOutdatedError

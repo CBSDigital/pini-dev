@@ -1,3 +1,15 @@
+## [6.38.1] - Wed 2025-01-29 13:12
+### Summary
+ - Pini Helper:
+    - bugfix error on launch due to bad data written to outputs cache (lcayo/farnold),
+### Updated
+ - pini.utils.CacheOutdatedError added,
+ - pini.pipe.CPJob.cfg_name added property,
+ - pini.pipe.CPEntitySG._read_outputs raise CacheOutdatedError on unmatched template,
+ - pini.pipe.CPEntitySG._read_outputs added force flag,
+ - pini.pipe.cache.CCPEntitySG._read_outputs force recache on outdated cache data,
+
+
 ## [6.38.0] - Wed 2025-01-29 10:38
 ### Summary
  - Pini Helper:

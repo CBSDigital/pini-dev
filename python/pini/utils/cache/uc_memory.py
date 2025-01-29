@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 _RESULTS = {}
 
 
-class _Result(object):
+class _Result:
     """Represents the result of a cacheable function."""
 
     def __init__(self, value):
@@ -173,11 +173,11 @@ def _get_args_key(func, args, kwargs, use_args=None):
         elif _arg_name in kwargs:
             _val = kwargs[_arg_name]
         elif abs(_arg_idx) > len(_defaults):
-            print('ARGS', _arg_spec.args, _args)
-            print('DEFAULTS', _arg_spec.defaults, _defaults)
+            _LOGGER.info('ARGS %s %s', _arg_spec.args, _args)
+            _LOGGER.info('DEFAULTS %s %s', _arg_spec.defaults, _defaults)
             raise TypeError(
-                'It looks like some of the required args are '
-                'missing {}'.format(func.__name__))
+                f'It looks like some of the required args are '
+                f'missing {func.__name__}')
         else:
             _val = _defaults[_arg_idx]
 

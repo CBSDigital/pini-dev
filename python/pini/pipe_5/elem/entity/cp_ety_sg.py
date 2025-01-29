@@ -3,7 +3,8 @@
 import collections
 import logging
 
-from pini.utils import last
+from pini.utils import last, CacheOutdatedError
+
 from . import cp_ety_base
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,8 +47,11 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         """
         return self.job.sg_proj
 
-    def _read_outputs(self):
+    def _read_outputs(self, force=False):
         """Read outputs in this entity.
+
+        Args:
+            force (bool): force update shotgrid cache
 
         Returns:
             (CPOutput list): outputs
@@ -58,10 +62,20 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         # Build output objects
         _outs = {}  # Accomodate many pubs with same path (just use latest)
         for _sg_pub_file in self.sg_entity.find_pub_files(
-                validated=True, omitted=False):
+                validated=True, omitted=False, force=force):
             _LOGGER.debug(' - PUB FILE %s', _sg_pub_file)
             assert _sg_pub_file.validated
-            _tmpl = self.job.find_template_by_pattern(_sg_pub_file.template)
+
+            # Find template for this output
+            _tmpl = self.job.find_template_by_pattern(
+                _sg_pub_file.template, catch=True)
+            if not _tmpl:
+                _LOGGER.error(
+                    'FAILED TO MATCH TEMPLATE %s', _sg_pub_file.template)
+                _LOGGER.error('JOB CFG NAME %s', self.job.cfg_name)
+                raise CacheOutdatedError(self)
+
+            # Build output
             _LOGGER.debug('   - TMPL %s', _sg_pub_file.template)
             _out = pipe.to_output(
                 _sg_pub_file.path, template=_tmpl, entity=self)
@@ -69,6 +83,7 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             _out.status = _sg_pub_file.status
             _LOGGER.debug('   - OUT %s', _out)
             _outs[_out.path] = _out
+
         _outs = sorted(_outs.values())
 
         # Read + apply latest

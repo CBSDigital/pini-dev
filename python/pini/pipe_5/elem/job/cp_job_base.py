@@ -40,6 +40,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
     This is the top-level folder for any film/commercial.
     """
 
+    _cfg_name = None
+
     def __init__(self, path):
         """Constructor.
 
@@ -64,6 +66,17 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         _file = self.to_file(_path) if not is_abs(_path) else File(_path)
         _file = File(map_path(_file.path))
         return _file
+
+    @property
+    def cfg_name(self):
+        """Obtain this job's config name.
+
+        Returns:
+            (str): config name (eg. Ursaring)
+        """
+        if not self._cfg_name:
+            self._cfg_name = self.get_cfg()['name']
+        return self._cfg_name
 
     @cache_on_obj
     def get_cfg(self, force=False):
@@ -197,17 +210,20 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
                 f'Failed to find template "{type_}" in {self.name}')
 
     @cache_result
-    def find_template_by_pattern(self, pattern):
+    def find_template_by_pattern(self, pattern, catch=False):
         """Find template by its pattern.
 
         Args:
             pattern (str): pattern to match
+            catch (bool): no error if no matching pattern found
 
         Returns:
             (CPTemplate): matching template
         """
         _tmpl = single(self.find_templates(pattern=pattern), catch=True)
         if not _tmpl:
+            if catch:
+                return None
             raise ValueError(f'Failed to match pattern {pattern}')
         return _tmpl
 

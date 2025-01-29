@@ -6,7 +6,11 @@ import sys
 _LOGGER = logging.getLogger(__name__)
 
 
-class _CacheProperty(object):
+class CacheOutdatedError(RuntimeError):
+    """Used to signify a cache being out of date."""
+
+
+class _CacheProperty:
     """Acts like a property but the result is stored."""
 
     def __init__(self, func):
@@ -87,25 +91,24 @@ def build_cache_fmt(
     else:
         raise ValueError(mode)
 
-    # Build format
     _path = to_str(path)
     _path = _path.replace('{', '_')
     _path = _path.replace('}', '_')
     _path = Path(_path)
+
+    # Build format
+    _dir_s = _path.dir.replace(':', '')
+    _py_ver_s = f'_py{sys.version_info.major:d}' if py_ver else ''
+    _dcc_s = f'_{dcc.NAME}' if dcc_ else ''
+    _platform_s = f'_{sys.platform}' if platform else ''
     _fmt = (
-        '{root}/{namespace}/{tool}/{dir}/'
-        '{base}{py_ver}{dcc}{platform}_{{func}}.{extn}'.format(
-            root=_root, dir=_path.dir.replace(':', ''),
-            base=_path.base, tool=tool, namespace=namespace,
-            py_ver='_py{:d}'.format(sys.version_info.major) if py_ver else '',
-            dcc='_{}'.format(dcc.NAME) if dcc_ else '',
-            platform='_{}'.format(sys.platform) if platform else '',
-            extn=extn))
+        f'{_root}/{namespace}/{tool}/{_dir_s}/'
+        f'{_path.base}{_py_ver_s}{_dcc_s}{_platform_s}_{{func}}.{extn}')
 
     # Apply path limit check
     if check_path_limit and len(_fmt) > 250:
         _LOGGER.info(' - CACHE FMT %d %s', len(_fmt), _fmt)
         raise RuntimeError(
-            'Cache format too long ({:d} chars)'.format(len(_fmt)))
+            f'Cache format too long ({len(_fmt):d} chars)')
 
     return abs_path(_fmt)

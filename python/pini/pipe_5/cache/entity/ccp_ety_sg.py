@@ -2,7 +2,7 @@
 
 import logging
 
-from pini.utils import single
+from pini.utils import single, CacheOutdatedError
 
 from ..ccp_utils import pipe_cache_on_obj, pipe_cache_to_file
 from . import ccp_ety_base
@@ -65,9 +65,15 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             _LOGGER.debug(' - UPDATING SGC')
             self.sg_entity.find_pub_files(force=True)
 
-        # Rebuild outputs into cacheable objects
+        # Read outputs
         _out_cs = []
-        _out_us = super()._read_outputs()
+        try:
+            _out_us = super()._read_outputs()
+        except CacheOutdatedError:
+            _LOGGER.error('FORCE REBUILD OUTPUTS CACHE %s', self)
+            _out_us = super()._read_outputs(force=True)  # pylint: disable=unexpected-keyword-arg
+
+        # Rebuild outputs into cacheable objects
         for _out_u in _out_us:
 
             _LOGGER.debug('   - OUT %s', _out_u)
