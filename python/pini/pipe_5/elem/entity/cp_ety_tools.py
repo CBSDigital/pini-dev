@@ -4,7 +4,7 @@ import logging
 import re
 
 from pini import dcc
-from pini.utils import to_str
+from pini.utils import to_str, norm_path
 
 from ...cp_utils import map_path
 
@@ -56,11 +56,11 @@ def recent_entities():
     return _etys
 
 
-def to_entity(path, job=None, catch=False):
+def to_entity(match, job=None, catch=False):
     """Map the given path to an entity.
 
     Args:
-        path (str): path to map
+        match (str): item to match to entity
         job (CPJob): force parent job (to facilitate caching)
         catch (bool): no error if no entity found
 
@@ -68,18 +68,25 @@ def to_entity(path, job=None, catch=False):
         (CPAsset|CPShot): asset/shot object
     """
     from pini import pipe
-    _LOGGER.debug('TO ENTITY %s', path)
+    _LOGGER.debug('TO ENTITY %s', match)
 
-    if isinstance(path, (pipe.CPAsset, pipe.CPShot)):
-        return path
+    if isinstance(match, (pipe.CPAsset, pipe.CPShot)):
+        return match
 
     # Treat as job/shot label
-    if isinstance(path, str) and path.count('/') == 1:
-        _job_s, _ety_s = path.split('/')
+    if isinstance(match, str) and match.count('/') == 1:
+        _job_s, _ety_s = match.split('/')
         _job = job or pipe.find_job(_job_s)
         return _job.find_entity(_ety_s)
 
-    _path = to_str(path)
+    # Treat as entity name
+    if isinstance(match, str) and not norm_path(match).count('/'):
+        _job = job or pipe.cur_job()
+        if _job:
+            return _job.find_entity(match, catch=catch)
+
+    # Treat as path
+    _path = to_str(match)
     _path = map_path(_path)
     _LOGGER.debug(' - MAPPED %s', _path)
 
@@ -97,4 +104,4 @@ def to_entity(path, job=None, catch=False):
 
     if catch:
         return None
-    raise ValueError(path)
+    raise ValueError(match)

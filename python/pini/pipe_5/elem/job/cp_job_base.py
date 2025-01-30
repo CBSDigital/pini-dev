@@ -634,11 +634,12 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         raise NotImplementedError
 
-    def find_entity(self, match):
+    def find_entity(self, match, catch=False):
         """Find entity in this job.
 
         Args:
             match (str): match by label (eg. mercury/rnd010)
+            catch (bool): no error if no entity found
 
         Returns:
             (CPEntity): matching entity
@@ -648,13 +649,14 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         if isinstance(match, str):
             if '.' in match:
-                return self.find_asset(match)
-            return self.find_shot(match)
+                return self.find_asset(match, catch=catch)
+            return self.find_shot(match, catch=catch)
 
         if isinstance(match, (pipe.CPAsset, pipe.CPShot)):
             _etys = self.find_entities()
             _LOGGER.debug(' - FOUND %d ETYS %s', len(_etys), _etys)
-            return single(_ety for _ety in _etys if _ety == match)
+            return single(
+                [_ety for _ety in _etys if _ety == match], catch=catch)
 
         raise NotImplementedError(match)
 

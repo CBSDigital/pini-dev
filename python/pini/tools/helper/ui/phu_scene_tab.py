@@ -755,7 +755,16 @@ class PHSceneTab:
         raise NotImplementedError
 
     @usage.get_tracker(name='PiniHelper.RefOutputs')
-    def _callback__SApply(self, force=False):
+    def _callback__SApply(self):
+        self.apply_updates()
+
+    def apply_updates(self, msg=None, force=False):
+        """Apply staged updates.
+
+        Args:
+            msg (str): override apply message
+            force (bool): apply updates without confirmation
+        """
 
         # Build list of updates
         _updates = []
@@ -776,9 +785,9 @@ class PHSceneTab:
 
         # Execute updates
         if not force:
-            qt.ok_cancel(
-                f'Apply {len(_updates):d} scene update{plural(_updates)}?',
-                parent=self, icon=icons.find('Gear'))
+            _msg = msg or (
+                f'Apply {len(_updates):d} scene update{plural(_updates)}?')
+            qt.ok_cancel(_msg, parent=self, icon=icons.find('Gear'))
         for _update in qt.progress_bar(
                 _updates, 'Applying {:d} update{}', parent=self):
             _update()

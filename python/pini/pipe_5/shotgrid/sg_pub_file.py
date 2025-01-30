@@ -321,9 +321,11 @@ def _obt_scene_entry(output, user, task, notes):
     if not _scene:
         return None
 
-    return create_pub_file_from_path(
+    _pub = create_pub_file_from_path(
         _scene, job=output.job, entity=output.entity, user=user, task=task,
         notes=notes, ver_n=output.ver_n, name=_name)
+    _LOGGER.info(' - SCENE PUB %s', _pub)
+    return _pub
 
 
 @get_result_cacher(use_args=['path'])

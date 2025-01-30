@@ -43,7 +43,8 @@ class _CMayaNodeRef(prm_base.CMayaPipeRef):
         """
         if not force:
             raise NotImplementedError
-        cmds.delete(self.top_node)
+        if cmds.objExists(self.top_node):
+            cmds.delete(self.top_node)
 
     def update(self, out):
         """Update this node to a new output.

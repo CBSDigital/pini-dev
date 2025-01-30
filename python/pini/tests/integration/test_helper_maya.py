@@ -272,9 +272,10 @@ def _test_anim_workflow(progress, force, show_ctx):
 
     # Bring in rig
     progress.set_pc(20)
+    _helper.ui.SReset.click()
     _helper.ui.SRefresh.click()
     _helper.ui.SAdd.click()
-    _helper._callback__SApply(force=True)
+    _helper.apply_updates(force=True)
 
     # Test scene ref ctx
     _rig_ref = single(_helper.ui.SSceneRefs.all_data())
@@ -355,7 +356,7 @@ def _test_lighting_workflow(progress, force, show_ctx):
     _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()
     assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
-    _helper._callback__SApply(force=True)
+    _helper.apply_updates(force=True)
 
     # Test lookdev publish ctx
     progress.set_pc(70)

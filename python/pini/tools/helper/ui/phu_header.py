@@ -345,7 +345,8 @@ class PHHeader:
             menu.add_separator()
 
         # Add copied shot
-        _c_ety = pipe.to_entity(QtGui.QClipboard().text(), catch=True)
+        _c_ety = pipe.to_entity(
+            QtGui.QClipboard().text(), job=self.job, catch=True)
         if not _c_ety:
             menu.add_label('No copied entity', icon=icons.COPY)
         else:

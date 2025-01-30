@@ -153,7 +153,7 @@ class TestHelper(unittest.TestCase):
                 _helper.ui.SAdd.click()
                 assert _helper._staged_imports
                 _n_refs = len(dcc.find_pipe_refs())
-                _helper._callback__SApply(force=True)
+                _helper.apply_updates(force=True)
                 assert _n_refs != len(dcc.find_pipe_refs())
             _elem.select_text('Auto')
 
@@ -166,7 +166,7 @@ class TestHelper(unittest.TestCase):
         _helper.ui.SAdd.click()
         assert _helper._staged_imports
         _n_refs = len(dcc.find_pipe_refs())
-        _helper._callback__SApply(force=True)
+        _helper.apply_updates(force=True)
         assert _n_refs != len(dcc.find_pipe_refs())
 
     def test_save_new_tag(self):

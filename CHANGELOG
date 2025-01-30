@@ -1,3 +1,16 @@
+## [6.39.0] - Thu 2025-01-30 07:34
+### Summary
+ - Pini Helper:
+    - asset/shot label right-click jump to match copied shot name,
+### Updated
+ - pini.dcc.pipe_ref.CMayaNodeRef.delete catch error on node already deleted,
+ - pini.pipe.CPJob.find_entity added catch,
+ - pini.pipe.to_entity adding handling for cur job ety name,
+ - pini.pipe.to_entity renamed arg path -> match,
+ - pini.tools.helper ety label ctx pass job to match copied shot name,
+ - pini.tools.helper.apply_updates added public func,
+
+
 ## [6.38.1] - Wed 2025-01-29 13:12
 ### Summary
  - Pini Helper:
