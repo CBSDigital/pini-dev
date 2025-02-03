@@ -9,7 +9,7 @@ from ...cp_utils import map_path
 
 _LOGGER = logging.getLogger(__name__)
 
-_RECENT_WORK_YAML = HOME.to_file(f'.pini/{dcc.NAME}_recent_work.yml')
+RECENT_WORK_YAML = HOME.to_file(f'.pini/{dcc.NAME}_recent_work.yml')
 
 
 def add_recent_work(work):
@@ -30,7 +30,7 @@ def add_recent_work(work):
         _paths.append(_path)
     _paths = _paths[:20]
 
-    _RECENT_WORK_YAML.write_yml(_paths, force=True)
+    RECENT_WORK_YAML.write_yml(_paths, force=True)
 
 
 def cur_work(work_dir=None, catch=True):
@@ -83,10 +83,10 @@ def recent_work():
     Returns:
         (CPWork list): recent work files
     """
-    _LOGGER.debug('RECENT WORK %s', _RECENT_WORK_YAML.path)
+    _LOGGER.debug('RECENT WORK %s', RECENT_WORK_YAML.path)
     _LOGGER.debug(' - WORK %s', pipe.CPWork)
 
-    _paths = _RECENT_WORK_YAML.read_yml(catch=True) or []
+    _paths = RECENT_WORK_YAML.read_yml(catch=True) or []
     _works = []
     for _path in _paths:
         _LOGGER.debug(' - ADD PATH %s', _path)

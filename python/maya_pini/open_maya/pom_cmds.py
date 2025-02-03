@@ -90,6 +90,9 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
         elif _name in ['circle']:
             _tfm, _ = _result
             _result = pom.CNurbsCurve(_tfm)
+        elif _name in ['cluster']:
+            _, _tfm = _result
+            _result = pom.CNurbsCurve(_tfm)
         elif _name in ['curve']:
             _result = pom.CNurbsCurve(_result)
         elif _name == 'imagePlane':
@@ -98,9 +101,10 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
         elif _name in ['createNode', 'pathAnimation', 'shadingNode']:
             _result = pom.CNode(_result)
         elif _name in [
+                'aimConstraint',
+                'orientConstraint',
                 'parentConstraint',
                 'pointConstraint',
-                'orientConstraint',
                 'scaleConstraint',
                 'spaceLocator',
         ]:
@@ -123,7 +127,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
             _result = _result or []
         elif _name in [
                 'polySphere', 'polyCube', 'polyCylinder', 'polyPyramid',
-                'polyPlane',
+                'polyPlane', 'polyDisc',
         ]:
             _tfm, _ = _result
             _result = pom.CMesh(_tfm)

@@ -205,7 +205,7 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
             print('DEADLINE INIT PY:\n'+_py)
 
 
-def wrap_py(py, name, py_file, work=None, maya=False):
+def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):
     """Wrap mayapy code to be executed on deadline.
 
     Args:
@@ -214,6 +214,8 @@ def wrap_py(py, name, py_file, work=None, maya=False):
         py_file (PyFile): py file being written to
         work (File): work file
         maya (bool): apply maya init to wrapper
+        print_traceback (bool): print formatted traceback (not needed
+            generally - deadline/shell already prints traceback)
 
     Returns:
         (str): wrapped python
@@ -252,9 +254,10 @@ def wrap_py(py, name, py_file, work=None, maya=False):
             '']
 
     if _init_py:
+        _code = '\n    '.join(_init_py.split('\n'))
         _lines += [
             '    # Run $PINI_DEADLINE_INIT_PY code',
-            '    {}'.format('\n    '.join(_init_py.split('\n'))),
+            f'    {_code}',
             '']
     _lines += [
         '    # Setup loggging',
@@ -272,11 +275,12 @@ def wrap_py(py, name, py_file, work=None, maya=False):
     _lines += ['']
 
     # Add task py
+    _task_py = '\n    '.join(py.split('\n'))
     _lines += [
         'def _exec_task():',
         '    """Execute this task."""',
         '',
-        '    {}'.format('\n    '.join(py.split('\n'))),
+        f'    {_task_py}',
         '', '']
 
     # Add main
@@ -290,9 +294,11 @@ def wrap_py(py, name, py_file, work=None, maya=False):
         '    try:',
         '        _exec_task()',
         '    except Exception as _exc:',
-        '        _LOGGER.info(" - ERRORED %s", _exc)',
-        '        _err = error.PEError()',
-        '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())']
+        '        _LOGGER.info(" - ERRORED %s", _exc)']
+    if print_traceback:
+        _lines += [
+            '        _err = error.PEError()',
+            '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())']
     if maya:
         _lines += ['        cmds.quit(exitCode=1, force=True)']
     else:

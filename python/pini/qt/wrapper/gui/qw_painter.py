@@ -78,8 +78,7 @@ class CPainter(QtGui.QPainter):
 
         # Check args
         if not isinstance(text, str):
-            raise TypeError("Bad text type {} ({})".format(
-                text, type(text).__name__))
+            raise TypeError(f"Bad text type {text} ({type(text).__name__})")
         if size is not None and not int(size):
             return None
 
@@ -100,7 +99,7 @@ class CPainter(QtGui.QPainter):
             _align, _rect = self._draw_text_get_rect(pos=_pos, anchor=anchor)
 
         # Setup font
-        _font = font or QtGui.QFont()
+        _font = qt.to_font(font)
         if size:
             _font.setPointSizeF(size)
         self.setFont(_font)
@@ -156,7 +155,7 @@ class CPainter(QtGui.QPainter):
             _rect = QtCore.QRect(0, _y, _x+1, _h-_y+1)
             _align = Qt.AlignRight | Qt.AlignTop
         else:
-            raise ValueError('Unhandled anchor: %s' % anchor)
+            raise ValueError(f'Unhandled anchor: {anchor}')
 
         return _align, _rect
 

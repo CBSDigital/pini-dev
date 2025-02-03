@@ -1,3 +1,27 @@
+## [6.40.0] - Mon 2025-02-03 12:02
+### Summary
+ - Pini Helper:
+    - added take snapshot option in jump to current work right-click menu,
+    - maya render better error on fails due iff render (nwray),
+### Updated
+ - pini.utils.Image.convert better error on iff fail,
+ - pini.utils.to_pascal ignore apostrophe,
+ - pini.dcc.take_snapshot added for maya/hou,
+ - pini.pipe.RECENT_WORK_YAML made public,
+ - pini.pipe.shotgrid.find added path arg,
+ - pini.pipe.shotgrid.create_pub_file_from_path apply abs_path,
+ - pini.pipe.shotgrid.create_pub_file_from_path use pipe cacher for scene file to fix tmp shot register error,
+ - pini.qt.to_font added handling for QFont + font name,
+ - pini.qt.CPainter.draw_text use to_font,
+ - pini.qt.CDockableMixin.apply_docking raise MixinError on fail to dock,
+ - pini.farm.deadline.wrap_py disable print traceback to avoid duplicate,
+ - pini.tools.helper added take snapshot,
+ - pini.tools.helper scene/outputs added handling for plate with task,
+ - pini.tools.error avoid duplicate errors in hou,
+ - maya_pini.open_maya.CMDS added cluster/aimConstraint/polyDisc handling,
+ - maya_pini.open_maya.CBaseTransform.aim_constraint added,
+
+
 ## [6.39.0] - Thu 2025-01-30 07:34
 ### Summary
  - Pini Helper:

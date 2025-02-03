@@ -70,13 +70,14 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     from . import e_error, e_dialog
 
+    _LOGGER.debug('HANDLE EXCEPTION %s', exc)
     _error = e_error.PEError()
     _show_traceback = False
 
     if isinstance(exc, qt.DialogCancelled):
-        _LOGGER.info('DIALOG CANCELLED')
+        _LOGGER.info(' - DIALOG CANCELLED')
     elif isinstance(exc, StopIteration):
-        _LOGGER.info('STOP ITERATION')
+        _LOGGER.info(' - STOP ITERATION')
 
     elif isinstance(exc, error.HandledError):
         _title = exc.title or 'Error'
@@ -87,24 +88,26 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
         File(exc.file_).edit(line_n=exc.line_n)
 
     elif isinstance(exc, SyntaxError):
-        _LOGGER.info('SYNTAX ERROR %s', exc)
+        _LOGGER.info(' - SYNTAX ERROR %s', exc)
         _file = File(abs_path(exc.filename))
         _line_n = int(str(exc).split()[-1].strip(')'))
         _LOGGER.info(' - LINE N %d', _line_n)
         _file.edit(line_n=_line_n)
 
     else:
+        _LOGGER.debug(' - BASIC ERROR')
         error.TRIGGERED = True
         e_dialog.launch_ui(_error, parent=parent)
         _show_traceback = True
 
+    _LOGGER.debug(' - SHOW TRACEBACK %d', _show_traceback)
     if _show_traceback:
         print(_error.to_text())
 
     # Finalise error
     if supress_error:
         return
-    if qt_safe or dcc.NAME != 'maya':
+    if qt_safe or dcc.NAME not in ('maya', 'hou'):
         raise exc
     sys.exit()
 

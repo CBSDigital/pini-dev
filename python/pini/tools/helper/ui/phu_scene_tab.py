@@ -269,8 +269,6 @@ class PHSceneTab:
         self.ui.SOutputTask.set_items(
             _tasks, data=_data, emit=False, select=_sel)
         self.ui.SOutputTask.setEnabled(bool(_tasks))
-        for _elem in [self.ui.SOutputTask, self.ui.SOutputTaskLabel]:
-            _elem.setVisible(_type != 'plate')
         self.ui.SOutputTask.setEnabled(len(_tasks) > 1)
         if not _sel:
             self.settings.apply_to_widget(self.ui.SOutputTask, emit=False)

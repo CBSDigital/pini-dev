@@ -55,7 +55,7 @@ class Dir(up_path.Path):
             _exe = 'caja'
         else:
             raise RuntimeError('No file browser app found')
-        os.system('{} "{}" &'.format(_exe, self.path))
+        os.system(f'{_exe} "{self.path}" &')
 
     def contains(self, path):
         """Test whether this dir contains the given path.
@@ -102,8 +102,7 @@ class Dir(up_path.Path):
             from pini import qt, icons
             _icon = icons.find('Sponge')
             qt.ok_cancel(
-                msg='{} directory and contents?\n\n{}'.format(
-                    wording, self.path),
+                msg=f'{wording} directory and contents?\n\n{self.path}',
                 icon=_icon, title=wording)
         shutil.rmtree(self.path)
 
@@ -188,8 +187,7 @@ class Dir(up_path.Path):
 
         _outside = not self.contains(path)
         if _outside and not allow_outside:
-            raise ValueError('Not in {} dir - {}'.format(
-                self.path, _path))
+            raise ValueError(f'Not in {self.path} dir - {_path}')
 
         # Calculate relative path within this dir
         if not _outside:
@@ -216,7 +214,8 @@ class Dir(up_path.Path):
         _LOGGER.debug(' - TO THIS %s', _to_this)
         _to_other = _shared.rel_path(_path)
         _LOGGER.debug(' - TO OTHER %s', _to_other)
-        return '{}{}'.format('../' * (_to_this.count('/')+1), _to_other)
+        _dir_s = '../' * (_to_this.count('/')+1)
+        return f'{_dir_s}{_to_other}'
 
     def _read_size(self, catch=False):
         """Read size of this directory.
@@ -307,9 +306,9 @@ class Dir(up_path.Path):
         if not force:
             _msg = 'Confirm execute sync?\n'
             if _to_sync:
-                _msg += '\n - {:d} files to sync'.format(len(_to_sync))
+                _msg += f'\n - {len(_to_sync):d} files to sync'
             if _to_delete:
-                _msg += '\n - {:d} files to remove'.format(len(_to_delete))
+                _msg += f'\n - {len(_to_delete):d} files to remove'
             qt.ok_cancel(_msg, title='Execute Sync')
 
         # Execute sync

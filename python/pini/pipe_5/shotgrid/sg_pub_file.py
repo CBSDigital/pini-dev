@@ -5,15 +5,14 @@ import operator
 import platform
 
 from pini import pipe
+from pini.pipe import cache
 from pini.tools import release
 from pini.utils import (
-    Seq, Video, TMP, Image, single, File, get_result_cacher, to_str)
+    Seq, Video, TMP, Image, single, File, to_str, abs_path)
 
 from . import sg_handler
 
 _LOGGER = logging.getLogger(__name__)
-_PUB_FILE_FIELDS = [
-    'path', 'published_file_type', 'name', 'path_cache', 'id']
 _TMP_THUMB = TMP.to_file('PiniTmp/thumb_tmp.jpg')
 
 
@@ -328,7 +327,7 @@ def _obt_scene_entry(output, user, task, notes):
     return _pub
 
 
-@get_result_cacher(use_args=['path'])
+@cache.get_pipe_result_cacher(use_args=['path'])
 def create_pub_file_from_path(
         path, job=None, entity=None, task=None, user=None, ver_n=None,
         type_=None, notes=None, name=None, thumb=None):
@@ -351,15 +350,15 @@ def create_pub_file_from_path(
     """
     from pini.pipe import shotgrid
     assert isinstance(path, str)
+    _path = abs_path(path)
 
     # Try to find existing
-    _pub = shotgrid.find_one(
-        'PublishedFile', entity=entity, job=job, path=path)
+    _pub = shotgrid.find_one('PublishedFile', path=_path)
 
     # Create entry if required
     if not _pub:
-        _LOGGER.info(' - CREATE PublishedFile %s', path)
-        _file = File(path)
+        _LOGGER.info(' - CREATE PublishedFile %s', _path)
+        _file = File(_path)
         _data = _build_pub_data(
             _file, name=name, job=job, entity=entity, type_=type_,
             user=user, task=task, ver_n=ver_n, notes=notes)

@@ -499,11 +499,7 @@ class CExportHandler:
             return
 
         _LOGGER.info(' - BLAST FRAME %s', work.image)
-        if dcc.NAME == 'maya':
-            from maya_pini.utils import blast_frame
-            blast_frame(work.image, force=True)
-        else:
-            raise NotImplementedError(dcc.NAME)
+        dcc.take_snapshot(work.image)
 
     def _apply_version_up(self, version_up=None):
         """Apply version up setting.

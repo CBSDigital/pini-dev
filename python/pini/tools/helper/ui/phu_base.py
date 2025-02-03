@@ -144,16 +144,6 @@ class PHUiBase(
         _LOGGER.debug('START TIMER')
         self.timer = self.startTimer(5000)
 
-    def _callback__JumpToCurrent(self):
-        _file = dcc.cur_file()
-        if not _file:
-            qt.notify(
-                'Unable to jump to current scene.\n\nThis scene has not been '
-                'saved yet.', title='Warning', icon=icons.find('Magnet'),
-                parent=self)
-            return
-        self.jump_to(_file)
-
     def _set_target(self, target):
         """Set target project in the ui.
 

@@ -5,6 +5,7 @@ import re
 
 _LOGGER = logging.getLogger(__name__)
 _SPLIT_RX = r'[ \-_\[\]\n:\(\)]'
+_IGNORE_CHRS = "'"
 
 
 def add_indent(text, indent='    '):
@@ -214,7 +215,10 @@ def to_pascal(text):
         (str): converted text
     """
     _LOGGER.debug('TO PASCAL %s', text)
-    _tokens = [_token for _token in re.split(_SPLIT_RX, text) if _token]
+    _text = text
+    for _chr in _IGNORE_CHRS:
+        _text = _text.replace(_chr, '')
+    _tokens = [_token for _token in re.split(_SPLIT_RX, _text) if _token]
     _LOGGER.debug(' - TOKENS %s', _tokens)
     _result = ''.join([_token[0].upper()+_token[1:] for _token in _tokens])
     _LOGGER.debug(' - RESULT %s', _result)

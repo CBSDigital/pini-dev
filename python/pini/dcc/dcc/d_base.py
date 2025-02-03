@@ -607,6 +607,14 @@ class BaseDCC:
         """
         raise NotImplementedError
 
+    def take_snapshot(self, file_):
+        """Take snapshot of the current scene.
+
+        Args:
+            file_ (str): path to save image to
+        """
+        raise NotImplementedError
+
     def to_node_name(self, node):
         """Obtain the name of the given node.
 

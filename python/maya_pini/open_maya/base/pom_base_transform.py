@@ -283,6 +283,20 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             raise ValueError(args)
         cmds.move(*_args, relative=True)
 
+    def aim_constraint(self, target, maintain_offset=False):
+        """Build an aim constraint from this node to the given target.
+
+        Args:
+            target (CTransform): node to constrain
+            maintain_offset (bool): maintain offset
+
+        Returns:
+            (CTransform): constraint
+        """
+        from maya_pini import open_maya as pom
+        return pom.CMDS.aimConstraint(
+            self, target, maintainOffset=maintain_offset)
+
     def orient_constraint(self, target, maintain_offset=False):
         """Build an orient constraint from this node to the given target.
 

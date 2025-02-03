@@ -360,18 +360,20 @@ def to_col(*args):
     raise ValueError(args)
 
 
-def to_font(name):
-    """Obtain a font of the given name.
+def to_font(obj):
+    """Obtain a font from the given object.
 
     Args:
-        name (str): font name (eg. Arial)
+        obj (any): font name (eg. Arial) or font
 
     Returns:
         (QFont|None): font (if available)
     """
-    if name not in QtGui.QFontDatabase().families():
-        return None
-    return QtGui.QFont(name)
+    if isinstance(obj, QtGui.QFont):
+        return obj
+    if obj not in QtGui.QFontDatabase().families():
+        return QtGui.QFont()
+    return QtGui.QFont(obj)
 
 
 def to_icon(arg):

@@ -37,6 +37,10 @@ class Image(File):
             _convert_file_ffmpeg(
                 self, _file, colspace=_colspace, size=size,
                 catch=catch, force=force)
+        elif 'iff' in _fmts:
+            _LOGGER.info(' - SRC %s', self.path)
+            _LOGGER.info(' - TRG %s', _file.path)
+            raise RuntimeError('IFF is not supported')
         elif not _fmts - set(qt.PIXMAP_EXTNS):
             _convert_file_qt(self, _file, size=size, force=force)
         else:

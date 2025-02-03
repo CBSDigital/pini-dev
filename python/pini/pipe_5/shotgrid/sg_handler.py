@@ -197,7 +197,7 @@ def _to_filters(filters, job=None, entity=None, id_=None, path=None):
 
 def find(
         entity_type, filters=(), fields=(), fmt='list',
-        job=None, entity=None, id_=None,
+        job=None, entity=None, id_=None, path=None,
         limit=0, order=None):
     """Wrapper for Shotgrid.find command.
 
@@ -211,13 +211,14 @@ def find(
         job (CPJob): apply job filter
         entity (CPEntity): add entity filter
         id_ (int): apply id filter
+        path (str): apply path filter
         limit (int): limit number of results (see sg docs)
         order (dict list): apply sorting (see sg docs)
 
     Returns:
         (dict list): results
     """
-    _filters = _to_filters(filters, job=job, entity=entity, id_=id_)
+    _filters = _to_filters(filters, job=job, entity=entity, id_=id_, path=path)
     _results = to_handler().find(
         entity_type, filters=_filters, fields=fields, limit=limit,
         order=order)

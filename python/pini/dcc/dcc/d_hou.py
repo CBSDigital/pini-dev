@@ -8,6 +8,7 @@ import logging
 import hou
 
 from pini.utils import File, abs_path, check_heart, lprint
+from hou_pini.utils import flipbook_frame
 
 from .d_base import BaseDCC
 
@@ -59,21 +60,20 @@ class HouDCC(BaseDCC):
             _cmd = command
         else:
             _mod = inspect.getmodule(command)
-            _cmd = 'import {} as _tmp\n_tmp.{}()'.format(
-                _mod.__name__, command.__name__)
+            _cmd = f'import {_mod.__name__} as _tmp\n_tmp.{command.__name__}()'
 
         _LOGGER.debug('ADD MENU ITEM %s', name)
         _xml = '\n'.join([
-            '      <!--Add {label}-->',
-            '      <scriptItem id="{name}">',
-            '        <label>{label}</label>',
+            f'      <!--Add {label}-->',
+            f'      <scriptItem id="{name}">',
+            f'        <label>{label}</label>',
             '          <scriptCode><![CDATA[',
-            '{command}',
+            f'{_cmd}',
             ']]>',
             '         </scriptCode>',
             '      </scriptItem>',
             '',
-        ]).format(command=_cmd, name=name, label=label)
+        ])
         lprint(_xml, verbose=verbose)
 
         return _xml
@@ -171,7 +171,7 @@ class HouDCC(BaseDCC):
         _idx = 1
         while hou.node('/obj/'+_name) or _name in ignore:
             check_heart()
-            _name = 'import_{}_{:02d}'.format(base, _idx)
+            _name = f'import_{base}_{_idx:02d}'
             _idx += 1
         return _name
 
@@ -181,7 +181,7 @@ class HouDCC(BaseDCC):
         Args:
             key (str): data to obtain
         """
-        _key = 'pini_{}'.format(key)
+        _key = f'pini_{key}'
         _data = hou.node('/').userData(_key)
         _LOGGER.debug('GET SCENE DATA %s %s', _key, _data)
         if not _data:
@@ -219,6 +219,14 @@ class HouDCC(BaseDCC):
         from .. import pipe_ref
         return pipe_ref.find_pipe_refs(selected=selected)
 
+    def _read_version(self):
+        """Read houdini version.
+
+        Returns:
+            (int tuple): houdini version
+        """
+        return hou.applicationVersion()
+
     def select_node(self, node):
         """Select the given node.
 
@@ -253,10 +261,10 @@ class HouDCC(BaseDCC):
             key (str): name of data to store
             val (any): value of data to store
         """
-        _key = 'pini_{}'.format(key)
+        _key = f'pini_{key}'
         _type = type(val).__name__
         assert _type in ['int', 'float', 'str']
-        _val = '{}:{}'.format(_type, val)
+        _val = f'{_type}:{val}'
         _LOGGER.debug('SET SCENE DATA %s %s', _key, _val)
         hou.node("/").setUserData(_key, _val)
 
@@ -282,13 +290,13 @@ class HouDCC(BaseDCC):
         """
         return class_(hou.playbar.frameRange()[0])
 
-    def _read_version(self):
-        """Read houdini version.
+    def take_snapshot(self, file_):
+        """Take snapshot of the current scene.
 
-        Returns:
-            (int tuple): houdini version
+        Args:
+            file_ (str): path to save image to
         """
-        return hou.applicationVersion()
+        flipbook_frame(file_, force=True)
 
     def unsaved_changes(self):
         """Test whether there are unsaved changes in the current scene.

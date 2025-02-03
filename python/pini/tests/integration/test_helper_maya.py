@@ -131,7 +131,7 @@ class TestHelper(unittest.TestCase):
 
         testing.check_test_asset(force=True)
 
-        _helper = helper.obt_helper()
+        _helper = helper.obt_helper(reset_cache=False)
         _import = export.PubRefsMode.IMPORT_TO_ROOT
         _remove = export.PubRefsMode.REMOVE
 
@@ -175,7 +175,7 @@ class TestHelper(unittest.TestCase):
         _m_pub.ui.References.select_text('Remove')
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
         assert export.get_pub_refs_mode() is _remove
-        _helper.close()
+        _helper.delete()
         _LOGGER.info('HELPER CLOSED')
         print('')
         _helper = helper.launch(reset_cache=False)

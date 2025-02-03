@@ -8,7 +8,7 @@ These are the job, entity type and entity elements above the main pane.
 import logging
 import os
 
-from pini import pipe, icons, qt
+from pini import pipe, icons, qt, dcc
 from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import wrap_fn, chain_fns, copied_path, get_user, strftime
@@ -300,6 +300,16 @@ class PHHeader:
         self.ui.Entity.redraw()
         self.jump_to(_ety.path)
 
+    def _callback__JumpToCurrent(self):
+        _file = dcc.cur_file()
+        if not _file:
+            qt.notify(
+                'Unable to jump to current scene.\n\nThis scene has not been '
+                'saved yet.', title='Warning', icon=icons.find('Magnet'),
+                parent=self)
+            return
+        self.jump_to(_file)
+
     def _context__JobLabel(self, menu):
         if not self.job:
             return
@@ -405,10 +415,17 @@ class PHHeader:
 
         # Add copied work
         _c_work = pipe.to_work(copied_path(), catch=True)
-        if not _c_work:
-            menu.add_label('No copied work', icon=icons.COPY)
-        else:
+        if _c_work:
             self._add_jump_to_work_action(menu=menu, work=_c_work)
+        else:
+            menu.add_label('No copied work', icon=icons.COPY)
+        _cur_work = pipe.cur_work()
+        if _cur_work:
+            menu.add_action(
+                'Take snapshot', self._take_snapshot,
+                icon=icons.find('Camera with Flash'))
+        else:
+            menu.add_label('No current work')
         menu.add_separator()
 
         # Add recent works
@@ -427,3 +444,11 @@ class PHHeader:
         _label = '/'.join(_tokens)
         menu.add_action(
             _label, _action, icon=icons.find('Magnet'))
+
+    def _take_snapshot(self):
+        """Take snapshot of the current scene and save as work thumbnail."""
+        _work = pipe.CACHE.obt_cur_work()
+        assert _work
+        self._callback__JumpToCurrent()
+        dcc.take_snapshot(_work.image)
+        _work.update_outputs()

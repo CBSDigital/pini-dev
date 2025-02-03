@@ -8,10 +8,10 @@ import operator
 import os
 import time
 
-from pini import pipe, dcc
+from pini import pipe, dcc, testing
 from pini.utils import (
     passes_filter, File, PyFile, cache_result, abs_path, Dir, single,
-    apply_filter, EMPTY)
+    apply_filter, EMPTY, is_pascal)
 
 from . import sc_check
 
@@ -53,10 +53,14 @@ def find_checks(  # pylint: disable=too-many-branches
     Returns:
         (SCCheck list): checks
     """
+
+    # Check action
     if action not in (
             None, 'Render', 'ModelPublish', 'LookdevPublish', 'Cache',
             'BasicPublish'):
         raise ValueError(action)
+    if action and testing.dev_mode():
+        assert is_pascal(action)
 
     _all_checks = read_checks(force=force)
     _work = work or pipe.cur_work()

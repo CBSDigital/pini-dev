@@ -5,6 +5,18 @@ from pini.utils import get_result_cacher, get_method_to_file_cacher
 CACHE_START = 1729706863
 
 
+def get_pipe_result_cacher(**kwargs):
+    """Decorate to cache a function result to the pipe namespace.
+
+    Args:
+        func (fn): function to cache
+
+    Returns:
+        (fn): decorated function
+    """
+    return get_result_cacher(namespace='pipe', **kwargs)
+
+
 def pipe_cache_result(func):
     """Decorate to cache a function result to the pipe namespace.
 

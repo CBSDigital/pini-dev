@@ -38,7 +38,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         # before parenting self to main window
         self.delete_existing_instances()
 
-        super(CDockableMixin, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.setObjectName(self.tool_name)
 
         # Setup window properties
@@ -96,7 +96,12 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         """Dock this widget to the main maya ui."""
         _LOGGER.debug('APPLY DOCKING')
 
-        self.show(dockable=True)
+        try:
+            self.show(dockable=True)
+        except RuntimeError as _exc:
+            if str(_exc) == f"Object's name '{self.ws_name}' is not unique.":
+                raise _MixinError(_exc)
+            raise _exc
 
         _channel_box = mel.eval(
             'getUIComponentDockControl("Channel Box / Layer Editor", '
@@ -124,3 +129,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         _LOGGER.debug('DOCK CLOSE EVENT TRIGGERED')
         self.delete_existing_instances()
         _LOGGER.debug(' - DOCK CLOSE EVENT COMPLETE')
+
+
+class _MixinError(RuntimeError):
+    """Raise when mixin fails to dock to maya interface."""

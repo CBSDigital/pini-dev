@@ -11,7 +11,7 @@ from pini.utils import single, wrap_fn, EMPTY, Path, abs_path
 
 from maya_pini import ui, ref
 from maya_pini.utils import (
-    cur_file, load_scene, save_scene, render, to_clean, to_audio)
+    cur_file, load_scene, save_scene, render, to_clean, to_audio, blast_frame)
 
 from .d_base import BaseDCC
 
@@ -372,6 +372,15 @@ class MayaDCC(BaseDCC):
         from .. import pipe_ref
         return pipe_ref.find_pipe_refs(selected=selected)
 
+    def _read_version(self):
+        """Read maya version.
+
+        Returns:
+            (tuple): major/minor version
+        """
+        return (int(cmds.about(majorVersion=True)),
+                int(cmds.about(minorVersion=True)), None)
+
     def refresh(self):
         """Refresh the ui."""
         cmds.refresh()
@@ -503,14 +512,13 @@ class MayaDCC(BaseDCC):
         """
         return class_(cmds.playbackOptions(query=True, maxTime=True))
 
-    def _read_version(self):
-        """Read maya version.
+    def take_snapshot(self, file_):
+        """Take snapshot of the current scene.
 
-        Returns:
-            (tuple): major/minor version
+        Args:
+            file_ (str): path to save image to
         """
-        return (int(cmds.about(majorVersion=True)),
-                int(cmds.about(minorVersion=True)), None)
+        blast_frame(file_, force=True)
 
     def unsaved_changes(self):
         """Test whether there are currently unsaved changes.

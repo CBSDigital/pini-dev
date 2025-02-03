@@ -24,4 +24,4 @@ from .work_dir import (
     CPWorkDir, cur_work_dir, to_work_dir, cur_task, map_task)
 from .work import (
     CPWork, cur_work, add_recent_work, install_set_work_callback,
-    recent_work, load_recent, to_work)
+    recent_work, load_recent, to_work, RECENT_WORK_YAML)

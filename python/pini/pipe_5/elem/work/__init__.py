@@ -13,6 +13,6 @@ else:
 
 from .cp_work_tools import (
     cur_work, add_recent_work, install_set_work_callback,
-    recent_work, load_recent, to_work)
+    recent_work, load_recent, to_work, RECENT_WORK_YAML)
 
 SET_WORK_CALLBACKS = {}
