@@ -582,7 +582,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
         # Prepare output path
         _video = clip.Video(video)
-        _video.delete(force=force, wording='Replace')
+        _video.delete(force=force, wording='replace')
         assert not _video.exists()
         if _video.extn.lower() not in ('mp4', 'mov'):
             raise RuntimeError('Bad extn '+_video.path)

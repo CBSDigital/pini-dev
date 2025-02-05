@@ -419,7 +419,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                     continue
                 _plug.set_val(0)
                 if break_conns:
-                    _plug.break_connections()
+                    _plug.break_conns()
 
     def __repr__(self):
         return basic_repr(self, str(self.root), separator='|')

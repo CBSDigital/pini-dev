@@ -289,7 +289,7 @@ class CUiBase:
         _widget_name = _callback.__name__[len('_callback__'):]
         _widget = getattr(self._ui, _widget_name, None)
         if not _widget:
-            raise RuntimeError('Missing callback widget '+_widget_name)
+            raise RuntimeError(f'Missing callback widget {_widget_name}')
 
         # Find signal to connect
         _signal = qt.widget_to_signal(_widget)

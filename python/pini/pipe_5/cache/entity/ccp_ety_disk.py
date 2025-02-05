@@ -145,21 +145,24 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
         _work_dirs = self.find_work_dirs(force=force)
         _LOGGER.debug(' - FOUND %d WORK DIRS', len(_work_dirs))
 
-        # Search work dirs for outputs
-        _outs = []
+        # Find outputs in this entity
+        _outs = self.find_outputs(force=force)
+        _pub_outs = sorted([_out for _out in _outs if not _out.is_media()])
+
+        # Sort into streams
+        _to_tag = []
         _streams = {}
-        for _work_dir in _work_dirs:
-            for _out in _work_dir.find_outputs(type_='publish'):
-                _LOGGER.debug(' - CHECK OUT %s', _out)
-                _stream = _out.to_stream()
-                _LOGGER.debug('   - STREAM %s', _stream)
-                _outs.append((_out, _stream))
-                _streams[_stream] = _out
+        for _out in _pub_outs:
+            _LOGGER.debug(' - CHECK OUT %s', _out)
+            _stream = _out.to_stream()
+            _LOGGER.debug('   - STREAM %s', _stream)
+            _to_tag.append((_out, _stream))
+            _streams[_stream] = _out
         _LOGGER.debug(' - FOUND %d WORK DIR OUTPUTS', len(_outs))
 
         # Apply version numbers
         _pubs = []
-        for _out, _stream in _outs:
+        for _out, _stream in _to_tag:
             _LOGGER.debug(' - TEST PUB %s', _out)
             if not _out.ver_n:
                 _latest = True
@@ -167,6 +170,7 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
                 _latest = _streams[_stream] == _out
                 _LOGGER.debug('   - STREAM %s', _stream)
             _LOGGER.debug('   - LATEST %d', _latest)
+            _out.set_latest(_latest)
             _pub = _out.to_ghost()
             _LOGGER.debug('   - PUB %s', _pub)
             _pubs.append(_pub)

@@ -128,7 +128,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             _trg, self, follow=True, fractionMode=True, followAxis=follow_axis,
             upAxis=up_axis)
         _m_path_u = _m_path.plug['uValue']
-        _m_path_u.break_connections()
+        _m_path_u.break_conns()
 
         # Add u attr
         if use_u_length:

@@ -473,12 +473,14 @@ class TestCache(unittest.TestCase):
         pipe.CACHE.reset()
 
         _ety_c = pipe.CACHE.obt(testing.TEST_ASSET)
-        _pub = _ety_c.find_publishes(task='model')[-1]
+        _pub = _ety_c.find_publishes(task='model', extn='ma')[-1]
         _pub_c = pipe.CACHE.obt(_pub)
         _LOGGER.info('ETY (PUB) %s', _pub_c.entity)
         _LOGGER.info('ETY       %s', _ety_c)
+        _LOGGER.info('PUB C %s %s', type(_pub_c), _pub_c)
 
         assert isinstance(_pub_c, cache.CCPOutputFile)
+        assert _pub_c.work_dir
         assert isinstance(_pub_c.work_dir, cache.CCPWorkDir)
         assert isinstance(_pub_c.work_dir.entity, cache.CCPEntity)
 

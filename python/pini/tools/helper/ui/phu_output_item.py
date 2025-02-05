@@ -76,8 +76,8 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _ety_name = _out.asset or _out.shot
 
         # Handle restCache abcs
-        if _out.extn == 'abc' and _out.output_name == 'restCache':
-            return f'{_ety_name} ({_out.task} restCache)'
+        if _out.extn in ('abc', 'fbx') and _out.output_name == 'restCache':
+            return f'{_ety_name} ({_out.pini_task} {_out.extn})'
 
         # Handle shdCache ass.gz
         if _out.extn == 'gz' and _out.output_name == 'shdCache':

@@ -64,15 +64,19 @@ class TestHelper(unittest.TestCase):
             else:
                 raise NotImplementedError(dcc.NAME)
             _LOGGER.info(' - CHECKING TYPES %s', _tabs)
+            _LOGGER.info(' - OUTS %s', _helper.ui.SOutputs.all_data())
 
             assert not error.TRIGGERED
 
             for _tab in _tabs:
 
+                print()
                 _LOGGER.info(' - CHECKING TYPE %s %s', _tab, _helper.entity)
 
                 _helper.ui.SOutputsPane.select_tab(_tab)
+                _LOGGER.info(' - APPLIED TAB %s', _tab)
                 _helper.ui.SOutputVers.select_text('latest')
+                _LOGGER.info(' - APPLIED LATEST')
                 assert _helper.ui.SOutputs.all_data()
                 assert _helper.ui.SOutputsPane.current_tab_name() == _tab
                 _outs = _helper.ui.SOutputs.all_data()

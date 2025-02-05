@@ -239,6 +239,8 @@ def to_snake(text):
     """
     _LOGGER.debug('TO SNAKE')
     _text = ' '.join(text.split())
+    for _chr in _IGNORE_CHRS:
+        _text = _text.replace(_chr, '')
     _LOGGER.debug(' - TEXT "%s"', _text)
 
     _out = ''

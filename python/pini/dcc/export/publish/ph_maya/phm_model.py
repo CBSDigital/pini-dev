@@ -100,13 +100,11 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         Args:
             references (str): how to handle references (eg. Remove)
         """
-        super()._clean_scene(references=references)
-
         _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
         _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True
-
         self._clean_geos(
             delete_history=_del_history, freeze_tfms=_freeze_tfms)
+        super()._clean_scene(references=references)
 
     def _clean_geos(
             self, delete_history=True, freeze_tfms=True,

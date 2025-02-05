@@ -76,7 +76,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
 
     def disconnect(self):
         """Disconnect this anim curve."""
-        self.target.break_connections()
+        self.target.break_conns()
 
     def fix_name(self):
         """Fix name to match target channel.

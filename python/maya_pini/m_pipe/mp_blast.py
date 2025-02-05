@@ -32,7 +32,7 @@ def blast(
         save (bool): save scene on cache (default is true)
         force (bool): overwrite existing without confirmation
     """
-    _work = pipe.CACHE.cur_work
+    _work = pipe.CACHE.obt_cur_work()
     _LOGGER.info(' - WORK %s', _work)
 
     # Determine cam

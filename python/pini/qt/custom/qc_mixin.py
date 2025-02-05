@@ -99,6 +99,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         try:
             self.show(dockable=True)
         except RuntimeError as _exc:
+            _LOGGER.info(' - DOCKING FAILED %s ^^^ %s ^^^', self.ws_name, _exc)
             if str(_exc) == f"Object's name '{self.ws_name}' is not unique.":
                 raise _MixinError(_exc)
             raise _exc

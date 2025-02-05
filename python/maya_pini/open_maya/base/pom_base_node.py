@@ -17,7 +17,7 @@ from .. import pom_cmds, pom_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBaseNode(object):  # pylint: disable=too-many-public-methods
+class CBaseNode:  # pylint: disable=too-many-public-methods
     """Base class for any node object."""
 
     def __init__(self, node):
@@ -178,7 +178,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             _cur_type = type(_val)
             if _cur_type != type(value):  # pylint: disable=unidiomatic-typecheck
                 raise NotImplementedError(
-                    'Type mismatch {}/{}'.format(_cur_type, type(value)))
+                    f'Type mismatch {_cur_type}/{type(value)}')
 
             # Update val
             if force and value != _val:
@@ -293,11 +293,11 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         from maya_pini import tex
         tex.to_shd(shd).apply_to(self)
 
-    def break_connections(self):
+    def break_conns(self):
         """Break incoming connections on this node."""
         _plugs = [_dest for _, _dest in self.find_incoming()]
         for _plug in _plugs:
-            _plug.break_connections()
+            _plug.break_conns()
 
     def delete(self):
         """Delete this node."""
@@ -541,7 +541,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         Returns:
             (str): attribute path
         """
-        return '{}.{}'.format(self, attr)
+        return f'{self}.{attr}'
 
     def to_bbox(self):
         """Obtain this node's bounding box.
@@ -621,7 +621,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
             (CNode|None): shape (if any)
         """
         _shps = self.to_shps(type_=type_)
-        _err = '{} has {:d} shapes'.format(self, len(_shps))
+        _err = f'{self} has {len(_shps):d} shapes'
         return single(_shps, error=_err, catch=catch)
 
     def to_shps(self, type_=None):
@@ -646,8 +646,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _type = self.object_type()
         _presets_dir = abs_path(cmds.internalVar(userPresetsDir=True))
         _LOGGER.debug(' - PRESETS DIR %s', _presets_dir)
-        _fmt = "{}/attrPresets/{}/tmp.mel"
-        return File(_fmt.format(_presets_dir, _type))
+        return File(f"{_presets_dir}/attrPresets/{_type}/tmp.mel")
 
     def load_preset(self, file_):
         """Load the given preset to this node.
@@ -659,8 +658,7 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         _tmp = self._to_preset_tmp_file()
         if _file != _tmp:
             _file.copy_to(_tmp, force=True)
-        _cmd = '{} "{}" "" "" "tmp" 1'.format(
-            _get_load_preset_mel(), self)
+        _cmd = f'{_get_load_preset_mel()} "{self}" "" "" "tmp" 1'
         mel.eval(_cmd)
 
     def save_preset(self, file_=None, force=False):
@@ -683,10 +681,10 @@ class CBaseNode(object):  # pylint: disable=too-many-public-methods
         if _tmp.exists():
             _tmp.delete(force=True)
 
-        mel.eval('saveAttrPreset "{}" "tmp" false'.format(self))
+        mel.eval(f'saveAttrPreset "{self}" "tmp" false')
         _LOGGER.debug(" - SAVED PRESET %s", _tmp)
         if not _tmp.exists():
-            raise RuntimeError('Failed to save preset: {}'.format(_tmp))
+            raise RuntimeError(f'Failed to save preset: {_tmp}')
         if not _file:
             return _tmp
         _tmp.move_to(_file, force=force)
@@ -730,7 +728,7 @@ def _get_load_preset_mel():
     return 'applyPresetToNode'
 
 
-class _AttrGetter(object):
+class _AttrGetter:
     """Item mapper for obtaining attributes on a node."""
 
     def __init__(self, node):
@@ -745,7 +743,7 @@ class _AttrGetter(object):
         return self.node.to_attr(item)
 
 
-class _PlugGetter(object):
+class _PlugGetter:
     """Item mapper for obtaining plugs on a node."""
 
     def __init__(self, node):

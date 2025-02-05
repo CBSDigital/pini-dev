@@ -248,7 +248,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         if force:
             for _plug in self.tfm_plugs:
                 _LOGGER.debug(' - BREAK CONNS %s', _plug)
-                _plug.break_connections()
+                _plug.break_conns()
                 _plug.unlock()
         cmds.makeIdentity(
             self, apply=True, translate=translate, rotate=rotate, scale=scale,
@@ -334,7 +334,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         if force:
             for _plug in _trg.to_tfm_plugs(scale=False):
                 _LOGGER.debug(' - BREAK CONNECT %s', _plug)
-                _plug.break_connections()
+                _plug.break_conns()
         return pom.CMDS.parentConstraint(
             self, target, maintainOffset=maintain_offset, **_kwargs)
 
@@ -370,12 +370,12 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.scaleConstraint(
             self, target, maintainOffset=maintain_offset)
 
-    def reset_tfms(self, scale=True, break_connections=False):
+    def reset_tfms(self, scale=True, break_conns=False):
         """Reset transforms on this node.
 
         Args:
             scale (bool): reset scale
-            break_connections (bool): break connections on reset
+            break_conns (bool): break connections on reset
         """
         _attrs = 'tr'
         if scale:
@@ -384,8 +384,8 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             for _attr in _attrs:
                 _val = {'s': 1, 't': 0, 'r': 0}[_attr]
                 _plug = self.plug[_attr+_axis]
-                if break_connections:
-                    _plug.break_connections()
+                if break_conns:
+                    _plug.break_conns()
                 _plug.set_val(_val)
 
     def set_p(self, pos):

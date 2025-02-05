@@ -248,22 +248,10 @@ class CCPOutputBase(elem.CPOutputBase):
         _LOGGER.debug(' - EXTN %s', self.extn)
 
         _reps = []
+        _reps += self._read_reps_alt_tasks()
+        _reps += self._read_reps_alt_fmts()
 
-        # Add model/rig publishes
-        if self.extn in ('ma', 'mb', 'gz'):
-            _LOGGER.debug(' - LOOKING FOR PUBLISHES')
-            for _task in ['model', 'rig']:
-                if _task in (self.task, self.pini_task):
-                    continue
-                _pub_g = self.entity.find_publish(
-                    ver_n='latest', tag=self.tag, versionless=False,
-                    task=_task, extn='ma', catch=True)
-                _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub_g)
-                if _pub_g:
-                    _pub = pipe.CACHE.obt(_pub_g)
-                    _reps.append(_pub)
-
-        # Add ass.gz for model refs
+        # Add ass.gz
         if self.pini_task in ('model', 'rig'):
             _LOGGER.debug(
                 ' - CHECKING FOR AssArchive tag=%s ety=%s', self.tag,
@@ -290,6 +278,52 @@ class CCPOutputBase(elem.CPOutputBase):
             if _shds:
                 _reps.append(_shds)
 
+        return _reps
+
+    def _read_reps_alt_tasks(self):
+        """Read alternative task reps.
+
+        Returns:
+            (CPOutput list): task reps
+        """
+        _reps = []
+        if (
+                self.profile == 'asset' and
+                self.extn in ('ma', 'mb', 'gz', 'abc', 'fbx')):
+            _LOGGER.debug(' - LOOKING FOR PUBLISHES')
+            for _task in ['model', 'rig']:
+                if _task in (self.task, self.pini_task):
+                    continue
+                _pub_g = self.entity.find_publish(
+                    ver_n='latest', tag=self.tag, versionless=False,
+                    task=_task, extn='ma', catch=True)
+                _LOGGER.debug(' - CHECKING PUBLISH task=%s %s', _task, _pub_g)
+                if _pub_g:
+                    _pub = pipe.CACHE.obt(_pub_g)
+                    _reps.append(_pub)
+        return _reps
+
+    def _read_reps_alt_fmts(self):
+        """Read alternative format reps.
+
+        Returns:
+            (CPOutput list): format reps
+        """
+        _reps = []
+        if (
+                self.profile == 'asset' and
+                self.extn in ('ma', 'mb', 'gz', 'abc', 'fbx')):
+            if self.pini_task == 'model':
+                _LOGGER.debug(' - CHECKING FOR EXTNS')
+                for _extn in ['abc', 'fbx', 'ma']:
+                    if _extn == self.extn:
+                        continue
+                    _pub = self.entity.find_output(
+                        ver_n=self.ver_n, tag=self.tag, versionless=False,
+                        task=self.task, extn=_extn, catch=True)
+                    _LOGGER.debug('   - EXTN %s %s', _extn, _pub)
+                    if _pub:
+                        _reps.append(_pub)
         return _reps
 
     def set_latest(self, latest: bool):

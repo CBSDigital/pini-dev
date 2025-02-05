@@ -5,6 +5,7 @@ import unittest
 from maya import cmds
 
 from pini import dcc, pipe, testing, qt
+from pini.pipe import cache
 from pini.dcc import export
 from pini.tools import helper
 from pini.utils import single, assert_eq
@@ -43,6 +44,60 @@ class TestHelper(unittest.TestCase):
         _farm_rh.ui.Layers.select(_default_lyr, replace=True)
         assert _default_lyr.is_renderable()
         assert not _blah_lyr.is_renderable()
+
+    def test_model_reps(self, show_ctx=False):
+
+        _mdl = testing.find_test_model()
+        pprint.pprint(_mdl.find_reps())
+        assert _mdl.find_reps()
+        assert _mdl.find_reps(extn='abc')
+        assert _mdl.find_reps(extn='fbx')
+        _abc = _mdl.find_rep(extn='abc')
+        assert _abc in _mdl.entity.find_publishes()
+        assert _abc in _mdl.job.find_publishes()
+        assert _abc.is_latest()
+        assert isinstance(_abc, cache.CCPOutputFile)
+        # assert _abc.to_ghost().is_latest()
+        _fbx = _mdl.find_rep(extn='fbx')
+
+        _helper = helper.obt_helper()
+        _helper.ui.MainPane.select_tab('Scene')
+        _helper.jump_to(_mdl)
+        _helper.stage_import(_mdl, reset=True)
+
+        # Check scene refs context menu
+        _helper.ui.SSceneRefs.select_row(0)
+        _pos = _helper.ui.SSceneRefs.rect().center()
+        _menu = qt.CMenu(_helper.ui.SSceneRefs)
+        _helper._context__SSceneRefs(_menu)
+        if show_ctx:
+            _menu.exec_(_helper.ui.SSceneRefs.mapToGlobal(_pos))
+        assert _menu.actions()
+        _menu.deleteLater()
+
+        # Check abc label
+        print()
+        _LOGGER.info(' - ABC %s', _abc)
+        _helper.jump_to(_abc)
+        assert _abc == _abc.to_ghost()
+        assert _abc in [_abc.to_ghost()]
+        _LOGGER.info(' - ABC %s', _abc)
+        pprint.pprint(_helper.ui.SOutputType.selected_data())
+        assert _abc.path in [_out.path for _out in _helper.ui.SOutputType.selected_data()]
+        assert _abc in _helper.ui.SOutputType.selected_data()
+        assert _helper.ui.SOutputs.selected_data() == _abc
+        _item = _helper.ui.SOutputs.selected_item()
+        assert _item.label == 'test (model abc)'
+
+        # Check fbx label
+        print()
+        _LOGGER.info(' - FBX %s', _fbx)
+        _helper.jump_to(_fbx)
+        assert _helper.ui.SOutputs.selected_data() == _fbx
+        _item = _helper.ui.SOutputs.selected_item()
+        assert _item.label == 'test (model fbx)'
+
+        _helper.ui.SReset.click()
 
     def test_output_tab_names(self):
 
@@ -255,12 +310,14 @@ def _test_anim_workflow(progress, force, show_ctx):
     _menu.deleteLater()
 
     # Select rig in outputs list
-    _helper.ui.MainPane.select_tab('Scene')
-    _helper.ui.SOutputType.select_text('char')
-    _helper.ui.SOutputTask.select_text('rig/rig')
-    _helper.ui.SOutputTag.select_text(pipe.DEFAULT_TAG)
-    _helper.ui.SOutputVers.select_text('latest')
-    _helper.ui.SOutputs.select_data(_rig_pub, catch=False)
+    # _helper.ui.MainPane.select_tab('Scene')
+    # _helper.ui.SOutputType.select_text('char')
+    # _helper.ui.SOutputTask.select_text('rig/rig')
+    # _helper.ui.SOutputTag.select_text(pipe.DEFAULT_TAG)
+    # _helper.ui.SOutputVers.select_text('latest')
+    # _helper.ui.SOutputs.select_data(_rig_pub, catch=False)
+    _helper.jump_to(_rig_pub)
+    assert _helper.ui.SOutputs.selected_data() == _rig_pub
     _out_info = _helper.ui.SOutputInfo.text()
     assert 'bound method' not in _out_info
 
@@ -297,6 +354,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     _blast_h.ui.View.setChecked(False)
     _helper.ui.EBlast.click()
     _LOGGER.info(' - WORK %s', _helper.work)
+    _helper.ui.MainPane.select_tab('Work')
     assert _helper.work.outputs
     assert_eq(single(_helper.work.outputs).type_, 'blast_mov')
 

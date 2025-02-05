@@ -169,7 +169,7 @@ class PHUiBase(
             _recent = obt_recent_work()
             if _recent:
                 self.target = pipe.to_work(_recent[0].path)
-        _LOGGER.debug(' - TARGET %s', self.target)
+        _LOGGER.debug(' - TARGET %s %s', type(self.target), self.target)
 
     def jump_to(self, path):
         """Jump interface to the given path.
@@ -197,7 +197,8 @@ class PHUiBase(
         if not self.target:
             self.target = pipe.to_entity(path, catch=True)
             _trg_ety = self.target
-        _LOGGER.debug(' - TARGET tab=%s %s', _tab, self.target)
+        _LOGGER.debug(
+            ' - TARGET tab=%s %s %s', _tab, type(self.target), self.target)
         if not self.target:
             return
 

@@ -388,7 +388,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         if catch:
             return None
-        raise ValueError(match)
+        raise ValueError(match, kwargs)
 
     def find_outputs(self, tag=EMPTY, ver_n=EMPTY, class_=None, **kwargs):
         """Find outputs in this entity.

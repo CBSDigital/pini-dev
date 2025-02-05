@@ -207,7 +207,7 @@ def set_col(node, col, force=False):
     # Setup node
     _node = pom.to_node(node)
     if force:
-        _node.plug['drawOverride'].break_connections()
+        _node.plug['drawOverride'].break_conns()
     _node.plug['overrideEnabled'].set_val(True)
 
     # Apply index col

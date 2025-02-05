@@ -27,7 +27,7 @@ def _to_mplug(node, attr):
     Returns:
         (MPlug): plug
     """
-    _LOGGER.debug('TO MPLUG %s %s', node, attr)
+    _LOGGER.log(9, 'TO MPLUG %s %s', node, attr)
 
     # Find nested attrs (eg. node.attr[0].attr[0].attr)
     if '.' in attr:
@@ -124,7 +124,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             name (str): plug name (eg. persp.tx)
             verbose (int): print process data
         """
-        _LOGGER.debug('INIT %s', name)
+        _LOGGER.log(9, 'INIT %s', name)
         _name = name
         if isinstance(_name, CPlug):
             _name = str(_name)
@@ -175,9 +175,9 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """
         return cmds.attributeQuery(self.attr, node=self.node, **kwargs)
 
-    def break_connections(self):
+    def break_conns(self):
         """Break any incoming connection to this plug."""
-        _LOGGER.debug('BREAK CONNECTIONS %s', self)
+        _LOGGER.debug('BREAK CONNS %s', self)
         _incoming = cmds.listConnections(
             self, destination=False, plugs=True, connections=True)
         _LOGGER.debug(' - INCOMING %s', _incoming)
@@ -185,6 +185,12 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             return
         _dest, _src = _incoming
         cmds.disconnectAttr(_src, _dest)
+
+    def break_connections(self):
+        """Break any incoming connection to this plug."""
+        from pini.tools import release
+        release.apply_deprecation('01/02/25', 'Use break_conns')
+        self.break_conns()
 
     def connect(self, target, break_connections=False, force=False):
         """Connect this plug to another one.
@@ -356,7 +362,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (tuple list): connections
         """
-        _LOGGER.debug('FIND CONNECTIONS plugs=%d', plugs)
+        _LOGGER.log(9, 'FIND CONNECTIONS plugs=%d', plugs)
         return pom_utils.find_connections(
             self, source=source, destination=destination, type_=type_,
             connections=connections, plugs=plugs)
@@ -415,6 +421,15 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         _data = str(single(
             cmds.attributeQuery(self.attr, node=self.node, listEnum=True)))
         return _data.split(':')
+
+    def list_children(self):
+        """Find child plugs on this plug.
+
+        Returns:
+            (CPlug list): child plugs
+        """
+        _children = self.attribute_query(listChildren=True) or []
+        return [self.node.plug[_attr] for _attr in _children]
 
     def loop(self, offset=False):
         """Loop this plug's animation curve.
@@ -479,32 +494,61 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         return _mod_out
 
-    def multiply(self, input_, output=None, name='multiply', force=False):
+    def multiply(
+            self, input_, output=None, name='multiply', as_3d=None,
+            force=False):
         """Build a multiply node with this plug as first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
             name (str): override node name
+            as_3d (bool): force 3D connection
             force (bool): replace any existing connection on the output
 
         Returns:
             (CPlug): output connection
         """
+        _3d = bool(self.list_children()) if as_3d is None else as_3d
+        _LOGGER.debug(
+            'MULTIPLY %s X %s -> %s (3d=%d)', self, input_, output, _3d)
         from maya_pini import open_maya as pom
 
+        if not _3d:
+            _mult_i1 = 'input1X'
+            _mult_i2 = 'input2X'
+            _mult_o = 'outputX'
+        else:
+            _mult_i1 = 'input1'
+            _mult_i2 = 'input2'
+            _mult_o = 'output'
+
         _mult = pom.CMDS.createNode('multiplyDivide', name=name)
-        cmds.connectAttr(self, _mult.plug['input1X'])
+        cmds.connectAttr(self, _mult.plug[_mult_i1])
 
         # Set/connect input
-        _i2x = _mult.plug['input2X']
-        if isinstance(input_, (int, float)):
-            cmds.setAttr(_i2x, input_)
+        _i2 = _mult.plug[_mult_i2]
+        if isinstance(input_, (int, float, tuple)):
+            _mult.plug[_mult_i2].set_val(input_)
+        elif isinstance(input_, (CPlug, str)):
+            _input = input_
+            if isinstance(_input, str):
+                _input = CPlug(_input)
+            _in_3d = bool(_input.list_children())
+            _LOGGER.debug(' - CONNECT INPUT %s 3d=%d', _input, _in_3d)
+            if _3d == _in_3d:
+                _input.connect(_i2)
+            elif not _in_3d and _3d:
+                for _axis in 'XYZ':
+                    _input.connect(_mult.plug[f'input2{_axis}'])
+            else:
+                raise NotImplementedError
         else:
-            cmds.connectAttr(input_, _i2x)
+            raise ValueError(input_)
 
-        _out = _mult.plug['outputX']
+        _out = _mult.plug[_mult_o]
         if output:
+            _LOGGER.debug(' - CONNECT OUTPUT %s %s', _out, output)
             cmds.connectAttr(_out, output, force=force)
 
         return _out
@@ -523,16 +567,42 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """
         return plus_plug(self, input_, output=output, name=name, force=force)
 
-    def reverse(self):
+    def reverse(self, output=None, as_3d=None):
         """Build a reverse node and connect it to this node.
+
+        Args:
+            output (CPlug): output
+            as_3d (bool): force 3D connection
 
         Returns:
             (CPlug): reverse output
         """
         from maya_pini import open_maya as pom
         _reverse = pom.CMDS.createNode('reverse')
-        self.connect(_reverse.plug['inputX'])
-        return _reverse.plug['outputX']
+
+        _this_is_3d = bool(self.list_children())
+        _3d = _this_is_3d if as_3d is None else as_3d
+        _LOGGER.debug('REVERSE %s 3d=%d this_3d=%d', self, _3d, _this_is_3d)
+
+        if not _3d:
+            self.connect(_reverse.plug['inputX'])
+            _out = _reverse.plug['outputX']
+        else:
+            if not _this_is_3d:
+                for _axis in 'XYZ':
+                    self.connect(_reverse.plug[f'input{_axis}'])
+            else:
+                self.connect(_reverse.plug['input'])
+            _out = _reverse.plug['output']
+
+        if output:
+            _out_is_3d = bool(output.list_children())
+            if _out_is_3d == _3d:
+                _out.connect(output)
+            else:
+                raise NotImplementedError(_out, output)
+
+        return _out
 
     def set_col(self, col):
         """Apply colour value to this plug.

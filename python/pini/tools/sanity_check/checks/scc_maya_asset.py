@@ -58,7 +58,7 @@ class CheckAssetHierarchy(core.SCMayaCheck):
                 _create_top_level_group, name=_req_top_node,
                 nodes=_top_nodes)
             self.add_fail(
-                'No top level "{}" group'.format(_req_top_node), fix=_fix)
+                f'No top level "{_req_top_node}" group', fix=_fix)
             return
 
         # Fix badly named top node
@@ -256,8 +256,8 @@ class CheckRenderStats(core.SCMayaCheck):
         ]:
             _plug = geo.shp.plug[_attr]
             if _plug.get_val() != _val:
-                _msg = 'Bad render setting: "{}" set to "{}"'.format(
-                    _plug, {True: 'on', False: 'off'}[_plug.get_val()])
+                _val = {True: 'on', False: 'off'}[_plug.get_val()]
+                _msg = f'Bad render setting: "{_plug}" set to "{_val}"'
                 _fix = wrap_fn(_plug.set_val, _val)
                 self.add_fail(_msg, fix=_fix, node=geo)
 
@@ -290,7 +290,7 @@ class CheckForEmptyNamespaces(core.SCMayaCheck):
                 continue
             _fix = wrap_fn(del_namespace, _ns)
             self.write_log('Found empty namespace %s', _ns)
-            self.add_fail('Empty namespace {}'.format(_ns), fix=_fix)
+            self.add_fail(f'Empty namespace {_ns}', fix=_fix)
 
 
 class CheckUVs(core.SCMayaCheck):
@@ -329,19 +329,21 @@ class CheckUVs(core.SCMayaCheck):
 
         # Flag no uv sets
         if not _set:
-            _msg = 'Geo {} has no uvs'.format(geo)
+            _msg = f'Geo "{geo}" has no uvs'
             self.add_fail(_msg, node=geo)
             return
 
         # Flag current set is not map1
         if _set != 'map1':
             if 'map1' in _sets:
-                _msg = 'Geo {} is not using uv set map1 (set is {})'.format(
-                    geo, _set)
+                _msg = (
+                    f'Geo "{geo}" is not using uv set "map1" '
+                    f'(set is "{_set}")')
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
-                _msg = ('Geo {} does not have uv set map1 (set is '
-                        '{})'.format(geo, _set))
+                _msg = (
+                    f'Geo {geo} does not have uv set "map1" '
+                    f'(set is "{_set}")')
                 self.add_fail(_msg, node=geo, fix=_fix)
             return
 
@@ -353,19 +355,21 @@ class CheckUVs(core.SCMayaCheck):
                 catch=True)
             if _set:
                 _msg = (
-                    'Geo {} is using empty uv set map1 (should use '
-                    '{})'.format(geo, _set))
+                    f'Geo "{geo}" is using empty uv set "map1" (should use '
+                    f'"{_set}")')
                 self.add_fail(_msg, node=geo, fix=_fix)
             else:
-                _msg = 'Geo "{}" empty uv set "map1"'.format(geo)
+                _msg = f'Geo "{geo}" empty uv set "map1"'
                 self.add_fail(_msg, node=geo, fix=_fix)
             return
 
         # Flag unused sets
         if len(_sets) > 1:
             _unused = sorted(set(_sets) - set(['map1']))
-            _msg = 'Geo {} has unused uv set{}: {}'.format(
-                geo, plural(_sets[1:]), ', '.join(_unused))
+            _unused_s = ', '.join(f'"{_set}"' for _set in _unused)
+            _msg = (
+                f'Geo "{geo}" has unused uv set{plural(_sets[1:])}: '
+                f'{_unused_s}')
             self.add_fail(_msg, node=geo, fix=_fix)
 
 
@@ -384,8 +388,8 @@ class CheckModelGeo(core.SCMayaCheck):
             for _plug in _geo.tfm_plugs:
                 if _plug.find_incoming():
                     self.add_fail(
-                        'Plug has incoming connections: "{}"'.format(_plug),
-                        fix=_plug.break_connections)
+                        f'Plug has incoming connections: "{_plug}"',
+                        fix=_plug.break_conns)
 
 
 class CheckGeoNaming(core.SCMayaCheck):
@@ -432,8 +436,7 @@ class CheckGeoNaming(core.SCMayaCheck):
         _geo_ss = cmds.listRelatives(
             geo, shapes=True, noIntermediate=True, path=True) or []
         if len(_geo_ss) > 1:
-            _msg = 'Geo {} has muliple shapes {}'.format(
-                geo, _geo_ss)
+            _msg = f'Geo "{geo}" has muliple shapes: {_geo_ss}'
             self.add_fail(_msg, node=geo)
             return
         _geo_s = single(_geo_ss, catch=True)
@@ -464,7 +467,7 @@ class CheckGeoNaming(core.SCMayaCheck):
                 _fix = None
             else:
                 _fix = wrap_fn(cmds.rename, geo, _clean_name)
-            _msg = 'Geo "{}" is using a namespace'.format(geo)
+            _msg = f'Geo "{geo}" is using a namespace'
             self.add_fail(_msg, fix=_fix, node=geo)
             return
 
@@ -497,7 +500,7 @@ class CheckForNgons(core.SCMayaCheck):
                 '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
                 '    "1e-05","0","1e-05","0","-1","0","0" }')
             if cmds.ls(selection=True):
-                _msg = 'Mesh "{}" contains ngons'.format(_geo)
+                _msg = f'Mesh "{_geo}" contains ngons'
                 self.add_fail(
                     _msg, node=_geo, fix=wrap_fn(self.fix_ngons, _geo))
 
@@ -561,9 +564,9 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
                 continue
 
             _msg = (
-                '{} has a skinCluster with no blendShape and a single '
-                'input joint - this can cause bloat in abcs and cause '
-                'memory issues'.format(_geo.shp))
+                f'Shape "{_geo.shp}" has a skinCluster with no blendShape '
+                f'and a single input joint - this can cause bloat in abcs '
+                f'and cause memory issues')
             self.add_fail(_msg, node=_geo.shp)
 
 
@@ -597,10 +600,10 @@ class CheckForFaceAssignments(core.SCMayaCheck):
             # Add fails
             for _geo, _shd in _face_assigns.items():
                 _assigns = _shd.to_geo(node=_geo, faces=True)
-                _msg = 'Shader "{}" has face assigment{}: {}'.format(
-                    _shd, plural(_assigns),
-                    ', '.join([
-                        '"{}"'.format(_assign) for _assign in _assigns]))
+                _assigns_s = ', '.join(f'"{_assign}"' for _assign in _assigns)
+                _msg = (
+                    f'Shader "{_shd}" has face assigment{plural(_assigns)}: '
+                    f'{_assigns_s}')
                 _fix = wrap_fn(
                     self._fix_face_assignment, geo=_geo, shader=_shd)
                 _fail = core.SCFail(_msg, node=_geo)
@@ -621,11 +624,11 @@ class CheckForFaceAssignments(core.SCMayaCheck):
             shader.unassign(node=geo)
         except ValueError:
             raise error.HandledError(
-                'Failed to unassign "{}" from "{}".'
+                f'Failed to unassign "{shader}" from "{geo}".'
                 '\n\n'
                 'It seems like maya is having trouble with this assignment.'
                 'Try deleting history on this node or removing it '
-                'if possible'.format(shader, geo))
+                'if possible')
         shader.assign_to(geo)
 
 
@@ -651,8 +654,8 @@ class CheckShaders(core.SCMayaCheck):
         for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
             _fix = wrap_fn(utils.import_referenced_shader, _shd)
             self.add_fail(
-                'Shader "{}" is referenced - this must be imported into the '
-                'current scene'.format(str(_shd)),
+                f'Shader "{_shd}" is referenced - this must be imported into '
+                'the current scene',
                 node=_shd, fix=_fix)
 
         _shds = lookdev.read_shader_assignments(
@@ -678,7 +681,7 @@ class CheckShaders(core.SCMayaCheck):
 
             # Flag namespace
             if _shd != to_clean(_shd):
-                _msg = 'Shader {} is using a namespace'.format(_shd)
+                _msg = f'Shader "{_shd}" is using a namespace'
                 _fix = wrap_fn(cmds.rename, _shd, to_clean(_shd))
                 self.add_fail(_msg, fix=_fix, node=_shd)
                 continue
@@ -700,8 +703,7 @@ class CheckShaders(core.SCMayaCheck):
 
                 # Flag non-arnold shader
                 if utils.shd_is_arnold(engine=_se, type_=_type):
-                    _msg = 'Shader {} ({}) is not arnold shader'.format(
-                        _shd, _type)
+                    _msg = f'Shader "{_shd}" ({_type}) is not arnold shader'
                     self.add_fail(_msg, node=_shd)
                     continue
 
@@ -733,8 +735,7 @@ class CheckShaders(core.SCMayaCheck):
             # Check for face assigns
             if '.f[' in _assign:
                 _fail = core.SCFail(
-                    'Shader "{}" is face assignment "{}".'.format(
-                        shader, _assign),
+                    f'Shader "{shader}" is face assignment "{_assign}".',
                     node=_assign)
                 _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
                 self.add_fail(_fail)
@@ -743,8 +744,8 @@ class CheckShaders(core.SCMayaCheck):
             # Catch duplicate node
             if '|' in _assign:
                 _fail = core.SCFail(
-                    'Shader "{}" is assigned to duplicate node "{}".'.format(
-                        shader, _assign),
+                    f'Shader "{shader}" is assigned to duplicate node '
+                    f'"{_assign}".',
                     node=_assign)
                 _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
                 self.add_fail(_fail)
@@ -758,10 +759,9 @@ class CheckShaders(core.SCMayaCheck):
             if not _geo.plug['intermediateObject'].get_val():
                 continue
             _msg = (
-                'Shader "{}" is assigned to intermediate object "{}" '
-                'which is not renderable. This assigment has no effect '
-                'and may bloat the publish file.'.format(
-                    shader, _geo))
+                f'Shader "{shader}" is assigned to intermediate object '
+                f'"{_geo}" which is not renderable. This assigment has '
+                f'no effect and may bloat the publish file.')
             _fix = wrap_fn(
                 self._unassign_shader, engine=engine, geo=_geo)
             _fail = core.SCFail(_msg, node=_geo)
@@ -797,8 +797,9 @@ class CheckShaders(core.SCMayaCheck):
             self.write_log(' - shading engine %s is good', engine)
             return
 
-        _msg = ('Shading engine {} name does not match shader {} (should '
-                'be {})'.format(engine, shd, _good_name))
+        _msg = (
+            f'Shading engine "{engine}" name does not match shader "{shd}" '
+            f'(should be "{_good_name}")')
         _fix = wrap_fn(cmds.rename, engine, _good_name)
         self.add_fail(_msg, fix=_fix, node=shd)
 
@@ -822,10 +823,10 @@ class CheckShaders(core.SCMayaCheck):
             break
         if not _ref:
             _fail = core.SCFail(
-                'Shader "{}" is not assigned to referenced geometry, which '
-                'can lead to a mismatch between the geometry names in the '
-                'model/rig and the assignment - this could cause shaders to '
-                'fail to attach.'.format(shd))
+                f'Shader "{shd}" is not assigned to referenced geometry, '
+                'which can lead to a mismatch between the geometry names in '
+                'the model/rig and the assignment - this could cause '
+                'shaders to fail to attach.')
             _fail.add_action('Select shader', wrap_fn(cmds.select, shd))
             _fail.add_action('Select nodes', wrap_fn(cmds.select, _assigns))
             self.add_fail(_fail)
@@ -850,8 +851,7 @@ class NoObjectsWithDefaultShader(core.SCMayaCheck):
             # Check for default shader
             if _shd in DEFAULT_NODES:
                 for _geo in _geos:
-                    _msg = 'Geo "{}" has default shader "{}" applied'.format(
-                        _geo, _shd)
+                    _msg = f'Geo "{_geo}" has default shader "{_shd}" applied'
                     self.add_fail(_msg, node=_geo)
                     _flagged_geos.add(_geo)
 
@@ -861,8 +861,7 @@ class NoObjectsWithDefaultShader(core.SCMayaCheck):
                     if _geo in _flagged_geos:
                         continue
                     _msg = (
-                        'Geo "{}" has shader "{}" applied which uses default '
-                        'shading engine "{}" - this will cause issues as '
-                        'default nodes do not appear in references'.format(
-                            _geo, _shd, _se))
+                        f'Geo "{_geo}" has shader "{_shd}" applied which uses '
+                        f'default shading engine "{_se}" - this will cause '
+                        f'issues as default nodes do not appear in references')
                     self.add_fail(_msg, node=_geo)

@@ -217,8 +217,8 @@ class PHSceneTab:
                 isinstance(self.target, pipe.CPOutputBase) and
                 self.target.asset_type in _types):
             _select = self.target.asset_type
-        else:
-            _select = 'rig'
+        elif _types:
+            _select = sorted(_types, key=_sort_asset_type)[0]
         _LOGGER.debug('   - SELECT OUT TYPE ASSET %s', _select)
 
         return _label, _types, _data, _select
@@ -231,7 +231,8 @@ class PHSceneTab:
         _mode = self.ui.SOutputsPane.current_tab_text()
         _type = self.ui.SOutputType.selected_text()
         _outs = self.ui.SOutputType.selected_data() or []
-        _LOGGER.debug('   - FOUND %d OUTS', len(_outs))
+        _LOGGER.debug(
+            '   - FOUND %d OUTS (target=%d)', len(_outs), self.target in _outs)
 
         # Build list of tasks/data
         _tasks, _data = [], []
@@ -277,7 +278,7 @@ class PHSceneTab:
 
     def _redraw__SOutputTag(self):
 
-        _LOGGER.debug('REDRAW SOutputTag')
+        _LOGGER.debug(' - REDRAW SOutputTag')
         _outs = self.ui.SOutputTask.selected_data() or []
 
         # Build list of tags
@@ -292,7 +293,9 @@ class PHSceneTab:
 
         # Determine selection
         _sel = None
-        if len(_tags) > 1:
+        if pipe.DEFAULT_TAG in _tags:
+            _sel = pipe.DEFAULT_TAG
+        elif len(_tags) > 1:
             _sel = 'all'
         if (
                 isinstance(self.target, pipe.CPOutputBase) and
@@ -305,9 +308,9 @@ class PHSceneTab:
 
     def _redraw__SOutputFormat(self):
 
+        _LOGGER.debug(' - REDRAW SOutputFormat')
         _pane = self.ui.SOutputsPane.current_tab_text()
 
-        _sel = None
         _outs = self.ui.SOutputTag.selected_data() or []
         _extns = sorted({_out.extn for _out in _outs})
         _data = [
@@ -316,18 +319,22 @@ class PHSceneTab:
         if len(_extns) > 1:
             _extns.insert(0, 'all')
             _data.insert(0, _outs)
-            _sel = 'all'
 
         # Apply default format
-        _fmts_order = []
-        if _pane == 'Asset':
-            _fmts_order = ['ma', 'abc']
-        elif _pane == 'Cache':
-            _fmts_order = ['abc']
-        for _fmt in _fmts_order:
-            if _fmt in _extns:
-                _sel = _fmt
-                break
+        _sel = None
+        if not _sel and self.target and self.target.extn in _extns:
+            _sel = self.target.extn
+        if not _sel:
+            _fmts_order = []
+            if _pane == 'Asset':
+                _fmts_order = ['ma', 'abc']
+            elif _pane == 'Cache':
+                _fmts_order = ['abc']
+            for _fmt in _fmts_order:
+                if _fmt in _extns:
+                    _sel = _fmt
+                    break
+        _LOGGER.debug('   - SEL FMT %s', _sel)
 
         self.ui.SOutputFormat.set_items(
             _extns, data=_data, emit=True, select=_sel)
@@ -411,7 +418,7 @@ class PHSceneTab:
         displayed, eg. abc mode, vdb mode, etc.
         """
         _outs = self.ui.SOutputs.all_data()
-        _LOGGER.debug(' - UPDATE OUT MODE ELEMS %s', _outs)
+        _LOGGER.log(9, ' - UPDATE OUT MODE ELEMS %s', _outs)
 
         _abcs = self.abc_modes and any(
             _out for _out in _outs if _out.extn == 'abc')
@@ -432,7 +439,7 @@ class PHSceneTab:
                     self.ui.SVdbModeLabel]),
                 (_cams, [self.ui.SCamPlates]),
                 (_media, [self.ui.SViewer, self.ui.SView])]:
-            _LOGGER.debug('   - UPDATE ELEMS %d %s', _tgl, _elems)
+            _LOGGER.log(9, '   - UPDATE ELEMS %d %s', _tgl, _elems)
             for _elem in _elems:
                 _elem.setVisible(bool(_tgl))
 
@@ -647,7 +654,7 @@ class PHSceneTab:
         for _out in _outs:
             if not dcc.can_reference_output(_out):
                 continue
-            self.stage_import(_out)
+            self.stage_import(_out, redraw=False)
         self.ui.SSceneRefs.redraw()
 
     def _callback__SUpdateToLatest(self):
@@ -1067,8 +1074,8 @@ class PHSceneTab:
                         icon=_LATEST_ICON, enabled=bool(_actions))
 
     def stage_import(
-            self, output, attach_to=None, redraw=False, base=None,
-            namespace=None):
+            self, output, attach_to=None, redraw=True, base=None,
+            namespace=None, reset=False):
         """Stage a reference to be imported.
 
         Args:
@@ -1079,8 +1086,12 @@ class PHSceneTab:
             redraw (bool): update scene refs list
             base (str): override namespace base
             namespace (str): force namespace of import
+            reset (bool): reset imports before adding import
         """
         _LOGGER.debug('STAGE IMPORT')
+
+        if reset:
+            self._callback__SReset()
 
         _out = pipe.CACHE.obt(output)
         _ignore = [_ref.namespace for _ref in self._staged_imports]
@@ -1221,7 +1232,10 @@ def _sort_asset_type(type_):
     Returns:
         (str): sort key
     """
-    return type_ or ''
+    _priority = ['char', 'prop']
+    if type_ in _priority:
+        return _priority.index(type_), type_
+    return len(_priority), type_
 
 
 def _sort_outputs(output):
