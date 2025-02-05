@@ -212,6 +212,7 @@ class PHSceneTab:
         _LOGGER.debug(
             '   - SELECTION %d %s',
             isinstance(self.target, pipe.CPOutputBase), _types)
+        _select = None
         if (
                 self.target and
                 isinstance(self.target, pipe.CPOutputBase) and
