@@ -11,38 +11,38 @@ from .. u_misc import basic_repr, single
 _LOGGER = logging.getLogger(__name__)
 
 
-class PyDefDocs(object):
+class PyDefDocs:
     """Represents docstrings of a python function."""
 
-    def __init__(self, docstring, def_):
+    def __init__(self, body, def_):
         """Constructor.
 
         Args:
-            docstring (str): docstring
+            body (str): docstring
             def_ (PyDef): parent python function
         """
-        self.docstring = docstring or ''
+        self.body = body or ''
         self.def_ = def_
 
-        _body = self.docstring
+        _text = self.body
 
         self.raises = None
-        if 'Raises:' in _body:
-            _body, _raises = _body.rsplit('Raises:', 1)
+        if 'Raises:' in _text:
+            _text, _raises = _text.rsplit('Raises:', 1)
             self.raises = _raises.strip()
 
         self.returns = None
-        if 'Returns:' in _body:
-            _body, _returns = _body.rsplit('Returns:', 1)
+        if 'Returns:' in _text:
+            _text, _returns = _text.rsplit('Returns:', 1)
             self.returns = _returns.strip()
 
         self.args_str = None
         _splitter = "\nArgs:\n"
-        if _splitter in _body:
-            _body, _args_str = _body.rsplit(_splitter, 1)
+        if _splitter in _text:
+            _text, _args_str = _text.rsplit(_splitter, 1)
             self.args_str = _args_str.rstrip()
 
-        self.header = _body.strip()
+        self.header = _text.strip()
         _LOGGER.debug(' - HEADER %s', self.header.split('\n'))
 
         self.title = self.header.split('\n')[0]
@@ -122,7 +122,7 @@ class PyDefDocs(object):
             (str): docstring component
         """
         if mode == 'Raw':
-            _result = self.docstring
+            _result = self.body
         elif mode == 'Header':
             _result = self.header
         elif mode == 'SingleLine':
@@ -135,7 +135,7 @@ class PyDefDocs(object):
         return basic_repr(self, self.def_.name)
 
 
-class _PyArgDocs(object):
+class _PyArgDocs:
     """Represents an argument definition in a docstring."""
 
     def __init__(self, docstring):

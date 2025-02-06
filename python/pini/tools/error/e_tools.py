@@ -24,7 +24,7 @@ class HandledError(RuntimeError):
             icon (str): path to dialog icon
         """
         from pini import icons
-        super(HandledError, self).__init__(message)
+        super().__init__(message)
         self.title = title
         self.icon = icon or icons.find('Hot Pepper')
 
@@ -40,7 +40,7 @@ class FileError(RuntimeError):
             file_ (str): path to file
             line_n (int): line of file causing issue
         """
-        super(FileError, self).__init__(message)
+        super().__init__(message)
         self.file_ = file_
         self.line_n = line_n
 

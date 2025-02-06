@@ -229,7 +229,7 @@ class PHSceneTab:
         _LOGGER.debug(' - REDRAW SOutputTask')
         _LOGGER.debug('   - TARGET %s', self.target)
 
-        _mode = self.ui.SOutputsPane.current_tab_text()
+        _pane = self.ui.SOutputsPane.currentWidget()
         _type = self.ui.SOutputType.selected_text()
         _outs = self.ui.SOutputType.selected_data() or []
         _LOGGER.debug(
@@ -251,7 +251,7 @@ class PHSceneTab:
             _LOGGER.debug(
                 '   - FIND SELECTED TASK FROM TARGET %s %s', _sel,
                 self.target)
-        elif _mode == 'render':
+        elif _pane == self.ui.SMediaTab:
             _sel = 'lighting'
         elif 'rig' in _tasks:  # Select default before add all
             _sel = 'rig'
@@ -281,6 +281,7 @@ class PHSceneTab:
 
         _LOGGER.debug(' - REDRAW SOutputTag')
         _outs = self.ui.SOutputTask.selected_data() or []
+        _tab = self.ui.SOutputsPane.currentWidget()
 
         # Build list of tags
         _tags = sorted({_out.tag for _out in _outs}, key=pipe.tag_sort)
@@ -294,7 +295,7 @@ class PHSceneTab:
 
         # Determine selection
         _sel = None
-        if pipe.DEFAULT_TAG in _tags:
+        if pipe.DEFAULT_TAG in _tags and _tab == self.ui.SAssetsTab:
             _sel = pipe.DEFAULT_TAG
         elif len(_tags) > 1:
             _sel = 'all'
@@ -310,7 +311,7 @@ class PHSceneTab:
     def _redraw__SOutputFormat(self):
 
         _LOGGER.debug(' - REDRAW SOutputFormat')
-        _pane = self.ui.SOutputsPane.current_tab_text()
+        _tab = self.ui.SOutputsPane.currentWidget()
 
         _outs = self.ui.SOutputTag.selected_data() or []
         _extns = sorted({_out.extn for _out in _outs})
@@ -320,6 +321,7 @@ class PHSceneTab:
         if len(_extns) > 1:
             _extns.insert(0, 'all')
             _data.insert(0, _outs)
+        _LOGGER.debug('   - FMTS %s', _extns)
 
         # Apply default format
         _sel = None
@@ -327,10 +329,11 @@ class PHSceneTab:
             _sel = self.target.extn
         if not _sel:
             _fmts_order = []
-            if _pane == 'Asset':
+            if _tab == self.ui.SAssetsTab:
                 _fmts_order = ['ma', 'abc']
-            elif _pane == 'Cache':
-                _fmts_order = ['abc']
+            else:
+                _fmts_order = ['all', 'abc']
+            _LOGGER.debug('   - FMTS ORDER %s', _fmts_order)
             for _fmt in _fmts_order:
                 if _fmt in _extns:
                     _sel = _fmt
@@ -606,12 +609,9 @@ class PHSceneTab:
             f'Apply {_updates:d} update{plural(_updates)}')
 
     def _callback__SOutputsPane(self):
-
         self.settings.save_widget(self.ui.SOutputsPane)
-
-        _tab = self.ui.SOutputsPane.currentWidget()
+        # _tab = self.ui.SOutputsPane.currentWidget()
         self.all_outs = self._read_all_outs()
-
         self.ui.SOutputType.redraw()
 
     def _callback__SOutputType(self):

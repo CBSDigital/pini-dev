@@ -10,7 +10,7 @@ from ..u_misc import basic_repr, single
 _LOGGER = logging.getLogger(__name__)
 
 
-class PyElem(object):
+class PyElem:
     """Base class for any python element - eg. file, def, class."""
 
     parent = None
@@ -64,7 +64,7 @@ class PyElem(object):
             (str): element name
         """
         if self.parent:
-            _name = '{}.{}'.format(self.parent.name, self._ast.name)
+            _name = f'{self.parent.name}.{self._ast.name}'
         else:
             _name = self._ast.name
         return _name
@@ -203,7 +203,7 @@ class PyElem(object):
         return [_elem for _elem in self.find_children()
                 if isinstance(_elem, PyClass)]
 
-    def find_def(self, match, internal=None, recursive=False, catch=False):
+    def find_def(self, match=None, internal=None, recursive=False, catch=False):
         """Find a child def of this object.
 
         Args:
@@ -218,6 +218,9 @@ class PyElem(object):
         _LOGGER.debug('FIND DEF %s', match)
         _defs = self.find_defs(internal=internal, recursive=recursive)
         _LOGGER.debug(' - FOUND %d DEFS %s', len(_defs), _defs)
+
+        if len(_defs) == 1:
+            return single(_defs)
 
         _matches = [
             _def for _def in _defs
@@ -261,6 +264,16 @@ class PyElem(object):
             (Module): ast module
         """
         return self._ast
+
+    def to_code(self):
+        """Obtain this element's code.
+
+        Returns:
+            (str): element code
+        """
+        _lines = self.py_file.read_lines()
+        _ast = self.to_ast()
+        return '\n'.join(_lines[_ast.lineno-1:_ast.end_lineno])
 
     def to_docstring(self):
         """Obtain docstring.

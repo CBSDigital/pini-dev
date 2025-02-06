@@ -565,6 +565,7 @@ class MetadataFile(File):
     """
 
     cache_file_extn = 'yml'
+    cache_loc = 'adjacent'
 
     @property
     def cache_fmt(self):
@@ -573,7 +574,17 @@ class MetadataFile(File):
         Returns:
             (str): cache format
         """
-        return f'{self.dir}/.pini/{self.base}_{{func}}.{self.cache_file_extn}'
+        _suffix = f'{self.base}_{{func}}.{self.cache_file_extn}'
+        if self.cache_loc == 'adjacent':
+            return f'{self.dir}/.pini/{_suffix}'
+        if self.cache_loc == 'home':
+            from pini.utils import HOME
+            assert self.path[1] == ':'
+            assert self.path[2] == '/'
+            _drive = self.path[0]
+            return HOME.to_file(
+                f'.pini/cache/{_drive}/{self.dir[3:]}/{_suffix}').path
+        raise NotImplementedError(self.cache_loc)
 
     @property
     def metadata(self):
