@@ -20,7 +20,7 @@ def _read_mounts():
     Returns:
         (str list): mounted drive root paths
     """
-    _letters = [chr(_idx) for _idx in range(ord('A'), ord('Z')+1)]
+    _letters = [chr(_idx) for _idx in range(ord('A'), ord('Z') + 1)]
     _mounts = []
     for _letter in _letters:
         _path = _letter + ":/"
@@ -86,8 +86,8 @@ def _get_tmp_dir():
     _user = getpass.getuser()
     _LOGGER.debug(' - USER %s', _user)
     for _cropped_user in [
-            _user[:6]+'~1',
-            _user[:6].upper()+'~1',
+            _user[:6] + '~1',
+            _user[:6].upper() + '~1',
     ]:
         _LOGGER.debug(' - CROPPED USER %s', _cropped_user)
         if _tmp.count(_cropped_user) == 1:
@@ -101,7 +101,7 @@ TMP_PATH = _get_tmp_dir()
 
 
 def abs_path(path, win=False, root=None):
-    """Make the given path absolute and normalised.
+    r"""Make the given path absolute and normalised.
 
     eg. C://path -> C:/path
         c://path -> C:/path
@@ -124,7 +124,7 @@ def abs_path(path, win=False, root=None):
     if isinstance(_path, Path):
         _path = _path.path
     if not isinstance(_path, str):
-        raise ValueError('bad type {}'.format(_path))
+        raise ValueError(f'bad type {_path}')
     _path = str(_path)  # convert unicode
     _path = _path.strip('"')
 
@@ -132,11 +132,11 @@ def abs_path(path, win=False, root=None):
     if _path == '~':
         _path = HOME_PATH
     elif _path.startswith('~/'):
-        _path = HOME_PATH+_path[1:]
+        _path = HOME_PATH + _path[1:]
     elif _path.startswith('file:///'):
         _path = _path.replace('file:///', '', 1)
         if len(_path) > 2 and _path[1] != ':':  # Fix linux style
-            _path = '/'+_path
+            _path = '/' + _path
     _path = norm_path(_path)
 
     # Apply allowed root
@@ -220,7 +220,7 @@ def error_on_file_system_disabled(path=None):
     if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
         _msg = "Access file system disabled using PINI_DISABLE_FILE_SYSTEM"
         if path:
-            _msg += ' '+path
+            _msg += ' ' + path
         raise DebuggingError(_msg)
 
 
@@ -252,7 +252,7 @@ def copied_path():
     _LOGGER.debug(' - JOBS ROOT %s', pipe.ROOT.path)
     if pipe.ROOT.path in _text:
         _, _rel_path = _text.rsplit(pipe.ROOT.path, 1)
-        _path = abs_path('{}/{}'.format(pipe.ROOT.path, _rel_path))
+        _path = abs_path(f'{pipe.ROOT.path}/{_rel_path}')
         if os.path.exists(_path):
             return _path
 
@@ -266,7 +266,7 @@ def is_abs(path):
         path (str): path to test
 
     Returns:
-        ():
+        (bool): whether path is absolute
     """
     if not path:
         return False
@@ -293,8 +293,8 @@ def norm_path(path):
     _path = _path.strip('"')
     try:
         _path = os.path.normpath(_path).replace('\\', '/')
-    except AttributeError:
-        raise ValueError(_path)
+    except AttributeError as _exc:
+        raise ValueError(_path) from _exc
 
     # Normalise drive letter
     if is_abs(_path):
@@ -449,11 +449,11 @@ def _search_file_contents(file_, body, text, filter_, edit):
             _n_lines += 1
             if not _printed_path:
                 lprint(abs_path(file_))
-            lprint('{:>6} {}'.format(
-                '[{:d}]'.format(_idx+1), _line.rstrip()))
+            _line_s = f'[{_idx+1:d}]'
+            lprint(f'{_line_s:>6} {_line.rstrip()}')
             _printed_path = True
             if edit:
-                File(file_).edit(line_n=_idx+1)
+                File(file_).edit(line_n=_idx + 1)
                 raise StopIteration
 
     if _printed_path:

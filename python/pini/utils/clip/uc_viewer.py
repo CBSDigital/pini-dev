@@ -67,6 +67,9 @@ class _DjvView(_Viewer):
         """
         from .. import clip
 
+        if fps:
+            _LOGGER.warning('UNUSED FPS ARG %s', fps)
+
         # Build cmds
         if isinstance(clip_, clip.Seq):
             _path = clip_.path.replace("%04d", "#")
@@ -101,6 +104,8 @@ class _DJV(_Viewer):
             fps (float): apply frame rate
         """
         from .. import clip
+        if fps:
+            _LOGGER.warning('UNUSED FPS ARG %s', fps)
         if isinstance(clip_, clip.Seq):
             _path = clip_.path.replace("%04d", "#")
         else:
@@ -182,7 +187,8 @@ class _VLC(_Viewer):
         from .. import clip
         if isinstance(clip_, clip.Seq):
             raise ValueError(clip_)
-
+        if fps:
+            _LOGGER.warning('UNUSED FPS ARG %s', fps)
         _file = File(clip_)
         assert _file.exists()
         assert self.exe
@@ -208,7 +214,8 @@ class _WMPlayer(_Viewer):
         from .. import clip
         if isinstance(clip_, clip.Seq):
             raise ValueError(clip_)
-
+        if fps:
+            _LOGGER.warning('UNUSED FPS ARG %s', fps)
         _file = File(clip_)
         assert _file.exists()
         assert self.exe
@@ -243,7 +250,7 @@ def find_viewer(name=None, plays_seqs=None, plays_videos=None):
     if _match:
         return _match
     if name:
-        raise ValueError('Failed to find viewer '+name)
+        raise ValueError('Failed to find viewer ' + name)
     return _viewers[0]
 
 

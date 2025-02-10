@@ -57,7 +57,7 @@ class CRenderLayer(wrapper.CNode):
         Args:
             pass_name (str): pass name to apply
         """
-        _node_name = 'rs_'+pass_name
+        _node_name = 'rs_' + pass_name
         self.render_setup_layer.rename(pass_name)
         self.rename(_node_name)
         self.__init__(pass_name)  # pylint: disable=unnecessary-dunder-call

@@ -11,10 +11,11 @@ from . import up_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-def find(path, depth=None, class_=None, type_=None, catch_missing=False,
-         catch_access_error=False, base=None, filter_=None, full_path=True,
-         hidden=False, extn=EMPTY, extns=None, head=None, tail=None,
-         filename=None):
+def find(
+        path, depth=None, class_=None, type_=None, catch_missing=False,
+        catch_access_error=False, base=None, filter_=None, full_path=True,
+        hidden=False, extn=EMPTY, extns=None, head=None, tail=None,
+        filename=None):
     """Search for files within the given directory.
 
     This is aimed to mimic the behaviour of the linux/bash find command.
@@ -137,7 +138,7 @@ def _read_find_data(
             continue
 
         _c_path = up_utils.abs_path(  # Clean path
-            '{}/{}'.format(dir_.path, _rc_path))
+            f'{dir_.path}/{_rc_path}')
         _LOGGER.debug(' - TESTING %s %s', _rc_path, _c_path)
 
         # Read type

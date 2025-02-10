@@ -126,7 +126,7 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
         _LOGGER.error(' - FAILED TO FIND FONT %s', _names)
         _font = QtGui.QFont()
     _LOGGER.info(' - FONT %s %s', _name, _font)
-    _font.setPointSize(height*0.4)
+    _font.setPointSize(height * 0.4)
     _metrics = QtGui.QFontMetrics(_font)
 
     # Draw header
@@ -134,12 +134,13 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _pix = qt.CPixmap(_res[0], height)
     _pix.fill(_fade)
     _pix.draw_text(
-        pipe.NAME.upper(), (inset, height/2), anchor='L', font=_font)
+        pipe.NAME.upper(), (inset, height / 2), anchor='L', font=_font)
     _pix.draw_text(
-        strftime('%Y-%m-%d'), (_seq_w-inset-2, height/2),
+        strftime('%Y-%m-%d'), (_seq_w - inset - 2, height / 2),
         anchor='R', font=_font)
     if _job:
-        _pix.draw_text(_job.name, (_seq_w/2, height/2), anchor='C', font=_font)
+        _pix.draw_text(
+            _job.name, (_seq_w / 2, height / 2), anchor='C', font=_font)
     _pix.save_as(_header, force=True, verbose=0)
 
     # Draw footer
@@ -147,27 +148,27 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _pix = qt.CPixmap(_seq_w, height)
     _pix.fill(_fade)
     _pix.draw_text(
-        video.base, (inset, height/2), anchor='L', font=_font)
+        video.base, (inset, height / 2), anchor='L', font=_font)
     _pix.save_as(_footer, force=True, verbose=0)
 
     # Write frame number overlays
     _path = Dir(TMP_PATH).to_file('pini/overlay_frames/frame.%04d.png')
     _frame_ns = Seq(_path)
     _frame_ns.delete(force=True)
-    _frames_overlay_w = height*6
+    _frames_overlay_w = height * 6
     for _frame in seq.to_frames():
         _pix = qt.CPixmap(_frames_overlay_w, height)
         _pix.fill(_transparent)
         for _num, _x_pos in [
                 (_start, height),
-                (_frame, height*3),
-                (_end, height*5),
+                (_frame, height * 3),
+                (_end, height * 5),
         ]:
-            _pos = qt.to_p(_x_pos, height/2)
+            _pos = qt.to_p(_x_pos, height / 2)
             _pix.draw_text(
                 f'{_num:04d}', pos=_pos, anchor='C', font=_font)
-        for _x_pos in [height*2, height*4]:
-            _pos = qt.to_p(_x_pos, height/2)
+        for _x_pos in [height * 2, height * 4]:
+            _pos = qt.to_p(_x_pos, height / 2)
             _pix.draw_text('-', pos=_pos, anchor='C', font=_font)
         _pix.save_as(_frame_ns[_frame], force=True, verbose=0)
 
@@ -302,7 +303,7 @@ def _handle_conversion_fail(seq, video, err):
 
     # Compression fail
     if 'Compression 8 is not implemented' in err:
-        raise RuntimeError('Unsupported compression '+seq.path)
+        raise RuntimeError('Unsupported compression ' + seq.path)
 
     # Res fail
     if (
@@ -313,7 +314,7 @@ def _handle_conversion_fail(seq, video, err):
             f'Unsupported resolution {_res[0]:d}x{_res[1]:d} (H264 requires '
             f'width and height be divisible by two) - {seq.path}')
 
-    raise RuntimeError('Conversion failed '+seq.path)
+    raise RuntimeError('Conversion failed ' + seq.path)
 
 
 def video_to_frame(video, file_, res=None, frame=None, force=False):
@@ -337,7 +338,7 @@ def video_to_frame(video, file_, res=None, frame=None, force=False):
     if frame is not None:
         _time = frame / video.to_fps()
     else:
-        _time = video.to_dur()/2
+        _time = video.to_dur() / 2
     _LOGGER.info(' - TIME %f', _time)
 
     # Build ffmpeg commands
@@ -356,7 +357,7 @@ def video_to_frame(video, file_, res=None, frame=None, force=False):
     if not _img.exists():
         _LOGGER.info('OUT %s', _out)
         _LOGGER.info('ERR %s', _err)
-        raise RuntimeError('Failed to export image '+_img.path)
+        raise RuntimeError('Failed to export image ' + _img.path)
 
     return _img
 
@@ -405,7 +406,7 @@ def video_to_seq(video, seq, fps=None, res=None, force=False, verbose=1):
     if not seq.exists():
         _LOGGER.info('OUT %s', _out)
         _LOGGER.info('ERR %s', _err)
-        raise RuntimeError('Failed to compile seq '+seq.path)
+        raise RuntimeError('Failed to compile seq ' + seq.path)
 
     _f_start, _f_end = seq.to_range()
     _LOGGER.info(' - WROTE FRAMES %d-%d IN %s', _f_start, _f_end,

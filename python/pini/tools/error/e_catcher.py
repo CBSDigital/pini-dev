@@ -2,21 +2,13 @@
 
 import functools
 import logging
-import os
 import sys
 
 from pini.utils import File, abs_path
 
+from . import e_tools
+
 _LOGGER = logging.getLogger(__name__)
-
-
-def _is_disabled():
-    """Check whether the error catcher is disabled.
-
-    Returns:
-        (bool): whether disabled
-    """
-    return os.environ.get('PINI_DISABLE_ERROR_CATCHER') == '1'
 
 
 def get_catcher(parent=None, qt_safe=False, supress_error=False):
@@ -38,7 +30,7 @@ def get_catcher(parent=None, qt_safe=False, supress_error=False):
 
             from pini import dcc
 
-            if _is_disabled() or dcc.batch_mode():
+            if e_tools.is_disabled() or dcc.batch_mode():
                 return func(*args, **kwargs)
 
             # Run the function and catch any errors
@@ -83,7 +75,9 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
         _title = exc.title or 'Error'
         qt.notify(str(exc), title=_title, icon=exc.icon, parent=parent)
 
-    elif isinstance(exc, error.FileError):
+    elif (
+            isinstance(exc, error.FileError) and
+            not e_tools.is_disabled('FileError')):
         _LOGGER.info(' - FILE ERROR %s', exc)
         File(exc.file_).edit(line_n=exc.line_n)
 
@@ -123,19 +117,3 @@ def catch(func, supress_error=False):
         (fn): decorated function
     """
     return get_catcher(supress_error=supress_error)(func)
-
-
-def toggle(enabled=None):
-    """Toggle error catcher on/off.
-
-    Args:
-        enabled (bool): state to apply
-    """
-    _enable = _is_disabled() if enabled is None else enabled
-    if _enable:
-        if 'PINI_DISABLE_ERROR_CATCHER' in os.environ:
-            del os.environ['PINI_DISABLE_ERROR_CATCHER']
-        _LOGGER.info('ERROR CATCHER ENABLED')
-    else:
-        os.environ['PINI_DISABLE_ERROR_CATCHER'] = '1'
-        _LOGGER.info('ERROR CATCHER DISABLED')

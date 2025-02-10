@@ -5,6 +5,7 @@
 import copy
 import logging
 import os
+import pprint
 
 from pini import dcc
 from pini.utils import single, EMPTY, passes_filter, cache_result
@@ -190,7 +191,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             (CPWorkDir list): matching work dirs
         """
         from pini import pipe
-        _LOGGER.debug('FIND WORK DIRS dcc_=%s', dcc_, **kwargs)
+        _LOGGER.debug('FIND WORK DIRS dcc_=%s %s', dcc_, kwargs)
 
         _all_work_dirs = self._read_work_dirs()
         _LOGGER.debug(
@@ -307,8 +308,6 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _dcc = dcc_
         if _dcc is None:
             _dcc = dcc.NAME
-        if not _dcc:
-            raise ValueError('No dcc defined')
 
         # Find template
         _tmpls = self.job.find_templates(
@@ -449,12 +448,13 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         raise NotImplementedError
 
     def to_output(
-            self, template, task=None, step=None, tag=None, output_type=None,
-            output_name=None, dcc_=None, user=None, ver_n=1, extn=None):
+            self, template, task=None, step=None, tag=None,
+            output_type=None, output_name=None, dcc_=None, user=None, ver_n=1,
+            extn=None):
         """Build an output object for this entity.
 
         Args:
-            template (CPTemplate): output template to use
+            template (CPTemplate|str): output template to use
             task (str): output task
             step (str): output step (if applicable)
             tag (str): output tag
@@ -473,20 +473,9 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         # Get template
         _tag = tag or self.job.cfg['tokens']['tag']['default']
-        if isinstance(template, pipe.CPTemplate):
-            _tmpl = template
-        elif isinstance(template, str):
-            _want_key = {
-                'output_type': bool(output_type)}
-            _LOGGER.debug(' - WANT KEY %s', _want_key)
-            _has_key = {
-                'tag': bool(_tag),
-                'ver': bool(ver_n)}
-            _LOGGER.debug(' - HAS KEY %s', _has_key)
-            _tmpl = self.find_template(
-                template, has_key=_has_key, want_key=_want_key)
-        else:
-            raise ValueError(template)
+        _tmpl = self._to_output_template(
+            template, output_type=output_type, task=task, dcc_=dcc_, tag=_tag,
+            ver_n=ver_n)
         _LOGGER.debug(' - TMPL %s', _tmpl)
         _LOGGER.debug(' - TAG %s', _tag)
 
@@ -519,7 +508,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _data['extn'] = _extn
         if 'work_dir' in _tmpl.keys():
             _LOGGER.debug(' - TO WORK DIR %s %s', step, task)
-            _work_dir = self.to_work_dir(step=step, task=task)
+            _work_dir = self.to_work_dir(step=step, task=task, dcc_=dcc_)
             _data['work_dir'] = _work_dir.path
         if 'job_prefix' in _tmpl.keys():
             _data['job_prefix'] = self.job.to_prefix()
@@ -536,6 +525,50 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _path = _tmpl.format(_data)
         _LOGGER.debug(' - PATH %s', _path)
         return pipe.to_output(_path, template=_tmpl)
+
+    def _to_output_template(
+            self, template, output_type, task, dcc_, tag, ver_n):
+        """Obtain an output template.
+
+        Args:
+            template (CPTemplate|str): output template to use
+            output_type (str): apply output name
+            task (str): output task
+            dcc_ (str): output dcc (if applicable)
+            tag (str): output dcc
+            ver_n (int): output version
+
+        Returns:
+            (CPTemplate): output template
+        """
+        from pini import pipe
+
+        if isinstance(template, pipe.CPTemplate):
+            return template
+
+        if isinstance(template, str):
+            _want_key = {
+                'output_type': bool(output_type),
+                'work_dir': bool(task),
+                'dcc': bool(dcc_)}
+            _LOGGER.debug(' - WANT KEY %s', _want_key)
+            _has_key = {
+                'tag': bool(tag),
+                'ver': bool(ver_n)}
+            _LOGGER.debug(' - HAS KEY %s', _has_key)
+            _tmpl = self.find_template(
+                template, has_key=_has_key, want_key=_want_key,
+                dcc_=dcc_, catch=True)
+
+            if not _tmpl:
+                pprint.pprint(self.find_templates(
+                    template, has_key=_has_key, want_key=_want_key))
+                raise ValueError(
+                    f'Failed to find {template} template in {self.path}')
+
+            return _tmpl
+
+        raise ValueError(template)
 
     def to_work(
             self, task, step=None, tag=None, ver_n=1, dcc_=None, user=None,

@@ -290,7 +290,7 @@ def create_ai_standin(path, namespace, group=None):
     """
     cmds.loadPlugin('mtoa', quiet=True)
 
-    _shp = pom.CMDS.createNode('aiStandIn', name=namespace+'Shape')
+    _shp = pom.CMDS.createNode('aiStandIn', name=namespace + 'Shape')
     _is_seq = isinstance(path, Seq)
     if _is_seq:
         _path = path[path.frames[0]]
@@ -327,7 +327,7 @@ def create_ai_vol(output, namespace, group=None):
     assert isinstance(output, Seq)
     cmds.loadPlugin('mtoa', quiet=True)
     _seq = output
-    _shp = pom.CMDS.createNode('aiVolume', name=namespace+'Shape')
+    _shp = pom.CMDS.createNode('aiVolume', name=namespace + 'Shape')
     _path = _seq[_seq.frames[0]]
     _shp.plug['filename'].set_val(_path)
     _tfm = _shp.to_parent().rename(namespace)

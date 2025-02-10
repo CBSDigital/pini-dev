@@ -67,7 +67,7 @@ class CVector(base.CArray3, om.MVector):
         return _crv
 
     def __mul__(self, other):
-        return CVector(self[0]*other, self[1]*other, self[2]*other)
+        return CVector(self[0] * other, self[1] * other, self[2] * other)
 
     def __rxor__(self, other):
         """Obtain cross product of this vector and another one.

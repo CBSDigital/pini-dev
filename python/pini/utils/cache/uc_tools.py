@@ -87,7 +87,7 @@ def build_cache_fmt(
     if mode == 'tmp':
         _root = TMP_PATH
     elif mode == 'home':
-        _root = HOME_PATH+'/tmp'
+        _root = HOME_PATH + '/tmp'
     else:
         raise ValueError(mode)
 

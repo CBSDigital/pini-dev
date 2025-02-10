@@ -281,7 +281,7 @@ class Path:
         return self.path
 
 
-def _get_owner_nt(path):
+def _get_owner_nt(path):  # pylint: disable=too-many-locals
     """Get windows path owner.
 
     Args:

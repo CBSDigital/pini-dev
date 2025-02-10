@@ -282,7 +282,7 @@ def obtain_menu(label, replace=False):
 
     # Create if not found
     return cmds.menu(
-        label+"_MENU", label=label, tearOff=True, parent=get_main_window())
+        label + "_MENU", label=label, tearOff=True, parent=get_main_window())
 
 
 def raise_attribute_editor():

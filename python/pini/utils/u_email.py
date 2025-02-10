@@ -74,8 +74,7 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
             _hook.set_payload(open(_file.path, 'rb').read())
             email.encoders.encode_base64(_hook)
             _hook.add_header(
-                'Content-Disposition', 'attachment;filename={}'.format(
-                    _file.filename))
+                'Content-Disposition', f'attachment;filename={_file.filename}')
             _email.attach(_hook)
 
     _server = smtplib.SMTP(_server)

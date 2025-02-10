@@ -29,4 +29,4 @@ class UnrealDCC(BaseDCC):
         _world = _ss.get_editor_world()
         _name = _world.get_name()
 
-        return abs_path('{}/{}.umap'.format(_dir, _name))
+        return abs_path(f'{_dir}/{_name}.umap')

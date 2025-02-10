@@ -5,15 +5,14 @@ import nuke
 
 from pini import dcc, pipe, testing
 
-from nuke_pini.tools import autowrite2
-
+from nuke_pini.tools import autowrite
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class TestTools(unittest.TestCase):
 
-    def test_autowrite2(self):
+    def test_autowrite(self):
 
         # Check test shots exist
         _job = testing.TEST_JOB
@@ -42,7 +41,7 @@ class TestTools(unittest.TestCase):
         pipe.CACHE.reset()
         _const = nuke.createNode('Constant')
         _const['color'].setValue([1, 1, 0, 1])
-        _node = autowrite2.build()
+        _node = autowrite.build()
         assert _node['name'].value() == 'main'
         dcc.set_range(1001, 1005)
         assert _node['ety_mode'].value() == 'Linked'
@@ -82,4 +81,4 @@ class TestTools(unittest.TestCase):
         # Test mov
         _node['file_type'].setValue('mov')
         assert _node.output.extn == 'mov'
-        assert isinstance(_node.output, pipe.CPOutput)
+        assert isinstance(_node.output, pipe.CPOutputBase)

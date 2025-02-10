@@ -103,7 +103,7 @@ def _find_path_exe(name):
     for _path in os.environ['PATH'].split(_sep):
         _dir = Dir(_path)
         if sys.platform == 'win32':
-            _exe = _dir.to_file(name+'.exe')
+            _exe = _dir.to_file(name + '.exe')
         else:
             _exe = _dir.to_file(name)
         _LOGGER.debug('CHECKING FILE %s', _exe)
@@ -130,4 +130,4 @@ def find_exe(name, catch=True, force=False):
         return _exe
     if catch:
         return None
-    raise OSError('Failed to find exe '+name)
+    raise OSError('Failed to find exe ' + name)

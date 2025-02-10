@@ -331,7 +331,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         if not _frames:
             return True
         for _idx, _this in enumerate(_frames[:-1]):
-            _next = _frames[_idx+1]
+            _next = _frames[_idx + 1]
             if _this + 1 != _next:
                 return True
         return False
@@ -417,7 +417,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Returns:
             (File): central frame file
         """
-        _ctr_frame = self.frames[int(len(self.frames)/2)]
+        _ctr_frame = self.frames[int(len(self.frames) / 2)]
         _ctr_file = self[_ctr_frame]
         return File(_ctr_file)
 
@@ -467,7 +467,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _frame = frame
         if not _frame:
             _frames = self.to_frames()
-            _frame = _frames[int(len(_frames)/2)]
+            _frame = _frames[int(len(_frames) / 2)]
         return File(self[_frame])
 
     def to_frame_files(self):
@@ -506,7 +506,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         _frames = self.to_frames(force=force)
         if not _frames:
-            raise OSError('No frames found '+self.path)
+            raise OSError('No frames found ' + self.path)
         return _frames[0], _frames[-1]
 
     def to_res(self):
@@ -520,7 +520,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         from pini.utils import Image
         _start, _end = self.to_range()
         assert self.frames
-        _frame = self.frames[int(len(self.frames)/2)]
+        _frame = self.frames[int(len(self.frames) / 2)]
         _img = Image(self[_frame])
         _LOGGER.debug('TO RES %s', _img.path)
         return _img.to_res()
@@ -585,7 +585,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _video.delete(force=force, wording='replace')
         assert not _video.exists()
         if _video.extn.lower() not in ('mp4', 'mov'):
-            raise RuntimeError('Bad extn '+_video.path)
+            raise RuntimeError('Bad extn ' + _video.path)
         _video.test_dir()
 
         # Build video
@@ -773,7 +773,7 @@ def find_seqs(
         _frame = int(_frame_str)
         _frame_expr = f'%0{len(_frame_str):d}d'
         _LOGGER.debug('   - FRAME EXPR %s', _frame_expr)
-        _seq_base = _file.base[:-len(_frame_str)]+_frame_expr
+        _seq_base = _file.base[:-len(_frame_str)] + _frame_expr
         _seq_path = _file.to_file(base=_seq_base).path
 
         # Ignore
@@ -825,7 +825,7 @@ def _tokenise_base(base, split_chrs):
     """
     if len(split_chrs) == 1:
         return base.split(split_chrs)
-    return re.split('['+split_chrs+']', base)
+    return re.split('[' + split_chrs + ']', base)
 
 
 def file_to_seq(file_, safe=True, catch=False):

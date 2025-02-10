@@ -47,6 +47,11 @@ def _build_reload_tool():
                 label='Toggle error catcher',
                 icon=icons.find('Police Car Light'), command=error.toggle),
             PITool(
+                name='ToggleErrorCatcher',
+                label='Toggle file errors',
+                icon=icons.find('Police Car Light'),
+                command=wrap_fn(error.toggle, 'FileError')),
+            PITool(
                 name='ToggleSanityCheck',
                 label='Toggle sanity check',
                 icon=icons.find('Police Car Light'),
@@ -92,14 +97,14 @@ REVERT_SCENE_TOOL = PITool(
 
 PINI_HELPER_BASIC_TOOL = PITool(
     name='PiniHelperBasic',
-    label='Launch {} (non-docking)'.format(helper.TITLE),
+    label=f'Launch {helper.TITLE} (non-docking)',
     icon=helper.ICON, command='\n'.join([
         'from pini.tools import helper',
         'helper.launch(use_basic=True)']))
 
 PINI_HELPER_NO_RESET = PITool(
     name='PiniHelperBasic',
-    label='Launch {} (no cache reset)'.format(helper.TITLE),
+    label=f'Launch {helper.TITLE} (no cache reset)',
     icon=helper.ICON, command='\n'.join([
         'from pini.tools import helper',
         'helper.launch(reset_cache=False)']))
@@ -188,8 +193,8 @@ def _build_sanity_check():
         _sc_task = PITool(
             name='SanityCheck'+_name, command='\n'.join([
                 'from pini.tools import sanity_check',
-                'sanity_check.launch_ui(task="{}")'.format(_task)]),
-            label='Launch {} Sanity Check'.format(_name),
+                f'sanity_check.launch_ui(task="{_task}")']),
+            label=f'Launch {_name} Sanity Check',
             icon=sanity_check.ICON)
         _sanity.add_context(_sc_task)
 

@@ -53,7 +53,7 @@ class SubstanceDCC(BaseDCC):
         """
         return None
 
-    def t_range(self, **kwargs):  # pylint: disable=unused-argument
+    def t_range(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Get start/end frames.
 
         Returns:

@@ -191,7 +191,7 @@ class _Shader(pom.CNode):
         _outs = self.out_col.find_outgoing(plugs=False, type_='shadingEngine')
         _se = single(_outs, catch=True)
         if not _se and create:
-            _name = str(self)+"SG"
+            _name = str(self) + "SG"
             _se = cmds.sets(
                 name=_name, renderable=True, noSurfaceShader=True,
                 empty=True)

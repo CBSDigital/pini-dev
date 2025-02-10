@@ -92,8 +92,8 @@ class PyDefDocs:
         _arg_strs = []
         for _line in self.args_str.split('\n'):
             _LOGGER.log(9, 'LINE %s', _line)
-            if not _line.startswith(' '*8):
-                if not _line.startswith(' '*4):
+            if not _line.startswith(' ' * 8):
+                if not _line.startswith(' ' * 4):
                     _LOGGER.info(' - FAILED TO READ ARGS %s', self)
                     raise ValueError
                 _arg_strs.append(_line.strip())

@@ -22,7 +22,7 @@ def to_uv(uv):
     return PUV(uv)
 
 
-class PUV(object):
+class PUV:
     """Represents a mesh UV value."""
 
     def __init__(self, uv):
@@ -34,10 +34,10 @@ class PUV(object):
         self.u, self.v = uv
 
     def __repr__(self):
-        return basic_repr(self, '({:.04f}, {:.04f})'.format(self.u, self.v))
+        return basic_repr(self, f'({self.u:.04f}, {self.v:.04f})')
 
 
-class PUVBBox(object):
+class PUVBBox:
     """Represents a bounding box in UV space."""
 
     def __init__(self, uvs):
@@ -50,14 +50,10 @@ class PUVBBox(object):
         self.max = PUV((0, 0))
         assert uvs
         for _uv in uvs:
-            if _uv.u > self.max.u:
-                self.max.u = _uv.u
-            if _uv.u < self.min.u:
-                self.min.u = _uv.u
-            if _uv.v > self.max.v:
-                self.max.v = _uv.v
-            if _uv.v < self.min.v:
-                self.min.v = _uv.v
+            self.max.u = max(self.max.u, _uv.u)
+            self.min.u = min(self.min.u, _uv.u)
+            self.max.v = max(self.max.v, _uv.v)
+            self.min.v = min(self.min.v, _uv.v)
 
     @property
     def height(self):
@@ -98,10 +94,11 @@ class PUVBBox(object):
         Args:
             dist (float): distance to expand by
         """
-        self.min = to_uv([self.min.u-dist, self.min.v-dist])
-        self.max = to_uv([self.max.u+dist, self.max.v+dist])
+        self.min = to_uv([self.min.u - dist, self.min.v - dist])
+        self.max = to_uv([self.max.u + dist, self.max.v + dist])
 
     def __repr__(self):
-        _label = '({:.04f}, {:.04f}) -> ({:.04f}, {:.04f})'.format(
-            self.min.u, self.min.v, self.max.u, self.max.v)
+        _label = (
+            f'({self.min.u:.04f}, {self.min.v:.04f}) -> '
+            f'({self.max.u:.04f}, {self.max.v:.04f})')
         return basic_repr(self, _label)

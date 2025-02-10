@@ -24,7 +24,7 @@ class _CNukePipeRef(pr_base.CPipeRef):
             path (str): node reference path
             node (Node): read node
         """
-        super(_CNukePipeRef, self).__init__(
+        super().__init__(
             path=path, namespace=node.name())
         self.node = node
 
@@ -58,7 +58,7 @@ class CNukeCamAbcRef(CNukeAbcRef):
     @functools.wraps(_CNukePipeRef.__init__)
     def __init__(self, *args, **kwargs):
         """Constructor."""
-        super(CNukeCamAbcRef, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def update(self, out):
         """Update this node to a new path.
@@ -67,7 +67,7 @@ class CNukeCamAbcRef(CNukeAbcRef):
             out (str): path to apply
         """
         self.node['read_from_file'].setValue(False)
-        super(CNukeCamAbcRef, self).update(out)
+        super().update(out)
         self.node['read_from_file'].setValue(True)
 
 

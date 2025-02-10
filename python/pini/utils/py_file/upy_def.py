@@ -36,17 +36,19 @@ class PyDef(upy_elem.PyElem):
         """
         return tuple(self.find_args())
 
-    def find_arg(self, name):
+    def find_arg(self, name, catch=False):
         """Find an arg from this def.
 
         Args:
             name (str): arg name
+            catch (bool): no error of no arg found
 
         Returns:
             (PyArg): matching arg
         """
-        return single([_arg for _arg in self.find_args()
-                       if _arg.name == name])
+        return single(
+            [_arg for _arg in self.find_args() if _arg.name == name],
+            catch=catch)
 
     def find_args(self):
         """Find args of this def.

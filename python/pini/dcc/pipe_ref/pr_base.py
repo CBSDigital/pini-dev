@@ -10,7 +10,7 @@ from pini.utils import File, split_base_index, basic_repr
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPipeRef(object):
+class CPipeRef:
     """Represents a pipeline output referenced into a dcc."""
 
     node = None
@@ -46,7 +46,7 @@ class CPipeRef(object):
         self._out = pipe.to_output(self.path, catch=True)
         _LOGGER.debug(' - OUT %s', self._out)
         if not self._out:
-            raise ValueError('Failed to map path to output '+self.path)
+            raise ValueError('Failed to map path to output ' + self.path)
         self._out_c = pipe.CACHE.obt_output(self._out, catch=True)
 
     @property
@@ -156,7 +156,7 @@ class CPipeRef(object):
         from pini import qt
         _ns = qt.input_dialog(
             title='Rename',
-            msg='Enter new name for {}:'.format(self.namespace),
+            msg=f'Enter new name for {self.namespace}:',
             default=self.namespace, parent=parent)
         self.rename(_ns)
 
@@ -215,4 +215,4 @@ def to_cmp_str(namespace):
         (str): comparison string
     """
     _base, _idx = split_base_index(namespace)
-    return '{}{:05d}'.format(_base, _idx)
+    return f'{_base}{_idx:05d}'

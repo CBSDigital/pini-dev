@@ -44,8 +44,8 @@ class CArray3:
         # Build loc
         _name = to_unique(name)
         _loc = pom.CMDS.spaceLocator(name=_name)
-        if _loc.shp != str(_loc)+"Shape":
-            cmds.rename(_loc.shp, to_clean(str(_loc)+"Shape"))
+        if _loc.shp != str(_loc) + "Shape":
+            cmds.rename(_loc.shp, to_clean(str(_loc) + "Shape"))
         self.apply_to(_loc)
 
         # Apply col
@@ -55,7 +55,7 @@ class CArray3:
         # Apply scale
         _scale = pom.LOC_SCALE if scale is None else scale
         if scale != 1.0:
-            _loc.shp.plug['localScale'].set_val([_scale]*3)
+            _loc.shp.plug['localScale'].set_val([_scale] * 3)
 
         return _loc
 

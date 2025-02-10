@@ -7,7 +7,7 @@ from pini.utils import single, basic_repr
 from . import cpt_uv, cpt_vertex
 
 
-class PFace(object):
+class PFace:
     """Represents a face on a mesh."""
 
     def __init__(self, mesh, idx):
@@ -62,7 +62,7 @@ class PFace(object):
             idx=_v_idx, mesh=self.mesh) for _v_idx in _v_idxs]
 
     def __str__(self):
-        return '{}.f[{:d}]'.format(self.mesh, self.idx)
+        return f'{self.mesh}.f[{self.idx:d}]'
 
     def __repr__(self):
         return basic_repr(self, str(self))

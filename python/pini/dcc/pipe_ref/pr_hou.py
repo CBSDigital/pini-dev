@@ -24,7 +24,7 @@ class CHouAbcGeometryRef(pr_base.CPipeRef):
         self.node = node
         _file = abs_path(node.parm('fileName').eval())
         _ns = namespace or node.parent().name()
-        super(CHouAbcGeometryRef, self).__init__(path=_file, namespace=_ns)
+        super().__init__(path=_file, namespace=_ns)
 
     def delete(self, force=False):
         """Delete this reference from the current scene.
@@ -61,7 +61,7 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         Args:
             node (Node): alembicarchive object node
         """
-        super(CHouAbcArchiveRef, self).__init__(
+        super().__init__(
             node=node, namespace=node.name())
 
     def delete(self, force=False):
@@ -80,7 +80,7 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         Args:
             out (str): abc to update to
         """
-        super(CHouAbcArchiveRef, self).update(out)
+        super().update(out)
         self.node.parm('buildHierarchy').pressButton()
         self.update_res()
 

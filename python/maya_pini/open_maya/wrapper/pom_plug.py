@@ -102,7 +102,7 @@ def _to_child_mplug(head, tail, parent):
             _LOGGER.debug('   - FAILED TO READ CHILD %d', _jdx)
             continue
         _LOGGER.debug('   - TESTING CHILD %d %s', _jdx, _child.name())
-        if _child.name().endswith('.'+_attr):
+        if _child.name().endswith('.' + _attr):
             break
     else:
         raise RuntimeError
@@ -143,7 +143,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
                 _err = f'Attribute not found {_name}'
             else:
                 _err = f'Failed to build mplug {_name}'
-            raise RuntimeError(_err)
+            raise RuntimeError(_err) from _exc
 
         super().__init__(_plug)
 

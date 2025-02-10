@@ -67,11 +67,11 @@ class Image(File):
         _LOGGER.debug('TO RES %s', self.path)
 
         if not self.exists():
-            raise OSError('Missing file '+self.path)
+            raise OSError('Missing file ' + self.path)
         if self.extn.lower() in ['mp4']:
             if catch:
                 return None
-            raise RuntimeError('Bad image extension '+self.path)
+            raise RuntimeError('Bad image extension ' + self.path)
 
         if self.extn.lower() in ['png', 'jpg', 'jpeg']:
             return self._read_res_qt()
@@ -144,7 +144,7 @@ class Image(File):
 
 
 def _convert_file_ffmpeg(
-        src, trg, colspace=None,  size=None, catch=False, force=False):
+        src, trg, colspace=None, size=None, catch=False, force=False):
     """Convert image file to a different format using ffmpeg.
 
     Args:
@@ -170,7 +170,7 @@ def _convert_file_ffmpeg(
     system(_cmds, verbose=1)
 
     if not trg.exists():
-        _msg = 'Failed to generate image '+trg.path
+        _msg = 'Failed to generate image ' + trg.path
         if not catch:
             raise RuntimeError(_msg)
         _LOGGER.warning(_msg)

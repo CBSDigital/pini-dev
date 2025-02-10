@@ -1,3 +1,28 @@
+## [6.43.0] - Mon 2025-02-10 10:10
+### Summary
+ - Pipe Codebase:
+    - updated to allow render path access in unreal (nkim),
+### Updated
+ - appiled whitespace around operators,
+ - use with for file open operations,
+ - pini.utils.register_custom_yaml_handler deprecated,
+ - pini.utils.MetadataFile.cache_namespace added,
+ - pini.utils.PyElem.line_n added,
+ - pini.utils.PyDef.find_arg added catch,
+ - pini.utils DjvView/DJV/VLC/WMPlayer added unused fps arg warning for linter,
+ - pini.pipe.CPTemplate updated cmp_str -> cmp_key,
+ - pini.pipe.CPTemplate.__repr__ added with alt,
+ - pini.pipe.CPEntity.to_work_dir removed error on no dcc,
+ - pini.pipe.CPEntity.to_output pass dcc to find template,
+ - pini.pipe.CPWorkDir.to_output updated to use parent entity not work,
+ - pini.install refresh button added ctx toggle file errors,
+ - pini.tools.error toggle/is_disable made public + added mode for file error disable,
+ - pini.tools.helper jump to ctx allow jump to output,
+ - pini.tools.helper scene/outputs vers bugfix output latest version,
+ - pini.tools.release added CheckFile/suggest_docs wip,
+ - nuke_pini.tools.autowrite renamed CAutowrite2 -> CAutowrite,
+
+
 ## [6.42.0] - Thu 2025-02-06 09:47
 ### Summary
  - Pini Helper:

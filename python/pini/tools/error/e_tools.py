@@ -5,6 +5,10 @@ import logging
 import os
 
 _LOGGER = logging.getLogger(__name__)
+_ENV_VARS = {
+    "ErrorCatcher": 'PINI_DISABLE_ERROR_CATCHER',
+    "FileError": 'PINI_DISABLE_FILE_ERROR',
+}
 
 
 class HandledError(RuntimeError):
@@ -68,3 +72,34 @@ def continue_on_fail(func):
             return None
 
     return _ignore_fail
+
+
+def is_disabled(mode='ErrorCatcher'):
+    """Check whether the error catcher is disabled.
+
+    Args:
+        mode (str): aspect to check
+
+    Returns:
+        (bool): whether disabled
+    """
+    _env = _ENV_VARS[mode]
+    return os.environ.get(_env) == '1'
+
+
+def toggle(mode='ErrorCatcher', enabled=None):
+    """Toggle error catcher on/off.
+
+    Args:
+        mode (str): aspect to toggle
+        enabled (bool): state to apply
+    """
+    _env = _ENV_VARS[mode]
+    _enable = is_disabled(mode=mode) if enabled is None else enabled
+    if _enable:
+        if _env in os.environ:
+            del os.environ[_env]
+        _LOGGER.info('ENABLED %s $%s', mode, _env)
+    else:
+        os.environ[_env] = '1'
+        _LOGGER.info('DISABLED %s $%s', mode, _env)

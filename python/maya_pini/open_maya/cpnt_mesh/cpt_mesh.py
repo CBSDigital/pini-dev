@@ -38,7 +38,7 @@ class PCpntMesh(CMesh):
         Returns:
             (PUV): UV value
         """
-        _result = super(PCpntMesh, self).p_to_uv(point)
+        _result = super().p_to_uv(point)
         return cpt_uv.to_uv(_result)
 
     def to_faces(self, idxs=None):

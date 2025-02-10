@@ -29,7 +29,7 @@ class CCamera(base.CBaseTransform, om.MFnCamera):
         _node = node
         if isinstance(_node, base.CBaseNode):
             _node = str(node)
-        super(CCamera, self).__init__(_node)
+        super().__init__(_node)
 
         _shp = shp or to_shp(_node, type_='camera')
         _m_obj = to_mobject(_shp)

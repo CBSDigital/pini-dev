@@ -70,7 +70,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
         _, _dur_str = _dur_token.split()
         _LOGGER.debug(' - DUR STR %s', _dur_str)
         _hrs, _mins, _secs = _dur_str.split(':')
-        _dur = 60*60*float(_hrs) + 60*float(_mins) + float(_secs)
+        _dur = 60 * 60 * float(_hrs) + 60 * float(_mins) + float(_secs)
         _LOGGER.debug(' - DUR %.03f', _dur)
         return _dur
 

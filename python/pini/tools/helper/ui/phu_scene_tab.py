@@ -365,9 +365,11 @@ class PHSceneTab:
             else self.target.is_latest())
         if (
                 isinstance(self.target, pipe.CPOutputBase) and
-                self.target in _outs and
-                not self.target.is_latest()):
-            _sel = 'all'
+                self.target in _outs):
+            if not self.target.is_latest():
+                _sel = 'all'
+            elif self.target.ver_n:
+                _sel = 'latest'
 
         self.ui.SOutputVers.set_items(_opts, select=_sel, emit=True)
         self.ui.SOutputVers.setEnabled(bool(_outs))

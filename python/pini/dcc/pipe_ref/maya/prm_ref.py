@@ -52,7 +52,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
         Returns:
             (CMayaShadersRef|None): lookdev ref (if any)
         """
-        return dcc.find_pipe_ref(self.namespace+'_shd', catch=True)
+        return dcc.find_pipe_ref(self.namespace + '_shd', catch=True)
 
     @property
     def node(self):
@@ -99,7 +99,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
                 return
             _LOGGER.info(' - LOOKDEV OUT %s', _look_out)
             _look_ref = dcc.create_ref(
-                _look_out, namespace=self.namespace+'_shd', force=force)
+                _look_out, namespace=self.namespace + '_shd', force=force)
             _look_ref = dcc.find_pipe_ref(_look_ref.namespace)
         else:
             raise ValueError(lookdev_)
@@ -356,7 +356,7 @@ class CMayaShadersRef(CMayaRef):
         Args:
             target (CReference):  reference to apply cache to
         """
-        set_namespace(':'+self.namespace)
+        set_namespace(':' + self.namespace)
         _lights = self.to_node('LIGHTS').find_children()
         _LOGGER.debug(' - LIGHTS %s', _lights)
         for _light in _lights:
@@ -367,7 +367,7 @@ class CMayaShadersRef(CMayaRef):
             if _trg:
 
                 # Build constraint
-                _name = str(_light.clean_name)+'_CONS'
+                _name = str(_light.clean_name) + '_CONS'
                 _cons = self.ref.to_node(_name, fmt='str')
                 _LOGGER.debug('   - CONS %s', _cons)
                 if cmds.objExists(_cons):
@@ -399,18 +399,18 @@ class CMayaShadersRef(CMayaRef):
             else:
                 _shd = self.ref.to_node(_shd)
             if not cmds.objExists(_shd):
-                raise RuntimeError('Missing shader '+_shd)
+                raise RuntimeError('Missing shader ' + _shd)
 
             # Find shading engine
             _ses = cmds.listConnections(_shd, type='shadingEngine') or []
             _ses = sorted(set(_ses))
             _se = single(_ses, catch=True)
             if not _se:
-                _name = _shd+"SG"
+                _name = _shd + "SG"
                 _se = cmds.sets(
                     name=_name, renderable=True, noSurfaceShader=True,
                     empty=True)
-                cmds.connectAttr(_shd+'.outColor', _se+'.surfaceShader')
+                cmds.connectAttr(_shd + '.outColor', _se + '.surfaceShader')
             _LOGGER.log(9, '   - SE %s', _se)
             assert _se
 

@@ -11,7 +11,7 @@ import os
 _LOGGER = logging.getLogger(__name__)
 
 
-class Clip(object):
+class Clip:
     """Base class for any video or image sequence."""
 
     path = None
@@ -46,7 +46,7 @@ class Clip(object):
         if width is None:
             return _cur_res
         _aspect = 1.0 * _cur_res[0] / _cur_res[1]
-        _thumb_res = width, int(width/_aspect)
+        _thumb_res = width, int(width / _aspect)
         _LOGGER.info(' - RES %s -> %s', _cur_res, _thumb_res)
         return _thumb_res
 

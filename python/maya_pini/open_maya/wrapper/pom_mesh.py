@@ -26,21 +26,21 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         _node = node
         if isinstance(_node, base.CBaseNode):
             _node = str(_node)
-        super(CMesh, self).__init__(_node)
+        super().__init__(_node)
         _m_dag = to_mdagpath(_node)
         try:
             om.MFnMesh.__init__(self, _m_dag)
         except ValueError as _exc:
             _LOGGER.error(_exc)
             raise ValueError(
-                'Failed to construct MFnMesh object {}'.format(_node))
+                'Failed to construct MFnMesh object {_node}') from _exc
 
         # Check shape
         _shp = self.shp
         if not _shp:
-            raise ValueError('No shape {}'.format(_node))
+            raise ValueError(f'No shape {_node}')
         if _shp.object_type() != 'mesh':
-            raise ValueError('Bad shape {}'.format(_shp))
+            raise ValueError(f'Bad shape {_shp}')
 
     @property
     def n_edges(self):
@@ -115,8 +115,8 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (CMesh): updated mesh object
         """
-        _new = super(CMesh, self).rename(name)
-        _new.shp.rename(name+'Shape')
+        _new = super().rename(name)
+        _new.shp.rename(name + 'Shape')
         return CMesh(_new)
 
     def p_to_uv(self, point):
@@ -158,7 +158,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (str): edge (eg. polySphere.e[0])
         """
-        return self.shp.attr['e[{:d}]'.format(idx)]
+        return self.shp.attr[f'e[{idx:d}]']
 
     def to_edges(self, idxs=None):
         """Obtain the edge attributes.
@@ -181,7 +181,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (str): face (eg. polySphere.f[0])
         """
-        return self.shp.attr['f[{:d}]'.format(idx)]
+        return self.shp.attr[f'f[{idx:d}]']
 
     def to_faces(self, idxs=None):
         """Obtain list of faces for this mesh.
@@ -204,7 +204,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (str): uv (eg. polySphere.map[0])
         """
-        return self.shp.attr['map[{:d}]'.format(idx)]
+        return self.shp.attr[f'map[{idx:d}]']
 
     def to_vtx(self, idx):
         """Obtain the given vertex index of this mesh.
@@ -215,7 +215,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (str): vertex attribute
         """
-        return self.shp.attr['vtx[{:d}]'.format(idx)]
+        return self.shp.attr[f'vtx[{idx:d}]']
 
     def to_vtxs(self):
         """Obtain list of mesh vertices.

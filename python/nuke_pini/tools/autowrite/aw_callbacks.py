@@ -48,7 +48,7 @@ def update_all():
     _aw2s = []
     for _grp in nuke.allNodes('Write'):
         try:
-            _aw2 = aw_node.CAutowrite2(_grp)
+            _aw2 = aw_node.CAutowrite(_grp)
         except ValueError:
             continue
         _aw2s.append(_aw2)
@@ -123,7 +123,7 @@ def knob_changed_callback(knob=None, node=None):
 
     # Update if autowrite
     try:
-        _auto = aw_node.CAutowrite2(_node)
+        _auto = aw_node.CAutowrite(_node)
     except ValueError:
         return
     _LOGGER.info('AUTO2 KNOB CHANGED %s.%s', _node.name(), _knob.name())

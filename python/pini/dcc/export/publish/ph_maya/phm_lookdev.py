@@ -124,7 +124,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _metadata = self.build_metadata(force=force)
 
         self.shd_yml = _pub.to_file(
-            dir_=_data_dir,  base=_pub.base+'_shaders', extn='yml')
+            dir_=_data_dir, base=_pub.base + '_shaders', extn='yml')
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
 
         _bkp = _work.save(
@@ -140,7 +140,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             raise RuntimeError('No valid shading assignments found')
         for _shd in _assignments:
             if to_namespace(_shd):
-                raise RuntimeError('Shader has namespace '+_shd)
+                raise RuntimeError('Shader has namespace ' + _shd)
         self.textures = _read_textures()
 
         # Generate outputs

@@ -166,7 +166,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             (MMatrix): transformation matrix
         """
         _len = self.length()
-        return self.l_to_m(fraction*_len)
+        return self.l_to_m(fraction * _len)
 
     def fr_to_p(self, fraction):
         """Obtain position at the given fractional distance on this curve.

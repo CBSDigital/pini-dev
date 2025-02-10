@@ -26,6 +26,7 @@ class PyElem:
         self._ast = ast_
         self._py_file = py_file
         self.parent = parent
+        self.line_n = self._ast.lineno
 
     @property
     def clean_name(self):
@@ -80,7 +81,7 @@ class PyElem:
 
     def edit(self):
         """Edit the element's definition in a text editor."""
-        self.py_file.edit(line_n=self._ast.lineno)
+        self.py_file.edit(line_n=self.line_n)
 
     def find_child(self, match, recursive=False):
         """Find a child of this element.
@@ -125,7 +126,7 @@ class PyElem:
         _parent = None if isinstance(self, PyFile) else self
         _ast = self.to_ast(catch=True)
         if not _ast:
-            raise RuntimeError('Failed to read py '+self.py_file.path)
+            raise RuntimeError('Failed to read py ' + self.py_file.path)
         for _idx, _item in enumerate(_ast.body):
 
             # Check if ast object is addable
@@ -251,8 +252,8 @@ class PyElem:
         """
         from pini.utils import PyDef
         return [_elem for _elem in self.find_children(
-                    internal=internal, filter_=filter_, recursive=recursive)
-                if isinstance(_elem, PyDef)]
+            internal=internal, filter_=filter_, recursive=recursive)
+            if isinstance(_elem, PyDef)]
 
     def to_ast(self, catch=False):  # pylint: disable=unused-argument
         """Obtain ast object associated with this element.
@@ -273,7 +274,7 @@ class PyElem:
         """
         _lines = self.py_file.read_lines()
         _ast = self.to_ast()
-        return '\n'.join(_lines[_ast.lineno-1:_ast.end_lineno])
+        return '\n'.join(_lines[_ast.lineno - 1:_ast.end_lineno])
 
     def to_docstring(self):
         """Obtain docstring.

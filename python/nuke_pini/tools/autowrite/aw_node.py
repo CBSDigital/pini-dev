@@ -27,7 +27,7 @@ _RES_MAP = {
 }
 
 
-class CAutowrite2(object):
+class CAutowrite:
     """Represents an autowrite 2.0 node."""
 
     def __init__(self, node):
@@ -44,7 +44,7 @@ class CAutowrite2(object):
         _knob = self['is_pini_autowrite_2']
         if not _knob:
             raise ValueError(
-                'Missing {}.is_pini_autowrite_2'.format(_node.name()))
+                f'Missing {_node.name()}.is_pini_autowrite_2')
 
     @property
     def entity(self):
@@ -178,7 +178,7 @@ class CAutowrite2(object):
         # Update lines Linked/Select status
         for _name in ['ety_type', 'ety', 'task', 'tag', 'ver']:
 
-            _mode_knob = self[_name+'_mode']
+            _mode_knob = self[_name + '_mode']
             _list_knob = self[_name]
             _mode = _mode_knob.value()
 
@@ -187,7 +187,7 @@ class CAutowrite2(object):
                     'Select': NON_DEFAULT_COL}[_mode]
             _cur_label = re.split('[<>]', _mode_knob.label())[-3]
             _label = {
-                'ety_type':  _ety_type_label,
+                'ety_type': _ety_type_label,
                 'ety': _ety_label}.get(_name, _cur_label)
             _LOGGER.debug(' - UPDATE MODE mode=%s label=%s', _mode, _label)
             _label = COL_FMT.format(col=_col, text=_label)
@@ -397,7 +397,7 @@ class CAutowrite2(object):
 
         self['res_text'].setEnabled(_res_mode == 'Manual')
         _res = self.node.width(), self.node.height()
-        _res_name = _RES_MAP.get(_res, '{:d}x{:d}'.format(*_res))
+        _res_name = _RES_MAP.get(_res, f'{_res[0]:d}x{_res[1]:d}')
         if _res_mode == 'Auto':
             self['res_text'].setValue(_res_name)
             _col = DEFAULT_COL if _tmpl == 'plate' else NON_DEFAULT_COL
@@ -617,9 +617,9 @@ def get_selected():
     """Get currently selected autowrite 2.0 node.
 
     Returns:
-        (CAutowrite2): selected node
+        (CAutowrite): selected node
     """
-    return CAutowrite2(nuke.selectedNode())
+    return CAutowrite(nuke.selectedNode())
 
 
 def _find_tab_widget(node):

@@ -38,7 +38,7 @@ class _MelExpr:
         _val = ''
         _in_quotes = False
         for _idx in range(_idx, len(self.text)):
-            _escaped = _idx and self.text[_idx-1] == '\\'
+            _escaped = _idx and self.text[_idx - 1] == '\\'
             _chr = self.text[_idx]
             if not _escaped and _chr == '"':
                 _in_quotes = not _in_quotes
@@ -99,7 +99,7 @@ class MelFile(File):
         _in_quotes = False
         for _last, (_idx, _chr) in last(enumerate(_text)):
             assert isinstance(_chr, str)
-            _escaped = _idx and _text[_idx-1] == '\\'
+            _escaped = _idx and _text[_idx - 1] == '\\'
             if not _escaped and _chr == '"':
                 _in_quotes = not _in_quotes
             _expr_text += _chr

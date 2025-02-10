@@ -18,7 +18,7 @@ def add_indent(text, indent='    '):
     Returns:
         (str): indented text
     """
-    return indent + (text.replace('\n', '\n'+indent))
+    return indent + (text.replace('\n', '\n' + indent))
 
 
 def copy_text(text, verbose=1):
@@ -127,7 +127,7 @@ def split_base_index(string):
     _base = string
     _idx_str = ''
     while _base and _base[-1].isdigit():
-        _idx_str = _base[-1]+_idx_str
+        _idx_str = _base[-1] + _idx_str
         _base = _base[:-1]
 
     _idx = int(_idx_str) if _idx_str else 0
@@ -150,9 +150,9 @@ def to_camel(text):
     _camel = ''
     for _idx, _token in enumerate(_tokens):
         if _idx:
-            _token = _token[0].upper()+_token[1:]
+            _token = _token[0].upper() + _token[1:]
         else:
-            _token = _token[0].lower()+_token[1:]
+            _token = _token[0].lower() + _token[1:]
         _camel += _token
     return _camel
 
@@ -220,7 +220,7 @@ def to_pascal(text):
         _text = _text.replace(_chr, '')
     _tokens = [_token for _token in re.split(_SPLIT_RX, _text) if _token]
     _LOGGER.debug(' - TOKENS %s', _tokens)
-    _result = ''.join([_token[0].upper()+_token[1:] for _token in _tokens])
+    _result = ''.join([_token[0].upper() + _token[1:] for _token in _tokens])
     _LOGGER.debug(' - RESULT %s', _result)
     return _result
 
@@ -246,7 +246,7 @@ def to_snake(text):
     _out = ''
     for _idx, _chr in enumerate(_text):
         if _chr.isupper():
-            _out += '_'+_chr.lower()
+            _out += '_' + _chr.lower()
         elif _chr == ' ':
             _out += '_'
         else:

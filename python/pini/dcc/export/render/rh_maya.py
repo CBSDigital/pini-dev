@@ -300,7 +300,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             QtWidgets.QSizePolicy.MinimumExpanding)
 
         self.layout.addWidget(self.ui.Layers)
-        self.layout.setStretch(self.layout.count()-1, 1)
+        self.layout.setStretch(self.layout.count() - 1, 1)
 
         _signal = qt.widget_to_signal(self.ui.Layers)
         _signal.connect(self._callback__Layers)

@@ -28,7 +28,7 @@ def import_assgz_shaders(out, parent=None, force=False):
     _LOGGER.info(' - NS %s', _ns)
 
     # Obtain empty matnet
-    _name = 'shaders_'+_ns
+    _name = 'shaders_' + _ns
     _obj = hou.node('/obj')
     _net = _obj.node(_name)
     if _net:

@@ -5,7 +5,7 @@ from ..u_misc import EMPTY, basic_repr
 DIR_FILES = True
 
 
-class PyArg(object):
+class PyArg:
     """Represents an argument to a python function."""
 
     def __init__(self, name, parent, has_default, default=None):

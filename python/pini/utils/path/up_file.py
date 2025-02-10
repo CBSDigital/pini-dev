@@ -29,14 +29,17 @@ def _find_diff_exe():
         (str): path to diff tool
     """
     global _DIFF_TOOL
+
     if _DIFF_TOOL:
         return _DIFF_TOOL
+
     from pini.utils import find_exe
     for _name in ['Diffinity', 'meld']:
         _exe = find_exe(_name)
         if _exe:
             _DIFF_TOOL = _exe
             return _exe
+
     raise RuntimeError('No diff tool found')
 
 
@@ -167,7 +170,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         # Safety checks (avoid comparing binary)
         assert self.exists()
         if not _other.exists():
-            raise OSError('Missing file '+_other.path)
+            raise OSError('Missing file ' + _other.path)
         if self.matches(_other):
             raise RuntimeError("Files are identical")
         if check_extn and self.extn not in [
@@ -186,7 +189,6 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             line_n (int): line number to open file at
             verbose (int): print process data
         """
-
         _subl = os.environ.get('SUBL_EXE')
         if _subl:
             assert File(_subl).exists()
@@ -310,7 +312,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if not self.exists():
             if catch:
                 return None
-            raise OSError('File does not exist '+self.path)
+            raise OSError('File does not exist ' + self.path)
 
         with open(self.path, 'r', encoding=encoding) as _hook:
             _body = _hook.read()
@@ -349,16 +351,16 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if not self.exists():
             if catch:
                 return {}
-            raise OSError('Missing file '+self.path)
+            raise OSError('Missing file ' + self.path)
 
-        _handle = open(self.path, "rb")
         try:
-            _obj = pickle.load(_handle)
+            with open(self.path, "rb") as _handle:
+                _obj = pickle.load(_handle)
         except Exception as _exc:
             if catch:
                 return {}
             _handle.close()
-            raise ReadDataError(f'{_exc} {self.path}')
+            raise ReadDataError(f'{_exc} {self.path}') from _exc
         _handle.close()
         return _obj
 
@@ -392,7 +394,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if not self.exists(catch=catch):
             if catch:
                 return {}
-            raise OSError('Missing file '+self.path)
+            raise OSError('Missing file ' + self.path)
         try:
             _body = self.read(encoding=encoding)
         except IOError as _exc:
@@ -410,7 +412,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             _LOGGER.info(' - MESSAGE %s', str(_exc))
             if catch:
                 return {}
-            raise RuntimeError('Yaml scanner error '+self.path)
+            raise RuntimeError('Yaml scanner error ' + self.path) from _exc
 
     def to_bkp(self):
         """Obtain backup file for this file.
@@ -460,7 +462,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             else:
                 _filename = f'{_base}.{_extn}'
         if hidden:
-            _filename = '.'+_filename
+            _filename = '.' + _filename
         _LOGGER.debug(' - FILENAME %s', _filename)
         _path = f'{Dir(dir_ or self.dir).path}/{_filename}'
         _LOGGER.debug(' - PATH %s', _path)
@@ -521,14 +523,13 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         assert self.extn == 'pkl'
 
         try:
-            self.delete(force=force)
-            _handle = open(self.path, "wb")
+            self.delete(force=force, wording='replace')
+            with open(self.path, "wb") as _handle:
+                pickle.dump(data, _handle, protocol=0)
         except OSError as _exc:
             if catch:
                 return
             raise _exc
-        pickle.dump(data, _handle, protocol=0)
-        _handle.close()
 
     def write_yml(
             self, data, force=False, mode='w', fix_unicode=False,
@@ -566,6 +567,7 @@ class MetadataFile(File):
 
     cache_file_extn = 'yml'
     cache_loc = 'adjacent'
+    cache_namespace = None
 
     @property
     def cache_fmt(self):
@@ -574,7 +576,8 @@ class MetadataFile(File):
         Returns:
             (str): cache format
         """
-        _suffix = f'{self.base}_{{func}}.{self.cache_file_extn}'
+        _ns_dir = f'{self.cache_namespace}/' if self.cache_namespace else ''
+        _suffix = f'{_ns_dir}{self.base}_{{func}}.{self.cache_file_extn}'
         if self.cache_loc == 'adjacent':
             return f'{self.dir}/.pini/{_suffix}'
         if self.cache_loc == 'home':

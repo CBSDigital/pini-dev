@@ -46,17 +46,15 @@ class CMatrix(om.MMatrix):
             (CTransform): geometry group
         """
         from maya_pini import open_maya as pom
-        _grp = pom.CMDS.group(name=to_unique(name+'_GRP'), empty=True)
+        _grp = pom.CMDS.group(name=to_unique(name + '_GRP'), empty=True)
         for _col, _axis, _name in [
-                ('red', pom.X_AXIS*scale, 'X'),
-                ('green', pom.Y_AXIS*scale, 'Y'),
-                ('blue', pom.Z_AXIS*scale, 'Z'),
+                ('red', pom.X_AXIS * scale, 'X'),
+                ('green', pom.Y_AXIS * scale, 'Y'),
+                ('blue', pom.Z_AXIS * scale, 'Z'),
         ]:
             _crv = _axis.to_curve(
-                pom.ORIGIN, col=_col, name=to_unique(name+_name))
+                pom.ORIGIN, col=_col, name=to_unique(name + _name))
             _crv.parent(_grp)
-            # print _crv, _grp
-
         self.apply_to(_grp)
 
         return _grp
@@ -107,8 +105,9 @@ class CMatrix(om.MMatrix):
         return tuple(self[_idx] for _idx in range(16))
 
     def __repr__(self):
-        _label = '({})'.format(
-            ', '.join('{:.04f}'.format(_item) for _item in self.to_tuple()))
+        _vals_s = ', '.join(
+            f'{_item:.04f}' for _item in self.to_tuple())
+        _label = f'({_vals_s})'
         return basic_repr(self, _label)
 
 

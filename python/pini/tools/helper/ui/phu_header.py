@@ -414,18 +414,22 @@ class PHHeader:
         menu.add_separator()
 
         # Add copied work
-        _c_work = pipe.to_work(copied_path(), catch=True)
+        _c_path = copied_path()
+        _c_work = pipe.to_work(_c_path, catch=True)
+        _c_out = pipe.to_output(_c_path, catch=True)
         if _c_work:
             self._add_jump_to_work_action(menu=menu, work=_c_work)
+        elif _c_out:
+            self._add_jump_to_output_action(menu=menu, output=_c_out)
         else:
-            menu.add_label('No copied work', icon=icons.COPY)
+            menu.add_label('No copied work/output', icon=icons.COPY)
         _cur_work = pipe.cur_work()
         if _cur_work:
             menu.add_action(
                 'Take snapshot', self._take_snapshot,
                 icon=icons.find('Camera with Flash'))
         else:
-            menu.add_label('No current work')
+            menu.add_label('No current work to snapshot')
         menu.add_separator()
 
         # Add recent works
@@ -441,6 +445,19 @@ class PHHeader:
         """
         _action = wrap_fn(self.jump_to, work)
         _tokens = [work.job.name] + work.base.split('_')[:-1]
+        _label = '/'.join(_tokens)
+        menu.add_action(
+            _label, _action, icon=icons.find('Magnet'))
+
+    def _add_jump_to_output_action(self, menu, output):
+        """Add jump to output action to the given menu.
+
+        Args:
+            menu (QMenu): menu to add to
+            output (CPOutput): output to jump to
+        """
+        _action = wrap_fn(self.jump_to, output)
+        _tokens = [output.job.name] + output.base.split('_')[:-1]
         _label = '/'.join(_tokens)
         menu.add_action(
             _label, _action, icon=icons.find('Magnet'))

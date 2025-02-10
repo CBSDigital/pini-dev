@@ -19,7 +19,7 @@ def to_vtx(vtx):
     return PVertex(idx=int(_idx), mesh=pom.PCpntMesh(_mesh))
 
 
-class PVertex(object):
+class PVertex:
     """Represents a mesh vertex."""
 
     def __init__(self, mesh, idx):
@@ -41,7 +41,7 @@ class PVertex(object):
         return cpt_uv.PUV(self.mesh.getUV(self.idx))
 
     def __str__(self):
-        return '{}.vtx[{:d}]'.format(self.mesh, self.idx)
+        return f'{self.mesh}.vtx[{self.idx:d}]'
 
     def __repr__(self):
         return basic_repr(self, str(self))

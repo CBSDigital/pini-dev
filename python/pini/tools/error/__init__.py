@@ -1,8 +1,9 @@
 """Tools for handling errors."""
 
-from .e_catcher import catch, get_catcher, toggle
+from .e_catcher import catch, get_catcher
 from .e_error import PEError, error_from_str
-from .e_tools import continue_on_fail, HandledError, FileError
+from .e_tools import (
+    continue_on_fail, HandledError, FileError, toggle, is_disabled)
 from .e_trace_line import PETraceLine
 
 # Allow import without qt available

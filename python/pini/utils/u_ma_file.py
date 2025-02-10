@@ -60,7 +60,7 @@ class _MaExpr:  # pylint: disable=too-many-instance-attributes
         Returns:
             (str): flag value
         """
-        return self.tokens[self.tokens.index('-'+flag)+1].strip('"')
+        return self.tokens[self.tokens.index('-' + flag) + 1].strip('"')
 
     def __repr__(self):
         return basic_repr(self, self.cmd)

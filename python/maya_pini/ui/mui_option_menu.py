@@ -26,7 +26,7 @@ def create_option_menu(options, select=None):
     return _menu
 
 
-class OptionMenu(object):
+class OptionMenu:
     """Represent an option menu ui element."""
 
     def __init__(self, field):
@@ -45,7 +45,7 @@ class OptionMenu(object):
         """
         _sel = cmds.optionMenu(self.field, query=True, select=True)
         _items = cmds.optionMenu(self.field, query=True, itemListLong=True)
-        _item = _items[_sel-1]
+        _item = _items[_sel - 1]
         return cmds.menuItem(_item, query=True, label=True)
 
     def set_val(self, value, catch=True):
@@ -63,7 +63,7 @@ class OptionMenu(object):
                 return
             raise ValueError(value)
         _idx = _labels.index(str(value))
-        cmds.optionMenu(self.field, edit=True, select=_idx+1)
+        cmds.optionMenu(self.field, edit=True, select=_idx + 1)
 
     def set_opts(self, options):
         """Apply menu item options.

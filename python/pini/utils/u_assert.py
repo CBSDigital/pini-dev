@@ -20,4 +20,4 @@ def assert_eq(item_a, item_b, dp=None):  # pylint: disable=invalid-name
         _item_b = round(_item_b, dp)
     if _item_a != _item_b:
         raise AssertionError(
-            'Item {} is not equal to {}'.format(item_a, item_b))
+            f'Item {item_a} is not equal to {item_b}')

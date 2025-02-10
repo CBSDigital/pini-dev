@@ -46,7 +46,7 @@ class Res:
         return self.uid < other.uid
 
     def __mul__(self, val):
-        return Res(round(self.width*val), round(self.height*val))
+        return Res(round(self.width * val), round(self.height * val))
 
     def __str__(self):
         return f'{self.width}x{self.height}'

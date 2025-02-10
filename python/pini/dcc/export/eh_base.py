@@ -59,7 +59,8 @@ class CExportHandler:
         Args:
             elem (QWidget): widget to add
             name (str): widget name
-            disable_save_settings (bool): apply disable save settings to element
+            disable_save_settings (bool): apply disable save settings
+                to element
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
             settings_key (str): override settings key for element
@@ -82,7 +83,7 @@ class CExportHandler:
 
         # Connect signals
         _signal = qt.widget_to_signal(elem)
-        _callback = getattr(self, '_callback__'+name, None)
+        _callback = getattr(self, '_callback__' + name, None)
         if _callback:
             _signal.connect(_callback)
         _apply_save_policy = wrap_fn(
@@ -113,7 +114,7 @@ class CExportHandler:
         _LOGGER.debug('ADD ELEM LAYOUT')
 
         # Build layout
-        _h_lyt_name = name+'Layout'
+        _h_lyt_name = name + 'Layout'
         _h_lyt = QtWidgets.QHBoxLayout(self.parent)
         _h_lyt.setObjectName(_h_lyt_name)
         _h_lyt.setSpacing(2)
@@ -121,7 +122,7 @@ class CExportHandler:
         _LOGGER.debug(' - SET LAYOUT %s %s', _h_lyt_name, _h_lyt)
 
         # Add label
-        _label_name = name+'Label'
+        _label_name = name + 'Label'
         _label_e = QtWidgets.QLabel(self.parent)
         _label_e.setText(_label)
         _label_e.setObjectName(_label_name)

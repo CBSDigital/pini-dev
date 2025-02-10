@@ -170,7 +170,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 _cons_fn(_src_jnt, _trg_jnt, maintainOffset=True)
             elif mode == 'connect':
                 for _axis in 'xyz':
-                    _chan = _attr+_axis
+                    _chan = _attr + _axis
                     _src_jnt.plug[_chan].connect(_trg_jnt.plug[_chan])
             else:
                 raise ValueError(mode)

@@ -19,12 +19,15 @@ def register_custom_yaml_handler(type_):
     Args:
         type_ (class): class to register
     """
+    from pini.tools import release
+    release.apply_deprecation('06/02/25', 'No longer required')
     _LOGGER.debug('REGISTER CUSTOM HANDLER %s %s', type_, type_.yaml_tag)
 
     # Clean existing
     for _key, _val in list(yaml.Dumper.yaml_multi_representers.items()):
         if _key.__name__ == type_.__name__:
-            _LOGGER.debug(' - REMOVE EXISTING REPRESENTATION %s %s', _key, _val)
+            _LOGGER.debug(
+                ' - REMOVE EXISTING REPRESENTATION %s %s', _key, _val)
             yaml.Dumper.yaml_multi_representers.pop(_key)
 
     yaml.Dumper.add_multi_representer(type_, type_.to_yaml)

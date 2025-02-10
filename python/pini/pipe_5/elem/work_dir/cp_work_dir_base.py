@@ -111,7 +111,7 @@ class CPWorkDir(Dir):
             (str): task label
         """
         if self.step:
-            return '{}/{}'.format(self.step, self.task)
+            return f'{self.step}/{self.task}'
         return self.task
 
     def create(self, force=False):
@@ -331,7 +331,7 @@ class CPWorkDir(Dir):
             _extn = extn
         else:
             _defaults = self.job.cfg['defaults']
-            _key = '{}_extn'.format(dcc.NAME)
+            _key = f'{dcc.NAME}_extn'
             _extn = _defaults.get(_key, dcc.DEFAULT_EXTN)
 
         # Build data
@@ -466,9 +466,7 @@ class CPWorkDir(Dir):
         """
         raise NotImplementedError
 
-    def to_output(
-            self, type_, output_type=None, output_name=None, tag=None,
-            ver_n=1, extn=None):
+    def to_output(self, type_, **kwargs):
         """Map this work dir to an output.
 
         Args:
@@ -478,13 +476,14 @@ class CPWorkDir(Dir):
             tag (str): output tag
             ver_n (int): output version number
             extn (str): output extension
+            dcc_ (str): override output dcc
 
         Returns:
             (CPOutput): output
         """
-        _work = self.to_work(ver_n=ver_n, tag=tag)
-        return _work.to_output(
-            type_, extn=extn, output_name=output_name, output_type=output_type)
+        _LOGGER.debug('TO OUTPUT %s', self)
+        return self.entity.to_output(
+            type_, task=self.task, step=self.step, **kwargs)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key

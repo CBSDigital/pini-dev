@@ -310,12 +310,14 @@ def _test_anim_workflow(progress, force, show_ctx):
     _menu.deleteLater()
 
     # Select rig in outputs list
+    print()
     # _helper.ui.MainPane.select_tab('Scene')
     # _helper.ui.SOutputType.select_text('char')
     # _helper.ui.SOutputTask.select_text('rig/rig')
     # _helper.ui.SOutputTag.select_text(pipe.DEFAULT_TAG)
     # _helper.ui.SOutputVers.select_text('latest')
     # _helper.ui.SOutputs.select_data(_rig_pub, catch=False)
+    _LOGGER.info(' - RIG PUB %s', _rig_pub)
     _helper.jump_to(_rig_pub)
     assert _helper.ui.SOutputs.selected_data() == _rig_pub
     _out_info = _helper.ui.SOutputInfo.text()

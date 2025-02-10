@@ -91,7 +91,7 @@ class CPTemplate(lucidity.Template):
 
         # Apply sort key, dcc templates appear first, then profile specific
         # ones, then the longest pattern should dominate
-        self.cmp_str = '{:d}_{:d}_{:05d}_{}'.format(
+        self.cmp_key = (
             not bool(self.dcc), not bool(self.profile),
             10000-len(self.pattern), self.type_)
 
@@ -129,7 +129,7 @@ class CPTemplate(lucidity.Template):
                 continue
 
             # Update pattern
-            _token_s = '{{{}}}'.format(_name)  # Basic pattern
+            _token_s = f'{{{_name}}}'  # Basic pattern
             if _token_s not in _pattern:  # Pattern contains regex
                 _start = _pattern.find(_token_s[:-1]+':')
                 _end = _pattern.find('}', _start)+1
@@ -160,7 +160,7 @@ class CPTemplate(lucidity.Template):
                 f'Token "{token}" not in template "{self.pattern}"')
         _LOGGER.log(9, 'CROP TO TOKEN %s', self)
         _type_dir = [_token for _token in self.pattern.split('/')
-                     if '{{{}}}'.format(token) in _token][0]
+                     if f'{{{token}}}' in _token][0]
         _LOGGER.log(9, ' - TYPE DIR %s', _type_dir)
         _root, _ = self.pattern.split(_type_dir, 1)
         if include_token_dir:
@@ -230,8 +230,8 @@ class CPTemplate(lucidity.Template):
         _data_keys = set(_data.keys())
         _missing_keys = _req_keys - _data_keys
         if _missing_keys:
-            raise RuntimeError('Missing keys: {}'.format(
-                ', '.join(sorted(_missing_keys))))
+            _keys_s = ', '.join(sorted(_missing_keys))
+            raise RuntimeError(f'Missing keys: {_keys_s}')
 
         return super().format(_data)
 
@@ -362,7 +362,7 @@ class CPTemplate(lucidity.Template):
             if not are_valid_tokens(data=_data, job=job):
                 continue
 
-            _path = '{}/{}'.format(_dir.path, _rel_path)
+            _path = f'{_dir.path}/{_rel_path}'
             _paths.append(_path)
 
         return _paths
@@ -498,10 +498,15 @@ class CPTemplate(lucidity.Template):
             pattern=File(self.pattern).to_dir().path, name=name)
 
     def __hash__(self):
-        return hash(self.cmp_str)
+        return hash(self.cmp_key)
 
     def __lt__(self, other):
-        return self.cmp_str < other.cmp_str
+        return self.cmp_key < other.cmp_key
+
+    def __repr__(self):
+        _suffix = f', alt={self.alt:d}' if self.alt else ''
+        _type = type(self).__name__
+        return f'{_type}("{self.name}", "{self.pattern}"{_suffix})'
 
 
 def build_job_templates(job, catch=True):
@@ -557,8 +562,8 @@ def build_job_templates(job, catch=True):
                 if _data.get('nounderscore'):
                     _regex = '[^_]+'
                 if _regex:
-                    _find = '{{{}}}'.format(_token)
-                    _replace = '{{{}:{}}}'.format(_token, _regex)
+                    _find = f'{{{_token}}}'
+                    _replace = f'{{{_token}:{_regex}}}'
                     _pattern = _pattern.replace(_find, _replace)
                     _LOGGER.debug('   - FIND %s %s', _find, _replace)
 
