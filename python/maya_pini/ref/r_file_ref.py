@@ -4,7 +4,8 @@ import logging
 
 from maya import cmds
 
-from pini.utils import File, single, passes_filter, safe_zip, EMPTY
+from pini.utils import (
+    File, single, passes_filter, safe_zip, EMPTY, basic_repr)
 from maya_pini.utils import (
     to_namespace, set_namespace, del_namespace, to_clean)
 
@@ -27,8 +28,9 @@ class FileRef(r_path_ref.PathRef):
         if not allow_no_namespace:
             try:
                 assert self.namespace and self.namespace != ':'
-            except (RuntimeError, AssertionError):
-                raise ValueError('Missing namespace {}'.format(self.ref_node))
+            except (RuntimeError, AssertionError) as _exc:
+                raise ValueError(
+                    f'Missing namespace {self.ref_node}') from _exc
         self.cmp_str = self.namespace
 
     @property
@@ -95,7 +97,7 @@ class FileRef(r_path_ref.PathRef):
         _ns = str(cmds.file(self.path_uid, query=True, namespace=True))
         _ref_ns = to_namespace(self.ref_node)
         if _ref_ns:
-            _ns = '{}:{}'.format(_ref_ns, _ns)
+            _ns = f'{_ref_ns}:{_ns}'
         return _ns
 
     @property
@@ -130,16 +132,16 @@ class FileRef(r_path_ref.PathRef):
         from pini import qt
 
         if not force:
+            _ns_s = self.namespace or '<no namespace>'
             qt.ok_cancel(
-                'Delete existing {} reference?'.format(
-                    self.namespace or '<no namespace>'),
+                f'Delete existing {_ns_s} reference?',
                 title='Remove Reference')
 
         self.unload()
         cmds.file(self.path_uid, removeReference=True)
 
         if delete_foster_parent:
-            _foster_parent = str(self.ref_node)+'fosterParent1'
+            _foster_parent = str(self.ref_node) + 'fosterParent1'
             if cmds.objExists(_foster_parent):
                 cmds.delete(_foster_parent)
 
@@ -207,10 +209,8 @@ class FileRef(r_path_ref.PathRef):
         """
         _node = single(
             self.find_top_nodes(), catch=catch,
-            zero_error='Reference {} has no top node'.format(
-                self.namespace),
-            multi_error='Reference {} has multiple top nodes'.format(
-                self.namespace))
+            zero_error=f'Reference {self.namespace} has no top node',
+            multi_error=f'Reference {self.namespace} has multiple top nodes')
         if class_ and _node:
             _node = class_(_node)
         return _node
@@ -276,13 +276,13 @@ class FileRef(r_path_ref.PathRef):
         # Update namespace
         if namespace != self.namespace:
             set_namespace(":")
-            del_namespace(':'+namespace)
+            del_namespace(':' + namespace)
             cmds.file(self.path_uid, edit=True, namespace=namespace)
 
         # Update ref node
         if update_ref_node:
             cmds.lockNode(self.ref_node, lock=False)
-            self.ref_node = cmds.rename(self.ref_node, namespace+"RN")
+            self.ref_node = cmds.rename(self.ref_node, namespace + "RN")
             cmds.lockNode(self.ref_node, lock=True)
 
         return self
@@ -309,7 +309,7 @@ class FileRef(r_path_ref.PathRef):
         if clean:
             _name = to_clean(name)
         _name = _name.split('.')[0]
-        return '{}:{}'.format(self.namespace, _name)
+        return f'{self.namespace}:{_name}'
 
     def to_plug(self, plug):
         """Map a plug name to this reference.
@@ -323,7 +323,7 @@ class FileRef(r_path_ref.PathRef):
             (str): plug with namespace added
         """
         assert '.' in plug
-        return '{}:{}'.format(self.namespace, plug)
+        return f'{self.namespace}:{plug}'
 
     def unload(self):
         """Unload this reference."""
@@ -337,14 +337,15 @@ class FileRef(r_path_ref.PathRef):
         """
         _file = File(path)
         if not _file.exists():
-            raise OSError("Missing file: {}".format(_file.path))
+            raise OSError(f"Missing file: {_file.path}")
         try:
             cmds.file(
                 _file.path, loadReference=self.ref_node, ignoreVersion=True,
                 options="v=0", force=True)
         except RuntimeError as _exc:
             if str(_exc) == 'Maya command error':
-                raise RuntimeError('Maya errored on opening file '+_file.path)
+                raise RuntimeError(
+                    'Maya errored on opening file ' + _file.path) from _exc
             raise _exc
 
     def __eq__(self, other):
@@ -354,5 +355,4 @@ class FileRef(r_path_ref.PathRef):
         return hash(self.path_uid)
 
     def __repr__(self):
-        return '<{}|{}>'.format(
-            type(self).__name__.strip('_'), self.namespace)
+        return basic_repr(self, self.namespace, separator='|')

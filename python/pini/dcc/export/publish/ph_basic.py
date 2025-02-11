@@ -39,18 +39,16 @@ class CBasicPublish(eh_base.CExportHandler):
         _data['publish_type'] = type(self).__name__
         return _data
 
-    def build_ui(self, parent=None, layout=None, add_footer=True):
+    def build_ui(self, add_footer=True):
         """Build basic render interface into the given layout.
 
         Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
-        self.ui.Label = QtWidgets.QLabel(self.LABEL, parent)
+        self.ui.Label = QtWidgets.QLabel(self.LABEL, self.parent)
         self.ui.Label.setWordWrap(True)
         self.ui.Label.setObjectName('Label')
-        layout.addWidget(self.ui.Label)
+        self.layout.addWidget(self.ui.Label)
 
         if add_footer:
             self.add_footer_elems()

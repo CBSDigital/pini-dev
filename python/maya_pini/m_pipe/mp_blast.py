@@ -62,7 +62,7 @@ def blast(
             reason='blast', force=True, result='bkp', update_outputs=False)
         _LOGGER.info(' - BKP %s', _bkp)
     u_blast(
-        clip=_out, settings=settings, camera=_cam,  range_=range_, res=res,
+        clip=_out, settings=settings, camera=_cam, range_=range_, res=res,
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq,
         frame_to_thumb=_work.image)

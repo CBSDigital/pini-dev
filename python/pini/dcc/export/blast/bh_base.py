@@ -110,13 +110,8 @@ class CBlastHandler(eh_base.CExportHandler):
             return self.ui.RangeManStart.value(), self.ui.RangeManEnd.value()
         raise ValueError(_mode)
 
-    def build_ui(self, parent=None, layout=None):
-        """Build ui elements.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): parent layout
-        """
+    def build_ui(self):
+        """Build ui elements."""
         self.add_separator_elem()
 
         self._build_range_elems()

@@ -37,7 +37,7 @@ def create_ref(file_, namespace, force=False):
     _rng = dcc.t_range()
 
     if not _file.exists():
-        raise OSError("File does not exist: "+_file.path)
+        raise OSError("File does not exist: " + _file.path)
 
     if _file.extn == 'abc':
         cmds.loadPlugin('AbcImport', quiet=True)

@@ -202,12 +202,12 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         try:
             return single(_tmpls, catch=catch)
-        except ValueError:
+        except ValueError as _exc:
             _LOGGER.log(
                 9, 'FAILED TO FIND TEMPLATE tmpls=%d has_key=%s want_key=%s '
                 'tmpls=%s', len(_tmpls), has_key, want_key, _tmpls)
             raise ValueError(
-                f'Failed to find template "{type_}" in {self.name}')
+                f'Failed to find template "{type_}" in {self.name}') from _exc
 
     @cache_result
     def find_template_by_pattern(self, pattern, catch=False):
@@ -556,7 +556,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         if catch:
             return None
-        raise ValueError('Failed to find shot '+match)
+        raise ValueError('Failed to find shot ' + match)
 
     def find_shots(self, sequence=None, class_=None, filter_=None):
         """Find shots in this job.

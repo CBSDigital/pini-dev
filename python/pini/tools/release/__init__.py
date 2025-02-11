@@ -1,6 +1,7 @@
 """Tools for managing releasing code."""
 
-from .check import suggest_docs, CheckFile
+from .check import suggest_docs, CheckFile, check_file
+
 from .r_deprecate import apply_deprecation
 from .r_notes import PRNotes
 from .r_version import PRVersion, RELEASE_TYPES, DEV_VER, ZERO_VER

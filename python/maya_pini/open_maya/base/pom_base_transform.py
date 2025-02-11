@@ -228,7 +228,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
     def fix_shp_name(self):
         """Make sure shape name matches transform name."""
         _LOGGER.debug('FIX SHP %s', self.shp)
-        _name = str(self)+'Shape'
+        _name = str(self) + 'Shape'
         _LOGGER.debug(' - NAME %s', _name)
         if _name != self.shp:
             _LOGGER.debug(' - APPLYING FIX')
@@ -270,7 +270,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """Lock transforms on this node."""
         for _axis in 'xyz':
             for _attr, _val in [('t', 0), ('r', 0), ('s', 1)]:
-                self.plug[_attr+_axis].locked = True
+                self.plug[_attr + _axis].locked = True
 
     def move(self, *args):
         """Move this object relative to its current position."""
@@ -383,7 +383,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         for _axis in 'xyz':
             for _attr in _attrs:
                 _val = {'s': 1, 't': 0, 'r': 0}[_attr]
-                _plug = self.plug[_attr+_axis]
+                _plug = self.plug[_attr + _axis]
                 if break_conns:
                     _plug.break_conns()
                 _plug.set_val(_val)

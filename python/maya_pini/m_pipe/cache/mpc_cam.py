@@ -39,15 +39,15 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
             _ns = to_namespace(self.cam)
             self.ref = ref.find_ref(_ns)
             if not self.ref:  # Could be nested in which case ignore
-                raise ValueError('Failed to find reference {}'.format(self.cam))
+                raise ValueError(f'Failed to find reference {self.cam}')
             self.output_name = self.ref.namespace
         else:
             self.output_name = to_clean(self.cam)
         self.label = self.output_name
         self.output_type = 'cam'
 
-        self._tmp_ns = ':tmp_{}'.format(self.output_name)
-        self._tmp_cam = '{}:CAM'.format(self._tmp_ns)
+        self._tmp_ns = f':tmp_{self.output_name}'
+        self._tmp_cam = f'{self._tmp_ns}:CAM'
         self._img_plane_data = {}
 
     def build_metadata(self):
@@ -56,7 +56,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         Returns:
             (dict): metadata
         """
-        _data = super(CPCacheableCam, self).build_metadata()
+        _data = super().build_metadata()
         _data['res'] = dcc.get_res()
         _data['img_plane'] = self._img_plane_data
         return _data
@@ -130,8 +130,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                     ('shp', _img_plane.shp),
             ]:
                 _file = _abc.to_dir().to_file(
-                    '.pini/imgPlanes/{}_{}_{}.mel'.format(
-                        _abc.base, _name, _tag))
+                    f'.pini/imgPlanes/{_abc.base}_{_name}_{_tag}.mel')
                 _node.save_preset(_file, force=True)
                 assert _file.exists()
                 _data[_tag] = _file.path
@@ -195,8 +194,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         Returns:
             (str): job arg
         """
-        return super(CPCacheableCam, self).to_job_arg(
-            check_geo=False, **kwargs)
+        return super().to_job_arg(check_geo=False, **kwargs)
 
 
 def find_cams():

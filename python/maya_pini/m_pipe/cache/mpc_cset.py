@@ -31,15 +31,16 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
                 f'Referenced CSETs not supported {cache_set}')
         self.cache_set = cache_set
         self.output_name = self.cache_set.replace('_CSET', '')
-        self.label = self.output_name+' (CSET)'
+        self.label = self.output_name + ' (CSET)'
         self.output_type = 'geo'
 
         if not self.to_geo():
             raise ValueError('No export geo')
         try:
             self.to_output()
-        except ValueError:
-            raise ValueError('Failed to map to abc '+self.output_name)
+        except ValueError as _exc:
+            raise ValueError(
+                'Failed to map to abc ' + self.output_name) from _exc
 
     def rename(self, name):
         """Rename this cacheable.

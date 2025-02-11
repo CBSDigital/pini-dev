@@ -98,6 +98,8 @@ def _check_def_args(def_, docs):
         docs (PyDefDocs): docstrings to check
     """
     from pini.tools import error
+
+    # Check for superfluous args
     _has_kwargs = bool(def_.to_ast().args.kwarg)
     if not _has_kwargs:
         for _arg_docs in docs.find_args():
@@ -107,7 +109,12 @@ def _check_def_args(def_, docs):
                 raise error.FileError(
                     f'Arg "{_arg_docs.name}" docs are superflouous',
                     file_=def_.py_file, line_n=def_.line_n)
-    for _arg in def_.args:
+
+    _args = list(def_.args)
+    if _args and _args[0].name == 'self':
+        _args.pop(0)
+
+    for _arg in _args:
         _arg_docs = _arg.to_docs()
         _LOGGER.debug(' - CHECKING ARG %s %s', _arg, _arg_docs)
         if not _arg_docs or not _arg_docs.body:
@@ -118,7 +125,8 @@ def _check_def_args(def_, docs):
             raise error.FileError(
                 f'Arg "{_arg.name}" docs is missing type',
                 file_=def_.py_file, line_n=def_.line_n)
-    for _arg, _arg_docs in zip(def_.args, docs.find_args()):
+
+    for _arg, _arg_docs in zip(_args, docs.find_args()):
         if _arg.name != _arg_docs.name:
             raise error.FileError(
                 f'Arg "{_arg.name}" docs are in the wrong position',
@@ -189,7 +197,7 @@ def suggest_docs(def_):
             _line for _line in _header.split('\n'))
         # _header = '\n'.join([_line.rstrip() for _line in _header.split('\n')])
     if not _header:
-        _header = to_nice(def_.name).capitalize()
+        _header = to_nice(def_.clean_name).capitalize()
     # _LOGGER.info(' - HEADER %s', _header)
     _header_lines = _header.split('\n')
 
@@ -197,11 +205,14 @@ def suggest_docs(def_):
     _lines += _header_lines[1:]
 
     # Add args
-    if def_.args:
+    _args = [  # Ignore method self args
+        _arg for _idx, _arg in enumerate(def_.args)
+        if _idx or _arg.name != 'self']
+    if _args:
         _lines += [
             '',
             'Args:']
-        for _arg in def_.args:
+        for _idx, _arg in enumerate(_args):
 
             _cur_docs = _arg.to_docs()
             _LOGGER.info(' - ADDING ARG %s %s %s', _arg, _arg.type_, _cur_docs)
@@ -235,6 +246,6 @@ def suggest_docs(def_):
     else:
         _lines += ['"""']
 
-    _docs = _indent + f'\n{_indent}'.join(_lines)
-    # _docs = '\n'.join([_line.rstrip() for _line in _docs.split('\n')])
+    _docs = _indent + f'\n{_indent}'.join(_lines) + '\n'
+    _docs = '\n'.join([_line.rstrip() for _line in _docs.split('\n')])
     return _docs

@@ -21,6 +21,18 @@ class Res:
         self.aspect = self.width / self.height
         self.uid = self.width, self.height, self.name
 
+    def duplicate(self, name=None, mult=1.0):
+        """Duplicate this resolution.
+
+        Args:
+            name (str): apply new name
+            mult (float): apply multiplication
+
+        Returns:
+            (Res): duplicate of this res
+        """
+        return Res(self.width, self.height, name=name or self.name)*mult
+
     def to_tuple(self):
         """Convert to tuple.
 

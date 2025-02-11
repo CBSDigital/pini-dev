@@ -8,7 +8,7 @@ import time
 from maya import cmds, mel
 
 from pini import icons
-from pini.utils import File, single, find_exe, system, check_heart
+from pini.utils import File, single, find_exe, system, check_heart, Res
 
 _LOGGER = logging.getLogger(__name__)
 _REN_FMTS_MAP = {}
@@ -464,19 +464,24 @@ def to_render_extn():
     return _fmt
 
 
-def to_render_res():
+def to_render_res(name=None):
     """Get current render resolution.
 
+    Args:
+        name (str): apply resolution name
+
     Returns:
-        (tuple): render width/height in pixels
+        (Res): render resolution
     """
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
     if _ren in ('arnold', 'mayaSoftware', 'redshift'):
-        return tuple(
+        _res_x, _res_y = (
             cmds.getAttr(f'defaultResolution.{_attr}')
             for _attr in ['width', 'height'])
-    if _ren == 'vray':
-        return tuple(
+    elif _ren == 'vray':
+        _res_x, _res_y = (
             cmds.getAttr(f'vraySettings.{_attr}')
             for _attr in ['width', 'height'])
-    raise NotImplementedError(_ren)
+    else:
+        raise NotImplementedError(_ren)
+    return Res(_res_x, _res_y, name=name)

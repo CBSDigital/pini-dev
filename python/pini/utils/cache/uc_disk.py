@@ -38,7 +38,7 @@ def get_file_cacher(file_):
 
 
 def get_method_to_file_cacher(
-        mtime_outdates=True, min_mtime=None, max_age=None,
+        mtime_outdates=False, min_mtime=None, max_age=None,
         namespace='default'):
     """Build a caching decorator which saves a result to disk.
 
@@ -68,7 +68,7 @@ def get_method_to_file_cacher(
     def _method_to_file_cacher_dec(func):
 
         _LOGGER.debug(
-            'BUILDING METHOD TO FILE CACHER %s mtime_outdates=%s',
+            'BUILDING METHOD TO FILE CACHER %s - mtime_outdates=%s',
             func.__name__, mtime_outdates)
 
         @functools.wraps(func)
@@ -76,8 +76,9 @@ def get_method_to_file_cacher(
 
             from pini.utils import File, ReadDataError
 
-            _LOGGER.debug('EXEC METHOD CACHE FUNC %s mtime_outdates=%s',
-                          func.__name__, mtime_outdates)
+            _LOGGER.debug(
+                'EXEC METHOD CACHE FUNC %s - mtime_outdates=%s',
+                func.__name__, mtime_outdates)
             _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
             assert isinstance(self.cache_fmt, str)
             _key = func, self
@@ -167,7 +168,7 @@ def _determine_cache_action(  # pylint: disable=too-many-return-statements,too-m
         if _exists and file_.age() > max_age:
             return 'recache'
 
-    if key in results:
+    if not mtime_outdates and key in results:
         return 'use memory'
 
     if _exists is None:
@@ -176,10 +177,13 @@ def _determine_cache_action(  # pylint: disable=too-many-return-statements,too-m
         return 'recache'
 
     # Apply mtime outdates to files
+    _LOGGER.debug(' - OBJ file=%d %s', isinstance(obj, File), obj)
     if isinstance(obj, File) and mtime_outdates:
         if _mtime is None:
             _mtime = file_.mtime()
-        if _mtime < obj.mtime():
+        _obj_mtime = obj.mtime()
+        _LOGGER.debug(' - MTIME DIFF %s', _mtime - _obj_mtime)
+        if _mtime < _obj_mtime:
             return 'recache'
     if min_mtime:
         if _mtime is None:

@@ -85,7 +85,7 @@ def basic_repr(obj, label, show_nice_id=None, separator=':'):
     if _show_nice_id:
         _str += f'[{nice_id(obj)}]'
     if label:
-        _str += separator+str(label)
+        _str += separator + str(label)
     _str += '>'
 
     return _str
@@ -152,8 +152,8 @@ def fr_range(count, last_=True):
     """
     if count == 1:
         return [0]
-    _end = count-1 if last_ else count
-    return [1.0*_idx/_end for _idx in range(count)]
+    _end = count - 1 if last_ else count
+    return [1.0 * _idx / _end for _idx in range(count)]
 
 
 def get_user():
@@ -179,7 +179,7 @@ def ints_to_str(ints):
     _LOGGER.debug('STR TO INTS %s', ints)
 
     # Determine step size
-    _steps = {ints[_idx+1] - ints[_idx] for _idx in range(len(ints)-1)}
+    _steps = {ints[_idx + 1] - ints[_idx] for _idx in range(len(ints) - 1)}
     _step = single(_steps, catch=True)
     _LOGGER.debug(' - STEPS %s', _steps)
 
@@ -196,12 +196,12 @@ def ints_to_str(ints):
                           _idx, _int, _last, _str)
             if not _idx:
                 _str += str(_int)
-            elif ints[_idx-1] != _int-1:
+            elif ints[_idx - 1] != _int - 1:
                 _str += f',{_int}'
-            elif (  # Range use hypen
+            elif (  # Range use hyphen
                     not _last and
-                    ints[_idx-1] == _int-1 and
-                    ints[_idx+1] == _int+1):
+                    ints[_idx - 1] == _int - 1 and
+                    ints[_idx + 1] == _int + 1):
                 pass
             else:
                 _str += f'-{_int}'
@@ -301,24 +301,24 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     _vals = []
 
     # Add weeks
-    if weeks and _secs > 7*24*60*60:
-        _wks = int(_secs/(7*24*60*60))
-        _secs = _secs - _wks*7*24*60*60
-        _str = (_fmt+'w').format(_wks)
+    if weeks and _secs > 7 * 24 * 60 * 60:
+        _wks = int(_secs / (7 * 24 * 60 * 60))
+        _secs = _secs - _wks * 7 * 24 * 60 * 60
+        _str = (_fmt + 'w').format(_wks)
         _vals.append(_str)
 
     # Add days
-    if _secs > 24*60*60:
-        _days = int(_secs/(24*60*60))
-        _secs = _secs - _days*24*60*60
-        _str = (_fmt+'d').format(_days)
+    if _secs > 24 * 60 * 60:
+        _days = int(_secs / (24 * 60 * 60))
+        _secs = _secs - _days * 24 * 60 * 60
+        _str = (_fmt + 'd').format(_days)
         _vals.append(_str)
 
     # Add hours
-    if _vals or _secs > 60*60:
-        _hours = int(_secs/(60*60))
-        _secs = _secs - _hours*60*60
-        _str = (_fmt+'h').format(_hours)
+    if _vals or _secs > 60 * 60:
+        _hours = int(_secs / (60 * 60))
+        _secs = _secs - _hours * 60 * 60
+        _str = (_fmt + 'h').format(_hours)
         _vals.append(_str)
 
     # Add mins
@@ -326,15 +326,15 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     if (
             (_vals and _secs) or  # secs left but no minutes
             _secs > 60):
-        _mins = int(_secs/60)
-        _str = (_fmt+'m').format(_mins)
-        _secs = _secs - _mins*60
+        _mins = int(_secs / 60)
+        _str = (_fmt + 'm').format(_mins)
+        _secs = _secs - _mins * 60
         _vals.append(_str)
 
     # Add secs
     _LOGGER.debug(' - ADDING SECONDS %d', _secs)
     if seconds and _secs:
-        _str = (_fmt+'s').format(_secs)
+        _str = (_fmt + 's').format(_secs)
         _vals.append(_str)
 
     if depth:
@@ -462,7 +462,7 @@ def safe_zip(*lists):
     assert len(lists) >= 2
     for _idx, _list in enumerate(lists[1:], start=1):
         if not len(lists[0]) == len(_list):
-            _chr = chr(ord('a')+_idx)
+            _chr = chr(ord('a') + _idx)
             raise ValueError(
                 f'Length of list a ({len(lists[0]):d}) does not match '
                 f'length of list {_chr} ({len(_list):d})')
@@ -510,7 +510,7 @@ def _check_item_for_keys(item, key):
         _child_results = _check_item_for_keys(item=_child, key=key)
         _LOGGER.debug(' - VAL RESULTS %s', _child_results)
         _full_results = {
-            tuple([_key]+list(_r_key)): _r_val
+            tuple([_key] + list(_r_key)): _r_val
             for _r_key, _r_val in _child_results.items()}
         _results.update(_full_results)
 
@@ -665,7 +665,7 @@ def str_to_ints(string, chunk_sep=",", rng_sep="-", end=None, inc=1):
             _split = _rng.rfind(rng_sep)
             _tokens = [
                 int(float(_val)) if _val else None
-                for _val in (_rng[: _split], _rng[_split+1:])]
+                for _val in (_rng[: _split], _rng[_split + 1:])]
 
             # Convert to list of ints
             if _rng.endswith(rng_sep):
@@ -676,7 +676,7 @@ def str_to_ints(string, chunk_sep=",", rng_sep="-", end=None, inc=1):
             else:
                 _rng_start = _tokens[0]
                 _rng_end = _tokens[-1]
-            _ints += list(range(_rng_start, _rng_end+1, _inc))
+            _ints += list(range(_rng_start, _rng_end + 1, _inc))
 
         # Handle lone num
         else:
@@ -706,8 +706,8 @@ class _RandFromStr(random.Random):
         # Build seed
         _total = offset
         for _idx, _chr in enumerate(string):
-            self.seed(ord(_chr)*(_idx+1))
-            _total += int(self.random()*100000)
+            self.seed(ord(_chr) * (_idx + 1))
+            _total += int(self.random() * 100000)
         self.seed(_total)
         _LOGGER.debug('STR TO SEED total=%d', _total)
 

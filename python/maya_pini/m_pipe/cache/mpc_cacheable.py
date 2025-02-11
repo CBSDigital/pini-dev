@@ -4,13 +4,14 @@ import logging
 
 from pini import pipe
 from pini.dcc import export
+from pini.utils import basic_repr
 
 from maya_pini.utils import save_abc
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPCacheable(object):
+class CPCacheable:
     """Base class for any cacheable object."""
 
     asset = None
@@ -128,5 +129,4 @@ class CPCacheable(object):
         return self.label.lower() < other.label.lower()
 
     def __repr__(self):
-        return '<{}|{}>'.format(
-            type(self).__name__.strip('_'), self.output_name)
+        return basic_repr(self, self.output_name, separator='|')

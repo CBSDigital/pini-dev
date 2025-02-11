@@ -75,9 +75,9 @@ def find_attr_refs(types=()):
 
     # Build list of types to check
     _types = [
-            ('file', 'fileTextureName'),
-            ('imagePlane', 'imageName'),
-            ('audio', 'filename')]
+        ('file', 'fileTextureName'),
+        ('imagePlane', 'imageName'),
+        ('audio', 'filename')]
     if cmds.pluginInfo('mtoa', query=True, loaded=True):
         _types += [
             ('aiImage', 'filename'),

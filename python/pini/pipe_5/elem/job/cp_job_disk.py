@@ -3,6 +3,9 @@
 # pylint: disable=abstract-method
 
 import logging
+import operator
+
+from pini.utils import apply_filter
 
 from . import cp_job_base
 
@@ -30,7 +33,9 @@ class CPJobDisk(cp_job_base.CPJobBase):
         _assets = []
         for _type in _types:
             _assets += self.read_type_assets(asset_type=_type)
-
+        if filter_:
+            _assets = apply_filter(
+                _assets, filter_, key=operator.attrgetter('path'))
         return _assets
 
     def _read_all_asset_types(self):

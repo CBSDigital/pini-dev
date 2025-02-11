@@ -160,8 +160,8 @@ def load_redshift_proxy(path, name='proxy'):
     from maya_pini import open_maya as pom, ui
 
     _name = mu_misc.to_unique(name)
-    _pxy_name = mu_misc.to_unique(name+'Proxy')
-    _shp_name = mu_misc.to_unique(name+'Shape')
+    _pxy_name = mu_misc.to_unique(name + 'Proxy')
+    _shp_name = mu_misc.to_unique(name + 'Shape')
 
     # Check path
     if isinstance(path, Seq):

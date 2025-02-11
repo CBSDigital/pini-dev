@@ -2,9 +2,10 @@
 
 import logging
 
+from pini import qt
 from pini.utils import (
     File, PyFile, find_exe, system, cache_method_to_file,
-    MetadataFile, TMP, PyDef, PyClass, strftime)
+    MetadataFile, TMP, PyDef, PyClass, strftime, abs_path, to_str)
 
 from . import r_docs, r_issue
 
@@ -20,26 +21,29 @@ class CheckFile(MetadataFile):
     cache_loc = 'home'
     cache_namespace = 'release'
 
-    def apply_checks(self, force=False):
+    def apply_checks(self, pylint=True, pycodestyle=True, force=False):
         """Apply release checks.
 
         Args:
+            pylint (bool): apply pylint checks
+            pycodestyle (bool): apply pycodestyle checks
             force (bool): force regenerate checks data
         """
         self.apply_docs_check()
         self.apply_autofix()
         self.apply_simple_checks()
-        self.apply_pylint_check(force=force)
-        self.apply_pycodestyle_check(force=force)
+        if pylint:
+            self.apply_pylint_check(force=force)
+        if pycodestyle:
+            self.apply_pycodestyle_check(force=force)
 
-    def apply_autofix(self, diff=False, force=False):
+    def apply_autofix(self, force=False):
         """Apply autofixes.
 
         Args:
-            diff (bool): show diffs before update
             force (bool): apply updates without confirmation
         """
-
+        _LOGGER.info('APPLY AUTOFIX force=%d %s', force, self.path)
         _orig = self.read()
 
         # Check code line by line
@@ -53,20 +57,34 @@ class CheckFile(MetadataFile):
             if (
                     _tokens and
                     _tokens[0] in ('def', 'class')):
-                _lines += ['', '']
-                _LOGGER.info(' - ADDED NEWLINES %s', _lines)
-                while len(_lines) > 2 and _lines[-3] == '':
-                    _lines.pop(-3)
-                    _LOGGER.info(' - CROPPED NEWLINES %s', _lines)
+
+                _LOGGER.info(' - ADDING NEWLINES %s', _line)
+
+                # Strip decorators
+                _decs = []
+                while _lines and _lines[-1] and (
+                        _lines[-1][0] in ('@ ')):
+                    _decs.insert(0, _lines.pop())
+                _LOGGER.info('   - DECS %s', _decs)
+
+                # Add newlines
+                _n_lines = 1 if _line.startswith(' ') else 2
+                _lines += [''] * _n_lines
+                _LOGGER.info('   - ADDED NEWLINES %s', _lines)
+                _pop_idx = -1 - _n_lines
+                while len(_lines) > 2 and _lines[_pop_idx] == '':
+                    _lines.pop(_pop_idx)
+                    _LOGGER.info('   - CROPPED NEWLINES %s', _lines)
+                _lines += _decs
 
             _lines.append(_line)
 
         # Save updated code
         _fixed = '\n'.join(_lines) + '\n'
         if _orig != _fixed:
-            _LOGGER.info('AUTOFIXES WERE FOUND')
-            if diff:
-                raise NotImplementedError
+            _LOGGER.info(' - AUTOFIXES WERE FOUND')
+
+            # Apply bkp
             assert self.dir[1] == ':'
             assert self.dir[2] == '/'
             _t_stamp = strftime()
@@ -75,8 +93,32 @@ class CheckFile(MetadataFile):
                 f'{self.base}_{_t_stamp}.{self.extn}')
             _LOGGER.info(' - BKP %s', _bkp.path)
             self.copy_to(_bkp, force=True)
+
+            # Confirm
+            _force = False
+            if not force:
+                _result = qt.raise_dialog(
+                    f'Apply autofixes to file?\n\n{self.path}',
+                    buttons=('Yes', 'Show diffs', 'No'))
+                if _result == 'Yes':
+                    _force = True
+                elif _result == 'No':
+                    pass
+                elif _result == 'Show diffs':
+                    _tmp = TMP.to_file(f'.pini/{self.filename}')
+                    _tmp.write(_fixed, force=True)
+                    _tmp.diff(self)
+                    if self.read() == _fixed:
+                        _LOGGER.info('UPDATES APPLIED IN DIFF')
+                        return
+                else:
+                    raise ValueError(_result)
+            else:
+                _force = force
+
+            # Apply updates
             _LOGGER.info(' - UPDATING %s', self.path)
-            self.write(_fixed, force=force)
+            self.write(_fixed, force=_force)
 
     def apply_docs_check(self):
         """Apply docstrings checks."""
@@ -95,6 +137,8 @@ class CheckFile(MetadataFile):
                 r_docs.check_def_docs(_item)
             elif isinstance(_item, PyClass):
                 r_docs.check_class_docs(_item)
+                for _method in _item.find_defs():
+                    r_docs.check_def_docs(_method)
             else:
                 raise ValueError(_item)
 
@@ -197,3 +241,15 @@ class CheckFile(MetadataFile):
         if _disable:
             _cmds += ['--disable', ','.join(_disable)]
         return system(_cmds, verbose=1)
+
+
+def check_file(file_, pylint=True, pycodestyle=True):
+    """Apply release checks to the given file.
+
+    Args:
+        file_ (str): path to file to check
+        pylint (bool): apply pylint checks
+        pycodestyle (bool): apply pycodestyle checks
+    """
+    _file = abs_path(to_str(file_))
+    CheckFile(_file).apply_checks(pylint=pylint, pycodestyle=pycodestyle)

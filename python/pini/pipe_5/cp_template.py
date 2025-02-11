@@ -93,7 +93,7 @@ class CPTemplate(lucidity.Template):
         # ones, then the longest pattern should dominate
         self.cmp_key = (
             not bool(self.dcc), not bool(self.profile),
-            10000-len(self.pattern), self.type_)
+            10000 - len(self.pattern), self.type_)
 
     @property
     def dcc(self):
@@ -131,10 +131,10 @@ class CPTemplate(lucidity.Template):
             # Update pattern
             _token_s = f'{{{_name}}}'  # Basic pattern
             if _token_s not in _pattern:  # Pattern contains regex
-                _start = _pattern.find(_token_s[:-1]+':')
-                _end = _pattern.find('}', _start)+1
+                _start = _pattern.find(_token_s[:-1] + ':')
+                _end = _pattern.find('}', _start) + 1
                 _token_s = _pattern[_start: _end]
-            _pattern = _pattern.replace(_token_s,  _val)
+            _pattern = _pattern.replace(_token_s, _val)
 
             _updated[_name] = _val
 
@@ -164,7 +164,7 @@ class CPTemplate(lucidity.Template):
         _LOGGER.log(9, ' - TYPE DIR %s', _type_dir)
         _root, _ = self.pattern.split(_type_dir, 1)
         if include_token_dir:
-            _pattern = norm_path(_root)+'/'+_type_dir
+            _pattern = norm_path(_root) + '/' + _type_dir
         else:
             _pattern = norm_path(_root)
         return self.duplicate(pattern=_pattern, name=name)
@@ -305,7 +305,7 @@ class CPTemplate(lucidity.Template):
         for _path in _dir.find(
                 depth=_depth, type_=type_, full_path=False,
                 catch_missing=True):
-            if _path.count('/')+1 != _depth:
+            if _path.count('/') + 1 != _depth:
                 continue
             _LOGGER.debug(' - CHECKING PATH %s', _path)
 
@@ -345,7 +345,7 @@ class CPTemplate(lucidity.Template):
 
         _dir, _tmpl = self.split_hardened()
 
-        _depth = _tmpl.pattern.count('/')+1
+        _depth = _tmpl.pattern.count('/') + 1
         assert _depth <= 2
         _paths = []
         for _rel_path in _dir.find(
@@ -530,14 +530,14 @@ def build_job_templates(job, catch=True):
     # Read templates from yaml
     try:
         _tmpls_cfg = job.cfg['templates']
-    except KeyError:
+    except KeyError as _exc:
         if not job.cfg_file.exists():
             if not catch:
-                raise OSError('Missing config '+job.cfg_file.path)
+                raise OSError('Missing config ' + job.cfg_file.path) from _exc
             _LOGGER.warning('MISSING CONFIG FILE %s', job.cfg_file.path)
             return {}
         _LOGGER.info('CFG %s', job.cfg)
-        raise RuntimeError('Bad config '+job.cfg_file.path)
+        raise RuntimeError('Bad config ' + job.cfg_file.path) from _exc
 
     # Build configs into dict
     _tmpls = collections.defaultdict(list)

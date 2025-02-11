@@ -23,16 +23,13 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         'cache_SET')
     ACTION = 'ModelPublish'
 
-    def build_ui(self, parent=None, layout=None, add_footer=True):
+    def build_ui(self, add_footer=True):
         """Build basic render interface into the given layout.
 
         Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
-        super().build_ui(
-            parent=parent, layout=layout, add_footer=False)
+        super().build_ui(add_footer=False)
 
         self.ui.FreezeTfms = self.add_checkbox_elem(
             val=True, name='FreezeTfms',

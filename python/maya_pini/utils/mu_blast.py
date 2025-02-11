@@ -35,7 +35,7 @@ def _build_tmp_blast_cam(cam):
     _LOGGER.debug(' - BUILD TMP BLAST CAM %s', cam)
     from maya_pini import open_maya as pom
 
-    set_namespace(":"+_BLAST_TMP_NS, clean=True)
+    set_namespace(":" + _BLAST_TMP_NS, clean=True)
 
     # Duplicate camera + remove unwanted childre + move dulplicate to world
     _src = pom.CCamera(cam)
@@ -44,7 +44,7 @@ def _build_tmp_blast_cam(cam):
         if _node != _cam.shp:
             _node.delete()
     _LOGGER.debug(' - TMP BLAST CAM %s %s', _cam, type(_cam))
-    for _plug in [_cam.plug[_attr] for _attr in 'trs']+_cam.tfm_plugs:
+    for _plug in [_cam.plug[_attr] for _attr in 'trs'] + _cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
     _src.parent_constraint(_cam, force=True)
@@ -207,7 +207,7 @@ def _exec_blast(
             cmds.deleteUI(_tmp_window)
         if _tmp_cam:
             cmds.delete(_tmp_cam)
-        del_namespace(':'+_BLAST_TMP_NS, force=True)
+        del_namespace(':' + _BLAST_TMP_NS, force=True)
 
     _fmt_mgr.popRenderGlobals()
 
@@ -283,10 +283,10 @@ def _to_res(res, is_video):
         _res = dcc.get_res()
     elif res == 'Half':
         _revert_res = dcc.get_res()
-        _res = [int(_item/2) for _item in dcc.get_res()]
+        _res = [int(_item / 2) for _item in dcc.get_res()]
     elif res == 'Quarter':
         _revert_res = dcc.get_res()
-        _res = [int(_item/4) for _item in dcc.get_res()]
+        _res = [int(_item / 4) for _item in dcc.get_res()]
     else:
         raise ValueError(res)
 
@@ -343,11 +343,11 @@ def blast(
         _tmp_seq = None
     try:
         _clip.delete(force=force, wording='Replace')
-    except OSError:
+    except OSError as _exc:
         raise error.HandledError(
             f'Unable to delete existing file:\n\n{_clip.path}\n\n'
             f'This could be caused by having the file open already in a '
-            f'viewing application (eg. rv).')
+            f'viewing application (eg. rv).') from _exc
     _clip.test_dir()
     _seq = _tmp_seq or _clip
     _LOGGER.debug(' - SEQ %s', _seq)
@@ -418,7 +418,7 @@ def blast_frame(file_, settings='Nice', force=False):
     _file.delete(force=force, wording='replace')
     _frame = int(cmds.currentTime(query=True))
     _rng = [_frame]
-    _tmp_seq = TMP.to_seq('tmp.%04d.'+file_.extn)
+    _tmp_seq = TMP.to_seq('tmp.%04d.' + file_.extn)
     _tmp_seq.delete(force=True)
     assert not _tmp_seq.exists()
     blast(clip=_tmp_seq, range_=_rng, settings=settings)

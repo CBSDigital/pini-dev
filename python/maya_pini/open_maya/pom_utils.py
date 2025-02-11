@@ -149,7 +149,7 @@ def create_square(name='square', width=1.0, col=None):
         point=_pts, periodic=True, knot=range(5),
         degree=1, name=to_unique(name))
     cmds.rotate(90, 0, 0)
-    _scale = width/2
+    _scale = width / 2
     cmds.scale(_scale, _scale, _scale)
     _square.flush()
     if col:
@@ -212,15 +212,15 @@ def find_connections(
         # Sort results into pairs
         assert not len(_conns) % 2  # Check even number of results
         if _src:  # Process incoming
-            _conns = [(_conns[2*_idx+1], _conns[2*_idx])
-                      for _idx in range(int(len(_conns)/2))]
+            _conns = [(_conns[2 * _idx + 1], _conns[2 * _idx])
+                      for _idx in range(int(len(_conns) / 2))]
             _LOGGER.debug(' - SORTED INCOMING %s', _conns)
             if not connections:
                 _conns = [_src for _src, _ in _conns]
                 _LOGGER.debug(' - CLEANED INCOMING %s', _conns)
         else:  # Process outgoing
-            _conns = [(_conns[2*_idx], _conns[2*_idx+1])
-                      for _idx in range(int(len(_conns)/2))]
+            _conns = [(_conns[2 * _idx], _conns[2 * _idx + 1])
+                      for _idx in range(int(len(_conns) / 2))]
             _LOGGER.debug(' - SORTED OUTGOING %s', _conns)
             if not connections:
                 _conns = [_dest for _, _dest in _conns]
@@ -499,7 +499,7 @@ def to_mobject(node):
     except RuntimeError as _exc:
         _LOGGER.debug(' - EXC %s', _exc)
         if str(_exc).endswith('Object does not exist'):
-            raise RuntimeError(f'Missing node {node}')
+            raise RuntimeError(f'Missing node {node}') from _exc
         raise _exc
     _obj = _tmp.getDependNode(0)
     return _obj
@@ -518,7 +518,7 @@ def to_mdagpath(node):
         _sel = om.MGlobal.getSelectionListByName(node)
     except RuntimeError as _exc:
         if not cmds.objExists(node):
-            raise RuntimeError('Missing node '+node)
+            raise RuntimeError('Missing node ' + node) from _exc
         raise _exc
     return _sel.getDagPath(0)
 
@@ -543,10 +543,10 @@ def _local_axes_to_m(pos, lx, ly=None, lz=None):
     if not _lz:
         _lz = (lx ^ _ly).normalize()
     return pom.CMatrix([
-        lx[0],    lx[1],   lx[2],  0,
-        _ly[0],  _ly[1],  _ly[2],  0,
-        _lz[0],  _lz[1],  _lz[2],  0,
-        pos[0],  pos[1],  pos[2],  1])
+        lx[0], lx[1], lx[2], 0,
+        _ly[0], _ly[1], _ly[2], 0,
+        _lz[0], _lz[1], _lz[2], 0,
+        pos[0], pos[1], pos[2], 1])
 
 
 def selected_node():

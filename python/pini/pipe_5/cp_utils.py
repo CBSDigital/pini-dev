@@ -112,15 +112,15 @@ def extract_template_dir_data(path, template, job=None, safe=True):
 
     # Crop path to template depth
     _path = abs_path(path)
-    _path = '/'.join(_path.split('/')[:_tmpl_path.count('/')+1])
+    _path = '/'.join(_path.split('/')[:_tmpl_path.count('/') + 1])
 
     _tmpl = pipe.CPTemplate('tmp', _tmpl_path)
     _LOGGER.debug(' - PATH (B) %s', _path)
     _LOGGER.debug(' - TMP TMPL %s', _tmpl)
     try:
         _data = _tmpl.parse(_path)
-    except lucidity.ParseError:
-        raise ValueError(path)
+    except lucidity.ParseError as _exc:
+        raise ValueError(path) from _exc
 
     validate_tokens(_data, job=_job)
 
@@ -161,8 +161,9 @@ def expand_pattern_variations(fmt):
     _n_opts = len(_opts)
     _toggle_combis = []
     for _idx in range(2**_n_opts):
-        _toggle_combi = [bool(int(_idx/(2**_jdx)) % 2)
-                         for _jdx in range(_n_opts-1, -1, -1)]
+        _toggle_combi = [
+            bool(int(_idx / (2 ** _jdx)) % 2)
+            for _jdx in range(_n_opts - 1, -1, -1)]
         _toggle_combis.append(_toggle_combi)
         _LOGGER.debug(' - ADD COMBINATION %s', _toggle_combi)
 
@@ -228,7 +229,7 @@ def map_path(path, mode='start'):
         _src, _dest = _entry.split('>>>')
         if mode == 'start':
             if _path.lower().startswith(_src.lower()):
-                return _dest+_path[len(_src):]
+                return _dest + _path[len(_src):]
         elif mode == 'any':
             _path = _path.replace(_src, _dest)
         else:

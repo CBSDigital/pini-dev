@@ -321,18 +321,12 @@ class CExportHandler:
             name='Notes', val=_notes, disable_save_settings=True)
         self.notes_elem = self.ui.Notes
 
-    def build_ui(self, parent=None, layout=None):
+    def build_ui(self):
         """Build any specific ui elements for this handler.
 
-        The elements should be added to the given layout.
-
         This should be implemeneted in the child class.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add elements to
         """
-        _LOGGER.debug('BUILD UI %s %s', parent, layout)
+        _LOGGER.debug('BUILD UI')
 
     def build_metadata(
             self, work=None, sanity_check_=True, task=None, force=False):
@@ -417,7 +411,7 @@ class CExportHandler:
         self.ui = self.ui or qt.CUiContainer(settings_file=self._settings_file)
 
         qt.flush_layout(layout)
-        self.build_ui(parent=parent, layout=layout)
+        self.build_ui()
         self.ui.load_settings()
 
     def post_export(

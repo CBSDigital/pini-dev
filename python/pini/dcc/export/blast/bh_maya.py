@@ -26,14 +26,9 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         """
         super().__init__(label_w=label_w)
 
-    def build_ui(self, parent=None, layout=None):
-        """Build ui elements for this handler.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): parent layout
-        """
-        super().build_ui(parent=parent, layout=layout)
+    def build_ui(self):
+        """Build ui elements for this handler."""
+        super().build_ui()
 
         # Read cams
         _cams = [str(_cam) for _cam in pom.find_cams()]
@@ -107,11 +102,11 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             return
         try:
             self.output
-        except ValueError:
+        except ValueError as _exc:
             raise error.HandledError(
                 f'You have chosen "{self.output_name}" as the output name '
                 f'which is not valid within the pipeline.\n\nPlease select '
-                f'another output name.')
+                f'another output name.') from _exc
 
     def blast(self):
         """Excute blast."""

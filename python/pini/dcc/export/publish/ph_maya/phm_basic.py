@@ -47,17 +47,14 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         'You can use the sanity check tool to check your scene.',
     ])
 
-    def build_ui(self, parent=None, layout=None, add_footer=True):
+    def build_ui(self, add_footer=True):
         """Build basic render interface into the given layout.
 
         Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
             add_footer (bool): add footer elements
         """
         _LOGGER.debug('BUILD UI %s', self)
-        super().build_ui(
-            parent=parent, layout=layout, add_footer=False)
+        super().build_ui(add_footer=False)
 
         self.add_separator_elem()
 

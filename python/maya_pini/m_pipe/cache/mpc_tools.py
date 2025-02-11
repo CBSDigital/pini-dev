@@ -59,7 +59,7 @@ def _check_for_overwrite(cacheables, extn, force):
                 len(_to_replace), extn, plural(_to_replace),
                 '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
-                _n_over = len(_to_replace)-10
+                _n_over = len(_to_replace) - 10
                 _msg += f'\n\n(and {_n_over:d} other abc{plural(_n_over)})'
             _icon = icons.find('Bear')
             qt.ok_cancel(
@@ -167,7 +167,7 @@ def cache(
     if save and not dcc.batch_mode():
         _work.save(reason='cache', force=True, update_outputs=False)
     if snapshot:
-        _take_snapshot(image=_work.image, frame=int(sum(_range)/2))
+        _take_snapshot(image=_work.image, frame=int(sum(_range) / 2))
         _updated = True
 
     # Execute cache

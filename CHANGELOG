@@ -1,3 +1,19 @@
+## [6.45.0] - Tue 2025-02-11 14:34
+### Summary
+ - Release Tools:
+    - added tools for checking code on release,
+### Updated
+ - applied whitespace around operator,
+ - pini.utils.get_method_to_file_cache updated default mtime_outdates -> False,,
+ - pini.utils.get_method_to_file_cache mtime_outdates bugfix mem cache result skipping mtime check,
+ - pini.utils.Res.duplicate added,
+ - pini.dcc.export.CBaseExportHandler.build_ui removed layout/parent args + updated subclasses,
+ - pini.pipe.CPJobDisk.find_asset bugfix filter not being applied,
+ - pini.tools.release.check_file added wip,
+ - maya_pini.utils.find_render_cam removed deprecated func,
+ - maya_pini.utils.to_render_res returns Res,
+
+
 ## [6.44.0] - Mon 2025-02-10 16:24
 ### Summary
  - Pini Helper:

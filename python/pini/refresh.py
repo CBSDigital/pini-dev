@@ -131,7 +131,10 @@ _RELOAD_ORDER = [
     'pini.tools.pyui.ui',
     'pini.tools.pyui',
 
+    'pini.tools.release.check',
     'pini.tools.release.r_version',
+    'pini.tools.release',
+
     'pini.tools.sanity_check.core.sc_fail',
     'pini.tools.sanity_check.core.sc_check',
     'pini.tools.sanity_check.core.sc_check_maya',

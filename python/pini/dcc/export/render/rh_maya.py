@@ -38,15 +38,10 @@ def _get_current_lyr():
 class CMayaRenderHandler(rh_base.CRenderHandler):
     """Base class for any maya render handler."""
 
-    def build_ui(self, parent=None, layout=None):
-        """Build basic render interface into the given layout.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
-        """
+    def build_ui(self):
+        """Build basic render interface into the given layout."""
         _LOGGER.debug('BUILD UI')
-        super().build_ui(parent=parent, layout=layout)
+        super().build_ui()
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
@@ -84,14 +79,9 @@ class CMayaLocalRender(CMayaRenderHandler):
     description = (
         'Renders the current scene locally to disk using the maya interface')
 
-    def build_ui(self, parent=None, layout=None):
-        """Build basic render interface into the given layout.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
-        """
-        super().build_ui(parent=parent, layout=layout)
+    def build_ui(self):
+        """Build basic render interface into the given layout."""
+        super().build_ui()
 
         self.ui.View = self.add_checkbox_elem(
             name='View', val=True,
@@ -219,15 +209,10 @@ class CMayaFarmRender(CMayaRenderHandler):
         """
         super().__init__(priority=priority, label_w=label_w)
 
-    def build_ui(self, parent=None, layout=None):
-        """Build basic render interface into the given layout.
-
-        Args:
-            parent (QWidget): parent widget
-            layout (QLayout): layout to add widgets to
-        """
+    def build_ui(self):
+        """Build basic render interface into the given layout."""
         _LOGGER.debug('BUILD UI')
-        super().build_ui(parent=parent, layout=layout)
+        super().build_ui()
 
         self.ui.Priority = self.add_spinbox_elem(
             name='Priority', val=50)

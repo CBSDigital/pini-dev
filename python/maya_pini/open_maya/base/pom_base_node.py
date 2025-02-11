@@ -134,7 +134,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             self, shortName=name, longName=name, keyable=keyable,
             **_kwargs)
         for _child in _children:
-            _c_name = name+_child
+            _c_name = name + _child
             _LOGGER.info(' - ADDING CHILD %s %s', _child, _c_name)
             cmds.addAttr(
                 self, shortName=_c_name, longName=_c_name, parent=name,

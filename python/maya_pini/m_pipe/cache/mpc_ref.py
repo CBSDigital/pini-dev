@@ -24,7 +24,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         Args:
             ref_node (str): reference node
         """
-        super(CPCacheableRef, self).__init__(ref_node)
+        super().__init__(ref_node)
         self.node = pom.CReference(ref_node)
 
         self.asset = pipe.CPOutputFile(self.path)
@@ -35,8 +35,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         self.output_name = self.namespace.split(':')[-1]
 
         if self.output_name != self.namespace:
-            self.label = '{} ({})'.format(
-                self.output_name, to_namespace(self.namespace))
+            self.label = f'{self.output_name} ({to_namespace(self.namespace)})'
         else:
             self.label = self.output_name
 
