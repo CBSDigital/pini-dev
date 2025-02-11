@@ -139,7 +139,7 @@ class PRTest:
             shotgrid.to_handler().requests_limit = 0
 
     @cache_method_to_file
-    def last_exec_dur(self, exec_dur=0, force=False):
+    def last_exec_dur(self, exec_dur=None, force=False):
         """Obtain duration of last successful execution of this test.
 
         Args:

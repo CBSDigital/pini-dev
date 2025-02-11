@@ -2,7 +2,6 @@
 
 import logging
 
-from pini.tools import error
 from pini.utils import to_nice, copy_text
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,6 +18,7 @@ def _copy_suggestion_on_fail(func):
     """
 
     def _copy_suggestion_func(arg):
+        from pini.tools import error
         try:
             _result = func(arg)
         except error.FileError as _exc:
@@ -37,6 +37,7 @@ def check_mod_docs(py_file):
     Args:
         py_file (PyFile): file to check
     """
+    from pini.tools import error
     _docs = py_file.to_docstring()
     if not _docs:
         raise error.FileError(
@@ -60,6 +61,7 @@ def check_def_docs(def_):
     Args:
         def_ (PyDef): def to check
     """
+    from pini.tools import error
     _docs = def_.to_docs()
     if not _docs.body:
         raise error.FileError(
@@ -77,6 +79,7 @@ def _check_def_title(def_, docs):
         def_ (PyDef): def to check
         docs (PyDefDocs): docstrings to check
     """
+    from pini.tools import error
     if not docs.title[-1] == '.':
         raise error.FileError(
             'No trailing period in def docs title',
@@ -94,6 +97,7 @@ def _check_def_args(def_, docs):
         def_ (PyDef): def to check
         docs (PyDefDocs): docstrings to check
     """
+    from pini.tools import error
     _has_kwargs = bool(def_.to_ast().args.kwarg)
     if not _has_kwargs:
         for _arg_docs in docs.find_args():
@@ -128,6 +132,7 @@ def _check_def_result(def_, docs):
         def_ (PyDef): def to check
         docs (PyDefDocs): docstrings to check
     """
+    from pini.tools import error
     if not docs.returns:
         return
     _LOGGER.debug(' - RETURNS %s', docs.returns)
@@ -149,6 +154,7 @@ def check_class_docs(class_):
     Args:
         class_ (PyClass): class to check
     """
+    from pini.tools import error
     _docs = class_.to_docstring()
     if not _docs:
         raise error.FileError(

@@ -2,7 +2,6 @@
 
 import logging
 
-from pini.tools import error
 from pini.utils import (
     File, PyFile, find_exe, system, cache_method_to_file,
     MetadataFile, TMP, PyDef, PyClass, strftime)
@@ -130,6 +129,7 @@ class CheckFile(MetadataFile):
 
     def apply_simple_checks(self):
         """Apply simple checks."""
+        from pini.tools import error
         for _line_n, _line in enumerate(self.read_lines()):
             _line = _line.split('  # pylint:', 1)[0]
             if len(_line) > 80:

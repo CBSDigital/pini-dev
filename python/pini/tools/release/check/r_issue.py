@@ -3,7 +3,7 @@
 import logging
 import re
 
-from pini.tools import error
+# from pini.tools import error
 from pini.utils import basic_repr
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ class _Issue:
         Returns:
             (FileError): error for this issue
         """
+        from pini.tools import error
         return error.FileError(self.desc, file_=file_, line_n=self.line_n)
 
     def __repr__(self):

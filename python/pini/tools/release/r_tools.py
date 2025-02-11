@@ -1,11 +1,12 @@
 """General release tools."""
 
 import logging
+import operator
 import os
 import time
 import sys
 
-from pini.utils import single
+from pini.utils import single, apply_filter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,11 +22,19 @@ def find_test(match):
     """
     _tests = find_tests()
 
+    # Try exact name match
     _name_match = single(
         [_test for _test in _tests if match in (_test.name, _test.clean_name)],
         catch=True)
     if _name_match:
         return _name_match
+
+    # Try filter match
+    _filter_match = single(
+        apply_filter(_tests, match, key=operator.attrgetter('name')),
+        catch=True)
+    if _filter_match:
+        return _filter_match
 
     raise ValueError(match)
 
@@ -43,9 +52,12 @@ def find_tests(mode=None, repos=(), filter_=None):
     """
     from .. import release
     _repos = repos or release.REPOS
+    _LOGGER.debug('FIND TESTS %s', _repos)
     _tests = []
     for _repo in _repos:
-        _tests += _repo.find_tests(mode=mode, filter_=filter_)
+        _r_tests = _repo.find_tests(mode=mode, filter_=filter_)
+        _LOGGER.debug(' - %s FOUND %d TESTS', _repo, len(_r_tests))
+        _tests += _r_tests
     _tests.sort(key=_test_sort_key)
     return _tests
 

@@ -7,7 +7,7 @@ import time
 
 from pini.utils import (
     Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
-    system, to_time_f)
+    system, to_time_f, abs_path)
 
 from . import r_test_file
 from .r_version import PRVersion, DEV_VER
@@ -17,6 +17,16 @@ _LOGGER = logging.getLogger(__name__)
 
 class PRRepo(Dir):
     """Represents a code repository on disk."""
+
+    def __init__(self, dir_):
+        """Constructor.
+
+        Args:
+            dir_ (str): path to repo
+        """
+        _dir = abs_path(dir_)
+        _LOGGER.debug('INIT PRRepo %s', _dir)
+        super().__init__(_dir)
 
     @property
     def name(self):
@@ -135,7 +145,7 @@ class PRRepo(Dir):
         _LOGGER.debug(' - CHANGELOG NOTES\n%s', _cl_notes)
         if update_ver:
             if _cl_notes not in _cl_body:
-                _cl_body = '{}\n\n\n{}'.format(_cl_notes, _cl_body)
+                _cl_body = f'{_cl_notes}\n\n\n{_cl_body}'
                 self.changelog.write(_cl_body, wording='Update', force=True)
                 self.changelog.edit()
             else:
@@ -156,11 +166,10 @@ class PRRepo(Dir):
             email (bool): print send email command
             dev_label (str): how to label dev push in comment
         """
-        print('# Release {} code'.format(dev_label))
+        print(f'# Release {dev_label} code')
         print('cd '+self.path)
         print('git add -A')
-        print('git commit -m "{}" -a'.format(
-            notes.to_cmdline(repo=self, ver=ver)))
+        print(f'git commit -m "{notes.to_cmdline(repo=self, ver=ver)}" -a')
         print('git push')
         print('git tag '+ver.string)
         print('git push --tags')
@@ -173,7 +182,7 @@ class PRRepo(Dir):
                 print('git pull')
             elif pull_mode == 'clone':
                 print('cd '+target.to_dir().path)
-                print('git clone {} .tmp'.format(self.to_url()))
+                print(f'git clone {self.to_url()} .tmp')
                 print('rm -fr '+target.filename)
                 print('mv .tmp '+target.filename)
             else:
@@ -181,7 +190,7 @@ class PRRepo(Dir):
             print('')
 
         if email:
-            print('send_release_email {}'.format(tmp_yml.path))
+            print(f'send_release_email {tmp_yml.path}')
             print('')
 
     def release(
@@ -232,7 +241,7 @@ class PRRepo(Dir):
         _data = {'notes': notes, 'version': _next, 'mtime': _mtime,
                  'repo': self}
         _tmp_yml = Dir(TMP_PATH).to_file(
-            '{}_{}.yml'.format(self.name, _next.to_str()))
+            f'{self.name}_{_next.to_str()}.yml')
         _tmp_yml.write_yml(_data, force=True)
 
         self._update_changelog(
@@ -258,7 +267,7 @@ class PRRepo(Dir):
         lprint('SEARCHING', self.path, verbose=verbose)
         _files = Dir(self.path).find(
             type_='f', extn=extn, filter_=file_filter)
-        lprint('FOUND {:d} FILES'.format(len(_files)))
+        lprint(f'FOUND {len(_files):d} FILES')
         search_files_for_text(
             files=_files, filter_=filter_, edit=edit, text=text)
 
@@ -276,6 +285,20 @@ class PRRepo(Dir):
 _FILE = os.environ.get('PINI_REPO_FILE', __file__)
 _PINI_DIR, _ = _FILE.split('python', 1)
 PINI = PRRepo(_PINI_DIR)
+
+
+def add_repo(repo):
+    """Add repo to pini repos.
+
+    Args:
+        repo (PRRepo): repo to add
+    """
+    from pini.tools import release
+    _names = [_repo.name for _repo in release.REPOS]
+    if repo.name in _names:
+        release.REPOS[_names.index(repo.name)] = repo
+    else:
+        release.REPOS.append(repo)
 
 
 def cur_ver():

@@ -506,8 +506,10 @@ def _read_textures(filter_=None):
         _LOGGER.debug(' - FTN %s', _path)
         if _file.plug['uvTilingMode'].get_val():
             _LOGGER.debug(' - CONVERT TO SEQ')
-            _path = to_seq(_path)
-        if not _path.exists():
+            _path = to_seq(_path.replace('.<UDIM>.', '.%04d.'))
+            _LOGGER.debug(' - FTN %s', _path)
+        if not _path or not _path.exists():
+            _LOGGER.debug(' - REJECTED %s', _path)
             continue
         _ftns.add(_path)
     return sorted(_ftns)

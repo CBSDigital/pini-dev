@@ -1,3 +1,15 @@
+## [6.44.0] - Mon 2025-02-10 16:24
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error register textures due to udim in texture path (eehemann),
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish bugfix failed to map <UDIM> to seq on register textures,
+ - pini.tools.release bugfix cyclical error module import,
+ - pini.tools.release.add_repo added,
+ - pini.tools.release.PRTest.last_exec_dur default arg is None to fix sort,
+ - pini.tools.release.find_test try filter match,
+
+
 ## [6.43.0] - Mon 2025-02-10 10:10
 ### Summary
  - Pipe Codebase:
