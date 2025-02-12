@@ -1,4 +1,4 @@
-"""Tools for managing the work file object
+"""Tools for managing the work file object.
 
 This is used to represent a work file in PiniHelper.
 """
@@ -79,7 +79,8 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         super().__init__(
             list_view=list_view, col='Transparent', data=work,
-            height=max(self.text_h, self.thumb_h+20 if self._has_thumb else 0))
+            height=max(
+                self.text_h, self.thumb_h + 20 if self._has_thumb else 0))
 
     @property
     def text_h(self):
@@ -88,7 +89,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         Returns:
             (float): height in pixels
         """
-        return self.margin*3 + self.line_h * self._to_n_lines()
+        return self.margin * 3 + self.line_h * self._to_n_lines()
 
     @property
     def thumb_h(self):
@@ -97,7 +98,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         Returns:
             (float): height in pixels
         """
-        return self.metrics.size(0, '\n'.join('A'*4)).height() * 1.1
+        return self.metrics.size(0, '\n'.join('A' * 4)).height() * 1.1
 
     def _to_n_lines(self):
         """Calculate number of lines of text.
@@ -128,9 +129,9 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             f' - Owner: {_owner}'])
 
         if _size_str:
-            _text += '\n - Size: '+_size_str
+            _text += '\n - Size: ' + _size_str
         if self.output_tags:
-            _text += '\n - '+'/'.join(self.output_tags)
+            _text += '\n - ' + '/'.join(self.output_tags)
 
         _text += '\n - Notes:'
 
@@ -175,7 +176,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         # Draw text
         _text = self._to_text()
-        _text_pos = qt.to_p(_icon_size+16.0, 4)
+        _text_pos = qt.to_p(_icon_size + 16.0, 4)
         pix.draw_text(
             _text, pos=_text_pos, col=self.text_col, font=self.font,
             line_h=self.line_h)
@@ -185,15 +186,17 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         _n_offs_x = self.metrics.size(0, ' - Notes: ').width() + 1
         pix.draw_text(
             self.notes,
-            pos=_text_pos + qt.to_p(_n_offs_x, (_n_lines-1)*self.line_h+0.5),
+            pos=_text_pos + qt.to_p(
+                _n_offs_x, (_n_lines - 1) * self.line_h + 0.5),
             col=self.text_col, font=self.font)
 
         # Draw output icons
         _keys = set(_OUTPUT_ICONS.keys())
         _keys.remove('Empty')
-        _out_icons_offs_x = self.metrics.size(0, 'A'*25).width() + _text_pos.x()
-        _out_icons_width = self.metrics.size(0, 'A'*2).width()
-        _out_icons_offs_y = self.metrics.size(0, 'A').height()/2 + 6
+        _out_icons_offs_x = (
+            self.metrics.size(0, 'A' * 25).width() + _text_pos.x())
+        _out_icons_width = self.metrics.size(0, 'A' * 2).width()
+        _out_icons_offs_y = self.metrics.size(0, 'A').height() / 2 + 6
         for _idx, _tag in enumerate(sorted(_keys, key=_sort_output_tag)):
             _icon_size = _out_icons_width
             if _tag not in self.output_tags:
@@ -201,7 +204,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
                 _icon_size *= 0.35
             _icon = _to_output_icon(_tag, size=_icon_size)
             _pos = (
-                _out_icons_offs_x + (_out_icons_width * 1.3)*_idx,
+                _out_icons_offs_x + (_out_icons_width * 1.3) * _idx,
                 _out_icons_offs_y)
             pix.draw_overlay(_icon, pos=_pos, anchor='C')
 
@@ -209,10 +212,10 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         if self._has_thumb:
             _margin = 10
             _pix = ph_utils.obt_pixmap(self.work.image)
-            _size = _pix.size() * self.thumb_h/_pix.height()  # pylint: disable=no-member
-            self._draw_right_fade(pix, offset=_size.width()+_margin*2)
+            _size = _pix.size() * self.thumb_h / _pix.height()  # pylint: disable=no-member
+            self._draw_right_fade(pix, offset=_size.width() + _margin * 2)
             pix.draw_overlay(
-                _pix, pos=(pix.width()-_margin, _margin),
+                _pix, pos=(pix.width() - _margin, _margin),
                 anchor='TR', size=_size)
 
 

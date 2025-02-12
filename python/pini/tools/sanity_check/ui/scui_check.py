@@ -91,7 +91,7 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
         super().draw_pixmap(pix)
 
         pix.draw_text(
-            self.check.label, pos=(45, self.height/3), anchor='L')
+            self.check.label, pos=(45, self.height / 3), anchor='L')
 
         # Draw progress
         if self.check.status in ['disabled', 'errored', 'ready']:
@@ -100,15 +100,16 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
         else:
             _pc = self.check.progress
             _pc_text = f'{self.check.progress:.00f}%'
-        pix.draw_text(_pc_text, pos=(45, 2*self.height/3), anchor='L')
-        _icon_idx = int(val_map(_pc, in_max=100, out_max=len(icons.MOONS)-1))
+        pix.draw_text(_pc_text, pos=(45, 2 * self.height / 3), anchor='L')
+        _icon_idx = int(val_map(_pc, in_max=100, out_max=len(icons.MOONS) - 1))
         _icon = icons.MOONS[_icon_idx]
         pix.draw_overlay(_icon, pos=(25, 25), anchor='C', rotate=180, size=30)
 
         pix.draw_overlay(
-            self.icon, pos=(pix.width()-30, 25), anchor='C', size=30)
+            self.icon, pos=(pix.width() - 30, 25), anchor='C', size=30)
         pix.draw_text(
-            self.check.status, pos=(pix.width()-53, self.height/3), anchor='R')
+            self.check.status, pos=(pix.width() - 53, self.height / 3),
+            anchor='R')
 
     def __repr__(self):
         return basic_repr(self, self.check.label)

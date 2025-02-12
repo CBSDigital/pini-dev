@@ -40,7 +40,7 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
         for _seq_dir in _seq_dirs:
             _seqs += _seq_dir.find_outputs()
 
-        _outs = sorted(_files+_seqs)
+        _outs = sorted(_files + _seqs)
         _LOGGER.debug(
             'BUILT OUTPUTS %s outs=%d globs=%d files=%d seq_dirs=%d seqs=%d',
             self, len(_outs), len(_globs), len(_files), len(_seq_dirs),
@@ -270,6 +270,6 @@ def _tmpl_in_seq_dir(tmpl, seq_dir_tmpls):
     if tmpl.name == 'seq_dir':
         return False
     for _sd_tmpl in seq_dir_tmpls:
-        if tmpl.pattern.startswith(_sd_tmpl.pattern+'/'):
+        if tmpl.pattern.startswith(_sd_tmpl.pattern + '/'):
             return True
     return False

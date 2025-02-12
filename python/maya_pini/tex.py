@@ -85,8 +85,8 @@ class _Shader(pom.CNode):
 
         Args:
             col (str|File): colour to apply - can be:
-             - name of colour (eg. IndianRed)
-             - path to file texture to apply
+                - name of colour (eg. IndianRed)
+                - path to file texture to apply
             colspace (str): colourspace for file node (if applicable)
         """
         if isinstance(col, str):

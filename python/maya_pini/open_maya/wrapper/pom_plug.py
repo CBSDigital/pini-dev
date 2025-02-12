@@ -470,7 +470,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             output (CPlug): output
 
         Returns:
-            ():
+            (CPlug): output connection
         """
         from maya_pini import open_maya as pom
         cmds.loadPlugin('modulo', quiet=True)

@@ -121,7 +121,7 @@ class TestHelper(unittest.TestCase):
         assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
 
         print()
-        print('TEST JUMP TO TEST SHOT '+testing.TEST_SHOT.path)
+        print('TEST JUMP TO TEST SHOT ' + testing.TEST_SHOT.path)
         _helper.jump_to(testing.TEST_SHOT)
         assert _helper.entity == testing.TEST_SHOT
         assert _helper.ui.SOutputsPane.tabText(1) == 'Shot'
@@ -138,7 +138,7 @@ class TestHelper(unittest.TestCase):
         _helper.jump_to(testing.TEST_ASSET)
         assert _helper.entity == testing.TEST_ASSET
         print()
-        print('TEST JUMP TO LOOKDEV FROM ASSET '+_lookdev.path)
+        print('TEST JUMP TO LOOKDEV FROM ASSET ' + _lookdev.path)
         _helper.jump_to(_lookdev)
         assert _helper.entity == testing.TEST_ASSET
         assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
@@ -213,7 +213,7 @@ class TestHelper(unittest.TestCase):
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
 
         # Check setting maintained
-        _helper.close()
+        _helper.delete()
         print('')
         _LOGGER.info('LAUNCH HELPER')
         _helper = helper.launch(reset_cache=False)
@@ -239,7 +239,7 @@ class TestHelper(unittest.TestCase):
         _LOGGER.info('SELECTED EXPORT TAB')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         assert export.get_pub_refs_mode() is _remove
-        _helper.close()
+        _helper.delete()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'

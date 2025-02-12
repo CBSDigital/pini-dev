@@ -82,8 +82,8 @@ class CMayaRef(prm_base.CMayaPipeRef):
         Args:
             lookdev_ (CPOutput|CMayaShadersRef): lookdev to attach
             mode (str): attach mode
-             > Reference - reference nodes using <namespace>_shd namespace
-             > Import - import nodes into root namespace
+                Reference - reference nodes using <namespace>_shd namespace
+                Import - import nodes into root namespace
             tag (str): tag to apply
             force (bool): replace existing ref without confirmation
         """

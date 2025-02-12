@@ -151,7 +151,7 @@ class PHExportTab:
         _text = '  '
         if _mode != 'Manual':
             _visible = True
-            _text = ' '+ints_to_str(_frames)
+            _text = ' ' + ints_to_str(_frames)
         else:
             _visible = False
         self.ui.ERenderFramesLabel.setVisible(_visible)

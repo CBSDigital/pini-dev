@@ -54,7 +54,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Returns:
             (float): font size
         """
-        return self.font_size*0.9
+        return self.font_size * 0.9
 
     @property
     def info_y(self):
@@ -63,7 +63,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Returns:
             (float): y-pos
         """
-        return self.font_size*5.5
+        return self.font_size * 5.5
 
     @property
     def label(self):
@@ -85,7 +85,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
         _label = _out.output_name or _out.asset or _out.shot
         if isinstance(_out, (Seq, Video)):
-            _label += ' '+_out.extn
+            _label += ' ' + _out.extn
         return _label
 
     @property
@@ -95,7 +95,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
         Returns:
             (float): margin in pixels
         """
-        return self.font_size*0.3
+        return self.font_size * 0.3
 
     @property
     def sort_key(self):
@@ -132,8 +132,9 @@ class PHOutputItem(qt.CListViewPixmapItem):
         # Draw backdrop
         if self.bg_col:
             pix.draw_rounded_rect(
-                pos=(self.margin, self.margin/2),
-                size=(pix.width()-self.margin*2, pix.height()-self.margin),
+                pos=(self.margin, self.margin / 2),
+                size=(pix.width() - self.margin * 2,
+                      pix.height() - self.margin),
                 outline=None, col=self.bg_col)
 
         # Add text/icon overlays
@@ -169,15 +170,15 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _font = QtGui.QFont(self.font)
         _font.setBold(True)
 
-        _left_m = self.font_size*3.9
-        _icon_w = self.font_size*2.5
-        _text_y = self.font_size*1.3
+        _left_m = self.font_size * 3.9
+        _icon_w = self.font_size * 2.5
+        _text_y = self.font_size * 1.3
 
         # Draw icon
         if self.icon:
             _over = self.icon.resize(_icon_w)
             pix.draw_overlay(
-                _over, pos=(self.font_size*0.8, pix.height()/2), anchor='L')
+                _over, pos=(self.font_size * 0.8, pix.height() / 2), anchor='L')
 
         # Draw asset text
         if not self.output.tag:
@@ -188,13 +189,13 @@ class PHOutputItem(qt.CListViewPixmapItem):
         # Draw asset text with tag underneath
         else:
             _rect = pix.draw_text(
-                self.label, pos=(_left_m, _text_y-5), col=self.text_col,
+                self.label, pos=(_left_m, _text_y - 5), col=self.text_col,
                 font=_font)
 
             _font.setBold(False)
             _rect = pix.draw_text(
                 self.output.tag,
-                pos=(_left_m, self.line_h*1.4), col=self.text_col,
+                pos=(_left_m, self.line_h * 1.4), col=self.text_col,
                 font=_font)
 
         if self.info:
@@ -214,13 +215,13 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _font = QtGui.QFont(self.font)
         _font.setBold(True)
 
-        _icon_w = self.font_size*2
+        _icon_w = self.font_size * 2
         _right_m = pix.width() - self.font_size * 0.9
         _text_x = _right_m - self.font_size * 2.7
-        _text_y = self.font_size*2.2
+        _text_y = self.font_size * 2.2
 
         _icon = output_to_type_icon(self.output)
-        _over_p = qt.to_p(_right_m+3, _text_y)
+        _over_p = qt.to_p(_right_m + 3, _text_y)
         if _icon:
             _over = obt_pixmap(_icon, size=_icon_w)
             _pix = pix.draw_overlay(
@@ -228,8 +229,8 @@ class PHOutputItem(qt.CListViewPixmapItem):
         if self.output.status == pipe.STATUS_ORDER[-1]:
             pix.draw_overlay(
                 _APPROVED_ICON,
-                pos=_over_p + qt.to_p(-0.2*_icon_w, 0),
-                anchor='T', size=_icon_w*0.8)
+                pos=_over_p + qt.to_p(-0.2 * _icon_w, 0),
+                anchor='T', size=_icon_w * 0.8)
 
         # Draw version text
         if self.output.ver_n is not None:
@@ -241,8 +242,6 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _status = self.output.status
         if _status == 'cmpt':
             _status = None
-        # if _status:
-        #     _ver_text = f'({_status}) {_ver_text}'
         _rect = pix.draw_text(
             _ver_text, pos=(_text_x, _text_y),
             col=self.text_col, anchor='R', font=_font)

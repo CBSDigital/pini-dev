@@ -74,12 +74,13 @@ class EmojiSet(Seq):
             if not _emoji:
                 try:
                     _emoji = single(_emojis, catch=catch)
-                except ValueError:
+                except ValueError as _exc:
                     if verbose:
                         for _emoji in sorted(_emojis):
                             _LOGGER.info(' - %s', _emoji.name)
                     _emojis = sorted([_emoji.name for _emoji in _emojis])
-                    raise ValueError(f'Failed to match {match} - {_emojis}')
+                    raise ValueError(
+                        f'Failed to match {match} - {_emojis}') from _exc
 
             self._matches[match] = _emoji
 
@@ -99,7 +100,7 @@ class EmojiSet(Seq):
         _name = name
         if not _name.isupper():
             _name = to_snake(name)
-        _name = '_'+_name.upper()
+        _name = '_' + _name.upper()
         _names = getattr(i_const, _name)
         return tuple(self.find(_name) for _name in _names)
 

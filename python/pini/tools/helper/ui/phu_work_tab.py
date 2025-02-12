@@ -344,10 +344,10 @@ class PHWorkTab:
         _data = []
         _items = []
         for _work in ph_utils.obt_recent_work():
-            _ety = _work.shot or (_work.asset_type+'/'+_work.asset)
+            _ety = _work.shot or (_work.asset_type + '/' + _work.asset)
             _uid = f'{_work.job.name}/{_ety}/{_work.task}'
             if _work.tag:
-                _uid += '/'+_work.tag
+                _uid += '/' + _work.tag
             if _uid in _items:
                 continue
             _items.append(_uid)
@@ -558,7 +558,7 @@ class PHWorkTab:
         _sel_label, _cur_label = [
             '{work.entity.label}/{work.task}{tag}'.format(
                 work=_work,
-                tag='/'+_work.tag if _work.tag else '')
+                tag='/' + _work.tag if _work.tag else '')
             for _work in (_sel_work, _cur_work)]
         _msg = '\n'.join([
             'Are you sure you want to save in a different version stream?',
@@ -672,8 +672,8 @@ class PHWorkTab:
         elif out.type_ == 'cache':
             _label = f'Cache - {out.output_name} ({out.extn})'
         elif isinstance(out, pipe.CPOutputSeq):
-            _header += ' '+ints_to_str(out.frames)
-            _label += ' '+ints_to_str(out.frames)
+            _header += ' ' + ints_to_str(out.frames)
+            _label += ' ' + ints_to_str(out.frames)
 
         # Set icon
         _icon = _icon or ph_utils.output_to_icon(out)

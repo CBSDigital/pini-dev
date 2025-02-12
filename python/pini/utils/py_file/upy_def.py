@@ -86,10 +86,11 @@ class PyDef(upy_elem.PyElem):
                 _default = _ast_default.n
             elif isinstance(_ast_default, ast.Tuple):
                 _default = tuple(_item.s for _item in _ast_default.dims)
-            elif isinstance(_ast_default, (ast.Name, ast.Call, _AstNoneType)):
+            elif isinstance(_ast_default, (
+                    ast.Name, ast.Call, ast.UnaryOp, _AstNoneType)):
                 _default = None
             elif isinstance(_ast_default, ast.Attribute):
-                _default = _ast_attr_to_val(_ast_default)
+                _default = _ast_attr_to_val(_ast_default, catch=True)
             else:
                 raise ValueError(_ast_default)
             _LOGGER.debug('   - DEFAULT %s', _default)
@@ -138,7 +139,7 @@ class PyDef(upy_elem.PyElem):
         return _result
 
 
-def _ast_attr_to_val(attr):
+def _ast_attr_to_val(attr, catch=False):
     """Obtain a value from an ast attribute.
 
     This occurs when ast encounters an attibute as a default value.
@@ -147,6 +148,9 @@ def _ast_attr_to_val(attr):
 
     Args:
         attr (Attribute): ast attribute to read
+        catch (bool): no error if fail to find attribute value - this
+            can happen if this module cannot be imported (eg. for a
+            maya module outside maya)
 
     Returns:
         (any): value of attribute
@@ -163,7 +167,12 @@ def _ast_attr_to_val(attr):
         _attr = _attr.value
     _attr_name = '.'.join(_path)
     _mod_name = _attr.id
-    _mod = importlib.import_module(_mod_name)
+    try:
+        _mod = importlib.import_module(_mod_name)
+    except ModuleNotFoundError as _exc:
+        if catch:
+            return None
+        raise _exc
     _parent = _mod
     while len(_path) > 1:
         check_heart()

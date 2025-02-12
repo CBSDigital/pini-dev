@@ -36,4 +36,4 @@ class TestJobManager(unittest.TestCase):
         _sm.ui.CPrefix.setText('temp')
         assert _sm.ui.CPrefixWarning.isVisible()
         assert _n_items + 1 == len(_sm.ui.ShotsTree.all_items())
-        _sm.close()
+        _sm.delete()

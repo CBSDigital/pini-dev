@@ -85,4 +85,4 @@ class TestQt(unittest.TestCase):
         _ui.move(_off_pos)
         _ui.save_settings()
         assert not _ui._load_geometry_settings(screen='N/A')
-        _ui.close()
+        _ui.delete()

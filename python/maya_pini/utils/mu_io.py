@@ -526,8 +526,8 @@ def save_redshift_proxy(path, selection=True, animation=False, force=False):
     if selection and not cmds.ls(selection=True):
         raise RuntimeError('Nothing selected')
     cmds.file(
-         _export_path, force=True, preserveReferences=True, options=_opts,
-         exportSelected=selection, type="Redshift Proxy")
+        _export_path, force=True, preserveReferences=True, options=_opts,
+        exportSelected=selection, type="Redshift Proxy")
     if animation:
         _path.to_frames(force=True)
     _LOGGER.info(' - PATH %s', _path)

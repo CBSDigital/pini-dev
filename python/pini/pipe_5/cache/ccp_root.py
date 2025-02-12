@@ -162,10 +162,10 @@ class CCPRoot(elem.CPRoot):
         if isinstance(_match, elem.CPJob):
             try:
                 _result = single(_job for _job in self.jobs if _job == _match)
-            except ValueError:
+            except ValueError as _exc:
                 raise ValueError(
                     f'Job {_match.name} is missing from jobs list (maybe '
-                    f'missing config file?)')
+                    f'missing config file?)') from _exc
             _LOGGER.debug(' - FOUND EXISTING JOB %s', _result)
             return _result
 

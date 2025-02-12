@@ -55,8 +55,8 @@ class CPShot(cp_ety.CPEntity):
         # Parse template for data
         try:
             self.data = self.template.parse(_path)
-        except lucidity.ParseError:
-            raise ValueError('lucidity rejected path '+_path)
+        except lucidity.ParseError as _exc:
+            raise ValueError('lucidity rejected path ' + _path) from _exc
         validate_tokens(data=self.data, job=self.job)
         self.shot = self.data['shot']
         self.name = self.shot
@@ -157,10 +157,10 @@ def cur_shot(catch=True):
     """
     try:
         return CPShot(dcc.cur_file())
-    except ValueError:
+    except ValueError as _exc:
         if catch:
             return None
-        raise ValueError('No current shot')
+        raise ValueError('No current shot') from _exc
 
 
 def to_shot(path):

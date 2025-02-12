@@ -96,7 +96,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """Obtain this node's shape (if any).
 
         Returns:
-            (CNode|None):
+            (CNode|None): shape
         """
         return self.to_shp(catch=True)
 

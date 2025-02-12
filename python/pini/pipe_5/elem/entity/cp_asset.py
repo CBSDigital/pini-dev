@@ -53,14 +53,14 @@ class CPAsset(cp_ety.CPEntity):
         _depth = _test_path.count('/')
         _LOGGER.debug(' - TEST PATH %s depth=%d', _test_path, _depth)
         _LOGGER.debug(' - ABS PATH %s', _path)
-        _path = '/'.join(_path.split('/')[:_depth+1])
+        _path = '/'.join(_path.split('/')[:_depth + 1])
         _LOGGER.debug(' - CROPPED PATH %s', _path)
 
         # Parse template to retrieve asset data
         try:
             self.data = self.template.parse(_path)
-        except lucidity.ParseError:
-            raise ValueError('lucidity rejected path '+_path)
+        except lucidity.ParseError as _exc:
+            raise ValueError('lucidity rejected path ' + _path) from _exc
         self.asset = self.data['asset']
         self.name = self.asset
         self.asset_type = self.data.get('asset_type')
@@ -123,7 +123,7 @@ def cur_asset(catch=True):
     """
     try:
         return CPAsset(dcc.cur_file())
-    except ValueError:
+    except ValueError as _exc:
         if catch:
             return None
-        raise ValueError('No current asset')
+        raise ValueError('No current asset') from _exc

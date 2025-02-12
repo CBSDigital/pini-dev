@@ -28,7 +28,7 @@ DEFAULT_NODES = [
     'renderSetup',
 ]
 for _cam in ['persp', 'top', 'side', 'front', 'back', 'left']:
-    DEFAULT_NODES += [_cam, _cam+'Shape']
+    DEFAULT_NODES += [_cam, _cam + 'Shape']
 DEFAULT_NODES = tuple(sorted(DEFAULT_NODES))
 
 
@@ -270,12 +270,12 @@ def to_audio(start=None, mode='wav/offset'):
     if _start is None:
         _start = dcc.t_start()
 
-    _file = abs_path(cmds.getAttr(_node+'.filename'))
+    _file = abs_path(cmds.getAttr(_node + '.filename'))
     _fps = dcc.get_fps()
-    _offs = cmds.getAttr(_node+'.offset')
+    _offs = cmds.getAttr(_node + '.offset')
 
     if mode == 'wav/offset':
-        return _file, (_offs-_start)/_fps
+        return _file, (_offs - _start) / _fps
     if mode == 'node':
         return _node
     raise ValueError(mode)
@@ -310,8 +310,8 @@ def to_long(node):
     _ls = cmds.ls(_node, long=True)
     try:
         return str(single(_ls))
-    except ValueError:
-        raise ValueError(node, type(node))
+    except ValueError as _exc:
+        raise ValueError(node, type(node)) from _exc
 
 
 def to_node(name, shorten=True, namespace=None, class_=None, clean=True):
@@ -374,8 +374,8 @@ def to_shp(node, catch=False, type_=None):
     """
     try:
         return single(to_shps(node, type_=type_), catch=catch)
-    except ValueError:
-        raise ValueError(f'Failed to find shape - {node}')
+    except ValueError as _exc:
+        raise ValueError(f'Failed to find shape - {node}') from _exc
 
 
 def to_shps(node, type_=None):
@@ -427,5 +427,5 @@ def to_unique(base, suffix='', ignore=()):
         _idx += 1
         if _suggestion in ignore:
             continue
-        if not cmds.objExists(_ns+':'+_suggestion):
+        if not cmds.objExists(_ns + ':' + _suggestion):
             return _suggestion

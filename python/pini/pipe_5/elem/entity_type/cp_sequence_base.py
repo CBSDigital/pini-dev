@@ -42,8 +42,8 @@ class CPSequenceBase(cp_settings_elem.CPSettingsLevel):
         try:
             _path, self.data = extract_template_dir_data(
                 path=path, template=self._tmpl, job=self.job)
-        except lucidity.ParseError:
-            raise ValueError('Lucidity parse error {}'.format(path))
+        except lucidity.ParseError as _exc:
+            raise ValueError(f'Lucidity parse error {path}') from _exc
         super().__init__(_path)
 
         self.sequence = self.data['sequence']
@@ -77,8 +77,8 @@ class CPSequenceBase(cp_settings_elem.CPSettingsLevel):
         if not force:
             from pini import qt
             qt.ok_cancel(
-                'Create new sequence {} in {}?\n\n{}'.format(
-                    self.name, self.job.name, self.path),
+                f'Create new sequence {self.name} in {self.job.name}?'
+                f'\n\n{self.path}',
                 icon=icons.find('Plus'), title='Create Sequence',
                 parent=parent)
 

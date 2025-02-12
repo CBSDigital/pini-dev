@@ -62,10 +62,17 @@ def check_def_docs(def_):
         def_ (PyDef): def to check
     """
     from pini.tools import error
+
+    if def_.clean_name != '__init__' and def_.clean_name.startswith('__'):
+        return
+    for _callback in ['callback', 'redraw', 'context']:
+        if def_.clean_name.startswith(f'_{_callback}__'):
+            return
+
     _docs = def_.to_docs()
     if not _docs.body:
         raise error.FileError(
-            'Missing def docs', file_=def_.py_file, line_n=def_.line_n)
+            'Missing def docs', file_=def_.py_file, line_n=def_.line_n + 1)
 
     _check_def_title(def_, docs=_docs)
     _check_def_args(def_, docs=_docs)
@@ -80,14 +87,15 @@ def _check_def_title(def_, docs):
         docs (PyDefDocs): docstrings to check
     """
     from pini.tools import error
+
     if not docs.title[-1] == '.':
         raise error.FileError(
             'No trailing period in def docs title',
-            file_=def_.py_file, line_n=def_.line_n)
+            file_=def_.py_file, line_n=def_.line_n + 1)
     if not docs.title[0].isupper():
         raise error.FileError(
             'Def docs title not capitalized',
-            file_=def_.py_file, line_n=def_.line_n)
+            file_=def_.py_file, line_n=def_.line_n + 1)
 
 
 def _check_def_args(def_, docs):
@@ -108,7 +116,7 @@ def _check_def_args(def_, docs):
             if not _arg:
                 raise error.FileError(
                     f'Arg "{_arg_docs.name}" docs are superflouous',
-                    file_=def_.py_file, line_n=def_.line_n)
+                    file_=def_.py_file, line_n=def_.line_n + 1)
 
     _args = list(def_.args)
     if _args and _args[0].name == 'self':
@@ -120,17 +128,17 @@ def _check_def_args(def_, docs):
         if not _arg_docs or not _arg_docs.body:
             raise error.FileError(
                 f'Arg "{_arg.name}" docs are missing',
-                file_=def_.py_file, line_n=def_.line_n)
+                file_=def_.py_file, line_n=def_.line_n + 1)
         if not _arg_docs.type_:
             raise error.FileError(
                 f'Arg "{_arg.name}" docs is missing type',
-                file_=def_.py_file, line_n=def_.line_n)
+                file_=def_.py_file, line_n=def_.line_n + 1)
 
     for _arg, _arg_docs in zip(_args, docs.find_args()):
         if _arg.name != _arg_docs.name:
             raise error.FileError(
                 f'Arg "{_arg.name}" docs are in the wrong position',
-                file_=def_.py_file, line_n=def_.line_n)
+                file_=def_.py_file, line_n=def_.line_n + 1)
 
 
 def _check_def_result(def_, docs):
@@ -247,5 +255,7 @@ def suggest_docs(def_):
         _lines += ['"""']
 
     _docs = _indent + f'\n{_indent}'.join(_lines) + '\n'
-    _docs = '\n'.join([_line.rstrip() for _line in _docs.split('\n')])
+    _docs = '\n'.join([
+        _line if _line.strip() else ''
+        for _line in _docs.split('\n')])
     return _docs

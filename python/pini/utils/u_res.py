@@ -31,7 +31,7 @@ class Res:
         Returns:
             (Res): duplicate of this res
         """
-        return Res(self.width, self.height, name=name or self.name)*mult
+        return Res(self.width, self.height, name=name or self.name) * mult
 
     def to_tuple(self):
         """Convert to tuple.

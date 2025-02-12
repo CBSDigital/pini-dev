@@ -55,11 +55,11 @@ class _PycodestyleIssue(_Issue):
         Args:
             line (str): issue text
         """
-        _LOGGER.info('INIT PycodestyleIssue %s', line)
+        _LOGGER.debug('INIT PycodestyleIssue %s', line)
         self.line = line
         _head, _tail = line.split(': ', 1)
         _line_n = int(_head.rsplit(':')[-1])
-        _LOGGER.info(' - TAIL %s', _tail)
+        _LOGGER.debug(' - TAIL %s', _tail)
         _, _code, _desc = re.split(r'[\[\]]', _tail)
         super().__init__(desc=_desc.strip(), code=_code, line_n=_line_n)
 

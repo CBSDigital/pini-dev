@@ -33,7 +33,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
         """Read metadata for this video.
 
         Returns:
-            ():
+            (dict): metadata
         """
         _ffprobe = self._read_ffprobe()
 

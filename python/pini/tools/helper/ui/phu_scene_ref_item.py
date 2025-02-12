@@ -89,7 +89,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Returns:
             (float): font size
         """
-        return self.font_size*0.9
+        return self.font_size * 0.9
 
     @property
     def info_y(self):
@@ -98,7 +98,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Returns:
             (float): y-pos
         """
-        return self.font_size*5.5
+        return self.font_size * 5.5
 
     @property
     def margin(self):
@@ -107,7 +107,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         Returns:
             (float): margin in pixels
         """
-        return self.font_size*0.3
+        return self.font_size * 0.3
 
     @property
     def size_y(self):
@@ -133,8 +133,9 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         # Draw backdrop
         if self.bg_col:
             pix.draw_rounded_rect(
-                pos=(self.margin, self.margin/2),
-                size=(pix.width()-self.margin*2, pix.height()-self.margin),
+                pos=(self.margin, self.margin / 2),
+                size=(pix.width() - self.margin * 2,
+                      pix.height() - self.margin),
                 outline=None, col=self.bg_col)
 
         # Add text/icon overlays
@@ -167,34 +168,34 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             pix (CPixmap): pixmap to draw on
         """
         _font = QtGui.QFont(self.font)
-        _left_m = self.font_size*4.2
+        _left_m = self.font_size * 4.2
         _out = self.ref.to_output(use_cache=False)
 
         # Draw icon
         if self.icon:
-            _over = self.icon.resize(self.font_size*2.5)
+            _over = self.icon.resize(self.font_size * 2.5)
             pix.draw_overlay(
-                _over, pos=(self.font_size*1, pix.height()/2), anchor='L')
+                _over, pos=(self.font_size * 1, pix.height() / 2), anchor='L')
 
         # Draw namespace
         _font.setBold(True)
         _rect = pix.draw_text(
             self.namespace,
-            pos=(_left_m, self.font_size*0.8), col=self.text_col,
+            pos=(_left_m, self.font_size * 0.8), col=self.text_col,
             font=_font)
 
         # Draw asset/tag
         _font.setBold(False)
         _label = _out.entity.name
         if _out.tag:
-            _label += '/'+_out.tag
+            _label += '/' + _out.tag
         pix.draw_text(
             _label,
-            pos=(_left_m, self.font_size*2.4), col=self.text_col,
+            pos=(_left_m, self.font_size * 2.4), col=self.text_col,
             font=_font, anchor='TL')
 
         if self.info and self.output:
-            _line_h = self.font_size*4
+            _line_h = self.font_size * 4
             _font.setPointSize(self.info_font_size)
             pix.draw_text(
                 self.output.strftime('%a %b %m %H:%M'),
@@ -208,7 +209,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             pix (CPixmap): pixmap to draw on
         """
         _font = QtGui.QFont(self.font)
-        _right_m = pix.width() - self.margin*5
+        _right_m = pix.width() - self.margin * 5
         _out = self.output or self.ref.to_output(use_cache=False)
 
         # Draw type icon
@@ -216,8 +217,8 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         if _icon:
             _over = obt_pixmap(_icon)
             pix.draw_overlay(
-                _over, size=self.font_size*2,
-                pos=(_right_m+3, self.font_size*2.3), anchor='R')
+                _over, size=self.font_size * 2,
+                pos=(_right_m + 3, self.font_size * 2.3), anchor='R')
 
         # Draw version text
         _text_x = _right_m - self.font_size * 3.0
@@ -235,7 +236,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
 
         # Draw detail
         if self.detail:
-            _font.setPointSize(self.font_size*0.9)
+            _font.setPointSize(self.font_size * 0.9)
             _font.setBold(False)
             _pos = (
                 _right_m - self.font_size * 4.5,

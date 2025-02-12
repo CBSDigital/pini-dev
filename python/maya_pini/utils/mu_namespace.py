@@ -25,7 +25,7 @@ def apply_namespace(token, namespace=''):
     _clean = mu_misc.to_clean(token)
     if not namespace:
         return _clean
-    return '{}:{}'.format(namespace, _clean)
+    return f'{namespace}:{_clean}'
 
 
 @mu_dec.restore_sel
@@ -50,7 +50,7 @@ def del_namespace(namespace, force=False):
     _force = force
     if cmds.namespace(exists=namespace) and not _force:
         qt.ok_cancel(
-            'Delete contents of namespace {}?'.format(namespace),
+            f'Delete contents of namespace {namespace}?',
             icon=icons.CLEAN, title='Flush namespace')
         _force = True
 
@@ -60,7 +60,7 @@ def del_namespace(namespace, force=False):
     if cmds.namespace(exists=namespace):
         cmds.namespace(removeNamespace=namespace, deleteNamespaceContent=True)
     if cmds.namespace(exists=namespace):
-        raise RuntimeError('Failed to delete namespace '+namespace)
+        raise RuntimeError('Failed to delete namespace ' + namespace)
 
 
 def set_namespace(namespace, clean=False):
@@ -91,7 +91,7 @@ def to_namespace(node):
     Returns:
         (str): namespace
     """
-    _tail = str(node).split('|')[-1]
+    _tail = str(node).rsplit('|', 1)[-1]
     if ':' not in _tail:
         return None
     return _tail.rsplit(':', 1)[0]

@@ -52,7 +52,7 @@ class TestPyui(unittest.TestCase):
         _ui = pyui.build(_TEST_PY, mode='qt', load_settings=False)
         _LOGGER.info(' - UI %s', _ui)
         _ui.hide()
-        _ui.close()
+        _ui.delete()
 
     def test_qt_y_offset(self):
 
@@ -73,7 +73,7 @@ class TestPyui(unittest.TestCase):
         assert_eq(_ui.pos().y(), _pos_y)
         assert_eq(_ui.read_settings()['geometry']['y'], _pos_y)
         _ui.hide()
-        _ui.close()
+        _ui.delete()
 
 
 class TestRelease(unittest.TestCase):

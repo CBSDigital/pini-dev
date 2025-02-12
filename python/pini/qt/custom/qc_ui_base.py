@@ -566,33 +566,20 @@ class CUiBase:
         """Delete this interface."""
         _LOGGER.debug('DELETE CUiBase %s', self.name)
 
-        # Kill any timer
-        try:
-            if self.timer:
-                self.killTimer(self.timer)
-        except RuntimeError as _exc:
-            _LOGGER.info(' - KILL TIMER ERRORED - %s', self.name)
-
-        # Save settings
-        _LOGGER.debug(
-            ' - SAVE SETTINGS successful_load=%d save_settings=%d',
-            self._successful_load, self.store_settings)
+        # Obtain list of actions to try
+        _actions = [self.close]
+        if self.timer:
+            _actions += [wrap_fn(self.killTimer, self.timer)]
         if self._successful_load and self.store_settings:
-            try:
-                self.save_settings()
-            except RuntimeError as _exc:
-                _LOGGER.debug(' - ERROR %s', _exc)
-                _LOGGER.info(
-                    ' - SAVE SETTINGS ERRORED - %s', self.name)
-            else:
-                _LOGGER.debug(
-                    ' - SAVED SETTINGS %s', abs_path(self.settings.fileName()))
+            _actions += [self.save_settings]
+        _actions += [self.deleteLater]
 
-        # Delete the ui
-        try:
-            self.deleteLater()
-        except RuntimeError as _exc:
-            _LOGGER.info(' - DELETE LATER ERRORED - %s', self.name)
+        # Attempt to execute each action
+        for _action in _actions:
+            try:
+                _action()
+            except RuntimeError as _exc:
+                _LOGGER.info(' - ACTION %s ERRORED - %s', _action, self.name)
 
         _LOGGER.debug(' - DELETE %s COMPLETE', self.name)
 

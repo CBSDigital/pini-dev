@@ -75,7 +75,7 @@ class PHSceneTab:
 
         # Fix OOutputsPane on 4k monitors
         _tab_height = self.ui.MainPane.tabBar().height()
-        self.ui.SOutputsPane.setFixedHeight(_tab_height+1)
+        self.ui.SOutputsPane.setFixedHeight(_tab_height + 1)
 
     def _select_default_output_tab(self, switch_tabs):
         """Select default tab for outputs pane.
@@ -891,7 +891,7 @@ class PHSceneTab:
         else:
             _base, _ = split_base_index(ref.namespace)
 
-        menu.add_label('Ref: '+ref.namespace)
+        menu.add_label('Ref: ' + ref.namespace)
         menu.add_separator()
         if isinstance(ref, pipe_ref.CPipeRef):  # Not if staged ref
             menu.add_action(
@@ -1124,7 +1124,7 @@ class PHSceneTab:
             # Add lookdev if available
             _lookdev = _out.find_lookdev_shaders()
             if _lookdev and _abc_mode == 'Reference':
-                _lookdev_ns = _ns+'_shd'
+                _lookdev_ns = _ns + '_shd'
                 _lookdev_ref = _StagedRef(
                     output=_lookdev, namespace=_lookdev_ns,
                     attach_to=_ref)
@@ -1290,7 +1290,7 @@ def _output_to_label(out):
         _label = out.asset or out.output_name or out.type_
     _fmt = ''
     if out.tag:
-        _label += ' '+out.tag
+        _label += ' ' + out.tag
     if isinstance(out, pipe.CPOutputSeq):
         _fmt = f' ({out.extn})'
     if out.ver_n:

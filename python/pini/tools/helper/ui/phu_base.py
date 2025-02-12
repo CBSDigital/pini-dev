@@ -77,7 +77,7 @@ class PHUiBase(
         self._save_settings = load_settings
         self._notes_stack = {}
         if not pipe.CACHE.jobs:
-            raise RuntimeError('No valid jobs found in '+pipe.ROOT.path)
+            raise RuntimeError('No valid jobs found in ' + pipe.ROOT.path)
 
         # Init ui
         _title = title or TITLE
@@ -207,11 +207,11 @@ class PHUiBase(
         self.ui.Job.redraw()
         _LOGGER.debug(' - TRG ETY %s', _trg_ety)
         if _trg_ety:
-            self.ui.Profile.select_text(_trg_ety.profile+'s', catch=False)
+            self.ui.Profile.select_text(_trg_ety.profile + 's', catch=False)
             self.ui.EntityType.select_text(_trg_ety.entity_type)
             self.ui.Entity.select_text(_trg_ety.name)
         if _tab:
-            _LOGGER.debug(' - SELECT PANE  %s', _tab)
+            _LOGGER.debug(' - SELECT PANE %s', _tab)
             self.ui.MainPane.select_tab(_tab, emit=True)
 
         self.target = None

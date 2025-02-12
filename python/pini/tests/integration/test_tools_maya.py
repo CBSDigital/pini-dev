@@ -227,7 +227,9 @@ class TestSanityCheck(unittest.TestCase):
         _check.reset_and_run()
         pprint.pprint(_check.fails)
         _fail = single(_check.fails)
-        assert_eq(_fail.msg, 'Node "pCube3" has badly named shape node "pCubeShape1" (should be "pCube3Shape")')
+        assert_eq(
+            _fail.msg, 'Node "pCube3" has badly named shape node '
+            '"pCubeShape1" (should be "pCube3Shape")')
         _fail.fix()
         _check.reset_and_run()
         assert not _check.fails
@@ -252,7 +254,9 @@ class TestSanityCheck(unittest.TestCase):
         _check.reset_and_run()
         pprint.pprint(_check.fails)
         _fail = single(_check.fails)
-        assert_eq(_fail.msg, 'Duplicate name "pCube3" in "model:cache_SET". This will cause errors on abc export.')
+        assert_eq(
+            _fail.msg, 'Duplicate name "pCube3" in "model:cache_SET". '
+            'This will cause errors on abc export.')
         _fail.fix()
         _check.reset_and_run()
         pprint.pprint(_check.fails)
@@ -280,15 +284,19 @@ class TestSanityCheck(unittest.TestCase):
 
         # Setup node with uvs in wrong map
         _cube = pom.CMDS.polyCube()
-        assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
+        assert single(
+            _cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
         _cube.cmds.polyUVSet(newUVSet='blah', uvSet='map1', copy=True)
         cmds.polyMapDel(_cube.to_attr('map[:]'))
         _cube.cmds.polyUVSet(currentUVSet=True, uvSet='blah')
-        assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'blah'
+        assert single(
+            _cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'blah'
 
         # Apply check
-        assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) != 'map1'
+        assert single(
+            _cube.cmds.polyUVSet(query=True, currentUVSet=True)) != 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) != 1
         utils.fix_uvs(_cube.node)
-        assert single(_cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
+        assert single(
+            _cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) == 1

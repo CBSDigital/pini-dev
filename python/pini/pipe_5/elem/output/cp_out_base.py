@@ -59,6 +59,7 @@ class CPOutputBase:
     ver_n = None
 
     status = None
+    dcc_ = None
     data = None
     template = None
 
@@ -130,14 +131,15 @@ class CPOutputBase:
                 self.data = self.template.parse(self.path)
             except lucidity.ParseError as _exc:
                 _LOGGER.log(9, ' - ERROR %s', _exc)
-                raise ValueError(_exc)
+                raise ValueError(_exc) from _exc
         else:
             try:
                 self.data, self.template = lucidity.parse(self.path, _tmpls)
             except lucidity.ParseError as _exc:
                 _LOGGER.log(9, ' - PATH "%s"', self.path)
                 _LOGGER.log(9, ' - ERROR %s', _exc)
-                raise ValueError('No output templates matched path '+self.path)
+                raise ValueError(
+                    'No output templates matched path ' + self.path) from _exc
         _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
                     self.template)
 
@@ -169,6 +171,7 @@ class CPOutputBase:
         self.ver_n = int(self.ver) if self.ver else None
 
         self.output_type = self.data.get('output_type')
+        self.dcc_ = self.data.get('dcc')
 
     def _init_extract_data_find_output_templates(
             self, template, templates, types):
@@ -283,7 +286,7 @@ class CPOutputBase:
         Returns:
             (File): metadata yaml
         """
-        return self.to_file(dir_=self.dir+'/.pini', extn='yml')
+        return self.to_file(dir_=self.dir + '/.pini', extn='yml')
 
     @property
     def basic_type(self):
@@ -405,7 +408,7 @@ class CPOutputBase:
         if not _vers:
             if catch:
                 return None
-            raise ValueError('No versions found '+self.path)
+            raise ValueError('No versions found ' + self.path)
         return _vers[-1]
 
     def find_next(self):
@@ -418,7 +421,7 @@ class CPOutputBase:
         if not _latest:
             _ver_n = 1
         else:
-            _ver_n = _latest.ver_n+1
+            _ver_n = _latest.ver_n + 1
         return self.to_output(ver_n=_ver_n)
 
     def find_vers(self, ver_n=EMPTY):
@@ -579,7 +582,7 @@ class CPOutputBase:
         """
         _data = copy.copy(self.data)
         if 'ver' in _data:
-            _data['ver'] = '0'*len(_data['ver'])
+            _data['ver'] = '0' * len(_data['ver'])
         return self.template.format(_data)
 
     def to_work(self, dcc_=None, user=None, tag=None, extn=EMPTY, catch=True):

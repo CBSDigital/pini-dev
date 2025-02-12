@@ -66,7 +66,7 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
         """
         _LOGGER.info('BUILD THUMB %s', self._thumb.path)
 
-        _frame = self.frames[len(self.frames)/2]
+        _frame = self.frames[len(self.frames) / 2]
         _LOGGER.debug(' - FRAME %d', _frame)
         _img = Image(self[_frame])
         _LOGGER.debug(' - IMAGE %s', _img)
@@ -74,9 +74,9 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
         # Get thumb res
         _res = self.to_res()
         assert _res
-        _aspect = 1.0*_res[0]/_res[1]
+        _aspect = 1.0 * _res[0] / _res[1]
         _out_h = 50
-        _out_w = int(_out_h*_aspect)
+        _out_w = int(_out_h * _aspect)
         _out_res = _out_w, _out_h
         _LOGGER.debug(' - RES %s -> %s', _res, _out_res)
         _out_res_s = f'{_out_w:d}x{_out_h:d}'
@@ -118,9 +118,9 @@ def _write_fail_thumb(file_, res):
     _pix.fill('Black')
     _pix.draw_overlay(
         icons.find('Warning'),
-        pos=(_pix.width()/2, 3), anchor='T',
-        size=_pix.height()*0.4)
+        pos=(_pix.width() / 2, 3), anchor='T',
+        size=_pix.height() * 0.4)
     _pix.draw_text(
-        'THUMB\nFAILED', pos=(_pix.width()/2, _pix.height()-3),
+        'THUMB\nFAILED', pos=(_pix.width() / 2, _pix.height() - 3),
         anchor='B', col='White', size=7)
     _pix.save_as(file_, force=True)

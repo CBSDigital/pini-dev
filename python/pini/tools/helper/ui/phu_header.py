@@ -74,7 +74,7 @@ class PHHeader:
             size=pix.size())
         pix.draw_overlay(
             self.job.to_icon(), anchor='C', pos=pix.center(),
-            size=0.5*pix.width())
+            size=0.5 * pix.width())
 
     def _redraw__EntityType(self):
 
@@ -202,7 +202,7 @@ class PHHeader:
                     self.target.profile == 'asset'):
                 _trg_ety = None
         if _trg_ety:
-            _profile = _trg_ety.profile+'s'
+            _profile = _trg_ety.profile + 's'
             _LOGGER.debug(' - APPLY TARGET PROFILE %s', _profile)
             self.ui.Profile.select_text(_profile)
 
@@ -394,7 +394,7 @@ class PHHeader:
             f"It will have an underscore prepended to its name and "
             f"will no longer be visible in the pipeline.",
             icon=_ARCHIVE_ICON,
-            title='Archive '+self.entity.profile.capitalize())
+            title='Archive ' + self.entity.profile.capitalize())
 
         # Record who archived
         _t_str = strftime('%y%m%d_%H%M%S')
@@ -403,7 +403,7 @@ class PHHeader:
         _file.touch()
 
         # Execute the archiving
-        _path = self.entity.to_dir().to_subdir('_'+self.entity.name).path
+        _path = self.entity.to_dir().to_subdir('_' + self.entity.name).path
         _LOGGER.info(' - PATH %s', _path)
         self.entity.move_to(_path, force=True)
         self.ui.Refresh.click()

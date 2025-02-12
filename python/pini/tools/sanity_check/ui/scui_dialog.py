@@ -274,7 +274,7 @@ class SanityCheckUi(qt.CUiDialog):
         _label = 'NONE'
         if self.task:
             _label = pipe.map_task(self.task).upper()
-        self.ui.TaskLabel.setText(' Task: '+_label)
+        self.ui.TaskLabel.setText(' Task: ' + _label)
 
     def _callback__ShowPassed(self):
         self.ui.Checks.redraw()

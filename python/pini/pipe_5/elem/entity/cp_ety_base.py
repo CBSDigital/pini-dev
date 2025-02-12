@@ -39,7 +39,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         # Reject leading underscore in name (archived entities)
         if self.name.startswith('_'):
-            raise ValueError('Name has leading underscore '+self.name)
+            raise ValueError('Name has leading underscore ' + self.name)
 
     def create(self, force=False, parent=None, shotgrid_=True):
         """Create this entity.

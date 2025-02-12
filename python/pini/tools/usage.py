@@ -70,6 +70,7 @@ def get_tracker(name=None, write_after=False, args=None):
                     _args[_arg] = _val
                 _LOGGER.debug(' - ADDING ARGS %s', _args)
 
+            _result = None
             if write_after:
                 _result = func(*fn_args, **fn_kwargs)
             if not dcc.batch_mode():
@@ -148,7 +149,7 @@ def _get_usage_yml():
 
     # Use $PINI_USAGE_DIR
     if ROOT:
-        return Dir(ROOT).to_subdir(_user).to_file(_date+'.yml')
+        return Dir(ROOT).to_subdir(_user).to_file(_date + '.yml')
 
     _LOGGER.debug(' - ROOT NOT SET')
     return None
@@ -249,10 +250,11 @@ def _read_mod_ver(mod, force=False):
     from pini.tools import release
 
     # Check for env override to get mod dir
-    _mod_env = 'PINI_USAGE_{}_REPO_ROOT'.format(to_camel(mod.__name__).upper())
+    _name = to_camel(mod.__name__).upper()
+    _mod_env = f'PINI_USAGE_{_name}_REPO_ROOT'
     _LOGGER.debug(' - MOD ENV %s', _mod_env)
-    if _mod_env in os.environ:
 
+    if _mod_env in os.environ:
         _repo_root = os.environ[_mod_env]
 
     else:

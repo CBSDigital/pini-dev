@@ -171,7 +171,7 @@ class CCPWork(CPWork):
         """
         return self.metadata.get('mtime')
 
-    def nice_size(self, catch=False):
+    def nice_size(self, catch=False):  # pylint: disable=unused-argument
         """Obtain readable size for this work file.
 
         Args:

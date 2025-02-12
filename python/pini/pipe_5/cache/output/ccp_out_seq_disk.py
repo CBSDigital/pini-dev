@@ -44,7 +44,7 @@ class CCPOutputSeqDisk(ccp_out_seq_base.CCPOutputSeqBase):
         if not _seqs:
             raise OSError(
                 'Seq no longer exists (need to update cache on '
-                'parent) '+self.path)
+                'parent) ' + self.path)
         _seq = single(_seqs)
         _frames = _seq.frames
 

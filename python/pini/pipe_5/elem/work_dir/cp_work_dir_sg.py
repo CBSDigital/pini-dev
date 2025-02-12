@@ -24,7 +24,7 @@ class CPWorkDirSG(cp_work_dir_base.CPWorkDir):
                 task=self.task, step=self.step)
         return self._sg_task
 
-    def _read_outputs(self, class_=None):
+    def _read_outputs(self, class_=None):  # pylint: disable=unused-argument
         """Read outputs from shotgrid.
 
         Args:

@@ -34,10 +34,10 @@ class SCUiFailItem(qt.CListViewWidgetItem):  # pylint: disable=too-many-instance
 
         _n_actions = len(fail.actions)
         self.btns_height = (
-            self.btn_h*_n_actions +
-            self.margin*(_n_actions + 1))
+            self.btn_h * _n_actions +
+            self.margin * (_n_actions + 1))
 
-        super(SCUiFailItem, self).__init__(list_view=list_view, data=fail)
+        super().__init__(list_view=list_view, data=fail)
 
     def build_ui(self):
         """Build ui elements."""
@@ -54,8 +54,8 @@ class SCUiFailItem(qt.CListViewWidgetItem):  # pylint: disable=too-many-instance
         self.label.setWordWrap(True)
         _n_actions = len(self.fail.actions)
         self.label.setFixedHeight(
-            self.btn_h*_n_actions +
-            self.margin*(_n_actions - 1))
+            self.btn_h * _n_actions +
+            self.margin * (_n_actions - 1))
         self.h_lyt.addWidget(self.label)
 
         # Build vert layout for buttons
@@ -100,17 +100,17 @@ class SCUiFailItem(qt.CListViewWidgetItem):  # pylint: disable=too-many-instance
             _widget_h = max(self.btns_height, _text_h)
         self._height = _widget_h
 
-        super(SCUiFailItem, self).redraw()
+        super().redraw()
 
         _item_w = self.list_view.get_draw_width()
         self.widget.setFixedSize(_item_w, _widget_h)
         self.label.setFixedHeight(_widget_h)
         if not self.btns:
-            _label_w = _item_w - self.margin*2
+            _label_w = _item_w - self.margin * 2
         else:
-            _label_w = _item_w - self.btn_w - self.margin*2
+            _label_w = _item_w - self.btn_w - self.margin * 2
         self.label.setFixedSize(_label_w, _item_w)
 
-        _item_h = _widget_h + self.margin*2
+        _item_h = _widget_h + self.margin * 2
         _size_hint = qt.to_size(_item_w, _item_h)
         self.setSizeHint(_size_hint)

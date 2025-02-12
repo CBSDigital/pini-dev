@@ -21,7 +21,7 @@ def _add_sys_path(path, action):
     """
     _path = abs_path(path)
     if not os.path.exists(_path):
-        raise OSError('Missing path '+_path)
+        raise OSError('Missing path ' + _path)
     while _path in sys.path:
         sys.path.remove(_path)
 
@@ -143,7 +143,7 @@ def insert_env_path(path, env):
     """
     _path = Path(abs_path(path))
     if not _path.exists():
-        raise OSError('Missing path '+_path.path)
+        raise OSError('Missing path ' + _path.path)
     if env not in os.environ:
         os.environ[env] = _path.path
         return
@@ -177,7 +177,7 @@ def print_sys_paths(sort=False):
     for _idx, _path in enumerate(_paths):
         if _paths.count(_path) > 1 and _paths.index(_path) != _idx:
             continue
-        print('{:d} {}'.format(os.path.exists(_path), _path))
+        print(f'{os.path.exists(_path):d} {_path}')
 
 
 def read_env_paths(env):

@@ -51,7 +51,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
         if platform.system() == 'Linux':
             _title = ui.TITLE
         else:
-            _title = ui.EMOJI.to_unicode()+' '+ui.TITLE
+            _title = ui.EMOJI.to_unicode() + ' ' + ui.TITLE
         super().__init__(
             show=False, ui_file=ui.UI_FILE, load_settings=False,
             parent=parent, title=_title)
@@ -64,8 +64,9 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
             self, admin=admin, load_settings=load_settings, show=False,
             jump_to=jump_to, reset_cache=reset_cache, title=title)
 
-        self.show(dockable=True)
-        self.apply_docking()
+        if show:
+            self.show(dockable=True)
+            self.apply_docking()
         _LOGGER.debug(' - LAUNCH COMPLETE')
 
     def init_ui(self):

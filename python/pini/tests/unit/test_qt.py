@@ -27,14 +27,18 @@ class TestQt(unittest.TestCase):
         assert qt.to_p((1, 2)) == QtCore.QPoint(1, 2)
         assert qt.Y_AXIS == QtCore.QPoint(0, 1)
 
-        assert isinstance(qt.CPoint(100, 100)/3, (qt.CPoint, qt.CPointF))  # py2/py3
-        assert isinstance(qt.CPoint(100, 100)/3.0, qt.CPointF)
+        assert isinstance(
+            qt.CPoint(100, 100) / 3, (qt.CPoint, qt.CPointF))  # py2/py3
+        assert isinstance(
+            qt.CPoint(100, 100) / 3.0, qt.CPointF)
 
     def test_cpointf(self):
 
         # Test divide
-        assert isinstance(qt.CPointF(100, 100)/3, (qt.CPoint, qt.CPointF))  # py2/py3
-        assert isinstance(qt.CPointF(100, 100)/3.0, qt.CPointF)
+        assert isinstance(
+            qt.CPointF(100, 100) / 3, (qt.CPoint, qt.CPointF))  # py2/py3
+        assert isinstance(
+            qt.CPointF(100, 100) / 3.0, qt.CPointF)
 
         # Test add/sub
         _pt = qt.CPointF(100, 100)
@@ -51,8 +55,8 @@ class TestQt(unittest.TestCase):
         for _angle in range(0, 361, 45):
             _rad = math.radians(_angle)
             _vec = qt.CVector2D(
-                100*math.sin(_rad),
-                -100*math.cos(_rad),
+                100 * math.sin(_rad),
+                -100 * math.cos(_rad),
             )
             _LOGGER.info(' - %10s %30s %.02f', _angle, _vec, _vec.bearing())
             assert _angle == _vec.bearing()
@@ -84,7 +88,7 @@ class TestQt(unittest.TestCase):
 
             def __init__(self, load_settings=True):
 
-                super(_SettingsTestUi, self).__init__(
+                super().__init__(
                     ui_file=_UI_FILE.path, load_settings=load_settings)
 
         assert _UI_FILE.exists()
@@ -93,11 +97,11 @@ class TestQt(unittest.TestCase):
         _dialog.ui.MyTab.setCurrentIndex(1)
         assert _dialog.find_widgets()
         _dialog.save_settings()
-        _dialog.close()
+        _dialog.delete()
 
         _dialog = _SettingsTestUi(load_settings=True)
         assert _dialog.ui.MyTab.currentIndex() == 1
-        _dialog.close()
+        _dialog.delete()
 
     def test_to_p(self):
 

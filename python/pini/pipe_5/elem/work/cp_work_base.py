@@ -92,13 +92,13 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - TMPL %s', self.template)
                 _LOGGER.debug(' - EXC %s', _exc)
-                raise ValueError('Lucidity rejected '+self.path)
+                raise ValueError('Lucidity rejected ' + self.path) from _exc
         else:
             try:
                 self.data, self.template = lucidity.parse(self.path, _tmpls)
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - EXC %s', _exc)
-                raise ValueError('Lucidity rejected '+self.path)
+                raise ValueError('Lucidity rejected ' + self.path) from _exc
         self.data['task'] = self.work_dir.task
         self.data['step'] = self.work_dir.step
         _LOGGER.log(9, ' - WORK DATA %s', self.data)
@@ -232,7 +232,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             return _vers[-1]
         if catch:
             return None
-        raise ValueError('No versions found '+self.path)
+        raise ValueError('No versions found ' + self.path)
 
     def find_next(self, user=None, class_=None):
         """Find next version, ie. one after the latest one.
@@ -255,7 +255,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if not _latest:
             _ver_n = 1
         else:
-            _ver_n = _latest.ver_n+1
+            _ver_n = _latest.ver_n + 1
         _user = user or cur_user()
 
         _extn = self.extn

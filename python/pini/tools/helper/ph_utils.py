@@ -215,7 +215,7 @@ def _lookdev_to_icon(lookdev):
     _icon = qt.CPixmap(_base_icon)
     _over = qt.CPixmap(_asset_icon)
     _icon.draw_overlay(
-        _over, pos=_icon.center(), size=_over.size()*0.6, anchor='C')
+        _over, pos=_icon.center(), size=_over.size() * 0.6, anchor='C')
 
     return _icon
 
@@ -406,7 +406,7 @@ def output_to_namespace(output, attach_to=None, ignore=(), base=None):
         (str): namespace for this output
     """
     if attach_to:
-        return attach_to.namespace+'_shd'
+        return attach_to.namespace + '_shd'
 
     _mode = 'asset'
     _ety_name = output.asset or output.shot
@@ -491,7 +491,7 @@ def _basic_work_icon(work):
     if work.ver_n == 8:
         return _8_BALL_ICON
     _icons = list(_WORK_ICONS)
-    str_to_seed(work.work_dir.path+str(work.tag)).shuffle(_icons)
+    str_to_seed(work.work_dir.path + str(work.tag)).shuffle(_icons)
     return _icons[work.ver_n % len(_icons)]
 
 

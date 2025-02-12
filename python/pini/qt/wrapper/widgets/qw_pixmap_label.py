@@ -28,7 +28,7 @@ class CPixmapLabel(QtWidgets.QLabel):
         from pini import qt
         assert parent is None or isinstance(parent, QtWidgets.QWidget)
 
-        super(CPixmapLabel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
 
         _rand = str_to_seed(self.objectName())
         self.col = col or _rand.choice(qt.PASTEL_COLS)
@@ -90,7 +90,7 @@ class CPixmapLabel(QtWidgets.QLabel):
             event (QResizeEvent): triggered event
         """
         _LOGGER.debug('RESIZE %s', self)
-        super(CPixmapLabel, self).resizeEvent(event)
+        super().resizeEvent(event)
         self.redraw()
 
     def __repr__(self):

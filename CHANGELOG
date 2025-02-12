@@ -1,3 +1,17 @@
+## [6.46.0] - Wed 2025-02-12 14:46
+### Summary
+ - Pipeline Codebase:
+    - added dcc filter for find shot outputs (nkim),
+### Updated
+ - applied whitespace around operator,
+ - pini.utils.PyDef.find_args fix error on enum default,
+ - pini.pipe.passes_filter added dcc_ arg,
+ - pini.pipe.CPOutput.dcc_ added attr,
+ - pini.pipe.shotgrid.create_pub_file_from_output bugfix not returning data dict,
+ - pini.qt.CUiDialog.delete added close + consolidated code,
+ - pini.tools.release.check_file added autofixes wip,
+
+
 ## [6.45.0] - Tue 2025-02-11 14:34
 ### Summary
  - Release Tools:

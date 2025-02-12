@@ -105,8 +105,8 @@ class TestUtils(unittest.TestCase):
         assert split_base_index('blah67') == ('blah', 67)
 
     def test_nice_age(self):
-        assert nice_age(60*60+1, pad=2) == '01h00m'
-        assert nice_age(24*60*60+1, pad=2, depth=2) == '01d00h'
+        assert nice_age(60 * 60 + 1, pad=2) == '01h00m'
+        assert nice_age(24 * 60 * 60 + 1, pad=2, depth=2) == '01d00h'
 
     def test_res(self):
 
@@ -117,7 +117,7 @@ class TestUtils(unittest.TestCase):
         assert _res[1] == 480
         assert str(_res) == '640x480'
 
-        _half = _res*0.5
+        _half = _res * 0.5
         assert _half.width == 320
         assert _half[0] == 320
         assert _half.height == 240
@@ -253,7 +253,7 @@ class TestPath(unittest.TestCase):
             if TMP_PATH.startswith(_tmp_fmt):
                 break
         else:
-            raise RuntimeError("Bad TMP_PATH "+TMP_PATH)
+            raise RuntimeError("Bad TMP_PATH " + TMP_PATH)
         assert File('/tmp/test').extn is None
         if platform.system() == 'Windows':
             assert not Dir('D:/').to_dir()
@@ -288,14 +288,14 @@ class TestPath(unittest.TestCase):
             raise AssertionError
 
         os.chdir(Path('~').path)
-        assert_eq(abs_path('./test.txt'), HOME_PATH+'/test.txt')
+        assert_eq(abs_path('./test.txt'), HOME_PATH + '/test.txt')
         assert_eq(abs_path('./test.txt', root='C:/Users'),
                   'C:/Users/test.txt')
         assert_eq(abs_path('../test.txt', root='C:/Users'),
                   'C:/test.txt')
 
         _path = abs_path('~/dev/pini-legacy/python')
-        assert _path == HOME_PATH+'/dev/pini-legacy/python'
+        assert _path == HOME_PATH + '/dev/pini-legacy/python'
 
         assert_eq(abs_path('/tmp'), '/tmp')
 
@@ -330,7 +330,7 @@ class TestPath(unittest.TestCase):
     def test_find(self):
 
         # Test find in test dir
-        _tmp_path = norm_path(TMP_PATH+'/test')
+        _tmp_path = norm_path(TMP_PATH + '/test')
         print('TMP', _tmp_path, abs_path(_tmp_path))
         _tmp_dir = Dir(_tmp_path)
         print('TMP', _tmp_dir)
@@ -416,13 +416,13 @@ class TestPath(unittest.TestCase):
         _path = 'C:\\test'
         assert Path(_path).path == 'C:/test'
         _path = '~/test'
-        assert_eq(Path(_path).path, HOME_PATH+'/test')
-        assert Path(_path).path == HOME_PATH+'/test'
+        assert_eq(Path(_path).path, HOME_PATH + '/test')
+        assert Path(_path).path == HOME_PATH + '/test'
         assert Path('~').path == HOME_PATH
         os.chdir(Path('~').path)
         assert_eq(Path('./test').path, 'test')
-        assert_eq(abs_path('./test'), HOME_PATH+'/test')
-        assert_eq(Path(abs_path('./test')).path, HOME_PATH+'/test')
+        assert_eq(abs_path('./test'), HOME_PATH + '/test')
+        assert_eq(Path(abs_path('./test')).path, HOME_PATH + '/test')
         _file = File('C:/test/hello.txt')
         assert _file.base == 'hello'
         assert _file.extn == 'txt'
@@ -446,7 +446,7 @@ class TestPath(unittest.TestCase):
 
         # Test write yml
         _data = {'shot': 'Design/Production/Spots/{sequence}/Shots/{shot}'}
-        _tmp_file = File(TMP_PATH+'/test.yml')
+        _tmp_file = File(TMP_PATH + '/test.yml')
         print(_tmp_file)
         _tmp_file.write_yml(_data, force=True)
         pprint.pprint(_tmp_file.read_yml())

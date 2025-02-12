@@ -2,12 +2,11 @@
 
 import logging
 
-from pini import qt
 from pini.utils import (
-    File, PyFile, find_exe, system, cache_method_to_file,
-    MetadataFile, TMP, PyDef, PyClass, strftime, abs_path, to_str)
+    File, PyFile, find_exe, system, get_method_to_file_cacher,
+    MetadataFile, PyDef, PyClass, abs_path, to_str)
 
-from . import r_docs, r_issue
+from . import r_docs, r_issue, r_autofix
 
 DIR = File(__file__).to_dir()
 
@@ -21,21 +20,31 @@ class CheckFile(MetadataFile):
     cache_loc = 'home'
     cache_namespace = 'release'
 
-    def apply_checks(self, pylint=True, pycodestyle=True, force=False):
+    def apply_checks(
+            self, pylint=True, pycodestyle=True, pylint_disable=(),
+            force=False):
         """Apply release checks.
 
         Args:
             pylint (bool): apply pylint checks
             pycodestyle (bool): apply pycodestyle checks
+            pylint_disable (list): list of pylint issues to ignore
             force (bool): force regenerate checks data
         """
+        if self.has_passed_checks():
+            return
+
+        # Run checks
         self.apply_docs_check()
         self.apply_autofix()
         self.apply_simple_checks()
         if pylint:
-            self.apply_pylint_check(force=force)
+            self.apply_pylint_check(force=force, disable=pylint_disable)
         if pycodestyle:
-            self.apply_pycodestyle_check(force=force)
+            self.apply_pycodestyle_check(force=force, ignore=pylint_disable)
+
+        # Mark as checked
+        self.has_passed_checks(True, force=True)
 
     def apply_autofix(self, force=False):
         """Apply autofixes.
@@ -43,82 +52,7 @@ class CheckFile(MetadataFile):
         Args:
             force (bool): apply updates without confirmation
         """
-        _LOGGER.info('APPLY AUTOFIX force=%d %s', force, self.path)
-        _orig = self.read()
-
-        # Check code line by line
-        _lines = []
-        for _line in _orig.strip().split('\n'):
-
-            _line = _line.rstrip()
-            _tokens = _line.split()
-
-            # Enforce double newline above def/class
-            if (
-                    _tokens and
-                    _tokens[0] in ('def', 'class')):
-
-                _LOGGER.info(' - ADDING NEWLINES %s', _line)
-
-                # Strip decorators
-                _decs = []
-                while _lines and _lines[-1] and (
-                        _lines[-1][0] in ('@ ')):
-                    _decs.insert(0, _lines.pop())
-                _LOGGER.info('   - DECS %s', _decs)
-
-                # Add newlines
-                _n_lines = 1 if _line.startswith(' ') else 2
-                _lines += [''] * _n_lines
-                _LOGGER.info('   - ADDED NEWLINES %s', _lines)
-                _pop_idx = -1 - _n_lines
-                while len(_lines) > 2 and _lines[_pop_idx] == '':
-                    _lines.pop(_pop_idx)
-                    _LOGGER.info('   - CROPPED NEWLINES %s', _lines)
-                _lines += _decs
-
-            _lines.append(_line)
-
-        # Save updated code
-        _fixed = '\n'.join(_lines) + '\n'
-        if _orig != _fixed:
-            _LOGGER.info(' - AUTOFIXES WERE FOUND')
-
-            # Apply bkp
-            assert self.dir[1] == ':'
-            assert self.dir[2] == '/'
-            _t_stamp = strftime()
-            _bkp = TMP.to_file(
-                f'.pini/release/autofix/{self.dir[3:]}/'
-                f'{self.base}_{_t_stamp}.{self.extn}')
-            _LOGGER.info(' - BKP %s', _bkp.path)
-            self.copy_to(_bkp, force=True)
-
-            # Confirm
-            _force = False
-            if not force:
-                _result = qt.raise_dialog(
-                    f'Apply autofixes to file?\n\n{self.path}',
-                    buttons=('Yes', 'Show diffs', 'No'))
-                if _result == 'Yes':
-                    _force = True
-                elif _result == 'No':
-                    pass
-                elif _result == 'Show diffs':
-                    _tmp = TMP.to_file(f'.pini/{self.filename}')
-                    _tmp.write(_fixed, force=True)
-                    _tmp.diff(self)
-                    if self.read() == _fixed:
-                        _LOGGER.info('UPDATES APPLIED IN DIFF')
-                        return
-                else:
-                    raise ValueError(_result)
-            else:
-                _force = force
-
-            # Apply updates
-            _LOGGER.info(' - UPDATING %s', self.path)
-            self.write(_fixed, force=_force)
+        r_autofix.apply_autofix(self, force=force)
 
     def apply_docs_check(self):
         """Apply docstrings checks."""
@@ -142,43 +76,62 @@ class CheckFile(MetadataFile):
             else:
                 raise ValueError(_item)
 
-    def apply_pycodestyle_check(self, force=False):
+    def apply_pycodestyle_check(self, ignore=(), force=False):
         """Apply pycodestyle checks.
 
         Args:
+            ignore (list): list of issues to ignore
             force (bool): force regenerate checks data
         """
-        _reading = self.to_pycodestyle_reading(force=force)
+        _reading = self.to_pycodestyle_reading(ignore=ignore, force=force)
         _issues = r_issue.to_pycodestyle_issues(_reading)
-        _LOGGER.info('FOUND %d pycodestyle ISSUES', len(_issues))
+        _LOGGER.debug('FOUND %d pycodestyle ISSUES', len(_issues))
         for _issue in _issues:
-            _LOGGER.info(' - ISSUE %s %s', _issue, _issue.desc)
+            _LOGGER.debug(' - ISSUE %s %s', _issue, _issue.desc)
             raise _issue.to_error(self)
-        _LOGGER.info(' - PYCODESTYLE SUCCESFUL %s', self.path)
+        _LOGGER.debug(' - PYCODESTYLE SUCCESFUL %s', self.path)
 
-    def apply_pylint_check(self, force=False):
+    def apply_pylint_check(self, disable=(), force=False):
         """Apply pylint checks.
 
         Args:
+            disable (list): list of issues to ignore
             force (bool): force regenerate checks data
         """
-        _reading = self.to_pylint_reading(force=force)
+        _reading = self.to_pylint_reading(disable=disable, force=force)
         _issues = r_issue.to_pylint_issues(_reading)
-        _LOGGER.info('FOUND %d pylint ISSUES', len(_issues))
+        _LOGGER.debug('FOUND %d pylint ISSUES', len(_issues))
         for _issue in _issues:
             _LOGGER.info(' - ISSUE %s %s %s', _issue, _issue.name, _issue.desc)
             _LOGGER.info(' - DISABLE # pylint: disable=%s', _issue.name)
             raise _issue.to_error(self)
-        _LOGGER.info(' - LINT SUCCESFUL %s', self.path)
+        _LOGGER.debug(' - LINT SUCCESFUL %s', self.path)
 
     def apply_simple_checks(self):
         """Apply simple checks."""
         from pini.tools import error
+
         for _line_n, _line in enumerate(self.read_lines()):
-            _line = _line.split('  # pylint:', 1)[0]
-            if len(_line) > 80:
-                raise error.FileError(
-                    'Line too long', file_=self, line_n=_line_n)
+
+            # Check for line too long
+            if not self.is_test():
+                _line = _line.split('  # pylint:', 1)[0]
+                if len(_line) > 80:
+                    raise error.FileError(
+                        'Line too long', file_=self, line_n=_line_n + 1)
+
+    @get_method_to_file_cacher(mtime_outdates=True)
+    def has_passed_checks(self, val=False, force=False):
+        """Check whether this file has already been checked.
+
+        Args:
+            val (bool): checked status to apply
+            force (bool): force write status to disk
+
+        Returns:
+            (bool): whether file has been checked
+        """
+        return val
 
     def is_test(self):
         """Check whether this file is a unit/integration test.
@@ -188,18 +141,19 @@ class CheckFile(MetadataFile):
         """
         return '/tests/' in self.path
 
-    @cache_method_to_file
-    def to_pycodestyle_reading(self, force=False):
+    @get_method_to_file_cacher(mtime_outdates=True)
+    def to_pycodestyle_reading(self, ignore=(), force=False):
         """Obtain pycodestyle reading for this file.
 
         Args:
+            ignore (list): list of issues to ignore
             force (bool): force regenerate checks data
 
         Returns:
             (str): pycodestyle reading
         """
         _exe = find_exe('pycodestyle')
-        _ignore = [
+        _ignore = list(ignore) + [
             'E501',  # line too long
             'W504',  # line break after binary operator
         ]
@@ -212,23 +166,26 @@ class CheckFile(MetadataFile):
             _cmds += ['--ignore', ','.join(_ignore)]
         return system(_cmds)
 
-    @cache_method_to_file
-    def to_pylint_reading(self, force=False):
+    @get_method_to_file_cacher(mtime_outdates=True)
+    def to_pylint_reading(self, disable=(), force=False):
         """Obtain pylint reading for this file.
 
         Args:
+            disable (list): list of issues to ignore
             force (bool): force regenerate checks data
 
         Returns:
             (str): pylint reading
         """
         _pylint = find_exe('pylint')
-        _disable = []
+        _disable = list(disable)
         if self.is_test():
             _disable += [
+                'line-too-long',
                 'missing-module-docstring',
                 'protected-access',
                 'too-many-statements',
+                'unused-argument',
             ]
 
         _cmds = [
@@ -243,13 +200,17 @@ class CheckFile(MetadataFile):
         return system(_cmds, verbose=1)
 
 
-def check_file(file_, pylint=True, pycodestyle=True):
+def check_file(file_, pylint=True, pycodestyle=True, pylint_disable=()):
     """Apply release checks to the given file.
 
     Args:
         file_ (str): path to file to check
         pylint (bool): apply pylint checks
         pycodestyle (bool): apply pycodestyle checks
+        pylint_disable (tuple): issues to ignore
     """
-    _file = abs_path(to_str(file_))
-    CheckFile(_file).apply_checks(pylint=pylint, pycodestyle=pycodestyle)
+    _path = abs_path(to_str(file_))
+    _file = CheckFile(_path)
+    _LOGGER.debug(' - PYLINT DISABLE %s', pylint_disable)
+    _file.apply_checks(
+        pylint=pylint, pycodestyle=pycodestyle, pylint_disable=pylint_disable)

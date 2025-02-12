@@ -175,7 +175,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             raise RuntimeError("Files are identical")
         if check_extn and self.extn not in [
                 'py', 'txt', None, 'yml', 'gizmo', 'mel', 'cs', 'env',
-                'xml', 'bat', 'vbs', 'ma', 'md', 'ui']:
+                'xml', 'bat', 'vbs', 'ma', 'md', 'ui', 'rc']:
             raise ValueError(self.extn)
 
         # Execute diff

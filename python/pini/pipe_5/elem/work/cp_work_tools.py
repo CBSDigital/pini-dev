@@ -49,9 +49,9 @@ def cur_work(work_dir=None, catch=True):
     _file = abs_path(_file)
     try:
         return pipe.CPWork(_file, work_dir=work_dir)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as _exc:
         if not catch:
-            raise ValueError('No current work')
+            raise ValueError('No current work') from _exc
         return None
 
 
@@ -70,7 +70,7 @@ def load_recent():
     from pini import qt
     _latest = recent_work()[0].find_latest()
     qt.ok_cancel(
-        'Load latest work file?\n\n'+_latest.path,
+        'Load latest work file?\n\n' + _latest.path,
         title='Load recent', icon=icons.find('Monkey Face'))
     _latest.load()
 

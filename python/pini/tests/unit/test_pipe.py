@@ -182,7 +182,7 @@ class TestDiskPipe(unittest.TestCase):
         _LOGGER.info(' - WORKS %s', _work_dir_c.works)
         assert len(_work_dir_c.works) == 2
         assert not _work_dir_c.badly_named_files
-        _work_dir.to_file('blah.'+dcc.DEFAULT_EXTN).touch()
+        _work_dir.to_file('blah.' + dcc.DEFAULT_EXTN).touch()
         assert not _work_dir_c.badly_named_files
         _work_dir_c.find_works(force=True)
         assert _work_dir_c.badly_named_files == 1
@@ -202,7 +202,7 @@ class TestDiskPipe(unittest.TestCase):
         _out.set_metadata(_data)
         assert _out.metadata == _data
         assert _out_c.metadata == _data
-        _data = {'mtime': time.time()+1}
+        _data = {'mtime': time.time() + 1}
         _out.set_metadata(_data)
         assert _out.metadata == _data
         testing.enable_file_system(False)

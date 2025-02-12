@@ -71,6 +71,7 @@ ignored-modules=
       flame,
       maya,
       nuke,
+      nukescripts,
       substance_painter,
 
 # Python code to execute, usually for sys.path manipulation such as
@@ -205,9 +206,19 @@ good-names=i,
            _,
            userSetup,
 
+           # Maya plugins
+           nodeCreator,
+           nodeInitializer,
+           initializePlugin,
+           uninitializePlugin,
+
+           # Qt
+           closeEvent,
+           timerEvent,
+
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
-good-names-rgxs=^[_a-z][_a-z0-9]?$|^(_callback_).*$
+good-names-rgxs=^[_a-z][_a-z0-9]?$|^(_callback__|_redraw__|_context__|_draw__).*$
 
 # Include a hint for the correct naming format with invalid-name.
 include-naming-hint=no
@@ -652,7 +663,7 @@ allowed-redefined-builtins=
 # List of strings which can identify a callback function by name. A callback
 # name must start or end with one of those strings.
 callbacks=cb_,
-          _cb
+          _cb,
 
 # A regular expression matching the name of dummy variables (i.e. expected to
 # not be used).

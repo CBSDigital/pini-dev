@@ -284,14 +284,14 @@ def get_mod_sort(order=None):
             _val += 0.03
         if 'launch' in _name:
             _val += 0.04
-        _val -= _name.count('.')*0.1
+        _val -= _name.count('.') * 0.1
         _LOGGER.log(9, ' - VAL A %f', _val)
 
         # Apply ordering
         _idx = 0
         _tokens = _name.split('.')
         _LOGGER.log(9, ' - TOKENS %s', _tokens)
-        for _idx in range(_name.count('.')+1):
+        for _idx in range(_name.count('.') + 1):
             _n_tokens = _name.count('.') + 1 - _idx
             _r_name = '.'.join(_tokens[:_n_tokens])
             _LOGGER.log(9, ' - TESTING %s %d', _r_name, _n_tokens)
@@ -302,7 +302,7 @@ def get_mod_sort(order=None):
         else:
             _order_idx = len(_order)
             _LOGGER.log(9, ' - NO MATCH %s %d', _name, _idx)
-        _val += _order_idx*10
+        _val += _order_idx * 10
         _LOGGER.log(9, ' - VAL B %f', _val)
 
         return _val
@@ -340,7 +340,7 @@ def _reload_mod(mod, sort, catch=False, verbose=0):
 
     # Print status
     if len(_name) > 53:
-        _name = _name[:50]+' ...'
+        _name = _name[:50] + ' ...'
     lprint(
         f'{sort(_name):<7.02f} {_name:<55} {_dur:5.02f}s    '
         f'{abs_path(mod.__file__)}',
@@ -383,7 +383,8 @@ def reload_libs(
 
     # Print summary
     if verbose:
-        _LOGGER.info('Reloaded %d libs in %.01fs', _count, time.time()-_start)
+        _LOGGER.info(
+            'Reloaded %d libs in %.01fs', _count, time.time() - _start)
 
     # Run setup
     if run_setup:
@@ -429,7 +430,7 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
         attempts (int): maximum number of attempts
         verbose (int): print process data
     """
-    _root = abs_path(check_root)+'/'
+    _root = abs_path(check_root) + '/'
     _LOGGER.info('UPDATE LIBS root=%s', _root)
 
     # Find modules to reload
@@ -440,7 +441,7 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
 
     # Reload modules until they all fall inside root
     _dur = None
-    for _attempt in range(1, attempts+1):
+    for _attempt in range(1, attempts + 1):
         check_heart()
         _start = time.time()
         _fails = _count_root_match_fails(root=_root, mods=_mods)

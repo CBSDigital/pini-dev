@@ -262,7 +262,7 @@ class TestHelper(unittest.TestCase):
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == _tab
 
         # Re-open helper and check render tab is still selected
-        _helper.close()
+        _helper.delete()
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
         assert_eq(_helper.ui.EExportPane.current_tab_text(), _tab)

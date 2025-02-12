@@ -174,7 +174,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
     if mode == 'api':  # Deprecated ~2020
         from mtoa.cmds import arnoldRender
         arnoldRender.arnoldRender(
-            res[0], res[1], True, True, cam, ' -layer '+layer)
+            res[0], res[1], True, True, cam, ' -layer ' + layer)
     elif mode == 'mel':
         if layer != pom.cur_render_layer():
             raise NotImplementedError(layer)
@@ -187,7 +187,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
     # Catch arnold appended _1 to filename
     if not file_.exists():
         _LOGGER.debug(' - FILE MISSING %s', file_)
-        _tmp_file = file_.to_file(base=file_.base+'_1')
+        _tmp_file = file_.to_file(base=file_.base + '_1')
         assert _tmp_file.exists()
         _LOGGER.debug(' - TMP FILE %s', _tmp_file)
         _tmp_file.move_to(file_)
@@ -373,8 +373,9 @@ def _apply_rs_fmt_idx(idx):
         mel.eval('redshiftImageFormatChanged')
     except RuntimeError as _exc:
         raise RuntimeError(
-            'Update image format failed - this could be because render '
-            'gobals window needs to be opened to initialise redshift')
+            'Update image format failed - this could be because '
+            'render globals window needs to be opened to initialise '
+            'redshift') from _exc
 
 
 def set_render_extn(extn: str):
