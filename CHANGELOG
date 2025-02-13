@@ -1,3 +1,27 @@
+## [6.47.0] - Thu 2025-02-13 10:58
+### Summary
+ - Sanity Check:
+    - allow fix button label override,
+ - Pini Helper:
+    - entity label right-click allow path with newline/quotes,
+### Updated
+ - applied whitespace around operator,
+ - pini.utils.File._read_size bugfix catch arg not used,
+ - pini.utils.PyFile added check_extn arg,
+ - pini.utils.Res name is ignored in cmp,
+ - pini.utils.Res.__mul__ maintains name,
+ - pini.dcc.NukeDCC.add_menu_item allow image as File,
+ - pini.qt.CUiDialog.delete fix error on elems garbage collected,
+ - pini.install.PIMayaShelfInstaller._build_divider bugfix parent arg not applied,
+ - pini.tools.release pylint.rc added qt callbacks to good names,
+ - pini.tools.release pylint.rc added xargs to ignored names,
+ - pini.tools.sanity_check.SCFail added fix_label override arg,
+ - pini.tools.helper entity label ctx use copied_path func,
+ - pini.tools.helper export/submit template use cur work + apply render as default,
+ - pini.tools.helper export/submit tag use cur work + apply default tag as default,
+ - nuke_pini.tools.autowrite bugfix outdated import in header file,
+
+
 ## [6.46.0] - Wed 2025-02-12 14:46
 ### Summary
  - Pipeline Codebase:

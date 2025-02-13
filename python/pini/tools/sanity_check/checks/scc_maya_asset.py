@@ -474,9 +474,9 @@ class CheckGeoNaming(core.SCMayaCheck):
         # Check geo name
         _name = to_clean(geo)
         _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
-        if not (_name.endswith('_'+_geo_suffix) or _name == _geo_suffix):
+        if not (_name.endswith('_' + _geo_suffix) or _name == _geo_suffix):
             _msg, _fix, _suggestion = utils.fix_node_suffix(
-                node=geo, suffix='_'+_geo_suffix,
+                node=geo, suffix='_' + _geo_suffix,
                 alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
                 ignore=self._ignore_names)
             self._ignore_names.append(_suggestion)
@@ -622,13 +622,13 @@ class CheckForFaceAssignments(core.SCMayaCheck):
         _LOGGER.info('FIX FACE ASSIGNMENTS %s %s', shader, geo)
         try:
             shader.unassign(node=geo)
-        except ValueError:
+        except ValueError as _exc:
             raise error.HandledError(
                 f'Failed to unassign "{shader}" from "{geo}".'
                 '\n\n'
                 'It seems like maya is having trouble with this assignment.'
                 'Try deleting history on this node or removing it '
-                'if possible')
+                'if possible') from _exc
         shader.assign_to(geo)
 
 
@@ -792,7 +792,7 @@ class CheckShaders(core.SCMayaCheck):
 
         self.write_log('Checking shd %s', shd)
         assert shd.endswith('_MTL')
-        _good_name = shd[:-4]+'_SG'
+        _good_name = shd[:-4] + '_SG'
         if _good_name == engine:
             self.write_log(' - shading engine %s is good', engine)
             return

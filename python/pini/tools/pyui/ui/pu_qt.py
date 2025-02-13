@@ -458,16 +458,16 @@ class _PUQtSection(qt.CPixmapLabel):
 
         _text_col = 'Silver'
         pix.draw_text(
-            self.text, pos=(30, self.height()/2), anchor='L',
+            self.text, pos=(30, self.height() / 2), anchor='L',
             col=_text_col, font=self.font)
 
-        _grid = self.height()/3
+        _grid = self.height() / 3
         if self.collapse:
-            _pts = [(_grid*1.5, _grid*0.5),
-                    (_grid*2.5, _grid*1.5),
-                    (_grid*1.5, _grid*2.5)]
+            _pts = [(_grid * 1.5, _grid * 0.5),
+                    (_grid * 2.5, _grid * 1.5),
+                    (_grid * 1.5, _grid * 2.5)]
         else:
-            _pts = [(_grid, _grid), (_grid*3, _grid), (_grid*2, _grid*2)]
+            _pts = [(_grid, _grid), (_grid * 3, _grid), (_grid * 2, _grid * 2)]
         pix.draw_polygon(_pts, col=_text_col, outline=None)
 
     def mousePressEvent(self, event=None):

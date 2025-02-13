@@ -57,7 +57,7 @@ class PEError:
         """
         _text = f'{prefix}Traceback (most recent call last):\n'
         for _line in self.lines:
-            _text += _line.to_text(prefix=prefix+'  ')+'\n'
+            _text += _line.to_text(prefix=prefix + '  ') + '\n'
         _text += f'{prefix}{self.type_name}: {self.message}'
         return _text.strip()
 
@@ -66,7 +66,7 @@ class PEError:
         from pini import qt
         from .e_dialog import EMOJI
 
-        _dcc_ver = '-'+dcc.to_version(str) if dcc.NAME else ''
+        _dcc_ver = '-' + dcc.to_version(str) if dcc.NAME else ''
         _lines = [
             f'<b>DCC</b> {dcc.NAME}{_dcc_ver}',
             f'<b>SCENE</b> {dcc.cur_file()}',
@@ -152,7 +152,7 @@ def error_from_str(traceback_):
     while _tb_lines:
         _tb_top = _tb_lines.pop(0)
         _tb_bot = _tb_lines.pop(0)
-        _e_line = e_trace_line.line_from_str(_tb_top+'\n'+_tb_bot)
+        _e_line = e_trace_line.line_from_str(_tb_top + '\n' + _tb_bot)
         _e_lines.append(_e_line)
 
     return PEError(type_name=_type_name, message=_msg, lines=_e_lines)

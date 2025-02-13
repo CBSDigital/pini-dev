@@ -71,7 +71,8 @@ class NukeDCC(BaseDCC):
         assert parent
         _menu = _obtain_menu(parent)
         _menu.removeItem(label)
-        _item = _menu.addCommand(name=label, command=command, icon=image)
+        _item = _menu.addCommand(
+            name=label, command=command, icon=to_str(image))
         _LOGGER.debug('ADDED MENU ITEM %s (menu=%s)', _item, parent)
         return _item
 

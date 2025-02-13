@@ -115,7 +115,7 @@ class CheckFps(SCCheck):
             return
         _cfg_fps = _ety.settings.get('fps')
         if not _cfg_fps:
-            self.write_log('No fps found in '+_ety.name)
+            self.write_log('No fps found in ' + _ety.name)
             return
         self.write_log('Entity fps %s %s', _cfg_fps, _ety)
         _cur_fps = dcc.get_fps()
@@ -171,13 +171,13 @@ class SlowCheckTest(SCCheck):
 
         _count = 30
         for _idx in self.update_progress(range(_count)):
-            self.write_log('Updating %d/%d', _idx+1, _count)
+            self.write_log('Updating %d/%d', _idx + 1, _count)
             time.sleep(0.1)
 
         for _key in ['BLAH', 'BLUE', 'BLEE']:
             if dcc.get_scene_data(_key):
                 _fix = wrap_fn(self.fix_scene_data, _key)
-                self.add_fail('Bad scene data '+_key, fix=_fix)
+                self.add_fail('Bad scene data ' + _key, fix=_fix)
 
     def fix_scene_data(self, key):
         """Fix scene data issue.

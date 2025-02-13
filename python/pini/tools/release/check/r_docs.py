@@ -191,7 +191,7 @@ def suggest_docs(def_):
     _LOGGER.info(' - NAME %s', def_.name)
 
     _ast = def_.to_ast()
-    _indent = ' '*(_ast.col_offset+4)
+    _indent = ' ' * (_ast.col_offset + 4)
     _LOGGER.info(' - INDENT %d "%s"', len(_indent), _indent)
     _code = def_.to_code()
     _cur_docs = def_.to_docs()

@@ -168,7 +168,7 @@ class PUFile(PyFile):
         _LOGGER.debug(' - ADD TOOLKIT %s', self.path)
         _LOGGER.debug('   - TITLE %s', self.title)
 
-        _name = prefix+to_pascal(self.title)
+        _name = prefix + to_pascal(self.title)
         _path = abs_path(self.path)
 
         _title = title or self.title
@@ -177,22 +177,22 @@ class PUFile(PyFile):
             _name, label=_label,
             command='\n'.join([
                 'from pini.tools import pyui',
-                'pyui.build("{}", title="{}")'.format(_path, _title)]),
+                f'pyui.build("{_path}", title="{_title}")']),
             icon=self.icon)
 
         # Add standard options
         _copy = install.PITool(
-            _name+'Copy', label='Copy path',
+            _name + 'Copy', label='Copy path',
             command='\n'.join([
                 'from pini.utils import copy_text',
-                'copy_text("{}")'.format(_path)]),
+                f'copy_text("{_path}")']),
             icon=icons.COPY)
         _tool.add_context(_copy)
         _edit = install.PITool(
-            _name+'Edit', label='Edit file',
+            _name + 'Edit', label='Edit file',
             command='\n'.join([
                 'from pini.utils import File',
-                'File("{}").edit()'.format(_path)]),
+                f'File("{_path}").edit()']),
             icon=icons.EDIT)
         _tool.add_context(_edit)
 
@@ -201,15 +201,15 @@ class PUFile(PyFile):
         for _elem in self.find_ui_elems():
             if isinstance(_elem, pyui.PUDef):
                 if not _div_count:
-                    _tool.add_divider(_name+str(_div_count))
+                    _tool.add_divider(_name + str(_div_count))
                     _div_count += 1
                 _ctx = install.PITool(
-                    name=_name+to_pascal(_elem.label),
+                    name=_name + to_pascal(_elem.label),
                     label=_elem.label, icon=_elem.icon,
                     command=_elem.to_execute_py())
                 _tool.add_context(_ctx)
             elif isinstance(_elem, pyui.PUSection):
-                _tool.add_divider(_name+str(_div_count), label=_elem.name)
+                _tool.add_divider(_name + str(_div_count), label=_elem.name)
                 _div_count += 1
             else:
                 raise ValueError(_elem)

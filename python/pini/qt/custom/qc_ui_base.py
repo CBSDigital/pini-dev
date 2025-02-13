@@ -564,22 +564,23 @@ class CUiBase:
 
     def delete(self):
         """Delete this interface."""
-        _LOGGER.debug('DELETE CUiBase %s', self.name)
+        _name = self.name
+        _LOGGER.debug('DELETE CUiBase %s', _name)
 
         # Obtain list of actions to try
-        _actions = [self.close]
+        _actions = [('close', self.close)]
         if self.timer:
-            _actions += [wrap_fn(self.killTimer, self.timer)]
+            _actions += [('kill timer', wrap_fn(self.killTimer, self.timer))]
         if self._successful_load and self.store_settings:
-            _actions += [self.save_settings]
-        _actions += [self.deleteLater]
+            _actions += [('save settings', self.save_settings)]
+        _actions += [('delete', self.deleteLater)]
 
         # Attempt to execute each action
-        for _action in _actions:
+        for _label, _action in _actions:
             try:
                 _action()
             except RuntimeError as _exc:
-                _LOGGER.info(' - ACTION %s ERRORED - %s', _action, self.name)
+                _LOGGER.info(' - ACTION %s ERRORED - %s', _label, _name)
 
         _LOGGER.debug(' - DELETE %s COMPLETE', self.name)
 

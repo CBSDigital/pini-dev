@@ -20,6 +20,7 @@ class Res:
 
         self.aspect = self.width / self.height
         self.uid = self.width, self.height, self.name
+        self.cmp_key = self.width, self.height
 
     def duplicate(self, name=None, mult=1.0):
         """Duplicate this resolution.
@@ -42,7 +43,7 @@ class Res:
         return self.width, self.height
 
     def __eq__(self, other):
-        return self.uid == other.uid
+        return self.cmp_key == other.cmp_key
 
     def __getitem__(self, name):
         if name == 0:
@@ -52,13 +53,14 @@ class Res:
         raise AttributeError(name)
 
     def __hash__(self):
-        return hash(str(self))
+        return hash(self.cmp_key)
 
     def __lt__(self, other):
-        return self.uid < other.uid
+        return self.cmp_key < other.cmp_key
 
     def __mul__(self, val):
-        return Res(round(self.width * val), round(self.height * val))
+        return Res(
+            round(self.width * val), round(self.height * val), name=self.name)
 
     def __str__(self):
         return f'{self.width}x{self.height}'

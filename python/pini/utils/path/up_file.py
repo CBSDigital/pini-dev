@@ -364,7 +364,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _handle.close()
         return _obj
 
-    def _read_size(self, catch=False):
+    def _read_size(self, catch=True):
         """Read size of this file.
 
         Args:
@@ -375,8 +375,10 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """
         try:
             return os.path.getsize(self.path)
-        except OSError:
-            return 0
+        except OSError as _exc:
+            if catch:
+                return 0
+            raise _exc
 
     def read_yml(self, encoding=None, catch=False):
         """Read this file as yaml.

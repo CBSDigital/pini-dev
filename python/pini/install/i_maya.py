@@ -111,7 +111,7 @@ class PIMayaShelfInstaller(i_installer.PIInstaller):
         """
         _LOGGER.debug('ADD SHELF SEPARATOR %s', divider)
         ui.add_shelf_separator(
-            parent=self.shelf, name=self.shelf+'_'+divider.name)
+            parent=parent or self.shelf, name=self.shelf+'_'+divider.name)
 
     def run(self, parent=None, launch_helper=True, flush=True):  # pylint: disable=unused-argument
         """Execute this installer.

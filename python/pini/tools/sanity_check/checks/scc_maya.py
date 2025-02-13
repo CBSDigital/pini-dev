@@ -83,24 +83,25 @@ class CleanBadSceneNodes(core.SCMayaCheck):
 
         # Get list of nodes
         _nodes = []
-        _types = cmds.allNodeTypes()
+        _all_types = cmds.allNodeTypes()
         for _type in [
                 # 'RedshiftOptions',
                 # 'RedshiftPostEffects',
                 # 'VRaySettingsNode',
                 'unknown',
         ]:
-            if _type not in _types:
+            if _type not in _all_types:
                 self.write_log('Type %s does not exist', _type)
                 continue
             _type_nodes = cmds.ls(type=_type) or []
             self.write_log(
                 'Found %d %s nodes - %s', len(_type_nodes), _type, _type_nodes)
-            _nodes += _type_nodes
+            for _node in _type_nodes:
+                _nodes.append((_node, _type))
 
         # Check nodes
-        for _node in self.update_progress(_nodes):
-            self.write_log('Checking node %s', _node)
+        for _node, _type in self.update_progress(_nodes):
+            self.write_log('Checking node %s (%s)', _node, _type)
 
             # Ignore whitelisted
             if _node in _whitelist:
@@ -162,10 +163,10 @@ class RemoveBadPlugins(core.SCMayaCheck):
                 # 'vrayformaya',
                 'Mayatomr',
         ]:
-            self.write_log('Checking plugin '+_plugin)
+            self.write_log('Checking plugin ' + _plugin)
             if _plugin in _plugins:
                 self.add_fail(
-                    'Bad plugin found '+_plugin,
+                    'Bad plugin found ' + _plugin,
                     fix=wrap_fn(self.fix_bad_plugin, _plugin))
 
         # Remove unknown plugins
@@ -185,7 +186,7 @@ class RemoveBadPlugins(core.SCMayaCheck):
                     ' - ignoring benign unknown plugin %s', _plugin)
                 continue
 
-            _msg = 'Scene is requesting missing plugin '+_plugin
+            _msg = 'Scene is requesting missing plugin ' + _plugin
             _fix = wrap_fn(cmds.unknownPlugin, _plugin, remove=True)
             self.add_fail(_msg, fix=_fix)
 
@@ -212,7 +213,7 @@ class FixRefNodeNames(core.SCMayaCheck):
         """Run this check."""
         for _ref in self.update_progress(ref.find_refs()):
             self.write_log('Checking ref %s %s', _ref.ref_node, _ref.namespace)
-            _good_name = _ref.namespace+'RN'
+            _good_name = _ref.namespace + 'RN'
             if _ref.ref_node == _good_name:
                 self.write_log(
                     'Checked %s namespace=%s', _ref.ref_node, _ref.namespace)
@@ -269,7 +270,7 @@ class FixViewportCallbacks(core.SCMayaCheck):
                 self.write_log(
                     'Found %s in %s callback %s', callback, _model_panel,
                     _callback)
-                for _replace in [callback+';', callback]:
+                for _replace in [callback + ';', callback]:
                     if _callback.count(_replace) == 1:
                         break
                 else:
@@ -326,7 +327,7 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
             # Check for unconnected legacy layer
             if not _rs_lyr:
                 self.add_fail(
-                    'Unconnected legacy layer '+_lyr,
+                    'Unconnected legacy layer ' + _lyr,
                     node=_lyr, fix=wrap_fn(cmds.delete, _lyr))
                 _bad_nodes.add(_lyr)
                 continue
@@ -343,7 +344,7 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
                     continue
                 _fix = wrap_fn(cmds.delete, _node)
                 self.add_fail(
-                    'Unconnected render setup node '+_node,
+                    'Unconnected render setup node ' + _node,
                     node=_node, fix=_fix)
                 _bad_nodes.add(_node)
 
@@ -379,7 +380,7 @@ class CheckReferences(core.SCMayaCheck):
             _size = _ref.size()
             self.write_log(' - checking size %d %s',
                            _size, nice_size(_size))
-            if _size > 500*1000*1000:
+            if _size > 500 * 1000 * 1000:
                 _size_s = nice_size(_size)
                 _msg = (
                     f'Reference {_ref.namespace} is large ({_size_s}) - '

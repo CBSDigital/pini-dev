@@ -345,7 +345,7 @@ class SCPipeCheck(SCCheck):
         _max_age = 20
         _age = time.time() - pipe.CACHE.ctime
         self.write_log('Found cache %s age=%s', pipe.CACHE, nice_age(_age))
-        if _age > _max_age*60:
+        if _age > _max_age * 60:
             self.add_fail(
                 f'Cache is more than {_max_age:d} minutes old',
                 fix=pipe.CACHE.reset)
@@ -392,8 +392,8 @@ class _ProgressUpdater:
         # Increment iteration
         try:
             _result = self.items[self.counter]
-        except IndexError:
-            raise StopIteration
+        except IndexError as _exc:
+            raise StopIteration from _exc
         self.counter += 1
         return _result
 

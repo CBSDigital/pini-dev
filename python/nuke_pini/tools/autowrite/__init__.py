@@ -6,6 +6,6 @@ from .aw_callbacks import (
     flush_callbacks, install_callbacks, knob_changed_callback,
     update_all)
 from .aw_build import build
-from .aw_node import CAutowrite2, get_selected
+from .aw_node import CAutowrite, get_selected
 
 ICON = icons.find('Robot')

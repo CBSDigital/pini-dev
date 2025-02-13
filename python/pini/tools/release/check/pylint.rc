@@ -214,6 +214,9 @@ good-names=i,
 
            # Qt
            closeEvent,
+           keyPressEvent,
+           mousePressEvent,
+           resizeEvent,
            timerEvent,
 
 # Good variable names regexes, separated by a comma. If names match any regex,
@@ -670,7 +673,7 @@ callbacks=cb_,
 dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
 
 # Argument names that match this expression will be ignored.
-ignored-argument-names=_.*|^ignored_|^unused_|force
+ignored-argument-names=_.*|^ignored_|^unused_|force|xargs
 
 # Tells whether we should check for unused import in __init__ files.
 init-import=no

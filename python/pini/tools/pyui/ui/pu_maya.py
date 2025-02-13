@@ -32,7 +32,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         Returns:
             (str): unique indentifier
         """
-        return 'PYUI_'+self.mod.__name__.replace('.', '_')
+        return 'PYUI_' + self.mod.__name__.replace('.', '_')
 
     def init_ui(self):
         """Inititiate interface window."""
@@ -44,9 +44,9 @@ class PUMayaUi(pu_base.PUBaseUi):
             iconName='Short Name', closeCommand=self.close_event,
             width=400, menuBar=True)
 
-        self.scroll = self.uid+'_scroll'
+        self.scroll = self.uid + '_scroll'
         cmds.scrollLayout(self.scroll, childResizable=True)
-        self.master = self.uid+'_master'
+        self.master = self.uid + '_master'
         cmds.columnLayout(self.master, adjustableColumn=1)
 
         super().init_ui()
@@ -137,7 +137,7 @@ class PUMayaUi(pu_base.PUBaseUi):
             _tooltip = 'Get selection'
             if isinstance(arg.selection, str):
                 _type = arg.selection
-                _tooltip = 'Get selected '+_type
+                _tooltip = 'Get selected ' + _type
             cmds.iconTextButton(
                 image1=icons.SELECT, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage=_tooltip,
@@ -233,7 +233,7 @@ class PUMayaUi(pu_base.PUBaseUi):
 
         _col = qt.to_col(def_.col or self.base_col)
 
-        cmds.text(def_.uid+'Spacer', label='', height=3)  # Spacer
+        cmds.text(def_.uid + 'Spacer', label='', height=3)  # Spacer
         cmds.rowLayout(
             numberOfColumns=3, columnWidth3=(self.def_h, 75, self.def_h),
             adjustableColumn=2, columnAlign=(1, 'right'),
@@ -319,7 +319,8 @@ class PUMayaUi(pu_base.PUBaseUi):
         _LOGGER.debug(' - SECTION %s', _frame)
         cmds.columnLayout(parent=_frame, adjustableColumn=1)
         self.callbacks['sections'][section.name] = {
-            'get': wrap_fn(cmds.frameLayout, _frame, query=True, collapse=True),
+            'get': wrap_fn(
+                cmds.frameLayout, _frame, query=True, collapse=True),
             'set': _build_apply_fn(_frame)}
 
     def collapse_all(self):

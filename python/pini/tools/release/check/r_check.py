@@ -62,7 +62,8 @@ class CheckFile(MetadataFile):
         if self.filename == '__init__.py' and not self.read():
             return
 
-        _py = PyFile(self)
+        assert self.extn in ('py', None)
+        _py = PyFile(self, check_extn=False)
 
         r_docs.check_mod_docs(_py)
 

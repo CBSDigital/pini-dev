@@ -86,7 +86,7 @@ def _test_sort_key(test, mode='sca/dur'):
         _dur = test.last_exec_dur()
         if _dur is None:
             return -sys.maxsize, 0
-        _mod_c_age = _c_age % (10*60)
+        _mod_c_age = _c_age % (10 * 60)
         _stepped_c_age = int(_c_age - _mod_c_age)
         _key = -_stepped_c_age, round(_dur, 2)
     elif mode == 'completed':

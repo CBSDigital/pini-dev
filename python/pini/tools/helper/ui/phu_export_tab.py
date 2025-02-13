@@ -161,14 +161,16 @@ class PHExportTab:
         _LOGGER.debug('REDRAW ESubmitTemplate %s', self.entity)
         _outs = self.entity.find_outputs() if self.entity else []
         _outs = [_out for _out in _outs if _out.submittable]
+        _work = pipe.CACHE.cur_work or self.work
 
         # Determine selection
-        _select = None
-        if self.work:
-            if self.work.find_outputs('render'):
+        _select = 'render'
+        if _work:
+            if _work.find_outputs('render'):
                 _select = 'render'
-            elif self.work.find_outputs('blast'):
+            elif _work.find_outputs('blast'):
                 _select = 'blast'
+        _LOGGER.debug(' - SELECT %s %s', _select, self.work)
 
         _tmpls, _data = _sort_by_attr(_outs, attr='basic_type')
         self.ui.ESubmitTemplate.set_items(
@@ -198,16 +200,19 @@ class PHExportTab:
     def _redraw__ESubmitTag(self):
 
         _outs = self.ui.ESubmitTask.selected_data() or []
-        _tasks, _data = _sort_by_attr(_outs, attr='tag')
+        _tags, _data = _sort_by_attr(_outs, attr='tag')
+        _work = pipe.CACHE.cur_work or self.work
 
         # Apply default selection
         _select = None
-        if self.work:
-            _select = self.work.tag
+        if _work and _work.tag in _tags:
+            _select = _work.tag
+        if not _select and pipe.DEFAULT_TAG in _tags:
+            _select = pipe.DEFAULT_TAG
 
         self.ui.ESubmitTag.set_items(
-            _tasks, data=_data, select=_select, emit=True)
-        self.ui.ESubmitTag.setEnabled(len(_tasks) > 1)
+            _tags, data=_data, select=_select, emit=True)
+        self.ui.ESubmitTag.setEnabled(len(_tags) > 1)
 
     def _redraw__ESubmitFormat(self):
 

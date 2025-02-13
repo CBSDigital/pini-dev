@@ -167,24 +167,24 @@ class PRRepo(Dir):
             dev_label (str): how to label dev push in comment
         """
         print(f'# Release {dev_label} code')
-        print('cd '+self.path)
+        print('cd ' + self.path)
         print('git add -A')
         print(f'git commit -m "{notes.to_cmdline(repo=self, ver=ver)}" -a')
         print('git push')
-        print('git tag '+ver.string)
+        print('git tag ' + ver.string)
         print('git push --tags')
 
         if target:
             print('')
             print('# Update release code')
             if pull_mode == 'pull':
-                print('cd '+target.path)
+                print('cd ' + target.path)
                 print('git pull')
             elif pull_mode == 'clone':
-                print('cd '+target.to_dir().path)
+                print('cd ' + target.to_dir().path)
                 print(f'git clone {self.to_url()} .tmp')
-                print('rm -fr '+target.filename)
-                print('mv .tmp '+target.filename)
+                print('rm -fr ' + target.filename)
+                print('mv .tmp ' + target.filename)
             else:
                 raise ValueError(pull_mode)
             print('')

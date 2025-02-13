@@ -1,9 +1,11 @@
 """Tools for managing release versions."""
 
+from pini.utils import basic_repr
+
 RELEASE_TYPES = ('major', 'minor', 'patch')
 
 
-class PRVersion(object):
+class PRVersion:
     """Represents a release version.
 
     This is defined by a 3 number string with value representing
@@ -20,7 +22,7 @@ class PRVersion(object):
         self.string = string
         _tokens = [int(_token) for _token in string.split('.')]
         self.major, self.minor, self.patch = _tokens
-        self.cmp_str = '.'.join('{:03d}'.format(_val) for _val in _tokens)
+        self.cmp_str = '.'.join(f'{_val:03d}' for _val in _tokens)
         self.mtime = mtime
 
     def to_str(self) -> str:
@@ -60,8 +62,8 @@ class PRVersion(object):
         return self.cmp_str <= other.cmp_str
 
     def __repr__(self):
-        return '<{}:{:d}.{:d}.{:d}>'.format(
-            type(self).__name__, self.major, self.minor, self.patch)
+        _ver_s = f'{self.major:d}.{self.minor:d}.{self.patch:d}'
+        return basic_repr(self, _ver_s)
 
 
 DEV_VER = PRVersion('999.0.0')

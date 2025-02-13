@@ -15,18 +15,20 @@ _LOGGER = logging.getLogger(__name__)
 class PyFile(File, PyElem):
     """Represents a python file on disk."""
 
-    def __init__(self, file_):
+    def __init__(self, file_, check_extn=True):
         """Constructor.
 
         Args:
             file_ (str): path to py file
+            check_extn (bool): apply extension test
         """
-        super().__init__(file_)
+        _file = File(file_)
+        if _file.extn == 'pyc':
+            _file = self.to_file(extn='py')
+        super().__init__(_file.path)
 
-        if self.extn == 'pyc':
-            super().__init__(self.to_file(extn='py'))
-        if self.extn != 'py':
-            raise ValueError(self.extn)
+        if check_extn and self.extn != 'py':
+            raise ValueError(f'Bad extn: {self.path}')
 
     @property
     def py_file(self):

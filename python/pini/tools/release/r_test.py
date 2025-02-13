@@ -37,7 +37,7 @@ class PRTest:
             (str): cache format
         """
         _path = '_'.join([
-            self.py_file.dir+'/'+to_pascal(self.py_file.base),
+            self.py_file.dir + '/' + to_pascal(self.py_file.base),
             self.class_.name, to_pascal(self.method.clean_name)])
         _LOGGER.debug(' - NAME %s', self.name)
         _cache_fmt = build_cache_fmt(
@@ -60,9 +60,9 @@ class PRTest:
 
         # Print header
         _title = f'------------- EXECUTE {self} -------------'
-        print('\n'+'-'*len(_title))
+        print('\n' + '-' * len(_title))
         print(_title)
-        print('-'*len(_title)+'\n')
+        print('-' * len(_title) + '\n')
 
         # Locate test method
         if _last_exec_dur and _last_complete_time:
@@ -96,9 +96,9 @@ class PRTest:
 
         # Print tail
         _tail = f'---------- COMPLETE {self} ({_dur:.01f}s) ----------'
-        print('\n'+'-'*len(_tail))
+        print('\n' + '-' * len(_tail))
         print(_tail)
-        print('-'*len(_tail)+'\n')
+        print('-' * len(_tail) + '\n')
 
     def _check_for_fail(self, result):
         """Handle test has failed.

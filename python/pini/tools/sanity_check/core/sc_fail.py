@@ -8,10 +8,12 @@ from pini.utils import single, basic_repr, wrap_fn
 _LOGGER = logging.getLogger(__name__)
 
 
-class SCFail(object):
+class SCFail:
     """Represent a check failure."""
 
-    def __init__(self, msg, node=None, fix=None, button_width=None):
+    def __init__(
+            self, msg, node=None, fix=None, button_width=None,
+            fix_label='Fix'):
         """Constructor.
 
         Args:
@@ -20,6 +22,7 @@ class SCFail(object):
             fix (fn): fix function (if any)
             button_width (int): override default button with in sanity check
                 ui for this fail (to accommodate for long option names)
+            fix_label (str): override label for fix button (default is "Fix")
         """
         self.msg = msg
         self.actions = []
@@ -28,7 +31,7 @@ class SCFail(object):
         if node:
             self.add_action('Select node', wrap_fn(dcc.select_node, node))
         if fix:
-            self.add_action('Fix', fix, is_fix=True)
+            self.add_action(fix_label, fix, is_fix=True)
 
     @property
     def fix(self):

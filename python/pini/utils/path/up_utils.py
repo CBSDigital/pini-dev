@@ -238,7 +238,7 @@ def copied_path():
 
     _LOGGER.debug('COPIED PATH')
     _text = norm_path(QtGui.QClipboard().text().strip())
-    _LOGGER.debug(' - TEXT %s', _text)
+    _LOGGER.debug(' - TEXT "%s"', _text)
 
     if os.path.exists(_text):
         return _text

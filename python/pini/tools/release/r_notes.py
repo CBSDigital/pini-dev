@@ -48,7 +48,7 @@ class PRNotes:
                         _start_upper and
                         _line[0].isalpha() and
                         not _line.strip(' -')[0].isupper()):
-                    raise ValueError('Head fail - '+_line)
+                    raise ValueError('Head fail - ' + _line)
 
                 # Check tail
                 if (

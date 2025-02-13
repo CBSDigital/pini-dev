@@ -9,7 +9,6 @@ import logging
 import os
 
 from pini import pipe, icons, qt, dcc
-from pini.qt import QtGui
 from pini.tools import usage
 from pini.utils import wrap_fn, chain_fns, copied_path, get_user, strftime
 
@@ -356,7 +355,7 @@ class PHHeader:
 
         # Add copied shot
         _c_ety = pipe.to_entity(
-            QtGui.QClipboard().text(), job=self.job, catch=True)
+            copied_path(), job=self.job, catch=True)
         if not _c_ety:
             menu.add_label('No copied entity', icon=icons.COPY)
         else:

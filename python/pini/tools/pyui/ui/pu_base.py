@@ -57,7 +57,7 @@ class PUBaseUi:
         """
         self.py_file = cpnt.PUFile(py_file)
         self.name = self.mod.__name__
-        self.settings_file = _SETTING_ROOT.to_file(self.name+'.pkl')
+        self.settings_file = _SETTING_ROOT.to_file(self.name + '.pkl')
 
         self.title = title
         if not self.title and hasattr(self.mod, 'PYUI_TITLE'):
@@ -457,6 +457,6 @@ def _h_print(msg, length=80):
     """
     _time = strftime('[%H:%M:%S]')
     _h_count = length - len(msg) - len(_time) - 3
-    _h_start_n = int((_h_count)/2)
+    _h_start_n = int((_h_count) / 2)
     _h_end_n = _h_count - _h_start_n
-    print(' '.join([_time, '#'*_h_start_n, msg, '#'*_h_end_n]))
+    print(' '.join([_time, '#' * _h_start_n, msg, '#' * _h_end_n]))

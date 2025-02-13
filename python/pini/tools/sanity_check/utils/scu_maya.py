@@ -90,9 +90,10 @@ def _check_for_mutiple_top_nodes(set_, check):
     if len(_top_nodes) == 1:
         return
 
-    _msg = ('Cache set should contain one single node to avoid '
-            'abcs with multiple top nodes - cache_SET contains {:d} '
-            'top nodes').format(len(_top_nodes))
+    _msg = (
+        f'Cache set should contain one single node to avoid '
+        f'abcs with multiple top nodes - cache_SET contains '
+        f'{len(_top_nodes):d} top nodes')
     _fix = None
     _shared_parent = single(
         {to_parent(_node) for _node in _top_nodes}, catch=True)
@@ -141,15 +142,14 @@ def _check_for_overlapping_nodes(set_, check):
     check.write_log(' - longs %s', _longs)
     for _idx, _long in enumerate(_longs[1:], start=1):
         for _o_long in _longs[:_idx]:
-            if _long.startswith(_o_long+'|'):
+            if _long.startswith(_o_long + '|'):
                 _overlaps.append((_long, _o_long))
     for _node, _parent in _overlaps:
         _fix = wrap_fn(cmds.sets, _node, remove=set_)
         check.add_fail(
-            'In set "{}" the top node "{}" is inside top node "{}" '
-            'which will cause abc export to error'.format(
-                set_, to_node(_node), to_node(_parent)),
-            node=_node, fix=_fix)
+            f'In set "{set_}" the top node "{to_node(_node)}" is inside '
+            f'top node "{to_node(_parent)}" which will cause abc export '
+            f'to error', node=_node, fix=_fix)
 
 
 def _fix_shared_parent(parent, nodes, set_, grp):
@@ -252,8 +252,8 @@ def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
 
     _node = pom.cast_node(str(node))
     if _node.is_referenced():
-        _msg = ('Referenced {} {} does not have "{}" '
-                'suffix'.format(type_, _node, suffix))
+        _msg = (f'Referenced {type_} {_node} does not have "{suffix}" '
+                f'suffix')
         return _msg, None, None
 
     # Determine base
@@ -278,8 +278,8 @@ def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
     _suggestion = to_unique(base=_base, suffix=suffix, ignore=ignore)
     _LOGGER.debug(' - SUGGESTION %s', _suggestion)
     _msg = (
-        '{} "{}" does not have "{}" suffix (suggestion: '
-        '"{}")'.format(type_.capitalize(), node, suffix, _suggestion))
+        f'{type_.capitalize()} "{node}" does not have "{suffix}" suffix '
+        f'(suggestion: "{_suggestion}")')
     _fix = wrap_fn(_node.rename, _suggestion)
 
     return _msg, _fix, _suggestion
