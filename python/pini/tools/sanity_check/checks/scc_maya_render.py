@@ -404,9 +404,21 @@ class CheckRenderGlobals(SCMayaCheck):
 
         elif _ren == 'redshift':
             _attrs_to_check += [
-                # ('redshiftOptions.autocrop', True),
                 ('redshiftOptions.exrForceMultilayer', True),
-                ('redshiftOptions.exrMultipart', True)]
+                ('redshiftOptions.exrMultipart', True),
+                ('redshiftOptions.motionBlurEnable', True),
+                ('redshiftOptions.motionBlurFrameDuration', 1),
+                ('redshiftOptions.motionBlurShutterStart', 0.25),
+                ('redshiftOptions.motionBlurShutterEnd', 0.75),
+            ]
+
+        elif _ren == 'vray':
+            _attrs_to_check += [
+                ('vraySettings.cam_mbOn', True),
+                ('vraySettings.cam_mbCameraMotionBlur', True),
+                ('vraySettings.cam_mbDuration', 0.5),
+                ('vraySettings.cam_mbIntervalCenter', 0.5),
+            ]
 
         # Check render format
         _fmt = to_render_extn()

@@ -1,3 +1,11 @@
+## [6.47.1] - Thu 2025-02-13 12:15
+### Summary
+ - Sanity Check:
+    - check render globals apply vray/redshift motion blur settings (eehemann/mkim/rcaulderon),
+### Updated
+ - pini.tools.sanity_check.CheckRenderGlobals vray/redshift apply mblur settings,
+
+
 ## [6.47.0] - Thu 2025-02-13 10:58
 ### Summary
  - Sanity Check:
