@@ -28,10 +28,11 @@ class SCFail:
         self.actions = []
         self.node = node
         self.button_width = button_width
+        self.fix_label = fix_label
         if node:
             self.add_action('Select node', wrap_fn(dcc.select_node, node))
         if fix:
-            self.add_action(fix_label, fix, is_fix=True)
+            self.add_action(self.fix_label, fix, is_fix=True)
 
     @property
     def fix(self):
@@ -41,7 +42,7 @@ class SCFail:
             (fn|None): fix fuction (if any)
         """
         return single([_action for _label, _action, _ in self.actions
-                       if _label == 'Fix'], catch=True)
+                       if _label == self.fix_label], catch=True)
 
     def add_action(self, label, func, is_fix=False, index=None):
         """Append an action to this fail's action list.

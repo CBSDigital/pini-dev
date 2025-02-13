@@ -1,3 +1,11 @@
+## [6.47.2] - Thu 2025-02-13 12:25
+### Summary
+ - Sanity Check:
+    - bugfix not marking fix as default if label has been overridden,
+### Updated
+ - pini.tools.sanity_check.SCFail.fix bugfix not finding fix if label override,
+
+
 ## [6.47.1] - Thu 2025-02-13 12:15
 ### Summary
  - Sanity Check:
