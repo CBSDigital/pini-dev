@@ -13,4 +13,5 @@ from .t_profile import (
     profile, profile_start, profile_stop, PROFILE_FILE, PROFILE_TXT,
     to_profiler, PROFILE_TXT_FMT)
 from .t_tools import (
-    dev_mode, setup_logging, TEST_YML, TEST_DIR, obt_image, set_dev_mode)
+    dev_mode, setup_logging, TEST_YML, TEST_DIR, obt_image, set_dev_mode,
+    clear_print)

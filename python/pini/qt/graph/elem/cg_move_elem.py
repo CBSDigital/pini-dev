@@ -39,7 +39,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         _saveable = saveable
         if _saveable is None:
             _saveable = lock is not True
-        super(CGMoveElem, self).__init__(
+        super().__init__(
             draggable=True, saveable=_saveable, selectable=selectable, **kwargs)
 
         self.local_pos_g_default = self.local_pos_g
@@ -51,7 +51,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         Returns:
             (dict): saveable settings
         """
-        _settings = super(CGMoveElem, self).get_settings()
+        _settings = super().get_settings()
 
         # Get pos
         _pos = list(self.local_pos_g.to_tuple())
@@ -73,7 +73,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         """Reset this element."""
         self.local_pos_g = self.local_pos_g_default
         _LOGGER.info(' - RESET LOCAL POS G %s', self.local_pos_g)
-        super(CGMoveElem, self).reset()
+        super().reset()
 
     def set_move_limits(self, min_=None, max_=None):
         """Set movement limits for this control.
@@ -94,7 +94,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         Args:
             event (QMouseEvent): triggered event
         """
-        _event = super(CGMoveElem, self).mousePressEvent(event)
+        _event = super().mousePressEvent(event)
         if not self.enabled:
             return _event
         if self.lock is True:
@@ -114,7 +114,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         if self.anchor == 'BL':
             _min = self.local_pos_g_min + q_utils.to_p(0, self.size_g.height())
         elif self.anchor == 'C':
-            _min = self.local_pos_g_min + q_utils.to_p(self.size_g/2)
+            _min = self.local_pos_g_min + q_utils.to_p(self.size_g / 2)
         elif self.anchor == 'TL':
             _min = self.local_pos_g_min
         elif self.anchor == 'TR':
@@ -137,7 +137,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         if self.anchor == 'BL':
             _max = self.local_pos_g_max - q_utils.to_p(self.size_g.width(), 0)
         elif self.anchor == 'C':
-            _max = self.local_pos_g_max - q_utils.to_p(self.size_g/2)
+            _max = self.local_pos_g_max - q_utils.to_p(self.size_g / 2)
         elif self.anchor == 'TL':
             _max = self.local_pos_g_max - q_utils.to_p(self.size_g)
         elif self.anchor == 'TR':
@@ -153,7 +153,7 @@ class CGMoveElem(cg_pixmap_elem.CGPixmapElem):
         Args:
             event (QMouseEvent): triggered event
         """
-        _event = super(CGMoveElem, self).mouseMoveEvent(event)
+        _event = super().mouseMoveEvent(event)
 
         if self.lock is True:
             return _event

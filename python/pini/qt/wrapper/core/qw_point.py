@@ -24,11 +24,11 @@ class CPoint(QtCore.QPoint):
             _class = qt.CPointF
         else:
             _class = CPoint
-        return _class(self.x()+other.x(), self.y()+other.y())
+        return _class(self.x() + other.x(), self.y() + other.y())
 
     def __truediv__(self, value):
         from pini import qt
         _class = qt.CPointF if isinstance(value, float) else CPoint
-        return _class(self.x()/value, self.y()/value)
+        return _class(self.x() / value, self.y() / value)
 
     __div__ = __truediv__  # For py2

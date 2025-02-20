@@ -117,6 +117,7 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _LOGGER.info(' - RES %s', _res)
 
     # Find font
+    _name = None
     _names = ["Arial", "Helvetica"]
     for _name in _names:
         _font = qt.to_font(_name)

@@ -118,7 +118,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
         for _idx, _fr in enumerate(fr_range(width)):
             _col.setAlphaF(_fr)
             pix.draw_rect(
-                pos=(pix.width()-offset-_idx, 0),
+                pos=(pix.width() - offset - _idx, 0),
                 size=(1, pix.height()), col=_col,
                 outline=None, anchor='TR', operation='DestinationIn')
 

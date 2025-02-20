@@ -15,7 +15,7 @@ from . import sg_version, sg_utils, sg_handler
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPSubmitter(object):
+class CPSubmitter:
     """Default shotgrid submitter."""
 
     def __init__(
@@ -186,9 +186,8 @@ def _check_video_sg_metadata(video, sg_data=None, force=False):
             if not _sg_data['user']['id'] == _user_data['id']:
                 if not force:
                     qt.ok_cancel(
-                        'Update user {} -> {}?\n\n{}'.format(
-                            _sg_data['user']['name'], _user_data['name'],
-                            video.path),
+                        f'Update user {_sg_data["user"]["name"]} -> '
+                        f'{_user_data["name"]}?\n\n{video.path}',
                         icon=sg_utils.ICON)
                 sg_handler.update(
                     entity_type='Version',
@@ -280,7 +279,7 @@ def _submit_seq(seq, progress, comment=None, burnins=False, force=False):
     assert isinstance(seq, pipe.CPOutputSeq)
 
     # Obtain video
-    _vid_type = seq.template.name+'_mov'
+    _vid_type = seq.template.name + '_mov'
     _out_vid = seq.to_output(_vid_type, extn='mp4')
     assert _out_vid.tag == seq.tag
     progress.set_pc(5)
@@ -361,14 +360,13 @@ def submit(output, comment=None, burnins=False, force=False):
             raise ValueError(_out)
     except _VersionAlreadyExists as _exc:
         _progress.close()
+        _t_stamp = strftime('%H:%M%P on %a %m/%d/%y')
         qt.notify(
-            "This version has already been submitted:"
-            "\n\n{path}\n\n"
-            "Submission was made by {user} at {time}, and cannot be "
-            "overwritten in case it has already been reviewed. Please "
-            "create a new version to submit to shotgrid.".format(
-                user=_exc.user, path=output.path,
-                time=strftime('%H:%M%P on %a %m/%d/%y')),
+            f"This version has already been submitted:"
+            f"\n\n{output.path}\n\n"
+            f"Submission was made by {_exc.user} at {_t_stamp}, and cannot be "
+            f"overwritten in case it has already been reviewed. Please create "
+            f"a new version to submit to shotgrid.",
             icon=sg_utils.ICON, title='Version Exists')
         return
     _progress.set_pc(50)
@@ -386,7 +384,7 @@ def submit(output, comment=None, burnins=False, force=False):
     # Notify
     if not force:
         qt.notify(
-            'Submitted version to shotgrid:\n\n'+_out.path,
+            'Submitted version to shotgrid:\n\n' + _out.path,
             icon=sg_utils.ICON,
             title='Version Submitted')
 

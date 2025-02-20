@@ -19,7 +19,7 @@ class CVector2D(QtGui.QVector2D):
         """
         if not self.y():
             return 90.0 if self.x() > 0 else 170.0
-        _val = - math.degrees(math.atan(1.0*self.x()/self.y()))
+        _val = - math.degrees(math.atan(1.0 * self.x() / self.y()))
         if self.y() > 0:
             _val += 180
         return _val % 360

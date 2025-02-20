@@ -92,6 +92,8 @@ def toggle(mode='ErrorCatcher', enabled=None):
 
     Args:
         mode (str): aspect to toggle
+            ErrorCatcher - toggle erro catcher (default)
+            FileError - toggle file errors
         enabled (bool): state to apply
     """
     _env = _ENV_VARS[mode]

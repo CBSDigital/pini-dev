@@ -24,7 +24,7 @@ def _age_from_nice(nice):
         (int): age in seconds
     """
     if nice.endswith('w') and nice[:-1].isdigit():
-        return int(nice[:-1])*60*60*24*7
+        return int(nice[:-1]) * 60 * 60 * 24 * 7
     raise NotImplementedError(nice)
 
 
@@ -40,7 +40,7 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
     _LOGGER.debug("FLUSH OLD SUBMISSIONS")
 
     _max_age = _age_from_nice(max_age)
-    _root = job.to_subdir('.pini/Deadline/'+get_user())
+    _root = job.to_subdir('.pini/Deadline/' + get_user())
 
     # Find submissions
     _subs = _root.find(type_='d', class_=True, catch_missing=True, depth=1)
@@ -202,7 +202,7 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
         _py = '\n'.join(_lines)
         os.environ['PINI_DEADLINE_INIT_PY'] = _py
         if verbose:
-            print('DEADLINE INIT PY:\n'+_py)
+            print('DEADLINE INIT PY:\n' + _py)
 
 
 def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):

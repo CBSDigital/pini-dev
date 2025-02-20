@@ -22,7 +22,7 @@ def _copy_suggestion_on_fail(func):
         try:
             _result = func(arg)
         except error.FileError as _exc:
-            _LOGGER.info('FAILED %s', arg)
+            _LOGGER.info('FAILED %s %s', arg, _exc)
             _suggestion = suggest_docs(arg)
             copy_text(_suggestion)
             raise _exc
@@ -119,7 +119,7 @@ def _check_def_args(def_, docs):
                     file_=def_.py_file, line_n=def_.line_n + 1)
 
     _args = list(def_.args)
-    if _args and _args[0].name == 'self':
+    if _args and _args[0].name in ('self', 'cls'):
         _args.pop(0)
 
     for _arg in _args:
@@ -213,9 +213,9 @@ def suggest_docs(def_):
     _lines += _header_lines[1:]
 
     # Add args
-    _args = [  # Ignore method self args
+    _args = [  # Ignore method self/cls args
         _arg for _idx, _arg in enumerate(def_.args)
-        if _idx or _arg.name != 'self']
+        if _idx or _arg.name not in ('self', 'cls')]
     if _args:
         _lines += [
             '',

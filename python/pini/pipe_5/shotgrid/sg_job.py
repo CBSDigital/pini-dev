@@ -40,7 +40,7 @@ def create_job(job, force=False):
         raise ValueError(job)
     _LOGGER.debug(' - JOB %s', _job)
     if shotgrid.SGC.find_proj(_job, catch=True):
-        raise RuntimeError('Job already exists on shotgrid '+_job.name)
+        raise RuntimeError('Job already exists on shotgrid ' + _job.name)
 
     # Find layout project (template)
     _lyt = _sg.find_one(
@@ -58,8 +58,7 @@ def create_job(job, force=False):
     _LOGGER.debug(' - DATA %s', _data)
     if not force:
         qt.ok_cancel(
-            'Register job {} on shotgrid?\n\n{}'.format(
-                _job.name, _job.path),
+            f'Register job {_job.name} on shotgrid?\n\n{_job.path}',
             icon=shotgrid.ICON, title='Shotgrid')
 
     return [_sg.create('Project', _data)]

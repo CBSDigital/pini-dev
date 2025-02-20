@@ -252,7 +252,7 @@ def output_clip_sort(output):
 
 
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
-        obj, type_=None, path=None, status=None, dcc_=None,
+        obj, type_=None, path=None, status=None, dcc_=None, user=None,
         entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None, id_=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
@@ -265,6 +265,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         path (str): apply path filter
         status (str): apply status filter
         dcc_ (str): apply dcc filter
+        user (str): apply user filter
         entity (CPEntity): match entity
         asset (str): match asset name
         asset_type (str): match asset type
@@ -326,6 +327,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     if content_type and obj.content_type != content_type:
         return False
     if dcc_ and obj.dcc_ != dcc_:
+        return False
+    if user and obj.user != user:
         return False
     if status and obj.status != status:
         return False

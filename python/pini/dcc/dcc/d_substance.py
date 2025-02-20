@@ -42,7 +42,7 @@ class SubstanceDCC(BaseDCC):
         _file = to_str(file_) or self.cur_file()
         project.save_as(_file, mode=project.ProjectSaveMode.Incremental)
 
-    def get_scene_data(self, key):
+    def get_scene_data(self, key):  # pylint: disable=unused-argument
         """Retrieve data stored with this scene.
 
         Args:

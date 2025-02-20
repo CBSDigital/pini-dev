@@ -21,6 +21,6 @@ def set_node_col(node, col):
     if isinstance(_node, str):
         _node = nuke.toNode(_node)
 
-    _name = qt.CColor(col).name().strip('#')+'ff'
+    _name = qt.CColor(col).name().strip('#') + 'ff'
     _val = int(_name, 16)
     _node['tile_color'].setValue(_val)

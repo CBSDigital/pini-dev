@@ -64,7 +64,7 @@ class CDFarm(base.CFarm):
             _job.write_submission_files()
 
         # Write submit file
-        _sub_file = jobs[0].job_file.to_dir().to_file(name+'.sub')
+        _sub_file = jobs[0].job_file.to_dir().to_file(name + '.sub')
         _sub_lines = ['-SubmitMultipleJobs']
         for _job in jobs:
             _sub_lines += [
@@ -88,7 +88,7 @@ class CDFarm(base.CFarm):
             _LOGGER.debug(' - RESULT %s', _result)
             _job_ids = d_utils.read_job_ids(_result)
         else:
-            _job_ids = [None]*len(jobs)
+            _job_ids = [None] * len(jobs)
         _LOGGER.info(' - JOB IDS %s', _job_ids)
 
         # Apply job ids to jobs

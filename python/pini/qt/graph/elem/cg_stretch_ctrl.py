@@ -18,7 +18,7 @@ class CGStretchCtrl(cg_move_elem.CGMoveElem):
             stretch (CGStretchElem): parent stretch element
             limit (str): how to limit movement
         """
-        super(CGStretchCtrl, self).__init__(
+        super().__init__(
             saveable=False, selectable=False, **kwargs)
         self.stretch = stretch
         self.limit = limit
@@ -36,7 +36,7 @@ class CGStretchCtrl(cg_move_elem.CGMoveElem):
         if self.limit == 'y_min':
             return wrapper.CPointF(
                 self.stretch.rect_g.left(),
-                self.stretch.rect_g.top()+self.stretch.ctrl_w)
+                self.stretch.rect_g.top() + self.stretch.ctrl_w)
         return None
 
     def _to_limit_max(self):
@@ -52,7 +52,7 @@ class CGStretchCtrl(cg_move_elem.CGMoveElem):
         if self.limit == 'y_max':
             return wrapper.CPointF(
                 self.stretch.rect_g.right(),
-                self.stretch.rect_g.bottom()-self.stretch.ctrl_w)
+                self.stretch.rect_g.bottom() - self.stretch.ctrl_w)
         return None
 
     def mousePressEvent(self, event=None):
@@ -65,7 +65,7 @@ class CGStretchCtrl(cg_move_elem.CGMoveElem):
         _min = self._to_limit_min() or self.stretch.local_pos_g_min
         _max = self._to_limit_max() or self.stretch.local_pos_g_max
         self.set_move_limits(min_=_min, max_=_max)
-        _event = super(CGStretchCtrl, self).mousePressEvent(event)
+        _event = super().mousePressEvent(event)
         return _event
 
     def mouseMoveEvent(self, event=None):
@@ -74,18 +74,18 @@ class CGStretchCtrl(cg_move_elem.CGMoveElem):
         Args:
             event (QMouseEvent): triggered event
         """
-        _event = super(CGStretchCtrl, self).mouseMoveEvent(event)
+        _event = super().mouseMoveEvent(event)
         self.stretch.resizeEvent(ctrl=self)
         _LOGGER.debug(' - MOUSE MOVE %s %s', self, self.local_pos_g)
         return _event
 
-    def mouseReleaseEvent(self, event=None, update_selection=True):
+    def mouseReleaseEvent(self, event=None, update_selection=True):  # pylint: disable=unused-argument
         """Triggered by mouse release.
 
         Args:
             event (QMouseEvent): triggered event
             update_selection (bool): N/A (ineffective)
         """
-        _event = super(CGStretchCtrl, self).mouseReleaseEvent(event)
+        _event = super().mouseReleaseEvent(event)
         self.stretch.mouseReleaseEvent(event, update_selection=False)
         return _event

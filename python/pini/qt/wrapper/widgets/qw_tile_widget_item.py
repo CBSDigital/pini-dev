@@ -43,7 +43,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
             filmstrip (File): filmstrip image
             show_pc (bool): display mouse scroll percent
         """
-        super(CTileWidgetItem, self).__init__(data=data)
+        super().__init__(data=data)
 
         self.name = name
         self.col = col
@@ -228,7 +228,7 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
 
             # Draw thumb scroll fraction as percentage
             if self.show_pc and self.t_fr is not None:
-                _text = '{:.00f}%'.format(self.t_fr * 100)
+                _text = f'{self.t_fr * 100:.00f}%'
                 _pos = qt.to_p(pix.center().x(), pix.height() - 3)
                 pix.draw_text(_text, pos=_pos, anchor='B', size=8)
 

@@ -8,7 +8,7 @@ import copy
 from pini.utils import basic_repr, is_pascal
 
 
-class PITool(object):
+class PITool:
     """Container class for a pini tool."""
 
     def __init__(self, name, command, icon=None, label=None):
@@ -22,7 +22,7 @@ class PITool(object):
         """
         self.name = name
         if not is_pascal(self.name):
-            raise ValueError('Name not pascal '+self.name)
+            raise ValueError('Name not pascal ' + self.name)
         self.command = command
         self.icon = icon
         self.label = label or self.name
@@ -69,13 +69,13 @@ class PITool(object):
         Returns:
             (str): tool uid (eg. PI_PiniHelper)
         """
-        return prefix+'_'+self.name
+        return prefix + '_' + self.name
 
     def __repr__(self):
         return basic_repr(self, self.name)
 
 
-class PIDivider(object):
+class PIDivider:
     """Used to represent a divider/separator."""
 
     def __init__(self, name, label=None):
@@ -99,7 +99,7 @@ class PIDivider(object):
         Returns:
             (str): divider uid (eg. PI_Divider1)
         """
-        return prefix+'_'+self.name
+        return prefix + '_' + self.name
 
     def __repr__(self):
         return basic_repr(self, self.name)

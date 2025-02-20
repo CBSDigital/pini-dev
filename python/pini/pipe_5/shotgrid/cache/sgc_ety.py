@@ -226,7 +226,9 @@ class _SGCEntity(sgc_elem.SGCElem):
                 ' - T CMP last="%s" cache="%s"',
                 strftime('nice', _last_t),
                 strftime('nice', _last_t_c))
-            assert _last_t_c == _last_t
+            if _last_t_c != _last_t:
+                raise RuntimeError(
+                    f'Shotgrid returned bad pub files data {self}')
         return _pub_files_c
 
     @sg_cache_to_file

@@ -13,6 +13,15 @@ TEST_YML = TMP.to_file('test.yml')
 TEST_DIR = TMP.to_subdir('PiniTesting')
 
 
+def clear_print(text):
+    """Print the given text with start/end pipes to show spaces.
+
+    Args:
+        text (str): text to print
+    """
+    print('|' + '|\n|'.join(text.split('\n')) + '|')
+
+
 def dev_mode():
     """Check whether pini dev mode is enabled.
 

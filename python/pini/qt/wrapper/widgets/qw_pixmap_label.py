@@ -53,7 +53,7 @@ class CPixmapLabel(QtWidgets.QLabel):
         from pini import qt
 
         if self.margin:
-            _size = pix.size() - qt.to_size(self.margin*2, self.margin*2)
+            _size = pix.size() - qt.to_size(self.margin * 2, self.margin * 2)
         else:
             _size = pix.size()
         pix.draw_rect(col=self.col, pos=(self.margin, self.margin),

@@ -223,7 +223,7 @@ class CDMayaRenderJob(_CDMayaJob):
         """
         _imgs = cmds.workspace(fileRuleEntry='images')
         _imgs_dir = Dir(abs_path(cmds.workspace(expandName=_imgs)))
-        _output_file_path = output_file_path or _imgs_dir.path+'/'
+        _output_file_path = output_file_path or _imgs_dir.path + '/'
         _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
 
         _data = super()._build_job_data(

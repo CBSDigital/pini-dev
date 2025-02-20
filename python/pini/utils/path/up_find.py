@@ -116,7 +116,7 @@ def _read_find_data(
     if not dir_.exists():
         if catch_missing:
             return _data
-        raise OSError('Missing dir '+dir_.path)
+        raise OSError('Missing dir ' + dir_.path)
 
     # Decrement depth
     _depth = depth

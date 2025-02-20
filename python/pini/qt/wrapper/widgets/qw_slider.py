@@ -25,7 +25,7 @@ class CSlider(QtWidgets.QSlider, CBaseWidget):
         Args:
             fraction (float): value to apply
         """
-        _val = round(val_map(fraction, out_max=self.maximum()+0.499999))
+        _val = round(val_map(fraction, out_max=self.maximum() + 0.499999))
         _LOGGER.debug('SET FR %s -> %s', fraction, _val)
         self.setValue(_val)
 

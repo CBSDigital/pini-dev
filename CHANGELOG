@@ -1,3 +1,21 @@
+## [6.48.0] - Thu 2025-02-20 09:38
+### Summary
+ - Pini Helper:
+    - houdini bugfix error on new scene with job fps set (jgarrido),
+### Updated
+ - completed add whitespace around operator,
+ - pini.utils.MetadataFile bugfix cache namespace not applied in home mode,
+ - pini.utils.PyDef catch error on read arg default from import error module,
+ - pini.dcc.HouDCC.set_fps implemented,
+ - pini.dcc.NukeDCC.get_next_namespace implemented ignore,
+ - pini.pipe.passes_filters added user arg,
+ - pini.pipe.shotgrid.SGCEntity._read_pub_files better error on bad sg data,
+ - pini.qt.find_widget_children added filter arg,
+ - pini.qt.progress_bar apply update at least once per sec even if % unchanged to allow cancel,
+ - pini.tools.release.check_file wip batch apply unused module issues,
+ - pini.testing.clear_print added,
+
+
 ## [6.47.2] - Thu 2025-02-13 12:25
 ### Summary
  - Sanity Check:
@@ -9,7 +27,7 @@
 ## [6.47.1] - Thu 2025-02-13 12:15
 ### Summary
  - Sanity Check:
-    - check render globals apply vray/redshift motion blur settings (eehemann/mkim/rcaulderon),
+    - check render globals apply vray/redshift motion blur settings (eehemann/mkim/rcalderon),
 ### Updated
  - pini.tools.sanity_check.CheckRenderGlobals vray/redshift apply mblur settings,
 

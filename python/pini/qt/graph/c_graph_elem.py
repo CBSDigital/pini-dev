@@ -5,7 +5,7 @@
 from pini.utils import single, passes_filter
 
 
-class CGraphElemBase(object):
+class CGraphElemBase:
     """Base class for graph + elements."""
 
     def append_child_elem(self, elem):
@@ -15,7 +15,7 @@ class CGraphElemBase(object):
             elem (CGraphElem): element to adde
         """
         if elem.name in (_elem.name for _elem in self.elems):
-            raise RuntimeError('Name clash '+elem.name)
+            raise RuntimeError('Name clash ' + elem.name)
 
         # Set graph link
         elem.graph = self

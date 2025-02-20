@@ -65,7 +65,7 @@ class CColor(QtGui.QColor):
                 1 - returns target colour
 
         Returns:
-            ():
+            (CColor): new colour
         """
         from pini import qt
         _trg = qt.to_col(col)

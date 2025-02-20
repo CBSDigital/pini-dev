@@ -75,7 +75,7 @@ class C4dDCC(BaseDCC):
         _LOGGER.info('FORCE LOAD %s', _file.path)
         c4d.documents.LoadFile(_file.path)
         c4d.documents.LoadDocument(_file.path, c4d.SCENEFILTER_NONE)
-        self.doc().SetDocumentPath(_file.dir+'/'+_file.base)
+        self.doc().SetDocumentPath(_file.dir + '/' + _file.base)
 
     def get_fps(self):
         """Get current fps.
@@ -134,8 +134,8 @@ class C4dDCC(BaseDCC):
             end (int): end frame
         """
         _fps = self.get_fps()
-        _start_t = c4d.BaseTime(start/_fps)
-        _end_t = c4d.BaseTime(end/_fps)
+        _start_t = c4d.BaseTime(start / _fps)
+        _end_t = c4d.BaseTime(end / _fps)
         if end > self.doc().GetMaxTime().GetFrame(_fps):
             self.doc().SetMaxTime(_end_t)
             self.doc().SetMinTime(_start_t)

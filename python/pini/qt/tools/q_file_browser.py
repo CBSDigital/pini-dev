@@ -35,7 +35,7 @@ def file_browser(root='~', mode='ExistingFile', extn=None, title=None):
     if mode in ('ExistingFile', None):
         _filter = None
         if extn:
-            _filter = '*.{}'.format(extn)
+            _filter = f'*.{extn}'
         _title = title or 'Select File'
         _path, _filter = QtWidgets.QFileDialog.getOpenFileName(
             dir=_root, caption=_title, filter=_filter)

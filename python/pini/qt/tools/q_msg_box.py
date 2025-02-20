@@ -196,8 +196,8 @@ def raise_dialog(
 
     # Avoid farm qt seg fault
     if dcc.batch_mode():
-        lprint('MESSAGE:\n'+msg)
-        raise RuntimeError("Cannot raise dialog in batch mode - "+title)
+        lprint('MESSAGE:\n' + msg)
+        raise RuntimeError("Cannot raise dialog in batch mode - " + title)
     qt.get_application()
 
     # Check format in dev mode

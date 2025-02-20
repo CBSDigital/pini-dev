@@ -46,7 +46,7 @@ class CPixmap(QtGui.QPixmap):
         Returns:
             (float): width/height ratio
         """
-        return float(self.width())/self.height()
+        return float(self.width()) / self.height()
 
     def center(self):
         """Obtain centre point of this pixmap.
@@ -95,7 +95,7 @@ class CPixmap(QtGui.QPixmap):
         _pos = qt.to_p(pos)
         if anchor != 'C':
             _pos = _pos + qt.to_p(1, 1)
-            _rect = qt.to_rect(pos=_pos, size=int(radius*2), anchor=anchor)
+            _rect = qt.to_rect(pos=_pos, size=int(radius * 2), anchor=anchor)
             _pos = _rect.center()
         _col = qt.to_col(col)
         _brush = QtGui.QBrush(_col)
@@ -112,10 +112,10 @@ class CPixmap(QtGui.QPixmap):
         _pnt.setBrush(_brush)
         _pnt.setPen(_pen)
         _pnt.drawEllipse(
-            _pos.x()-radius, _pos.y()-radius, radius*2, radius*2)
+            _pos.x() - radius, _pos.y() - radius, radius * 2, radius * 2)
         _pnt.end()
 
-        return qt.to_rect(pos=_pos, size=int(radius*2), anchor='C')
+        return qt.to_rect(pos=_pos, size=int(radius * 2), anchor='C')
 
     def draw_line(self, point_a, point_b, col='Black', thickness=None,
                   pen=None):
@@ -309,7 +309,7 @@ class CPixmap(QtGui.QPixmap):
         _pnt.setPen(_pen)
         _pnt.setBrush(_brush)
         if operation:
-            _name = 'CompositionMode_'+operation
+            _name = 'CompositionMode_' + operation
             _LOGGER.debug(' - OBT COMP MODE %s "%s"', _pnt, _name)
             _mode = getattr(_pnt, _name, qt.CPainter.CompositionMode_Clear)
             _pnt.setCompositionMode(_mode)
@@ -512,7 +512,7 @@ class CPixmap(QtGui.QPixmap):
             if not force:
                 from pini import qt
                 _result = qt.yes_no_cancel(
-                    'Overwrite existing image?\n\n'+_file.path)
+                    'Overwrite existing image?\n\n' + _file.path)
                 if _result == 'No':
                     return None
             os.remove(_file.path)

@@ -31,7 +31,7 @@ class TerragenDCC(BaseDCC):
         except ConnectionRefusedError:
             return None
 
-    def get_scene_data(self, key):
+    def get_scene_data(self, key):  # pylint: disable=unused-argument
         """Retrieve data stored with this scene.
 
         Args:

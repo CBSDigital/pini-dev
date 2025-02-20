@@ -76,7 +76,7 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
             _base = type(self).__name__.strip('_')
             _LOGGER.debug('BASE %s', _base)
             _idx = len(parent.find_elems(head=_base))
-            _name = _base+str(_idx)
+            _name = _base + str(_idx)
             _LOGGER.debug(' - NAME %s', _name)
         assert '.' not in _name
         self.name = _name
@@ -337,7 +337,7 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         elif self.style == 'dot':
             pix.draw_dot(
                 col=self.col,
-                pos=_rect_p.center(), radius=_rect_p.width()/2,
+                pos=_rect_p.center(), radius=_rect_p.width() / 2,
                 anchor='C', outline=None)
         else:
             raise NotImplementedError(self.style)
@@ -378,10 +378,10 @@ class CGBasicElem(c_graph_elem.CGraphElemBase):
         _rect_p = rect or self.rect_p
 
         if style == 'basic':
-            _offs = _SEL_PEN_W*0.25
+            _offs = _SEL_PEN_W * 0.25
             _rect_p = q_utils.to_rect(
                 pos=_rect_p.topLeft() + q_utils.to_p(_offs, _offs),
-                size=_rect_p.size() - q_utils.to_size(_offs*2))
+                size=_rect_p.size() - q_utils.to_size(_offs * 2))
             pix.draw_rounded_rect(
                 col=_SEL_COL, outline=_SEL_PEN,
                 pos=_rect_p.topLeft(), size=_rect_p.size(), anchor='TL',

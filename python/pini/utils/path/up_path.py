@@ -228,7 +228,7 @@ class Path:
         if self.is_abs():
             return self
         _root = path.Dir(root or os.getcwd())
-        _path = path.abs_path(_root.path+'/'+self.path)
+        _path = path.abs_path(_root.path + '/' + self.path)
         return type(self)(_path)
 
     def to_dir(self, levels=1):
@@ -245,7 +245,7 @@ class Path:
         assert isinstance(levels, int)
 
         if levels > 1:
-            return self.to_dir().to_dir(levels=levels-1)
+            return self.to_dir().to_dir(levels=levels - 1)
 
         _parent = os.path.dirname(self.path)
         _LOGGER.debug(' - PARENT %s', _parent)
@@ -387,7 +387,7 @@ def _get_data_dir():
     _dir = None
     for _ in range(5):
         _dir = os.path.dirname(_dir or __file__)
-    return up_utils.abs_path(_dir+'/data')
+    return up_utils.abs_path(_dir + '/data')
 
 
 DATA_PATH = _get_data_dir()

@@ -9,7 +9,7 @@ from pini.utils import HOME_PATH, Dir
 MASTER = os.environ.get('PINI_PIPE_MASTER', 'disk')
 NAME = os.environ.get('PINI_PIPE_NAME', 'pini')
 GLOBAL_CACHE_ROOT = Dir(
-    os.environ.get('PINI_GLOBAL_CACHE_ROOT', HOME_PATH+'/.pini'))
+    os.environ.get('PINI_GLOBAL_CACHE_ROOT', HOME_PATH + '/.pini'))
 
 SHOTGRID_AVAILABLE = bool(
     os.environ.get('PINI_SG_KEY') and

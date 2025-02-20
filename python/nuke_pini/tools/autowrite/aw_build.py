@@ -97,7 +97,7 @@ def _build_pipeline(node):
         if _allow_edit:
             _opts += ['Manual']
         _label = COL_FMT.format(col=DEFAULT_COL, text=_label)
-        _mode = nuke.Enumeration_Knob(_name+'_mode', _label, _opts)
+        _mode = nuke.Enumeration_Knob(_name + '_mode', _label, _opts)
         node.addKnob(_mode)
 
         _list = nuke.Enumeration_Knob(_name, ' ', [])
@@ -225,7 +225,7 @@ def build(name='main', show_internals=False):
     _pos = None
     _sel = single(nuke.selectedNodes(), catch=True)
     if _sel:
-        _pos = _sel.xpos(), _sel.ypos()+100
+        _pos = _sel.xpos(), _sel.ypos() + 100
 
     # Create node
     _node = nuke.createNode('Write')
@@ -250,7 +250,7 @@ def build(name='main', show_internals=False):
         _node['show_internals'].setValue(True)
 
     # Update
-    _node = aw_node.CAutowrite2(_node)
+    _node = aw_node.CAutowrite(_node)
     _node.update()
     _LOGGER.debug(' - UPDATED NODE')
     _node['file'].setFlag(nuke.READ_ONLY)  # Switch back to Write tab

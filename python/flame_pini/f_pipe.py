@@ -30,7 +30,7 @@ def _find_export_preset(out):
             'ACES 16-bit EXR Sequence - Start Frame 1001 - For Studio.xml')
         _file = File(_path)
         if not _file.exists():
-            raise RuntimeError('Missing preset file '+_file.path)
+            raise RuntimeError('Missing preset file ' + _file.path)
         return _file
 
     _presets_dir = Dir(flame.PyExporter.get_presets_dir(

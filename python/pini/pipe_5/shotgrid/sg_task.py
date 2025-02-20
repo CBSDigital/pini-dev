@@ -1,4 +1,3 @@
-
 """Tools for managing shotgrid tasks."""
 
 import logging
@@ -45,9 +44,9 @@ def create_task(work_dir, force=False):
     }
     if not force:
         qt.ok_cancel(
-            'Register task {} on shotgrid?\n\nStep: {}\nEntity: {}/{}'.format(
-                work_dir.task, _step_data['code'], work_dir.entity.job.name,
-                work_dir.entity.name),
+            f'Register task {work_dir.task} on shotgrid?\n\n'
+            f'Step: {_step_data["code"]}\n'
+            f'Entity: {work_dir.entity.job.name}/{work_dir.entity.name}',
             icon=sg_utils.ICON, title='Shotgrid')
     sg_handler.create('Task', _data)
 

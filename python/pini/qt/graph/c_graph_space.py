@@ -245,7 +245,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         _LOGGER.log(9, 'DRAW GRID %s', _rect_g)
 
         # Draw vertical lines
-        _x_plot_g = int(_rect_g.x()/_step)*_step - _step
+        _x_plot_g = int(_rect_g.x() / _step) * _step - _step
         _LOGGER.log(9, ' - X PLOT START %f', _x_plot_g)
         while _x_plot_g < _rect_g.right() + _step:
             check_heart()
@@ -257,7 +257,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             _x_plot_g += _step
 
         # Draw horizontal lines
-        _y_plot_g = int(_rect_g.y()/_step)*_step - _step
+        _y_plot_g = int(_rect_g.y() / _step) * _step - _step
         _LOGGER.log(9, ' - Y PLOT START %f', _y_plot_g)
         while _y_plot_g < _rect_g.bottom() + _step:
             check_heart()
@@ -330,7 +330,7 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
         # need to make the aspect of the frame rect match the space aspect
         _f_rect_p = self.g2p(_f_rect_g)
         if anchor == 'L':
-            _space_p_left = wrapper.CVector2D(0, self.height()/2)
+            _space_p_left = wrapper.CVector2D(0, self.height() / 2)
             _f_rect_p_left = wrapper.CVector2D(
                 _f_rect_p.left(), _f_rect_p.center().y())
             _d_offset_p = _space_p_left - _f_rect_p_left
@@ -338,7 +338,8 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
                 ' - DELTA OFFSET %s -> %s = %s', _f_rect_p_left, _space_p_left,
                 _d_offset_p)
         elif anchor == 'C':
-            _space_p_ctr = wrapper.CVector2D(self.width()/2, self.height()/2)
+            _space_p_ctr = wrapper.CVector2D(
+                self.width() / 2, self.height() / 2)
             _f_rect_p_ctr = wrapper.CVector2D(_f_rect_p.center())
             _d_offset_p = _space_p_ctr - _f_rect_p_ctr
         else:
@@ -603,10 +604,9 @@ class CGraphSpace(wrapper.CPixmapLabel, c_graph_elem.CGraphElemBase):
             else:
                 _LOGGER.info(
                     ' - UPDATE SIZE %s -> %s', self._prev_size, _cur_size)
-                _pre_ctr_p = q_utils.to_p(self._prev_size/2)
-                _post_ctr_p = q_utils.to_p(_cur_size/2)
+                _pre_ctr_p = q_utils.to_p(self._prev_size / 2)
+                _post_ctr_p = q_utils.to_p(_cur_size / 2)
                 self.offset_p += wrapper.CVector2D(_post_ctr_p - _pre_ctr_p)
-                # self.update_t = time.time()
                 self.redraw()
                 self._prev_size = _cur_size
 

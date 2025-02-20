@@ -37,7 +37,7 @@ def _autofix_code(code):
             # Strip decorators
             _decs = []
             while _lines and _lines[-1] and (
-                    _lines[-1][0] in ('@ ')):
+                    _lines[-1][0] in ('@ ]})')):
                 _decs.insert(0, _lines.pop())
             _LOGGER.debug('   - DECS %s', _decs)
 

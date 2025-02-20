@@ -29,7 +29,7 @@ class HouDCC(BaseDCC):
     VALID_EXTNS = (DEFAULT_EXTN, )
     REF_EXTNS = ('abc', )
 
-    def add_menu_divider(self, parent, name, verbose=0):
+    def add_menu_divider(self, parent, name, verbose=0):  # pylint: disable=unused-argument
         """Print xml to declare a separtor item in MainMenuCommon.xml file.
 
         Args:
@@ -45,7 +45,7 @@ class HouDCC(BaseDCC):
 
         return _xml
 
-    def add_menu_item(self, parent, command, image, label, name, verbose=0):
+    def add_menu_item(self, parent, command, image, label, name, verbose=0):  # pylint: disable=unused-argument
         """Print xml to declare a menu item in MainMenuCommon.xml file.
 
         Args:
@@ -159,7 +159,7 @@ class HouDCC(BaseDCC):
         """
         return hou.ui.mainQtWindow()
 
-    def get_next_namespace(self, base, ignore=(), mode='asset'):
+    def get_next_namespace(self, base, ignore=(), mode='asset'):  # pylint: disable=unused-argument
         """Get next available namespace.
 
         Args:
@@ -167,9 +167,9 @@ class HouDCC(BaseDCC):
             ignore (str list): list of namespaces to ignore
             mode (str): how to allocate next namespace
         """
-        _name = 'import_'+base
+        _name = 'import_' + base
         _idx = 1
-        while hou.node('/obj/'+_name) or _name in ignore:
+        while hou.node('/obj/' + _name) or _name in ignore:
             check_heart()
             _name = f'import_{base}_{_idx:02d}'
             _idx += 1
@@ -244,6 +244,14 @@ class HouDCC(BaseDCC):
             work (CPWork): work file to apply
         """
         hou.putenv('JOB', work.job.path)
+
+    def set_fps(self, fps):
+        """Set frame rate.
+
+        Args:
+            fps (float): frame rate to apply
+        """
+        hou.setFps(fps)
 
     def set_range(self, start, end):
         """Set current frame range.

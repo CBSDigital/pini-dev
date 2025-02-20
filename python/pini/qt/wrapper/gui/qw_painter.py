@@ -45,14 +45,14 @@ class CPainter(QtGui.QPainter):
         _bearing = _pos.bearing()
         _bearing_dash = _bearing - rotate
         _pos_dash = qt.CPointF(
-            round(_len*math.cos(math.radians(_bearing_dash))),
-            round(_len*math.sin(math.radians(_bearing_dash))))
+            round(_len * math.cos(math.radians(_bearing_dash))),
+            round(_len * math.sin(math.radians(_bearing_dash))))
         _offs = _pos_dash - _pos
 
         # Apply rotation
         self.rotate(rotate)
         _rect = qt.to_rect(_offs + qt.to_p(0, 1) + rect.topLeft(),
-                           qt.to_size(rect.width(), rect.height()-1))
+                           qt.to_size(rect.width(), rect.height() - 1))
 
         return _rect
 
@@ -128,31 +128,31 @@ class CPainter(QtGui.QPainter):
         _w, _h = self.window().width(), self.window().height()
 
         if anchor == 'BL':
-            _rect = QtCore.QRect(_x, 0, _w-_x+1, _y+1)
+            _rect = QtCore.QRect(_x, 0, _w - _x + 1, _y + 1)
             _align = Qt.AlignLeft | Qt.AlignBottom
         elif anchor == 'BR':
-            _rect = QtCore.QRect(0, 0, _x+1, _y+1)
+            _rect = QtCore.QRect(0, 0, _x + 1, _y + 1)
             _align = Qt.AlignRight | Qt.AlignBottom
         elif anchor == 'B':
-            _rect = QtCore.QRect(0, 0, 2*_x+1, _y+1)
+            _rect = QtCore.QRect(0, 0, 2 * _x + 1, _y + 1)
             _align = Qt.AlignHCenter | Qt.AlignBottom
         elif anchor == 'C':
-            _rect = QtCore.QRect(0, 0, 2*_x+1, 2*_y+1)
+            _rect = QtCore.QRect(0, 0, 2 * _x + 1, 2 * _y + 1)
             _align = Qt.AlignHCenter | Qt.AlignVCenter
         elif anchor == 'L':
-            _rect = QtCore.QRect(_x, 0, _w+1, 2*_y+1)
+            _rect = QtCore.QRect(_x, 0, _w + 1, 2 * _y + 1)
             _align = Qt.AlignVCenter | Qt.AlignLeft
         elif anchor == 'R':
-            _rect = QtCore.QRect(0, 0, _x+1, 2*_y+1)
+            _rect = QtCore.QRect(0, 0, _x + 1, 2 * _y + 1)
             _align = Qt.AlignRight | Qt.AlignVCenter
         elif anchor in ('T', 'TC'):
-            _rect = QtCore.QRect(0, _y, 2*_x+1, _h+1)
+            _rect = QtCore.QRect(0, _y, 2 * _x + 1, _h + 1)
             _align = Qt.AlignHCenter | Qt.AlignTop
         elif anchor == 'TL':
-            _rect = QtCore.QRect(_x, _y, _w+1, _h+1)
+            _rect = QtCore.QRect(_x, _y, _w + 1, _h + 1)
             _align = Qt.AlignLeft | Qt.AlignTop
         elif anchor == 'TR':
-            _rect = QtCore.QRect(0, _y, _x+1, _h-_y+1)
+            _rect = QtCore.QRect(0, _y, _x + 1, _h - _y + 1)
             _align = Qt.AlignRight | Qt.AlignTop
         else:
             raise ValueError(f'Unhandled anchor: {anchor}')
@@ -190,13 +190,13 @@ class CPainter(QtGui.QPainter):
         for _idx, _line in enumerate(_lines):
 
             # Set offset
-            _offs = _idx*line_h
+            _offs = _idx * line_h
             if anchor.startswith('B'):
                 _offs *= -1
             elif anchor in 'LCR':
-                _offs -= 0.5 * line_h * (len(_lines)-1)
+                _offs -= 0.5 * line_h * (len(_lines) - 1)
 
             # Draw line
-            _kwargs['pos'] = qt.to_p(pos) + qt.Y_AXIS*_offs
+            _kwargs['pos'] = qt.to_p(pos) + qt.Y_AXIS * _offs
             _kwargs['text'] = _line
             self.draw_text(**_kwargs)

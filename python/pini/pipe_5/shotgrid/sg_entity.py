@@ -46,9 +46,9 @@ def set_entity_range(entity, range_, force=False):
     from .. import shotgrid
     if not force:
         qt.ok_cancel(
-            'Are you sure you want to update the shotgrid range this {} '
-            'to {}-{}?\n\n{}'.format(
-                entity.profile, range_[0], range_[1], entity.path),
+            f'Are you sure you want to update the shotgrid range this '
+            f'{entity.profile} to {range_[0]}-{range_[1]}?\n\n'
+            f'{entity.path}',
             icon=sg_utils.ICON, title='Update Range')
     _ety_s = shotgrid.SGC.find_entity(entity)
     sg_handler.update(
@@ -99,7 +99,7 @@ def _create_asset(asset, force=False):
         'TaskTemplate',
         [('code', 'is', ASSET_TEMPLATE)]))
     _data = {
-        "project": shotgrid.to_job_data(asset.job),
+        "project": shotgrid.SGC.find_proj(asset.job).to_entry(),
         "sg_asset_type": _type,
         "code": asset.name,
         "task_template": _tmpl,
@@ -107,8 +107,8 @@ def _create_asset(asset, force=False):
 
     if not force:
         qt.ok_cancel(
-            'Register asset {}/{}/{} in shotgrid?\n\n{}'.format(
-                asset.job.name, asset.asset_type, asset.name, asset.path),
+            f'Register asset {asset.job.name}/{asset.asset_type}/{asset.name} '
+            f'in shotgrid?\n\n{asset.path}',
             icon=shotgrid.ICON, title='Shotgrid')
 
     return [_sg.create("Asset", _data)]
@@ -126,21 +126,24 @@ def _create_shot(shot, force=False):
     """
     from pini.pipe import shotgrid
 
-    _sg = shotgrid.to_handler()
-    _task_tmpl = single(_sg.find(
-        'TaskTemplate',
-        [('code', 'is', SHOT_TEMPLATE)]))
+    _proj = shotgrid.SGC.find_proj(shot.job)
+    _seq = shotgrid.find_one(
+        'Sequence', job=shot.job,
+        filters=[('code', 'is', shot.sequence)])
+    _task_tmpl = shotgrid.find_one(
+        'TaskTemplate', [('code', 'is', SHOT_TEMPLATE)])
+
     _data = {
-        "project": shotgrid.to_job_data(shot.job),
-        "sg_sequence": shotgrid.to_sequence_data(shot.to_sequence()),
+        "project": _proj.to_entry(),
+        "sg_sequence": _seq,
         "code": shot.name,
         "task_template": _task_tmpl,
     }
 
     if not force:
         qt.ok_cancel(
-            'Register shot {}/{}/{} in shotgrid?\n\n{}'.format(
-                shot.job.name, shot.sequence, shot.name, shot.path),
+            f'Register shot {shot.job.name}/{shot.sequence}/{shot.name} '
+            f'in shotgrid?\n\n{shot.path}',
             icon=shotgrid.ICON, title='Shotgrid')
 
-    return [_sg.create("Shot", _data)]
+    return [shotgrid.create("Shot", _data)]

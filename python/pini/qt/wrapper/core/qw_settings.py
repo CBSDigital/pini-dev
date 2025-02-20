@@ -152,7 +152,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
         elif isinstance(widget, QtWidgets.QSplitter):
             _width = widget.width()
             _val = float(_val or 0.0)
-            _sizes = _val*_width, _width-_val*_width
+            _sizes = _val * _width, _width - _val * _width
             widget.setSizes(_sizes)
             _LOGGER.debug(
                 '   - APPLY SPLITTER w=%d, %s %s', _width, _val, _sizes)
@@ -236,7 +236,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
         if not _name:
             _LOGGER.debug(' - NO NAME')
             return
-        _key = 'widgets/'+_name
+        _key = 'widgets/' + _name
 
         # Read current widget value
         _LOGGER.debug(' - CHECKING %s', _name)
@@ -256,7 +256,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
             _sizes = widget.sizes()
             if not sum(_sizes):
                 return
-            _val = 1.0*_sizes[0]/sum(_sizes)
+            _val = 1.0 * _sizes[0] / sum(_sizes)
         elif isinstance(widget, QtWidgets.QTabWidget):
             _val = widget.currentIndex()
         elif isinstance(widget, QtWidgets.QTextEdit):

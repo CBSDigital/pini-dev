@@ -178,7 +178,13 @@ def _ast_attr_to_val(attr, catch=False):
         check_heart()
         _parent = getattr(_parent, _path.pop(0))
         _LOGGER.info(' - PARENT %s', _parent)
-    return getattr(_parent, single(_path))
+    try:
+        return getattr(_parent, single(_path))
+    except AttributeError as _exc:
+        _LOGGER.info(' - FAILED TO READ ATTR VAL %s', attr)
+        if catch:
+            return None
+        raise _exc
 
 
 def _ast_arg_to_name(arg):

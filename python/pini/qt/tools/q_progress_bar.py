@@ -100,6 +100,7 @@ class _ProgressDialog(QtWidgets.QDialog):
 
         self.counter = 0
         self.last_update = time.time()
+        self.last_redraw = time.time()
         self.start = time.time()
         self.durs = []
         self.info = ''
@@ -146,7 +147,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         """Apply position."""
         from pini import qt
         if self._pos:
-            _pos = self._pos - qt.to_p(self.size())/2
+            _pos = self._pos - qt.to_p(self.size()) / 2
         else:
             _pos = _get_next_pos(stack_key=self.stack_key)
         if _pos:
@@ -192,12 +193,11 @@ class _ProgressDialog(QtWidgets.QDialog):
         _avg_dur = sum(_durs) / len(_durs)
         _etr = _avg_dur * _n_remaining
         _eta = time.time() + _etr
+        _eta_s = time.strftime('%H:%M:%S', to_time_t(_eta))
         dprint(
-            'Beginning {}/{}, frame_t={:.02f}s, etr={:.00f}s, '
-            'eta={}{}'.format(
-                self.counter, len(self.items), _avg_dur, _etr,
-                time.strftime('%H:%M:%S', to_time_t(_eta)),
-                self.info))
+            f'Beginning {self.counter}/{len(self.items)}, '
+            f'frame_t={_avg_dur:.02f}s, etr={_etr:.00f}s, '
+            f'eta={_eta_s}{self.info}')
 
     def set_pc(self, percent):
         """Set percent complete.
@@ -225,6 +225,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         """Update interface."""
         from pini import qt
         qt.get_application().processEvents()
+        self.last_redraw = time.time()
 
     def deleteLater(self):
         """Garbage collection safe wrapper for deleteLater."""
@@ -262,8 +263,10 @@ class _ProgressDialog(QtWidgets.QDialog):
             self._finalise()
             raise qt.DialogCancelled
 
-        # Apply update
-        if self.cur_pc != self._display_pc:
+        # Apply update - if last redraw was more than a second ago still apply
+        # update so that cancelling progress bar still registers in long lists
+        _t_since_redraw = time.time() - self.last_redraw
+        if self.cur_pc != self._display_pc or _t_since_redraw > 1:
             self.progress_bar.setValue(self.cur_pc)
             if update_ui:
                 self.update_ui()
@@ -272,12 +275,12 @@ class _ProgressDialog(QtWidgets.QDialog):
         # Increment item
         self.counter += 1
         try:
-            _result = self.items[self.counter-1]
-        except IndexError:
+            _result = self.items[self.counter - 1]
+        except IndexError as _exc:
             self.close()
             self._finalise()
             if self.raise_stop:
-                raise StopIteration
+                raise StopIteration from _exc
             return None
 
         _dur = time.time() - self.last_update

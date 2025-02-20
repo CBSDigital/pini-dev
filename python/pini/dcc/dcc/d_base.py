@@ -408,12 +408,12 @@ class BaseDCC:
         """
         _file = File(file_)
         if _file.extn.lower() not in self.VALID_EXTNS:
-            raise RuntimeError('Invalid file '+_file.path)
+            raise RuntimeError('Invalid file ' + _file.path)
         if lazy and _file.path == self.cur_file():
             _LOGGER.info('Lazy load - scene currently open')
             return
         if not _file.exists():
-            raise OSError('File not found '+_file.path)
+            raise OSError('File not found ' + _file.path)
         if not force:
             _save = _file.path != self.cur_file()
             _LOGGER.debug('HANDLE UNSAVED CHANGES save=%d', _save)
@@ -580,7 +580,7 @@ class BaseDCC:
             (int list): all frames in timeline
         """
         assert mode == 'Timeline'
-        return list(range(self.t_start(int), self.t_end(int)+1))
+        return list(range(self.t_start(int), self.t_end(int) + 1))
 
     def t_range(self, class_=float, expand=0):
         """Get start/end frames.
@@ -593,8 +593,8 @@ class BaseDCC:
         Returns:
             (float, float): start/end time
         """
-        return (self.t_start(class_=class_)-expand,
-                self.t_end(class_=class_)+expand)
+        return (self.t_start(class_=class_) - expand,
+                self.t_end(class_=class_) + expand)
 
     def t_start(self, class_=float):
         """Get start frame.
@@ -646,7 +646,7 @@ class BaseDCC:
                 return _major, _minor
             return _major, _minor, _patch
         if type_ is float:
-            return _major+0.1*_minor
+            return _major + 0.1 * _minor
         if type_ is str:
             if _patch is None:
                 return f'{_major:d}.{_minor:d}'

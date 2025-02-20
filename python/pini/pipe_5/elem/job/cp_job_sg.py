@@ -103,12 +103,7 @@ class CPJobSG(cp_job_base.CPJobBase):
         Returns:
             (str list): asset type paths
         """
-        _tmpl = self.find_template('entity_path', profile='asset')
-        _tmpl = _tmpl.crop_to_token('asset_type', name='asset_type')
-        _names = sorted({_asset.asset_type for _asset in self.sg_proj.assets})
-        return [
-            _tmpl.format(job_path=self.path, asset_type=_name)
-            for _name in _names]
+        raise NotImplementedError
 
     def _find_sequence_paths(self):
         """Find paths to all sequences.

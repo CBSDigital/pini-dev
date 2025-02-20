@@ -191,7 +191,7 @@ def _build_sanity_check():
     for _task in ['model', 'rig', 'lookdev', 'anim', 'lighting']:
         _name = _task.capitalize()
         _sc_task = PITool(
-            name='SanityCheck'+_name, command='\n'.join([
+            name='SanityCheck' + _name, command='\n'.join([
                 'from pini.tools import sanity_check',
                 f'sanity_check.launch_ui(task="{_task}")']),
             label=f'Launch {_name} Sanity Check',

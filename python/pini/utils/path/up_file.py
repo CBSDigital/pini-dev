@@ -578,17 +578,20 @@ class MetadataFile(File):
         Returns:
             (str): cache format
         """
-        _ns_dir = f'{self.cache_namespace}/' if self.cache_namespace else ''
-        _suffix = f'{_ns_dir}{self.base}_{{func}}.{self.cache_file_extn}'
+        _filename = f'{self.base}_{{func}}.{self.cache_file_extn}'
         if self.cache_loc == 'adjacent':
-            return f'{self.dir}/.pini/{_suffix}'
+            _ns_dir = f'{self.cache_namespace}/' if self.cache_namespace else ''
+            return f'{self.dir}/.pini/{_ns_dir}{_filename}'
         if self.cache_loc == 'home':
             from pini.utils import HOME
             assert self.path[1] == ':'
             assert self.path[2] == '/'
             _drive = self.path[0]
-            return HOME.to_file(
-                f'.pini/cache/{_drive}/{self.dir[3:]}/{_suffix}').path
+            _dir = HOME.to_subdir('.pini/cache')
+            if self.cache_namespace:
+                _dir = _dir.to_subdir(self.cache_namespace)
+            return _dir.to_file(
+                f'{_drive}/{self.dir[3:]}/{_filename}').path
         raise NotImplementedError(self.cache_loc)
 
     @property

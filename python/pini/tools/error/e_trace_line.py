@@ -3,7 +3,7 @@
 from pini.utils import abs_path, File
 
 
-class PETraceLine(object):
+class PETraceLine:
     """Represents a line of a traceback."""
 
     def __init__(self, file_, line_n, func, code):

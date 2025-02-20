@@ -81,7 +81,9 @@ class PRTestFile(PyFile):
 
             # Read tests
             for _def in _p_class.find_defs():
-                if _def.clean_name == 'setUp':
+                if (
+                        _def.clean_name == 'setUp' or
+                        _def.internal):
                     continue
                 if not passes_filter(_def.clean_name, filter_):
                     continue

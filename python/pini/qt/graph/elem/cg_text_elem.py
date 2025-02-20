@@ -51,7 +51,7 @@ class CGTextElem(cg_move_elem.CGMoveElem):
             _metrics = QtGui.QFontMetrics(_font)
             _size = _metrics.size(0, text) + q_utils.to_size(2)
 
-        super(CGTextElem, self).__init__(
+        super().__init__(
             pos=_pos, size=_size, text_size=text_size, saveable=False,
             parent=parent, lock=lock, anchor=anchor, selectable=selectable,
             **kwargs)
@@ -68,7 +68,7 @@ class CGTextElem(cg_move_elem.CGMoveElem):
         pix.fill(self.bg_col)
         _size = self.g2p(self.text_size_g)
         if self.anchor == 'B':
-            _pos = q_utils.to_p(pix.width()/2, pix.height())
+            _pos = q_utils.to_p(pix.width() / 2, pix.height())
         elif self.anchor == 'BL':
             _pos = q_utils.to_p(0, pix.height())
         elif self.anchor == 'C':

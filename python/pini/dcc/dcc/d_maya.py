@@ -305,7 +305,7 @@ class MayaDCC(BaseDCC):
                     _base.strip(':') not in ignore):
                 return _base
             return self.get_next_namespace(
-                _base+'_', mode='asset', ignore=ignore)
+                _base + '_', mode='asset', ignore=ignore)
 
         raise ValueError(mode)
 
@@ -330,7 +330,7 @@ class MayaDCC(BaseDCC):
         _data = single(cmds.fileInfo(key, query=True), catch=True)
         if not _data:
             return None
-        _type_key = '_TYPE_'+key
+        _type_key = '_TYPE_' + key
         _type = single(cmds.fileInfo(_type_key, query=True), catch=True)
         if _type == 'bool':
             _data = {'True': True, 'False': False}[_data]
@@ -447,7 +447,8 @@ class MayaDCC(BaseDCC):
         """
         cmds.setAttr("defaultResolution.width", width)
         cmds.setAttr("defaultResolution.height", height)
-        cmds.setAttr("defaultResolution.deviceAspectRatio", 1.0*width/height)
+        cmds.setAttr(
+            "defaultResolution.deviceAspectRatio", 1.0 * width / height)
 
     def set_scene_data(self, key, val):
         """Store data within this scene.
@@ -457,7 +458,7 @@ class MayaDCC(BaseDCC):
             val (any): value of data to store
         """
         _type = type(val).__name__
-        _type_key = '_TYPE_'+key
+        _type_key = '_TYPE_' + key
         _LOGGER.debug('SET SCENE DATA %s %s (%s/%s)',
                       key, val, _type, _type_key)
         cmds.fileInfo(key, val)
@@ -487,7 +488,7 @@ class MayaDCC(BaseDCC):
             _start = int(cmds.getAttr('defaultRenderGlobals.startFrame'))
             _end = int(cmds.getAttr('defaultRenderGlobals.endFrame'))
             _step = int(cmds.getAttr('defaultRenderGlobals.byFrameStep'))
-            return list(range(_start, _end+1, _step))
+            return list(range(_start, _end + 1, _step))
         return super().t_frames()
 
     def t_start(self, class_=float):

@@ -31,7 +31,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             ctrl_bevel (float): bevel for controls
             lock (str): axis lock (H/V)
         """
-        super(CGStretchElem, self).__init__(lock=lock, **kwargs)
+        super().__init__(lock=lock, **kwargs)
 
         self.ctrl_col = self.col.whiten(0.5)
 
@@ -45,7 +45,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             if lock in ['H', 'V']:
                 self.ctrl_offs = 0
             else:
-                self.ctrl_offs = self.ctrl_w*1.5
+                self.ctrl_offs = self.ctrl_w * 1.5
         self.ctrl_bevel = ctrl_bevel
         if self.ctrl_bevel is None:
             if lock in ['H', 'V']:
@@ -84,8 +84,8 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             size=self._to_horiz_ctrl_size(),
             enabled=self.enabled,
             parent=self.graph, anchor='TL', col=col, bevel=1,
-            limit='x_max', level=self.level+1, lock='V',
-            name=self.name+'Left', stretch=self)
+            limit='x_max', level=self.level + 1, lock='V',
+            name=self.name + 'Left', stretch=self)
 
     def _build_right_ctrl(self, col='Transparent', class_=None):
         """Build right stretch control.
@@ -103,8 +103,8 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             size=self._to_horiz_ctrl_size(),
             enabled=self.enabled,
             parent=self.graph, anchor='TR', col=col, bevel=1,
-            limit='x_min', level=self.level+1, lock='V',
-            name=self.name+'Right', stretch=self)
+            limit='x_min', level=self.level + 1, lock='V',
+            name=self.name + 'Right', stretch=self)
 
     def _build_top_ctrl(self, col='Transparent', class_=None):
         """Build top stretch control.
@@ -122,8 +122,8 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             size=self._to_vert_ctrl_size(),
             enabled=self.enabled,
             parent=self.graph, anchor='TL', col=col, bevel=1,
-            limit='y_max', level=self.level+1, lock='H',
-            name=self.name+'Top', stretch=self)
+            limit='y_max', level=self.level + 1, lock='H',
+            name=self.name + 'Top', stretch=self)
 
     def _build_bottom_ctrl(self, col='Transparent', class_=None):
         """Build bottom stretch control.
@@ -141,8 +141,8 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             size=self._to_vert_ctrl_size(),
             enabled=self.enabled,
             parent=self.graph, anchor='BL', col=col, bevel=1,
-            limit='y_min', level=self.level+1, lock='H',
-            name=self.name+'Bottom', stretch=self)
+            limit='y_min', level=self.level + 1, lock='H',
+            name=self.name + 'Bottom', stretch=self)
 
     def _to_bottom_ctrl_pos(self):
         """Obtain bottom control position.
@@ -188,7 +188,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         """
         return wrapper.CSizeF(
             self.ctrl_w,
-            self.rect_g.height() - self.ctrl_offs*2)
+            self.rect_g.height() - self.ctrl_offs * 2)
 
     def _to_vert_ctrl_size(self):
         """Obtain size for vertical controls.
@@ -197,7 +197,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             (QSizeF): size
         """
         return wrapper.CSizeF(
-            self.rect_g.width() - self.ctrl_offs*2,
+            self.rect_g.width() - self.ctrl_offs * 2,
             self.ctrl_w)
 
     def apply_stretch_update(self, ctrl=None):
@@ -239,7 +239,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             raise ValueError(ctrl)
 
         _pos = wrapper.CPointF(_left, _top)
-        _size = wrapper.CSizeF(_right-_left, _bottom-_top)
+        _size = wrapper.CSizeF(_right - _left, _bottom - _top)
         _rect = QtCore.QRectF(_pos, _size)
         if self.anchor == 'C':
             self.local_pos_g = wrapper.CPointF(_rect.center())
@@ -279,25 +279,25 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             _pos_g = self.left_ctrl.rect_g.topRight() - self.rect_g.topLeft()
             self._draw_rounded_rect(
                 pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
-                size=self._to_horiz_ctrl_size()*wrapper.CSizeF(2, 1),
+                size=self._to_horiz_ctrl_size() * wrapper.CSizeF(2, 1),
                 col=self.left_ctrl_col or _col, anchor='TR')
         if self.right_ctrl and not self.right_ctrl.is_tiny():
             _pos_g = self.right_ctrl.rect_g.topLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
                 pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
-                size=self._to_horiz_ctrl_size()*wrapper.CSizeF(2, 1),
+                size=self._to_horiz_ctrl_size() * wrapper.CSizeF(2, 1),
                 col=self.right_ctrl_col or _col, anchor='TL')
         if self.top_ctrl and not self.top_ctrl.is_tiny():
             _pos_g = self.top_ctrl.rect_g.bottomLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
                 pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
-                size=self._to_vert_ctrl_size()*wrapper.CSizeF(1, 2),
+                size=self._to_vert_ctrl_size() * wrapper.CSizeF(1, 2),
                 col=_col, anchor='BL')
         if self.bottom_ctrl and not self.bottom_ctrl.is_tiny():
             _pos_g = self.bottom_ctrl.rect_g.topLeft() - self.rect_g.topLeft()
             self._draw_rounded_rect(
                 pix=pix, pos=_pos_g, bevel=self.ctrl_bevel,
-                size=self._to_vert_ctrl_size()*wrapper.CSizeF(1, 2),
+                size=self._to_vert_ctrl_size() * wrapper.CSizeF(1, 2),
                 col=_col, anchor='TL')
 
     # def _draw_children(self, pix):
@@ -316,7 +316,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
     #             _child, _child.visible,
     #             self.rect_g.contains(_child.rect_g),
     #             self.rect_g.intersects(_child.rect_g))
-    #     super(CGStretchElem, self)._draw_children(pix)
+    #     super()._draw_children(pix)
 
     def get_settings(self):
         """Read settings for this element.
@@ -324,7 +324,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         Returns:
             (dict): saveable settings
         """
-        _settings = super(CGStretchElem, self).get_settings()
+        _settings = super().get_settings()
 
         # Get size
         _size = list(self.size_g.to_tuple())
@@ -344,7 +344,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
 
     def reset(self):
         """Reset this element."""
-        super(CGStretchElem, self).reset()
+        super().reset()
         self.size_g = self.size_g_default
         self.apply_stretch_update()
 
@@ -355,7 +355,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             min_ (QPointF): minimum position
             max_ (QPointF): maximum position
         """
-        super(CGStretchElem, self).set_move_limits(min_=min_, max_=max_)
+        super().set_move_limits(min_=min_, max_=max_)
         for _ctrl in self.ctrls:
             _ctrl.set_move_limits(min_=min_, max_=max_)
 
@@ -365,7 +365,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         Args:
             enabled (bool): enabled state
         """
-        super(CGStretchElem, self).set_enabled(enabled)
+        super().set_enabled(enabled)
         for _ctrl in self.ctrls:
             _ctrl.enabled = enabled
 
@@ -375,7 +375,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
         Args:
             event (QMouseEvent): triggered event
         """
-        _event = super(CGStretchElem, self).mouseMoveEvent(event)
+        _event = super().mouseMoveEvent(event)
         self.apply_stretch_update()
         return _event
 
@@ -387,7 +387,7 @@ class CGStretchElem(cg_move_elem.CGMoveElem):
             ctrl (CGStretchCtrl): control causing resize
             block_callback (bool): block move callbacks
         """
-        super(CGStretchElem, self).resizeEvent(event=event)
+        super().resizeEvent(event=event)
         self.apply_stretch_update(ctrl=ctrl)
 
         if not block_callback and self.move_callback:

@@ -25,7 +25,7 @@ class CGPixmapElem(cg_basic_elem.CGBasicElem):
         Args:
             label (str): element label
         """
-        super(CGPixmapElem, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.label = label
 
     def g2p(self, obj):
@@ -40,8 +40,8 @@ class CGPixmapElem(cg_basic_elem.CGBasicElem):
         _obj = obj
         if isinstance(obj, (QtCore.QPointF, QtCore.QPoint)):
             return wrapper.CPointF(
-                self.graph.zoom*_obj.x(),
-                self.graph.zoom*_obj.y())
+                self.graph.zoom * _obj.x(),
+                self.graph.zoom * _obj.y())
         return self.graph.g2p(_obj)
 
     def _draw_bg(self, pix, rect=None):
@@ -89,7 +89,8 @@ class CGPixmapElem(cg_basic_elem.CGBasicElem):
         if self.label:
             _col = _DISABLED_TEXT_COL if not self.enabled else self.text_col
             self._draw_text(
-                pix=_pix, text=self.label, pos=_size_g/2, anchor='C', col=_col)
+                pix=_pix, text=self.label, pos=_size_g / 2,
+                anchor='C', col=_col)
 
         return _pix
 

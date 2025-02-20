@@ -102,7 +102,7 @@ class CUiBase:
         # from designer to nuke
         _file = File(self.ui_file)
         self._hbox_size_policies_yml = _file.to_file(
-            base=_file.base+'_hsp', extn='yml', hidden=True)
+            base=_file.base + '_hsp', extn='yml', hidden=True)
         if dcc.NAME == 'nuke':
             self.fix_hbox_size_policies()
 
@@ -190,7 +190,7 @@ class CUiBase:
         Args:
             fps (float): frame rate of timer event
         """
-        _ms = int(1000/fps)
+        _ms = int(1000 / fps)
         _LOGGER.info('START TIMER fps=%.01f ms=%d', fps, _ms)
         self.timer = self.startTimer(_ms)
 
@@ -365,7 +365,7 @@ class CUiBase:
             _widget_name = _context.__name__[len('_context__'):]
             _widget = getattr(self.ui, _widget_name, None)
             if not _widget:
-                raise RuntimeError('Missing context widget '+_widget_name)
+                raise RuntimeError('Missing context widget ' + _widget_name)
 
             # Connnect context callback
             _widget.customContextMenuRequested.connect(
@@ -469,7 +469,7 @@ class CUiBase:
             (QSettings): settings
         """
         from pini import qt
-        _dcc = '_'+dcc.NAME if dcc.NAME else ''
+        _dcc = '_' + dcc.NAME if dcc.NAME else ''
         _settings_file = self._settings_file or abs_path(
             f'{SETTINGS_DIR}/{self._settings_name}{_dcc}.ini')
         File(_settings_file).touch()  # Check settings writable
@@ -729,8 +729,8 @@ class _UiHandler:
             return single([
                 _widget for _widget in self.find_widgets()
                 if _widget.objectName().lower() == name.lower()], catch=catch)
-        except ValueError:
-            raise ValueError('Failed to find widget '+name)
+        except ValueError as _exc:
+            raise ValueError('Failed to find widget ' + name) from _exc
 
     @_rebuild_ui_on_error
     def find_widgets(self, filter_=None, class_=None):
@@ -901,7 +901,7 @@ def _fix_icon_paths(ui_file, force=False):
                 _path = f'{icons.ICONS_ROOT}/{_tail}'
             _LOGGER.debug(' - PATH %s', _path)
             if not os.path.exists(_path):
-                raise RuntimeError('Missing path '+_path)
+                raise RuntimeError('Missing path ' + _path)
             assert File(_path).exists()
             _body = _body.replace(_chunk, _path)
             _fixed.add(_chunk)

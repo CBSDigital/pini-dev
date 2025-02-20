@@ -155,7 +155,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
                 self.setCurrentRow(_idx)
                 return
         if not catch:
-            raise ValueError('Failed to select '+text)
+            raise ValueError('Failed to select ' + text)
 
     def selected_data(self, catch=True):
         """Get data from selected item.

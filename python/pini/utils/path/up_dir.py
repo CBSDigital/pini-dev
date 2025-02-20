@@ -74,7 +74,7 @@ class Dir(up_path.Path):
             _this = _this.lower()
         _LOGGER.debug(' - THIS %s', _this)
         _LOGGER.debug(' - PATH %s', _path)
-        return _path.startswith(_this+'/')
+        return _path.startswith(_this + '/')
 
     def copy_to(self, trg, force=False):
         """Copy this dir and its contents to another location.
@@ -146,7 +146,7 @@ class Dir(up_path.Path):
         if not force and self.exists() and self.find(depth=1):
             _icon = icons.find('Sponge')
             qt.ok_cancel(
-                'Flush contents of directory?\n\n'+self.path,
+                'Flush contents of directory?\n\n' + self.path,
                 icon=_icon, title='Flush')
         self.delete(force=True)
         if not self.exists():
@@ -194,7 +194,7 @@ class Dir(up_path.Path):
             if self.path.endswith('/'):  # eg. C:/
                 _depth = len(self.path)
             else:
-                _depth = len(self.path)+1
+                _depth = len(self.path) + 1
             return _path[_depth:]
 
         # Calculate relative path outside this dir
@@ -214,7 +214,7 @@ class Dir(up_path.Path):
         _LOGGER.debug(' - TO THIS %s', _to_this)
         _to_other = _shared.rel_path(_path)
         _LOGGER.debug(' - TO OTHER %s', _to_other)
-        _dir_s = '../' * (_to_this.count('/')+1)
+        _dir_s = '../' * (_to_this.count('/') + 1)
         return f'{_dir_s}{_to_other}'
 
     def _read_size(self, catch=False):
@@ -268,7 +268,7 @@ class Dir(up_path.Path):
             full_path=False, type_='f', class_=True, filter_=filter_)
         _trg_paths = _trg_dir.find(
             full_path=False, type_='f', class_=True, filter_=filter_)
-        _rel_paths = sorted(set(_src_paths+_trg_paths))
+        _rel_paths = sorted(set(_src_paths + _trg_paths))
 
         _to_delete = []
         _to_sync = []
@@ -343,7 +343,7 @@ class Dir(up_path.Path):
         elif base:
             _rel_path = base
             if extn:
-                _rel_path += '.'+extn
+                _rel_path += '.' + extn
             assert not filename
         elif filename:
             assert not base and not extn
@@ -351,7 +351,7 @@ class Dir(up_path.Path):
         else:
             raise TypeError(rel_path, base, extn)
 
-        return _class(self.path+'/'+_rel_path)
+        return _class(self.path + '/' + _rel_path)
 
     def to_seq(self, rel_path, safe=False):
         """Build a child sequence object for this directory.
@@ -377,7 +377,7 @@ class Dir(up_path.Path):
             (Dir): child subdir
         """
         _rel_path = up_path.Path(rel_path)
-        return Dir(self.path+'/'+_rel_path.path)
+        return Dir(self.path + '/' + _rel_path.path)
 
 
 DESKTOP_PATH = up_utils.abs_path(os.environ.get('DESKTOP', '~/Desktop'))

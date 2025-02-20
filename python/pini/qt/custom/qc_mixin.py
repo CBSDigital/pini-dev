@@ -32,7 +32,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         _title = title or type(self).__name__.strip('_')
         self.tool_name = tool_name or type(self).__name__.strip('_')
         _LOGGER.debug(' - TOOL NAME %s', self.tool_name)
-        self.ws_name = self.tool_name+'WorkspaceControl'
+        self.ws_name = self.tool_name + 'WorkspaceControl'
 
         # Delete any previous instances that is detected. Do this
         # before parenting self to main window
@@ -101,7 +101,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         except RuntimeError as _exc:
             _LOGGER.info(' - DOCKING FAILED %s ^^^ %s ^^^', self.ws_name, _exc)
             if str(_exc) == f"Object's name '{self.ws_name}' is not unique.":
-                raise _MixinError(_exc)
+                raise _MixinError(_exc) from _exc
             raise _exc
 
         _channel_box = mel.eval(

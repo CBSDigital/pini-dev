@@ -88,7 +88,7 @@ class CDJob:
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:
                 if _group not in farm.find_limit_groups():
-                    raise RuntimeError('Bad limit group '+_group)
+                    raise RuntimeError('Bad limit group ' + _group)
         self.limit_groups = limit_groups or ()
 
         assert self.stype

@@ -45,7 +45,7 @@ class NukeDCC(BaseDCC):
         DEFAULT_EXTN = 'nk'
     VALID_EXTNS = (DEFAULT_EXTN, )
 
-    def add_menu_divider(self, parent, name=None):
+    def add_menu_divider(self, parent, name=None):  # pylint: disable=unused-argument
         """Add menu divider to maya ui.
 
         Args:
@@ -58,7 +58,7 @@ class NukeDCC(BaseDCC):
         _LOGGER.debug('ADDED MENU DIVIDER %s (menu=%s)', _div, parent)
         return _div
 
-    def add_menu_item(self, parent, command, image, label, name=None):
+    def add_menu_item(self, parent, command, image, label, name=None):  # pylint: disable=unused-argument
         """Add menu item to maya ui.
 
         Args:
@@ -241,7 +241,7 @@ class NukeDCC(BaseDCC):
         _LOGGER.info('MAIN WINDOW NOT FOUND')
         return None
 
-    def get_next_namespace(self, base, ignore=(), mode='asset'):
+    def get_next_namespace(self, base, ignore=(), mode='asset'):  # pylint: disable=unused-argument
         """Get next available namespace.
 
         Args:
@@ -254,6 +254,8 @@ class NukeDCC(BaseDCC):
         while nuke.toNode(_name):
             check_heart()
             _name = f'{base}_{_count:d}'
+            if _name in ignore:
+                continue
             _count += 1
         return _name
 
@@ -272,7 +274,7 @@ class NukeDCC(BaseDCC):
         Args:
             key (str): data to obtain
         """
-        _key = 'PINI_DATA_'+key
+        _key = 'PINI_DATA_' + key
         _knob = nuke.Root().knob(_key)
         if not _knob:
             return None
@@ -404,7 +406,7 @@ class NukeDCC(BaseDCC):
             key (str): name of data to store
             val (any): value of data to store
         """
-        _key = 'PINI_DATA_'+key
+        _key = 'PINI_DATA_' + key
         _root = nuke.Root()
 
         _tab = _root.knob('Pini')

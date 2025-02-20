@@ -31,8 +31,8 @@ def create_sequence(sequence, force=False):
 
     if not force:
         qt.ok_cancel(
-            'Register sequence {}/{} on shotgrid?\n\n{}'.format(
-                _seq.job.name, _seq.name, _seq.path),
+            f'Register sequence {_seq.job.name}/{_seq.name} on shotgrid?'
+            f'\n\n{_seq.path}',
             icon=sg_utils.ICON)
     _data = {
         'project': _proj_s.to_entry(),

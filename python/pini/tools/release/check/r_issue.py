@@ -103,7 +103,7 @@ def to_pycodestyle_issues(reading):
             _issue = _PycodestyleIssue(_line)
         except ValueError:
             continue
-        _LOGGER.info(' - ISSUE %s', _issue)
+        _LOGGER.debug(' - ISSUE %s', _issue)
         _issues.append(_issue)
     return _issues
 

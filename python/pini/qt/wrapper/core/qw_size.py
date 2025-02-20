@@ -29,9 +29,9 @@ class CSize(QtCore.QSize):
     def __mul__(self, other):
 
         if isinstance(other, (float, int)):
-            return CSize(self.width()*other, self.height()*other)
+            return CSize(self.width() * other, self.height() * other)
         if isinstance(other, (QtCore.QSize, QtCore.QSize)):
             return CSize(
-                self.width()*other.width(), self.height()*other.height())
+                self.width() * other.width(), self.height() * other.height())
 
         raise NotImplementedError(other)

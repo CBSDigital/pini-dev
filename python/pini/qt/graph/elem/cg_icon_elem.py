@@ -25,7 +25,7 @@ class CGIconElem(cg_move_elem.CGMoveElem):
         """
         self.pixmap = q_utils.to_pixmap(icon)
         self.scale = scale
-        super(CGIconElem, self).__init__(
+        super().__init__(
             col=col, bevel=bevel, lock=lock, **kwargs)
 
     def update_pixmap(self, pix):
@@ -36,5 +36,5 @@ class CGIconElem(cg_move_elem.CGMoveElem):
         """
         pix.fill(self.col)
         pix.draw_overlay(
-            self.pixmap, size=pix.size()*self.scale, anchor='C',
+            self.pixmap, size=pix.size() * self.scale, anchor='C',
             pos=pix.center())

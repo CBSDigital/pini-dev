@@ -71,12 +71,12 @@ def build_tmp_icon(
         _pix = qt.CPixmap(_base.size())
         _pix.fill('Transparent')
         _pix.draw_overlay(
-            _base, pos=_pix.center(), size=_base.size()*base_scale,
+            _base, pos=_pix.center(), size=_base.size() * base_scale,
             anchor='C')
 
     # Add overlay
     _over = to_pixmap(overlay)
-    _over = _over.resize(144*over_scale)
+    _over = _over.resize(144 * over_scale)
     _pix.draw_overlay(_over, pos=_pix.size(), anchor='BR')
 
     # Save file
@@ -125,12 +125,13 @@ def _pformat_widget(widget):
     return basic_repr(widget, _name)
 
 
-def find_widget_children(widget, indent=''):
+def find_widget_children(widget, indent='', filter_=None):
     """Recursive function to find all children of the given widget.
 
     Args:
         widget (QWidget): widget to read
         indent (str): indent for logging
+        filter_ (str): apply name filter (for debugging)
 
     Returns:
         (QWidget list): widget children
@@ -151,10 +152,17 @@ def find_widget_children(widget, indent=''):
                 '%s - %s ADDING CHILD %d %s', indent,
                 _pformat_widget(widget), _idx, _child)
             _children += [_child] + find_widget_children(
-                _child, indent=indent+'  ')
+                _child, indent=indent + '  ')
     _LOGGER.debug(
         '%s - %s FOUND %d CHILDREN', indent, _pformat_widget(widget),
         len(_children))
+
+    # Apply filter
+    if filter_:
+        _children = [
+            _widget for _widget in _children
+            if hasattr(_widget, 'objectName') and
+            passes_filter(_widget.objectName(), filter_)]
 
     return _children
 
@@ -503,13 +511,13 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
 
     # Determine root position (top left) of result
     if anchor == 'C':
-        _root = _pos - to_p(_size)/2
+        _root = _pos - to_p(_size) / 2
     elif anchor == 'L':
-        _root = _pos - to_p(0, int(_size.height()/2))
+        _root = _pos - to_p(0, int(_size.height() / 2))
     elif anchor == 'R':
-        _root = _pos - to_p(_size.width(), int(_size.height()/2))
+        _root = _pos - to_p(_size.width(), int(_size.height() / 2))
     elif anchor == 'T':
-        _root = _pos - to_p(_size.width()/2, 0)
+        _root = _pos - to_p(_size.width() / 2, 0)
     elif anchor == 'TL':
         _root = _pos
     elif anchor == 'TR':
@@ -519,7 +527,7 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
     elif anchor == 'BR':
         _root = _pos - to_p(_size.width(), _size.height())
     elif anchor == 'B':
-        _root = _pos - to_p(_size.width()/2, _size.height())
+        _root = _pos - to_p(_size.width() / 2, _size.height())
     else:
         raise ValueError(anchor)
 

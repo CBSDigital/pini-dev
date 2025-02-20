@@ -64,7 +64,7 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         """
         raise NotImplementedError
 
-    def _build_tool(self, tool, parent=None):
+    def _build_tool(self, tool, parent=None):  # pylint: disable=unused-argument
         """Build a shelf item for the given tool.
 
         Args:
@@ -75,7 +75,6 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
             (Tool): houdini tool object
         """
         _LOGGER.debug('BUILD TOOL %s', tool)
-        del parent
 
         _uid = tool.to_uid(prefix=self.prefix)
         if _uid in hou.shelves.tools():
@@ -99,7 +98,7 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
 
         return _tool
 
-    def _build_divider(self, divider, parent=None):
+    def _build_divider(self, divider, parent=None):  # pylint: disable=unused-argument
         """Build a shelf divider item.
 
         Args:
@@ -232,7 +231,7 @@ class PIHouMenuInstaller(_PIHouBaseInstaller):
         _xml_file = File(xml or self.xml_file)
         if not _xml_file.exists():
             if not force:
-                qt.ok_cancel('Write shelf xml?\n\n'+_xml_file.path)
+                qt.ok_cancel('Write shelf xml?\n\n' + _xml_file.path)
             _xml_file.write(_new_xml)
         else:  # Compare existing xml
             _cur_xml = _xml_file.read()
