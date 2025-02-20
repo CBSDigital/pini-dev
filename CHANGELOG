@@ -1,3 +1,11 @@
+## [6.48.1] - Thu 2025-02-20 15:16
+### Summary
+ - Ffmpeg wrapper:
+    - bugfix fps flag not being applied (nkim/blee),
+### Updated
+ - pini.utils.Seq.to_video bugfix positioning of fps flag,
+
+
 ## [6.48.0] - Thu 2025-02-20 09:38
 ### Summary
  - Pini Helper:

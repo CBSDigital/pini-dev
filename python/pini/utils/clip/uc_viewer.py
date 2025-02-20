@@ -165,8 +165,9 @@ class _RV(_Viewer):
         assert self.exe
         _cmds = [self.exe.path]
         if fps:
-            _cmds += ['-fps', fps]
+            _cmds += ['-fps', str(fps)]
         _cmds += [clip_.path, '-play']
+        # system(_cmds, verbose=1, result=False)
         _LOGGER.info('VIEW CLIP %s', ' '.join(_cmds))
         subprocess.Popen(_cmds)
 

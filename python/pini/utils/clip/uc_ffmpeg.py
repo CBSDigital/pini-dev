@@ -128,7 +128,6 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
         _font = QtGui.QFont()
     _LOGGER.info(' - FONT %s %s', _name, _font)
     _font.setPointSize(height * 0.4)
-    _metrics = QtGui.QFontMetrics(_font)
 
     # Draw header
     _header = Dir(TMP_PATH).to_file('pini/overlay_header.png')
@@ -157,6 +156,7 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _frame_ns = Seq(_path)
     _frame_ns.delete(force=True)
     _frames_overlay_w = height * 6
+    _LOGGER.debug(' - ADDING OVERLAY FRAMES %s', seq.to_range())
     for _frame in seq.to_frames():
         _pix = qt.CPixmap(_frames_overlay_w, height)
         _pix.fill(_transparent)
@@ -251,11 +251,11 @@ def seq_to_video(
     assert _fps
 
     # Build args list
-    _args = [_ffmpeg, '-r', _fps]
+    _args = [_ffmpeg]
     _args += ['-f', 'image2']
     if _start != 1:
         _args += ['-start_number', _start]
-    _args += ['-i', seq.path]
+    _args += ['-i', seq.path, '-r', _fps]
     if burnins:
         _args += _build_ffmpeg_burnin_flags(seq, video=_video)
     _args += _build_ffmpeg_audio_flags(
