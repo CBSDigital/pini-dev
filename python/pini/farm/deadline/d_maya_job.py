@@ -189,7 +189,8 @@ class CDMayaRenderJob(_CDMayaJob):
             stime=stime, camera=camera, priority=priority, output=_output,
             machine_limit=machine_limit, comment=comment, work=work,
             frames=frames or dcc.t_frames(), name=_name, group=group,
-            scene=scene, chunk_size=chunk_size, limit_groups=limit_groups)
+            scene=scene, chunk_size=chunk_size, limit_groups=limit_groups,
+            env={'MAYA_RENDER_SETUP_INCLUDE_ALL_LIGHTS': 0})
 
         assert self.output
         assert self.batch_name
@@ -209,8 +210,8 @@ class CDMayaRenderJob(_CDMayaJob):
         _name = f'{self.work} - {self.output.output_name} - {_cam}'
         _output_filename = output_filename or self.output.path.replace(
             '.%04d.', '.####.')
-        return super()._build_info_data(
-            output_filename=_output_filename)
+        _data = super()._build_info_data(output_filename=_output_filename)
+        return _data
 
     def _build_job_data(self, output_file_path=None):
         """Build job data for this submission.

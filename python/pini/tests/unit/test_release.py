@@ -3,8 +3,8 @@ import logging
 import unittest
 
 from pini import qt, testing
-from pini.utils import TMP, PyFile
 from pini.tools import release, error
+from pini.utils import TMP, PyFile, to_snake
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -678,6 +678,169 @@ class TestRelease(unittest.TestCase):
             print()
 
         _LOGGER.info('CHECKS PASSED')
+
+    def test_remove_unused_imports(self):
+
+        _names = set()
+        for _name, _code, _fixed in qt.progress_bar([
+
+            ('Basic import test',
+             '\n'.join([
+                 'import os',
+                 'import sys',
+                 '',
+                 'def test():',
+                 '    pass']),
+             '\n'.join([
+                 '',
+                 'def test():',
+                 '    pass'])),
+
+            ('Basic from test',
+             '\n'.join([
+                 'from pini import testing',
+                 'from maya_pini import open_maya',
+                 '',
+                 'def test():',
+                 '    pass']),
+             '\n'.join([
+                 '',
+                 'def test():',
+                 '    pass'])),
+
+            ('Remove from list test',
+             '\n'.join([
+                 'import os',
+                 'import sys',
+                 '',
+                 'from pini.utils import abs_path, File, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, abs_path, cache_result)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import abs_path, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, abs_path, cache_result)']),
+             ),
+
+            ('Remove last from list test',
+             '\n'.join([
+                 'import os',
+                 'import sys',
+                 '',
+                 'from pini.utils import abs_path, File, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, abs_path, File)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import abs_path, File',
+                 '',
+                 'def test():',
+                 '    print(sys, abs_path, File)']),
+             ),
+
+            ('Remove first from list test',
+             '\n'.join([
+                 'import os',
+                 'import sys',
+                 '',
+                 'from pini.utils import abs_path, File, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, cache_result, File)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import File, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, cache_result, File)']),
+             ),
+
+            ('Remove from multi line',
+             '\n'.join([
+                 'import os',
+                 'import sys',
+                 '',
+                 'from pini.utils import (',
+                 '    abs_path, File, cache_result)',
+                 '',
+                 'def test():',
+                 '    print(sys, cache_result, File)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import File, cache_result',
+                 '',
+                 'def test():',
+                 '    print(sys, cache_result, File)']),
+             ),
+
+            ('Apply wrapping',
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import (',
+                 '    File, cache_result,',
+                 '    abs_path, HOME, TMP, TMP_PATH,',
+                 '    single,',
+                 '    Dir, Path, Video,',
+                 '    get_method_to_file_cacher)',
+                 '',
+                 'def test():',
+                 '    print(HOME, TMP, TMP_PATH)',
+                 '    print(get_method_to_file_cacher, Video, Dir)',
+                 '    print(sys, cache_result, File)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'from pini.utils import (',
+                 '    File, cache_result, HOME, TMP, TMP_PATH, Dir, Video,',
+                 '    get_method_to_file_cacher)',
+                 '',
+                 'def test():',
+                 '    print(HOME, TMP, TMP_PATH)',
+                 '    print(get_method_to_file_cacher, Video, Dir)',
+                 '    print(sys, cache_result, File)']),
+             ),
+
+        ]):
+
+            _LOGGER.info('RUNNING CHECK %s', _name)
+            # print('---- CODE ----')
+            # testing.clear_print(_code)
+
+            # Write to disk
+            assert _name not in _names
+            _names.add(_name)
+            _tmp = TMP.to_file(f'.pini/tests/{to_snake(_name)}.py')
+            if not _tmp.exists() or _tmp.read() != _code:
+                _tmp.write(_code, force=True)
+
+            _orig_code = _tmp.read()
+
+            _file = release.CheckFile(_tmp)
+            _fixed_code = _file._batch_apply_pylint_unused_imports(
+                write=False, force=True)
+
+            # _fixed_code = _tmp.read()
+
+            assert _orig_code == _code
+            if _fixed_code != _fixed:
+                print('CODE:')
+                testing.clear_print(_code)
+                print()
+                print('FIXED:')
+                testing.clear_print(_fixed_code)
+                print()
+                print('REQUIRED:')
+                testing.clear_print(_fixed)
+                raise RuntimeError('Results do not match')
 
     def test_repo(self):
         _dev = os.environ['DEV']

@@ -2,7 +2,6 @@
 
 import logging
 
-from pini import qt
 from pini.utils import File, TMP, strftime
 
 DIR = File(__file__).to_dir()
@@ -80,31 +79,9 @@ def _save_updates(file_, code, force=False):
     _LOGGER.debug(' - BKP %s', _bkp.path)
     file_.copy_to(_bkp, force=True)
 
-    # Confirm
-    _force = False
-    if not force:
-        _result = qt.raise_dialog(
-            f'Apply autofixes to file?\n\n{file_.path}',
-            buttons=('Yes', 'Show diffs', 'No'))
-        if _result == 'Yes':
-            _force = True
-        elif _result == 'No':
-            pass
-        elif _result == 'Show diffs':
-            _tmp = TMP.to_file(f'.pini/{file_.filename}')
-            _tmp.write(code, force=True)
-            _tmp.diff(file_)
-            if file_.read() == code:
-                _LOGGER.debug('UPDATES APPLIED IN DIFF')
-                return
-        else:
-            raise ValueError(_result)
-    else:
-        _force = force
-
     # Apply updates
     _LOGGER.debug(' - UPDATING %s', file_.path)
-    file_.write(code, force=_force)
+    file_.write(code, wording='Apply autofixes?', diff=True, force=force)
 
 
 def apply_autofix(file_, force=False):

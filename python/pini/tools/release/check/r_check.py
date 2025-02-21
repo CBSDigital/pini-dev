@@ -2,13 +2,13 @@
 
 import ast
 import logging
-import operator
 import os
 
+from pini import qt
 from pini.utils import (
-    File, PyFile, find_exe, system, get_method_to_file_cacher,
-    MetadataFile, PyDef, PyClass, abs_path, to_str, cache_result,
-    merge_dicts, passes_filter, apply_filter)
+    File, PyFile, find_exe, system, get_method_to_file_cacher, MetadataFile,
+    PyDef, PyClass, abs_path, to_str, cache_result, merge_dicts,
+    passes_filter)
 
 from . import r_docs, r_issue, r_autofix
 
@@ -44,13 +44,20 @@ class CheckFile(MetadataFile):
         if self._is_empty():
             _LOGGER.info(' - IGNORING EMPTY FILE')
         else:
+            _prog = qt.progress_dialog(
+                'Checking file', stack_key='CheckFile')
             self.apply_docs_check()
+            _prog.set_pc(20)
             self.apply_autofix()
+            _prog.set_pc(40)
             self.apply_simple_checks()
+            _prog.set_pc(60)
             if pylint:
                 self.apply_pylint_check(force=force)
+            _prog.set_pc(80)
             if pycodestyle:
                 self.apply_pycodestyle_check(force=force)
+            _prog.set_pc(100)
             _LOGGER.info(' - ALL CHECKS PASSED')
 
         # Mark as checked
@@ -110,7 +117,9 @@ class CheckFile(MetadataFile):
         _reading = self.to_pycodestyle_reading(force=force)
         _issues = r_issue.to_pycodestyle_issues(_reading)
         _LOGGER.info('FOUND %d pycodestyle ISSUES', len(_issues))
-        for _issue in _issues:
+        for _issue in qt.progress_bar(
+                _issues, 'Checking {:d} pycodestyle issue{}',
+                stack_key="PycodestyleCheckFile"):
             _LOGGER.info(' - ISSUE %s %s', _issue, _issue.desc)
             raise _issue.to_error(self)
         _LOGGER.info(' - PYCODESTYLE SUCCESFUL %s', self.path)
@@ -121,9 +130,14 @@ class CheckFile(MetadataFile):
         Args:
             force (bool): force regenerate checks data
         """
+        self._batch_apply_pylint_unused_imports()
+
         _issues = self.find_pylint_issues(force=force)
         _LOGGER.debug('FOUND %d pylint ISSUES', len(_issues))
-        for _issue in _issues:
+
+        for _issue in qt.progress_bar(
+                _issues, 'Checking {:d} pylint issue{}',
+                stack_key="PylintCheckFile"):
             _LOGGER.info(' - ISSUE %s %s %s', _issue, _issue.name, _issue.desc)
             _LOGGER.info(' - DISABLE # pylint: disable=%s', _issue.name)
             raise _issue.to_error(self)
@@ -134,17 +148,16 @@ class CheckFile(MetadataFile):
         from pini.tools import error
 
         _disable = _obt_cfg()['disable_checks']
+        _too_long_filter = _disable.get('C0301', None)
         _check_line_len = (
             not self.is_test() and
-            not passes_filter(self.path, _disable['C0301']))
+            not passes_filter(self.path, _too_long_filter))
         _LOGGER.info(
-            ' - CHECK LINE LEN %d %s', _check_line_len, _disable['C0301'])
+            ' - CHECK LINE LEN %d %s', _check_line_len, _too_long_filter)
 
         for _line_n, _line in enumerate(self.read_lines()):
 
-            # Check for line too long
-            _filter = _obt_cfg()['disable_checks']['C0301']
-
+            # Apply check line len
             if _check_line_len:
                 _line = _line.split('  # pylint:', 1)[0]
                 if len(_line) > 80:
@@ -171,6 +184,27 @@ class CheckFile(MetadataFile):
             (bool): whether this is a test file
         """
         return '/tests/' in self.path
+
+    def _batch_apply_pylint_unused_imports(self, write=True, force=False):
+        """Batch apply pylint unused import issues.
+
+        Args:
+            write (bool): apply updates (disable for testings)
+            force (bool): apply updates without confirmation
+
+        Returns:
+            (str): updated code
+        """
+        _issues = self.find_pylint_issues(code='W0611')
+        _cur = self.read()
+        if len(_issues) < 2:
+            return _cur
+        _fixed = r_issue.fix_unused_imports(file_=self, issues=_issues)
+        if write and _fixed != _cur:
+            self.write(
+                _fixed, diff=True, wording='Batch apply unused imports?',
+                force=force)
+        return _fixed
 
     @get_method_to_file_cacher(mtime_outdates=True)
     def to_pycodestyle_reading(self, ignore=(), force=False):
@@ -200,21 +234,25 @@ class CheckFile(MetadataFile):
         assert f'checking {self.path}' in _result
         return _result
 
-    def find_pylint_issues(self, filter_=None, force=False):
+    def find_pylint_issues(self, filter_=None, code=None, force=False):
         """Find pylint issues in this file.
 
         Args:
-            filter_ (str): apply issue code filter
+            filter_ (str): apply issue filter
+            code (str): apply code filter
             force (bool): force reread issues from disk
 
         Returns:
             (PylintIssue list): matching issues
         """
         _reading = self.to_pylint_reading(force=force)
-        _issues = r_issue.to_pylint_issues(_reading)
-        if filter_:
-            _issues = apply_filter(
-                _issues, filter_, key=operator.attrgetter('code'))
+        _issues = []
+        for _issue in r_issue.to_pylint_issues(_reading):
+            if code and _issue.code != code:
+                continue
+            if filter_ and not passes_filter(_issue.filter_str, filter_):
+                continue
+            _issues.append(_issue)
         return _issues
 
     @get_method_to_file_cacher(mtime_outdates=True)

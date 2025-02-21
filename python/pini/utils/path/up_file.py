@@ -480,7 +480,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         self.test_dir()
         self._pathlib.touch()
 
-    def write(self, text, force=False, wording='Overwrite', encoding='utf-8'):
+    def write(
+            self, text, force=False, wording='Overwrite', encoding='utf-8',
+            diff=False):
         """Write text to this file.
 
         Args:
@@ -488,12 +490,18 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             force (bool): replace existing contents without warning
             wording (str): override warning dialog wording
             encoding (str): apply encoding (eg. utf-8)
+            diff (bool): offer to show diffs before overwrite
         """
         up_utils.error_on_file_system_disabled()
 
         # Handle replace
         if self.exists():
-            if not force:
+            if force:
+                pass
+            elif diff:
+                self._write_apply_diff(text, wording)
+                return
+            else:
                 from pini import qt
                 qt.ok_cancel(f'{wording} existing file?\n\n{self.path}')
             os.remove(self.path)
@@ -502,6 +510,38 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         self.test_dir()
         with open(self.path, 'w', encoding=encoding) as _file:
             _file.write(text)
+
+    def _write_apply_diff(self, text, wording=None):
+        """Apply write with diff option.
+
+        Args:
+            text (str): text to write
+            wording (str): wording for diffs dialog
+        """
+        from pini import qt
+        from pini.utils import TMP
+
+        # Apply show diffs
+        _prompt = wording or 'Update file'
+        _result = qt.raise_dialog(
+            f'{_prompt}?\n\n{self.path}', title='Confirm',
+            buttons=('Yes', 'Show diffs', 'No'))
+        if _result == 'Yes':
+            pass
+        elif _result == 'No':
+            return
+        elif _result == 'Show diffs':
+            _tmp = TMP.to_file(f'.pini/{self.filename}')
+            _tmp.write(text, force=True)
+            _tmp.diff(self)
+
+        # Apply updates
+        if self.read() == text:
+            _LOGGER.info('UPDATES APPLIED IN DIFF TOOL')
+            return
+        _result = qt.yes_no_cancel(
+            f'Update file?\n\n{self.path}', title='Confirm')
+        self.write(text, force=True)
 
     def write_json(self, data):
         """Write the given data as json.

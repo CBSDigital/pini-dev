@@ -65,8 +65,8 @@ class _ProgressDialog(QtWidgets.QDialog):
 
     def __init__(
             self, items, title='Processing {:d} item{}', col=None, show=True,
-            pos=None, parent=None, stack_key='DefaultProgress', show_delay=None,
-            plural_=None, raise_stop=True):
+            pos=None, parent=None, stack_key='DefaultProgress',
+            show_delay=None, plural_=None, raise_stop=True, auto_pos=True):
         """Constructor.
 
         Args:
@@ -81,6 +81,8 @@ class _ProgressDialog(QtWidgets.QDialog):
             plural_ (str): override plural string in title
                 (eg. 'es' for 'fixes')
             raise_stop (bool): raise StopIteration on complete
+            auto_pos (bool): automatically position beneath
+                existing progress dialogs
         """
         from pini import dcc, qt
         _flush_unused_bars(stack_key=stack_key)
@@ -115,7 +117,8 @@ class _ProgressDialog(QtWidgets.QDialog):
             len(self.items), plural(self.items, plural_=plural_))
         self.setWindowTitle(_title)
         self.resize(408, 54)
-        self._apply_pos()
+        if auto_pos:
+            self._apply_pos()
 
         _col = col
         if not _col:

@@ -35,7 +35,7 @@ class CDJob:
             self, name, work=None, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
             dependencies=(), group=None, chunk_size=1, limit_groups=None,
-            scene=None, output=None):
+            scene=None, output=None, env=None):
         """Constructor.
 
         Args:
@@ -55,6 +55,7 @@ class CDJob:
                 (eg. maya-2023,vray)
             scene (File): render scene (if not work file)
             output (CPOutput): output for this job
+            env (dict): add environment variables
         """
         from pini import farm
 
@@ -70,6 +71,7 @@ class CDJob:
             self.batch_name = work.base
         self.scene = scene or self.work
         self.output = output
+        self.env = env
 
         self.chunk_size = chunk_size
 
@@ -195,6 +197,12 @@ class CDJob:
         if self.error_limit:
             _data['OverrideJobFailureDetection'] = 'True'
             _data['FailureDetectionJobErrors'] = str(self.error_limit)
+
+        if self.env:
+            for _idx, (_key, _val) in enumerate(self.env.items()):
+                _i_key = f'EnvironmentKeyValue{_idx}'
+                _i_val = f'{_key}={_val}'
+                _data[_i_key] = _i_val
 
         return _data
 
