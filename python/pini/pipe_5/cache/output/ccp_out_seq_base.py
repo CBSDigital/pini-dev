@@ -16,6 +16,10 @@ class CCPOutputSeqBase(elem.CPOutputSeq, ccp_out_base.CCPOutputBase):
     set_metadata = ccp_out_base.CCPOutputBase.set_metadata
     strftime = ccp_out_base.CCPOutputBase.strftime
 
+    __eq__ = ccp_out_base.CCPOutputBase.__eq__
+    __lt__ = ccp_out_base.CCPOutputBase.__lt__
+    __hash__ = elem.CPOutputSeq.__hash__
+
     @pipe_cache_on_obj
     def mtime(self):
         """Obtain mtime for this sequence.

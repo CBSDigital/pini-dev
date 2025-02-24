@@ -165,7 +165,7 @@ def create(entity_type, data):
     return to_handler().create(entity_type, data)
 
 
-def _to_filters(filters, job=None, entity=None, id_=None, path=None):
+def _to_filters(filters, job=None, entity=None, id_=None, ids=None, path=None):
     """Build filters list.
 
     Args:
@@ -173,6 +173,7 @@ def _to_filters(filters, job=None, entity=None, id_=None, path=None):
         job (CPJob): add job filter
         entity (CPEntity): add entity filter
         id_ (int): match by id
+        ids (int list): match by list of ids
         path (str): match by path (relative path in path_cache field is used)
 
     Returns:
@@ -189,6 +190,8 @@ def _to_filters(filters, job=None, entity=None, id_=None, path=None):
         _filters.append(_ety_s.to_filter())
     if id_ is not None:
         _filters.append(('id', 'is', id_))
+    if ids:
+        _filters.append(('id', 'in', ids))
     if path:
         _rel_path = pipe.ROOT.rel_path(path)
         _filters.append(('path_cache', 'is', _rel_path))
@@ -197,7 +200,7 @@ def _to_filters(filters, job=None, entity=None, id_=None, path=None):
 
 def find(
         entity_type, filters=(), fields=(), fmt='list',
-        job=None, entity=None, id_=None, path=None,
+        job=None, entity=None, id_=None, ids=None, path=None,
         limit=0, order=None):
     """Wrapper for Shotgrid.find command.
 
@@ -211,6 +214,7 @@ def find(
         job (CPJob): apply job filter
         entity (CPEntity): add entity filter
         id_ (int): apply id filter
+        ids (int list): match by list of ids
         path (str): apply path filter
         limit (int): limit number of results (see sg docs)
         order (dict list): apply sorting (see sg docs)
@@ -218,7 +222,8 @@ def find(
     Returns:
         (dict list): results
     """
-    _filters = _to_filters(filters, job=job, entity=entity, id_=id_, path=path)
+    _filters = _to_filters(
+        filters, job=job, entity=entity, id_=id_, path=path, ids=ids)
     _results = to_handler().find(
         entity_type, filters=_filters, fields=fields, limit=limit,
         order=order)

@@ -18,7 +18,6 @@ _LOGGER = logging.getLogger(__name__)
 OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz']
 OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
 OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
-OUTPUT_MEDIA_TYPES = ['render', 'blast', 'plate']
 
 STATUS_ORDER = ['cmpt', 'apr', 'lapr']
 
@@ -475,14 +474,6 @@ class CPOutputBase:
         _LOGGER.debug(' - LATEST %s', _latest)
         return self == _latest
 
-    def is_media(self):
-        """Test whether this output is media.
-
-        Returns:
-            (bool): whether media (eg. render/blast)
-        """
-        return self.basic_type in OUTPUT_MEDIA_TYPES
-
     def set_latest(self, latest):
         """Set latest status of this output.
 
@@ -608,9 +599,23 @@ class CPOutputBase:
                 raise _exc
             return None
 
+    def __eq__(self, other):
+        _LOGGER.debug('EQ %s', other)
+        if hasattr(other, 'cmp_key'):
+            _LOGGER.debug(' - USING CMP KEY %s %s', self.cmp_key, other.cmp_key)
+            return self.cmp_key == other.cmp_key
+        if hasattr(other, 'path'):
+            _LOGGER.debug(' - USING PATH %s %s', self.path, other.path)
+            return self.path == other.path
+        if isinstance(other, str):
+            return self.path == other
+        return False
+
     def __lt__(self, other):
         if hasattr(other, 'cmp_key'):
             return self.cmp_key < other.cmp_key
+        if hasattr(other, 'path'):
+            return self.path < other.path
         raise ValueError(other)
 
 

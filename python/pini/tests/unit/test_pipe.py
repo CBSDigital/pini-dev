@@ -6,7 +6,7 @@ import unittest
 
 from pini import pipe, testing, dcc
 from pini.pipe import cache, cp_template
-from pini.utils import File, single, flush_caches, assert_eq
+from pini.utils import File, single, flush_caches, assert_eq, Seq
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +25,29 @@ class TestPipe(unittest.TestCase):
         _work_nk = _work_nk.find_next()
         _LOGGER.info(_work_nk)
         assert _work_nk.extn == 'nk'
+
+    def test_output_seq_hash(self):
+
+        _shot = pipe.CACHE.obt(testing.TEST_SHOT)
+        _path = _shot.find_outputs(extn='vdb')[0].path
+        _seq = Seq(_path)
+        assert hash(_seq)
+        _out = pipe.to_output(_path)
+        assert hash(_out)
+        assert hash(_out) == hash(_seq)
+
+        _out_c = pipe.CACHE.obt_output(_path)
+        assert _out_c.__hash__
+        assert hash(_out_c)
+        assert not _out_c.is_media()
+        _ghost = _out_c.to_ghost()
+        assert _out_c.path == _ghost.path
+        assert hash(_out_c) == hash(_ghost)
+        assert _ghost == _out_c
+        assert not hasattr(_ghost, 'cmp_key')
+        assert _out_c.__eq__(_ghost)
+        assert _out_c == _ghost
+        assert _out_c in [_out_c.to_ghost()]
 
     def test_settings(self):
 

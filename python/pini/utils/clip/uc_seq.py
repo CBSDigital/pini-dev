@@ -865,7 +865,7 @@ def file_to_seq(file_, safe=True, catch=False):
     return Seq(_path)
 
 
-def to_seq(obj, catch=True):
+def to_seq(obj, catch=True, safe=False):
     """Obtain a sequence from the given object.
 
     eg. "/tmp/blah.0001.jpg" -> Seq("/tmp/blah.%04d.jpg")
@@ -875,6 +875,7 @@ def to_seq(obj, catch=True):
     Args:
         obj (any): object to read sequence from
         catch (bool): no error if no seq found
+        safe (bool): only allow sequences in blah.%04d.jpg format
 
     Returns:
         (Seq): sequence
@@ -890,8 +891,8 @@ def to_seq(obj, catch=True):
         for _token in ('.####.', '.$F4.'):
             _seq = _seq.replace(_token, '.%04d.')
         _LOGGER.debug(' - STR %s', _seq)
-        if '.%04d.' in _seq:
-            return Seq(_seq)
+        if '%04d' in _seq:
+            return Seq(_seq, safe=safe)
         _seq = file_to_seq(_obj, catch=True)
         if _seq:
             return _seq

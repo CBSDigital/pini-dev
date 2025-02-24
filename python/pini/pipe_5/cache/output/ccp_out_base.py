@@ -11,6 +11,8 @@ from ... import elem
 
 _LOGGER = logging.getLogger(__name__)
 
+OUTPUT_MEDIA_CONTENT_TYPES = ['Render', 'Blast', 'Plate', 'Video']
+
 
 class CCPOutputBase(elem.CPOutputBase):
     """Base class for any caching output object."""
@@ -325,6 +327,14 @@ class CCPOutputBase(elem.CPOutputBase):
                     if _pub:
                         _reps.append(_pub)
         return _reps
+
+    def is_media(self):
+        """Test whether this output is media.
+
+        Returns:
+            (bool): whether media (eg. render/blast)
+        """
+        return self.content_type in OUTPUT_MEDIA_CONTENT_TYPES
 
     def set_latest(self, latest: bool):
         """Set whether this output is the latest in its version stream.

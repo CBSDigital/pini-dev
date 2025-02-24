@@ -1,6 +1,6 @@
 """Tools for managing cacheable output objects."""
 
-from .ccp_out_base import CCPOutputBase
+from .ccp_out_base import CCPOutputBase, OUTPUT_MEDIA_CONTENT_TYPES
 from .ccp_out_file import CCPOutputFile
 from .ccp_out_video import CCPOutputVideo
 from .ccp_out_seq_dir import CCPOutputSeqDir

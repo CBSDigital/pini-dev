@@ -65,9 +65,17 @@ class PRTestFile(PyFile):
         """
         from pini import pipe
         _LOGGER.debug('FIND TESTS %s', self)
-        _tests = []
-        _mod = self.to_module()
+
+        # Obtain module
+        try:
+            _mod = self.to_module()
+        except ImportError as _exc:
+            assert str(_exc) == 'Not supported in this pipeline'
+            return []
         assert _mod
+
+        # Find tests in module
+        _tests = []
         for _p_class in self.find_classes():
 
             # Check for pipe master filter

@@ -307,7 +307,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _link_textures = link_textures
         if os.environ.get('PINI_SG_DISABLE_REGISTER_TEX'):
             _link_textures = False
-        if _link_textures:
+        if _link_textures and self.textures:
             _upstream_files += _build_upstream_textures(
                 paths=self.textures, work=work)
 
@@ -340,6 +340,7 @@ def _build_upstream_textures(paths, work=None):
     # Find already registered
     _rel_paths = {pipe.ROOT.rel_path(_path): _path for _path in paths}
     _filters = [('path_cache', 'in', list(_rel_paths.keys()))]
+    _LOGGER.info(' - FILTERS %s', _filters)
     for _pub in shotgrid.find(
             'PublishedFile', filters=_filters, fields=['path_cache']):
         _LOGGER.info(' - ALREADY PUBLISHED %s', _pub)
@@ -501,9 +502,13 @@ def _read_textures(filter_=None):
             continue
         _LOGGER.debug('FILE %s', _file)
         _LOGGER.debug(' - FTN %s', _path)
-        if _file.plug['uvTilingMode'].get_val():
-            _LOGGER.debug(' - CONVERT TO SEQ')
-            _path = to_seq(_path.replace('.<UDIM>.', '.%04d.'))
+        _udims = _file.plug['uvTilingMode'].get_val()
+        _LOGGER.debug(' - UDIMS %s', _udims)
+        if _udims:
+            _path = _path.replace('<UDIM>', '%04d')
+            _path = _path.replace('1001.', '%04d.')
+            _LOGGER.debug(' - CONVERT TO SEQ %s', _path)
+            _path = to_seq(_path, safe=False)
             _LOGGER.debug(' - FTN %s', _path)
         if not _path or not _path.exists():
             _LOGGER.debug(' - REJECTED %s', _path)

@@ -7,7 +7,7 @@ This is a container class which is only used for caching.
 
 from pini.utils import basic_repr, File
 
-from ... import elem
+from . import ccp_out_base
 
 
 class CCPOutputGhost(File):
@@ -116,7 +116,15 @@ class CCPOutputGhost(File):
         Returns:
             (bool): whether media (eg. render/blast)
         """
-        return self.content_type in elem.OUTPUT_MEDIA_TYPES
+        return self.content_type in ccp_out_base.OUTPUT_MEDIA_CONTENT_TYPES
+
+    def __eq__(self, other):
+        if hasattr(other, 'path'):
+            return self.path == other.path
+        return False
+
+    def __hash__(self):
+        return hash(self.path)
 
     def __lt__(self, other):
         return self.path < other.path

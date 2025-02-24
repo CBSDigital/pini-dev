@@ -136,9 +136,8 @@ class PHSceneTab:
             _outs = self.job.find_publishes(extns=dcc.REF_EXTNS)
         elif _tab == self.ui.SEntityTab:
             if self.entity:
-                _outs += [
-                    _out for _out in self.entity.find_outputs()
-                    if not _out.is_media()]
+                _outs += [_out for _out in self.entity.find_outputs()
+                          if not _out.is_media()]
         elif _tab == self.ui.SMediaTab:
             if self.entity:
                 _outs += [
@@ -244,6 +243,7 @@ class PHSceneTab:
                 _out for _out in _outs if _output_to_task_label(_out) == _task])
 
         # Determine selection
+        _sel = None
         if self.target in _outs:
             _sel = single([
                 _task for _task, _task_outs in safe_zip(_tasks, _data)
@@ -251,16 +251,27 @@ class PHSceneTab:
             _LOGGER.debug(
                 '   - FIND SELECTED TASK FROM TARGET %s %s', _sel,
                 self.target)
-        elif _pane == self.ui.SMediaTab:
-            _sel = 'lighting'
-        elif 'rig' in _tasks:  # Select default before add all
-            _sel = 'rig'
-        elif _tasks:
-            _sel = _tasks[0]
-        else:
-            _sel = None
         if not _sel:
-            _sel = {'anim': 'rig'}.get(pipe.cur_task(), _sel)
+            if _pane == self.ui.SMediaTab:
+                _sel = 'lighting'
+            elif 'rig' in _tasks:  # Select default before add all
+                _sel = 'rig'
+        if not _sel:
+            _cur_task = pipe.cur_task()
+            _map_task = {'anim': 'rig'}.get(_cur_task, _sel)
+            _LOGGER.debug('   - MAP TASK %s %s', _cur_task, _map_task)
+            if _map_task in _tasks:
+                _sel = _map_task
+                _LOGGER.debug('   - SEL MAP TASK')
+            if not _sel:
+                _filter_task = single(
+                    apply_filter(_tasks, _map_task), catch=True)
+                if _filter_task in _tasks:
+                    _sel = _filter_task
+                    _LOGGER.debug('   - SEL FILTER TASK %s', _filter_task)
+        if not _sel and _tasks:
+            _sel = _tasks[0]
+            _LOGGER.debug('   - SELECT FIRST TASK %s', _sel)
         _LOGGER.debug('   - SELECT %s', _sel)
 
         if len(_tasks) > 1:
@@ -520,7 +531,7 @@ class PHSceneTab:
 
     def _redraw__SSceneRefs(self):
 
-        _LOGGER.debug('REDRAW SCENE REFS')
+        _LOGGER.debug('REDRAW SSceneRefs')
 
         # Build items list
         _items = []

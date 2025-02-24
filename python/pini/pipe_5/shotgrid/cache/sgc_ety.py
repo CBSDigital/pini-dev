@@ -343,7 +343,7 @@ class SGCShot(_SGCEntity):
     PROFILE = 'shot'
     ENTITY_TYPE = 'Shot'
     FIELDS = (
-        'sg_head_in', 'code', 'sg_sequence', 'sg_status_list',
+        'sg_head_in', 'code', 'sg_sequence', 'sg_status_list', 'assets',
         'updated_at', 'sg_has_3d', 'project', 'sg_tail_out')
 
     def __init__(self, data):

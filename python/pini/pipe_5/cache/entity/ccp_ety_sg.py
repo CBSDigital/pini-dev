@@ -105,7 +105,14 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             _out_cs.append(_out_c)
 
         _LOGGER.debug(' - FOUND %d OUTS', len(_out_cs))
-        return _out_cs
+
+        # Add pubs from linked assets
+        for _asset in self._find_linked_assets():
+            _asset_pubs = _asset.find_publishes()
+            _out_cs += _asset_pubs
+            _LOGGER.info('   - ADDED %d PUBS %s', len(_asset_pubs), _asset)
+
+        return sorted(_out_cs)
 
     @pipe_cache_to_file
     def _read_publishes(self, force=False):
@@ -122,21 +129,56 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
 
         # Read publishes
         _pubs = []
-        _c_types = set()
         for _out in self.find_outputs():
             _LOGGER.debug(' - OUT %s', _out)
             _LOGGER.debug('   - CONTENT TYPE %s', _out.content_type)
-            if _out.content_type in ('Video', 'Render', 'Video', 'Exr'):
+            if _out.is_media():
                 continue
-            _c_types.add(_out.content_type)
+            assert not _out.is_media()
             _pub = _out.to_ghost()
             _LOGGER.debug('   - PUB %s', _pub)
+            _LOGGER.debug('   - CONTENT TYPE %s', _pub.content_type)
+            assert not _pub.is_media()
             _pubs.append(_pub)
-        _c_types = sorted(_c_types)
-        _LOGGER.debug(' - FOUND %d CONTENT TYPES %s', len(_c_types), _c_types)
-        _LOGGER.info(' - FOUND %d PUBS %s', len(_pubs), self)
+        _LOGGER.info('   - ADDED %d PUBS %s', len(_pubs), self)
 
-        return _pubs
+        return sorted(_pubs)
+
+    def _find_linked_assets(self):
+        """Find assets linked to this entity.
+
+        (only applicable to shots)
+
+        Returns:
+            (CPAsset list): linked assets
+        """
+        from pini import pipe
+        from pini.pipe import shotgrid
+
+        if self.profile == 'asset':
+            yield from []
+            return
+        assert self.profile == 'shot'
+        assert 'assets' in self.sg_entity.data
+        if not self.sg_entity.data['assets']:
+            yield from []
+            return
+
+        # Map ids to asset objects
+        _ids = [_item['id'] for _item in self.sg_entity.data['assets']]
+        _LOGGER.info(' - IDS %s', _ids)
+        for _asset_d in shotgrid.find(
+                'Asset', ids=_ids, fields=['project', 'code', 'sg_asset_type']):
+            _LOGGER.info(' - ADDING ASSET %s', _asset_d)
+            _proj = shotgrid.SGC.find_proj(_asset_d['project']['id'])
+            _LOGGER.info('   - PROJ %s', _proj)
+            _job = pipe.CACHE.find_job(_proj.name)
+            _LOGGER.info('   - JOB %s', _job)
+            _asset = _job.find_asset(
+                asset=_asset_d['code'],
+                asset_type=_asset_d['sg_asset_type'])
+            _LOGGER.info('   - ASSET %s', _asset)
+            yield _asset
 
     def _obt_output_cacheable(self, output, catch, force):
         """Obtain cacheable version of the given output.

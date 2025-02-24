@@ -4,7 +4,7 @@
 
 import os
 
-VERSION = 6
+VERSION = 8
 
 from ..pipe_5 import *
 

@@ -1,3 +1,26 @@
+## [6.50.0] - Mon 2025-02-24 10:36
+### Summary
+ - Pini Helper:
+    - scene/outputs/shot display linked asset outputs (mkim),
+    - maya lookdev publish bugfix error on _<UDIM>.extn style texture publish (farnold),,
+    - better task sorting,
+### Updated
+ - pini.utils.to_seq added safe arg,
+ - pini.dcc.export.CMayaLookdevPublish catch error on no textures,
+ - pini.dcc.export.CMayaLookdevPublish added handling for _<UDIM>. style ftns,
+ - pini.pipe.task_sort sort cam task at top,
+ - pini.pipe.task_sort bugfix sorting on task as None,
+ - pini.pipe moved OUTPUT_MEDIA_TYPES -> cache.OUTPUT_MEDIA_CONTENT_TYPES,
+ - pini.pipe moved CPOutput.is_media -> cache.CCPOutput.is_media,
+ - pini.pipe bugfix output seq sorting,
+ - pini.pipe.cache.CCPEntity.find_outputs add linked assets,
+ - pini.pipe.cache.CCPEntity.find_publishes use is_media,
+ - pini.pipe.shotgrid.find added ids arg,
+ - pini.pipe.shotgrid.SGC.SGCShot.FIELDS added asset,
+ - pini.pipe.VERSION updated 6 -> 8,
+ - pini.tools.helper scene/outputs bugfix task select rig by default for anim,
+
+
 ## [6.49.0] - Fri 2025-02-21 11:47
 ### Summary
  - Pini Helper:

@@ -385,7 +385,12 @@ def task_sort(task):
     if _task and '/' in _task:
         _step, _task = _task.split('/')
 
-    return _to_task_sort_idx(_step), _to_task_sort_idx(_task), _task
+    _step_idx = _to_task_sort_idx(_step)
+    _task_idx = _to_task_sort_idx(_task)
+    _LOGGER.debug(
+        ' - TASK SORT %d (%s), %d (%s), %s', _step_idx, _step,
+        _task_idx, _task, _task)
+    return _step_idx, _task_idx, _task
 
 
 def _to_task_sort_idx(task):
@@ -400,9 +405,10 @@ def _to_task_sort_idx(task):
     from pini import pipe
 
     _tasks = [
-        None,
+        'none',
 
         'default',
+        'cam',
 
         'mod',
         'model',
@@ -449,8 +455,9 @@ def _to_task_sort_idx(task):
         'dev',
     ]
     _task = pipe.map_task(task)
-    if str(_task).lower() in _tasks:
-        _idx = _tasks.index(_task.lower())
+    _task_s = str(_task).lower()
+    if _task_s in _tasks:
+        _idx = _tasks.index(_task_s)
     else:
         _idx = len(_tasks)
     _LOGGER.debug(' - TASK SORT KEY %s mapped=%s idx=%d', task, _task, _idx)

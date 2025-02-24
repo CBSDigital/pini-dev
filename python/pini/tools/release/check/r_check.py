@@ -271,6 +271,7 @@ class CheckFile(MetadataFile):
         _disable = set()
         if self.is_test():
             _disable |= {
+                'C2801',  # unnecessary-dunder-call
                 'C0301',  # line-too-long
                 'R0915',  # too-many-statements
                 'W0212',  # protected-access

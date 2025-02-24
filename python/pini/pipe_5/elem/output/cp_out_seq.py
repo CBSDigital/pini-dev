@@ -17,7 +17,6 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
 
     _dir = None
 
-    # yaml_tag = '!CPOutputSeq'
     to_file = Seq.to_file
 
     def __init__(  # pylint: disable=unused-argument
