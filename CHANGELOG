@@ -1,3 +1,11 @@
+## [6.50.1] - Mon 2025-02-24 12:22
+### Summary
+ - Pini Helper:
+    - bugfix helper not lauching in some shots (mkim),
+### Updated
+ - pini.pipe.cache.CCPEntity._read_outputs sg added linked arg + disabled,
+
+
 ## [6.50.0] - Mon 2025-02-24 10:36
 ### Summary
  - Pini Helper:
