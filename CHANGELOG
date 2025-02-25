@@ -1,3 +1,14 @@
+## [6.52.0] - Tue 2025-02-25 14:49
+### Summary
+ - Pipeline Codebase:
+    - updated pipeline version for internal code restructure,
+### Updated
+ - pini.pipe moved pipe_5 -> pipe,
+ - pini.pipe.VERSION updated 8 -> 9,
+ - pini.tools.release.to_test_sort_key made public,
+ - pini.tools.helper entity label ctx allow shots outside cur job,
+
+
 ## [6.51.0] - Tue 2025-02-25 10:28
 ### Summary
  - Pini Helper:

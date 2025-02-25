@@ -1,7 +1,7 @@
 """Tools for managing releasing code."""
 
 from .check import suggest_docs, CheckFile, check_file
-from .test import PRTestFile, find_tests, run_tests, find_test
+from .test import PRTestFile, find_tests, run_tests, find_test, to_test_sort_key
 
 from .r_deprecate import apply_deprecation
 from .r_notes import PRNotes

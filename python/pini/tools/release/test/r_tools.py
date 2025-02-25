@@ -58,11 +58,11 @@ def find_tests(mode=None, repos=(), filter_=None):
         _r_tests = _repo.find_tests(mode=mode, filter_=filter_)
         _LOGGER.debug(' - %s FOUND %d TESTS', _repo, len(_r_tests))
         _tests += _r_tests
-    _tests.sort(key=_test_sort_key)
+    _tests.sort(key=to_test_sort_key)
     return _tests
 
 
-def _test_sort_key(test, mode='sca/dur'):
+def to_test_sort_key(test, mode='sca/dur'):
     """Sort function for release tests.
 
         MCA - modulo completed age
@@ -115,7 +115,7 @@ def run_tests(mode='all', tests=None, safe=True, force=False):
     testing.enable_file_system(True)
 
     _tests = list(tests) if tests else find_tests(mode=mode)
-    _tests.sort(key=_test_sort_key)
+    _tests.sort(key=to_test_sort_key)
 
     # Handle unsaved changes
     if not force:

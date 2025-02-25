@@ -354,8 +354,7 @@ class PHHeader:
             menu.add_separator()
 
         # Add copied shot
-        _c_ety = pipe.to_entity(
-            copied_path(), job=self.job, catch=True)
+        _c_ety = pipe.to_entity(copied_path(), catch=True)
         if not _c_ety:
             menu.add_label('No copied entity', icon=icons.COPY)
         else:
