@@ -115,7 +115,7 @@ class PRTest:
             _msg = _traceback.strip().split('\n')[-1]
             _LOGGER.info('[error] %s', _class)
             _LOGGER.info('[msg] %s', _msg)
-            print('')
+            print()
             print('-----------------------------------------------')
             print('--------------- TRACEBACK (START) -------------')
             print('-----------------------------------------------')
@@ -123,7 +123,7 @@ class PRTest:
             print('-----------------------------------------------')
             print('---------------- TRACEBACK (END) --------------')
             print('-----------------------------------------------')
-            print('')
+            print()
             _err = error.error_from_str(_traceback)
             testing.enable_file_system(True)
             error.launch_ui(error=_err)

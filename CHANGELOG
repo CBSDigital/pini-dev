@@ -1,3 +1,15 @@
+## [6.51.0] - Tue 2025-02-25 10:28
+### Summary
+ - Pini Helper:
+    - bugfix linked assets not showing (mkim),
+### Updated
+ - pini.utils.File.write bugfix double prompt on diff -> yes,
+ - pini.pipe.CCPEntity.find_outputs added linked flag,
+ - pini.tools.release.tests added submodule in minor refactor,
+ - pini.tools.helper scene/refs show linked assets,
+ - maya_pini.open_maya.add_anim_offs bugfix call deprecated break_connections,
+
+
 ## [6.50.1] - Mon 2025-02-24 12:22
 ### Summary
  - Pini Helper:

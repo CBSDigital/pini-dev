@@ -9,7 +9,7 @@ from pini.utils import (
     Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
     system, to_time_f, abs_path)
 
-from . import r_test_file
+from . import test
 from .r_version import PRVersion, DEV_VER
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class PRRepo(Dir):
         from pini import dcc
 
         _files = self.find(
-            extn='py', filter_='/tests/', class_=r_test_file.PRTestFile)
+            extn='py', filter_='/tests/', class_=test.PRTestFile)
 
         # Apply dcc filter
         _files = [

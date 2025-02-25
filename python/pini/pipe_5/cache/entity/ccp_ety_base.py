@@ -77,8 +77,22 @@ class CCPEntityBase(CPEntity):
         """
         raise NotImplementedError
 
-    def find_outputs(  # pylint: disable=arguments-differ,arguments-renamed
-            self, type_=None, content_type=None, force=False, **kwargs):
+    def _read_linked_outputs(self, force=False):
+        """Read linked outputs for this entity.
+
+        (NOTE: only applicable in shotgrid)
+
+        Args:
+            force (bool): force reread from disk
+
+        Returns:
+            (CCPOutput list): outputs
+        """
+        return []
+
+    def find_outputs(  # pylint: disable=arguments-differ,arguments-renamed,unused-argument
+            self, type_=None, content_type=None, linked=False,
+            force=False, **kwargs):
         """Find outputs in this entity (stored at entity level).
 
         Args:
@@ -86,21 +100,32 @@ class CCPEntityBase(CPEntity):
                 to promote it to the first arg
             content_type (str): filter by content type (this attr is unique to
                 cache outputs)
+            linked (bool): include linked outputs
             force (bool): force reread from disk
 
         Returns:
             (CCPOutput list): entity level outputs
         """
+        from pini import pipe
+
         _LOGGER.debug('FIND OUTPUTS force=%d %s', force, self)
+        _outs = []
+
+        # Add outputs in this shot
         if force:
             self._update_outputs_cache(force=force)
-
-        # Apply outputs filter
-        _outs = []
         for _out in super().find_outputs(type_=type_, **kwargs):
             if content_type and _out.content_type != content_type:
                 continue
             _outs.append(_out)
+
+        # Add linked outputs
+        if linked:
+            for _out in self._read_linked_outputs(force=force):
+                if not pipe.passes_filters(
+                        _out, content_type=content_type, **kwargs):
+                    continue
+                _outs.append(_out)
 
         return _outs
 

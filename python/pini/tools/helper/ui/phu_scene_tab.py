@@ -136,8 +136,9 @@ class PHSceneTab:
             _outs = self.job.find_publishes(extns=dcc.REF_EXTNS)
         elif _tab == self.ui.SEntityTab:
             if self.entity:
-                _outs += [_out for _out in self.entity.find_outputs()
-                          if not _out.is_media()]
+                _outs += [
+                    _out for _out in self.entity.find_outputs(linked=True)
+                    if not _out.is_media()]
         elif _tab == self.ui.SMediaTab:
             if self.entity:
                 _outs += [

@@ -522,12 +522,13 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         from pini.utils import TMP
 
         # Apply show diffs
+        _force = False
         _prompt = wording or 'Update file'
         _result = qt.raise_dialog(
             f'{_prompt}?\n\n{self.path}', title='Confirm',
             buttons=('Yes', 'Show diffs', 'No'))
         if _result == 'Yes':
-            pass
+            _force = True
         elif _result == 'No':
             return
         elif _result == 'Show diffs':
@@ -539,8 +540,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if self.read() == text:
             _LOGGER.info('UPDATES APPLIED IN DIFF TOOL')
             return
-        _result = qt.yes_no_cancel(
-            f'Update file?\n\n{self.path}', title='Confirm')
+        if not _force:
+            _result = qt.yes_no_cancel(
+                f'Update file?\n\n{self.path}', title='Confirm')
         self.write(text, force=True)
 
     def write_json(self, data):

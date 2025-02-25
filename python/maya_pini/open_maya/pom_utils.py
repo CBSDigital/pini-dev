@@ -33,7 +33,8 @@ def add_anim_offs(tfm, anim, reset=False):
     _offs_t.multiply(_mult, output=_anim_t, force=True)
     _LOGGER.info(' - MULT/OFFS %s %s', _mult, _offs)
     for _crv in anim:
-        _anim_t.connect(_crv.input, force=True, break_conns=True)
+        _crv.input.break_conns()
+        _anim_t.connect(_crv.input, force=True)
 
     return _offs, _mult
 

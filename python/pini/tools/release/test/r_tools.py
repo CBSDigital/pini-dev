@@ -50,7 +50,7 @@ def find_tests(mode=None, repos=(), filter_=None):
     Returns:
         (PRTest list): unit/integration tests
     """
-    from .. import release
+    from ... import release
     _repos = repos or release.REPOS
     _LOGGER.debug('FIND TESTS %s', _repos)
     _tests = []

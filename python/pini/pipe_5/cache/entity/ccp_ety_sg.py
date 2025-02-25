@@ -48,11 +48,10 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         raise ValueError(match)
 
     @pipe_cache_on_obj
-    def _read_outputs(self, linked=False, force=False):  # pylint: disable=arguments-renamed
+    def _read_outputs(self, force=False):  # pylint: disable=arguments-renamed
         """Read outputs in this entity.
 
         Args:
-            linked (bool): include linked assets
             force (bool): force reread from shotgrid
 
         Returns:
@@ -107,14 +106,24 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
 
         _LOGGER.debug(' - FOUND %d OUTS', len(_out_cs))
 
-        # Add pubs from linked assets
-        if linked:
-            for _asset in self._find_linked_assets():
-                _asset_pubs = _asset.find_publishes()
-                _out_cs += _asset_pubs
-                _LOGGER.info('   - ADDED %d PUBS %s', len(_asset_pubs), _asset)
-
         return sorted(_out_cs)
+
+    @pipe_cache_on_obj
+    def _read_linked_outputs(self, force=False):
+        """Read linked outputs for this entity.
+
+        Args:
+            force (bool): force reread from disk
+
+        Returns:
+            (CCPOutput list): outputs
+        """
+        _outs = []
+        for _asset in self._find_linked_assets():
+            _asset_pubs = _asset.find_publishes()
+            _outs += _asset_pubs
+            _LOGGER.info('   - ADDED %d PUBS %s', len(_asset_pubs), _asset)
+        return _outs
 
     @pipe_cache_to_file
     def _read_publishes(self, force=False):

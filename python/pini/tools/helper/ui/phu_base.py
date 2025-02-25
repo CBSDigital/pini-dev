@@ -199,11 +199,10 @@ class PHUiBase(
             _trg_ety = self.target
         _LOGGER.debug(
             ' - TARGET tab=%s %s %s', _tab, type(self.target), self.target)
-        if not self.target:
-            return
 
         # Update ui
-
+        if not self.target:
+            return
         self.ui.Job.redraw()
         _LOGGER.debug(' - TRG ETY %s', _trg_ety)
         if _trg_ety:
