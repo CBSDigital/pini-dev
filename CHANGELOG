@@ -1,3 +1,13 @@
+## [6.52.1] - Wed 2025-02-26 12:34
+### Summary
+ - Pini Helper:
+    - maya apply lookdev catch shader missing from ma file,
+    - maya save lookdev block save referenced shaders,
+### Updated
+ - pini.dcc.CMayaRef._apply_shaders added catch,
+ - maya_pini.m_pipe.lookdev.read_shader_assignments exclude referenced shaders,
+
+
 ## [6.52.0] - Tue 2025-02-25 14:49
 ### Summary
  - Pipeline Codebase:

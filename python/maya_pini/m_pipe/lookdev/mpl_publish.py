@@ -139,7 +139,7 @@ def _read_clean_shd_assignments():
         (dict): {shader: shading engine/geos} assignment data
     """
     _shds = {}
-    for _shd, _data in read_shader_assignments().items():
+    for _shd, _data in read_shader_assignments(referenced=False).items():
         _data['geos'] = [to_clean(_geo) for _geo in _data['geos']]
         _shds[_shd] = _data
     return _shds

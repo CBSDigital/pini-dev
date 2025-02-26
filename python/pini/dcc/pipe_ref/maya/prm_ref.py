@@ -382,12 +382,13 @@ class CMayaShadersRef(CMayaRef):
             _light.set_visible(_en)
             _light.shp.plug[_plug].set_val(_en)
 
-    def _apply_shaders(self, shds, target):
+    def _apply_shaders(self, shds, target, catch=True):
         """Apply shaders to target ref.
 
         Args:
             shds (dict): shaders data
             target (CMayaRef): ref to attach shaders to
+            catch (bool): no error if fail to obtain shader
         """
         for _shd, _data in shds.items():
 
@@ -397,8 +398,10 @@ class CMayaShadersRef(CMayaRef):
             if _shd == 'lambert1':
                 _shd = 'lambert1'
             else:
-                _shd = self.ref.to_node(_shd)
+                _shd = self.ref.to_node(_shd, fmt='str')
             if not cmds.objExists(_shd):
+                if catch:
+                    continue
                 raise RuntimeError('Missing shader ' + _shd)
 
             # Find shading engine
