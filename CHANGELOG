@@ -1,8 +1,16 @@
+## [6.53.1] - Thu 2025-03-06 09:22
+### Summary
+ - Pini Helper:
+    - bugfix error on launch in houdini (chatfield),
+### Updated
+ - pini.tools.helper bugfix outdated load_settings arg in base PiniHelper,
+
+
 ## [6.53.0] - Thu 2025-03-06 08:43
 ### Summary
  - Sanity Check:
     - maya check cacheables bugfix hanging on CSETs with high numbers of duplicate name issues (nwray),
-    - maya check AOVs disabled in layout task (nvillareal),
+    - maya check AOVs disabled in layout task (nvillarreal),
     - maya check render globals apply set environment rays to black in depth AOV (cstewart),
 ### Updated
  - pini.utils renamed obtain_results_cache -> obt_results_cache,

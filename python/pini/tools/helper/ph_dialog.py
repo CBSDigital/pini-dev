@@ -18,23 +18,23 @@ class PiniHelper(qt.CUiDialog, ui.PHUiBase):
 
     def __init__(
             self, jump_to=None, admin=None, parent=None,
-            load_settings=True, show=True, reset_cache=True, title=None):
+            store_settings=True, show=True, reset_cache=True, title=None):
         """Constructor.
 
         Args:
             jump_to (str): path to jump interface to on launch
             admin (bool): launch in admin mode with create entity/task options
             parent (QDialog): parent dialog
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
             show (bool): show on launch
             reset_cache (bool): reset pipeline cache on launch
             title (str): override helper window title
         """
         super().__init__(
-            ui_file=ui.UI_FILE, load_settings=False, show=False,
+            ui_file=ui.UI_FILE, store_settings=False, show=False,
             parent=parent)
         ui.PHUiBase.__init__(
-            self, jump_to=jump_to, admin=admin, load_settings=load_settings,
+            self, jump_to=jump_to, admin=admin, store_settings=store_settings,
             show=show, reset_cache=reset_cache, title=title)
 
     def closeEvent(self, event=None):
