@@ -613,6 +613,17 @@ class MetadataFile(File):
     cache_loc = 'adjacent'
     cache_namespace = None
 
+    def __init__(self, file_, cache_loc=None):
+        """Constructor.
+
+        Args:
+            file_ (str): path to file
+            cache_loc (str): apply cache location (eg. home/tmp)
+        """
+        super().__init__(file_)
+        if cache_loc:
+            self.cache_loc = cache_loc
+
     @property
     def cache_fmt(self):
         """Obtain cache format path.
@@ -621,20 +632,28 @@ class MetadataFile(File):
             (str): cache format
         """
         _filename = f'{self.base}_{{func}}.{self.cache_file_extn}'
+
         if self.cache_loc == 'adjacent':
             _ns_dir = f'{self.cache_namespace}/' if self.cache_namespace else ''
             return f'{self.dir}/.pini/{_ns_dir}{_filename}'
+
         if self.cache_loc == 'home':
             from pini.utils import HOME
-            assert self.path[1] == ':'
-            assert self.path[2] == '/'
-            _drive = self.path[0]
-            _dir = HOME.to_subdir('.pini/cache')
-            if self.cache_namespace:
-                _dir = _dir.to_subdir(self.cache_namespace)
-            return _dir.to_file(
-                f'{_drive}/{self.dir[3:]}/{_filename}').path
-        raise NotImplementedError(self.cache_loc)
+            _root = HOME
+        elif self.cache_loc == 'tmp':
+            from pini.utils import TMP
+            _root = TMP
+        else:
+            raise NotImplementedError(self.cache_loc)
+
+        assert self.path[1] == ':'
+        assert self.path[2] == '/'
+        _drive = self.path[0]
+        _dir = _root.to_subdir('.pini/cache')
+        if self.cache_namespace:
+            _dir = _dir.to_subdir(self.cache_namespace)
+        return _dir.to_file(
+            f'{_drive}/{self.dir[3:]}/{_filename}').path
 
     @property
     def metadata(self):

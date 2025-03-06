@@ -34,7 +34,7 @@ class _NamespaceClashUi(qt.CUiDialog):
         self.input_namespace = namespace
         self.file_ = File(file_)
         super().__init__(
-            modal=True, ui_file=_UI_FILE, load_settings=False)
+            modal=True, ui_file=_UI_FILE, store_settings=False)
 
     def init_ui(self):
         """Initiate ui element."""

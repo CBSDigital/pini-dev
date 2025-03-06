@@ -381,7 +381,7 @@ def _build_update_job_py(outputs, metadata, work):
                 f'_metadata = {metadata}',
                 'for _out in _outs:',
                 '    if not _out.exists():',
-                '        raise RuntimeError(_out.path)',
+                '        raise RuntimeError(f"Missing output {_out.path}")',
                 '    _out.set_metadata(_metadata)',
                 '']
 

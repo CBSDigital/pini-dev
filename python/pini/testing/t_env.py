@@ -195,6 +195,21 @@ def read_env_paths(env):
         for _path in _val.split(os.pathsep)])
 
 
+def remove_env_path(env, path):
+    """Remove path from environment variable.
+
+    Args:
+        env (str): name of environment variable to read
+        path (str): path to remove
+    """
+    _path = abs_path(path)
+    if _path not in read_env_paths(env):
+        return
+    import pprint
+    pprint.pprint(read_env_paths(env))
+    raise NotImplementedError
+
+
 def reset_enable_filesystem(func):
     """Decorator to renable filesystem after running function.
 

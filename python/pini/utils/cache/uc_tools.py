@@ -78,16 +78,15 @@ def build_cache_fmt(
         (str): cache format
     """
     from pini import dcc
-    from pini.utils import (
-        TMP_PATH, is_pascal, Path, abs_path, HOME_PATH, to_str)
+    from pini.utils import TMP, is_pascal, Path, abs_path, HOME, to_str
 
     assert is_pascal(tool)
 
     # Determine root dir
     if mode == 'tmp':
-        _root = TMP_PATH
+        _root = TMP.to_subdir('.pini/cache')
     elif mode == 'home':
-        _root = HOME_PATH + '/tmp'
+        _root = HOME.to_subdir('.pini/cache')
     else:
         raise ValueError(mode)
 

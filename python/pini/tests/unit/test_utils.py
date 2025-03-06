@@ -14,10 +14,10 @@ from pini.utils import (
     Path, File, Dir, assert_eq, abs_path, norm_path, HOME_PATH, str_to_ints,
     TMP_PATH, single, find, passes_filter, Seq, cache_result, path, to_nice,
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
-    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, Res,
+    merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, Res, HOME,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image, TMP, search_dict_for_key, find_ffmpeg_exe,
-    get_result_to_file_cacher)
+    Image, TMP, search_dict_for_key, find_ffmpeg_exe, MetadataFile,
+    get_result_to_file_cacher, build_cache_fmt)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -193,6 +193,37 @@ class TestUtils(unittest.TestCase):
 
 
 class TestCache(unittest.TestCase):
+
+    def test_cache_paths(self):
+
+        _path = 'C:/TestDir/test.py'
+
+        _file = MetadataFile(_path)
+        print(_file.cache_fmt)
+        assert _file.cache_loc == 'adjacent'
+        assert File(_file.cache_fmt).to_dir(levels=2) == File(_file).to_dir()
+
+        _file = MetadataFile('C:/TestDir/test.py', cache_loc='tmp')
+        print(_file.cache_fmt)
+        assert TMP.to_subdir('.pini').contains(_file.cache_fmt)
+        assert TMP.to_subdir('.pini/cache').contains(_file.cache_fmt)
+
+        _file = MetadataFile('C:/TestDir/test.py', cache_loc='home')
+        print(_file.cache_fmt)
+        assert HOME.to_subdir('.pini').contains(_file.cache_fmt)
+        assert HOME.to_subdir('.pini/cache').contains(_file.cache_fmt)
+
+        _fmt = build_cache_fmt(_path, tool='Test')
+        print(_fmt)
+        assert TMP.contains(_fmt)
+        assert TMP.to_subdir('.pini').contains(_fmt)
+        assert TMP.to_subdir('.pini/cache').contains(_fmt)
+
+        _fmt = build_cache_fmt(_path, tool='Test', mode='home')
+        print(_fmt)
+        assert HOME.contains(_fmt)
+        assert HOME.to_subdir('.pini').contains(_fmt)
+        assert HOME.to_subdir('.pini/cache').contains(_fmt)
 
     def test_cache_result(self):
 

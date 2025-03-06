@@ -242,7 +242,8 @@ class Path:
         """
         from . import up_dir
         _LOGGER.debug('TO DIR %s', self.path)
-        assert isinstance(levels, int)
+        if not isinstance(levels, int):
+            raise TypeError(f'Bad value "{levels}" for levels arg')
 
         if levels > 1:
             return self.to_dir().to_dir(levels=levels - 1)
