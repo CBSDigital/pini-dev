@@ -324,6 +324,17 @@ class CCPJobBase(CPJob):
         """
         raise NotImplementedError
 
+    def find_outputs(self, **kwargs):
+        """Find outputs in this job.
+
+        Returns:
+            (CCPOutput list): outputs
+        """
+        _outs = []
+        for _ety in self.entities:
+            _outs += _ety.find_outputs(**kwargs)
+        return _outs
+
     def to_asset(self, asset_type, asset, class_=None, catch=True):
         """Build an asset object for an asset within this job.
 

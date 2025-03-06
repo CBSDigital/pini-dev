@@ -31,7 +31,7 @@ class _ErrorCatcherUi(qt.CUiDialog):
                 (to allow multiple error dialogs)
         """
         super().__init__(
-            ui_file=UI_FILE, load_settings=False, parent=parent,
+            ui_file=UI_FILE, store_settings=False, parent=parent,
             catch_errors=False, show=show, stack_key=stack_key)
         self.set_window_icon(ICON)
 

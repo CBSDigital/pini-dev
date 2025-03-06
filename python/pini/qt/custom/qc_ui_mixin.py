@@ -11,7 +11,7 @@ class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
     """Dockable maya interface defined by a ui file."""
 
     def __init__(self, ui_file, catch_errors=True, show=True, parent=None,
-                 load_settings=True, stack_key=None, title=None):
+                 store_settings=True, stack_key=None, title=None):
         """Constructor.
 
         Args:
@@ -19,7 +19,7 @@ class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
             catch_errors (bool): catch errors
             show (bool): show on launch
             parent (QDialog): override parent ui
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
             stack_key (str): override dialog stack key
             title (str): override title
         """
@@ -27,7 +27,7 @@ class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
             parent=parent, show=show, title=title)
         qc_ui_base.CUiBase.__init__(
             self, ui_file=ui_file, show=False, catch_errors=catch_errors,
-            load_settings=load_settings, stack_key=stack_key)
+            store_settings=store_settings, stack_key=stack_key)
 
     def load_settings(self, geometry=True, type_filter=None):
         """Load interface settings.

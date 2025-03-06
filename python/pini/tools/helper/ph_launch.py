@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 @usage.get_tracker('LaunchPiniHelper')
 @error.catch
 def launch(
-        jump_to=None, admin=None, parent=None, load_settings=True, show=True,
+        jump_to=None, admin=None, parent=None, store_settings=True, show=True,
         use_basic=False, reset_cache=True, title=None):
     """Launch PiniHelper interface.
 
@@ -24,7 +24,7 @@ def launch(
         jump_to (str): jump interface to path
         admin (bool): launch in admin mode with create entity/task options
         parent (QDialog): parent dialog
-        load_settings (bool): load settings on launch
+        store_settings (bool): load settings on launch
         show (bool): show on launch
         use_basic (bool): ignore any dcc overrides
         reset_cache (bool): reset pipeline cache on launch

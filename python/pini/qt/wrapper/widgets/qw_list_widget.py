@@ -111,7 +111,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         if not catch:
             raise ValueError(f'Failed to select {item}')
 
-    def select_row(self, idx, replace=False, emit=True):
+    def select_row(self, idx, replace=True, emit=True):
         """Set current row.
 
         Args:

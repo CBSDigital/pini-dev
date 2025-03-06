@@ -32,7 +32,7 @@ class _Result:
         return time.time() - self.mtime
 
 
-def obtain_results_cache(namespace='default'):
+def obt_results_cache(namespace='default'):
     """Obtain cached results for the given namespace.
 
     Args:
@@ -83,7 +83,7 @@ def get_result_cacher(use_args=None, namespace='default', max_age=None):
             _force = kwargs.get('force')
             _LOGGER.debug('[cache_result] - ARGS KEY (%s): %s',
                           func.__name__, _args_key)
-            _results = obtain_results_cache(namespace)
+            _results = obt_results_cache(namespace)
 
             # Determine whether result needs to be calculated
             if _force:

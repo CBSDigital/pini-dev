@@ -36,3 +36,11 @@ class CSlider(QtWidgets.QSlider, CBaseWidget):
             (float): frational value (between 0 and 1)
         """
         return 1.0 * self.value() / self.maximum()
+
+    def to_pc(self):
+        """Obtain slider value as a percentage of it maximum value.
+
+        Returns:
+            (float): percentage value (between 0 and 100)
+        """
+        return 100 * self.to_fr()

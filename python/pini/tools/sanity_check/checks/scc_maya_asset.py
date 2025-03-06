@@ -176,7 +176,7 @@ class CheckCacheSet(core.SCMayaCheck):
 
         # Check set geos
         _geos = m_pipe.read_cache_set(set_=_set, mode='geo')
-        _tfms = m_pipe.read_cache_set(set_=_set, mode='transforms')
+        _tfms = m_pipe.read_cache_set(set_=_set, mode='tfm')
         self.write_log('Geos %s', _geos)
         if not _geos:
 

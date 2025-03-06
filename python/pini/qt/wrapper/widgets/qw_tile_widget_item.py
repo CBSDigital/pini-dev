@@ -237,5 +237,16 @@ class CTileWidgetItem(qw_list_widget_item.CListWidgetItem):
         _pix = self._draw_pixmap()
         self.setIcon(to_icon(_pix))
 
+    def reset(self):
+        """Reset this tile's thumb/filmstrip caches."""
+        self._thumb_pix = None
+
+        self._filmstrip_pix = None
+        self._filmstrip_tile = None
+        self._filmstrip_tile_pix = None
+        self._filmstrip_scroll = None
+
+        self.redraw()
+
     def __repr__(self):
         return basic_repr(self, self.name)

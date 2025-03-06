@@ -189,7 +189,9 @@ class CPipeRef:
         raise NotImplementedError
 
     def __eq__(self, other):
-        return self.cmp_str == other.cmp_str
+        if isinstance(other, CPipeRef):
+            return self.cmp_str == other.cmp_str
+        return False
 
     def __hash__(self):
         return hash(self.cmp_str)

@@ -135,8 +135,9 @@ class CheckAOVs(SCMayaCheck):
     If no job AOV template has been published, the check does nothing.
     """
 
-    task_filter = 'lookdev layout lighting'
+    task_filter = 'lookdev lighting'
     label = 'Check AOVs'
+    sort = 40  # Before check render globals
 
     def run(self):
         """Run this check."""
@@ -368,6 +369,7 @@ class CheckRenderGlobals(SCMayaCheck):
     """Check render format is exr."""
 
     task_filter = 'lighting lookdev'
+    depends_on = (CheckAOVs, )
 
     def run(self, img_fmt='exr'):
         """Run this check.
@@ -410,6 +412,7 @@ class CheckRenderGlobals(SCMayaCheck):
                 ('redshiftOptions.motionBlurFrameDuration', 1),
                 ('redshiftOptions.motionBlurShutterStart', 0.25),
                 ('redshiftOptions.motionBlurShutterEnd', 0.75),
+                ('rsAov_Depth.setEnvironmentRaysToBlack', True),
             ]
 
         elif _ren == 'vray':

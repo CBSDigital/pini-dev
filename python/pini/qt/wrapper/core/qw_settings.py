@@ -58,6 +58,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
             _LOGGER.debug(' - APPLY SETTING %s %s', _key, _val)
             _, _name = _key.split('/')
             if filter_ and not passes_filter(_name, filter_):
+                _LOGGER.debug('   - FILTERED')
                 continue
 
             # Obtain widget
@@ -78,6 +79,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
             if _save_policy in (
                     qt.SavePolicy.SAVE_IN_SCENE,
                     qt.SavePolicy.NO_SAVE):
+                _LOGGER.debug('   - FILTERED BY SAVE POLICY %s', _save_policy)
                 continue
             _disable_save_settings = getattr(
                 _widget, 'disable_save_settings', False)

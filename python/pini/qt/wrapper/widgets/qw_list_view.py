@@ -174,6 +174,7 @@ class CListView(QtWidgets.QListView, qw_base_widget.CBaseWidget):
             item (QStandardItem): item to select
             replace (bool): replace existing selection
         """
+        _LOGGER.debug('SELECT ITEM %s replace=%d', item, replace)
 
         # Update selection
         assert isinstance(item, QtGui.QStandardItem)
@@ -182,6 +183,7 @@ class CListView(QtWidgets.QListView, qw_base_widget.CBaseWidget):
             _sel_model = QtCore.QItemSelectionModel.ClearAndSelect
         else:
             _sel_model = QtCore.QItemSelectionModel.Select
+        _LOGGER.debug(' - MODEL %s', _sel_model)
         _sel.setCurrentIndex(item.index(), _sel_model)
 
         # Make item visible

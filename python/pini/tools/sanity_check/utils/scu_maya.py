@@ -2,10 +2,10 @@
 
 import collections
 import logging
-import re
 
 from maya import cmds
 
+from pini import qt
 from pini.dcc import export
 from pini.utils import single, wrap_fn, check_heart
 
@@ -24,7 +24,10 @@ def check_cacheable_set(set_, check):
         set_ (str): name of cache_SET or CSET
         check (SCCheck): check to apply fails to
     """
+    check.tfms = m_pipe.read_cache_set(set_=set_, mode='tfm')
     for _func in [
+            _batch_check_for_basic_dup_names,
+            _batch_check_for_cleaned_dup_names,
             _check_for_overlapping_nodes,
             _check_for_duplicate_names,
             _check_geo_shapes,
@@ -33,6 +36,146 @@ def check_cacheable_set(set_, check):
         _func(set_=set_, check=check)
         if check.fails:
             return
+
+
+def _fix_dup_name(geo, idxs=None, reject=None):
+    """Fix node with duplicate name.
+
+    Args:
+        geo (str): node to fix
+        idxs (dict): index of current suffix indices for each node name
+        reject (set): names to reject
+
+    Returns:
+        (str): updated name
+    """
+    _LOGGER.debug(' - GEO %s', geo)
+
+    _idxs = idxs or {}
+    _reject = reject or set()
+    _root = to_clean(geo, strip_digits=True)
+    _idx = _idxs.get(_root, 1)
+    _LOGGER.debug('   - ROOT %s %d', _root, _idx)
+
+    while True:
+        check_heart()
+        if _root.endswith('_'):
+            _new_name = f'{_root}{_idx}'
+        else:
+            _new_name = f'{_root}_{_idx}'
+        _idx += 1
+        if _new_name in _reject:
+            _LOGGER.debug('     - REJECTED IN USE %s', _new_name)
+            continue
+        if cmds.objExists(_new_name):
+            _LOGGER.debug('     - REJECTED EXISTING %s', _new_name)
+            continue
+        break
+
+    _LOGGER.debug('   - RENAME %s (FROM %s)', _new_name, geo)
+    cmds.rename(geo, _new_name)
+    _idxs[_root] = _idx + 1
+
+    return _new_name
+
+
+def _fix_basic_dup_names(tfms):
+    """Fix basic dupicate names.
+
+    Args:
+        tfms (str list): nodes to fix
+    """
+    from pini.tools import sanity_check
+    _idxs = {}
+    _reject = {to_clean(_tfm) for _tfm in tfms}
+    _progress = qt.progress_bar(
+        reversed(tfms), 'Applying {:d} fixes', parent=sanity_check.DIALOG)
+    _progress.raise_()
+    for _tfm in _progress:
+        _fix_dup_name(_tfm, idxs=_idxs, reject=_reject)
+
+
+def _batch_check_for_basic_dup_names(set_, check, threshold=20):
+    """Batch check for basic duplicate names.
+
+    This is a quick check for duplicate names which simply flags pipe
+    characters in the node path - this is run before slower checks to
+    provide a first pass rough clean of a complex scene without making
+    sanity check hang - eg. forest created by duplicating nodes with 90k
+    duplicate names.
+
+    Args:
+        set_ (str): cache set being checked
+        check (SCCheck): sanity check
+        threshold (int): ignore this check if the result count is
+            less than this value
+    """
+    check.write_log('Applying batch basic duplicate name check %s', check)
+    _bad_tfms = [_tfm for _tfm in check.tfms if '|' in str(_tfm)]
+    if len(_bad_tfms) < threshold:
+        return
+    check.add_fail(
+        f'Fix {len(_bad_tfms):d} duplicate names in "{set_}" flagged '
+        'by basic check',
+        fix=wrap_fn(_fix_basic_dup_names, _bad_tfms))
+
+
+def _batch_check_for_cleaned_dup_names(set_, check, threshold=20):
+    """Slower check for duplicate names using clean name.
+
+    This runs after the basic check to batch flag large numbers of duplicate
+    names, although this check uses the cleaned (namespace strippped) name.
+    These are batched together as a single fail, in case there are a huge
+    number of duplicate nodes, which would grid the sanity check ui to a halt.
+
+    Args:
+        set_ (str): cache set being checked
+        check (SCCheck): sanity check
+        threshold (int): ignore this check if the result count is
+            less than this value
+    """
+    check.write_log('Applying batch cleaned duplicate name fix %s', set_)
+
+    _names = collections.defaultdict(list)
+    for _tfm in check.tfms:
+        _name = to_clean(_tfm)
+        _names[_name].append(_tfm)
+    _names = dict(_names)
+    _to_fix = [
+        (_name, _tfms) for _name, _tfms in _names.items() if len(_tfms) > 1]
+    if len(_to_fix) < threshold:
+        return
+
+    _LOGGER.debug(' - FOUND %d NAMES TO FIX', len(_to_fix))
+    _count = sum(len(_tfms) for _, _tfms in _to_fix)
+
+    check.add_fail(
+        f'Fix {_count:d} duplicate names in "{set_}" flagged '
+        'by clean name check', fix=wrap_fn(
+            _fix_cleaned_dup_names, to_fix=_to_fix, reject=_names.keys()))
+
+
+def _fix_cleaned_dup_names(to_fix, reject):
+    """Fix duplicate names taking account of cleaned names.
+
+    Args:
+        to_fix (tuple): list of items to fix
+        reject (str): names to reject
+    """
+    from pini.tools import sanity_check
+    _LOGGER.debug('FIX CLEANED DUP NAMES')
+
+    _idxs = {}
+    for _name, _tfms in qt.progress_bar(
+            to_fix, 'Applying {:d} by name fixes', parent=sanity_check.DIALOG):
+        _LOGGER.debug('FIX TFMS %s %s', _name, _tfms)
+        try:
+            _tfms.sort(key=to_long, reverse=True)
+        except ValueError:
+            _LOGGER.info(' - FAILED TO SORT %s', _tfms)
+            continue
+        for _tfm in _tfms[1:]:
+            _fix_dup_name(_tfm, idxs=_idxs, reject=reject)
 
 
 def _check_geo_shapes(set_, check):
@@ -58,7 +201,7 @@ def _check_for_duplicate_names(set_, check):
     """
     _names = collections.defaultdict(list)
 
-    for _node in m_pipe.read_cache_set(set_=set_, mode='transforms'):
+    for _node in check.tfms:
         _names[to_clean(_node)].append(_node)
 
     for _name, _nodes in _names.items():
@@ -72,8 +215,7 @@ def _check_for_duplicate_names(set_, check):
             _fixable = bool([
                 _node for _node in _nodes if not _node.is_referenced()])
             if _fixable:
-                _fix = wrap_fn(
-                    _fix_duplicate_node, node=_node, set_=set_)
+                _fix = wrap_fn(_fix_dup_name, _node)
             _fail = core.SCFail(_msg, fix=_fix)
             _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
             check.add_fail(_fail)
@@ -170,38 +312,6 @@ def _fix_shared_parent(parent, nodes, set_, grp):
     for _node in nodes:
         cmds.sets(_node, remove=set_)
         pom.CTransform(_node).add_to_grp(grp)
-
-
-def _fix_duplicate_node(node, set_):
-    """Rename a duplicate node so that it has a unique name.
-
-    Args:
-        node (str): node to fix (eg. lightsGrp)
-        set_ (str): name of cache_SET or CSET
-    """
-    _LOGGER.info('FIX DUP NODE %s', node)
-
-    _tfms = m_pipe.read_cache_set(set_=set_, mode='transforms')
-    _names = {to_clean(_tfm) for _tfm in _tfms}
-    _LOGGER.info(' - FOUND %d NAMES', len(_names))
-
-    _base = re.split('[|:]', str(node))[-1]
-    while _base and _base[-1].isdigit():
-        check_heart()
-        _base = _base[:-1]
-    _LOGGER.info(' - BASE %s', _base)
-
-    # Find next base
-    _idx = 1
-    _name = _base
-    _LOGGER.info(' - CHECK NAME %s', _name)
-    while cmds.objExists(_name) or _name in _names:
-        check_heart()
-        _name = f'{_base}{_idx:d}'
-        _LOGGER.info(' - CHECK NAME %s', _name)
-        _idx += 1
-    _LOGGER.info(' - RENAME %s -> %s', node, _name)
-    cmds.rename(node, _name)
 
 
 def find_cache_set():

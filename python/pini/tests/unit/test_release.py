@@ -708,6 +708,42 @@ class TestRelease(unittest.TestCase):
                  'def test():',
                  '    pass'])),
 
+            ('Nested from test',
+             '\n'.join([
+                 'from pini import testing',
+                 '',
+                 'def test():',
+                 '    from maya_pini import open_maya',
+                 '    pass']),
+             '\n'.join([
+                 '',
+                 'def test():',
+                 '    pass'])),
+
+            ('Relative from test',
+             '\n'.join([
+                 'from pini import testing',
+                 'from .. import open_maya',
+                 '',
+                 'def test():',
+                 '    pass']),
+             '\n'.join([
+                 '',
+                 'def test():',
+                 '    pass'])),
+
+            ('Nested relative from test',
+             '\n'.join([
+                 'from pini import testing',
+                 '',
+                 'def test():',
+                 '    from .. import open_maya',
+                 '    pass']),
+             '\n'.join([
+                 '',
+                 'def test():',
+                 '    pass'])),
+
             ('Remove from list test',
              '\n'.join([
                  'import os',

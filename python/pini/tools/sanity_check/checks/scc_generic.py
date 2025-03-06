@@ -1,6 +1,5 @@
 """Manages specific dcc-agnostic checks."""
 
-import time
 import logging
 
 from pini import dcc, pipe
@@ -159,31 +158,3 @@ class CheckFrameRange(SCCheck):
                 _fail.add_action(
                     'Update shotgrid', chain_fns(_update, self.run),
                     is_fix=True, index=0)
-
-
-class SlowCheckTest(SCCheck):
-    """Test check which runs over a few seconds."""
-
-    dev_only = True
-
-    def run(self):
-        """Run this check."""
-
-        _count = 30
-        for _idx in self.update_progress(range(_count)):
-            self.write_log('Updating %d/%d', _idx + 1, _count)
-            time.sleep(0.1)
-
-        for _key in ['BLAH', 'BLUE', 'BLEE']:
-            if dcc.get_scene_data(_key):
-                _fix = wrap_fn(self.fix_scene_data, _key)
-                self.add_fail('Bad scene data ' + _key, fix=_fix)
-
-    def fix_scene_data(self, key):
-        """Fix scene data issue.
-
-        Args:
-            key (str): data items to fix
-        """
-        dcc.set_scene_data(key, False)
-        time.sleep(0.3)

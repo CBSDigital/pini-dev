@@ -225,7 +225,7 @@ p, li { white-space: pre-wrap; }
      <item>
       <widget class="QPushButton" name="Continue">
        <property name="text">
-        <string>Publish (ignore fails)</string>
+        <string>Continue</string>
        </property>
       </widget>
      </item>

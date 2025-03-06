@@ -342,7 +342,7 @@ def blast(
     else:
         _tmp_seq = None
     try:
-        _clip.delete(force=force, wording='Replace')
+        _clip.delete(force=force, wording='replace')
     except OSError as _exc:
         raise error.HandledError(
             f'Unable to delete existing file:\n\n{_clip.path}\n\n'

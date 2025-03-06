@@ -281,18 +281,23 @@ def to_audio(start=None, mode='wav/offset'):
     raise ValueError(mode)
 
 
-def to_clean(node):
+def to_clean(node, strip_digits=False):
     """Get clean node name for the given node, ie. strip namespace.
 
     eg. tmp:camera -> camera
 
     Args:
         node (str): node name to clean
+        strip_digits (bool): remove trailing digits from node name
 
     Returns:
         (str): clean name
     """
-    return str(node).rsplit('|', 1)[-1].rsplit(':', 1)[-1]
+    _clean = str(node).rsplit('|', 1)[-1].rsplit(':', 1)[-1]
+    if strip_digits:
+        while _clean[-1].isdigit():
+            _clean = _clean[:-1]
+    return _clean
 
 
 def to_long(node):
@@ -309,9 +314,10 @@ def to_long(node):
     _node = to_node(node, shorten=False)
     _ls = cmds.ls(_node, long=True)
     try:
-        return str(single(_ls))
+        _long = single(_ls)
     except ValueError as _exc:
         raise ValueError(node, type(node)) from _exc
+    return _long
 
 
 def to_node(name, shorten=True, namespace=None, class_=None, clean=True):

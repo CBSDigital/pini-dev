@@ -86,20 +86,20 @@ class TestQt(unittest.TestCase):
 
         class _SettingsTestUi(qt.CUiDialog):
 
-            def __init__(self, load_settings=True):
+            def __init__(self, store_settings=True):
 
                 super().__init__(
-                    ui_file=_UI_FILE.path, load_settings=load_settings)
+                    ui_file=_UI_FILE.path, store_settings=store_settings)
 
         assert _UI_FILE.exists()
-        _dialog = _SettingsTestUi(load_settings=False)
+        _dialog = _SettingsTestUi(store_settings=False)
         assert _dialog.ui.MyTab.currentIndex() == 0
         _dialog.ui.MyTab.setCurrentIndex(1)
         assert _dialog.find_widgets()
         _dialog.save_settings()
         _dialog.delete()
 
-        _dialog = _SettingsTestUi(load_settings=True)
+        _dialog = _SettingsTestUi(store_settings=True)
         assert _dialog.ui.MyTab.currentIndex() == 1
         _dialog.delete()
 

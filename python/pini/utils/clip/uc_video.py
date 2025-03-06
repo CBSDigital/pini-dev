@@ -74,7 +74,7 @@ class Video(path.MetadataFile, uc_clip.Clip):
         _LOGGER.debug(' - DUR %.03f', _dur)
         return _dur
 
-    @cache.cache_method_to_file
+    @cache.get_method_to_file_cacher(mtime_outdates=True)
     def _read_ffprobe(self, force=False):
         """Obtain ffprobe reading for this video.
 

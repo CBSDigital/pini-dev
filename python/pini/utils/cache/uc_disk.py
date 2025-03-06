@@ -3,9 +3,66 @@
 import functools
 import logging
 
-from .uc_memory import obtain_results_cache
+from .uc_memory import obt_results_cache
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _determine_cache_action(  # pylint: disable=too-many-return-statements,too-many-branches
+        force, results, key, file_, obj, mtime_outdates, min_mtime,
+        max_age):
+    """Determine action to take on results request.
+
+    Args:
+        force (bool): force flag
+        results (dict): cache results dict
+        key (tuple): results key
+        file_ (File): cache file
+        obj (object): method's parent object
+        mtime_outdates (bool): whether mtime outdates cache
+        min_mtime (bool): min cache mtime to outdate cache
+        max_age (float): apply maximum cache age (in seconds)
+
+    Returns:
+        (str): cache action
+    """
+    from pini.utils import File
+
+    _exists = _mtime = None
+
+    if force:
+        return 'recache'
+
+    if max_age:
+        if _exists is None:
+            _exists = file_.exists()
+        if _exists and file_.age() > max_age:
+            return 'recache'
+
+    if not mtime_outdates and key in results:
+        return 'use memory'
+
+    if _exists is None:
+        _exists = file_.exists()
+    if not _exists:
+        return 'recache'
+
+    # Apply mtime outdates to files
+    _LOGGER.debug(' - OBJ file=%d %s', isinstance(obj, File), obj)
+    if isinstance(obj, File) and mtime_outdates:
+        if _mtime is None:
+            _mtime = file_.mtime()
+        _obj_mtime = obj.mtime()
+        _LOGGER.debug(' - MTIME DIFF %s', _mtime - _obj_mtime)
+        if _mtime < _obj_mtime:
+            return 'recache'
+    if min_mtime:
+        if _mtime is None:
+            _mtime = file_.mtime()
+        if _mtime < min_mtime:
+            return 'recache'
+
+    return 'use disk'
 
 
 def get_file_cacher(file_):
@@ -86,7 +143,7 @@ def get_method_to_file_cacher(
             _file = File(self.cache_fmt.format(func=func.__name__))
             _force = kwargs.get('force')
             _LOGGER.debug(' - CACHE FILE %s', _file.path)
-            _results = obtain_results_cache(namespace)
+            _results = obt_results_cache(namespace)
 
             # Determine whether to recache
             _action = _determine_cache_action(
@@ -137,61 +194,53 @@ def get_method_to_file_cacher(
     return _method_to_file_cacher_dec
 
 
-def _determine_cache_action(  # pylint: disable=too-many-return-statements,too-many-branches
-        force, results, key, file_, obj, mtime_outdates, min_mtime,
-        max_age):
-    """Determine action to take on results request.
+def get_result_to_file_cacher(
+        file_, namespace='default', min_mtime=None, max_age=None):
+    """Build a decorator which caches the result of a function to a file.
 
     Args:
-        force (bool): force flag
-        results (dict): cache results dict
-        key (tuple): results key
-        file_ (File): cache file
-        obj (object): method's parent object
-        mtime_outdates (bool): whether mtime outdates cache
+        file_ (File): file to write to
+        namespace (str): cache namespace
         min_mtime (bool): min cache mtime to outdate cache
         max_age (float): apply maximum cache age (in seconds)
 
     Returns:
-        (str): cache action
+        (fn): caching decorator
     """
-    from pini.utils import File
+    def _result_to_file_cacher_dec(func):
 
-    _exists = _mtime = None
+        @functools.wraps(func)
+        def _cache_func(*args, **kwargs):
 
-    if force:
-        return 'recache'
+            _LOGGER.info('CACHE FUNC %s', func)
+            assert file_.extn == 'pkl'
 
-    if max_age:
-        if _exists is None:
-            _exists = file_.exists()
-        if _exists and file_.age() > max_age:
-            return 'recache'
+            # Determine cache action
+            _force = kwargs.get('force', False)
+            _LOGGER.info(' - FORCE %s', _force)
+            _results = obt_results_cache(namespace)
+            _action = _determine_cache_action(
+                force=_force, results=_results, key=func,
+                file_=file_, obj=None, mtime_outdates='N/A',
+                min_mtime=min_mtime, max_age=max_age)
+            _LOGGER.info(' - ACTION %s', _action)
 
-    if not mtime_outdates and key in results:
-        return 'use memory'
+            # Obtain cache result
+            if _action == 'use disk':
+                _result = file_.read_pkl()
+            elif _action == 'recache':
+                _result = func(*args, **kwargs)
+                _LOGGER.info(' - CALCULATED RESULT %s', _result)
+                _results[func] = _result
+                file_.write_pkl(_result, force=True)
+            else:
+                raise NotImplementedError(_action)
 
-    if _exists is None:
-        _exists = file_.exists()
-    if not _exists:
-        return 'recache'
+            return _result
 
-    # Apply mtime outdates to files
-    _LOGGER.debug(' - OBJ file=%d %s', isinstance(obj, File), obj)
-    if isinstance(obj, File) and mtime_outdates:
-        if _mtime is None:
-            _mtime = file_.mtime()
-        _obj_mtime = obj.mtime()
-        _LOGGER.debug(' - MTIME DIFF %s', _mtime - _obj_mtime)
-        if _mtime < _obj_mtime:
-            return 'recache'
-    if min_mtime:
-        if _mtime is None:
-            _mtime = file_.mtime()
-        if _mtime < min_mtime:
-            return 'recache'
+        return _cache_func
 
-    return 'use disk'
+    return _result_to_file_cacher_dec
 
 
 def cache_method_to_file(func):

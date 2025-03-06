@@ -45,14 +45,14 @@ class PHUiBase(
     _cur_tab = None
 
     def __init__(
-            self, jump_to=None, admin=None, load_settings=True,
+            self, jump_to=None, admin=None, store_settings=True,
             show=True, reset_cache=True, title=None):
         """Constructor.
 
         Args:
             jump_to (str): path to jump interface to on launch
             admin (bool): launch in admin mode with create entity/task options
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
             show (bool): show on launch
             reset_cache (bool): reset pipeline cache on launch
             title (str): override helper window title
@@ -74,7 +74,7 @@ class PHUiBase(
             _cpnt.__init__(self)
 
         # Setup vars
-        self._save_settings = load_settings
+        self.store_settings = store_settings
         self._notes_stack = {}
         if not pipe.CACHE.jobs:
             raise RuntimeError('No valid jobs found in ' + pipe.ROOT.path)
@@ -99,7 +99,7 @@ class PHUiBase(
         self.ui.WWorks.doubleClicked.connect(
             wrap_fn(self._callback__WLoad))
 
-        if load_settings:
+        if store_settings:
             _LOGGER.debug(' - LOADING SETTINGS')
             self.load_settings()
             _LOGGER.debug(' - LOADED SETTINGS')

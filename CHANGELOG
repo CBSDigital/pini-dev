@@ -1,3 +1,31 @@
+## [6.53.0] - Thu 2025-03-06 08:43
+### Summary
+ - Sanity Check:
+    - maya check cacheables bugfix hanging on CSETs with high numbers of duplicate name issues (nwray),
+    - maya check AOVs disabled in layout task (nvillareal),
+    - maya check render globals apply set environment rays to black in depth AOV (cstewart),
+### Updated
+ - pini.utils renamed obtain_results_cache -> obt_results_cache,
+ - pini.utils.get_result_to_file_cacher added,
+ - pini.utils.Video._read_ffprobe apply mtime outdates to cache,
+ - pini.dcc.CPipeRef.__eq__ added non-pipe_ref cmp handling,
+ - pini.pipe.cache.CCPJob.find_outputs added,
+ - pini.qt.CListWidget.select_row replace enabled by default,
+ - pini.qt.CSlider.to_pc added,
+ - pini.qt.CTileWidgetItem.reset added,
+ - pini.qt.CUiBase renamed arg load_settings -> store_settings for clarity,
+ - pini.install.PITool allow icon as File in hou,
+ - pini.tools.release.check_file added deprecation check,
+ - pini.tools.release.check_file pylint add dev paths to linter,
+ - pini.tools.sanity_check added dev_only filter,
+ - pini.tools.sanity_check.CheckCacheables added batch dup name checks,
+ - pini.tools.sanity_check.CheckAOVs disabled check in layout,
+ - pini.tools.sanity_check.CheckRenderGlobals apply depth AOV env rays to black,
+ - pini.tools.sanity_check bugfix not appling ui to DIALOG global in modal mode,
+ - maya_pini.utils.to_clean added strip_digits flag,
+ - maya_pini.m_pipe.read_cache_set deprecated mode transforms -> tfm,
+
+
 ## [6.52.1] - Wed 2025-02-26 12:34
 ### Summary
  - Pini Helper:

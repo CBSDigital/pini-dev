@@ -35,7 +35,8 @@ from .path import (
 from .cache import (
     cache_property, cache_result, get_file_cacher, cache_method_to_file,
     get_method_to_file_cacher, get_result_cacher, cache_on_obj,
-    build_cache_fmt, flush_caches, CacheOutdatedError)
+    build_cache_fmt, flush_caches, CacheOutdatedError,
+    get_result_to_file_cacher)
 from .clip import (
     Seq, CacheSeq, find_seqs, Video, find_viewers, find_viewer, file_to_seq,
     play_sound, to_seq, find_ffmpeg_exe, VIDEO_EXTNS)

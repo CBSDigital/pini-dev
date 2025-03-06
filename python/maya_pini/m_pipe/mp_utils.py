@@ -81,7 +81,7 @@ def _read_cache_set_nodes(set_, mode):
     return sorted(_nodes)
 
 
-def read_cache_set(
+def read_cache_set(  # pylint: disable=too-many-branches
         mode='geo', include_referenced=True, filter_=None, set_=None):
     """Read cache set contents.
 
@@ -91,7 +91,7 @@ def read_cache_set(
             top - top nodes only
             geo - only geometry nodes
             lights - only lights
-            transforms - only transforms
+            tfm - only transforms
         include_referenced (bool): include referenced geometry
         filter_ (str): apply node name filter
         set_ (str): override set name
@@ -129,7 +129,10 @@ def read_cache_set(
         elif mode == 'lights':
             if not to_light_shp(_node):
                 continue
-        elif mode == 'transforms':
+        elif mode in ('tfm', 'transforms'):
+            if mode == 'transforms':
+                from pini.tools import release
+                release.apply_deprecation('04/03/25', 'Use tfm')
             if not isinstance(_node, pom.CBaseTransform):
                 continue
         else:

@@ -28,7 +28,7 @@ class CUiBase:
     timer = None
 
     def __init__(
-            self, ui_file, stack_key=None, load_settings=True, show=True,
+            self, ui_file, stack_key=None, store_settings=True, show=True,
             catch_errors=True, modal=False, ui_loader=None, title=None,
             settings_file=None, settings_suffix=None, fps=None):
         """Constructor.
@@ -38,7 +38,7 @@ class CUiBase:
             stack_key (str): stack key (default is ui path)
                 closes any previous instance of the dialog
                 before launching a new one
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
             show (bool): show interface on launch
             catch_errors (bool): decorate callbacks with error catcher
             modal (bool): execute dialog modally
@@ -65,7 +65,7 @@ class CUiBase:
         if settings_suffix:
             self._settings_name += settings_suffix
         self._settings_file = settings_file
-        self.store_settings = load_settings
+        self.store_settings = store_settings
 
         # Setup dialog stack
         self._dialog_stack_key = stack_key or self.ui_file
@@ -490,6 +490,8 @@ class CUiBase:
             geometry (bool): load window position/size
             type_filter (str): apply widget type name filter
         """
+        if not self.store_settings:
+            return
         _LOGGER.debug('LOAD SETTINGS %s', self.settings.fileName())
 
         # Apply window settings
@@ -543,6 +545,8 @@ class CUiBase:
                 causes the position to shift each time, so this is to prevent
                 that from happening
         """
+        if not self.store_settings:
+            return
         _LOGGER.debug('SAVE SETTINGS %s', self.settings.fileName())
 
         # Save pos

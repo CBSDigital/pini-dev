@@ -5,6 +5,7 @@ import pprint
 import platform
 import random
 import sys
+import time
 import unittest
 
 from pini import testing, icons
@@ -15,7 +16,8 @@ from pini.utils import (
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
     merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, Res,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image, TMP, search_dict_for_key, find_ffmpeg_exe)
+    Image, TMP, search_dict_for_key, find_ffmpeg_exe,
+    get_result_to_file_cacher)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -234,6 +236,29 @@ class TestCache(unittest.TestCase):
         _test_2 = _Test2()
         print(_test_2.func_3())
         print(_test_2.func_3())
+
+    def test_result_to_file_cacher(self):
+
+        _file = TMP.to_file('tmp.pkl')
+
+        @get_result_to_file_cacher(file_=_file)
+        def _test(force=False):
+            return random.random()
+
+        assert _test()
+        assert _test() == _test()
+        assert _test() != _test(force=True)
+
+        print()
+
+        @get_result_to_file_cacher(file_=_file, max_age=0.05)
+        def _test(force=False):
+            return random.random()
+
+        _result = _test()
+        assert _result == _test()
+        time.sleep(0.1)
+        assert _result != _test()
 
 
 class TestPath(unittest.TestCase):

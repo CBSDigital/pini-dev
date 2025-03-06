@@ -441,11 +441,12 @@ class CheckCacheables(core.SCMayaCheck):
     def run(self):
         """Run this check."""
         super().run()
-        for _cacheable in self.update_progress(m_pipe.find_cacheables()):
-            if isinstance(_cacheable, m_pipe.CPCacheableCam):
-                self._check_cam(_cacheable)
-            elif isinstance(_cacheable, m_pipe.CPCacheableSet):
-                self._check_cset(_cacheable)
+        for _cbl in self.update_progress(m_pipe.find_cacheables()):
+            self.write_log('check cacheable %s', _cbl)
+            if isinstance(_cbl, m_pipe.CPCacheableCam):
+                self._check_cam(_cbl)
+            elif isinstance(_cbl, m_pipe.CPCacheableSet):
+                self._check_cset(_cbl)
 
     def _check_cam(self, cam):
         """Check the given camera.

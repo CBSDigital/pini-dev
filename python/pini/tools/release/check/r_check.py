@@ -3,12 +3,14 @@
 import ast
 import logging
 import os
+import re
+import time
 
 from pini import qt
 from pini.utils import (
     File, PyFile, find_exe, system, get_method_to_file_cacher, MetadataFile,
     PyDef, PyClass, abs_path, to_str, cache_result, merge_dicts,
-    passes_filter)
+    passes_filter, to_time_f, nice_age)
 
 from . import r_docs, r_issue, r_autofix
 
@@ -35,6 +37,8 @@ class CheckFile(MetadataFile):
         """
         if self.has_passed_checks():
             return
+        qt.close_all_progress_bars(
+            filter_='PylintCheckFile PycodestyleCheckFile')
 
         # Run checks
         print()
@@ -51,6 +55,8 @@ class CheckFile(MetadataFile):
             self.apply_autofix()
             _prog.set_pc(40)
             self.apply_simple_checks()
+            _prog.set_pc(50)
+            self.apply_deprecation_check()
             _prog.set_pc(60)
             if pylint:
                 self.apply_pylint_check(force=force)
@@ -107,6 +113,26 @@ class CheckFile(MetadataFile):
                     r_docs.check_def_docs(_method)
             else:
                 raise ValueError(_item)
+
+    def apply_deprecation_check(self):
+        """Check for deprecated code.
+
+        Any deprecations older than half a year should be removed.
+        """
+        if abs_path(__file__) == self.path:
+            return
+        for _line in self.read_lines():
+            if 'release.apply_deprecation(' in _line:
+                _LOGGER.info('FOUND DEPRECATION')
+                _line = _line.strip()
+                _LOGGER.info(' - LINE %s', _line)
+                assert _line.startswith('release.apply_deprecation(')
+                _date_s = re.split('["\']', _line)[1]
+                _LOGGER.info(' - DATE S %s', _date_s)
+                _age = time.time() - to_time_f(_date_s)
+                _LOGGER.info(' - AGE %s', nice_age(_age))
+                if _age > 60 * 60 * 24 * 7 * 25:
+                    raise NotImplementedError
 
     def apply_pycodestyle_check(self, force=False):
         """Apply pycodestyle checks.
@@ -265,7 +291,7 @@ class CheckFile(MetadataFile):
         Returns:
             (str): pylint reading
         """
-        _pylint = find_exe('pylint')
+        from pini.tools import release
 
         # Find checks to disable
         _disable = set()
@@ -283,6 +309,20 @@ class CheckFile(MetadataFile):
         _disable = sorted(_disable)
         _LOGGER.info(' - DISABLE CHECKS %s', _disable)
 
+        # Add dev code to init hook
+        _py_dirs = []
+        for _repo in release.REPOS:
+            _py = _repo.to_subdir('python')
+            if _py.exists():
+                _py_dirs.append(_py)
+        _init = []
+        if _py_dirs:
+            _init += ['import sys']
+            for _py_dir in _py_dirs:
+                _init.append(f"sys.path.insert(0, '{_py.path}')")
+
+        # Build lint cmd
+        _pylint = find_exe('pylint')
         _cmds = [
             _pylint,
             self,
@@ -292,9 +332,18 @@ class CheckFile(MetadataFile):
         ]
         if _disable:
             _cmds += ['--disable', ','.join(_disable)]
-        _result = system(_cmds, verbose=1)
-        assert 'Your code has been rated at' in _result
-        return _result
+        if _init:
+            _init_py = '; '.join(_init)
+            _cmds += ['--init-hook', _init_py]
+
+        _out, _err = system(_cmds, result='out/err', verbose=1)
+        if 'Your code has been rated at' not in _out:
+            _LOGGER.info('OUT')
+            print(_out)
+            _LOGGER.info('ERR')
+            print(_err)
+            raise RuntimeError(f'Linting failed {self.path}')
+        return _out
 
 
 def check_file(file_, pylint=True, pycodestyle=True):

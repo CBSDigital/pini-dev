@@ -29,7 +29,6 @@ class SCCheck:
 
     # Filters
     enabled = True
-    dev_only = False
     dcc_filter = None
     profile_filter = None  # eg. asset/shot
     task_filter = None  # eg. model/rig

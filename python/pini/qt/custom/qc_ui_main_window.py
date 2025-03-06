@@ -19,7 +19,7 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBaseDummy):
 
     def __init__(
             self, ui_file, ui_loader=None, title=None, fps=None,
-            settings_file=None, load_settings=True):
+            settings_file=None, store_settings=True):
         """Constructor.
 
         Args:
@@ -28,12 +28,12 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBaseDummy):
             title (str): override window title
             fps (float): start timer at the given frame rate
             settings_file (str): override default settings file path
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
         """
         super().__init__()  # pylint: disable=no-value-for-parameter
         qc_ui_base.CUiBase.__init__(
             self, ui_file=ui_file, ui_loader=ui_loader, title=title, fps=fps,
-            settings_file=settings_file, load_settings=load_settings)
+            settings_file=settings_file, store_settings=store_settings)
 
     def closeEvent(self, event=None):
         """Triggered by closing dialog.

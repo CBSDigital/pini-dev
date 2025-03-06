@@ -38,6 +38,7 @@ class SanityCheckUi(qt.CUiDialog):
             force (bool): in export mode force export ignoring any issues
         """
         from pini.tools import sanity_check
+        sanity_check.DIALOG = self
 
         self.mode = mode
         self.task = task or pipe.cur_task(fmt='pini')

@@ -7,7 +7,7 @@ import hou
 
 from pini import qt, icons, dcc
 from pini.tools import release
-from pini.utils import cache_result, TMP, File, HOME
+from pini.utils import cache_result, TMP, File, HOME, to_str
 
 from . import i_installer, i_tool
 
@@ -86,14 +86,14 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _LOGGER.debug('    - ADD TOOL %s icon=%s', _uid, tool.icon)
 
         assert '\b' not in tool.command
-        assert isinstance(tool.icon, str)
-        assert os.path.exists(tool.icon)
+        assert isinstance(tool.icon, (str, File))
+        assert os.path.exists(to_str(tool.icon))
 
         _tool = hou.shelves.newTool(
             file_path=self.shelf_file, name=_uid,
             label=tool.label,
             script=tool.command,
-            icon=_fix_icon_gamma(tool.icon))
+            icon=to_str(_fix_icon_gamma(tool.icon)))
         _LOGGER.debug('    - NEW TOOL %s', _tool)
 
         return _tool

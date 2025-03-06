@@ -141,6 +141,8 @@ def fix_unused_imports(file_, issues):
             _LOGGER.info('   - TOKEN %s', _token)
             if _line == f'import {_token}':
                 _lines.pop(_line_n)
+            elif _line.endswith(f' import {_token}'):
+                _lines.pop(_line_n)
             else:
                 raise NotImplementedError
 
@@ -150,8 +152,18 @@ def fix_unused_imports(file_, issues):
             _fix_unused_from_import(
                 lines=_lines, issue=_issue, line=_line)
 
+        elif _issue.desc.endswith(' imported from'):
+            assert _issue.desc.startswith('Unused ')
+            assert _issue.desc.count(' imported from') == 1
+            assert _issue.desc.count('Unused ') == 1
+            _token = _issue.desc.replace(
+                'Unused ', '').replace(' imported from', '')
+            assert _line.strip().startswith('from ')
+            assert _line.endswith(f' import {_token}')
+            _lines.pop(_line_n)
+
         else:
-            raise NotImplementedError
+            raise NotImplementedError(f'Unhandled "{_issue.desc}"')
 
     return '\n'.join(_lines)
 
@@ -174,7 +186,7 @@ def _fix_unused_from_import(issue, lines, line):
     assert line.count(_token) == 1
 
     # Handle single from import
-    if line == f'from {_mod} import {_token}':
+    if line.strip() == f'from {_mod} import {_token}':
         lines.pop(_line_n)
         return
 

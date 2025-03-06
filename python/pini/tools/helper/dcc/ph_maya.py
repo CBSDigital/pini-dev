@@ -29,13 +29,13 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
     abc_cam_plates = True
 
     def __init__(
-            self, admin=None, load_settings=True, jump_to=None,
+            self, admin=None, store_settings=True, jump_to=None,
             parent=None, show=True, reset_cache=True, title=None):
         """Constructor.
 
         Args:
             admin (bool): launch in admin mode
-            load_settings (bool): load settings on launch
+            store_settings (bool): load settings on launch
             jump_to (str): path to point helper to on launch
             parent (QDialog): override parent dialog
             show (bool): show on launch
@@ -53,7 +53,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
         else:
             _title = ui.EMOJI.to_unicode() + ' ' + ui.TITLE
         super().__init__(
-            show=False, ui_file=ui.UI_FILE, load_settings=False,
+            show=False, ui_file=ui.UI_FILE, store_settings=False,
             parent=parent, title=_title)
 
         self.vdb_modes = ['Auto', 'aiVolume']
@@ -61,7 +61,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
             self.vdb_modes.append('RedshiftVolume')
 
         ui.PHUiBase.__init__(
-            self, admin=admin, load_settings=load_settings, show=False,
+            self, admin=admin, store_settings=store_settings, show=False,
             jump_to=jump_to, reset_cache=reset_cache, title=title)
 
         if show:

@@ -35,13 +35,11 @@ def find_check(name=None, catch=False, **kwargs):
 
 
 def find_checks(  # pylint: disable=too-many-branches
-        filter_=None, dev=False, work=None, task=EMPTY, action=None,
-        force=False):
+        filter_=None, work=None, task=EMPTY, action=None, force=False):
     """Find sanity checks to apply.
 
     Args:
         filter_ (str): filter checks by name
-        dev (bool): add dev checks
         work (CPWork): override work file
         task (str): force task (otherwise current task is used) - if
             'all' is passed, no task filter is applied and all checks
@@ -90,11 +88,6 @@ def find_checks(  # pylint: disable=too-many-branches
         # Check enabled
         if not _check.enabled:
             _LOGGER.debug('   - CHECK NOT ENABLED')
-            continue
-
-        # Apply dev filter
-        if not dev and _check.dev_only:
-            _LOGGER.debug('   - DEV FILTER REJECTED')
             continue
 
         # Apply dcc filter
@@ -219,10 +212,13 @@ def _checks_from_py(py_file) -> list:
     # Search this module for sanity checks
     _members = inspect.getmembers(_mod, inspect.isclass)
     _LOGGER.debug('   - MEMS %d %s', len(_members), _members)
-    _types = [
-        _type for _, _type in _members
-        if issubclass(_type, sc_check.SCCheck) and
-        not _type.__name__.startswith('_')]
+    _types = []
+    for _, _type in _members:
+        if (
+                not issubclass(_type, sc_check.SCCheck) or
+                _type.__name__.startswith('_')):
+            _LOGGER.debug('     - REJECTED %s', _type)
+        _types.append(_type)
     _LOGGER.debug('   - TYPES %d %s', len(_types), _types)
 
     # Check these checks were defined in this py file
