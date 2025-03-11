@@ -255,9 +255,9 @@ def seq_to_video(
     _args += ['-f', 'image2']
     if _start != 1:
         _args += ['-start_number', _start]
-    _args += ['-i', seq.path, '-r', _fps]
+    _args += ['-r', _fps, '-i', seq.path]
     if burnins:
-        _args += _build_ffmpeg_burnin_flags(seq, video=_video)
+        _args += ['-r', _fps] + _build_ffmpeg_burnin_flags(seq, video=_video)
     _args += _build_ffmpeg_audio_flags(
         use_scene_audio=use_scene_audio, audio=audio,
         audio_offset=audio_offset)

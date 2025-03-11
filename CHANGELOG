@@ -1,3 +1,11 @@
+## [6.55.1] - Tue 2025-03-11 10:43
+### Summary
+ - Pini Helper:
+    - maya blast bugfix blast fps not matching scene (mkim),
+### Updated
+ - pini.utils.clip.Seq.to_video apply fps before seq import + burnins,
+
+
 ## [6.55.0] - Tue 2025-03-11 10:26
 ### Summary
  - Pini Helper:
