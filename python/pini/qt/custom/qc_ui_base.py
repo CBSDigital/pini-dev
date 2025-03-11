@@ -103,7 +103,7 @@ class CUiBase:
         _file = File(self.ui_file)
         self._hbox_size_policies_yml = _file.to_file(
             base=_file.base + '_hsp', extn='yml', hidden=True)
-        if dcc.NAME == 'nuke':
+        if dcc.NAME in ('nuke', ):
             self.fix_hbox_size_policies()
 
         if fps:
@@ -445,7 +445,6 @@ class CUiBase:
         """
         _LOGGER.debug(
             'FIX HBOX SIZE POLICIES %s', self._hbox_size_policies_yml.path)
-        assert dcc.NAME == 'nuke'
         if not self._hbox_size_policies_yml.exists():
             _LOGGER.debug(
                 ' - MISSING YML %s', self._hbox_size_policies_yml.path)

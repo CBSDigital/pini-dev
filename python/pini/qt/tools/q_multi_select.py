@@ -36,7 +36,7 @@ class _MultiSelect(custom.CUiDialog):
         self.select = select
 
         super().__init__(
-            title=title, ui_file=_UI_FILE, modal=True, load_settings=False)
+            title=title, ui_file=_UI_FILE, modal=True, store_settings=False)
 
     def init_ui(self):
         """Init ui elements."""

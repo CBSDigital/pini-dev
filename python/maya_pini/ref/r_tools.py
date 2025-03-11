@@ -19,12 +19,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @restore_ns
-def create_ref(file_, namespace, force=False):
+def create_ref(file_, namespace, parent=None, force=False):
     """Create reference.
 
     Args:
         file_ (str): file to reference
         namespace (str): namespace for reference
+        parent (QDialog): parent dialog for any popups
         force (bool): force replace existing without confirmation
 
     Returns:
@@ -62,7 +63,8 @@ def create_ref(file_, namespace, force=False):
             _namespace, cmds.namespace(exists=_namespace),
             cmds.objExists(_namespace),
             bool(find_ref(namespace=_namespace, unloaded=True, catch=True)))
-        _namespace = handle_namespace_clash(file_=file_, namespace=_namespace)
+        _namespace = handle_namespace_clash(
+            file_=file_, namespace=_namespace, parent=parent)
 
     # Create the reference
     _pre_refs = set(find_refs())

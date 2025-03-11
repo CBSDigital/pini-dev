@@ -27,14 +27,21 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
-    def _check_attr(self, attr, val):
+    def _check_attr(self, attr, val, catch=False):
         """Check a attribute has the given value.
 
         Args:
             attr (str): attribute to check
             val (any): expected value
+            catch (bool): no error if attr missing
         """
-        _plug = pom.CPlug(attr)
+        try:
+            _plug = pom.CPlug(attr)
+        except RuntimeError as _exc:
+            if catch:
+                self.write_log('Missing attr %s', attr)
+                return
+            raise _exc
         _cur_val = _plug.get_val()
         _passed = _cur_val == val
         self.write_log(

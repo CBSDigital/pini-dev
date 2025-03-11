@@ -109,7 +109,8 @@ class CPainter(QtGui.QPainter):
             _rect = self.apply_rotate(rotate=rotate, rect=_rect, anchor=anchor)
 
         # Draw text
-        self.setPen(qt.to_col(col or 'White'))
+        _col = qt.to_col(col or 'White')
+        self.setPen(_col)
         self.drawText(_rect, _align, text)
 
         return _rect

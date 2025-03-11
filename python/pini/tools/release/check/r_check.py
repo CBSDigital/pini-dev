@@ -83,7 +83,7 @@ class CheckFile(MetadataFile):
         return not bool([
             _item for _item in _ast.body if not isinstance(_item, ast.Expr)])
 
-    def apply_autofix(self, force=False):
+    def apply_autofix(self, force=True):
         """Apply autofixes.
 
         Args:

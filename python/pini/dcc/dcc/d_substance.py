@@ -53,6 +53,14 @@ class SubstanceDCC(BaseDCC):
         """
         return None
 
+    def set_scene_data(self, key, val):
+        """Store data within this scene.
+
+        Args:
+            key (str): name of data to store
+            val (any): value of data to store
+        """
+
     def t_range(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Get start/end frames.
 

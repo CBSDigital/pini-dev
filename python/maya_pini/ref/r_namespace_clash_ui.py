@@ -22,19 +22,21 @@ class _NamespaceClashUi(qt.CUiDialog):
     or select a different namespace to use for a reference.
     """
 
-    def __init__(self, namespace, file_):
+    def __init__(self, namespace, file_, parent=None):
         """Constructor.
 
         Args:
             namespace (str): namespace causing clash
             file_ (str): path to reference file
+            parent (QDialog): parent dialog
         """
         cmds.namespace(set=':')
         self.namespace = None
         self.input_namespace = namespace
         self.file_ = File(file_)
         super().__init__(
-            modal=True, ui_file=_UI_FILE, store_settings=False)
+            modal=True, ui_file=_UI_FILE, store_settings=False,
+            parent=parent)
 
     def init_ui(self):
         """Initiate ui element."""
@@ -90,19 +92,21 @@ def _is_valid_namespace(namespace):
     return True
 
 
-def handle_namespace_clash(file_, namespace):
+def handle_namespace_clash(file_, namespace, parent=None):
     """Handle a reference import where the namespace is already in use.
 
     Args:
         file_ (str): file being referenced
         namespace (str): namespace causing clash
+        parent (QDialog): parent dialog
 
     Returns:
         (str): updated namespace
     """
     _LOGGER.info('HANDLE NAMESPACE CLASH %s', namespace)
     global _DIALOG
-    _DIALOG = _NamespaceClashUi(file_=file_, namespace=namespace)
+    _DIALOG = _NamespaceClashUi(
+        file_=file_, namespace=namespace, parent=parent)
     if not _DIALOG.namespace:
         raise qt.DialogCancelled
     _LOGGER.debug(' - OBTAINED RESULT %s', _DIALOG.namespace)

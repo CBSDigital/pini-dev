@@ -130,15 +130,17 @@ class MayaDCC(BaseDCC):
 
         return _ref
 
-    def create_ref(self, path, namespace, force=False, group=EMPTY):
+    def create_ref(
+            self, path, namespace, group=EMPTY, parent=None, force=False):
         """Create reference instance of the given path.
 
         Args:
             path (File): file to reference
             namespace (str): namespace reference
-            force (bool): replace existing without confirmation
             group (str): override group (otherwise references are automatically
                 put in a group based on the asset/output type)
+            parent (QDialog): parent dialog for any popups
+            force (bool): replace existing without confirmation
 
         Returns:
             (CMayaPipeRef): reference
@@ -164,9 +166,12 @@ class MayaDCC(BaseDCC):
             _ref = pipe_ref.create_rs_pxy(
                 _path, namespace=namespace, group=group)
         else:
-            _pom_ref = pom.create_ref(_path, namespace=namespace, force=force)
+            _pom_ref = pom.create_ref(
+                _path, namespace=namespace, parent=parent, force=force)
             _ns = _pom_ref.namespace
             _ref = self.find_pipe_ref(_ns, catch=True)
+            if not _ref:
+                raise RuntimeError(f'Failed to find ref {_ns}')
             if _ref.top_node:
                 pipe_ref.apply_grouping(
                     top_node=_ref.top_node, output=_ref.output, group=group)

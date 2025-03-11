@@ -70,6 +70,8 @@ class PRTestFile(PyFile):
         try:
             _mod = self.to_module()
         except ImportError as _exc:
+            _LOGGER.error('FILE %s', self)
+            _LOGGER.error('ERROR %s', _exc)
             assert str(_exc) == 'Not supported in this pipeline'
             return []
         assert _mod

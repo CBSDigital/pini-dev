@@ -435,7 +435,7 @@ class CheckRenderGlobals(SCMayaCheck):
             self.add_fail(_msg, fix=_fix)
 
         for _attr, _val in _attrs_to_check:
-            self._check_attr(_attr, _val)
+            self._check_attr(_attr, _val, catch=True)
 
         return not self.fails
 

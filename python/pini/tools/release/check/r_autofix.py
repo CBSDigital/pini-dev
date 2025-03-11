@@ -84,7 +84,7 @@ def _save_updates(file_, code, force=False):
     file_.write(code, wording='Apply autofixes?', diff=True, force=force)
 
 
-def apply_autofix(file_, force=False):
+def apply_autofix(file_, force=True):
     """Apply autofixes to the given code file.
 
     Args:

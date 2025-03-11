@@ -175,12 +175,11 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             else:
                 raise ValueError(mode)
 
-    def build_blend(self, src1, src2, blend=None, allow_missing=False):
+    def build_blend(self, srcs, blend=None, allow_missing=False):
         """Setup a blend between the provided sources.
 
         Args:
-            src1 (CSkeleton): source 1
-            src2 (CSkeleton): source 2
+            srcs (CSkeleton list): sources to blend between
             blend (CPlug): blend plug to use (if none is passed then one is
                 created on top node of this skeleton's reference)
             allow_missing (bool): no error if missing joints
@@ -189,14 +188,31 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             (CPlug): blend plug
         """
         from maya_pini import open_maya as pom
-        _LOGGER.debug('BUILD BLEND %s %s', src1, src2)
+        _LOGGER.debug('BUILD BLEND %s -> %s', srcs, blend)
+        assert len(srcs) > 1
 
         # Get blend + blend inverse
         _blend = blend
         if not _blend:
             _ref = self.to_ref()
-            _blend = _ref.top_node.add_attr('blend', 0.0, min_val=0, max_val=1)
-        _blend_inv = pom.minus_plug(1, _blend)
+            _blend = _ref.top_node.add_attr(
+                'blend', 0.0, min_val=0, max_val=len(srcs) - 1)
+
+        # Build blend weight attrs
+        _blend_ws = []
+        for _idx in range(len(srcs)):
+            _blend_w = _ref.top_node.add_attr(
+                f'blend_w{_idx}', 0.0, min_val=0, max_val=1)
+            for _driver_val, _val in [
+                    (_idx - 1, 0),
+                    (_idx, 1),
+                    (_idx + 1, 0),
+            ]:
+                cmds.setDrivenKeyframe(
+                    _blend_w, currentDriver=_blend, value=_val,
+                    driverValue=_driver_val, inTangentType='linear',
+                    outTangentType='linear')
+            _blend_ws.append(_blend_w)
 
         # Build constraints
         for _b_jnts, _cons_fn in [
@@ -204,18 +220,22 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 (self.joints, pom.CMDS.orientConstraint),
         ]:
             for _b_jnt in _b_jnts:
-                _src1_jnt = src1.to_joint(_b_jnt)
-                _src2_jnt = src2.to_joint(_b_jnt)
-                if allow_missing and not (_src1_jnt and _src2_jnt):
+
+                # Build constraint
+                _src_jnts = list(filter(bool, [
+                    _src.to_joint(_b_jnt) for _src in srcs]))
+                if allow_missing and not _src_jnts:
                     continue
-                assert _src1_jnt
-                assert _src2_jnt
+                assert _src_jnts
+                _args = _src_jnts + [_b_jnt]
                 _LOGGER.debug(
-                    ' - BUILD CONSTRAINT %s %s %s %s', _cons_fn,
-                    _src1_jnt, _src2_jnt, _b_jnt)
-                _cons = _cons_fn(_src1_jnt, _src2_jnt, _b_jnt)
-                _blend.connect(_cons.plug['w1'])
-                _blend_inv.connect(_cons.plug['w0'])
+                    ' - BUILD CONSTRAINT %s %s -> %s', _cons_fn,
+                    _src_jnts, _b_jnt)
+                _cons = _cons_fn(*_args)
+
+                # Connect weights
+                for _idx, _blend_w in enumerate(_blend_ws):
+                    _blend_w.connect(_cons.plug[f'w{_idx:d}'])
 
         self.set_col('red')
 

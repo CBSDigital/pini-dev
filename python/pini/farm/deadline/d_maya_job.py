@@ -190,7 +190,7 @@ class CDMayaRenderJob(_CDMayaJob):
             machine_limit=machine_limit, comment=comment, work=work,
             frames=frames or dcc.t_frames(), name=_name, group=group,
             scene=scene, chunk_size=chunk_size, limit_groups=limit_groups,
-            env={'MAYA_RENDER_SETUP_INCLUDE_ALL_LIGHTS': 0})
+        )
 
         assert self.output
         assert self.batch_name

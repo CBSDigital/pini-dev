@@ -135,7 +135,7 @@ class FileRef(r_path_ref.PathRef):
             _ns_s = self.namespace or '<no namespace>'
             qt.ok_cancel(
                 f'Delete existing {_ns_s} reference?',
-                title='Remove Reference')
+                title='Remove reference')
 
         self.unload()
         cmds.file(self.path_uid, removeReference=True)

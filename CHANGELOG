@@ -1,3 +1,29 @@
+## [6.55.0] - Tue 2025-03-11 10:26
+### Summary
+ - Pini Helper:
+    - maya deadline submit bugfix error change limit groups (eehemann),
+ - Sanity Check:
+    - check render globals bugfix error on missing redshift depth AOV,
+### Updated
+ - pini.dcc.MayaDCC.create_ref added parent flag,
+ - pini.dcc.SubstanceDCC.set_scene_data added,
+ - pini.pipe.CPJob.find_entities uses passes_filters,
+ - pini.pipe.CPEntity.find_works uses passes_filters,
+ - pini.pipe.cache.CCPJob.find_works added,
+ - pini.qt.CListWidget.select_row updated for PySide6 compatibility,
+ - pini.qt.multi_select bugfix using deprecated load_settings flag,
+ - pini.farm.deadline.submit_maya_render removed redundant $MAYA_RENDER_SETUP_INCLUDE_ALL_LIGHTS,
+ - pini.tools.release.check_file apply autofix without confirmation,
+ - pini.tools.sanity_check.find_checks allow any action with Publish suffix,
+ - pini.tools.sanity_check.SCMayaCheck._check_attr added catch,
+ - pini.tools.sanity_check.CheckRenderGlobals allow missing attr,
+ - maya_pini.hik added,
+ - maya_pini ref.create_ref/open_maya.create_ref added parent arg,
+ - maya_pini.open_maya.CReference.top_nodes added,
+ - maya_pini.open_maya.CSkeleton.create_blend updated args src1/src2 -> srcs,
+ - maya_pini.ui.OptionMenuGrp added,
+
+
 ## [6.54.0] - Thu 2025-03-06 13:23
 ### Summary
  - Namespace Clash Handler:

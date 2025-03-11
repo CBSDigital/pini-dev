@@ -324,6 +324,17 @@ class CCPJobBase(CPJob):
         """
         raise NotImplementedError
 
+    def find_works(self, **kwargs):
+        """Find work files in this job.
+
+        Returns:
+            (CCPWork list): works
+        """
+        _works = []
+        for _ety in self.entities:
+            _works += _ety.find_works(**kwargs)
+        return _works
+
     def find_outputs(self, **kwargs):
         """Find outputs in this job.
 

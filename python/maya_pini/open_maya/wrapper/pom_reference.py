@@ -131,6 +131,15 @@ class CReference(om.MFnReference, ref.FileRef):
         """
         return self.find_top_node(catch=True)
 
+    @property
+    def top_nodes(self):
+        """Obtain this reference's top nodes.
+
+        Returns:
+            (CTransform list): top nodes
+        """
+        return self.find_top_nodes()
+
     def add_to_grp(self, grp):
         """Add this reference's top node to the given group.
 
@@ -274,6 +283,9 @@ class CReference(om.MFnReference, ref.FileRef):
         assert '.' in _plug
         return pom.CPlug(f'{self.namespace}:{to_clean(_plug)}')
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
     def __str__(self):
         return str(self.ref_node)
 
@@ -281,12 +293,13 @@ class CReference(om.MFnReference, ref.FileRef):
         return basic_repr(self, self.namespace or self.ref_node)
 
 
-def create_ref(file_, namespace, force=False):
+def create_ref(file_, namespace, parent=None, force=False):
     """Create a reference.
 
     Args:
         file_ (str): path to reference
         namespace (str): namespace to use
+        parent (QDialog): parent dialog for any popups
         force (bool): replace existing without confirmation
 
     Returns:
@@ -295,7 +308,8 @@ def create_ref(file_, namespace, force=False):
     _file = File(file_)
     if not _file.exists():
         raise OSError(f'Missing file {_file.path}')
-    _ref = ref.create_ref(file_=_file, namespace=namespace, force=force)
+    _ref = ref.create_ref(
+        file_=_file, namespace=namespace, parent=parent, force=force)
     return CReference(_ref.ref_node)
 
 

@@ -8,14 +8,11 @@ import os
 
 from pini import dcc, icons
 from pini.utils import (
-    Dir, abs_path, single, norm_path, merge_dicts, to_str,
-    apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result,
-    is_abs)
+    Dir, abs_path, single, norm_path, merge_dicts, to_str, is_abs,
+    apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result)
 
-from .. import cp_settings_elem
-from ... import cp_template
-from ...cp_utils import map_path
-from .. import root
+from .. import cp_settings_elem, root
+from ... import cp_template, cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +61,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         _path = os.environ.get('PINI_PIPE_CFG_PATH', '.pini/config.yml')
         _file = self.to_file(_path) if not is_abs(_path) else File(_path)
-        _file = File(map_path(_file.path))
+        _file = File(cp_utils.map_path(_file.path))
         return _file
 
     @property
@@ -660,7 +657,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         raise NotImplementedError(match)
 
-    def find_entities(self, entity_type=None, filter_=None):
+    def find_entities(self, **kwargs):
         """Find entities in this job.
 
         Args:
@@ -671,13 +668,11 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPEntity list): entities (shots + assets)
         """
-        _etys = self.find_assets() + self.find_shots()
-        if entity_type:
-            _etys = [_ety for _ety in _etys
-                     if _ety.entity_type == entity_type]
-        if filter_:
-            _etys = apply_filter(
-                _etys, filter_, key=operator.attrgetter('path'))
+        _etys = []
+        for _ety in self.find_assets() + self.find_shots():
+            if not cp_utils.passes_filters(_ety, **kwargs):
+                continue
+            _etys.append(_ety)
         return _etys
 
     def to_prefix(self):

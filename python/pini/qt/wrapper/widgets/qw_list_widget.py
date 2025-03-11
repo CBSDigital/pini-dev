@@ -124,7 +124,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         if replace:
             self.clearSelection()
         _item = self.item(idx)
-        self.setItemSelected(_item, True)
+        self.setCurrentItem(_item)
         if not emit:
             self.blockSignals(False)
 

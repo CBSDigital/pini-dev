@@ -343,13 +343,11 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _works = self.find_works(tag=tag, ver_n=ver_n, task=task)
         return single(_works, catch=catch)
 
-    def find_works(self, task=None, tag=EMPTY, ver_n=None, dcc_=None):
+    def find_works(self, task=None, dcc_=None, **kwargs):
         """Find work files in this entity.
 
         Args:
             task (str): filter by task
-            tag (str|None): filter by tag
-            ver_n (int): filter by version number
             dcc_ (str): filter by dcc
 
         Returns:
@@ -360,7 +358,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _work_dirs = self.find_work_dirs(task=task, dcc_=dcc_)
         _LOGGER.debug(' - WORK DIRS %d %s', len(_work_dirs), _work_dirs)
         for _work_dir in _work_dirs:
-            _task_works = _work_dir.find_works(tag=tag, ver_n=ver_n)
+            _task_works = _work_dir.find_works(**kwargs)
             _LOGGER.debug(
                 ' - ADD TASK WORKS %s %s', _work_dir.task, _task_works)
             _works += _task_works
