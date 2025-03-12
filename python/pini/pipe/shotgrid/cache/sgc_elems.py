@@ -187,3 +187,16 @@ class SGCVersion(sgc_elem.SGCElem):
     FIELDS = (
         'published_files', 'entity', 'project', 'sg_task', 'sg_path_to_movie',
         'updated_at', 'updated_by', 'sg_status_list')
+
+    def __init__(self, data):
+        """Constructor.
+
+        Args:
+            data (dict): shotgrid data
+        """
+        _LOGGER.debug('INIT SGCVersion')
+        super().__init__(data)
+        self.path = abs_path(data['sg_path_to_movie'])
+
+    def __repr__(self):
+        return basic_repr(self, self.path)

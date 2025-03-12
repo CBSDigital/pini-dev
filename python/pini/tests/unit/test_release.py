@@ -744,6 +744,35 @@ class TestRelease(unittest.TestCase):
                  'def test():',
                  '    pass'])),
 
+            ('Aliased',
+             '\n'.join([
+                 'import sys',
+                 'from pini import testing',
+                 'from maya_pini import open_maya as pom',
+                 '',
+                 'def test():',
+                 '    print(sys)']),
+             '\n'.join([
+                 'import sys',
+                 '',
+                 'def test():',
+                 '    print(sys)'])),
+
+            ('Aliased in list',
+             '\n'.join([
+                 'import sys',
+                 'import os',
+                 'from maya_pini import tex, open_maya as pom, hik',
+                 '',
+                 'def test():',
+                 '    print(sys, tex, hik)']),
+             '\n'.join([
+                 'import sys',
+                 'from maya_pini import tex, hik',
+                 '',
+                 'def test():',
+                 '    print(sys, tex, hik)'])),
+
             ('Remove from list test',
              '\n'.join([
                  'import os',

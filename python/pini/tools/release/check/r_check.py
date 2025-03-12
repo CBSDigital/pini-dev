@@ -221,9 +221,11 @@ class CheckFile(MetadataFile):
         Returns:
             (str): updated code
         """
+        _LOGGER.info('BATCH APPLY PYLINT UNUSED IMPORTS')
         _issues = self.find_pylint_issues(code='W0611')
         _cur = self.read()
         if len(_issues) < 2:
+            _LOGGER.info(' - NOT ENOUGH RESULTS')
             return _cur
         _fixed = r_issue.fix_unused_imports(file_=self, issues=_issues)
         if write and _fixed != _cur:
@@ -312,14 +314,14 @@ class CheckFile(MetadataFile):
         # Add dev code to init hook
         _py_dirs = []
         for _repo in release.REPOS:
-            _py = _repo.to_subdir('python')
-            if _py.exists():
-                _py_dirs.append(_py)
+            _py_dir = _repo.to_subdir('python')
+            if _py_dir.exists():
+                _py_dirs.append(_py_dir)
         _init = []
         if _py_dirs:
             _init += ['import sys']
             for _py_dir in _py_dirs:
-                _init.append(f"sys.path.insert(0, '{_py.path}')")
+                _init.append(f"sys.path.insert(0, '{_py_dir.path}')")
 
         # Build lint cmd
         _pylint = find_exe('pylint')

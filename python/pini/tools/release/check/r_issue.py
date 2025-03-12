@@ -181,17 +181,35 @@ def _fix_unused_from_import(issue, lines, line):
     assert issue.desc.startswith('Unused ')
     _line_n = issue.line_n - 1
 
-    _token, _mod = issue.desc[len('Unused '):].split(' imported from ')
-    _LOGGER.info('   - TOKEN %s %s', _token, _mod)
-    assert line.count(_token) == 1
+    _tail = issue.desc[len('Unused '):]
+    if ' as ' in issue.desc:  # eg. from xxx import yyy as zzz
+        _submod, _tail = _tail.split(' imported from ')
+        _LOGGER.info('   - SUBMOD %s', _submod)
+        _root, _alias = _tail.split(' as ')
+        _LOGGER.info('   - ALIAS %s', _alias)
+        _to_remove = f'{_submod} as {_alias}'
+    else:
+        _to_remove, _root = _tail.split(' imported from ')
+    _LOGGER.info('   - ROOT %s', _root)
+    _LOGGER.info('   - TO REMOVE %s', _to_remove)
+    assert line.count(_to_remove) == 1
 
     # Handle single from import
-    if line.strip() == f'from {_mod} import {_token}':
+    _match_full_line = f'from {_root} import {_to_remove}'
+    _LOGGER.info('   - MATCH FULL LINE %s', _match_full_line)
+    if line.strip() == _match_full_line:
         lines.pop(_line_n)
         return
 
-    _new_line = line.replace(_token, '')
-    # _new_line = _new_line.rstrip()
+    _prefix = f'from {_root} import '
+    _LOGGER.info('   - PREFIX %s', _prefix)
+    assert line.strip().startswith(_prefix)
+    assert line.count(_prefix) == 1
+    _imports = line[len(_prefix):].split(', ')
+    _LOGGER.info('   - IMPORTS %s', _imports)
+
+    # Build new line(s)
+    _new_line = line.replace(_to_remove, '')
     _new_line = _new_line.replace(', , ', ', ')
     if _new_line.endswith(', '):
         _new_line = _new_line[:-2]
@@ -201,7 +219,7 @@ def _fix_unused_from_import(issue, lines, line):
         lines[_line_n] = _new_line
     else:
         _LOGGER.info('   - SPLITTING LONG LINE')
-        _prefix = f'from {_mod} import '
+        _prefix = f'from {_root} import '
         assert _new_line.startswith(_prefix)
         lines[_line_n] = _prefix + '('
         _mod_list = _new_line[len(_prefix):] + ')'

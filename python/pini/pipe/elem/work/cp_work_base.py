@@ -14,7 +14,7 @@ import lucidity
 from pini import dcc
 from pini.utils import (
     File, strftime, get_user, passes_filter, single, EMPTY, abs_path,
-    Video, Seq, plural)
+    Video, Seq, plural, find_callback)
 
 from ..work_dir import CPWorkDir, map_task
 from ...cp_utils import EXTN_TO_DCC, validate_tokens, cur_user
@@ -615,7 +615,6 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         """Set environment to match this work file."""
         from pini import pipe
         from pini.tools import helper
-        from . import SET_WORK_CALLBACKS
 
         pipe.add_recent_work(self)
 
@@ -629,7 +628,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         os.environ['PINI_VER'] = self.ver
 
         dcc.set_env(self)
-        for _, _callback in sorted(SET_WORK_CALLBACKS.items()):
+        _callback = find_callback('SetWork')
+        if _callback:
             _callback(self)
 
         # Update helper recent work cache

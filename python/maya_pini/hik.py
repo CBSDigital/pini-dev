@@ -5,6 +5,7 @@ import logging
 from pini.utils import single
 
 from maya_pini import ui, open_maya as pom
+from maya_pini.utils import process_deferrred_events
 
 from maya import cmds, mel
 
@@ -49,16 +50,29 @@ class PHIKNode(pom.CNode):
                 HIK node - apply HIK source
         """
         _LOGGER.info('SET SOURCE %s -> %s', self, source)
-        if source is None:
-            _mel = f'hikEnableCharacter("{self}", false); hikUpdateSourceList()'
+
+        # Select char
+        process_deferrred_events()
+        if not CHAR_LIST.get_val() == self:
+            _LOGGER.info(' - SELECT CHAR %s', self)
+            CHAR_LIST.set_val(str(self))
+            process_deferrred_events()
+        assert CHAR_LIST.get_val() == self
+
+        # Select source
+        if source in (None, CONTROL_RIG):
+            _select = source
         elif isinstance(source, (str, pom.CReference, pom.CNode)):
             _hik = find_hik(source)
             _LOGGER.info(' - HIK %s', _hik)
-            _mel = f'mayaHIKsetCharacterInput("{self}", "{_hik}")'
+            _select = _hik
         else:
             raise ValueError(source)
-        _LOGGER.info(' - MEL %s', _mel)
-        mel.eval(_mel)
+        _LOGGER.info(' - SELECT %s', _select)
+
+        SRC_LIST.set_val(f' {_select}')
+        process_deferrred_events()
+        assert SRC_LIST.get_val() == f' {_select}'
 
 
 def find_hik(match=None, **kwargs):

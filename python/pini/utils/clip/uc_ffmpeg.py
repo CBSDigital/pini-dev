@@ -216,7 +216,7 @@ def read_ffprobe(video):
 def seq_to_video(
         seq, video, fps=None, audio=None, audio_offset=0.0,
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
-        tune=None, speed=None, burnins=False, res=None,
+        tune=None, speed=None, burnins=False, res=None, range_=None,
         verbose=0):
     """Build video file using ffmpeg.
 
@@ -236,6 +236,7 @@ def seq_to_video(
         speed (str): apply speed preset (eg. slow, medium, slowest)
         burnins (bool): add burnins
         res (tuple): override resolution
+        range_ (tuple): override frame range
         verbose (int): print process data
 
     Returns:
@@ -246,7 +247,12 @@ def seq_to_video(
     _video = File(abs_path(to_str(video)))
     _ffmpeg = find_ffmpeg_exe()
     _fps = fps or dcc.get_fps()
-    _start, _ = seq.to_range(force=True)
+    if range_:
+        _start, _end = range_
+        _n_frames = _end - _start + 1
+    else:
+        _start, _ = seq.to_range(force=True)
+        _n_frames = None
     assert _ffmpeg
     assert _fps
 
@@ -256,6 +262,13 @@ def seq_to_video(
     if _start != 1:
         _args += ['-start_number', _start]
     _args += ['-r', _fps, '-i', seq.path]
+    if _n_frames:
+        _args += ['-frames:v', _n_frames]
+    # if colspace:
+    #     if colspace == 'sRGB':
+    #         _args += ['-color_trc', 'iec61966_2_1']
+    #     else:
+    #         raise NotImplementedError(colspace)
     if burnins:
         _args += ['-r', _fps] + _build_ffmpeg_burnin_flags(seq, video=_video)
     _args += _build_ffmpeg_audio_flags(
@@ -284,20 +297,28 @@ def seq_to_video(
         ' '.join(to_str(_arg) for _arg in _args))
     _, _err = system(_args, result='out/err', verbose=verbose)
     if not _video.exists() or not _video.size():
-        _handle_conversion_fail(seq=seq, err=_err, video=_video)
+        _handle_conversion_fail(seq=seq, err=_err, video=_video, args=_args)
 
     return _video
 
 
-def _handle_conversion_fail(seq, video, err):
+def _handle_conversion_fail(seq, video, err, args):
     """Handle conversion fail, flaggin common issues.
 
     Args:
         seq (Seq): source image sequence
         video (Video): conversion target
         err (str): ffmpeg error message
+        args (str): ffmpeg command args
     """
     _LOGGER.info('CONVERSION FAILED:\n%s', err)
+    _args_s = ''
+    for _arg in args:
+        _arg = to_str(_arg)
+        if ' ' in _arg:
+            _arg = f'"{_arg}"'
+        _args_s += f'{_arg} '
+    _LOGGER.info(' - ARGS %s', _args_s)
 
     if not video.size():
         video.delete(force=True)

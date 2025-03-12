@@ -7,6 +7,7 @@ import logging
 from pini import pipe
 from pini.pipe import cache
 from pini.qt import QtWidgets
+from pini.utils import find_callback
 
 from .. import eh_base
 
@@ -125,3 +126,19 @@ class CBasicPublish(eh_base.CExportHandler):
         _job_c.find_publishes(force=True)
 
         super()._update_pipe_cache(work=work, outs=outs)
+
+    def post_export(self, outs, **kwargs):
+        """Run post export scripts.
+
+        For publish this allows any publish callback to be installed.
+
+        Args:
+            outs (CPOutput list): outputs which were generated
+        """
+        _LOGGER.info('POST EXPORT %s', self)
+        super().post_export(outs=outs, **kwargs)
+
+        _callback = find_callback('Publish')
+        _LOGGER.info(' - PUBLISH CALLBACK %s', _callback)
+        for _out in outs:
+            _callback(_out)

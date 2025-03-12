@@ -1,6 +1,7 @@
 """General utilities for maya."""
 
 from .mu_cam import find_cams
+from .mu_eval import process_deferrred_events
 from .mu_namespace import (
     del_namespace, set_namespace, to_namespace, apply_namespace)
 from .mu_dec import (

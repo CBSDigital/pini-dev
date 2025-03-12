@@ -3,7 +3,7 @@
 import logging
 
 from pini import dcc, icons, pipe
-from pini.utils import abs_path, HOME
+from pini.utils import abs_path, HOME, install_callback
 
 from ...cp_utils import map_path
 
@@ -61,8 +61,9 @@ def install_set_work_callback(callback):
     Args:
         callback (fn): callback to execute on set work
     """
-    from . import SET_WORK_CALLBACKS
-    SET_WORK_CALLBACKS[callback.__name__] = callback
+    from pini.tools import release
+    release.apply_deprecation('11/03/25', 'Use pini.utils.install_callback')
+    install_callback('SetWork', callback)
 
 
 def load_recent():

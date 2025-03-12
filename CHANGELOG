@@ -1,3 +1,23 @@
+## [6.56.0] - Wed 2025-03-12 13:57
+### Summary
+ - Pini Helper:
+    - added option for callback on publish (nkim/blee),
+### Updated
+ - pini.utils.Seq.to_video added range_ override,
+ - pini.utils.Seq.to_video print ffmpeg cmd on fail,
+ - pini.utils install_callback/find_callback added,
+ - pini.dcc.export.CBasicPublish.post_export added publish callback option,
+ - pini.pipe install_read_settings_callback/install_set_work_callback deprecated,
+ - pini.pipe.shotgrid.SGCVersion.path added attr,
+ - pini.pipe.shotgrid.SGCEntity.find_ver added,
+ - pini.pipe.shotgrid.SGCEntity.find_vers added force flag,
+ - pini.pipe.shotgrid.create_pub_file allow upstream file as CCPOutput,
+ - pini.pipe.shotgrid.create_version working,
+ - pini.tools.release.check_file batch update unused imports bugfix alias imports,
+ - maya_pini.utils.process_deferrred_events added,
+ - maya_pini.hik.set_source bugfix error due to deferred events,
+
+
 ## [6.55.1] - Tue 2025-03-11 10:43
 ### Summary
  - Pini Helper:

@@ -186,15 +186,45 @@ class _SGCEntity(sgc_elem.SGCElem):
         _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
         return _tasks
 
-    def find_vers(self, **kwargs):
+    def find_ver(self, match, catch=True, force=False, **kwargs):
+        """Find version.
+
+        Args:
+            match (str): match version by name/path
+            catch (bool): no error if no version found
+            force (bool): force reread cached data
+
+        Returns:
+            (SGCVersion): matching version
+        """
+        _vers = self.find_vers(**kwargs)
+        if len(_vers) == 1:
+            return single(_vers)
+
+        _match_s = to_str(match)
+        _matches = [
+            _ver for _ver in _vers
+            if match in (_ver.path, _ver.name) or
+            _match_s in (_ver.path, _ver.name)]
+        if len(_matches) == 1:
+            return single(_matches)
+
+        if catch:
+            return None
+        raise ValueError(match, kwargs)
+
+    def find_vers(self, force=False, **kwargs):
         """Search versions in this entity.
+
+        Args:
+            force (bool): force reread cached data
 
         Returns:
             (SGCVer list): tasks
         """
         _LOGGER.debug('FIND TASKS %s', kwargs)
         _vers = []
-        for _ver in self._read_vers():
+        for _ver in self._read_vers(force=force):
             if not sgc_utils.passes_filters(_ver, **kwargs):
                 continue
             _vers.append(_ver)

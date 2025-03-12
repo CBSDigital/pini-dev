@@ -8,10 +8,10 @@ import logging
 import os
 
 from pini.utils import (
-    cache_on_obj, Dir, single, File, cache_result, merge_dicts)
+    cache_on_obj, Dir, single, File, cache_result, merge_dicts,
+    install_callback, find_callback)
 
 _LOGGER = logging.getLogger(__name__)
-_READ_SETTINGS_CALLBACK = None
 _DEFAULT_SETTINGS = {
     'col': None,
     'fps': None,
@@ -37,8 +37,9 @@ def install_read_settings_callback(func):
     Args:
         func (fn): function to read job resolution
     """
-    global _READ_SETTINGS_CALLBACK
-    _READ_SETTINGS_CALLBACK = func
+    from pini.tools import release
+    release.apply_deprecation('11/03/25', 'Use pini.utils.install_callback')
+    install_callback('ReadSettings', func)
 
 
 @cache_result
@@ -154,8 +155,9 @@ class CPSettingsLevel(Dir):
             (dict): setting at this level
         """
         _settings = self.settings_file.read_yml(catch=True) or {}
-        if _READ_SETTINGS_CALLBACK:
-            _cb_settings = _READ_SETTINGS_CALLBACK(self)
+        _callback = find_callback('ReadSettings')
+        if _callback:
+            _cb_settings = _callback(self)
             if _cb_settings:
                 _settings = merge_dicts(_settings, _cb_settings)
         return _settings

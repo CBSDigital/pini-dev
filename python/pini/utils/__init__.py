@@ -3,7 +3,7 @@
 from . import u_email as email
 
 from .u_assert import assert_eq
-
+from .u_callbacks import install_callback, find_callback
 from .u_exe import find_exe
 from .u_filter import apply_filter, passes_filter
 from .u_func import wrap_fn, chain_fns, null_fn

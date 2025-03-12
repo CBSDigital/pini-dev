@@ -118,7 +118,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             _LOGGER.info(' - NO cache_SET FOUND')
             return
 
-        _tfms = m_pipe.read_cache_set(mode='transforms')
+        _tfms = m_pipe.read_cache_set(mode='tfm')
         _LOGGER.info(' - TFMS %s', _tfms)
         for _tfm in sorted(_tfms, key=to_long, reverse=True):
             if not _tfm.exists():

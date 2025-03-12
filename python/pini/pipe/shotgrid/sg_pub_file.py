@@ -224,12 +224,19 @@ def _build_pub_data(
     if task:
         _data['task'] = task.to_entry()
     if upstream_files:
+        _up_data = []
         for _file in upstream_files:
+            _LOGGER.debug(' - ADDING UPSTREAM PUB FILE %s', _file)
             if isinstance(_file, dict):
                 _f_data = _file
+            elif isinstance(_file, cache.CCPOutputBase):
+                _f_data = _file.sg_pub_file.to_entry()
             else:
                 raise NotImplementedError(_file)
-            _data['upstream_published_files'] = upstream_files
+            _LOGGER.debug('   - DATA %s', _f_data)
+            assert isinstance(_data, dict)
+            _up_data.append(_f_data)
+        _data['upstream_published_files'] = _up_data
 
     return _data
 

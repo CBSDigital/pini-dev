@@ -548,8 +548,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
     def to_video(  # pylint: disable=unused-argument
             self, video, fps=None, audio=None, audio_offset=0.0,
             use_scene_audio=False, crf=15, bitrate=None, denoise=None,
-            tune=None, speed=None, force=False, burnins=False, res=None,
-            verbose=0):
+            tune=None, speed=None, burnins=False, res=None, range_=None,
+            force=False, verbose=0):
         """Convert this image sequence to a video.
 
         Args:
@@ -565,9 +565,10 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             denoise (float): apply nlmeans denoise (20.0 is recommended)
             tune (str): apply tuning preset (eg. animation, film)
             speed (str): apply speed preset (eg. slow, medium, slowest)
-            force (bool): overwrite existing without confirmation
             burnins (bool): add burnins
             res (tuple): override output res
+            range_ (tuple): override frame range
+            force (bool): overwrite existing without confirmation
             verbose (int): print process data
 
         Returns:

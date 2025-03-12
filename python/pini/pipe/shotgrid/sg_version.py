@@ -31,7 +31,8 @@ def create_version(
     _LOGGER.info('CREATE VERSION')
 
     # Check for existing
-    _cur_ver = shotgrid.SGC.find_ver(video, catch=True)
+    _ety = shotgrid.SGC.find_entity(video.entity)
+    _cur_ver = _ety.find_ver(video, catch=True)
     if not force and _cur_ver:
         _LOGGER.info(' - VERSION ALREADY EXISTS %s', video)
         return _cur_ver
@@ -47,7 +48,7 @@ def create_version(
         _data.pop('created_by')
         shotgrid.update('Version', _cur_ver.id_, _data)
         _action = 'UPDATED'
-    _sg_ver = shotgrid.SGC.find_ver(video, force=1)
+    _sg_ver = _ety.find_ver(video, force=True)
     _LOGGER.info(' - %s VERSION %s', _action, _sg_ver)
     assert _sg_ver
 
@@ -86,8 +87,8 @@ def _build_ver_data(video, frames, comment, pub_files):
 
     _work = sg_utils.output_to_work(video)
     _sg_ety = shotgrid.SGC.find_entity(video.entity)
-    _sg_job = shotgrid.SGC.find_job(video.job)
-    _sg_task = shotgrid.SGC.find_task(video)
+    _sg_job = shotgrid.SGC.find_proj(video.job)
+    _sg_task = _sg_ety.find_task(task=video.task, step=video.step)
 
     # Build data
     _data = {
