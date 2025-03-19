@@ -4,6 +4,7 @@
 
 import logging
 import operator
+import os
 
 from pini import qt, pipe, dcc, icons
 from pini.dcc import pipe_ref
@@ -130,19 +131,22 @@ class PHSceneTab:
         """
         _tab = self.ui.SOutputsPane.currentWidget()
         _ren_basic_types = ['render', 'blast', 'plate']
+        _filter = os.environ.get('PINI_HELPER_OUTPUT_FILTER')
 
         _outs = []
         if _tab == self.ui.SAssetsTab:
-            _outs = self.job.find_publishes(extns=dcc.REF_EXTNS)
+            _outs = self.job.find_publishes(
+                extns=dcc.REF_EXTNS, filter_=_filter)
         elif _tab == self.ui.SEntityTab:
             if self.entity:
                 _outs += [
-                    _out for _out in self.entity.find_outputs(linked=True)
+                    _out for _out in self.entity.find_outputs(
+                        linked=True, filter_=_filter)
                     if not _out.is_media()]
         elif _tab == self.ui.SMediaTab:
             if self.entity:
                 _outs += [
-                    _out for _out in self.entity.find_outputs()
+                    _out for _out in self.entity.find_outputs(filter_=_filter)
                     if _out.is_media()]
         else:
             raise ValueError(_tab)

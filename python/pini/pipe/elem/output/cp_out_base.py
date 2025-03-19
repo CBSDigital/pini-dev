@@ -161,10 +161,12 @@ class CPOutputBase:
         self.tag = self.data.get('tag')
         self.user = self.data.get('user')
 
-        self.asset_type = self.entity.asset_type
-        self.asset = self.entity.asset
-        self.sequence = self.entity.sequence
-        self.shot = self.entity.shot
+        # Transfer attrs from entity
+        for _attr in [
+                'asset_type', 'asset', 'sequence', 'shot', 'entity_type']:
+            _val = getattr(self.entity, _attr)
+            self.data[_attr] = _val
+            setattr(self, _attr, _val)
 
         self.ver = self.data.get('ver')
         self.ver_n = int(self.ver) if self.ver else None
@@ -538,7 +540,8 @@ class CPOutputBase:
         _tmpl = template or self.template
         if isinstance(_tmpl, str):
             _tmpl = self.entity.find_template(
-                _tmpl, has_key={'tag': bool('tag' in kwargs or self.tag)})
+                _tmpl, dcc_=kwargs.get('dcc_'),
+                has_key={'tag': bool('tag' in kwargs or self.tag)})
         assert isinstance(_tmpl, pipe.CPTemplate)
         _LOGGER.debug(' - TEMPLATE %s', _tmpl)
 

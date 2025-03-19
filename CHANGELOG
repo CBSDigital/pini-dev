@@ -1,3 +1,15 @@
+## [6.58.0] - Wed 2025-03-19 13:54
+### Summary
+ - Pini Helper:
+    - allow filtering out scene tab outputs via $PINI_HELPER_OUTPUT_FILTER,
+### Updated
+ - pini.pipe.CPOutputBase.entity_type added attr,
+ - pini.pipe.CPOutputBase.data asset/asset_type/shot/sequence added,
+ - pini.pipe.CPOutputBase.to_output apply dcc_ flag to template search,
+ - pini.tools.helper allow output filtering via $PINI_HELPER_OUTPUT_FILTER,
+ - pini.tools.helper.jump_to returns success,
+
+
 ## [6.57.0] - Wed 2025-03-19 10:07
 ### Summary
  - Pipeline Codebase:

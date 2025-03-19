@@ -62,7 +62,7 @@ class CCPEntityBase(CPEntity):
         _out_u = pipe.to_output(match, catch=True)
         if _out_u:
             return self._obt_output_cacheable(_out_u, catch=catch, force=force)
-        raise NotImplementedError(match)
+        raise NotImplementedError(match, type(match))
 
     def _obt_output_cacheable(self, output, catch, force):
         """Obtain cacheable version of the given output.

@@ -252,7 +252,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPTemplate list): matching templates
         """
-        _LOGGER.log(9, 'FIND TEMPLATES %s type_=%s', self.name, type_)
+        _LOGGER.debug('FIND TEMPLATES %s type_=%s dcc_=%s', self.name, type_, dcc_)
 
         # Apply simple filters
         assert profile in ['shot', 'asset', None]
@@ -267,13 +267,16 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             if alt is not EMPTY and _tmpl.alt != alt:
                 continue
             _tmpls.append(_tmpl)
+        _LOGGER.debug(' - MATCHED %d TMPLS %s', len(_tmpls), _tmpls)
 
         # Apply complex filters
         if dcc_ is not EMPTY:
             _tmpls = self._find_templates_dcc(_tmpls, dcc_=dcc_)
+            _LOGGER.debug(' - APPLY DCC %d %s', len(_tmpls), _tmpls)
         if has_key:
             _tmpls = self._find_templates_has_key(_tmpls, has_key=has_key)
         if want_key:
+            _LOGGER.debug(' - APPLY WANT KEY %s', want_key)
             _tmpls = self._find_templates_want_key(_tmpls, want_key=want_key)
 
         _tmpls = sorted(_tmpls, key=operator.attrgetter('name'))

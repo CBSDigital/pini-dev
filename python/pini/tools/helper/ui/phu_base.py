@@ -10,7 +10,7 @@ import webbrowser
 from pini import pipe, icons, dcc, qt, testing
 from pini.dcc import pipe_ref
 from pini.utils import (
-    File, wrap_fn, chain_fns, strftime, Video, Seq, VIDEO_EXTNS)
+    File, wrap_fn, chain_fns, strftime, Video, Seq, VIDEO_EXTNS, to_str)
 
 from . import phu_header, phu_work_tab, phu_export_tab, phu_scene_tab
 from ..ph_utils import LOOKDEV_BG_ICON, obt_recent_work, obt_pixmap
@@ -179,33 +179,17 @@ class PHUiBase(
 
         Args:
             path (str): path to jump to
+
+        Returns:
+            (bool): whether path was successfully applied
         """
         _LOGGER.debug('JUMP TO %s', path)
-
-        # Assign target
-        self.target = _tab = _trg_ety = None
+        _trg, _tab, _trg_ety = self._jump_to_assign_target(path)
+        self.target = _trg
         if not self.target:
-            self.target = pipe.to_work(path)
-            if self.target:
-                _tab = 'Work'
-                _trg_ety = self.target.entity
-        if not self.target:
-            _out = pipe.to_output(path, catch=True)
-            if _out:
-                _out = pipe.CACHE.obt(_out)
-                self.target = _out
-                _tab = 'Scene'
-                if _out.profile == 'shot':
-                    _trg_ety = _out.entity
-        if not self.target:
-            self.target = pipe.to_entity(path, catch=True)
-            _trg_ety = self.target
-        _LOGGER.debug(
-            ' - TARGET tab=%s %s %s', _tab, type(self.target), self.target)
+            return False
 
         # Update ui
-        if not self.target:
-            return
         self.ui.Job.redraw()
         _LOGGER.debug(' - TRG ETY %s', _trg_ety)
         if _trg_ety:
@@ -216,7 +200,59 @@ class PHUiBase(
             _LOGGER.debug(' - SELECT PANE %s', _tab)
             self.ui.MainPane.select_tab(_tab, emit=True)
 
+        # Determine result
+        _LOGGER.debug(' - TARGET %s', self.target)
+        if to_str(self.target) != to_str(path):
+            _result = False
+        elif isinstance(self.target, pipe.CPWork):
+            _result = self.target == self.ui.WWorks.selected_data()
+        elif isinstance(self.target, pipe.CPOutputBase):
+            _out = self.target == self.ui.SOutputs.selected_data()
+            _LOGGER.debug(' - OUT %s', _out)
+            _result = _out
+        else:
+            _result = False
+        _LOGGER.debug(' - RESULT %s', _result)
+
         self.target = None
+
+        return _result
+
+    def _jump_to_assign_target(self, path):
+        """Assign jump to target.
+
+        Args:
+            path (str): path to jump to
+
+        Returns:
+            (tuple): target, target tab, target entity
+        """
+        _trg = _trg_tab = _trg_ety = None
+
+        # Try target as work
+        if not _trg:
+            _trg = pipe.to_work(path)
+            if _trg:
+                _trg_tab = 'Work'
+                _trg_ety = _trg.entity
+
+        # Try target as output
+        if not _trg:
+            _out = pipe.to_output(path, catch=True)
+            if _out:
+                _out = pipe.CACHE.obt(_out)
+                _trg = _out
+                _trg_tab = 'Scene'
+                if _out.profile == 'shot':
+                    _trg_ety = _out.entity
+
+        # Try target as entity
+        if not _trg:
+            _trg = pipe.to_entity(path, catch=True)
+            _trg_ety = _trg
+
+        _LOGGER.debug(' - TARGET tab=%s %s %s', _trg_tab, type(_trg), _trg)
+        return _trg, _trg_tab, _trg_ety
 
     def _callback__Refresh(self):
         self.target = self.work
