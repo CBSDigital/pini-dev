@@ -17,10 +17,12 @@ class CCPOutputGhost(File):
     object before it is used for anything.
     """
 
+    dcc_ = None
+
     def __init__(
             self, path: str, stream: str, template: str,
             src: str, src_ref: str,
-            type_: str, basic_type: str,
+            type_: str, basic_type: str, dcc_: str,
             job: str, profile: str,
             asset: str, asset_type: str,
             shot: str, sequence: str,
@@ -40,6 +42,7 @@ class CCPOutputGhost(File):
             src_ref (str): path to source reference (eg. rig path)
             type_ (str): output type
             basic_type (str): output basic type
+            dcc_ (str): output dcc
             job (str): output job name
             profile (str): output profile
             asset (str): output asset name
@@ -74,6 +77,7 @@ class CCPOutputGhost(File):
 
         self.type_ = type_
         self.basic_type = basic_type
+        self.dcc_ = dcc_
 
         self.job = job
         self.profile = profile

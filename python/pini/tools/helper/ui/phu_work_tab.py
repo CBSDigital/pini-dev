@@ -670,7 +670,8 @@ class PHWorkTab:
             _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
-            _label = f'Cache - {out.output_name} ({out.extn})'
+            _name = out.output_name or out.dcc_
+            _label = f'Cache - {_name} ({out.extn})'
         elif isinstance(out, pipe.CPOutputSeq):
             _header += ' ' + ints_to_str(out.frames)
             _label += ' ' + ints_to_str(out.frames)

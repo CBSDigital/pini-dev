@@ -1,3 +1,16 @@
+## [6.59.0] - Wed 2025-03-19 15:28
+### Summary
+ - Pini Helper:
+    - better labelling for unreal outputs,
+### Updated
+ - pini.pipe.CPOutputBase.dcc_ use dcc from template if none in data,
+ - pini.pipe.cache.CCPOutputGhost.dcc_ added,
+ - pini.pipe.cache.CCPWork.cache_fmt include cfg_name in path,
+ - pipe.pipe.shotgrid.create_pub_file_from_output better error on upstream file type not implemented,
+ - pini.pipe.VERSION updated 9 -> 10 to force ghost recache,
+ - pini.tools.helper work file ctx output label uses dcc if no output name,
+
+
 ## [6.58.0] - Wed 2025-03-19 13:54
 ### Summary
  - Pini Helper:

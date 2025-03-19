@@ -232,7 +232,8 @@ def _build_pub_data(
             elif isinstance(_file, cache.CCPOutputBase):
                 _f_data = _file.sg_pub_file.to_entry()
             else:
-                raise NotImplementedError(_file)
+                raise NotImplementedError(
+                    f'No implemented "{type(_file).__name__}": {_file}')
             _LOGGER.debug('   - DATA %s', _f_data)
             assert isinstance(_data, dict)
             _up_data.append(_f_data)

@@ -2,7 +2,6 @@
 
 import functools
 import logging
-import sys
 
 from pini.utils import nice_id, File, nice_size
 
@@ -24,8 +23,10 @@ class CCPWork(CPWork):
         Returns:
             (str): cache format
         """
+        from pini import pipe
         return self.work_dir.to_file(
-            '.pini/cache/%s_%s_{func}.pkl' % (self.base, sys.platform)).path
+            f'.pini/cache/P{pipe.VERSION}_{self.job.cfg_name}/'
+            f'{self.base}_{{func}}.pkl').path
 
     @property
     def outputs(self):

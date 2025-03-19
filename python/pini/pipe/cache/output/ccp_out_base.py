@@ -360,7 +360,7 @@ class CCPOutputBase(elem.CPOutputBase):
             template=self.template.source.pattern, type_=self.type_,
             task=self.task, pini_task=self.pini_task, ver_n=self.ver_n,
             step=self.step, output_name=self.output_name, shot=self.shot,
-            sequence=self.sequence, asset=self.asset,
+            sequence=self.sequence, asset=self.asset, dcc_=self.dcc_,
             updated_by=self.updated_by, asset_type=self.asset_type,
             content_type=self.content_type, job=self.job.name,
             output_type=self.output_type, tag=self.tag,

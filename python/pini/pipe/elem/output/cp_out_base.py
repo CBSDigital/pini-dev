@@ -172,7 +172,7 @@ class CPOutputBase:
         self.ver_n = int(self.ver) if self.ver else None
 
         self.output_type = self.data.get('output_type')
-        self.dcc_ = self.data.get('dcc')
+        self.dcc_ = self.data.get('dcc') or self.template.dcc
 
     def _init_extract_data_find_output_templates(
             self, template, templates, types):
