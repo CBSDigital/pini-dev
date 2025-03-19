@@ -18,6 +18,17 @@ class CArray3:
         _tfm = pom.to_tfm(obj)
         cmds.xform(_tfm, worldSpace=True, translation=self.to_tuple())
 
+    def move(self, obj, relative=True):
+        """Apply this data to the given object.
+
+        ie. apply this data as a move
+
+        Args:
+            obj (str): object to move
+            relative (bool): apply move as relative
+        """
+        cmds.move(self.x, self.y, self.z, obj, relative=relative)
+
     def pformat(self):
         """Get a nicely formatted string of this array's values.
 

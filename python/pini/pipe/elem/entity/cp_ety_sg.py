@@ -57,7 +57,7 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             (CPOutput list): outputs
         """
         from pini import pipe
-        _LOGGER.debug('READ OUTPUTS')
+        _LOGGER.debug('READ OUTPUTS force=%d', force)
 
         # Build output objects
         _outs = {}  # Accomodate many pubs with same path (just use latest)

@@ -8,7 +8,7 @@ from pini import pipe, icons, qt, dcc, farm
 from pini.tools import sanity_check, error
 from pini.utils import single, plural, safe_zip, passes_filter, last
 
-from maya_pini import ref
+from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
     hide_img_planes, restore_frame, blast_frame, save_fbx, restore_sel)
 
@@ -296,10 +296,12 @@ def _take_snapshot(frame, image):
     blast_frame(file_=image, force=True)
 
 
-def find_cacheable(filter_=None, type_=None, output_name=None, catch=False):
+def find_cacheable(
+        match, filter_=None, type_=None, output_name=None, catch=False):
     """Find a cacheable in the current scene.
 
     Args:
+        match (str): match by name
         filter_ (str): label filter
         type_ (str): filter by cacheable type (ref/cam/cset)
         output_name (str): match by output name
@@ -314,14 +316,21 @@ def find_cacheable(filter_=None, type_=None, output_name=None, catch=False):
     if _cbl:
         return _cbl
 
+    if isinstance(match, str):
+        _match_s = str
+    elif isinstance(match, pom.CReference):
+        _match_s = match.namespace
+    else:
+        raise NotImplementedError(match)
+
     _name_match = single(
-        [_cbl for _cbl in _cbls if _cbl.output_name == filter_], catch=True)
+        [_cbl for _cbl in _cbls if _cbl.output_name == _match_s], catch=True)
     if _name_match:
         return _name_match
 
     if catch:
         return None
-    raise ValueError(filter_)
+    raise ValueError(_match_s)
 
 
 def find_cacheables(filter_=None, task=None, type_=None, output_name=None):

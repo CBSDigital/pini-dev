@@ -197,14 +197,19 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl.alt == _alts[0]]
             _LOGGER.log(9, ' - DISCARDING ALTS %d %s', len(_tmpls), _alts)
 
-        try:
-            return single(_tmpls, catch=catch)
-        except ValueError as _exc:
-            _LOGGER.log(
-                9, 'FAILED TO FIND TEMPLATE tmpls=%d has_key=%s want_key=%s '
-                'tmpls=%s', len(_tmpls), has_key, want_key, _tmpls)
+        if len(_tmpls) == 1:
+            return single(_tmpls)
+        if catch:
+            return None
+        _LOGGER.log(
+            9, 'FAILED TO FIND TEMPLATE tmpls=%d has_key=%s want_key=%s '
+            'tmpls=%s', len(_tmpls), has_key, want_key, _tmpls)
+        if _tmpls:
             raise ValueError(
-                f'Failed to find template "{type_}" in {self.name}') from _exc
+                f'Matched {len(_tmpls):d} "{type_}" templates in '
+                f'{self.name}')
+        raise ValueError(
+            f'Failed to find template "{type_}" in {self.name}')
 
     @cache_result
     def find_template_by_pattern(self, pattern, catch=False):

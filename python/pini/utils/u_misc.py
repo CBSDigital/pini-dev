@@ -459,14 +459,15 @@ def safe_zip(*lists):
     Raises:
         (ValueError): if lists are not all the same length
     """
-    assert len(lists) >= 2
-    for _idx, _list in enumerate(lists[1:], start=1):
-        if not len(lists[0]) == len(_list):
+    _lists = [to_list(_list) for _list in lists]
+    assert len(_lists) >= 2
+    for _idx, _list in enumerate(_lists[1:], start=1):
+        if not len(_lists[0]) == len(_list):
             _chr = chr(ord('a') + _idx)
             raise ValueError(
-                f'Length of list a ({len(lists[0]):d}) does not match '
+                f'Length of list a ({len(_lists[0]):d}) does not match '
                 f'length of list {_chr} ({len(_list):d})')
-    return zip(*lists)
+    return zip(*_lists)
 
 
 def search_dict_for_key(dict_, key):
@@ -801,6 +802,30 @@ def system(
     if result == 'err':
         return _err
     raise ValueError(result)
+
+
+def to_list(obj):
+    """Convert the given object to a list.
+
+    This is useful for functions where an iterable list is required.
+
+    eg. to_list(range(3)) -> [0, 1, 2]
+        to_list('blah') -> ['blah']
+        to_list([0, 1, 2]) -> [0, 1, 2]
+
+    Args:
+        obj (any): object to convert
+
+    Returns:
+        (list): object as list
+    """
+    if isinstance(obj, (list, set, tuple)):
+        return obj
+    if isinstance(obj, str):
+        return [obj]
+    if isinstance(obj, types.GeneratorType):
+        return list(obj)
+    raise NotImplementedError(obj)
 
 
 def to_str(obj):

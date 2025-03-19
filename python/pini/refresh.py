@@ -16,7 +16,7 @@ from pini.utils import apply_filter, lprint, abs_path, check_heart
 
 _LOGGER = logging.getLogger(__name__)
 
-_RELOAD_ORDER = [
+RELOAD_ORDER = [
     'pini.utils.u_misc',
     'pini.utils.u_yaml',
     'pini.utils.path.up_utils',
@@ -187,7 +187,7 @@ _RELOAD_ORDER = [
 
 _RELOAD_ORDER_APPEND = os.environ.get('PINI_RELOAD_ORDER_APPEND')
 if _RELOAD_ORDER_APPEND:
-    _RELOAD_ORDER += _RELOAD_ORDER_APPEND.split(',')
+    RELOAD_ORDER += _RELOAD_ORDER_APPEND.split(',')
 
 
 def find_mods(base=None):
@@ -257,7 +257,7 @@ def get_mod_sort(order=None):
         (fn): sort function
     """
 
-    _order = order or _RELOAD_ORDER
+    _order = order or RELOAD_ORDER
 
     def _mod_sort(name):
 
@@ -369,7 +369,7 @@ def reload_libs(
         qt.close_all_progress_bars()
 
     # Get list of modules to reload
-    _sort = sort or get_mod_sort(order=_RELOAD_ORDER)
+    _sort = sort or get_mod_sort(order=RELOAD_ORDER)
     _mods = mods or _find_pini_mods(
         sort=_sort, filter_=filter_, mod_names=mod_names)
 

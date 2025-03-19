@@ -140,5 +140,6 @@ class CBasicPublish(eh_base.CExportHandler):
 
         _callback = find_callback('Publish')
         _LOGGER.info(' - PUBLISH CALLBACK %s', _callback)
-        for _out in outs:
-            _callback(_out)
+        if _callback:
+            for _out in outs:
+                _callback(_out)

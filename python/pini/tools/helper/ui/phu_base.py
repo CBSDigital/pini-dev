@@ -7,7 +7,7 @@ import os
 import pprint
 import webbrowser
 
-from pini import pipe, icons, dcc, qt
+from pini import pipe, icons, dcc, qt, testing
 from pini.dcc import pipe_ref
 from pini.utils import (
     File, wrap_fn, chain_fns, strftime, Video, Seq, VIDEO_EXTNS)
@@ -138,6 +138,9 @@ class PHUiBase(
 
         self.ui.EExportPane.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
+
+        if not testing.dev_mode():
+            self.ui.ECacheDevTab.setVisible(False)
 
     def _start_timer(self):
         """Start timer."""

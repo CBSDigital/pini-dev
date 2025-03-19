@@ -307,12 +307,17 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """Delete history on this node."""
         cmds.delete(self, constructionHistory=True)
 
-    def duplicate(self, name=None, upstream_nodes=False, class_=None):
+    def duplicate(
+            self, name=None, upstream_nodes=False, instance_leaf=False,
+            return_roots_only=True, input_connections=False, class_=None):
         """Duplicate this node.
 
         Args:
             name (str): node name
             upstream_nodes (bool): duplicate upstream nodes
+            instance_leaf (bool): duplicate as instance
+            return_roots_only (bool): return root nodes
+            input_connections (bool): duplicate input connections
             class_ (class): override node class
 
         Returns:
@@ -324,7 +329,9 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _kwargs['name'] = name
         _class = class_ or type(self)
         _results = cmds.duplicate(
-            self, renameChildren=True, upstreamNodes=upstream_nodes, **_kwargs)
+            self, renameChildren=True, upstreamNodes=upstream_nodes,
+            instanceLeaf=instance_leaf, returnRootsOnly=return_roots_only,
+            inputConnections=input_connections, **_kwargs)
         _LOGGER.debug(' - RESULTS %s', _results)
         _dup = _results[0]
         _LOGGER.debug(' - RESULT %s %s', _dup, _class)

@@ -813,6 +813,7 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
         'double3': 3,
         'float': 1,
         'long': 1,
+        'time': 1,
     }[_type]
     _LOGGER.debug(' - SIZE %d type=%s', _size, _type)
 

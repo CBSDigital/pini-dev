@@ -202,12 +202,21 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             (str): cv attribute (eg. nurbCurve1Shape.cv[10])
         """
         from maya_pini import open_maya as pom
-        _attr = self.shp.attr[f'cv[{idx:d}]']
+        _attr = self.attr[f'cv[{idx:d}]']
         if mode == 'attr':
             return _attr
         if mode == 'pos':
             return pom.to_p(_attr)
         raise ValueError(mode)
+
+    def to_cvs(self):
+        """Build list of cvs for this curve.
+
+        Returns:
+            (str list): cvs
+        """
+        for _idx in range(self.numCVs):
+            yield self.to_cv(_idx)
 
     def to_ps(self):
         """Obtain cv point positions.

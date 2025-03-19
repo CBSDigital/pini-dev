@@ -283,6 +283,8 @@ class PHExportTab:
         elif _tab == 'Cache':
             self.ui.ECacheRefs.redraw()
             self._callback__ECacheRangeReset()
+        elif _tab == 'CacheDev':
+            pass
         elif _tab == 'Render':
             self.ui.ERenderHandler.redraw()
             self.ui.ERenderFrames.redraw()

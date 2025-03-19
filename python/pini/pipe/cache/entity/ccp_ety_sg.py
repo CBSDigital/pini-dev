@@ -20,7 +20,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             force (bool): provided for symmetry
         """
         _LOGGER.info('UPDATE OUTPUTS CACHE')
-        self._read_outputs(force=True)
+        self._read_outputs(force=force)
 
     def _update_publishes_cache(self):
         """Rebuild published file cache."""
@@ -63,7 +63,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
 
         if force:
             _LOGGER.debug(' - UPDATING SGC')
-            self.sg_entity.find_pub_files(force=True)
+            self.sg_entity.find_pub_files(force=force)
 
         # Read outputs
         _out_cs = []
@@ -71,7 +71,7 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             _out_us = super()._read_outputs()
         except CacheOutdatedError:
             _LOGGER.error('FORCE REBUILD OUTPUTS CACHE %s', self)
-            _out_us = super()._read_outputs(force=True)  # pylint: disable=unexpected-keyword-arg
+            _out_us = super()._read_outputs(force=max((force, True)))  # pylint: disable=unexpected-keyword-arg
 
         # Rebuild outputs into cacheable objects
         for _out_u in _out_us:

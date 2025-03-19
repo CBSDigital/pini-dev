@@ -414,10 +414,12 @@ class MayaDCC(BaseDCC):
         Args:
             work (CPWork): work file to apply
         """
+        _LOGGER.debug('SET ENV %s', self)
         if cmds.pluginInfo('mtoa', query=True, loaded=True):
             _dir = work.work_dir.to_subdir('workspace/snapshots')
             _dir.mkdir()
             cmds.arnoldRenderView(opt=("Snapshots Folder", _dir.path))
+            _LOGGER.debug(' - SET ARNOLD SNAPSHOTS %s', _dir.path)
 
     def set_fps(self, fps):
         """Set frame rate.

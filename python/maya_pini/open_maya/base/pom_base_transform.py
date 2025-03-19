@@ -473,6 +473,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
 
     def unlock_tfms(self):
         """Unlock transforms on this node."""
+        _LOGGER.debug('UNLOCK TFMS %s', self)
         _plugs = []
         for _attr in 'trs':
             _plug = f'{self}.{_attr}'
@@ -481,6 +482,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
                 _plug = f'{self}.{_attr}{_axis}'
                 _plugs.append(_plug)
         for _plug in _plugs:
+            _LOGGER.debug(' - UNLOCK TFM %s', _plug)
             cmds.setAttr(_plug, lock=False)
 
     def u_scale(self, scale):

@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -506,7 +506,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>2</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -1400,6 +1400,11 @@
             </widget>
            </item>
           </layout>
+         </widget>
+         <widget class="QWidget" name="ECacheDevTab">
+          <attribute name="title">
+           <string>CacheDev</string>
+          </attribute>
          </widget>
          <widget class="QWidget" name="ERenderTab">
           <attribute name="title">
@@ -3379,9 +3384,9 @@ icon</string>
    <header>clistwidget.h</header>
   </customwidget>
   <customwidget>
-   <class>CComboBox</class>
-   <extends>QComboBox</extends>
-   <header>ccombobox.h</header>
+   <class>CLabel</class>
+   <extends>QLabel</extends>
+   <header>clabel.h</header>
   </customwidget>
   <customwidget>
    <class>CTabWidget</class>
@@ -3390,9 +3395,9 @@ icon</string>
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>CLabel</class>
-   <extends>QLabel</extends>
-   <header>clabel.h</header>
+   <class>CComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ccombobox.h</header>
   </customwidget>
   <customwidget>
    <class>CListView</class>

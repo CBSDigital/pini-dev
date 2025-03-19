@@ -133,7 +133,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if self.ui_is_active():
             self.ui.save_settings()
         _pub.delete(wording='replace', force=force)
-        _work.save(reason='publish', force=True, update_outputs=False)
+        _bkp = _work.save(reason='publish', force=True, update_outputs=False)
+        _metadata['bkp'] = _bkp.path
         _progress.set_pc(20)
 
         self._clean_scene(references=references)
@@ -247,7 +248,12 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         elif _refs == 'Leave intact':
             pass
         elif _refs == 'Import into root namespace':
-            for _ref in ref.find_refs():
+            for _ref in pom.find_refs():
+                if (
+                        _ref.top_node and
+                        _ref.top_node.to_long().startswith('|JUNK')):
+                    _ref.delete(force=True)
+                    continue
                 _LOGGER.info(' - IMPORT REF %s', _ref)
                 _ns = _ref.namespace  # Need to read before import
                 _ref.import_()

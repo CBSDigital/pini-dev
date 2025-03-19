@@ -12,7 +12,7 @@ from pini.pipe import cache
 from pini.tools import error, helper
 from pini.utils import single, assert_eq
 
-from pini.dcc.export.publish.ph_maya import phm_basic
+from pini.dcc.export.eh_publish.ph_maya import phm_basic
 
 from maya_pini import open_maya as pom
 

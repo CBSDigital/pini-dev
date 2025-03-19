@@ -664,6 +664,8 @@ def _build_ass_gz_tmpls(tmpls, job):
         _ass_gz_name = _cache_name.replace('cache', 'ass_gz')
         _LOGGER.debug('BUILD ASS GZ %s -> %s', _cache_name, _ass_gz_name)
         for _cache_tmpl in tmpls[_cache_name]:
+            if 'extn' not in _cache_tmpl.keys():
+                continue
             _LOGGER.debug(' - CACHE TMPL %s', _cache_tmpl)
             _ass_gz_tmpl = CPTemplate(
                 name=_ass_gz_name, job=job, path_type='f',

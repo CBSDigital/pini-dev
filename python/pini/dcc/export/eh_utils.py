@@ -3,7 +3,7 @@
 import time
 
 from pini import pipe, dcc, qt
-from pini.utils import get_user
+from pini.utils import get_user, to_str
 
 
 def build_metadata(
@@ -38,9 +38,9 @@ def build_metadata(
     _data = {}
     _data['handler'] = handler
     if src:
-        _data['src'] = src
+        _data['src'] = to_str(src)
     if bkp:
-        _data['bkp'] = bkp
+        _data['bkp'] = to_str(bkp)
     if src_ref:
         _data['src_ref'] = src_ref
 

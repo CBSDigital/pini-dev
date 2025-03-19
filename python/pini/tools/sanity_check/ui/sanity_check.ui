@@ -145,7 +145,7 @@
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <property name="documentMode">
           <bool>false</bool>
@@ -256,15 +256,15 @@ p, li { white-space: pre-wrap; }
  </widget>
  <customwidgets>
   <customwidget>
-   <class>CListView</class>
-   <extends>QListView</extends>
-   <header>clistview.h</header>
-  </customwidget>
-  <customwidget>
    <class>CTabWidget</class>
    <extends>QTabWidget</extends>
    <header>ctabwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CListView</class>
+   <extends>QListView</extends>
+   <header>clistview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

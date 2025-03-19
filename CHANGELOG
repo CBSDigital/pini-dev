@@ -1,3 +1,31 @@
+## [6.57.0] - Wed 2025-03-19 10:07
+### Summary
+ - Pipeline Codebase:
+    - bugfix config error on cache output with hardcoded fbx extension,
+### Updated
+ - pini.utils.safe_zip added generator handling,
+ - pini.utils.to_list added,
+ - pini.utils to_pascal added comma splitting,
+ - pini.dcc.export.build_metadata allow bkp/src as File,
+ - pini.dcc.export.publish added fn access,
+ - pini.dcc.export.cache adding WIP,
+ - pini.pipe.CPJob.build_templates no ass.gz tmpl if extn not in keys,
+ - pini.pipe.CPJob.find_template better error on zero/multi fail,
+ - pini.pipe.CPWork.find_outputs uses pipe.passes_filters,
+ - pini.tools.pyui arg selection to left of clear,
+ - pini.tools.helper added cache dev tab WIP,
+ - pini.refresh.RELOAD_ORDER made public,
+ - maya_pini.m_pipe.find_cacheable first arg is match to allow ref match,
+ - maya_pini.open_maya.CNode.duplicate added instance_leaf/return_roots_only/input_connections args,
+ - maya_pini.open_maya.CArray3.move added,
+ - maya_pini.open_maya.CNurbsCurve.to_cvs added,
+ - maya_pini.open_maya.CPlug.plus added time type handling,
+ - maya_pini.open_maya.CReference.reload added,
+ - maya_pini.hik added STANCE handling,
+ - maya_pini.hik set_current/build_hik added,
+ - maya_pini.hik.find_hiks added referenced flag,
+
+
 ## [6.56.0] - Wed 2025-03-12 13:57
 ### Summary
  - Pini Helper:

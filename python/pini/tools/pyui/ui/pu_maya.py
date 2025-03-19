@@ -127,11 +127,6 @@ class PUMayaUi(pu_base.PUBaseUi):
                 command=wrap_fn(
                     pu_utils.apply_browser_btn, mode=arg.browser_mode,
                     read_fn=_read_fn, set_fn=_set_fn))
-        if arg.clear:
-            cmds.iconTextButton(
-                image1=icons.CLEAR, width=self.arg_h, height=self.arg_h,
-                style='iconOnly', statusBarMessage='Clear text',
-                command=wrap_fn(cmds.textField, _field, edit=True, text=''))
         if arg.selection:
             _type = None
             _tooltip = 'Get selection'
@@ -142,6 +137,11 @@ class PUMayaUi(pu_base.PUBaseUi):
                 image1=icons.SELECT, width=self.arg_h, height=self.arg_h,
                 style='iconOnly', statusBarMessage=_tooltip,
                 command=wrap_fn(_apply_selection, field=_field, type_=_type))
+        if arg.clear:
+            cmds.iconTextButton(
+                image1=icons.CLEAR, width=self.arg_h, height=self.arg_h,
+                style='iconOnly', statusBarMessage='Clear text',
+                command=wrap_fn(cmds.textField, _field, edit=True, text=''))
 
         cmds.setParent('..')
 

@@ -6,18 +6,21 @@ be embedded in PiniHelper.
 
 from pini import dcc
 
-from .eh_base import CExportHandler
 from .eh_utils import build_metadata
-from .render import CRenderHandler
-from .publish import CBasicPublish
+from .eh_base import CExportHandler
+
+from .eh_render import CRenderHandler
+from .eh_publish import CBasicPublish
+from .eh_cache import cache
 
 if dcc.NAME == 'maya':
-    from .publish import (
+    from .eh_publish import (
         CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode)
-    from .render import (
+        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode, publish)
+    from .eh_render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
-    from .blast import CMayaPlayblast
+    from .eh_blast import CMayaPlayblast
+    from .eh_cache import CMayaCache
 
 elif dcc.NAME == 'hou':
-    from .blast import CHouFlipbook
+    from .eh_blast import CHouFlipbook

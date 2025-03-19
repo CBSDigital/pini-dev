@@ -345,28 +345,19 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         _outs = self.find_outputs(type_=type_, **kwargs)
         return single(_outs, catch=catch, items_label='outputs')
 
-    def find_outputs(
-            self, type_=None, base=None, output_name=None, extn=None):
+    def find_outputs(self, type_=None, **kwargs):
         """Find outputs generated from this work file.
 
         Args:
             type_ (str): filter by type (eg. publish/cache)
-            base (str): filter by filename base
-            output_name (str): filter by output name (eg. bty_ao/horse02)
-            extn (str): filter by file extension (eg. abc/jpg)
 
         Returns:
             (CPOutput list): matching outputs
         """
+        from pini import pipe
         _outs = []
         for _out in self._read_outputs():
-            if base and _out.base != base:
-                continue
-            if type_ and type_ not in (_out.type_, _out.basic_type):
-                continue
-            if output_name and _out.output_name != output_name:
-                continue
-            if extn and _out.extn != extn:
+            if not pipe.passes_filters(_out, type_=type_, **kwargs):
                 continue
             _outs.append(_out)
         return _outs

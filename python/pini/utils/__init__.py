@@ -15,7 +15,7 @@ from .u_text import (
 from .u_misc import (
     lprint, single, to_time_t, strftime, to_time_f, search_dict_for_key,
     str_to_seed, dprint, system, str_to_ints, val_map, safe_zip,
-    nice_age, get_user, last, ints_to_str, basic_repr, nice_id,
+    nice_age, get_user, last, ints_to_str, basic_repr, nice_id, to_list,
     fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size, merge_dicts,
     null_dec, to_str, read_func_kwargs, check_logging_level, first)
 
