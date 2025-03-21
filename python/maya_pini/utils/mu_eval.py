@@ -10,7 +10,7 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
-def process_deferrred_events(max_iterations=1000):
+def process_deferred_events(max_iterations=1000):
     """Wait until all events in evalDeferred list have been processed.
 
     Args:

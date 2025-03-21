@@ -43,10 +43,10 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         """
         super().build_ui(add_footer=False)
 
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
         self._build_pxy_opts()
         if add_footer:
-            self.add_footer_elems()
+            self.ui.add_footer_elems()
 
     def _build_pxy_opts(self):
         """Build proxy publish options."""
@@ -62,24 +62,24 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             return
 
         if _ass:
-            self.ui.ExportAss = self.add_checkbox_elem(
+            self.ui.add_checkbox_elem(
                 val=True, name='ExportAss',
                 label="Export ass.gz of geo")
         if _vrm:
-            self.ui.ExportVrmesh = self.add_checkbox_elem(
+            self.ui.add_checkbox_elem(
                 val=True, name='ExportVrmesh',
                 label="Export shaded vrmesh scene of geo")
         if _rs:
-            self.ui.ExportRedshiftProxy = self.add_checkbox_elem(
+            self.ui.add_checkbox_elem(
                 val=True, name='ExportRedshiftProxy',
                 label="Export redshift proxy of geo")
 
         if _vrm or _rs:
-            self.ui.ProxyAnim = self.add_checkbox_elem(
+            self.ui.add_checkbox_elem(
                 val=False, name='ProxyAnim',
                 label='Include animation in proxies')
 
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
     def build_metadata(
             self, work=None, sanity_check_=True, task='lookdev', force=False):

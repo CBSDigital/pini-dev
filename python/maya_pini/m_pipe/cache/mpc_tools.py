@@ -119,7 +119,7 @@ def cache(
         cacheables, uv_write=True, world_space=True, extn='abc',
         format_='Ogawa', range_=None, step=1.0, save=True, clean_up=True,
         renderable_only=True, checks_data=None, use_farm=False, snapshot=True,
-        version_up=False, force=False):
+        version_up=False, update_cache=True, force=False):
     """Cache the current scene.
 
     Args:
@@ -137,6 +137,7 @@ def cache(
         use_farm (bool): cache using farm
         snapshot (bool): take thumbnail snapshot on cache
         version_up (bool): version up on cache
+        update_cache (bool): update cache with new outputs
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -189,14 +190,14 @@ def cache(
         _updated = True
 
     # Post cache
-    if _updated:
+    if update_cache and _updated:
         _work.update_outputs()
     if version_up:
         pipe.version_up()
     elif save and not dcc.batch_mode():
         cmds.file(modified=False)  # Ignore cleanup changes
 
-    if use_farm:
+    if use_farm and not force:
         qt.notify(
             f'Submitted {len(cacheables):d} caches to {farm.NAME}.\n\n'
             f'Batch name:\n{_work.base}',

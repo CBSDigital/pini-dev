@@ -46,10 +46,10 @@ class CBasicPublish(eh_base.CExportHandler):
         Args:
             add_footer (bool): add footer elements
         """
-        self.ui.Label = QtWidgets.QLabel(self.LABEL, self.parent)
+        self.ui.Label = QtWidgets.QLabel(self.LABEL, self.ui.parent)
         self.ui.Label.setWordWrap(True)
         self.ui.Label.setObjectName('Label')
-        self.layout.addWidget(self.ui.Label)
+        self.ui.layout.addWidget(self.ui.Label)
 
         if add_footer:
             self.add_footer_elems()

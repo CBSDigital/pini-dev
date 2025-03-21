@@ -40,14 +40,14 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             _cur_cam = str(_cur_cam)
         _LOGGER.debug('BUILD UI %s %s', _cur_cam, _cams)
 
-        self.ui.Camera = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='Camera', items=_cams, val=_cur_cam,
             disable_save_settings=True)
-        self.ui.Settings = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='Settings', items=['As is', 'Nice'])
-        self.ui.Resolution = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='Resolution', items=['Full', 'Half', 'Quarter'])
-        self.ui.OutputName = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='OutputName', items=['blast', '<camera>'])
 
     @property

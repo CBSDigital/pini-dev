@@ -189,6 +189,10 @@ class CPOutputBase:
 
         # Build dict of data to apply to template
         _data = {}
+        _data['asset'] = self.entity.asset
+        _data['asset_type'] = self.entity.asset_type
+        _data['shot'] = self.entity.shot
+        _data['sequence'] = self.entity.sequence
         _data['entity'] = self.entity.name
         _data['entity_path'] = self.entity.path
         _data['extn'] = self.extn

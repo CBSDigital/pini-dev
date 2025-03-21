@@ -124,6 +124,16 @@ class PHExportTab:
     def _redraw__ECacheRefs(self):
         self.ui.ECacheRefs.set_items([], emit=False)
 
+    def _redraw__ECacheDevTab(self):
+        _LOGGER.info('REDRAW ECacheDevTab')
+        self.ui.ECacheHandler.redraw()
+
+    def _redraw__ECacheHandler(self):
+        _handlers = dcc.find_export_handlers('Cache')
+        _labels = [_handler.NAME for _handler in _handlers]
+        self.ui.ECacheHandler.set_items(
+            data=_handlers, labels=_labels, emit=True)
+
     def _redraw__ERenderHandler(self):
         _handlers = sorted(dcc.find_export_handlers('Render'))
         self.ui.ERenderHandler.set_items(
@@ -273,24 +283,24 @@ class PHExportTab:
         self.ui.ESubmitOutputs.set_items(_items)
 
     def _callback__EExportPane(self):
-        _tab = self.ui.EExportPane.current_tab_text()
+        _tab = self.ui.EExportPane.currentWidget()
         _LOGGER.debug('CALLBACK EExportPane %s', _tab)
-        if _tab == 'Publish':
+        if _tab == self.ui.EPublishTab:
             self.ui.EPublishHandler.redraw()
             self.ui.EPublish.setEnabled(bool(self.entity))
-        elif _tab == 'Blast':
+        elif _tab == self.ui.EBlastTab:
             self.ui.EBlastHandler.redraw()
-        elif _tab == 'Cache':
+        elif _tab == self.ui.ECacheTab:
             self.ui.ECacheRefs.redraw()
             self._callback__ECacheRangeReset()
-        elif _tab == 'CacheDev':
-            pass
-        elif _tab == 'Render':
+        elif _tab == self.ui.ECacheDevTab:
+            self.ui.ECacheDevTab.redraw()
+        elif _tab == self.ui.ERenderTab:
             self.ui.ERenderHandler.redraw()
             self.ui.ERenderFrames.redraw()
             self.ui.ERenderFramesLabel.redraw()
             self.ui.ERender.redraw()
-        elif _tab == 'Submit':
+        elif _tab == self.ui.ESubmitTab:
             self.ui.ESubmitTemplate.redraw()
         else:
             raise ValueError(_tab)
@@ -299,7 +309,7 @@ class PHExportTab:
         _handler = self.ui.EPublishHandler.selected_data()
         _LOGGER.debug('UPDATE PUBLISH HANDLER %s', _handler)
         if _handler:
-            _handler.update_ui(parent=self, layout=self.ui.EPublishLayout)
+            _handler.update_ui(parent=self, layout=self.ui.EPublishLyt)
 
     @usage.get_tracker('PiniHelper.Publish')
     def _callback__EPublish(self, force=False):
@@ -331,7 +341,7 @@ class PHExportTab:
         if _handler:
             _catch = error.get_catcher(qt_safe=True, parent=self)
             _update_func = _catch(_handler.update_ui)
-            _update_func(parent=self, layout=self.ui.EBlastLayout)
+            _update_func(parent=self, layout=self.ui.EBlastLyt)
 
     @usage.get_tracker('PiniHelper.Blast')
     def _callback__EBlast(self):
@@ -359,13 +369,18 @@ class PHExportTab:
     def _callback__ECache(self):
         raise NotImplementedError('Implemented in dcc subclass')
 
+    def _callback__ECacheHandler(self):
+        _handler = self.ui.ECacheHandler.selected_data()
+        if _handler:
+            _handler.update_ui(parent=self, layout=self.ui.ECacheLyt)
+
     def _callback__ERenderHandler(self):
         _handler = self.ui.ERenderHandler.selected_data()
         self.save_settings()
         _LOGGER.debug('UPDATE RENDER HANDLER %s', _handler)
         if _handler:
             _build_ui = wrap_fn(
-                _handler.update_ui, parent=self, layout=self.ui.ERenderLayout)
+                _handler.update_ui, parent=self, layout=self.ui.ERenderLyt)
             _build_ui = error.get_catcher(parent=self, qt_safe=True)(_build_ui)
             _build_ui()
             self.save_settings()

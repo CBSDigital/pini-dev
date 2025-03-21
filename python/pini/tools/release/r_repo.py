@@ -7,7 +7,7 @@ import time
 
 from pini.utils import (
     Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
-    system, to_time_f, abs_path)
+    system, to_time_f, abs_path, cache_result, dprint)
 
 from . import test
 from .r_version import PRVersion, DEV_VER
@@ -46,6 +46,16 @@ class PRRepo(Dir):
         """
         return self.to_file('CHANGELOG')
 
+    @property
+    def git_repo(self):
+        """Get dev repo.
+
+        Returns:
+            (git.Repo): dev repo
+        """
+        import git
+        return git.Repo(self.path)
+
     @cache_property
     def version(self):
         """Obtain current repo version.
@@ -54,6 +64,29 @@ class PRRepo(Dir):
             (PRVersion): version
         """
         return self.read_version()
+
+    @cache_result
+    def find_py_files(self, filter_=None, class_=None, force=False):
+        """Find python files in the dev codebase.
+
+        Args:
+            filter_ (str): apply filter to the list
+            class_ (type): override py file class
+            force (bool): force reread file list
+
+        Returns:
+            (str list): list of files to check
+        """
+        _files = []
+        _LOGGER.info("SEARCHING %s", self.path)
+        assert self.exists()
+        _files += self.find(
+            extn='py', type_='f', filter_=filter_, class_=class_,
+            catch_missing=False)
+        _files += Dir(self.path + '/bin').find(
+            type_='f', filter_=filter_, class_=class_, extn=None,
+            catch_missing=True)
+        return _files
 
     def find_tests(self, mode='all', filter_=None):
         """Find tests in this repo.
@@ -115,6 +148,42 @@ class PRRepo(Dir):
             _vers.append(_ver)
 
         return sorted(_vers)
+
+    def pull(self, repo=None):
+        """Pull this repo's dev code.
+
+        Args:
+            repo (GitRepo): override repo
+        """
+        dprint('PULLING', self)
+        _repo = repo or self.git_repo
+        print(' - PATH', _repo.working_dir)
+        print(' - REPO', _repo)
+        print(' -', _repo.git.pull())
+
+    def push(self, message, force=False, repo=None):
+        """Push this repo's dev code.
+
+        Args:
+            message (str): commit message
+            force (bool): push even if nothing committed
+            repo (GitRepo): override repo
+        """
+        dprint('PUSHING', self)
+        _repo = repo or self.git_repo
+        print(' - PATH', _repo.working_dir)
+        print(' - REPO', _repo)
+
+        _repo.git.add(all=True)
+
+        _dirty = _repo.is_dirty()
+        if not force and not _dirty:
+            print(' - NO PUSH NEEDED')
+            return
+
+        _repo.git.commit(all=True, message=message)
+        _result = _repo.git.push()
+        print(' - PUSHED DATA', _result)
 
     def read_version(self):
         """Read current version from CHANGELOG.

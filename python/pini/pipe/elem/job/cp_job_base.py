@@ -252,7 +252,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPTemplate list): matching templates
         """
-        _LOGGER.debug('FIND TEMPLATES %s type_=%s dcc_=%s', self.name, type_, dcc_)
+        _LOGGER.debug(
+            'FIND TEMPLATES %s type_=%s dcc_=%s', self.name, type_, dcc_)
 
         # Apply simple filters
         assert profile in ['shot', 'asset', None]

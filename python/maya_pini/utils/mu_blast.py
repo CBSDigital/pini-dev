@@ -317,6 +317,7 @@ def blast(
         frame_to_thumb (File): copy a frame of the blast to this path
         force (bool): overwrite existing without confirmation
     """
+    from pini import qt
     from pini.tools import error
     from maya_pini import open_maya as pom
 
@@ -370,7 +371,8 @@ def blast(
         if cleanup:
             if _tmp_seq.to_range() != _range:
                 _LOGGER.debug(' - TMP %s %s', _tmp_seq.to_range(), _tmp_seq)
-                raise RuntimeError('Range mismatch')
+                raise qt.DialogCancelled(
+                    'Range mismatch - blast probably cancelled')
             _tmp_seq.delete(force=True)
     if not _clip.exists():
         raise RuntimeError(_clip.path)

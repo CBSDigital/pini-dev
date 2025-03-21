@@ -53,11 +53,11 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
         if not _cam:
             _cam = _cams[0]
         _LOGGER.debug(' - CAM %s %s', _cam, _cam)
-        self.ui.Camera = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='Camera', items=_cams, val=_cam, label_w=60,
             disable_save_settings=True)
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.
@@ -83,21 +83,19 @@ class CMayaLocalRender(CMayaRenderHandler):
         """Build basic render interface into the given layout."""
         super().build_ui()
 
-        self.ui.View = self.add_checkbox_elem(
-            name='View', val=True,
-            label='View render')
-        self.ui.Mov = self.add_checkbox_elem(
-            name='Mov', val=False,
-            label='Convert to mov')
-        self.ui.Cleanup = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
+            name='View', val=True, label='View render')
+        self.ui.add_checkbox_elem(
+            name='Mov', val=False, label='Convert to mov')
+        self.ui.add_checkbox_elem(
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
 
-        self.add_separator_elem()
-        self.add_footer_elems(snapshot=False)
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
+        self.ui.add_footer_elems(snapshot=False)
+        self.ui.add_separator_elem()
 
-        self.layout.addStretch()
+        self.ui.layout.addStretch()
         self._callback__Mov()
 
     def _callback__Mov(self):
@@ -124,7 +122,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                 qt.notify(
                     f'No mov template found in this job:'
                     f'\n\n{_work.job.path}\n\nUnable to render.',
-                    title='Warning', parent=self.parent)
+                    title='Warning', parent=self.ui.parent)
                 return
             _out = _work.to_output(
                 'mov', output_name=_output_name, extn='mp4')
@@ -138,7 +136,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                 qt.notify(
                     f'No render template found in this job:'
                     f'\n\n{_work.job.path}\n\nUnable to render.',
-                    title='Warning', parent=self.parent)
+                    title='Warning', parent=self.ui.parent)
                 return
             _fmt = cmds.getAttr(
                 'defaultArnoldDriver.ai_translator', asString=True)
@@ -214,27 +212,24 @@ class CMayaFarmRender(CMayaRenderHandler):
         _LOGGER.debug('BUILD UI')
         super().build_ui()
 
-        self.ui.Priority = self.add_spinbox_elem(
-            name='Priority', val=50)
-        self.ui.ChunkSize = self.add_spinbox_elem(
-            name='ChunkSize', val=1, min_=1)
-        self.ui.MachineLimit = self.add_spinbox_elem(
-            name='MachineLimit', val=15)
+        self.ui.add_spinbox_elem(name='Priority', val=50)
+        self.ui.add_spinbox_elem(name='ChunkSize', val=1, min_=1)
+        self.ui.add_spinbox_elem(name='MachineLimit', val=15)
         self._build_limit_groups_elems()
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
         self._build_layers_elems()
 
-        self.ui.HideImgPlanes = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             name='HideImgPlanes', val=False,
             label='Hide image planes',
             tooltip='Hide image planes before submission')
-        self.add_footer_elems(snapshot=False)
-        self.add_separator_elem()
+        self.ui.add_footer_elems(snapshot=False)
+        self.ui.add_separator_elem()
 
     def _build_limit_groups_elems(self):
         """Build limit groups elements."""
-        _btn = QtWidgets.QPushButton(self.parent)
+        _btn = QtWidgets.QPushButton(self.ui.parent)
         _btn.setFixedWidth(20)
         _btn.setFixedHeight(20)
         _btn.setIconSize(qt.to_size(20))
@@ -243,7 +238,7 @@ class CMayaFarmRender(CMayaRenderHandler):
         _btn.clicked.connect(self._callback__LimitGroupsSelect)
         self.ui.LimitGroupsSelect = _btn
 
-        self.ui.LimitGroups = self.add_lineedit_elem(
+        self.ui.add_lineedit_elem(
             name='LimitGroups', add_elems=[_btn])
         self.ui.LimitGroups.setEnabled(False)
 
@@ -254,7 +249,7 @@ class CMayaFarmRender(CMayaRenderHandler):
         # Build layers section
         _label = qt.CLabel('Layers')
         _label.setFixedHeight(20)
-        self.layout.addWidget(_label)
+        self.ui.layout.addWidget(_label)
         self.ui.Layers = qt.CListWidget()
         self.ui.Layers.setObjectName('Layers')
         self.ui.Layers.setSelectionMode(QtWidgets.QListView.ExtendedSelection)
@@ -284,8 +279,8 @@ class CMayaFarmRender(CMayaRenderHandler):
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.MinimumExpanding)
 
-        self.layout.addWidget(self.ui.Layers)
-        self.layout.setStretch(self.layout.count() - 1, 1)
+        self.ui.layout.addWidget(self.ui.Layers)
+        self.ui.layout.setStretch(self.ui.layout.count() - 1, 1)
 
         _signal = qt.widget_to_signal(self.ui.Layers)
         _signal.connect(self._callback__Layers)

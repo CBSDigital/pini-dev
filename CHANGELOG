@@ -1,3 +1,21 @@
+## [6.60.0] - Fri 2025-03-21 07:41
+### Summary
+ - Pini Helper:
+    - bugfix error on export from asset with underscore in name (blee),
+    - maya blast fix error on mov complile on cancelled blast (kakuna),
+### Updated
+ - pini.dcc.export.CExportHandler separated ui cpnts -> CExportHandlerUI,
+ - pini.dcc.export.CMayaCache added WIP,
+ - pini.dcc.export.CExportHandler.pre_export added,
+ - pini.pipe.CPOutputBase build output templates apply asset/asset_type/shot/sequence from entity,
+ - pini.tools.release.PRRepo added git_repo/push/pull/find_py_files,
+ - pini.tools.helper callback EExportPane uses tab objects not labels,
+ - pini.tools.helper export tab renamed layout suffixes Layout -> Lyt,
+ - maya_pini.utils fixed typo process_deferrred_events -> process_deferred_events,
+ - maya_pini.utils.blast raise dialog cancelled on mov compile error due to blast cancelled,
+ - maya_pini.m_pipe.cache added update_cache arg,
+
+
 ## [6.59.0] - Wed 2025-03-19 15:28
 ### Summary
  - Pini Helper:

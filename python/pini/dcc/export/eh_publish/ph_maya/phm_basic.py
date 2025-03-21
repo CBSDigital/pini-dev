@@ -56,38 +56,38 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _LOGGER.debug('BUILD UI %s', self)
         super().build_ui(add_footer=False)
 
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
-        self.ui.RemoveJunk = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='RemoveJunk', label='Remove JUNK group')
-        self.ui.RemoveSets = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='RemoveSets', label='Remove unused sets')
-        self.ui.RemoveDLayers = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='RemoveDLayers', label='Remove display layers')
-        self.ui.RemoveALayers = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='RemoveALayers', label='Remove anim layers')
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
-        self.ui.ExportAbc = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='ExportAbc',
             label="Export abc of cache_SET geo")
-        self.ui.ExportFbx = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=False, name='ExportFbx',
             label="Export fbx of top node")
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
         # Add reference option
         _data = list(PubRefsMode)
         _items = [_item.value for _item in _data]
-        self.ui.References = self.add_combobox_elem(
+        self.ui.add_combobox_elem(
             name='References', items=_items, data=_data,
             save_policy=qt.SavePolicy.SAVE_IN_SCENE,
             settings_key=_PUB_REFS_MODE_KEY)
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
 
         # Add notes
         if add_footer:
-            self.add_footer_elems()
+            self.ui.add_footer_elems()
 
         _LOGGER.debug(' - COMPLETED BUILD UI %s', self)
 

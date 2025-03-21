@@ -5,7 +5,7 @@ import logging
 from pini.utils import single, passes_filter
 
 from maya_pini import ui, open_maya as pom
-from maya_pini.utils import process_deferrred_events
+from maya_pini.utils import process_deferred_events
 
 from maya import cmds, mel
 
@@ -69,24 +69,24 @@ class PHIKNode(pom.CNode):
             raise ValueError(source)
 
         # Run HIK mel
-        process_deferrred_events()
+        process_deferred_events()
         if _hik:
             mel.eval(f'mayaHIKsetCharacterInput("{self}", "{_hik}")')
-            process_deferrred_events()
+            process_deferred_events()
             cmds.refresh()
             _LOGGER.debug(' - SELECTED "%s"', SRC_LIST.get_val())
 
         # Update ui
         _LOGGER.debug(' - SELECT %s', _select)
         SRC_LIST.set_val(f' {_select}', catch=False)
-        process_deferrred_events()
+        process_deferred_events()
         _LOGGER.debug(' - SELECTED "%s"', SRC_LIST.get_val())
         assert SRC_LIST.get_val() == f' {_select}'
 
     def set_current(self):
         """Set this HIK as current selection in the ui."""
         _LOGGER.debug(' - SET CURRENT %s', self)
-        process_deferrred_events()
+        process_deferred_events()
 
         # Run HIK mel
         mel.eval(f'hikEnableCharacter("{self}", false)')
@@ -96,14 +96,14 @@ class PHIKNode(pom.CNode):
         if not CHAR_LIST.get_val() == self:
             _LOGGER.debug(' - SELECT CHAR %s', self)
             CHAR_LIST.set_val(str(self), catch=True)
-            process_deferrred_events()
+            process_deferred_events()
 
         # assert CHAR_LIST.get_val() == self
         _LOGGER.debug(' - CURRENT CHAR %s', CHAR_LIST.get_val())
         cmds.refresh()
 
         # CHAR_LIST.select_item(_char)
-        process_deferrred_events()
+        process_deferred_events()
 
         assert CHAR_LIST.get_val() == self
 

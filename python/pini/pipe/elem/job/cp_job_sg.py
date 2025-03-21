@@ -160,12 +160,15 @@ class CPJobSG(cp_job_base.CPJobBase):
         _tmpl = self.find_template('entity_path', profile='shot')
         _shots = []
         for _sg_shot in shotgrid.SGC.find_shots(job=self):
+            _LOGGER.debug(' - ADDING SHOT %s', _sg_shot)
             _path = _tmpl.format(
                 job_path=self.path, sequence=_sg_shot.sequence,
                 shot=_sg_shot.shot)
+            _LOGGER.debug('   - PATH %s', _path)
             try:
                 _shot = _class(_path, job=self)
-            except ValueError:
+            except ValueError as _exc:
+                _LOGGER.debug('   - REJECTED %s', _exc)
                 continue
             _shots.append(_shot)
 

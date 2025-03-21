@@ -31,24 +31,23 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         """
         super().build_ui(add_footer=False)
 
-        self.ui.FreezeTfms = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='FreezeTfms',
             label="Freeze transforms")
-        self.ui.DeleteHistory = self.add_checkbox_elem(
+        self.ui.add_checkbox_elem(
             val=True, name='DeleteHistory')
-        self.add_separator_elem()
+        self.ui.add_separator_elem()
         if add_footer:
-            self.add_footer_elems()
+            self.ui.add_footer_elems()
 
     def publish(
-            self, work=None, force=False, revert=True, metadata=None,
+            self, work=None, revert=True, metadata=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None, progress=None):
+            references=None, version_up=None, progress=None, force=False):
         """Execute this publish.
 
         Args:
             work (CPWork): override work
-            force (bool): force overwrite without confirmation
             revert (bool): revert to work file on completion
             metadata (dict): override metadata
             sanity_check_ (bool): apply sanity check
@@ -57,6 +56,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             references (str): how to handle references (eg. Remove)
             version_up (bool): whether to version up on publish
             progress (ProgressDialog): override progress dialog
+            force (bool): force overwrite without confirmation
 
         Returns:
             (CPOutput): publish file
