@@ -436,7 +436,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         if catch:
             return None
-        raise ValueError(match)
+        raise ValueError(match, kwargs)
 
     def find_assets(self, asset_type=None, filter_=None):
         """Find assets in this job.

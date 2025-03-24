@@ -2,6 +2,7 @@
 
 from pini import dcc
 
+from .qc_callbacks import connect_callbacks
 from .qc_ui_base import CUiBase
 from .qc_ui_dialog import CUiDialog
 from .qc_ui_main_window import CUiMainWindow

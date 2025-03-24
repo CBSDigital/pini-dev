@@ -201,7 +201,9 @@ def _fix_unused_from_import(issue, lines, line):
         lines.pop(_line_n)
         return
 
-    _prefix = f'from {_root} import '
+    _root_name = line.split()[1]
+    assert _root_name.endswith(_root)  # eg. "..q_mgr", "c_pipe"
+    _prefix = f'from {_root_name} import '
     _LOGGER.info('   - PREFIX %s', _prefix)
     assert line.strip().startswith(_prefix)
     assert line.count(_prefix) == 1

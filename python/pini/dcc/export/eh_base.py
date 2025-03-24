@@ -140,16 +140,34 @@ class CExportHandler:
         qt.flush_layout(self.ui.layout)
         self.build_ui()
         self.ui.load_settings()
+        qt.connect_callbacks(self, settings=self.ui.settings)
 
-    def pre_export(self):
+    def init_export(self):
         """Run pre export code."""
-        _work = pipe.cur_work()
-        if not _work:
+        self.work = pipe.CACHE.obt_cur_work()
+        if not self.work:
             raise error.HandledError(
                 "Please save your scene using PiniHelper before blasting.\n\n"
                 "This allows the tools to tell what job/task you're working "
                 "in, to know where to save the blast to.",
                 title='Warning', parent=self.parent)
+        self.metadata = eh_utils.build_metadata(
+            sanity_check_=True, src=self.work)
+        _bkp = self.work.save(reason=self.ACTION)
+        self.metadata['bkp'] = _bkp.path
+
+    def to_range(self):
+        """Read range based on current ui settings.
+
+        Returns:
+            (tuple): start/end frames
+        """
+        _mode = self.ui.Range.currentText()
+        if _mode == 'From timeline':
+            return dcc.t_range(int)
+        if _mode == 'Manual':
+            return self.ui.RangeManStart.value(), self.ui.RangeManEnd.value()
+        raise ValueError(_mode)
 
     def post_export(
             self, work, outs=(), version_up=None, update_cache=True,

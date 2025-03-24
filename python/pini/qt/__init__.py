@@ -3,7 +3,7 @@
 import sys
 from pini import dcc
 
-from .custom import CUiDialog, CUiBase, CUiMainWindow
+from .custom import CUiDialog, CUiBase, CUiMainWindow, connect_callbacks
 from .wrapper import (
     CPixmap, CListWidget, CListWidgetItem, CTabWidget, CComboBox, CLineEdit,
     CTreeWidget, CTreeWidgetItem, CColor, CProgressBar, CMenu, CPainter,

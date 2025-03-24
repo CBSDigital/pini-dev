@@ -2,9 +2,9 @@
 
 import logging
 
-from pini import qt, pipe
+from pini import qt, pipe, dcc, icons
 from pini.qt import QtWidgets, QtGui, Qt
-from pini.utils import to_nice, wrap_fn
+from pini.utils import to_nice
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,32 +61,6 @@ class CExportHandlerUI(qt.CUiContainer):
         elem.save_policy = _save_policy
         elem.load_setting()
         setattr(self, name, elem)
-        self._connect_elem(elem, name)
-
-    def _connect_elem(self, elem, name):
-        """Connect element callbacks.
-
-        Args:
-            elem (QWidget): element to connect
-            name (str): element name
-        """
-        _signal = qt.widget_to_signal(elem)
-
-        # Connect save on change
-        _apply_save_policy = wrap_fn(
-            elem.apply_save_policy_on_change, self.settings)
-        _signal.connect(_apply_save_policy)
-
-        # Connect callback
-        _callback = getattr(self.handler, f'_callback__{name}', None)
-        if _callback:
-            _signal.connect(_callback)
-
-        # Connect
-        _redraw = getattr(self.handler, f'_redraw__{name}', None)
-        if _redraw:
-            elem.redraw = _redraw
-            elem.redraw()
 
     def _add_elem_lyt(
             self, name, elem, label=None, label_w=None, tooltip=None,
@@ -318,6 +292,75 @@ class CExportHandlerUI(qt.CUiContainer):
         self.Notes = self.add_lineedit_elem(
             name='Notes', val=_notes, disable_save_settings=True)
         self.notes_elem = self.Notes
+
+    def add_range_elems(self):
+        """Build range elements.
+
+        The allow the range to be manually set.
+        """
+        _start, _end = dcc.t_range()
+        _width = 40
+
+        self.add_combobox_elem(
+            'Range', items=['From timeline', 'Manual'])
+        self.Range.currentIndexChanged.connect(self._callback__Range)
+
+        self.RangeManStart = QtWidgets.QSpinBox()
+        self.RangeManStart.setObjectName('RangeManStart')
+        self.RangeManStart.setMaximum(10000)
+        self.RangeManStart.setValue(_start)
+        self.RangeManStart.setButtonSymbols(QtWidgets.QSpinBox.NoButtons)
+        self.RangeManStart.setFixedWidth(_width)
+        self.RangeManStart.setAlignment(Qt.AlignCenter)
+        self.RangeManStart.save_policy = qt.SavePolicy.NO_SAVE
+        self.RangeLayout.addWidget(self.RangeManStart)
+
+        self.RangeManLabel = QtWidgets.QLabel('to')
+        self.RangeManLabel.setObjectName('RangeManLabel')
+        self.RangeManLabel.setFixedWidth(21)
+        self.RangeManLabel.setAlignment(Qt.AlignCenter)
+        self.RangeLayout.addWidget(self.RangeManLabel)
+
+        self.RangeManEnd = QtWidgets.QSpinBox()
+        self.RangeManEnd.setObjectName('RangeManEnd')
+        self.RangeManEnd.setMaximum(10000)
+        self.RangeManEnd.setValue(_end)
+        self.RangeManEnd.setButtonSymbols(QtWidgets.QSpinBox.NoButtons)
+        self.RangeManEnd.setFixedWidth(_width)
+        self.RangeManEnd.setAlignment(Qt.AlignCenter)
+        self.RangeManEnd.save_policy = qt.SavePolicy.NO_SAVE
+        self.RangeLayout.addWidget(self.RangeManEnd)
+
+        self.RangeManReset = QtWidgets.QPushButton()
+        self.RangeManReset.setObjectName('RangeManReset')
+        self.RangeManReset.setFixedWidth(23)
+        self.RangeManReset.setIcon(qt.obt_icon(icons.RESET))
+        self.RangeManReset.clicked.connect(self._callback__RangeManReset)
+        self.RangeLayout.addWidget(self.RangeManReset)
+
+        self._manual_range_elems = [
+            self.RangeManStart,
+            self.RangeManLabel,
+            self.RangeManEnd,
+            self.RangeManReset,
+        ]
+
+        self._callback__Range()
+
+    def _callback__Range(self):
+
+        _mode = self.Range.currentText()
+        for _elem in self._manual_range_elems:
+            _elem.setVisible(_mode == 'Manual')
+        _LOGGER.debug('CHANGE RANGE %s %s', _mode, self.handler.to_range())
+        self._callback__RangeManReset()
+
+    def _callback__RangeManReset(self):
+
+        _start, _end = dcc.t_range(int)
+        _LOGGER.debug('RESET RANGE %d %d', _start, _end)
+        self.RangeManStart.setValue(_start)
+        self.RangeManEnd.setValue(_end)
 
 
 def _to_settings_key(handler, name):

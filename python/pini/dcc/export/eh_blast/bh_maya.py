@@ -134,7 +134,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         m_pipe.blast(
             format_=self.ui.Format.currentText(),
             view=self.ui.View.isChecked(),
-            range_=self._read_range(),
+            range_=self.to_range(),
             burnins=self.ui.Burnins.isChecked(),
             res=self.ui.Resolution.currentText(),
             camera=_cam,

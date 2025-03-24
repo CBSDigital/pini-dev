@@ -19,6 +19,8 @@ from ..q_utils import (
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
+from . import qc_callbacks
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -94,9 +96,7 @@ class CUiBase:
 
         self._apply_default_font_size()
         self._check_tooltips()
-        self._connect_redraws()
         self._connect_callbacks()
-        self._connect_contexts()
 
         # Setup QHBoxLayout size policies cache to fix bad transfer
         # from designer to nuke
@@ -221,6 +221,27 @@ class CUiBase:
 
         return self._ui
 
+    def find_widget(self, match, catch=False):
+        """Find widget in this dialog.
+
+        Args:
+            match (str): match by name
+            catch (bool): no error if no widget found
+
+        Returns:
+            (QWidget): matching widget
+        """
+        _widgets = self.find_widgets()
+        _name_match = [
+            _widget for _widget in _widgets
+            if _widget.objectName() == match]
+        if len(_name_match) == 1:
+            return single(_name_match)
+
+        if catch:
+            return None
+        raise ValueError(match)
+
     def find_widgets(self, filter_=None, class_=None):
         """Find widgets belonging to this interface.
 
@@ -275,53 +296,6 @@ class CUiBase:
                     raise RuntimeError(
                         f'No tooltip for image button {_widget}')
 
-    def _connect_callback(self, callback, disconnect=False):
-        """Connect a callback to its widget.
-
-        Args:
-            callback (fn): callback to connect
-            disconnect (bool): replace existing connections on connect
-        """
-        from pini import qt
-
-        # Obtain widget
-        _callback = callback
-        _widget_name = _callback.__name__[len('_callback__'):]
-        _widget = getattr(self._ui, _widget_name, None)
-        if not _widget:
-            raise RuntimeError(f'Missing callback widget {_widget_name}')
-
-        # Find signal to connect
-        _signal = qt.widget_to_signal(_widget)
-        if isinstance(_widget, QtWidgets.QPushButton):
-            if self._error_catcher:
-                _callback = self._error_catcher(_callback)
-            _callback = _disable_on_execute(
-                func=_callback, dialog=self, name=_widget_name)
-        elif isinstance(_widget, qt.CLabel):
-            _widget.callback = _callback
-
-        _LOGGER.debug(
-            ' - CONNECT CALLBACK %s %s %s',
-            _widget.objectName() if hasattr(_widget, 'objectName') else '-',
-            _widget, _callback)
-
-        # Make connections
-        if _signal:
-            if disconnect:
-                _LOGGER.debug(' - DISCONNECT CALLBACK %s %s', _widget, _signal)
-                try:
-                    _signal.disconnect()
-                except RuntimeError:
-                    _LOGGER.info(
-                        ' - DISCONNECT CALLBACK FAILED %s %s', _widget, _signal)
-            _signal.connect(_callback)
-
-            # Apply save on change save policy
-            if isinstance(_widget, qt.CBaseWidget):
-                _signal.connect(
-                    wrap_fn(_widget.apply_save_policy_on_change, self.settings))
-
     def _connect_callbacks(self, disconnect=False):
         """Connect callbacks based on method name.
 
@@ -334,70 +308,9 @@ class CUiBase:
         Args:
             disconnect (bool): replace existing connections on connect
         """
-        _LOGGER.debug('CONNECT CALLBACKS')
-        _callbacks = [getattr(self, _name)
-                      for _name in dir(self)
-                      if _name.startswith('_callback__')]
-
-        for _callback in _callbacks:
-            self._connect_callback(_callback, disconnect=disconnect)
-
-    def _connect_contexts(self):
-        """Connect context callbacks based on method name.
-
-        This builds a menu when the element is right-clicked, and then
-        passes that menu to the corresponding context method to be
-        populated.
-
-        eg. _context__PushButton is connected to ui.PushButton.
-        """
-        _contexts = [getattr(self, _name)
-                     for _name in dir(self)
-                     if _name.startswith('_context__')]
-
-        for _context in _contexts:
-
-            if self._error_catcher:
-                _context = self._error_catcher(_context)
-
-            # Obtain widget
-            _LOGGER.debug('CONNECTING CONTEXT %s', _context)
-            _widget_name = _context.__name__[len('_context__'):]
-            _widget = getattr(self.ui, _widget_name, None)
-            if not _widget:
-                raise RuntimeError('Missing context widget ' + _widget_name)
-
-            # Connnect context callback
-            _widget.customContextMenuRequested.connect(
-                _build_context_fn(
-                    _context, dialog=self, name=_widget.objectName()))
-            _widget.setContextMenuPolicy(Qt.CustomContextMenu)
-
-    def _connect_redraws(self):
-        """Connect redraw callbacks based on method name.
-
-        eg. _redraw__PushButton is connected to ui.PushButton.
-        """
-        _redraws = [getattr(self, _name)
-                    for _name in dir(self)
-                    if _name.startswith('_redraw__')]
-
-        for _redraw in _redraws:
-
-            if self._error_catcher:
-                _redraw = self._error_catcher(_redraw)
-
-            # Obtain widget
-            _LOGGER.debug('CONNECTING REDRAW %s', _redraw)
-            _widget_name = _redraw.__name__[len('_redraw__'):]
-            _widget = getattr(self.ui, _widget_name, None)
-            if not _widget:
-                raise RuntimeError(
-                    f'Redraw method {_redraw.__name__} is missing '
-                    f'widget ({_widget_name})')
-
-            # Connnect redraw callback
-            _widget.redraw = _redraw
+        qc_callbacks.connect_callbacks(
+            dialog=self, ui=self._ui, error_catcher=self._error_catcher,
+            disconnect=disconnect)
 
     def set_window_icon(self, icon):
         """Set window icon.
@@ -792,67 +705,6 @@ class _UiHandler:
         # Rebuild ui object
         self.rebuild_ui()
         return getattr(self.ui, attr)
-
-
-def _build_context_fn(callback, dialog, name):
-    """Build a context function for the given widget.
-
-    This function is called on right click. It builds a QMenu which can
-    then be populated by the context method in the dialog class.
-
-    Due to garbage collection issues, the parent dialog and the element
-    name are used rather than just the widget (ie. so the widget can be
-    retrieved if it gets garbage collected).
-
-    Args:
-        callback (fn): context method in dialog class
-        dialog (QDialog): parent dialog
-        name (str): widget name
-
-    Returns:
-        (fn): context function
-    """
-
-    def _context_fn(pos):
-        from pini import qt
-        _widget = dialog.ui.find_widget(name)
-        _menu = qt.CMenu(_widget)
-        callback(_menu)
-        _menu.exec_(_widget.mapToGlobal(pos))
-
-    return _context_fn
-
-
-def _disable_on_execute(func, dialog, name):
-    """Decorates a widget callback so that it is disabled during execution.
-
-    The ui handler and widget name are required in case garbage collection
-    issues occur, and the widget needs to be rediscovered.
-
-    Args:
-        func (fn): function to decorate
-        dialog (QDialog): parent dialog
-        name (str): widget name
-
-    Returns:
-        (fn): decorated function
-    """
-
-    def _func(*args, **kwargs):
-
-        _widget = dialog.ui.find_widget(name)
-        _widget.setEnabled(False)
-
-        try:
-            _result = func(*args, **kwargs)
-        finally:
-            _widget.setEnabled(True)
-            if hasattr(_widget, 'redraw'):
-                _widget.redraw()
-
-        return _result
-
-    return _func
 
 
 def _fix_icon_paths(ui_file, force=False):

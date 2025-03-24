@@ -314,8 +314,12 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         return False
 
     # Apply token filters
-    if task and task not in (obj.task, obj.pini_task):
-        return False
+    if task:
+        _task_matches = {obj.task, obj.pini_task}
+        if obj.step:
+            _task_matches.add(f'{obj.step}/{obj.task}')
+        if task not in _task_matches:
+            return False
     if step and step != obj.step:
         return False
     if tag is not EMPTY and obj.tag != tag:

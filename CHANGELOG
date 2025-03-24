@@ -1,3 +1,19 @@
+## [6.61.0] - Mon 2025-03-24 10:22
+### Summary
+ - Pipeline Code:
+    - added step filtering to task search,
+### Updated
+ - pini.dcc.export.CExportHandler renamed pre_export -> init_export,
+ - pini.dcc.export.CExportHandler.pre_export setup work/metadata attrs,
+ - pini.dcc.export.CExportHandler use qt.connect_callbacks,
+ - pini.dcc.export.CExportHandler ui.add_range_elems/to_range promoted from blast handler,
+ - pini.pipe.passes_filters match task as step/task token,
+ - pini.qt.connect_callbacks added,
+ - pini.qt.CBaseUI callbacks refactored into submodule,
+ - pini.qt.CBaseUI.find_widget added,
+ - pini.tools.release batch apply unused imports added rel import handling,
+
+
 ## [6.60.0] - Fri 2025-03-21 07:41
 ### Summary
  - Pini Helper:
