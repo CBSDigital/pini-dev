@@ -3,7 +3,7 @@
 import logging
 
 from pini import pipe
-from pini.utils import single, Seq, is_pascal, File
+from pini.utils import single, Seq, is_pascal, File, EMPTY
 
 from . import ccp_out_ghost
 from ..ccp_utils import pipe_cache_on_obj
@@ -193,22 +193,20 @@ class CCPOutputBase(elem.CPOutputBase):
         super().set_metadata(data, mode=mode, force=force)
         self.get_metadata(force=True)
 
-    def find_rep(self, task=None, content_type=None, extn=None, catch=True):
+    def find_rep(self, task=None, catch=True, **kwargs):
         """Find alternative representations of this output.
 
         Args:
             task (str): filter by task
-            content_type (str): filter by content type
-            extn (str): filter by extension
             catch (bool): no error if fail to match a single rep
 
         Returns:
             (CPOutput): alternative representation
         """
-        _reps = self.find_reps(task=task, extn=extn, content_type=content_type)
+        _reps = self.find_reps(task=task, **kwargs)
         return single(_reps, catch=catch)
 
-    def find_reps(self, task=None, content_type=None, extn=None):
+    def find_reps(self, task=None, **kwargs):
         """Find different representation of this reference.
 
         eg. model ma publish <=> lookdev ass.gz standin
@@ -217,8 +215,6 @@ class CCPOutputBase(elem.CPOutputBase):
 
         Args:
             task (str): filter by task
-            content_type (str): filter by content type
-            extn (str): filter by extension
 
         Returns:
             (CPOutput list): representations
@@ -226,15 +222,12 @@ class CCPOutputBase(elem.CPOutputBase):
         _LOGGER.debug('FIND REPS %s', self)
         _reps = []
         for _rep in self._read_reps():
-            if extn and _rep.extn != extn:
-                continue
-            if task and task not in (_rep.task, _rep.pini_task):
-                continue
-            if content_type and _rep.content_type != content_type:
+            if not pipe.passes_filters(_rep, task=task, **kwargs):
                 continue
             _reps.append(_rep)
         return _reps
 
+    @pipe_cache_on_obj
     def _read_reps(self):
         """Find different representations of this outputs.
 
@@ -311,21 +304,24 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (CPOutput list): format reps
         """
+        _LOGGER.debug(' - READ REPS ALT FMTS')
         _reps = []
         if (
                 self.profile == 'asset' and
                 self.extn in ('ma', 'mb', 'gz', 'abc', 'fbx')):
             if self.pini_task == 'model':
                 _LOGGER.debug(' - CHECKING FOR EXTNS')
-                for _extn in ['abc', 'fbx', 'ma']:
+                for _extn in ('abc', 'fbx', 'ma'):
                     if _extn == self.extn:
                         continue
-                    _pub = self.entity.find_output(
-                        ver_n=self.ver_n, tag=self.tag, versionless=False,
-                        task=self.task, extn=_extn, catch=True)
-                    _LOGGER.debug('   - EXTN %s %s', _extn, _pub)
-                    if _pub:
-                        _reps.append(_pub)
+                    for _dcc in (self.dcc_, None, EMPTY):
+                        _pub = self.entity.find_output(
+                            ver_n=self.ver_n, tag=self.tag, versionless=False,
+                            task=self.task, extn=_extn, dcc_=_dcc, catch=True)
+                        _LOGGER.debug('   - EXTN %s %s', _extn, _pub)
+                        if _pub:
+                            _reps.append(_pub)
+                            break
         return _reps
 
     def is_media(self):

@@ -334,7 +334,7 @@ def _exec_export_fbx(work, metadata, constraints=True, force=False):
     # Get fbx path
     _fbx = work.to_output(
         _tmpl, output_type='fbx', extn='fbx', output_name='restCache')
-    _fbx.delete(wording='Replace', force=force)
+    _fbx.delete(wording='replace', force=force)
     _LOGGER.debug(' - FBX %s', _fbx.path)
 
     # Export fbx

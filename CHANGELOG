@@ -1,3 +1,14 @@
+## [6.61.1] - Mon 2025-03-24 13:57
+### Summary
+ - Pini Helper:
+    - swap rep added handling for multiple fbx reps,
+### Updated
+ - pini.pipe.passes_filters default dcc_ is EMPTY,
+ - pini.pipe.CPOutputBase.to_output added optional output_name arg handling,
+ - pini.pipe.cache.CCPOutputBase find_rep/find_reps uses passes_filters,
+ - pini.pipe.cache.CCPOutputBase.find_reps added dcc matching,
+
+
 ## [6.61.0] - Mon 2025-03-24 10:22
 ### Summary
  - Pipeline Code:

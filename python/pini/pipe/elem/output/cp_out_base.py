@@ -543,9 +543,12 @@ class CPOutputBase:
         # Obtain template
         _tmpl = template or self.template
         if isinstance(_tmpl, str):
+            _has_key = {'tag': bool('tag' in kwargs or self.tag)}
+            if 'output_name' in kwargs:
+                _has_key['output_name'] = bool(kwargs['output_name'])
+            _LOGGER.debug(' - HAS KEY %s', _has_key)
             _tmpl = self.entity.find_template(
-                _tmpl, dcc_=kwargs.get('dcc_'),
-                has_key={'tag': bool('tag' in kwargs or self.tag)})
+                _tmpl, dcc_=kwargs.get('dcc_'), has_key=_has_key)
         assert isinstance(_tmpl, pipe.CPTemplate)
         _LOGGER.debug(' - TEMPLATE %s', _tmpl)
 
