@@ -1,3 +1,14 @@
+## [6.61.2] - Tue 2025-03-25 15:20
+### Summary
+ - Pini Helper:
+    - maya model publish bugfix error on freeze transforms in ref in hierarchy with remove refs opt selected (lcayo),
+    - maya lookdev publish bugfix error on publish model with textures outside asset/shot (eehemann/lcayo),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish._apply_refs_opt added No action opt,
+ - pini.dcc.export.CMayaModelPublish._clean_scene apply refs option before freeze tfms,
+ - pini.pipe.shotgrid.create_pub_file_from_output bugfix error on texture outside entity,
+
+
 ## [6.61.1] - Mon 2025-03-24 13:57
 ### Summary
  - Pini Helper:

@@ -245,7 +245,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if _refs == 'Remove':
             for _ref in ref.find_refs():
                 _ref.delete(force=True, delete_foster_parent=True)
-        elif _refs == 'Leave intact':
+        elif _refs in ('Leave intact', 'No action'):
             pass
         elif _refs == 'Import into root namespace':
             for _ref in pom.find_refs():

@@ -189,36 +189,29 @@ def _build_pub_data(
     """
     from pini.pipe import shotgrid
 
+    # Determine vars
     _type = type_ or shotgrid.SGC.find_pub_type(path.extn)
     _LOGGER.debug(' - TYPE %s', _type)
     _path_cache = pipe.ROOT.rel_path(path)
     _name = name or path.filename
     _user = user or shotgrid.SGC.find_user()
+    _ety = _obt_entity(path=path, entity=entity)
+    _job = _obt_job(path=path, job=job, entity=_ety)
 
-    _ety = entity
-    if not _ety:
-        _ety = pipe.CACHE.obt_entity(path)
-    assert _ety
-
-    _job = job
-    if not _job:
-        _job = _ety.job
-    assert _job
-    assert _job == _ety.job
-
+    # Build data dict
     _data = {
         'code': _name,
         'created_by': _user.to_entry(),
         'description': notes,
-        'entity': _ety.sg_entity.to_entry(),
         'name': _name,
         'path': _build_path_data(path, name=_name),
         'path_cache': _path_cache,
         'project': _job.sg_proj.to_entry(),
         'published_file_type': _type.to_entry(),
         'sg_status_list': status,
-        'updated_by': _user.to_entry(),
-    }
+        'updated_by': _user.to_entry()}
+    if _ety:
+        _data['entity'] = _ety.sg_entity.to_entry()
     if ver_n is not None:
         _data['version_number'] = ver_n
     if task:
@@ -291,6 +284,46 @@ def _find_sg_pub(output, sg_ety):
         _pub.omit()
     _sg_pub.set_status('wtg')
     return _sg_pub
+
+
+def _obt_entity(path, entity):
+    """Obtain entity from the given data.
+
+    Args:
+        path (str): path being registered
+        entity (CPEntity): force entity
+
+    Returns:
+        (CPEntity): entity
+    """
+    _ety = entity
+    if not _ety:
+        _ety = pipe.to_entity(path, catch=True)
+        if _ety:
+            _ety = pipe.CACHE.obt_entity(_ety)
+    return _ety
+
+
+def _obt_job(path, job, entity):
+    """Obtain job from the given data.
+
+    Args:
+        path (str): path being registered
+        job (CPJob): force job
+        entity (CPEntity): force entity
+
+    Returns:
+        (CPJob): job
+    """
+    _job = job
+    if entity:
+        _job = entity.job
+    if not _job:
+        _job = pipe.CACHE.obt_job(path)
+    assert _job
+    if entity:
+        assert _job == entity.job
+    return _job
 
 
 def _obt_scene_entry(output, user, task, notes):
