@@ -171,7 +171,7 @@ class BaseDCC:
             _zero_error = 'No references selected'
             _multi_error = 'Multiple references selected'
         else:
-            _error = 'Failed to match reference'
+            _error = f'Failed to match reference {namespace}'
         return single(
             _refs, catch=catch, error=_error, multi_error=_multi_error,
             zero_error=_zero_error)

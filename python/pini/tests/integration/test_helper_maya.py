@@ -262,6 +262,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     dcc.set_range(1001, 1005)
     _helper.ui.Refresh.click()
     _helper.jump_to(_shot)
+    assert _helper.entity == testing.TMP_SHOT
     _helper.ui.MainPane.select_tab('Work')
     assert _helper.entity == _shot
     assert _helper.entity == testing.TMP_SHOT

@@ -7,7 +7,7 @@ from maya import cmds
 
 from pini import qt
 from pini.dcc import export
-from pini.utils import single, wrap_fn, check_heart
+from pini.utils import single, wrap_fn, check_heart, to_list
 
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import to_unique, to_long, to_node, to_clean, to_parent
@@ -509,6 +509,21 @@ def read_cache_set_geo(filter_=None, apply_pub_refs_mode=False):
     return m_pipe.read_cache_set(
         mode='geo', include_referenced=_include_referenced, set_=_set,
         filter_=filter_)
+
+
+def safe_delete(nodes):
+    """Delete the given node or nodes.
+
+    If they are locked then they are unlocked. If they have already been
+    deleted (eg. in a previous fix operation) then this is ignored.
+
+    Args:
+        nodes (str|str list): node/nodes to delete
+    """
+    for _node in to_list(nodes):
+        if cmds.objExists(_node):
+            cmds.lockNode(_node, lock=False)
+            cmds.delete(_node)
 
 
 def shd_is_arnold(engine, type_):

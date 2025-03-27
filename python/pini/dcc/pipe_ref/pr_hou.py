@@ -142,7 +142,7 @@ def find_pipe_refs(selected=False, sop_abcs=False):
     _reject_paths = []
     while _paths:
         _path = _paths.pop(0)
-        while _paths and _paths[0].startswith(_path):
+        while _paths and _paths[0].startswith(f'{_path}/'):
             _LOGGER.debug(' - REMOVING %s', _paths[0])
             check_heart()
             _reject_paths.append(_paths.pop(0))

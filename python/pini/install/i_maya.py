@@ -5,8 +5,8 @@ import os
 
 from maya import cmds
 
-from pini import icons
-from pini.tools import helper
+from pini import icons, testing
+from pini.tools import helper, release
 from pini.utils import wrap_fn
 
 from maya_pini import ui
@@ -171,6 +171,12 @@ class PIMayaInstaller(i_installer.PIInstaller):
             launch_helper (bool): launch pini helper on startup
         """
         _LOGGER.info('RUN %s helper=%d', self, launch_helper)
+
+        # Setup plugins
+        _plugins = release.PINI.to_subdir('plug-ins/maya')
+        testing.insert_env_path(env='MAYA_PLUG_IN_PATH', path=_plugins)
+
+        # Install ui elements
         self.menu_installer.run(parent=parent)
         self.shelf_installer.run(parent=parent)
         if launch_helper:

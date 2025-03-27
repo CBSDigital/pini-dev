@@ -318,7 +318,7 @@ def find_cacheable(
         return _cbl
 
     if isinstance(match, str):
-        _match_s = str
+        _match_s = match
     elif isinstance(match, pom.CReference):
         _match_s = match.namespace
     else:

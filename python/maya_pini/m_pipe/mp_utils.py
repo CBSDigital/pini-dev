@@ -141,7 +141,7 @@ def read_cache_set(  # pylint: disable=too-many-branches
         _LOGGER.debug('   - ACCEPTED %s', _node)
         _results.append(_node)
 
-    _LOGGER.debug(' - RESULTS %s', _results)
+    _LOGGER.debug(' - RESULTS %d %s', len(_results), _results)
 
     return _results
 

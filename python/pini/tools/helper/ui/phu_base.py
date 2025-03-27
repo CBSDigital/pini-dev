@@ -157,7 +157,13 @@ class PHUiBase(
         Args:
             target (str): target passed on init ui
         """
-        self.target = target
+        self.target = None
+
+        # Apply target
+        if target:
+            self.target = _to_valid_target(target)
+
+        # Fall back on cur scene
         if not self.target:
             _cur_work = pipe.cur_work()
             if _cur_work:
@@ -644,3 +650,24 @@ def _shd_yml_print(output):
     _LOGGER.info(
         strftime('Published at %H:%M:%S on %a %D %b', _out_c.updated_at))
     pprint.pprint(_data, width=200)
+
+
+def _to_valid_target(path):
+    """Obtain a valid helper target from the given path.
+
+    Args:
+        path (str): path to check
+
+    Returns:
+        (CPWork|CPOutput|CPEntity): target
+    """
+    _work = pipe.to_work(path, catch=True)
+    if _work:
+        return _work
+    _out = pipe.to_output(path, catch=True)
+    if _out:
+        return _out
+    _ety = pipe.to_entity(path, catch=True)
+    if _ety:
+        return _ety
+    return None

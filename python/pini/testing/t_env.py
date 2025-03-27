@@ -180,19 +180,22 @@ def print_sys_paths(sort=False):
         print(f'{os.path.exists(_path):d} {_path}')
 
 
-def read_env_paths(env):
+def read_env_paths(env, existing=None):
     """Read paths from the given environment variable.
 
     Args:
         env (str): name of environment variable to read
+        existing (bool): filter by existing state of paths
 
     Returns:
         (str list): paths
     """
     _val = os.environ.get(env, '')
-    return sorted([
+    _path = sorted({
         abs_path(_path)
-        for _path in _val.split(os.pathsep)])
+        for _path in _val.split(os.pathsep)
+        if existing is None or os.path.exists(_path) == existing})
+    return _path
 
 
 def remove_env_path(env, path):

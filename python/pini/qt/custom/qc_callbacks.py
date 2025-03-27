@@ -177,6 +177,8 @@ def _connect_contexts(dialog, ui, error_catcher, disconnect):
         _widget = getattr(ui, _widget_name, None)
         if not _widget:
             raise RuntimeError(f'Missing context widget {_widget_name}')
+        if not hasattr(_widget, 'customContextMenuRequested'):
+            raise RuntimeError(f'Bad widget type {_widget_name}')
 
         # Connnect context callback
         if disconnect:

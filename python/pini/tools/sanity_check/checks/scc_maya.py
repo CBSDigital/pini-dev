@@ -1,5 +1,6 @@
 """Maya specific sanity checks."""
 
+import collections
 import logging
 import os
 import platform
@@ -8,11 +9,10 @@ from maya import cmds
 
 from pini import qt, dcc, pipe
 from pini.utils import (
-    single, wrap_fn, nice_size, cache_result, Path,
-    abs_path, Dir)
+    single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir)
 
 from maya_pini import ref, open_maya as pom, m_pipe
-from maya_pini.utils import DEFAULT_NODES
+from maya_pini.utils import DEFAULT_NODES, to_clean
 
 from .. import core, utils
 
@@ -112,20 +112,8 @@ class CleanBadSceneNodes(core.SCMayaCheck):
             if cmds.referenceQuery(_node, isNodeReferenced=True):
                 continue
             _msg = f'Bad {_type} node {_node}'
-            _fix = wrap_fn(self._delete_node, _node)
+            _fix = wrap_fn(utils.safe_delete, _node)
             self.add_fail(_msg, node=_node, fix=_fix)
-
-    def _delete_node(self, node):
-        """Delete the given node.
-
-        Supresses error if the node has already been deleted.
-
-        Args:
-            node (str): node to delete
-        """
-        if cmds.objExists(node):
-            cmds.lockNode(node, lock=False)
-            cmds.delete(node)
 
 
 @cache_result
@@ -328,7 +316,7 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
             if not _rs_lyr:
                 self.add_fail(
                     'Unconnected legacy layer ' + _lyr,
-                    node=_lyr, fix=wrap_fn(cmds.delete, _lyr))
+                    node=_lyr, fix=wrap_fn(utils.safe_delete, _lyr))
                 _bad_nodes.add(_lyr)
                 continue
 
@@ -342,7 +330,7 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
             for _node in [_lyr, _rs_lyr, _rs]:
                 if _node in _bad_nodes:
                     continue
-                _fix = wrap_fn(cmds.delete, _node)
+                _fix = wrap_fn(utils.safe_delete, _node)
                 self.add_fail(
                     'Unconnected render setup node ' + _node,
                     node=_node, fix=_fix)
@@ -447,6 +435,8 @@ class CheckCacheables(core.SCMayaCheck):
                 self._check_cam(_cbl)
             elif isinstance(_cbl, m_pipe.CPCacheableSet):
                 self._check_cset(_cbl)
+            elif isinstance(_cbl, m_pipe.CPCacheableRef):
+                self._check_ref_for_dup_nodes(_cbl)
 
     def _check_cam(self, cam):
         """Check the given camera.
@@ -463,3 +453,60 @@ class CheckCacheables(core.SCMayaCheck):
             cset (CPCacheableSet): CSET to check
         """
         utils.check_cacheable_set(set_=cset.node, check=self)
+
+    def _check_ref_for_dup_nodes(self, ref_):
+        """Check a referenced cache set for duplicate node.
+
+        This can occur if a reference is accidentally duplicated, causing
+        all the cache_SET geo to be duplicated and breaking AbcExport.
+
+        Args:
+            ref_ (CPCacheableRef): cache ref to check
+        """
+
+        # Find name clashes
+        _cache_set = ref_.to_node('cache_SET')
+        _nodes = ref_.to_nodes(mode='all')
+        self.write_log(' - found %d nodes', len(_nodes))
+        _map = collections.defaultdict(list)
+        for _node in _nodes:
+            _map[to_clean(_node)].append(_node)
+        _unrefd_nodes = [
+            _node for _node in _nodes if not _node.is_referenced()]
+        _clashes = []
+        for _clean, _o_nodes in _map.items():
+            if len(_o_nodes) <= 1:
+                continue
+            _clashes.append(_o_nodes)
+        self.write_log(' - found %d clashes', len(_clashes))
+        self.write_log(' - found %d unreferenced', len(_unrefd_nodes))
+
+        # Handle clashes - batch handle large numbers of fails
+        if len(_clashes) > 20:
+            if _unrefd_nodes:
+                self.add_fail(
+                    f'Cachable "{_cache_set}" has name clashes and there are '
+                    f'{len(_unrefd_nodes)} unreferenced nodes in it',
+                    node=_cache_set,
+                    fix=wrap_fn(utils.safe_delete, _unrefd_nodes))
+            else:
+                self.add_fail(
+                    f'Cachable "{_cache_set}" has name clashes',
+                    node=_cache_set)
+        elif _clashes:
+            for _nodes in _clashes:
+                _refd = [_node for _node in _nodes if _node.is_referenced()]
+                _unrefd_nodes = [
+                    _node for _node in _nodes if _node not in _refd]
+                if len(_refd) == 1:
+                    _node = single(_refd)
+                    _unrefd_s = ', '.join(
+                        [str(_node) for _node in _unrefd_nodes])
+                    self.add_fail(
+                        f'Geo "{_node}" in "{_cache_set}" has unreferenced '
+                        f'name clash: {_unrefd_s}',
+                        node=_cache_set,
+                        fix=wrap_fn(utils.safe_delete, _unrefd_nodes))
+                else:
+                    self.add_fail(
+                        f'Set "{_cache_set}" has name clash: {_nodes}')

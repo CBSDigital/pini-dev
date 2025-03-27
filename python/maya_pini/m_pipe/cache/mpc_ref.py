@@ -51,6 +51,19 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         """Select this reference in scene (top node)."""
         cmds.select(self.find_top_nodes())
 
+    def to_nodes(self, mode='geo'):
+        """Read nodes in the cache set.
+
+        Args:
+            mode (str): which nodes to read
+
+        Returns:
+            (CNode list): nodes
+        """
+        from maya_pini import m_pipe
+        return m_pipe.read_cache_set(
+            set_=self.to_node('cache_SET'), mode=mode)
+
     def to_output(self, extn='abc'):
         """Get an output based on this reference.
 
