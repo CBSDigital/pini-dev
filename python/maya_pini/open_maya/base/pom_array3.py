@@ -1,8 +1,12 @@
 """Tools for managing the 3D array base class."""
 
+import logging
+
 from maya import cmds
 
 from maya_pini.utils import to_unique, to_clean
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class CArray3:
@@ -79,8 +83,15 @@ class CArray3:
         return self.x, self.y, self.z  # pylint: disable=no-member
 
     def __add__(self, other):
+        if isinstance(other, float):
+            raise TypeError(other)
+        _LOGGER.debug(
+            'ADD %s (%s) + %s (%s)', self, type(self).__name__,
+            other, type(other).__name__)
         from maya_pini import open_maya as pom
         _result = super().__add__(other)  # pylint: disable=no-member
+        _LOGGER.debug(' - RESULT %s', _result)
+
         return pom.CVector(_result)
 
     def __div__(self, other):

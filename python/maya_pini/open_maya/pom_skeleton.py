@@ -175,7 +175,9 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             else:
                 raise ValueError(mode)
 
-    def build_blend(self, srcs, blend=None, allow_missing=False):
+    def build_blend(
+            self, srcs, blend=None, allow_missing=False,
+            interpolation='No Flip'):
         """Setup a blend between the provided sources.
 
         Args:
@@ -183,6 +185,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             blend (CPlug): blend plug to use (if none is passed then one is
                 created on top node of this skeleton's reference)
             allow_missing (bool): no error if missing joints
+            interpolation (str): interpolation for orient constraint
 
         Returns:
             (CPlug): blend plug
@@ -229,9 +232,13 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 assert _src_jnts
                 _args = _src_jnts + [_b_jnt]
                 _LOGGER.debug(
-                    ' - BUILD CONSTRAINT %s %s -> %s', _cons_fn,
-                    _src_jnts, _b_jnt)
+                    ' - BUILD CONSTRAINT %s %s -> %s (%d)', _cons_fn,
+                    _src_jnts, _b_jnt, _cons_fn is pom.CMDS.orientConstraint)
                 _cons = _cons_fn(*_args)
+                _type = _cons.object_type()
+                _LOGGER.debug(' - TYPE %s', _type)
+                if _type == 'orientConstraint':
+                    _cons.plug['interpType'].set_enum(interpolation)
 
                 # Connect weights
                 for _idx, _blend_w in enumerate(_blend_ws):

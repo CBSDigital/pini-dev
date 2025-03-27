@@ -140,7 +140,7 @@ class CExportHandler:
         qt.flush_layout(self.ui.layout)
         self.build_ui()
         self.ui.load_settings()
-        qt.connect_callbacks(self, settings=self.ui.settings)
+        qt.connect_callbacks(self, settings_container=self.ui)
 
     def init_export(self):
         """Run pre export code."""

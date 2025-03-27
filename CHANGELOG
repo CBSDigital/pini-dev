@@ -1,3 +1,15 @@
+## [6.61.3] - Thu 2025-03-27 07:44
+### Summary
+ - Pini Helper:
+    - fix hang on right-click scene ref items (bsheppherd),
+    - blast/flipbook handlers bugfix manual frame range not updating,
+### Updated
+ - pini.qt.connect_callbacks updated arg settings -> settings container to fix export handler callbacks not connecting,
+ - pini.qt.connect_callbacks apply disconnect to ctx to fix double menus,
+ - maya_pini.open_maya.CArray3.__add__ better error on add float,
+ - maya_pini.open_maya.CSkeleton.build_blend added iterpolation as NoFlip,
+
+
 ## [6.61.2] - Tue 2025-03-25 15:20
 ### Summary
  - Pini Helper:

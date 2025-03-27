@@ -320,6 +320,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (any): attribute value
         """
+        _LOGGER.debug('GET VAL %s', self)
         from maya_pini import open_maya as pom
 
         # Obtain result

@@ -20,25 +20,29 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def connect_callbacks(
-        dialog, ui=None, settings=None, error_catcher=None, disconnect=False):
+        dialog, ui=None, settings_container=None, error_catcher=None,
+        disconnect=False):
     """Connect all callbacks for the given dialog.
 
     Args:
         dialog (CUIDialog): dialog to connect
         ui (CUiContainer): override ui container (if not dialog.ui)
-        settings (CSettings): dialog settings
+        settings_container (any): parent object for settings
         error_catcher (fn): error catcher decorator
         disconnect (bool): disconnect signal before connecting callback
     """
     _LOGGER.debug('CONNECT CALLBACKS %s', dialog)
     _ui = ui or dialog.ui
-    _settings = settings or dialog.settings
+    _settings_container = settings_container or dialog
     _connect_simple_callbacks(
         dialog, ui=_ui, disconnect=disconnect,
         error_catcher=error_catcher)
-    _connect_save_on_change(ui=_ui, settings=settings)
+    _connect_save_on_change(
+        ui=_ui, settings_container=_settings_container)
     _connect_redraws(dialog, ui=_ui, error_catcher=error_catcher)
-    _connect_contexts(dialog, ui=_ui, error_catcher=error_catcher)
+    _connect_contexts(
+        dialog, ui=_ui, error_catcher=error_catcher, disconnect=disconnect)
+    _LOGGER.debug(' - CONNECT CALLBACKS COMPLETE %s', dialog)
 
 
 def _connect_callback(
@@ -74,28 +78,28 @@ def _connect_callback(
         _widget.callback = _callback
 
     _LOGGER.debug(
-        ' - CONNECT CALLBACK %s %s %s',
+        '   - CONNECT SIMPLE CALLBACK %s %s %s',
         _widget.objectName() if hasattr(_widget, 'objectName') else '-',
         _widget, _callback)
 
     # Make connections
     if _signal:
         if disconnect:
-            _LOGGER.debug(' - DISCONNECT CALLBACK %s %s', _widget, _signal)
+            _LOGGER.debug('    - DISCONNECT CALLBACK %s %s', _widget, _signal)
             try:
                 _signal.disconnect()
             except RuntimeError:
                 _LOGGER.info(
-                    ' - DISCONNECT CALLBACK FAILED %s %s', _widget, _signal)
+                    '    - DISCONNECT CALLBACK FAILED %s %s', _widget, _signal)
         _signal.connect(_callback)
 
 
-def _connect_save_on_change(ui, settings):
+def _connect_save_on_change(ui, settings_container):
     """Connect save on change callback.
 
     Args:
         ui (CUiContainer): override ui container (if not dialog.ui)
-        settings (CSettings): dialog settings
+        settings_container (any): parent object for settings
     """
     from pini import qt
     _LOGGER.debug(' - CONNECT SAVE ON CHANGE')
@@ -108,7 +112,9 @@ def _connect_save_on_change(ui, settings):
             continue
         _LOGGER.debug('   - CONNECTING SAVE ON CHANGE %s', _widget)
         _signal.connect(
-            wrap_fn(_widget.apply_save_policy_on_change, settings))
+            wrap_fn(
+                _widget.apply_save_policy_on_change,
+                settings_container.settings))
 
 
 def _connect_simple_callbacks(
@@ -140,7 +146,7 @@ def _connect_simple_callbacks(
             error_catcher=error_catcher)
 
 
-def _connect_contexts(dialog, ui, error_catcher):
+def _connect_contexts(dialog, ui, error_catcher, disconnect):
     """Connect context callbacks based on method name.
 
     This builds a menu when the element is right-clicked, and then
@@ -153,7 +159,9 @@ def _connect_contexts(dialog, ui, error_catcher):
         dialog (CUIDialog): dialog to connect
         ui (CUiContainer): override ui container (if not dialog.ui)
         error_catcher (fn): error catcher decorator
+        disconnect (bool): replace existing connections on connect
     """
+    _LOGGER.debug(' - CONNECTING CONTEXTS %s', dialog)
     _contexts = [getattr(dialog, _name)
                  for _name in dir(dialog)
                  if _name.startswith('_context__')]
@@ -164,16 +172,18 @@ def _connect_contexts(dialog, ui, error_catcher):
             _context = error_catcher(_context)
 
         # Obtain widget
-        _LOGGER.debug('CONNECTING CONTEXT %s', _context)
+        _LOGGER.debug('   - CONNECTING CONTEXT %s', _context)
         _widget_name = _context.__name__[len('_context__'):]
         _widget = getattr(ui, _widget_name, None)
         if not _widget:
-            raise RuntimeError('Missing context widget ' + _widget_name)
+            raise RuntimeError(f'Missing context widget {_widget_name}')
 
         # Connnect context callback
+        if disconnect:
+            _widget.customContextMenuRequested.disconnect()
         _widget.customContextMenuRequested.connect(
             _build_context_fn(
-                _context, dialog=dialog, name=_widget.objectName()))
+                callback=_context, dialog=dialog, name=_widget.objectName()))
         _widget.setContextMenuPolicy(Qt.CustomContextMenu)
 
 
@@ -187,6 +197,7 @@ def _connect_redraws(dialog, ui, error_catcher):
         ui (CUiContainer): override ui container (if not dialog.ui)
         error_catcher (fn): error catcher decorator
     """
+    _LOGGER.debug('   - CONNECT REDRAWS %s', dialog)
     _redraws = [getattr(dialog, _name)
                 for _name in dir(dialog)
                 if _name.startswith('_redraw__')]
@@ -197,7 +208,7 @@ def _connect_redraws(dialog, ui, error_catcher):
             _redraw = error_catcher(_redraw)
 
         # Obtain widget
-        _LOGGER.debug('CONNECTING REDRAW %s', _redraw)
+        _LOGGER.debug('   - CONNECTING REDRAW %s', _redraw)
         _widget_name = _redraw.__name__[len('_redraw__'):]
         _widget = getattr(ui, _widget_name, None)
         if not _widget:
@@ -261,10 +272,14 @@ def _build_context_fn(callback, dialog, name):
     """
 
     def _context_fn(pos):
+        _LOGGER.debug('CONTEXT FN %s %s %s', name, callback, dialog)
         from pini import qt
         _widget = dialog.ui.find_widget(name)
+        _LOGGER.debug(' - FOUND WIDGET %s', _widget)
         _menu = qt.CMenu(_widget)
         callback(_menu)
+        _LOGGER.debug(' - BUILT MENU %s', _menu)
         _menu.exec_(_widget.mapToGlobal(pos))
+        _LOGGER.debug(' - COMPLETE %s', name)
 
     return _context_fn
