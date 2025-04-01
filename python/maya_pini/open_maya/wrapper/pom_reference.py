@@ -232,10 +232,18 @@ class CReference(om.MFnReference, ref.FileRef):
 
         return [pom_transform.CTransform(_node) for _node in _top_nodes]
 
+    def hide(self):
+        """Hide this reference."""
+        self.top_node.hide()
+
     def reload(self):
         """Reload this reference."""
         self.unload()
         self.load()
+
+    def select(self):
+        """Select this reference."""
+        self.top_node.select()
 
     def to_node(self, name, clean=True, fmt='node', catch=False):
         """Obtain a node from this reference.

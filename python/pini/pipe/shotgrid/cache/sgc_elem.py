@@ -139,7 +139,7 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         if status == 'omt':
             _desc = strftime('Omitted %d/%m/%y %H:%M:%S')
             _data['description'] = _desc
-        elif status in ('wtg', 'apr', 'lapr'):
+        elif status in ('wtg', 'apr', 'lapr', 'ip'):
             pass
         else:
             raise NotImplementedError(status)

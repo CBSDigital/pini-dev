@@ -15,6 +15,7 @@ from ..cache import cache_result
 from ..path import File, abs_path
 from ..u_exe import find_exe
 from ..u_misc import single, system
+from ..u_text import nice_cmds
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,11 +39,12 @@ class _Viewer:
         assert self.NAME
         return find_exe(self.NAME)
 
-    def view(self, clip_, fps=None):
-        """View the given clip (to be implemented in subclass).
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
+            start_frame (int): override start frame
             fps (float): apply frame rate
         """
         raise NotImplementedError
@@ -58,17 +60,20 @@ class _DjvView(_Viewer):
 
     PLAYS_AUDIO = False
 
-    def view(self, clip_, fps=None):
-        """View the given clip in djv_view.
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
+            start_frame (int): override start frame
             fps (float): apply frame rate
         """
         from .. import clip
 
+        if start_frame:
+            _LOGGER.warning('UNUSED fps ARG %s', fps)
         if fps:
-            _LOGGER.warning('UNUSED FPS ARG %s', fps)
+            _LOGGER.warning('UNUSED start_frame ARG %s', fps)
 
         # Build cmds
         if isinstance(clip_, clip.Seq):
@@ -96,16 +101,19 @@ class _DJV(_Viewer):
 
     PLAYS_AUDIO = True
 
-    def view(self, clip_, fps=None):
-        """View the given clip in djv_view.
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
+            start_frame (int): override start frame
             fps (float): apply frame rate
         """
         from .. import clip
+        if start_frame:
+            _LOGGER.warning('UNUSED fps ARG %s', fps)
         if fps:
-            _LOGGER.warning('UNUSED FPS ARG %s', fps)
+            _LOGGER.warning('UNUSED start_frame ARG %s', fps)
         if isinstance(clip_, clip.Seq):
             _path = clip_.path.replace("%04d", "#")
         else:
@@ -124,16 +132,19 @@ class _MPlay(_Viewer):
 
     PLAYS_VIDEOS = False
 
-    def view(self, clip_, fps=None):
-        """View the given clip in mplay.
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
+            start_frame (int): override start frame
             fps (float): apply frame rate
         """
         from .. import clip
+        if start_frame:
+            _LOGGER.warning('UNUSED fps ARG %s', fps)
         if fps:
-            raise NotImplementedError
+            _LOGGER.warning('UNUSED start_frame ARG %s', fps)
         _LOGGER.info('MPLAY CLIP %s', clip_)
         _LOGGER.info(' - EXE %s', self.exe)
         _cmds = [self.exe]
@@ -155,20 +166,27 @@ class _RV(_Viewer):
 
     NAME = 'rv'
 
-    def view(self, clip_, fps=None):
+    def view(self, clip_, start_frame=None, fps=None):
         """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
+            start_frame (int): override start frame
             fps (float): apply frame rate
         """
+        _LOGGER.debug('VIEW RV %s', clip_)
+
         assert self.exe
         _cmds = [self.exe.path]
         if fps:
             _cmds += ['-fps', str(fps)]
-        _cmds += [clip_.path, '-play']
-        # system(_cmds, verbose=1, result=False)
-        _LOGGER.info('VIEW CLIP %s', ' '.join(_cmds))
+        _cmds += ['[', clip_.path]
+        if start_frame is not None:
+            _cmds += ['-rs', str(start_frame)]
+            _LOGGER.debug(' - ADD START OVERRIDE %s', start_frame)
+        _cmds += [']', '-play']
+
+        _LOGGER.info(' - VIEW CLIP RV %s', nice_cmds(_cmds))
         subprocess.Popen(_cmds)
 
 
@@ -178,18 +196,21 @@ class _VLC(_Viewer):
     NAME = 'vlc'
     PLAYS_SEQS = False
 
-    def view(self, clip_, fps=None):
-        """View the given clip in VLC.
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
-            fps (float): not applicable
+            start_frame (int): override start frame
+            fps (float): apply frame rate
         """
         from .. import clip
         if isinstance(clip_, clip.Seq):
             raise ValueError(clip_)
+        if start_frame:
+            _LOGGER.warning('UNUSED fps ARG %s', fps)
         if fps:
-            _LOGGER.warning('UNUSED FPS ARG %s', fps)
+            _LOGGER.warning('UNUSED start_frame ARG %s', fps)
         _file = File(clip_)
         assert _file.exists()
         assert self.exe
@@ -205,18 +226,21 @@ class _WMPlayer(_Viewer):
     NAME = 'wmplayer'
     PLAYS_SEQS = False
 
-    def view(self, clip_, fps=None):
-        """View the given clip in VLC.
+    def view(self, clip_, start_frame=None, fps=None):
+        """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
-            fps (float): not applicable
+            start_frame (int): override start frame
+            fps (float): apply frame rate
         """
         from .. import clip
         if isinstance(clip_, clip.Seq):
             raise ValueError(clip_)
+        if start_frame:
+            _LOGGER.warning('UNUSED fps ARG %s', fps)
         if fps:
-            _LOGGER.warning('UNUSED FPS ARG %s', fps)
+            _LOGGER.warning('UNUSED start_frame ARG %s', fps)
         _file = File(clip_)
         assert _file.exists()
         assert self.exe

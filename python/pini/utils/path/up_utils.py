@@ -218,6 +218,8 @@ def error_on_file_system_disabled(path=None):
         (DebuggingError): if $PINI_DISABLE_FILE_SYSTEM applied
     """
     if os.environ.get('PINI_DISABLE_FILE_SYSTEM'):
+        from pini.tools import error
+        error.TRIGGERED = True
         _msg = "Access file system disabled using PINI_DISABLE_FILE_SYSTEM"
         if path:
             _msg += ' ' + path

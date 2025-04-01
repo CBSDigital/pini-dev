@@ -9,6 +9,7 @@ publishing) to pipeline by a dcc.
 import logging
 
 from pini import qt, icons, pipe, dcc
+from pini.pipe import cache
 from pini.tools import error
 from pini.utils import cache_result, str_to_seed, last, single
 
@@ -27,6 +28,9 @@ class CExportHandler:
 
     description = None
 
+    work = None
+    metadata = None
+
     def __init__(self, priority=50, label_w=70):
         """Constructor.
 
@@ -43,6 +47,15 @@ class CExportHandler:
         _name = _name.lower().replace(' ', '_')
         self._settings_file = f'{qt.SETTINGS_DIR}/{_name}.ini'
 
+    @property
+    def _ui_parent(self):
+        """Obtain ui parent (if avaiable).
+
+        Returns:
+            (QDialog): parent dialog
+        """
+        return self.ui.parent if self.ui else None
+
     def build_ui(self):
         """Build any specific ui elements for this handler.
 
@@ -51,36 +64,29 @@ class CExportHandler:
         _LOGGER.debug('BUILD UI')
 
     def build_metadata(
-            self, work=None, sanity_check_=True, task=None, force=False):
+            self, work=None, sanity_check_=True, task=None, notes=None,
+            force=False):
         """Obtain metadata to apply to a generated export.
 
         Args:
             work (CPWork): override workfile to read metadata from
             sanity_check_ (bool): run sanity checks before publish
             task (str): task to pass to sanity check
+            notes (str): export notes
             force (bool): force completion without any confirmations
 
         Returns:
             (dict): metadata
         """
 
-        # Handle notes
-        if self.ui and self.ui.is_active() and self.ui.notes_elem:
-            _notes = self.ui.notes_elem.text()
-        else:
-            _notes = None
-        if not force and not _notes:
-            _notes = qt.input_dialog(
-                'Please enter notes for this export:', title='Notes')
-            if self.ui.notes_elem:
-                _LOGGER.debug(
-                    ' - APPLY NOTES %s %s', _notes, self.ui.notes_elem)
-                self.ui.notes_elem.setText(_notes)
+        # Handle notes - NOTE: ideally all handlers should be obtaining
+        # notes in init_export method so code here should be deprecated
+        _notes = notes or self._obt_notes(force=force)
 
         _LOGGER.debug('NOTES %s', _notes)
         _data = eh_utils.build_metadata(
-            action=self.ACTION, work=work, sanity_check_=sanity_check_,
-            force=force, handler=self.NAME, task=task, notes=_notes,
+            action=self.ACTION, work=work or self.work, handler=self.NAME,
+            sanity_check_=sanity_check_, force=force, task=task, notes=_notes,
             require_notes=True)
 
         return _data
@@ -142,18 +148,29 @@ class CExportHandler:
         self.ui.load_settings()
         qt.connect_callbacks(self, settings_container=self.ui)
 
-    def init_export(self):
-        """Run pre export code."""
+    def init_export(self, notes=None, force=False):
+        """Initiate export.
+
+        Args:
+            notes (str): apply export notes
+            force (bool): force overwrite/update without confirmation
+        """
+
+        # Check current work
         self.work = pipe.CACHE.obt_cur_work()
         if not self.work:
             raise error.HandledError(
-                "Please save your scene using PiniHelper before blasting.\n\n"
-                "This allows the tools to tell what job/task you're working "
-                "in, to know where to save the blast to.",
-                title='Warning', parent=self.parent)
-        self.metadata = eh_utils.build_metadata(
-            sanity_check_=True, src=self.work)
-        _bkp = self.work.save(reason=self.ACTION)
+                "Please save your scene using PiniHelper before exporting."
+                "\n\n"
+                "This allows the tools to tell what job/task you are working "
+                "in, to know where to save the files to.",
+                title='Warning', parent=self._ui_parent)
+
+        # Build metadata
+        _notes = self._obt_notes(notes=notes, force=force)
+        self.metadata = self.build_metadata(notes=_notes, force=force)
+        _bkp = self.work.save(
+            reason=self.TYPE.lower(), parent=self._ui_parent, notes=_notes)
         self.metadata['bkp'] = _bkp.path
 
     def to_range(self):
@@ -170,7 +187,7 @@ class CExportHandler:
         raise ValueError(_mode)
 
     def post_export(
-            self, work, outs=(), version_up=None, update_cache=True,
+            self, work=None, outs=(), version_up=None, update_cache=True,
             notes=None):
         """Execute post export code.
 
@@ -184,25 +201,61 @@ class CExportHandler:
             update_cache (bool): update work file cache
             notes (str): export notes
         """
-        _LOGGER.info('POST EXPORT %s', work.path)
+        _work = work or self.work
+        _LOGGER.info('POST EXPORT %s', _work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
 
         if self.ui and self.ui.snapshot_elem:
-            self._apply_snapshot(work=work)
+            self._apply_snapshot(work=_work)
 
         if update_cache:
             if pipe.SHOTGRID_AVAILABLE:
-                self._register_in_shotgrid(work=work, outs=outs)
-            self._update_pipe_cache(work=work, outs=outs)
+                self._register_in_shotgrid(work=_work, outs=outs)
+            self._update_pipe_cache(work=_work, outs=outs)
 
         # Apply notes to work
-        _work_c = pipe.CACHE.obt(work)  # May have been rebuilt on update cache
+        _work_c = pipe.CACHE.obt(_work)  # May have been rebuilt on update cache
         _notes = notes or single(
             {_out.metadata['notes'] for _out in outs}, catch=True)
         if _notes and not _work_c.notes:
             _work_c.set_notes(_notes)
 
         self._apply_version_up(version_up=version_up)
+
+    def _obt_notes(self, notes=None, work=None, force=False):
+        """Obtain export notes.
+
+        Args:
+            notes (str): force notes
+            work (CPWork): force work file
+            force (bool): suppress request notes dialog
+
+        Returns:
+            (str): notes
+        """
+        _notes = notes
+        _work = work or self.work
+
+        # Handle notes
+        if not _notes and (
+                self.ui and self.ui.is_active() and self.ui.notes_elem):
+            _notes = self.ui.notes_elem.text()
+        if not _notes and _work:
+            _notes = _work.notes
+        if not force and not _notes:
+            _notes = qt.input_dialog(
+                'Please enter notes for this export:', title='Notes')
+            if self.ui.notes_elem:
+                _LOGGER.debug(
+                    ' - APPLY NOTES %s %s', _notes, self.ui.notes_elem)
+                self.ui.notes_elem.setText(_notes)
+
+        # Apply notes to work
+        if _notes and _work and not _work.notes:
+            assert isinstance(_work, cache.CCPWork)
+            _work.set_notes(_notes)
+
+        return _notes
 
     def _register_in_shotgrid(self, work, outs, upstream_files=None):
         """Register outputs in shotgrid.

@@ -17,3 +17,12 @@ class CCPOutputVideo(CPOutputVideo, ccp_out_file.CCPOutputFile):
     exists = ccp_out_file.CCPOutputFile.exists
     get_metadata = ccp_out_file.CCPOutputFile.get_metadata
     set_metadata = ccp_out_file.CCPOutputFile.set_metadata
+
+    @property
+    def metadata(self):
+        """Obtain this output's metadata.
+
+        Returns:
+            (dict): metadata
+        """
+        return self.get_metadata()

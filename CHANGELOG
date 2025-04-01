@@ -1,3 +1,31 @@
+## [6.63.0] - Tue 2025-04-01 14:21
+### Summary
+ - Pini Helper:
+    - bugfix slipping frame numbers in blast burnins (eehemann),
+    - play mov in rv matches dcc frame number,
+### Updated
+ - pini.utils.nice_cmds added,
+ - pini.utils.system better printout in verbose,
+ - pini.utils.error_on_file_system_disabled pass error to error.TRIGGERED,
+ - pini.utils.PyFile.to_ast raise FileError on SyntaxError,
+ - pini.utils.Viewer.view added start frame arg,
+ - pini.utils.Seq.to_video bugfix positioning of fps flag,
+ - pini.utils.RV.view added start_frame arg,
+ - pini.dcc.CExportHandler added work/metadata attrs,
+ - pini.dcc.CExportHandler.build_metadata added notes arg,
+ - pini.dcc.CExportHandler.init_export handles pass notes to work,,
+ - pini.dcc.CExportHandler._obt_notes added,
+ - pini.dcc.CMayaAbcCache working,
+ - pini.pipe.cache.CCPOutputVideo.metadata bugfix not using cache,
+ - pini.pipe.shotgrid.SGCElem.set_status added ip status handling,
+ - pini.tools.error.HandledError added parent arg,
+ - pini.tools.sanity_check.find_checks allow any Publish/Cache/Render action suffix,
+ - pini.tools.sanity_check.SanityCheckUi added parent arg,
+ - pini.tools.helper scene/outputs bugfix not using cached approve icon,
+ - maya_pini.utils.render better error on render failed,
+ - maya_pini.open_maya.CReference select/hide added,
+
+
 ## [6.62.0] - Thu 2025-03-27 14:04
 ### Summary
  - Pini Helper:

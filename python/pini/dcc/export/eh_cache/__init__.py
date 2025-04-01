@@ -6,4 +6,4 @@ from .ch_cache import cache
 
 if dcc.NAME == 'maya':
 
-    from .ch_maya import CMayaCache
+    from .ch_maya import CMayaAbcCache

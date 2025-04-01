@@ -53,9 +53,10 @@ def find_checks(  # pylint: disable=too-many-branches
     """
 
     # Check action
-    if action and (
-            not str(action).endswith('Publish') and
-            action not in (None, 'Render', 'Cache')):
+    if action and not (
+            action.endswith('Publish') or
+            action.endswith('Cache') or
+            action.endswith('Render')):
         raise ValueError(action)
     if action and testing.dev_mode():
         assert is_pascal(action)

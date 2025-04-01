@@ -168,18 +168,18 @@ class CCPOutputBase(elem.CPOutputBase):
         return self.metadata.get('owner') or self.owner()  # pylint: disable=no-member
 
     @pipe_cache_on_obj
-    def get_metadata(self, force=False, data=None):
+    def get_metadata(self, data=None, force=False):
         """Get metadata for this output.
 
         Args:
-            force (bool): force reread from disk
             data (dict): force apply metadata
                 (update cache with this data)
+            force (bool): force reread from disk
 
         Returns:
             (dict): metadata
         """
-        _LOGGER.log(9, 'GET METADATA %s', self)
+        _LOGGER.debug('GET METADATA %s', self)
         return data or super().get_metadata()
 
     def set_metadata(self, data, mode='replace', force=True):

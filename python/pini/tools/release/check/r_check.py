@@ -35,6 +35,7 @@ class CheckFile(MetadataFile):
             pycodestyle (bool): apply pycodestyle checks
             force (bool): force regenerate checks data
         """
+        _LOGGER.debug('APPLY CHECKS %s', self)
         if self.has_passed_checks():
             return
         qt.close_all_progress_bars(
@@ -50,6 +51,7 @@ class CheckFile(MetadataFile):
         else:
             _prog = qt.progress_dialog(
                 'Checking file', stack_key='CheckFile')
+            _LOGGER.debug(' - APPLYING CHECKS %s', self)
             self.apply_docs_check()
             _prog.set_pc(20)
             self.apply_autofix()
@@ -77,6 +79,7 @@ class CheckFile(MetadataFile):
         Returns:
             (bool): whether this is an empty file
         """
+        _LOGGER.debug(' - IS EMPTY %s', self)
         assert self.extn in (None, 'py')
         _py = PyFile(self, check_extn=False)
         _ast = _py.to_ast()
@@ -93,6 +96,7 @@ class CheckFile(MetadataFile):
 
     def apply_docs_check(self):
         """Apply docstrings checks."""
+        _LOGGER.debug(' - APPLY DOCS CHECK %s', self)
         _is_test = '/tests/' in self.path
         if _is_test:
             return

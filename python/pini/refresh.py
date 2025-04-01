@@ -17,6 +17,7 @@ from pini.utils import apply_filter, lprint, abs_path, check_heart
 _LOGGER = logging.getLogger(__name__)
 
 RELOAD_ORDER = [
+    'pini.utils.u_text',
     'pini.utils.u_misc',
     'pini.utils.u_yaml',
     'pini.utils.path.up_utils',

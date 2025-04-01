@@ -188,7 +188,10 @@ def _exec_frame_render(file_, mode, layer, res, cam):
     if not file_.exists():
         _LOGGER.debug(' - FILE MISSING %s', file_)
         _tmp_file = file_.to_file(base=file_.base + '_1')
-        assert _tmp_file.exists()
+        if not _tmp_file.exists():
+            _LOGGER.info(' - FILE %s', file_)
+            _LOGGER.info(' - TMP FILE %s', _tmp_file)
+            raise RuntimeError(f'Missing file {file_}')
         _LOGGER.debug(' - TMP FILE %s', _tmp_file)
         _tmp_file.move_to(file_)
 

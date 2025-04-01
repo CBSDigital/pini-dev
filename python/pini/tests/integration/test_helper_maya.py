@@ -11,6 +11,7 @@ from pini.tools import helper
 from pini.utils import single, assert_eq
 
 from maya_pini import open_maya as pom
+from maya_pini.utils import process_deferred_events
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -230,9 +231,12 @@ class TestHelper(unittest.TestCase):
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
         assert export.get_pub_refs_mode() is _remove
         _helper.delete()
-        _LOGGER.info('HELPER CLOSED')
+        _LOGGER.info('HELPER CLOSED (DELETED')
+        process_deferred_events()
+        assert not helper.is_active()
         print('')
         _helper = helper.launch(reset_cache=False)
+        process_deferred_events()
         _LOGGER.info('HELPER LAUNCHED')
         _helper.ui.MainPane.select_tab('Export')
         _LOGGER.info('SELECTED EXPORT TAB')

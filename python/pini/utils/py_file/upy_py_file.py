@@ -50,13 +50,26 @@ class PyFile(File, PyElem):
         Returns:
             (Module): ast module
         """
+        _LOGGER.debug('TO AST %s', self)
         if catch:
             try:
                 return ast.parse(self.read())
             except Exception as _exc:  # pylint: disable=broad-except
                 _LOGGER.error('READ FILE FAILED %s', self.path)
                 return None
-        return ast.parse(self.read())
+
+        _body = self.read()
+        try:
+            _ast = ast.parse(_body)
+        except SyntaxError as _exc:
+            from pini.tools import error
+            _LOGGER.debug(' - SYNTAX ERROR %s', self)
+            _line_n = int(str(_exc).split()[-1].strip(')'))
+            _LOGGER.debug(' - LINE N %s', _line_n)
+            raise error.FileError(
+                f'Syntax error at line {_line_n:d} in {self}',
+                file_=self, line_n=_line_n)
+        return _ast
 
     def to_module_name(self):
         """Obtain module name for this python file.

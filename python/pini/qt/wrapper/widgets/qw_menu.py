@@ -119,11 +119,11 @@ class CMenu(QtWidgets.QMenu):
             delete_callback (fn): additional callback to run on deletion
             delete (bool): add delete action
         """
+        assert isinstance(video, Video)
         self.add_file_actions(
             video, delete_callback=delete_callback, delete=delete)
-        _video = Video(video)
         self.add_action(
-            'View', _video.view, icon=icons.find("Play Button"))
+            'View', video.view, icon=icons.find("Play Button"))
 
     def add_label(self, text, icon=None):
         """Add an action as a label.

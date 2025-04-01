@@ -15,6 +15,8 @@ import time
 import types
 import sys
 
+from . import u_text
+
 _LOGGER = logging.getLogger(__name__)
 _EXES = {}
 
@@ -763,8 +765,7 @@ def system(
         else str(_item)
         for _item in _cmds]
     if verbose:
-        _LOGGER.info(' '.join([
-            f'"{_cmd}"' if ' ' in _cmd else _cmd for _cmd in _cmds]))
+        _LOGGER.info(' - SYSTEM %s', u_text.nice_cmds(_cmds))
 
     # Build args/kwargs
     _si = None

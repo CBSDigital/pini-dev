@@ -26,6 +26,35 @@ class TestPipe(unittest.TestCase):
         _LOGGER.info(_work_nk)
         assert _work_nk.extn == 'nk'
 
+    def test_output_video_metadata_caching(self):
+
+        testing.enable_file_system(True)
+
+        # Find video with metadata
+        _shot = pipe.CACHE.obt(testing.TEST_SHOT)
+        for _out in _shot.find_outputs(extns=('mp4', 'mov')):
+            if _out.metadata:
+                break
+        else:
+            raise RuntimeError
+        _path = _out.path
+        assert File(_path).exists()
+
+        # Read metadata to check cache
+        _out = pipe.CACHE.obt_output(_path)
+        assert _out.exists()
+        assert _out.metadata
+        assert isinstance(_out, cache.CCPOutputBase)
+        assert isinstance(_out, cache.CCPOutputFile)
+        assert isinstance(_out, cache.CCPOutputVideo)
+
+        # Check access metadata wiht file system disabled
+        testing.enable_file_system(False)
+        assert _out.get_metadata()
+        assert _out.metadata
+
+        testing.enable_file_system(True)
+
     def test_output_seq_hash(self):
 
         _shot = pipe.CACHE.obt(testing.TEST_SHOT)

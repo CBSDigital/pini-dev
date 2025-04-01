@@ -11,7 +11,7 @@ from .u_heart import check_heart, HEART
 
 from .u_text import (
     is_pascal, is_camel, to_pascal, to_snake, to_ord, to_camel, copy_text,
-    to_nice, plural, add_indent, split_base_index)
+    to_nice, plural, add_indent, split_base_index, nice_cmds)
 from .u_misc import (
     lprint, single, to_time_t, strftime, to_time_f, search_dict_for_key,
     str_to_seed, dprint, system, str_to_ints, val_map, safe_zip,

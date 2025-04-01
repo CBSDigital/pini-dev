@@ -73,7 +73,9 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     elif isinstance(exc, error.HandledError):
         _title = exc.title or 'Error'
-        qt.notify(str(exc), title=_title, icon=exc.icon, parent=parent)
+        qt.notify(
+            str(exc), title=_title, icon=exc.icon,
+            parent=exc.parent or parent)
 
     elif (
             isinstance(exc, error.FileError) and

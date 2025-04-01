@@ -360,7 +360,7 @@ class MayaDCC(BaseDCC):
                 export.CMayaLookdevPublish(),
                 export.CMayaLocalRender(),
                 export.CMayaPlayblast(),
-                export.CMayaCache(),
+                export.CMayaAbcCache(),
             ]
             if farm.IS_AVAILABLE:
                 self._export_handlers.append(export.CMayaFarmRender())

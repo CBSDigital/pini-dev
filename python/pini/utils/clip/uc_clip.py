@@ -50,11 +50,12 @@ class Clip:
         _LOGGER.info(' - RES %s -> %s', _cur_res, _thumb_res)
         return _thumb_res
 
-    def view(self, viewer=None):
+    def view(self, viewer=None, start_frame=None):
         """View this clip.
 
         Args:
             viewer (str): force viewer
+            start_frame (int): override start frame
         """
         from .. import clip
         _seq = _video = None
@@ -69,6 +70,6 @@ class Clip:
             viewer, plays_seqs=_seq, plays_videos=_video)
         _LOGGER.info(' - VIEWER %s', _viewer)
         if _viewer:
-            _viewer.view(self)
+            _viewer.view(self, start_frame=start_frame)
         else:
             os.startfile(self.path)

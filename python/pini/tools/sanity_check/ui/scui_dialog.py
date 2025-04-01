@@ -23,7 +23,7 @@ class SanityCheckUi(qt.CUiDialog):
     def __init__(
             self, mode='standalone', checks=None, run=True,
             close_on_success=None, filter_=None, task=None, action=None,
-            modal=None, force=False):
+            modal=None, parent=None, force=False):
         """Constructor.
 
         Args:
@@ -35,6 +35,7 @@ class SanityCheckUi(qt.CUiDialog):
             task (str): task to apply checks filter to
             action (str): export action (eg. publish/render)
             modal (bool): override default modal state
+            parent (QDialog): parent dialog
             force (bool): in export mode force export ignoring any issues
         """
         from pini.tools import sanity_check
@@ -49,7 +50,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.checks = checks or sanity_check.find_checks(
             filter_=filter_, task=self.task, action=action)
 
-        super().__init__(ui_file=UI_FILE, show=False)
+        super().__init__(ui_file=UI_FILE, show=False, parent=parent)
 
         # Embed error catcher
         self.error_ui = error.launch_ui(

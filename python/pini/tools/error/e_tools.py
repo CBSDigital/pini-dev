@@ -19,18 +19,20 @@ class HandledError(RuntimeError):
     to the developer.
     """
 
-    def __init__(self, message, title=None, icon=None):
+    def __init__(self, message, title=None, icon=None, parent=None):
         """Constructor.
 
         Args:
             message (str): error/dialog message
             title (str): title for error dialog
             icon (str): path to dialog icon
+            parent (QDialog): parent dialog
         """
         from pini import icons
         super().__init__(message)
         self.title = title
         self.icon = icon or icons.find('Hot Pepper')
+        self.parent = parent
 
 
 class FileError(RuntimeError):
