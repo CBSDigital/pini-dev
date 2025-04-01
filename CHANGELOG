@@ -1,3 +1,11 @@
+## [6.63.1] - Tue 2025-04-01 15:38
+### Summary
+ - Pini Helper:
+    - bugfix bad blast fps (mkim),
+### Updated
+ - pini.utils.Seq.to_video bugfix positioning of fps flag,
+
+
 ## [6.63.0] - Tue 2025-04-01 14:21
 ### Summary
  - Pini Helper:

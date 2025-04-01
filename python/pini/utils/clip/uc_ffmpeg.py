@@ -92,12 +92,13 @@ def _build_ffmpeg_audio_flags(use_scene_audio, audio, audio_offset):
     return _args
 
 
-def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
+def _build_ffmpeg_burnin_flags(seq, video, fps, height=30, inset=10):
     """Add ffmpeg burnin flags and build tmp burnin files.
 
     Args:
         seq (Seq): sequence being converted
         video (Video): output video
+        fps (float): frame rate
         height (int): burnin height on top/bottom
         inset (int): burnin inset from sides
 
@@ -185,9 +186,9 @@ def _build_ffmpeg_burnin_flags(seq, video, height=30, inset=10):
     _flags = [
         '-i', _header,
         '-i', _footer,
+        '-framerate', fps,
         '-f', 'image2',
-        '-start_number', _start,
-        '-i', _frame_ns.path,
+        '-start_number', _start, '-i', _frame_ns.path,
         '-filter_complex', _filter_complex,
     ]
 
@@ -258,10 +259,10 @@ def seq_to_video(
 
     # Build args list
     _args = [_ffmpeg]
-    _args += ['-f', 'image2']
+    _args += ['-framerate', _fps, '-f', 'image2']
     if _start != 1:
         _args += ['-start_number', _start]
-    _args += ['-i', seq.path, '-r', _fps]
+    _args += ['-i', seq.path]
     if _n_frames:
         _args += ['-frames:v', _n_frames]
     # if colspace:
@@ -270,10 +271,11 @@ def seq_to_video(
     #     else:
     #         raise NotImplementedError(colspace)
     if burnins:
-        _args += _build_ffmpeg_burnin_flags(seq, video=_video)
+        _args += _build_ffmpeg_burnin_flags(seq, video=_video, fps=_fps)
     _args += _build_ffmpeg_audio_flags(
         use_scene_audio=use_scene_audio, audio=audio,
         audio_offset=audio_offset)
+    _args += ['-framerate', _fps]
     _args += ['-vcodec', 'libx264']
     _args += ['-pix_fmt', 'yuv420p']
     if bitrate:

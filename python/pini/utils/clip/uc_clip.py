@@ -58,10 +58,12 @@ class Clip:
             start_frame (int): override start frame
         """
         from .. import clip
+        from pini.utils import Video
+
         _seq = _video = None
         if isinstance(self, clip.Seq):
             _seq = True
-        elif isinstance(self, clip.Video):
+        elif isinstance(self, (clip.Video, Video)):
             _video = True
         else:
             raise ValueError(self)
