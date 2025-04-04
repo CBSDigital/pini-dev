@@ -1,5 +1,7 @@
 """Tools for managing the 3D array base class."""
 
+# pylint: disable=no-member
+
 import logging
 
 from maya import cmds

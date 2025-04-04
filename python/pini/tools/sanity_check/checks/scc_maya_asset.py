@@ -1,7 +1,6 @@
 """Maya asset checks."""
 
 import os
-import collections
 import logging
 
 from maya import cmds, mel
@@ -384,6 +383,7 @@ class CheckModelGeo(core.SCMayaCheck):
         """Run this check."""
 
         _geos = m_pipe.read_cache_set()
+        self.write_log('Found %d geos: %s', len(_geos), _geos)
         for _geo in _geos:
             for _plug in _geo.tfm_plugs:
                 if _plug.find_incoming():
@@ -406,22 +406,8 @@ class CheckGeoNaming(core.SCMayaCheck):
         """Run this check."""
         _geos = utils.read_cache_set_geo()
         self.write_log('geos %s', _geos)
-        self._check_geos(geos=_geos)
-
-    def _check_geos(self, geos):
-        """Check geometry in cache set.
-
-        Args:
-            geos (str list): cache set geometry
-
-        Returns:
-            (dict): dictionary of node names and nodes using that
-                name (eg. {'GEO': ['test:GEO', 'GEO']}) - this is
-                used to flag duplicates
-        """
-        _names = collections.defaultdict(list)
         self._ignore_names = []
-        for _geo in geos:
+        for _geo in _geos:
             self._check_geo(_geo)
 
     def _check_geo(self, geo):

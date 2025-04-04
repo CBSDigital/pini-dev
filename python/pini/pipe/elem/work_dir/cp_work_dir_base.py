@@ -57,7 +57,7 @@ class CPWorkDir(Dir):
             _LOGGER.debug(' - TRYING TEMPLATE %s %s', _tmpl,
                           _tmpl.embedded_data)
             try:
-                _dir, self.data = extract_template_dir_data(
+                _dir, _data = extract_template_dir_data(
                     template=_tmpl, path=_path, job=self.job)
             except ValueError as _exc:
                 _LOGGER.debug('   - FAILED %s', _exc)
@@ -66,14 +66,18 @@ class CPWorkDir(Dir):
             break
         else:
             raise ValueError(_path)
-        self.dcc = self.data.get('dcc') or self.template.dcc
+        self.dcc = _data.get('dcc') or self.template.dcc
         _LOGGER.debug(' - DCC %s %s', self.dcc, self.template.embedded_data)
+        self.task = _data['task']
+        self.step = _data.get('step')
+        self.user = _data.get('user')
+
+        # Setup data
+        self.data = {}
+        self.data.update(self.entity.data)
+        self.data.update(_data)
 
         super().__init__(_dir)
-
-        self.task = self.data['task']
-        self.step = self.data.get('step')
-        self.user = self.data.get('user')
 
     @property
     def cmp_key(self):

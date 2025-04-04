@@ -1,5 +1,6 @@
 """General maya pipeline utilities."""
 
+import copy
 import logging
 
 from maya import cmds
@@ -7,6 +8,7 @@ from maya import cmds
 from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
+from maya_pini.utils import to_long
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,12 +53,13 @@ def find_top_node():
     raise NotImplementedError('Failed to find top node')
 
 
-def _read_cache_set_nodes(set_, mode):
+def _read_cache_set_nodes(set_, mode, remove_junk=True):
     """Read cache set contents.
 
     Args:
         set_ (str): override set name
         mode (str): content to find
+        remove_junk (bool): remove nodes in JUNK group
 
     Returns:
         (str list): set contents node names
@@ -75,10 +78,17 @@ def _read_cache_set_nodes(set_, mode):
                 _root, allDescendents=True, type='transform', path=True) or []
             _nodes |= set(_children)
             _LOGGER.debug(' - ROOT %s %s', _root, _children)
+    _nodes = sorted(_nodes)
+
+    if remove_junk:
+        for _node in copy.copy(_nodes):
+            _long = to_long(_node)
+            if _long.startswith('|JUNK|'):
+                _nodes.remove(_node)
 
     _LOGGER.debug(' - NODES %s', _nodes)
 
-    return sorted(_nodes)
+    return _nodes
 
 
 def read_cache_set(  # pylint: disable=too-many-branches

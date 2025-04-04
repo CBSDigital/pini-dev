@@ -41,6 +41,10 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         if self.name.startswith('_'):
             raise ValueError('Name has leading underscore ' + self.name)
 
+        self.data['entity_path'] = self.path
+        self.data['entity'] = self.asset or self.shot
+        self.data['entity_type'] = self.asset_type or self.sequence
+
     def create(self, force=False, parent=None, shotgrid_=True):
         """Create this entity.
 

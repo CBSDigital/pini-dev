@@ -58,7 +58,7 @@ class _Shader(pom.CNode):
         _LOGGER.debug(' - ADD %s TO %s', _obj, _se)
         cmds.sets(_obj, edit=True, forceElement=_se)
 
-    def duplicate(self, name=None, upstream_nodes=True, class_=None):
+    def duplicate(self, name=None, upstream_nodes=True, class_=None):  # pylint: disable=arguments-differ
         """Duplicate this shading network.
 
         Args:

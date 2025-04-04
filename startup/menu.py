@@ -27,5 +27,5 @@ def _run_pini_install():
 if __name__ == '__main__':
     try:
         _run_pini_install()
-    except Exception as _exc:  # pylint: disable=broad-exception-caught
+    except Exception as _exc:
         _LOGGER.info('FAILED TO INSTALL PINI %s', _exc)

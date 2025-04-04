@@ -17,6 +17,7 @@ from ..ph_utils import obt_recent_work
 _LOGGER = logging.getLogger(__name__)
 
 _ARCHIVE_ICON = icons.find('Skull')
+_EMPTY_ICON = icons.find('Jar')
 
 
 class PHHeader:
@@ -68,11 +69,17 @@ class PHHeader:
         """
         _LOGGER.debug('UPDATE JOB ICON %s', self.job)
         pix.fill('Transparent')
+        if not self.job:
+            _col = 'White'
+            _icon = _EMPTY_ICON
+        else:
+            _col = self.job.to_col()
+            _icon = self.job.to_icon()
         pix.draw_rounded_rect(
-            pos=(0, 0), col=self.job.to_col(), outline=None,
+            pos=(0, 0), col=_col, outline=None,
             size=pix.size())
         pix.draw_overlay(
-            self.job.to_icon(), anchor='C', pos=pix.center(),
+            _icon, anchor='C', pos=pix.center(),
             size=0.5 * pix.width())
 
     def _redraw__EntityType(self):
@@ -94,7 +101,7 @@ class PHHeader:
                 for _seq in _data]
         else:
             raise ValueError(_profile)
-        _LOGGER.debug('REDRAW ENTITY TYPE %s %s', _job.name, _types)
+        _LOGGER.debug('REDRAW ENTITY TYPE %s %s', _job, _types)
 
         # Determine default selection
         _sel = None

@@ -76,8 +76,8 @@ class PHUiBase(
         # Setup vars
         self.store_settings = store_settings
         self._notes_stack = {}
-        if not pipe.CACHE.jobs:
-            raise RuntimeError('No valid jobs found in ' + pipe.ROOT.path)
+        # if not pipe.CACHE.jobs:
+        #     raise RuntimeError('No valid jobs found in ' + pipe.ROOT.path)
 
         # Init ui
         _title = title or TITLE

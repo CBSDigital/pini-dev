@@ -32,12 +32,16 @@ def _read_mounts():
 _MOUNTS = _read_mounts()
 
 
-def _get_home_dir():
+def _get_home_path():
     """Get path to home dir (not including Documents dir).
 
     Returns:
         (str): home dir path
     """
+    _LOGGER.debug('GET HOME PATH')
+    _user = getpass.getuser()
+
+    # Check for env overrides
     if 'PINI_HOME' in os.environ:
         _home = os.environ['PINI_HOME']
     elif 'HOME' in os.environ:
@@ -45,10 +49,9 @@ def _get_home_dir():
     else:
         _home = os.path.expanduser("~")
     _home = _home.replace('\\', '/')
-    _LOGGER.debug('GET HOME DIR %s', _home)
+    _LOGGER.debug(' - HOME %s', _home)
 
     # Check for clean mount
-    _user = getpass.getuser()
     if _home.count(_user) == 1:
         _home_root, _ = _home.split(_user)
         _home_tail = _home[len(_home_root):].lstrip('/')
@@ -60,10 +63,16 @@ def _get_home_dir():
                 _LOGGER.debug(' - UPDATED TO MOUNT %s', _home)
                 break
 
+    # Strip off OneDrive (maya adds this)
+    _user_home = f'C:/Users/{_user}'
+    if _home.startswith(_user_home) and 'OneDrive' in _home:
+        _home = _user_home
+        _LOGGER.debug(' - STRIPPING OneDrive %s', _home)
+
     return _home
 
 
-HOME_PATH = _get_home_dir()
+HOME_PATH = _get_home_path()
 
 
 def _get_tmp_dir():

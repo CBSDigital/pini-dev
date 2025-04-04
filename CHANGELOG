@@ -1,3 +1,18 @@
+## [6.64.0] - Fri 2025-04-04 12:23
+### Summary
+ - Sanity Check:
+    - check cache set bugfix not flagging all nodes in JUNK,
+### Updated
+ - pini.utils HOME/HOME_PATH apply fix for maya OneDrive reroute,
+ - pini.pipe.CPEntity.data added entity/entity_path/entity_type items,
+ - pini.pipe.CPWorkDir.data inherit data from entity,
+ - pini.pipe.CPWork.data inherit data from work dir,
+ - pini.pipe.CACHE.cur_output added,
+ - pini.tools.release.CheckFile check for deprecations ignore commented,
+ - pini.tools.helper added handling for no jobs,
+ - maya_pini.m_pipe.read_cache_set ignore JUNK nodes,
+
+
 ## [6.63.1] - Tue 2025-04-01 15:38
 ### Summary
  - Pini Helper:

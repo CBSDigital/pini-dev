@@ -88,7 +88,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
             try:
-                self.data = self.template.parse(self.path)
+                _data = self.template.parse(self.path)
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - TMPL %s', self.template)
                 _LOGGER.debug(' - EXC %s', _exc)
@@ -99,20 +99,21 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - EXC %s', _exc)
                 raise ValueError('Lucidity rejected ' + self.path) from _exc
-        self.data['task'] = self.work_dir.task
-        self.data['step'] = self.work_dir.step
-        _LOGGER.log(9, ' - WORK DATA %s', self.data)
-        _LOGGER.log(9, ' - WORK TMPL %s', self.template)
+        validate_tokens(_data, job=self.job)
+
+        # Setup up data
+        self.data = {}
+        self.data.update(self.work_dir.data)
+        self.data.update(_data)
+        self.data['dcc'] = self.dcc or self.data.get('dcc')
+
+        # Setup attrs
         for _key, _val in self.data.items():
-            if _key in ('entity', 'work_dir'):
+            if _key in ('entity', 'work_dir', 'job'):
                 continue
             setattr(self, _key, _val)
-
-        validate_tokens(self.data, job=self.job)
-
-        self.ver_n = int(self.ver)
         self.sequence = self.entity.sequence
-
+        self.ver_n = int(self.ver)
         self.metadata_yml = self.to_dir().to_file(
             f'.pini/metadata/{self.base}.yml')
         self.thumb = self.to_dir().to_file(

@@ -126,7 +126,9 @@ class CheckFile(MetadataFile):
         if abs_path(__file__) == self.path:
             return
         for _line in self.read_lines():
-            if 'release.apply_deprecation(' in _line:
+            if (
+                    'release.apply_deprecation(' in _line and
+                    not _line.strip().startswith('#')):
                 _LOGGER.info('FOUND DEPRECATION')
                 _line = _line.strip()
                 _LOGGER.info(' - LINE %s', _line)
@@ -253,6 +255,7 @@ class CheckFile(MetadataFile):
         _ignore = list(ignore) + [
             'E402',  # module level import not at top of file (use pylint)
             'E501',  # line too long
+            'E722',  # bare except (use pylint)
             'W504',  # line break after binary operator'
         ]
         _cmds = [
@@ -328,7 +331,7 @@ class CheckFile(MetadataFile):
                 _init.append(f"sys.path.insert(0, '{_py_dir.path}')")
 
         # Build lint cmd
-        _pylint = find_exe('pylint')
+        _pylint = find_exe('pylint', catch=False)
         _cmds = [
             _pylint,
             self,

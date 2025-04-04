@@ -139,7 +139,11 @@ class PHWorkTab:
         Returns:
             (str): default tag
         """
-        return pipe.DEFAULT_TAG or self.job.cfg['tokens']['tag']['default']
+        if pipe.DEFAULT_TAG:
+            return pipe.DEFAULT_TAG
+        if self.job:
+            return self.job.cfg['tokens']['tag']['default']
+        return None
 
     def _redraw__WTags(self):
 

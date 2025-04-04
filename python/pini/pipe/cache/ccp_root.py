@@ -91,6 +91,18 @@ class CCPRoot(elem.CPRoot):
         return self.obt_entity(_shot)
 
     @property
+    def cur_output(self):
+        """Obtain current output file.
+
+        Returns:
+            (CCPOutput|None): output (if any)
+        """
+        _out = elem.cur_output()
+        if not _out:
+            return None
+        return self.obt(_out)
+
+    @property
     def cur_work_dir(self):
         """Obtain current work directory.
 
