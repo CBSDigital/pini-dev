@@ -113,6 +113,7 @@ def run_tests(mode='all', tests=None, safe=True, force=False):
         assert not os.environ.get('PINI_PIPE_CFG_PATH')
 
     testing.enable_file_system(True)
+    testing.check_test_paths(force=force)
 
     _tests = list(tests) if tests else find_tests(mode=mode)
     _tests.sort(key=to_test_sort_key)

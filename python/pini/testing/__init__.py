@@ -6,9 +6,9 @@ from .t_env import (
     read_env_paths, insert_sys_path, append_sys_path, reset_enable_filesystem,
     print_sys_paths, remove_env_path)
 from .t_pipe import (
-    TEST_JOB, TEST_ASSET, TEST_SHOT, TMP_SHOT, TMP_ASSET,
-    TEST_SEQUENCE, check_test_asset, find_test_rig, find_test_lookdev,
-    find_test_model, find_test_abc, find_test_render)
+    TEST_JOB, TEST_ASSET, TEST_SHOT, TMP_SHOT, TMP_ASSET, check_test_paths,
+    TEST_SEQUENCE, find_test_rig, find_test_lookdev,
+    find_test_model, find_test_abc, find_test_render, find_test_vdb)
 from .t_profile import (
     profile, profile_start, profile_stop, PROFILE_FILE, PROFILE_TXT,
     to_profiler, PROFILE_TXT_FMT)

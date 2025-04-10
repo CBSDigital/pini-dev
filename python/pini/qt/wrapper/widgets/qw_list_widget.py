@@ -53,8 +53,11 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         Returns:
             (str): selected text
         """
-        return self.currentText()
+        if self.selectionMode() == QtWidgets.QListWidget.SingleSelection:
+            return self.selected_text()
+        return self.selected_texts()
 
+    @q_utils.apply_emit
     def select(self, match, replace=False, emit=True, catch=False):
         """Select an item in the list by item/text/data.
 
@@ -64,20 +67,28 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             emit (bool): emit changed signals on selection
             catch (bool): no error if fail to select data
         """
+        _LOGGER.debug('SELECT %s replace=%d', match, replace)
 
         # Apply multi select
         if isinstance(match, (list, tuple)):
             self.clearSelection()
             for _item in match:
-                self.select(_item, replace=False, catch=True)
+                self.select(_item, replace=False, catch=True, emit=False)
             return
 
         # Apply single selection
         for _idx, _item in enumerate(self.all_items()):
-            if match in (
-                    _item, _item.data(Qt.UserRole), _item.text()):
-                self.select_row(_idx, emit=emit, replace=replace)
+            _data = _item.data(Qt.UserRole)
+            if match in (_item, _data, _item.text()):
+                _LOGGER.debug(
+                    ' - SELECT ROW %d %s item=%d data=%d text=%d',
+                    _idx, _item, match == _item, match == _data,
+                    match == _item.text())
+                self.select_row(_idx, emit=False, replace=replace)
                 return
+
+        # Handle fail
+        _LOGGER.debug(' - FAILED TO SELECT %s', match)
         if not catch:
             raise ValueError(f'Failed to select {match}')
 
@@ -111,6 +122,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         if not catch:
             raise ValueError(f'Failed to select {item}')
 
+    @q_utils.apply_emit
     def select_row(self, idx, replace=True, emit=True):
         """Set current row.
 
@@ -119,15 +131,12 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             replace (bool): replace current selection
             emit (bool): emit changed signals on selection
         """
-        if not emit:
-            self.blockSignals(True)
         if replace:
             self.clearSelection()
         _item = self.item(idx)
-        self.setCurrentItem(_item)
-        if not emit:
-            self.blockSignals(False)
+        _item.setSelected(True)
 
+    @q_utils.apply_emit
     def select_rows(self, idxs, emit=True):
         """Select the given row indices.
 
@@ -135,13 +144,8 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             idxs (int list): rows to select
             emit (bool): emit item selection changed
         """
-        _blocked = self.signalsBlocked()
-        self.blockSignals(True)
         for _idx, _item in enumerate(self.all_items()):
             _item.setSelected(_idx in idxs)
-        if emit:
-            self.itemSelectionChanged.emit()
-        self.blockSignals(_blocked)
 
     def select_text(self, text, catch=True):
         """Select item by text.
@@ -298,7 +302,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         Args:
             val (str): text to select
         """
-        self.select_text(val)
+        self.select(val)
 
     def mouseMoveEvent(self, event):
         """Triggered by mouse move.

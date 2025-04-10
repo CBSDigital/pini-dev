@@ -415,7 +415,6 @@ class CCPJobBase(CPJob):
             (str): path to icon
         """
         from pini import testing
-        _rand = str_to_seed(self.name)
 
         # Add icon
         if self.settings['icon']:
@@ -425,6 +424,7 @@ class CCPJobBase(CPJob):
         elif 'Library' in self.name:
             _icon = icons.find('Books')
         else:
+            _rand = str_to_seed(self.name)
             _icon = _rand.choice(icons.FRUIT)
 
         return _icon

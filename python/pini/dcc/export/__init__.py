@@ -9,14 +9,14 @@ from pini import dcc
 from .eh_utils import build_metadata
 from .eh_base import CExportHandler
 
-from .eh_render import CRenderHandler
-from .eh_publish import CBasicPublish
-from .eh_cache import cache
+from .eh_render import CRenderHandler, local_render
+from .eh_publish import CBasicPublish, publish, model_publish, lookdev_publish
+from .eh_cache import abc_cache
 
 if dcc.NAME == 'maya':
     from .eh_publish import (
         CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode, publish)
+        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode)
     from .eh_render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
     from .eh_blast import CMayaPlayblast

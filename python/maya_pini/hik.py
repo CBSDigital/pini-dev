@@ -2,6 +2,8 @@
 
 import logging
 
+from pini import pipe
+from pini.dcc import pipe_ref
 from pini.utils import single, passes_filter
 
 from maya_pini import ui, open_maya as pom
@@ -27,11 +29,12 @@ class PHIKNode(pom.CNode):
         Returns:
             (None|str|PHIKNode): source (HIK, control rig or None)
         """
+        _LOGGER.debug('GET SOURCE %s', self)
         refresh_ui()
         CHAR_LIST.set_val(self)
         refresh_ui()
         _src = SRC_LIST.get_val().strip()
-        _LOGGER.info('SOURCE %s = %s', self, _src)
+        _LOGGER.info(' - SOURCE %s = %s', self, _src)
         if _src == CONTROL_RIG:
             _result = CONTROL_RIG
         elif _src == STANCE:
@@ -298,22 +301,26 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
     return find_hik(_name)
 
 
-def find_hik(match=None, **kwargs):
+def find_hik(match=None, catch=False, **kwargs):
     """Find an HIK node in this scene.
 
     Args:
         match (str): match by name/namespace
+        catch (bool): no error if no HIK matching node found
 
     Returns:
         (PHIKNode): HIK
     """
+    _LOGGER.debug('FIND HIK %s %s', match, kwargs)
     _hiks = find_hiks(**kwargs)
+    _LOGGER.debug(' - FOUND %d HIKS %s', len(_hiks), _hiks)
     if len(_hiks) == 1:
         return single(_hiks)
 
-    if isinstance(match, (pom.CReference, pom.CNode)):
+    if isinstance(match, (pom.CReference, pom.CNode, pipe_ref.CPipeRef)):
         _ns_hiks = [
             _hik for _hik in _hiks if _hik.namespace == match.namespace]
+        _LOGGER.debug(' - FOUND %d NS HIKS %s', len(_ns_hiks), _ns_hiks)
         if len(_ns_hiks) == 1:
             return single(_ns_hiks)
 
@@ -322,6 +329,7 @@ def find_hik(match=None, **kwargs):
         # Try exact string match
         _str_hiks = [
             _hik for _hik in _hiks if match in (str(_hik), _hik.namespace)]
+        _LOGGER.debug(' - FOUND %d STR HIKS %s', len(_str_hiks), _str_hiks)
         if len(_str_hiks) == 1:
             return single(_str_hiks)
 
@@ -331,14 +339,17 @@ def find_hik(match=None, **kwargs):
         if len(_filter_hiks) == 1:
             return single(_filter_hiks)
 
+    if catch:
+        return False
     raise ValueError(match, kwargs)
 
 
-def find_hiks(referenced=None):
+def find_hiks(referenced=None, task=None):
     """Find HIK nodes in this scene.
 
     Args:
         referenced (bool): filter by referenced status
+        task (str): filter by task
 
     Returns:
         (PHIKNode list): HIKs
@@ -350,6 +361,13 @@ def find_hiks(referenced=None):
             continue
         _hik = PHIKNode(_item)
         if referenced is not None and _hik.is_referenced() != referenced:
+            continue
+
+        _out = None
+        _ref = pom.find_ref(namespace=_hik.namespace)
+        if _ref:
+            _out = pipe.to_output(_ref.path)
+        if task and (not _out or not _out.task == task):
             continue
         _hiks.append(_hik)
     return _hiks
@@ -377,7 +395,11 @@ def refresh_ui(show=False):
     if show or not CHAR_LIST.exists():
         show_ui()
     mel.eval('hikUpdateCharacterList()')
+    process_deferred_events()
+    mel.eval('hikUpdateSourceList()')
+    process_deferred_events()
     cmds.refresh()
+    process_deferred_events()
 
 
 def show_ui():

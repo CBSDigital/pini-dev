@@ -17,6 +17,8 @@ class CPCacheable:
     asset = None
     label = None
     path = None
+
+    output = None
     output_type = None
     output_name = None
     attrs = ()
@@ -124,6 +126,11 @@ class CPCacheable:
             world_space=world_space, format_=format_, range_=range_,
             check_geo=check_geo, step=step, renderable_only=renderable_only,
             attrs=self.attrs)
+
+    def __eq__(self, other):
+        if isinstance(other, CPCacheable):
+            return self.node == other.node
+        return False
 
     def __lt__(self, other):
         return self.label.lower() < other.label.lower()

@@ -380,7 +380,28 @@ class Dir(up_path.Path):
         return Dir(self.path + '/' + _rel_path.path)
 
 
-DESKTOP_PATH = up_utils.abs_path(os.environ.get('DESKTOP', '~/Desktop'))
+def _get_desktop_path():
+    """Get path desktop directory.
+
+    Returns:
+        (str): desktop path
+    """
+    _LOGGER.debug('GET DESKTOP PATH')
+    _desktop = os.environ.get('DESKTOP')
+    _LOGGER.debug(' - $DESKTOP %s', _desktop)
+    if _desktop:
+        return up_utils.abs_path(_desktop)
+    _home = os.environ.get('HOME')
+    _LOGGER.debug(' - $HOME %s', _home)
+    if _home:
+        _desktop = Dir(_home).to_subdir('../_Desktop')
+        _LOGGER.debug(' - $HOME DESKTOP %s', _desktop)
+        if _desktop.exists():
+            return up_utils.abs_path(_desktop.path)
+    return up_utils.abs_path('~/Desktop')
+
+
+DESKTOP_PATH = _get_desktop_path()
 DESKTOP = Dir(DESKTOP_PATH)
 HOME = Dir(up_utils.HOME_PATH)
 TMP = Dir(up_utils.TMP_PATH)

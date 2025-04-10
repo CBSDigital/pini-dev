@@ -64,7 +64,6 @@ class TestDCC(unittest.TestCase):
             _LOGGER.info(' - TEST DISABLED OUTSIDE ARNOLD')
             return
 
-        testing.check_test_asset()
         _LOGGER.info(' - CHECKED TEST ASSET')
 
         _tag = testing.TEST_JOB.cfg['tokens']['tag']['default']

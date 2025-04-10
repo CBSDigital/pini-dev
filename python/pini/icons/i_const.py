@@ -431,6 +431,7 @@ UNLOCKED = EMOJI.find('Unlocked')
 URL = EMOJI.find('Globe Showing Europe-Africa')
 
 FRUIT = EMOJI.find_grp('fruit')
+COOL = EMOJI.find_grp('cool')
 
 MOONS = [EMOJI.find(_name) for _name in (
     'New Moon',

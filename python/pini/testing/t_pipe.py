@@ -5,11 +5,12 @@ import os
 import pprint
 
 from pini import pipe, dcc
-from pini.utils import File
+from pini.dcc import export
+from pini.utils import File, cache_result
 
 _LOGGER = logging.getLogger(__name__)
 
-_PINI_TEST_JOB = os.environ.get('PINI_TEST_JOB')
+_PINI_TEST_JOB = os.environ.get('PINI_TEST_JOB', 'Testing')
 _PINI_TEST_SEQUENCE = os.environ.get('PINI_TEST_SEQUENCE', 'Testing')
 _PINI_TEST_SHOT = os.environ.get('PINI_TEST_SHOT', 'test000')
 _PINI_TMP_SHOT = os.environ.get('PINI_TMP_SHOT', 'test999')
@@ -20,6 +21,7 @@ _PINI_TMP_ASSET = os.environ.get('PINI_TMP_ASSET', 'tmp')
 TEST_JOB = TEST_SEQUENCE = TMP_SHOT = TEST_SHOT = TEST_ASSET = TMP_ASSET = None
 if _PINI_TEST_JOB:
     TEST_JOB = pipe.to_job(_PINI_TEST_JOB)
+if TEST_JOB.exists():
     if _PINI_TEST_SEQUENCE:
         TEST_SEQUENCE = TEST_JOB.to_sequence(_PINI_TEST_SEQUENCE, catch=True)
     if TEST_SEQUENCE and _PINI_TEST_SHOT:
@@ -64,11 +66,10 @@ def _check_model(force):
         if File(_pub).exists()]
     if not _pubs:
         _mdl_work.load(lazy=True)
-        _pub = dcc.find_export_handler(type_='Publish', filter_='model')
-        _pub.publish(force=True)
+        export.model_publish(export_abc=True, export_fbx=True, force=True)
     _mdl_pub_g = _asset_c.find_publish(
-        task=_mod_task, ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
-        type_='publish')
+        task=_mod_task, ver_n='latest', tag=_mdl_work.tag, versionless=False,
+        type_='publish', extn='ma')
     _mdl_pub = pipe.CACHE.obt(_mdl_pub_g)
     assert _mdl_pub.path == _mdl_pub_g.path
     assert _mdl_pub
@@ -107,26 +108,25 @@ def _check_lookdev(force, model_pub):
 
     # Find publish
     _kwargs = dict(  # pylint: disable=use-dict-literal
-        task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
-        output_type='lookdev', extn='ma')
+        task='lookdev', ver_n='latest', tag=_to_default_tag(),
+        versionless=False, output_type='lookdev', extn='ma')
     _ld_pubs = _asset_c.find_publishes(**_kwargs)
     if len(_ld_pubs) > 1:
         pprint.pprint(_ld_pubs)
         raise RuntimeError
-    _ld_pub = _asset_c.find_publish(**_kwargs)
+    _ld_pub = _asset_c.find_publish(catch=True, **_kwargs)
     if not _ld_pub:
-
         _ld_work.load(lazy=True)
-        _pub = dcc.find_export_handler('lookdev')
-        _pub.publish(force=True, version_up=False)
+        export.lookdev_publish(force=True, version_up=False)
         _ld_pub = _asset_c.find_publishes(
-            task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG,
+            task='lookdev', ver_n='latest', tag=_to_default_tag(),
             versionless=False)
         dcc.new_scene(force=True)
+        assert _ld_pub
     assert _ld_pub
 
 
-def check_test_asset(force=False):
+def _check_test_assets(force=False):
     """Check test asset publishes and outputs exist.
 
     Args:
@@ -135,8 +135,10 @@ def check_test_asset(force=False):
     from maya_pini import open_maya as pom
     _LOGGER.info('CHECK TEST ASSET %s', TEST_ASSET)
 
-    _asset_c = pipe.CACHE.obt(TEST_ASSET)
+    _test_entity(TEST_ASSET)
+    _test_entity(TMP_ASSET)
 
+    _asset_c = pipe.CACHE.obt(TEST_ASSET)
     _mdl_work, _mdl_pub = _check_model(force=force)
 
     # Check rig
@@ -151,46 +153,94 @@ def check_test_asset(force=False):
         _rig_work.save(force=True)
     if not _asset_c.find_publishes(task='rig'):
         _rig_work.load(lazy=True)
-        _pub = dcc.find_export_handler(action='publish', filter_='basic')
+        _pub = dcc.find_export_handler('publish', filter_='basic')
         _pub.publish(force=True)
     assert _asset_c.find_publish(
-        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        task='rig', ver_n='latest', tag=_rig_work.tag, versionless=False,
         extn='ma')
 
     _check_lookdev(force=force, model_pub=_mdl_pub)
 
 
-def find_test_abc(force=False):
+def check_test_paths(force=False):
+    """Check all test asset and shot components have been created.
+
+    Args:
+        force (bool): lost unsaved data without confirmation
+    """
+    if not TEST_JOB.exists():
+        TEST_JOB.create()
+        pipe.CACHE.reset()
+
+    if dcc.NAME == 'maya':
+        _check_test_assets(force=force)
+        _check_test_shots(force=force)
+
+
+def _check_test_shots(force=False):
+    """Check test asset publishes and outputs exist.
+
+    Args:
+        force (bool): lose current scene without confirmation
+    """
+
+    _test_entity(TEST_SHOT)
+    _test_entity(TMP_SHOT)
+    _shot = pipe.CACHE.obt(TEST_SHOT)
+    assert _shot
+
+    # Check test abc
+    for _cam in (True, False):
+        assert find_test_abc(camera=_cam)
+    find_test_vdb(force=force)
+
+    # Check test render
+    find_test_render()
+
+
+def find_test_abc(camera=False, force=False):
     """Find test abc output, creating if needed.
 
     Args:
+        camera (bool): use test camera
         force (bool): lose unsaved changes without confirmation
 
     Returns:
         (CCPOutputFile): abc
     """
-    from maya_pini import m_pipe
-    _ns = 'test01'
+    from maya_pini import m_pipe, open_maya as pom
+
+    _ns = 'renderCam' if camera else 'test01'
     _ety = pipe.CACHE.obt(TEST_SHOT)
+    _work = _ety.to_work(task='anim', ver_n=1)
     _abc = _ety.find_output(
-        task='anim', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='abc',
+        task='anim', ver_n='latest', tag=_work.tag, extn='abc',
         output_name=_ns, versionless=False, catch=True)
     if not _abc:
+
+        _LOGGER.info(' - WORK %s', _work)
         _rig = find_test_rig()
+        dcc.new_scene(force=force)
+        dcc.set_range(1001, 1005)
         assert not _ety.find_outputs(
             extn='abc', tag=pipe.DEFAULT_TAG, output_name=_ns,
             task='anim')
-        dcc.new_scene(force=force)
-        _work = _ety.to_work(task='anim', ver_n=1)
-        _LOGGER.info(' - WORK %s', _work)
-        _ref = dcc.create_ref(_rig, namespace=_ns)
-        dcc.set_range(1001, 1005)
+
+        # Setup rig
+        _ref = dcc.create_ref(_rig, namespace='test01')
+
+        # Setup camera
+        _cam = pom.CMDS.camera(name='renderCam')
+        if _cam != 'renderCam':
+            _cam = _cam.rename('renderCam')
+        assert _cam == 'renderCam'
+
         _work.save(force=True)
         _cbls = m_pipe.find_cacheables()
-        assert len(_cbls) == 1
+        assert len(_cbls) == 2
         m_pipe.cache(_cbls)
         _abc = _ety.find_output(
-            task='anim', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='abc',
+            task='anim', ver_n='latest', tag=_work.tag, extn='abc',
             output_name=_ns, versionless=False, catch=True)
         assert _abc
     return _abc
@@ -202,8 +252,9 @@ def find_test_lookdev():
     Returns:
         (CCPOutputFile): lookdev publish
     """
+    _tag = _to_default_tag()
     _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
-        task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma',
+        task='lookdev', ver_n='latest', tag=_tag, extn='ma',
         versionless=False, content_type='ShadersMa')
     return pipe.CACHE.obt(_pub)
 
@@ -214,8 +265,9 @@ def find_test_model():
     Returns:
         (CCPOutputFile): model publish
     """
+    _tag = _to_default_tag()
     _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
-        task='model', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma',
+        task='model', ver_n='latest', tag=_tag, extn='ma',
         versionless=False)
     return pipe.CACHE.obt(_pub)
 
@@ -232,7 +284,7 @@ def find_test_render(force=False):
     from maya_pini.utils import render
     _ety = pipe.CACHE.obt(TEST_SHOT)
     _ren = _ety.find_output(
-        task='lighting', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='jpg',
+        task='lighting', ver_n='latest', tag=_to_default_tag(), extn='jpg',
         versionless=False, catch=True)
     if not _ren:
         dcc.new_scene(force=force)
@@ -250,7 +302,7 @@ def find_test_render(force=False):
             from pini.pipe import shotgrid
             shotgrid.create_pub_file_from_output(_out)
         _ren = _ety.find_output(
-            task='lighting', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='jpg',
+            task='lighting', ver_n='latest', tag=_to_default_tag(), extn='jpg',
             versionless=False, catch=True, force=True)
         assert _ren
     return _ren
@@ -263,6 +315,69 @@ def find_test_rig():
         (CCPOutputFile): rig publish
     """
     _pub = pipe.CACHE.obt(TEST_ASSET).find_publish(
-        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
+        task='rig', ver_n='latest', tag=_to_default_tag(), versionless=False,
         extn='ma')
     return pipe.CACHE.obt(_pub)
+
+
+@cache_result
+def find_test_vdb(force=False):
+    """Find test vdb sequence.
+
+    For now these are just empty files.
+
+    Args:
+        force (bool): lose unsaved data without confirmation
+
+    Returns:
+        (CPOutputSeq): test vdbs
+    """
+    _name = 'test'
+    _ety = pipe.CACHE.obt(TEST_SHOT)
+    _work = _ety.to_work(task='fx', ver_n=1)
+    _vdb = _ety.find_output(
+        task='fx', ver_n='latest', tag=_work.tag, extn='vdb',
+        output_name=_name, versionless=False, catch=True)
+    if not _vdb:
+        _metadata = export.build_metadata('cache', src=_work)
+        _vdb = _work.to_output(
+            'cache_seq', output_name=_name, extn='vdb')
+        _LOGGER.info(' - VDB %s', _vdb)
+        for _frame in range(1001, 1006):
+            File(_vdb[_frame]).touch()
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file_from_output(_vdb)
+        _vdb.set_metadata(_metadata)
+        pipe.CACHE.reset()
+        _vdb = pipe.CACHE.obt(_vdb)
+        assert _vdb
+    return _vdb
+
+
+def _test_entity(entity):
+    """Test the given entity exists.
+
+    Args:
+        entity (CPEntity): entity to check
+
+    Returns:
+        (CCPEntity): cacheable version of entity
+    """
+    _ety_c = pipe.CACHE.obt(entity)
+    if not _ety_c:
+        entity.create(force=True)
+        pipe.CACHE.reset()
+        _ety_c = pipe.CACHE.obt(entity)
+    assert _ety_c
+    return _ety_c
+
+
+@cache_result
+def _to_default_tag():
+    """Obtain default tag for test job.
+
+    Returns:
+        (str): default tag (eg. main)
+    """
+    return pipe.DEFAULT_TAG or TEST_JOB.cfg['tokens']['tag']['default']

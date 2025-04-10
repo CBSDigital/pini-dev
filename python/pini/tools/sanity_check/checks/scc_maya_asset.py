@@ -470,6 +470,23 @@ class CheckGeoNaming(core.SCMayaCheck):
             return
 
 
+class CheckForCameras(core.SCMayaCheck):
+    """Check for cameras in rigs/models."""
+
+    task_filter = 'model rig'
+
+    def run(self):
+        """Run this check."""
+        for _cam in pom.find_nodes('camera'):
+            _long = to_long(_cam)
+            self.write_log('Check cam %s %s', _cam, _long)
+            if _long.startswith('|JUNK'):
+                continue
+            if _cam in DEFAULT_NODES:
+                continue
+            self.add_fail(f'Camera {_cam}', node=_cam)
+
+
 class CheckForNgons(core.SCMayaCheck):
     """Check for polygons with more than four sides."""
 

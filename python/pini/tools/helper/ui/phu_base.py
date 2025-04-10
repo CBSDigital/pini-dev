@@ -132,6 +132,7 @@ class PHUiBase(
 
                 self.ui.SOutputsFilter,
                 self.ui.SSceneRefsFilter,
+                self.ui.ESubmitFilter,
         ]:
             _LOGGER.debug(' - DISABLE SAVE %s', _elem)
             _elem.set_save_policy(qt.SavePolicy.NO_SAVE)
@@ -140,7 +141,8 @@ class PHUiBase(
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
 
         if not testing.dev_mode():
-            self.ui.ECacheDevTab.setVisible(False)
+            self.ui.EExportPane.setTabVisible(3, False)
+            self.ui.EExportPane.set_val(0, emit=False)
 
     def _start_timer(self):
         """Start timer."""

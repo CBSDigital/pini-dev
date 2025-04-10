@@ -18,6 +18,8 @@ def assert_eq(item_a, item_b, dp=None):  # pylint: disable=invalid-name
     if dp is not None:
         _item_a = round(_item_a, dp)
         _item_b = round(_item_b, dp)
+    _type_a = type(item_a).__name__
+    _type_b = type(item_b).__name__
     if _item_a != _item_b:
         raise AssertionError(
-            f'Item {item_a} is not equal to {item_b}')
+            f'Item {item_a} ({_type_a}) is not equal to {item_b} ({_type_b})')

@@ -77,9 +77,9 @@ class CPSequenceBase(cp_settings_elem.CPSettingsLevel):
         if not force:
             from pini import qt
             qt.ok_cancel(
-                f'Create new sequence {self.name} in {self.job.name}?'
+                f'Create new sequence "{self.name}" in "{self.job.name}"?'
                 f'\n\n{self.path}',
-                icon=icons.find('Plus'), title='Create Sequence',
+                icon=icons.find('Plus'), title='Create sequence',
                 parent=parent)
 
         self.mkdir()

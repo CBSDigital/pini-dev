@@ -161,13 +161,13 @@ class PRRepo(Dir):
         print(' - REPO', _repo)
         print(' -', _repo.git.pull())
 
-    def push(self, message, force=False, repo=None):
+    def push(self, message, repo=None, force=False):
         """Push this repo's dev code.
 
         Args:
             message (str): commit message
-            force (bool): push even if nothing committed
             repo (GitRepo): override repo
+            force (bool): push even if nothing committed
         """
         dprint('PUSHING', self)
         _repo = repo or self.git_repo

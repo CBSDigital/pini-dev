@@ -5,7 +5,8 @@ import re
 
 from .path import File
 from .clip import find_ffmpeg_exe
-from .u_misc import single, system
+from .u_misc import single
+from .u_system import system
 from . import u_res
 
 _LOGGER = logging.getLogger(__name__)

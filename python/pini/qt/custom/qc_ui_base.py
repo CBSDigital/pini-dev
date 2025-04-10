@@ -446,7 +446,7 @@ class CUiBase:
         self.resize(_size)
         return True
 
-    def save_settings(self, filter_=None, pos=None):
+    def save_settings(self, filter_=None, pos=None, force=False):
         """Save settings to disk.
 
         Args:
@@ -456,8 +456,10 @@ class CUiBase:
                 you close a window is seems to move 21 pixel south which
                 causes the position to shift each time, so this is to prevent
                 that from happening
+            force (bool): save settings even if store settings is disabled
+                for this dialog
         """
-        if not self.store_settings:
+        if not force and not self.store_settings:
             return
         _LOGGER.debug('SAVE SETTINGS %s', self.settings.fileName())
 

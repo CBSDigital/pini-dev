@@ -14,7 +14,8 @@ import time
 from ..cache import cache_result
 from ..path import File, abs_path
 from ..u_exe import find_exe
-from ..u_misc import single, system
+from ..u_misc import single
+from ..u_system import system
 from ..u_text import nice_cmds
 
 _LOGGER = logging.getLogger(__name__)

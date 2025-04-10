@@ -6,7 +6,7 @@ templates:
   blast_mov: '{entity_path}/blast/{task}/{entity}_{tag}_{output_name}_v{ver}.{extn}'
   cache: '{entity_path}/outputs/{task}_{tag}/{output_name}/{entity}_{output_name}_v{ver}.{extn}'
   cache_seq: '{entity_path}/outputs/{task}_{tag}/{output_name}/{entity}_{output_name}_v{ver}/{entity}_{output_name}_v{ver}.%04d.{extn}'
-  publish: '{work_dir}/publish/[{output_type}/]{entity}_{tag}[_v{ver}].{extn}'
+  publish: '{work_dir}/publish/[{output_type}/]{entity}_{tag}_v{ver}.{extn}'
   publish_alt1: '{work_dir}/publish/{output_type}/{entity}_{tag}_{output_type}_v{ver}.{extn}'
   mov: '{entity_path}/mov/{task}/{entity}_{tag}_{output_name}_v{ver}.{extn}'
   render: '{entity_path}/images/{task}/{tag}_v{ver}/{output_name}/{entity}_{tag}_v{ver}.%04d.{extn}'

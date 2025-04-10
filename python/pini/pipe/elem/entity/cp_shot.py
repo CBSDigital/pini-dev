@@ -108,9 +108,9 @@ class CPShot(cp_ety.CPEntity):
         # Confirm
         if not force:
             qt.ok_cancel(
-                f'Create new shot {self.name} in {self.job.name}?'
+                f'Create new shot "{self.name}" in "{self.job.name}"?'
                 f'\n\n{self.path}',
-                icon=icons.BUILD, title='Create Shot',
+                icon=icons.BUILD, title='Create shot',
                 parent=parent)
 
         super().create(force=True, parent=parent, shotgrid_=shotgrid_)

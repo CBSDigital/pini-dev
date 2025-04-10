@@ -2,6 +2,7 @@
 
 # pylint: disable=abstract-method
 
+import ast
 import inspect
 import logging
 
@@ -194,6 +195,8 @@ class HouDCC(BaseDCC):
                 pass
             elif _type == 'float':
                 _val = float(_val)
+            elif _type in ('list', 'bool'):
+                _val = ast.literal_eval(_val)
             else:
                 raise ValueError(_type)
         return _val
@@ -271,7 +274,8 @@ class HouDCC(BaseDCC):
         """
         _key = f'pini_{key}'
         _type = type(val).__name__
-        assert _type in ['int', 'float', 'str']
+        if _type not in ['int', 'float', 'str', 'list', 'bool']:
+            raise RuntimeError(key, val, _type)
         _val = f'{_type}:{val}'
         _LOGGER.debug('SET SCENE DATA %s %s', _key, _val)
         hou.node("/").setUserData(_key, _val)

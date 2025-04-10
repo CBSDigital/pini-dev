@@ -41,7 +41,6 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
     def build_ui(self):
         """Build basic render interface into the given layout."""
         _LOGGER.debug('BUILD UI')
-        super().build_ui()
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
@@ -53,11 +52,11 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
         if not _cam:
             _cam = _cams[0]
         _LOGGER.debug(' - CAM %s %s', _cam, _cam)
-        self.ui.add_combobox_elem(
+        self.ui.add_combo_box(
             name='Camera', items=_cams, val=_cam, label_w=60,
-            disable_save_settings=True)
+            save_policy=qt.SavePolicy.NO_SAVE)
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
     def render(self, frames=None):
         """Execute render - to be implemented in child class.
@@ -83,36 +82,44 @@ class CMayaLocalRender(CMayaRenderHandler):
         """Build basic render interface into the given layout."""
         super().build_ui()
 
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             name='View', val=True, label='View render')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             name='Mov', val=False, label='Convert to mov')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
 
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
         self.ui.add_footer_elems(snapshot=False)
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
         self.ui.layout.addStretch()
+
         self._callback__Mov()
 
     def _callback__Mov(self):
         self.ui.Cleanup.setVisible(self.ui.Mov.isChecked())
 
-    def render(self, frames=None, render_=True, force=False):
+    def render(
+            self, camera=None, frames=None, mov=None, view=None,
+            render_=True, force=False):
         """Execute render.
 
         Args:
+            camera (str): render camera
             frames (int list): list of frames to render
-            render_ (bool): execute render
+            mov (bool): convert to mov
+            view (bool): view render on completion
+            render_ (bool): execute render (disable for debugging)
             force (bool): replace existing without confirmation
         """
         _data = self.build_metadata(force=force)
-        _cam = self.ui.Camera.currentText()
-        _mov = self.ui.Mov.isChecked()
-        _cleanup = self.ui.Cleanup.isChecked()
+        _cam = camera or self.ui.Camera.currentText()
+        _mov = mov if mov is not None else self.ui.Mov.isChecked()
+        if _mov:
+            _cleanup = self.ui.Cleanup.isChecked()
+        _view = view if view is not None else self.ui.View.isChecked()
 
         # Determine output paths
         _work = pipe.CACHE.cur_work
@@ -156,7 +163,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
             if _cleanup:
                 _out_seq.delete(force=True)
-        if self.ui.View.isChecked():
+        if _view:
             _out.view()
 
         # Save metadata
@@ -212,20 +219,20 @@ class CMayaFarmRender(CMayaRenderHandler):
         _LOGGER.debug('BUILD UI')
         super().build_ui()
 
-        self.ui.add_spinbox_elem(name='Priority', val=50)
-        self.ui.add_spinbox_elem(name='ChunkSize', val=1, min_=1)
-        self.ui.add_spinbox_elem(name='MachineLimit', val=15)
+        self.ui.add_spin_box(name='Priority', val=50)
+        self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
+        self.ui.add_spin_box(name='MachineLimit', val=15)
         self._build_limit_groups_elems()
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
         self._build_layers_elems()
 
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             name='HideImgPlanes', val=False,
             label='Hide image planes',
             tooltip='Hide image planes before submission')
         self.ui.add_footer_elems(snapshot=False)
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
     def _build_limit_groups_elems(self):
         """Build limit groups elements."""
@@ -238,7 +245,7 @@ class CMayaFarmRender(CMayaRenderHandler):
         _btn.clicked.connect(self._callback__LimitGroupsSelect)
         self.ui.LimitGroupsSelect = _btn
 
-        self.ui.add_lineedit_elem(
+        self.ui.add_line_edit(
             name='LimitGroups', add_elems=[_btn])
         self.ui.LimitGroups.setEnabled(False)
 

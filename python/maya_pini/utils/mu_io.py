@@ -275,7 +275,8 @@ def save_abc(  # pylint: disable=too-many-branches
         (str): job arg (if in job_arg mode)
     """
     _LOGGER.debug('EXPORT ABC')
-    assert format_ in ('Ogawa', 'HDF')
+    if format_ not in ('Ogawa', 'HDF'):
+        raise RuntimeError(format_)
 
     # Determine abc file
     _abc = None

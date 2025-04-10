@@ -31,17 +31,16 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         """
         super().build_ui(add_footer=False)
 
-        self.ui.add_checkbox_elem(
-            val=True, name='FreezeTfms',
-            label="Freeze transforms")
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
+            val=True, name='FreezeTfms', label="Freeze transforms")
+        self.ui.add_check_box(
             val=True, name='DeleteHistory')
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
         if add_footer:
             self.ui.add_footer_elems()
 
     def publish(
-            self, work=None, revert=True, metadata=None,
+            self, work=None, revert=True, metadata=None, notes=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
             references=None, version_up=None, progress=None, force=False):
         """Execute this publish.
@@ -50,6 +49,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             work (CPWork): override work
             revert (bool): revert to work file on completion
             metadata (dict): override metadata
+            notes (str): publish notes
             sanity_check_ (bool): apply sanity check
             export_abc (bool): whether to export rest cache abc
             export_fbx (bool): whether to export rest cache fbx
@@ -73,14 +73,15 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             return None
 
         _data = metadata or self.build_metadata(
-            work=work, force=force, sanity_check_=sanity_check_, task='model')
+            work=work, force=force, sanity_check_=sanity_check_, task='model',
+            notes=notes)
         _progress = progress or qt.progress_dialog(
             'Publishing model', col='CornflowerBlue', stack_key='Publish')
 
         # Execute publish
         _outs = super().publish(
             work=work, force=force, revert=False, metadata=_data,
-            export_abc=export_abc, export_fbx=export_fbx,
+            export_abc=export_abc, export_fbx=export_fbx, notes=notes,
             references=references, version_up=False, progress=_progress)
         _progress.set_pc(90)
 

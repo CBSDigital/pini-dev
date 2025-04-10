@@ -34,26 +34,26 @@ class CBlastHandler(eh_base.CExportHandler):
 
     def build_ui(self):
         """Build ui elements."""
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
         self.ui.add_range_elems()
         _vid_fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
-        self.ui.add_combobox_elem(
+        self.ui.add_combo_box(
             'Format', items=[_vid_fmt, 'jpg', 'png'])
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             'Force', label='Replace existing without confirmation')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             'View', label='View blast on completion')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             'Burnins', val=True, label='Add burnins on video compile')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             'DisableSave', val=False, label='Disable save on blast (unsafe)',
             save_policy=qt.SavePolicy.SAVE_IN_SCENE, tooltip=(
                 'Disabling save on blast is unsafe as you may get animation '
                 'that does not have a scene file approved'))
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
     def blast(self):
         """Execute blast."""

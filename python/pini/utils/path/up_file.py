@@ -11,7 +11,8 @@ import time
 import yaml
 
 from . import up_path, up_utils
-from ..u_misc import system, single
+from ..u_misc import single
+from ..u_system import system
 
 _LOGGER = logging.getLogger(__name__)
 _DIFF_TOOL = None

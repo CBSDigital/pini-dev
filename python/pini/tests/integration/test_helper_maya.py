@@ -1,4 +1,5 @@
 import logging
+import os
 import pprint
 import unittest
 
@@ -184,8 +185,6 @@ class TestHelper(unittest.TestCase):
 
     def test_store_settings_in_scene_export_handler(self):
 
-        testing.check_test_asset(force=True)
-
         _helper = helper.obt_helper(reset_cache=False)
         _import = export.PubRefsMode.IMPORT_TO_ROOT
         _remove = export.PubRefsMode.REMOVE
@@ -255,10 +254,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper = helper.obt_helper()
     _shot = pipe.CACHE.obt(testing.TMP_SHOT)
     _asset = pipe.CACHE.obt(testing.TEST_ASSET)
-    _rig_pub_g = _asset.find_publish(
-        task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
-        extn='ma')
-    _rig_pub = pipe.CACHE.obt(_rig_pub_g)
+    _rig_pub = testing.find_test_rig()
 
     # Save anim work
     progress.set_pc(5)
@@ -315,12 +311,6 @@ def _test_anim_workflow(progress, force, show_ctx):
 
     # Select rig in outputs list
     print()
-    # _helper.ui.MainPane.select_tab('Scene')
-    # _helper.ui.SOutputType.select_text('char')
-    # _helper.ui.SOutputTask.select_text('rig/rig')
-    # _helper.ui.SOutputTag.select_text(pipe.DEFAULT_TAG)
-    # _helper.ui.SOutputVers.select_text('latest')
-    # _helper.ui.SOutputs.select_data(_rig_pub, catch=False)
     _LOGGER.info(' - RIG PUB %s', _rig_pub)
     _helper.jump_to(_rig_pub)
     assert _helper.ui.SOutputs.selected_data() == _rig_pub
@@ -355,7 +345,9 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper.ui.EExportPane.select_tab('Blast')
     _blast_h = _helper.ui.EBlastHandler.selected_data()
     assert _blast_h
-    _blast_h.ui.Format.select_text('mov')
+
+    _vid_fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
+    _blast_h.ui.Format.select_text(_vid_fmt)
     _blast_h.ui.Force.setChecked(True)
     _blast_h.ui.View.setChecked(False)
     _helper.ui.EBlast.click()
@@ -367,10 +359,11 @@ def _test_anim_workflow(progress, force, show_ctx):
     # Test cache
     progress.set_pc(40)
     assert not _helper.work.find_outputs(extn='abc')
+    _helper.ui.MainPane.select_tab('Export')
+    _helper.ui.EExportPane.select_tab('Cache')
     assert (
         _helper.ui.ECacheRefs.all_data() ==
-        _helper.ui.ECacheRefs.selected_data())
-    _helper.ui.EExportPane.select_tab('Cache')
+        _helper.ui.ECacheRefs.selected_datas())
     _helper.ui.ECacheVersionUp.setChecked(False)
     _helper.ui.ECache.click()
     assert _helper.work.find_outputs(extn='abc')
@@ -385,10 +378,7 @@ def _test_lighting_workflow(progress, force, show_ctx):
     _helper = helper.obt_helper()
     _shot = pipe.CACHE.obt(testing.TMP_SHOT)
     _asset = pipe.CACHE.obt(testing.TEST_ASSET)
-    _lookdev_pub_g = _asset.find_publish(
-        task='lookdev', ver_n='latest', tag=pipe.DEFAULT_TAG, versionless=False,
-        extn='ma', content_type='ShadersMa')
-    _lookdev_pub = pipe.CACHE.obt(_lookdev_pub_g)
+    _lookdev_pub = testing.find_test_lookdev()
 
     # Save lighting work
     dcc.new_scene(force=force)

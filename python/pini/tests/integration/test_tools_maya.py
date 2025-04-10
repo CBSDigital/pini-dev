@@ -160,11 +160,7 @@ class TestSanityCheck(unittest.TestCase):
         dcc.new_scene(force=True)
 
         _ety = pipe.CACHE.obt(testing.TEST_ASSET)
-        _mdl_pub = pipe.CACHE.obt(testing.TEST_JOB).find_publish(
-            task='model', ver_n='latest', asset=testing.TEST_ASSET.asset,
-            tag=pipe.DEFAULT_TAG, asset_type='char', extn='ma',
-            versionless=False)
-        _mdl = pipe.CACHE.obt(_mdl_pub)
+        _mdl = testing.find_test_model()
         _work_dir = _ety.find_work_dir(
             'rig', dcc_=dcc.NAME)
         _work = _work_dir.to_work(tag='tmp')

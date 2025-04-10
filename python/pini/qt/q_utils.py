@@ -202,6 +202,35 @@ def get_application(force=False):
     return _app
 
 
+def apply_emit(func):
+    """Apply emit flag.
+
+    Args:
+        func (fn): method to decorate
+
+    Returns:
+        (fn): decorated method
+    """
+
+    def _emit_func(widget, *args, **kwargs):
+        _blocked = widget.signalsBlocked()
+        _emit = kwargs.get('emit', True)
+        if _emit is not None:
+            widget.blockSignals(True)
+        _result = func(widget, *args, **kwargs)
+        if _emit is not None:
+            widget.blockSignals(_blocked)
+        if _emit is True:
+            _signal = widget_to_signal(widget)
+            _args = []
+            if isinstance(widget, QtWidgets.QTabWidget):
+                _args = [widget.currentIndex()]
+            _signal.emit(*_args)
+        return _result
+
+    return _emit_func
+
+
 def nice_screen(screen):
     """Convert a screen name to a readable string.
 

@@ -8,7 +8,8 @@ from ..u_misc import strftime
 from ..u_exe import find_exe
 from ..cache import cache_result
 from ..path import Dir, File, TMP_PATH, abs_path
-from ..u_misc import system, nice_age, to_str
+from ..u_misc import nice_age, to_str
+from ..u_system import system
 
 _LOGGER = logging.getLogger(__name__)
 

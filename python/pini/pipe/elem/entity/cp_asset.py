@@ -101,7 +101,7 @@ class CPAsset(cp_ety.CPEntity):
         # Confirm
         if not force and not self.exists():
             qt.ok_cancel(
-                f'Create new asset {self.name} in {self.job.name}?'
+                f'Create new asset "{self.name}" in job "{self.job.name}"?'
                 f'\n\n{self.path}',
                 icon=icons.BUILD, title='Create asset',
                 parent=parent)

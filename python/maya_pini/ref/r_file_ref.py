@@ -349,7 +349,9 @@ class FileRef(r_path_ref.PathRef):
             raise _exc
 
     def __eq__(self, other):
-        return hash(self.path_uid)
+        if isinstance(other, FileRef):
+            return self.path_uid == other.path_uid
+        return False
 
     def __hash__(self):
         return hash(self.path_uid)

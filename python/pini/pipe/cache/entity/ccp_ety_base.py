@@ -3,12 +3,48 @@
 import functools
 import logging
 
-from pini.utils import single
+from pini import icons
+from pini.utils import single, str_to_seed
 
 from ..ccp_utils import pipe_cache_on_obj
 from ...elem import CPEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+_NAME_ICON_MAP = {
+    'apple': 'Green Apple',
+    'bee': 'Honeybee',
+    'bottle': 'Bottle with Popping Cork',
+    'chesspieces': 'Chess Pawn',
+    'christmaspresents': 'Gift',
+    'clouds': 'Cloud',
+    'coins': 'Money Bag',
+    'discoball': 'Crystal Ball',
+    'eggs': 'Egg',
+    'ferns': 'Potted Plant',
+    'ground': 'Desert',
+    'hand': 'Waving Hand: Medium Skin Tone',
+    'lamppost': 'Light Bulb',
+    'lightrig': 'Light Bulb',
+    'kitchencounter': 'Fork and Knife with Plate',
+    'moon': 'Last Quarter Moon Face',
+    'musicalnotes': 'Musical Note',
+    'musicnotes': 'Musical Note',
+    'palms': "Palm Tree",
+    'personm': "Men's Room",
+    'personf': "Women's Room",
+    'pumpkin': 'Jack-O-Lantern',
+    'rocketship': 'Rocket',
+    'screen': 'Television',
+    'snowflakes': 'Snowflake',
+    'snowflakesice': 'Cloud with Snow',
+    'spacesky': 'Milky Way',
+    'spacestation': 'Satellite',
+    'speakers': 'Loudspeaker',
+    'test': 'Microscope',
+    'whiteclouds': 'Cloud',
+    'xmastrees': 'Christmas Tree',
+}
 
 
 class CCPEntityBase(CPEntity):
@@ -278,6 +314,29 @@ class CCPEntityBase(CPEntity):
         _kwargs = kwargs
         _kwargs['class_'] = _kwargs.get('class_', cache.CCPWork)
         return super().to_work(**_kwargs)
+
+    def to_icon(self):
+        """Obtain icon for this job.
+
+        Returns:
+            (str): path to icon
+        """
+        from pini import testing
+
+        # Add icon
+        if self.settings['icon']:
+            _icon = icons.find(self.settings['icon'])
+        elif self == testing.TEST_ASSET:
+            _icon = icons.find('Test Tube')
+        elif self == testing.TEST_SHOT:
+            _icon = icons.find('Petri Dish')
+        elif self.name.lower() in _NAME_ICON_MAP:
+            _icon = _NAME_ICON_MAP[self.name.lower()]
+        else:
+            _rand = str_to_seed(self.name)
+            _icon = _rand.choice(icons.COOL)
+
+        return _icon
 
     def flush(self, force=False):
         """Flush contents of this entity.

@@ -7,7 +7,7 @@ a rig/model/lookdev.
 from pini import dcc
 
 from .ph_basic import CBasicPublish
-from .ph_publish import publish
+from .ph_publish import publish, model_publish, lookdev_publish
 
 if dcc.NAME == 'maya':
     from .ph_maya import (

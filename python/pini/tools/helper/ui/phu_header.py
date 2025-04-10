@@ -60,6 +60,7 @@ class PHHeader:
         _names = [_job.name for _job in pipe.CACHE.jobs]
         _select = pipe.to_job(self.target) if self.target else None
         self.ui.Job.set_items(_names, data=pipe.CACHE.jobs, select=_select)
+        self.ui.Job.setEditable(self._admin_mode)
 
     def _draw__JobIcon(self, pix):
         """Update job icon pixmap.
@@ -118,7 +119,7 @@ class PHHeader:
         if not _sel:
             _sel = _cur
 
-        self.ui.EntityType.setEditable(self._admin_mode)
+        self.ui.EntityType.setEditable(bool(self._admin_mode and self.job))
         self.ui.EntityType.set_items(_types, data=_data, select=_sel)
 
     def _redraw__EntityTypeCreate(self):
@@ -172,7 +173,7 @@ class PHHeader:
         elif _cur_ety:
             _select = _cur_ety
 
-        self.ui.Entity.setEditable(self._admin_mode)
+        self.ui.Entity.setEditable(bool(self._admin_mode and self.job))
         self.ui.Entity.set_items(_labels, data=_etys, select=_select)
 
     def _redraw__EntityCreate(self):
@@ -213,7 +214,14 @@ class PHHeader:
             self.ui.Profile.select_text(_profile)
 
         self.ui.JobIcon.redraw()
+        self.ui.JobCreate.setEnabled(bool(self.ui.Job.currentText()))
         self._redraw__EntityType()
+
+    def _callback__JobCreate(self):
+        _text = self.ui.Job.currentText()
+        _job = pipe.to_job(_text)
+        _job.create()
+        self._callback__Refresh()
 
     def _callback__ProfileLabel(self):
         _items = self.ui.Profile.all_text()
@@ -250,11 +258,16 @@ class PHHeader:
             self._admin_mode = admin
         else:
             self._admin_mode = not self._admin_mode
-        for _elem in [self.ui.WTaskText, self.ui.EntityCreate,
-                      self.ui.EntityTypeCreate]:
+        for _elem in [
+                self.ui.JobCreate,
+                self.ui.EntityCreate,
+                self.ui.EntityTypeCreate,
+                self.ui.WTaskText,
+        ]:
             _elem.setVisible(self._admin_mode)
         if not self.target:
             self._set_target(_cur_ety)
+        self.ui.Job.redraw()
         self.ui.EntityType.redraw()
         self.ui.Entity.redraw()
 

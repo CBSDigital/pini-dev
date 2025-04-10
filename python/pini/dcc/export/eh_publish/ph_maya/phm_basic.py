@@ -56,34 +56,34 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _LOGGER.debug('BUILD UI %s', self)
         super().build_ui(add_footer=False)
 
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=True, name='RemoveJunk', label='Remove JUNK group')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=True, name='RemoveSets', label='Remove unused sets')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=True, name='RemoveDLayers', label='Remove display layers')
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=True, name='RemoveALayers', label='Remove anim layers')
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=True, name='ExportAbc',
             label="Export abc of cache_SET geo")
-        self.ui.add_checkbox_elem(
+        self.ui.add_check_box(
             val=False, name='ExportFbx',
             label="Export fbx of top node")
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
         # Add reference option
         _data = list(PubRefsMode)
         _items = [_item.value for _item in _data]
-        self.ui.add_combobox_elem(
+        self.ui.add_combo_box(
             name='References', items=_items, data=_data,
             save_policy=qt.SavePolicy.SAVE_IN_SCENE,
             settings_key=_PUB_REFS_MODE_KEY)
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
         # Add notes
         if add_footer:
@@ -93,22 +93,23 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
 
     @restore_sel
     def publish(
-            self, work=None, force=False, revert=True, metadata=None,
+            self, work=None, revert=True, metadata=None, notes=None,
             sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None, progress=None):
+            references=None, version_up=None, progress=None, force=False):
         """Execute this publish.
 
         Args:
             work (CPWork): override work
-            force (bool): force overwrite without confirmation
             revert (bool): revert to work file on completion
             metadata (dict): override metadata
+            notes (bool): publish notes
             sanity_check_ (bool): apply sanity check
             export_abc (bool): whether to export rest cache abc
             export_fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
             version_up (bool): whether to version up on publish
             progress (ProgressDialog): override progress dialog
+            force (bool): force overwrite without confirmation
 
         Returns:
             (CPOutput): publish file
@@ -123,7 +124,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         # Read options/outputs
         _work = work or pipe.CACHE.cur_work
         _metadata = metadata or self.build_metadata(
-            work=_work, force=force, sanity_check_=sanity_check_)
+            work=_work, force=force, sanity_check_=sanity_check_,
+            notes=notes)
         _progress = progress or qt.progress_dialog(
             'Publishing', stack_key='Publish')
         _LOGGER.info(' - OBTAINED METADATA %s', _metadata)
@@ -133,7 +135,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if self.ui_is_active():
             self.ui.save_settings()
         _pub.delete(wording='replace', force=force)
-        _bkp = _work.save(reason='publish', force=True, update_outputs=False)
+        _bkp = _work.save(
+            reason='publish', force=True, update_outputs=False, notes=notes)
         _metadata['bkp'] = _bkp.path
         _progress.set_pc(20)
 

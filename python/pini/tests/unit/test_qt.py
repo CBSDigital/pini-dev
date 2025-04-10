@@ -3,14 +3,15 @@ import math
 import unittest
 
 from pini import qt
-from pini.qt import QtCore
-from pini.utils import File
+from pini.qt import QtCore, QtWidgets
+from pini.utils import File, assert_eq
 
 _LOGGER = logging.getLogger(__name__)
 
 _BLAH = False
 _DIR = File(__file__).to_dir()
 _UI_FILE = _DIR.to_file('settings_test.ui')
+_DIALOG = None
 
 
 def _set_blah_true():
@@ -82,7 +83,17 @@ class TestQt(unittest.TestCase):
         _list.set_items(['A', 'B', 'C'])
         assert not _BLAH
 
+        # Test extended selection
+        _list = qt.CListWidget()
+        _list.setSelectionMode(QtWidgets.QListWidget.ExtendedSelection)
+        _list.set_items(['A', 'B', 'C', 'D'])
+        _list.select(['B', 'C'])
+        assert _list.selected_texts() == ['B', 'C']
+        _list.deleteLater()
+
     def test_save_settings(self):
+
+        global _DIALOG
 
         class _SettingsTestUi(qt.CUiDialog):
 
@@ -92,16 +103,26 @@ class TestQt(unittest.TestCase):
                     ui_file=_UI_FILE.path, store_settings=store_settings)
 
         assert _UI_FILE.exists()
-        _dialog = _SettingsTestUi(store_settings=False)
-        assert _dialog.ui.MyTab.currentIndex() == 0
-        _dialog.ui.MyTab.setCurrentIndex(1)
-        assert _dialog.find_widgets()
-        _dialog.save_settings()
-        _dialog.delete()
+        _LOGGER.info(' - UI FILE %s', _UI_FILE)
+        _DIALOG = _SettingsTestUi(store_settings=False)
+        assert isinstance(_DIALOG.ui.MyTab, QtWidgets.QTabWidget)
+        assert not isinstance(_DIALOG.ui.MyTab, qt.CTabWidget)
+        assert _DIALOG.ui.MyTab.currentIndex() == 0
+        _DIALOG.ui.MyTab.setCurrentIndex(1)
+        assert _DIALOG.find_widgets()
+        assert _DIALOG.ui.MyTab.currentIndex() == 1
+        # _LOGGER.info(' - SAVE POLICY %s', _DIALOG.ui.MyTab.save_policy)
+        _DIALOG.save_settings(force=True)
+        _LOGGER.info(' - SETTINGS FILE %s', _DIALOG.settings.fileName())
+        assert_eq(int(_DIALOG.settings.value('widgets/MyTab')), 1)
+        _LOGGER.info(' - SETTINGS %s', _DIALOG.settings.fileName())
 
-        _dialog = _SettingsTestUi(store_settings=True)
-        assert _dialog.ui.MyTab.currentIndex() == 1
-        _dialog.delete()
+        _DIALOG.delete()
+
+        _DIALOG = _SettingsTestUi(store_settings=True)
+        _LOGGER.info(' - CUR TAB %s', _DIALOG.ui.MyTab.currentIndex())
+        assert _DIALOG.ui.MyTab.currentIndex() == 1
+        _DIALOG.delete()
 
     def test_to_p(self):
 

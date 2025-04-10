@@ -3,9 +3,9 @@
 import logging
 
 from pini import qt, pipe, dcc, icons
+from pini.tools import release
 from pini.qt import QtWidgets, QtGui, Qt
-from pini.utils import to_nice
-
+from pini.utils import to_nice, to_snake
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,11 +30,17 @@ class CExportHandlerUI(qt.CUiContainer):
         super().__init__(settings_file=settings_file)
         self.handler = handler
         self.label_w = label_w
+        self._elems = {}
 
-    def _add_elem(
+    def _setup_elem(
             self, elem, name, disable_save_settings=False, save_policy=None,
             settings_key=None, tooltip=None):
         """Setup element in the export handler's ui.
+
+        This will:
+         - Apply object name (eg. MyName)
+         - Set this element as an attribute of this object (ie. self.MyName)
+         - Apply save policy
 
         Args:
             elem (QWidget): widget to add
@@ -46,13 +52,17 @@ class CExportHandlerUI(qt.CUiContainer):
             settings_key (str): override settings key for element
             tooltip (str): add tooltip to element
         """
+        assert isinstance(elem, qt.CBaseWidget)
+
         elem.setObjectName(name)
+        setattr(self, name, elem)
         if tooltip:
             elem.setToolTip(tooltip)
 
         # Setup settings
         _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         if disable_save_settings:
+            release.apply_deprecation('08/04/25', 'Use save_policy')
             _save_policy = qt.SavePolicy.NO_SAVE
         _settings_key = settings_key or _to_settings_key(
             name=name, handler=self)
@@ -60,7 +70,8 @@ class CExportHandlerUI(qt.CUiContainer):
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
         elem.load_setting()
-        setattr(self, name, elem)
+
+        self._elems[name] = elem
 
     def _add_elem_lyt(
             self, name, elem, label=None, label_w=None, tooltip=None,
@@ -85,40 +96,24 @@ class CExportHandlerUI(qt.CUiContainer):
         _label = label or to_nice(name).capitalize()
         _LOGGER.debug('ADD ELEM LAYOUT')
 
-        # Build layout
-        _h_lyt_name = name + 'Layout'
-        _h_lyt = QtWidgets.QHBoxLayout(self.parent)
-        _h_lyt.setObjectName(_h_lyt_name)
-        _h_lyt.setSpacing(2)
-        setattr(self, _h_lyt_name, _h_lyt)
-        _LOGGER.debug(' - SET LAYOUT %s %s', _h_lyt_name, _h_lyt)
-
-        # Add label
-        _label_name = name + 'Label'
-        _label_e = QtWidgets.QLabel(self.parent)
-        _label_e.setText(_label)
-        _label_e.setObjectName(_label_name)
-        _label_e.setFixedWidth(label_w or self.label_w)
-        if tooltip:
-            _label_e.setToolTip(tooltip)
-        setattr(self, _label_name, _label_e)
-        _LOGGER.debug(' - SET LABEL %s %s', _label_name, _label_e)
-
+        # Build layout + label
+        _h_lyt = self.add_hbox_layout(f'{name}Lyt')
+        _label_e = self.add_label(
+            f'{name}Label', text=_label, tooltip=tooltip, label_w=label_w)
         _h_lyt.addWidget(_label_e)
         _h_lyt.addWidget(elem)
         if stretch:
             _h_lyt.addStretch()
-        self.layout.addLayout(_h_lyt)
 
         for _elem in add_elems:
             _h_lyt.addWidget(_elem)
 
-        self._add_elem(
+        self._setup_elem(
             elem, disable_save_settings=disable_save_settings, name=name,
             save_policy=save_policy, tooltip=tooltip,
             settings_key=settings_key)
 
-    def add_checkbox_elem(
+    def add_check_box(
             self, name, val=True, label=None, tooltip=None, enabled=True,
             save_policy=None):
         """Add QCheckBox element in this handler's interface.
@@ -142,21 +137,21 @@ class CExportHandlerUI(qt.CUiContainer):
             _checkbox_e.setEnabled(False)
         self.layout.addWidget(_checkbox_e)
 
-        self._add_elem(
+        self._setup_elem(
             elem=_checkbox_e, save_policy=save_policy, name=name,
             tooltip=tooltip)
 
         return _checkbox_e
 
-    def add_combobox_elem(
+    def add_combo_box(
             self, name, items, data=None, val=None, width=None, label=None,
             label_w=None, tooltip=None, disable_save_settings=False,
             save_policy=None, settings_key=None):
-        """Add a combobox element.
+        """Add a combo box element.
 
         Args:
             name (str): element name
-            items (str list): combobox items
+            items (str list): combo box items
             data (list): list of data corresponding to items
             val (str): item to select
             width (int): override element width
@@ -192,9 +187,72 @@ class CExportHandlerUI(qt.CUiContainer):
 
         return _combo_box
 
-    def add_lineedit_elem(
+    def add_hbox_layout(self, name):
+        """Add QHBboxLayout to this interace.
+
+        Args:
+            name (str): name for layout
+
+        Returns:
+            (QHBoxLayout): layout
+        """
+        assert name.endswith('Lyt')
+        _lyt = QtWidgets.QHBoxLayout(self.parent)
+        _lyt.setObjectName(name)
+        _lyt.setSpacing(2)
+        setattr(self, name, _lyt)
+        _LOGGER.debug(' - ADDED LAYOUT %s %s', name, _lyt)
+        self.layout.addLayout(_lyt)
+        return _lyt
+
+    def add_label(self, name, text=None, label_w=None, tooltip=None):
+        """Add QLabel to this inteface.
+
+        Args:
+            name (str): name for label element
+            text (str): display text for label
+            label_w (int): override label width
+            tooltip (str): apply label tooltip
+
+        Returns:
+            (QLabel): label
+        """
+        assert name.endswith('Label')
+        _label = QtWidgets.QLabel(self.parent)
+        _label.setText(text)
+        _label.setObjectName(name)
+        _label.setFixedWidth(label_w or self.label_w)
+        if tooltip:
+            _label.setToolTip(tooltip)
+        setattr(self, name, _label)
+        _LOGGER.debug(' - ADD LABEL %s %s', name, _label)
+
+        return _label
+
+    def add_icon_button(self, name, icon, callback):
+        """Add icon button element.
+
+        Args:
+            name (str): element name
+            icon (str): path to element icon
+            callback (fn): element callback
+
+        Returns:
+            (QPushButton): icon button
+        """
+        _btn = QtWidgets.QPushButton(self.parent)
+        _btn.setObjectName(f'{name}Refresh')
+        _btn.setIcon(qt.obt_icon(icon))
+        _btn.setFixedSize(qt.to_size(20))
+        _btn.setIconSize(qt.to_size(20))
+        _btn.setFlat(True)
+        _btn.clicked.connect(callback)
+        setattr(self, name, _btn)
+        return _btn
+
+    def add_line_edit(
             self, name, val=None, label=None, tooltip=None,
-            disable_save_settings=False, add_elems=()):
+            save_policy=None, disable_save_settings=False, add_elems=()):
         """Add QLineEdit element to this handler's interface.
 
         Args:
@@ -202,6 +260,8 @@ class CExportHandlerUI(qt.CUiContainer):
             val (str): text for element
             label (str): element label
             tooltip (str): apply tooltip
+            save_policy (SavePolicy): save policy to apply
+                (default is save on change)
             disable_save_settings (bool): apply disable save settings to element
             add_elems (list): widgets to add to this layout
 
@@ -217,12 +277,81 @@ class CExportHandlerUI(qt.CUiContainer):
 
         self._add_elem_lyt(
             name=name, elem=_lineedit, label=label, tooltip=tooltip,
-            disable_save_settings=disable_save_settings, stretch=False,
+            disable_save_settings=disable_save_settings,
+            save_policy=save_policy, stretch=False,
             add_elems=add_elems)
 
         return _lineedit
 
-    def add_separator_elem(self, name=None):
+    def add_list_widget(
+            self, name, items=None, label=None,
+            selection_mode=QtWidgets.QListView.ExtendedSelection):
+        """Add CListWidget element to this interface.
+
+        Args:
+            name (str): element name
+            items (list): list items
+            label (str): element label
+            selection_mode (SelectionMode): selection mode
+        """
+        self.add_separator()
+
+        # Build label layout
+        _label = self.add_label(name=f'{name}Label', text=label or name)
+        _lyt = self.add_hbox_layout(f'{name}Lyt')
+        _lyt.addWidget(_label)
+        _lyt.addStretch()
+
+        # Add refresh button
+        _refresh = getattr(self.handler, f'_redraw__{name}', None)
+        _LOGGER.debug(' - REFRESH %s %s', f'_redraw__{name}', _refresh)
+        if _refresh:
+            _btn = self.add_icon_button(
+                f'{name}Refresh', icon=icons.REFRESH, callback=_refresh)
+            _lyt.addWidget(_btn)
+
+        # Build list
+        _list = qt.CListWidget(self.parent)
+        _list.setSpacing(2)
+        _list.setSelectionMode(selection_mode)
+        _list.setIconSize(qt.to_size(30))
+        _list.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.MinimumExpanding)
+        self._setup_elem(_list, name=name)
+        if items:
+            _list.set_items(items, emit=False)
+        elif _refresh:
+            _refresh()
+        self.layout.addWidget(_list)
+        self.layout.setStretch(self.layout.count() - 1, 1)
+
+    def add_exec_button(self, label):
+        """Build execute button.
+
+        Args:
+            label (str): label for button
+        """
+        self.add_push_button(
+            'Execute', label, callback=self.handler.exec_from_ui)
+
+    def add_push_button(self, name, label=None, callback=None):
+        """Add push button element.
+
+        Args:
+            name (str): element name
+            label (str): element label
+            callback (fn): button callback
+        """
+        _btn = QtWidgets.QPushButton(self.parent)
+        _btn.setText(label or name)
+        _btn.setObjectName(name)
+        setattr(self, name, _btn)
+        if callback:
+            _btn.clicked.connect(callback)
+        self.layout.addWidget(_btn)
+
+    def add_separator(self, name=None):
         """Add a separator to the ui.
 
         Args:
@@ -233,7 +362,7 @@ class CExportHandlerUI(qt.CUiContainer):
             _sep.setObjectName(name)
         self.layout.addWidget(_sep)
 
-    def add_spinbox_elem(
+    def add_spin_box(
             self, name, val, min_=0, max_=10000, label=None, label_w=None,
             tooltip=None, disable_save_settings=False):
         """Build a QSpinBox element in this handler's interface.
@@ -278,10 +407,10 @@ class CExportHandlerUI(qt.CUiContainer):
             snapshot (bool): add snapshot option
         """
         if snapshot:
-            self.Snapshot = self.add_checkbox_elem(
+            self.Snapshot = self.add_check_box(
                 'Snapshot', label='Take snapshot')
             self.snapshot_elem = self.Snapshot
-        self.VersionUp = self.add_checkbox_elem(
+        self.VersionUp = self.add_check_box(
             'VersionUp', label='Version up')
         self.add_notes_elem()
 
@@ -289,8 +418,8 @@ class CExportHandlerUI(qt.CUiContainer):
         """Add notes element to the ui."""
         _work = pipe.cur_work()
         _notes = _work.notes if _work else ''
-        self.Notes = self.add_lineedit_elem(
-            name='Notes', val=_notes, disable_save_settings=True)
+        self.Notes = self.add_line_edit(
+            name='Notes', val=_notes, save_policy=qt.SavePolicy.NO_SAVE)
         self.notes_elem = self.Notes
 
     def add_range_elems(self):
@@ -301,8 +430,8 @@ class CExportHandlerUI(qt.CUiContainer):
         _start, _end = dcc.t_range()
         _width = 40
 
-        self.add_combobox_elem(
-            'Range', items=['From timeline', 'Manual'])
+        self.add_combo_box(
+            'Range', items=['From timeline', 'Manual', 'Current frame'])
         self.Range.currentIndexChanged.connect(self._callback__Range)
 
         self.RangeManStart = QtWidgets.QSpinBox()
@@ -313,13 +442,10 @@ class CExportHandlerUI(qt.CUiContainer):
         self.RangeManStart.setFixedWidth(_width)
         self.RangeManStart.setAlignment(Qt.AlignCenter)
         self.RangeManStart.save_policy = qt.SavePolicy.NO_SAVE
-        self.RangeLayout.addWidget(self.RangeManStart)
+        self.RangeLyt.addWidget(self.RangeManStart)
 
-        self.RangeManLabel = QtWidgets.QLabel('to')
-        self.RangeManLabel.setObjectName('RangeManLabel')
-        self.RangeManLabel.setFixedWidth(21)
-        self.RangeManLabel.setAlignment(Qt.AlignCenter)
-        self.RangeLayout.addWidget(self.RangeManLabel)
+        _label = self.add_label('RangeLabel')
+        self.RangeLyt.addWidget(_label)
 
         self.RangeManEnd = QtWidgets.QSpinBox()
         self.RangeManEnd.setObjectName('RangeManEnd')
@@ -329,38 +455,72 @@ class CExportHandlerUI(qt.CUiContainer):
         self.RangeManEnd.setFixedWidth(_width)
         self.RangeManEnd.setAlignment(Qt.AlignCenter)
         self.RangeManEnd.save_policy = qt.SavePolicy.NO_SAVE
-        self.RangeLayout.addWidget(self.RangeManEnd)
+        self.RangeLyt.addWidget(self.RangeManEnd)
 
-        self.RangeManReset = QtWidgets.QPushButton()
-        self.RangeManReset.setObjectName('RangeManReset')
-        self.RangeManReset.setFixedWidth(23)
-        self.RangeManReset.setIcon(qt.obt_icon(icons.RESET))
-        self.RangeManReset.clicked.connect(self._callback__RangeManReset)
-        self.RangeLayout.addWidget(self.RangeManReset)
-
-        self._manual_range_elems = [
-            self.RangeManStart,
-            self.RangeManLabel,
-            self.RangeManEnd,
-            self.RangeManReset,
-        ]
+        _btn = self.add_icon_button(
+            'RangeRefresh', icons.REFRESH,
+            callback=self._callback__RangeRefresh)
+        self.RangeLyt.addWidget(_btn)
 
         self._callback__Range()
 
+    def to_kwargs(self):
+        """Obtain execute kwargs from elements in this interface.
+
+        Returns:
+            (dict): kwargs
+        """
+        _LOGGER.info('TO KWARGS %s', self)
+        _kwargs = {}
+        for _name, _elem in self._elems.items():
+            _LOGGER.info(' - ELEM %s', _elem)
+            _name = to_snake(_name)
+            _val = _elem.get_val()
+            if _name == 'range':
+                _name = 'range_'
+                _val = self.handler.to_range()
+            elif _name == 'format':
+                _name = 'format_'
+            elif isinstance(_elem, qt.CListWidget):
+                _val = _elem.selected_datas()
+            _kwargs[_name] = _val
+        return _kwargs
+
     def _callback__Range(self):
+        _mode = self.Range.currentText()
+
+        for _elem in [self.RangeManStart, self.RangeManEnd]:
+            _elem.setVisible(_mode == 'Manual')
+
+        # Apply alignment
+        if _mode == 'Manual':
+            self.RangeLabel.setFixedWidth(21)
+            _align = Qt.AlignHCenter
+        else:
+            self.RangeLabel.setFixedWidth(100)
+            _align = Qt.AlignRight
+        self.RangeLabel.setAlignment(_align | Qt.AlignVCenter)
+
+        self._callback__RangeRefresh()
+
+    def _callback__RangeRefresh(self):
+        _LOGGER.debug('REFRESH RANGE %s', self)
 
         _mode = self.Range.currentText()
-        for _elem in self._manual_range_elems:
-            _elem.setVisible(_mode == 'Manual')
-        _LOGGER.debug('CHANGE RANGE %s %s', _mode, self.handler.to_range())
-        self._callback__RangeManReset()
-
-    def _callback__RangeManReset(self):
-
         _start, _end = dcc.t_range(int)
-        _LOGGER.debug('RESET RANGE %d %d', _start, _end)
-        self.RangeManStart.setValue(_start)
-        self.RangeManEnd.setValue(_end)
+        _space = ' ' * 3
+
+        if _mode == 'Manual':
+            self.RangeLabel.setText('to')
+            self.RangeManStart.setValue(_start)
+            self.RangeManEnd.setValue(_end)
+        elif _mode == 'Current frame':
+            _frame = dcc.t_frame(int)
+            self.RangeLabel.setText(f'{_frame}{_space}')
+        elif _mode == 'From timeline':
+            self.RangeLabel.setText(f'{_start:d} - {_end:d}{_space}')
+        else:
+            raise ValueError(_mode)
 
 
 def _to_settings_key(handler, name):

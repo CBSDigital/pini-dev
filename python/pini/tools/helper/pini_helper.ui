@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>470</width>
-    <height>850</height>
+    <width>468</width>
+    <height>844</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -506,7 +506,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>2</number>
+          <number>5</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -690,7 +690,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="ECacheTab">
+         <widget class="QWidget" name="ECacheLegacyTab">
           <attribute name="title">
            <string>Cache</string>
           </attribute>
@@ -2000,7 +2000,7 @@
                   <number>4</number>
                  </property>
                  <item row="0" column="1">
-                  <widget class="QLineEdit" name="ESubmitFilter"/>
+                  <widget class="CLineEdit" name="ESubmitFilter"/>
                  </item>
                  <item row="0" column="2">
                   <widget class="QPushButton" name="ESubmitFilterClear">
@@ -3082,7 +3082,7 @@ Range: 1-10</string>
         <number>2</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="JobPane" stretch="0,1">
+        <layout class="QHBoxLayout" name="JobPane" stretch="0,1,0">
          <property name="spacing">
           <number>0</number>
          </property>
@@ -3115,6 +3115,35 @@ Range: 1-10</string>
            </property>
            <property name="editable">
             <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="JobCreate">
+           <property name="maximumSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Create new job</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3086.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
            </property>
           </widget>
          </item>

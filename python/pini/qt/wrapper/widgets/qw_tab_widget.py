@@ -1,6 +1,7 @@
 """Tools for adding functionality to QTabWidget."""
 
 from ...q_mgr import QtWidgets
+from ... import q_utils
 from . import qw_base_widget
 
 
@@ -50,6 +51,7 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
         """
         return self.current_tab_text()
 
+    @q_utils.apply_emit
     def select_tab(self, match, emit=None):
         """Select tab by name.
 
@@ -63,7 +65,7 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
             _widget = self.widget(_idx)
             _name = _widget.objectName()
 
-            if match not in (_text, _name, _widget):
+            if match not in (_text, _name, _widget, _idx):
                 continue
 
             _signals = self.signalsBlocked()
@@ -96,10 +98,12 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
                 return
         raise RuntimeError(name)
 
-    def set_val(self, val):
+    @q_utils.apply_emit
+    def set_val(self, val, emit=None):
         """Select the given tab.
 
         Args:
             val (str): name of tab to select
+            emit (bool): emit signal on change
         """
         self.select_tab(val)

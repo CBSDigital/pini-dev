@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-public-methods
 
+import ast
 import inspect
 import logging
 
@@ -332,6 +333,7 @@ class MayaDCC(BaseDCC):
         Returns:
             (any): data which has been stored in the scene
         """
+        _LOGGER.debug('GET SCENE DATA %s', key)
         _data = single(cmds.fileInfo(key, query=True), catch=True)
         if not _data:
             return None
@@ -343,6 +345,8 @@ class MayaDCC(BaseDCC):
             _data = float(_data)
         elif _type == 'int':
             _data = int(_data)
+        elif _type == 'list':
+            _data = ast.literal_eval(_data)
         elif _type in ['str', 'unicode']:
             pass
         else:
@@ -465,11 +469,14 @@ class MayaDCC(BaseDCC):
             key (str): name of data to store
             val (any): value of data to store
         """
+        _LOGGER.debug('SET SCENE DATA key=%s val=%s', key, val)
         _type = type(val).__name__
+        _val = val
+        if isinstance(val, list):
+            _val = str(_val)
+        cmds.fileInfo(key, _val)
         _type_key = '_TYPE_' + key
-        _LOGGER.debug('SET SCENE DATA %s %s (%s/%s)',
-                      key, val, _type, _type_key)
-        cmds.fileInfo(key, val)
+        _LOGGER.debug(' - SET TYPE KEY key=%s val=%s', _type, _type_key)
         cmds.fileInfo(_type_key, _type)
 
     def t_frame(self, class_=float):

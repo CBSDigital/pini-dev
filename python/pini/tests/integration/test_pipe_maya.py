@@ -8,8 +8,6 @@ class TestCache(unittest.TestCase):
 
     def test_publish_cache(self):
 
-        testing.check_test_asset()
-
         _ety = pipe.CACHE.obt(testing.TEST_ASSET)
 
         print(_ety.cache_fmt)
@@ -22,8 +20,9 @@ class TestCache(unittest.TestCase):
         assert _job.find_publishes()
         assert _job.find_publishes(task='model', ver_n='latest', versionless=False)
 
+        _work = _ety.to_work(task='model')
         _pub_g = _ety.find_publish(
-            task='model', tag=pipe.DEFAULT_TAG, ver_n='latest', versionless=False,
+            task='model', tag=_work.tag, ver_n='latest', versionless=False,
             type_='publish')
         _pub_c = pipe.CACHE.obt(_pub_g)
         assert_eq(_pub_g.path, _pub_c.path)

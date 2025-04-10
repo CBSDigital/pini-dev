@@ -132,6 +132,7 @@ class PHWorkTab:
 
         _LOGGER.debug(' - SELECT TASK %s', _select)
         self.ui.WTasks.set_items(_items, select=_select)
+        self.ui.WTaskText.setEnabled(bool(self.entity))
 
     def _to_default_tag(self):
         """Obtain default tag for the current job.
@@ -172,6 +173,7 @@ class PHWorkTab:
         # Update widget
         _LOGGER.debug(' - items=%s', _items)
         self.ui.WTags.set_items(_items, select=_select, emit=True)
+        self.ui.WTagText.setEnabled(bool(self.entity))
 
     def _build_tags_list(self):
         """Build list of tags to display.

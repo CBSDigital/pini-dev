@@ -5,10 +5,10 @@ import logging
 from pini import icons, qt, pipe, dcc
 from pini.pipe import cache
 from pini.qt import QtGui
-from pini.utils import str_to_seed, cache_result, Seq, Video, File, to_str
+from pini.utils import (
+    str_to_seed, cache_result, Seq, Video, File, to_str, find_callback)
 
 _LOGGER = logging.getLogger(__name__)
-_WORK_ICON_FUNC = None
 
 CURRENT_ICON = icons.find('Star')
 UPDATE_ICON = icons.find('Gear')
@@ -72,50 +72,7 @@ _8_BALL_ICON = icons.find('Pool 8 Ball')
 _NO_CACHE_OUTPUT_ICON = icons.find('White Circle')
 _NO_CACHE_TYPE_ICON = icons.find('Cross Mark')
 
-_NAME_MAP = {
-    'apple': 'Green Apple',
-    'bee': 'Honeybee',
-    'bottle': 'Bottle with Popping Cork',
-    'chesspieces': 'Chess Pawn',
-    'christmaspresents': 'Gift',
-    'clouds': 'Cloud',
-    'coins': 'Money Bag',
-    'discoball': 'Crystal Ball',
-    'eggs': 'Egg',
-    'ferns': 'Potted Plant',
-    'ground': 'Desert',
-    'hand': 'Waving Hand: Medium Skin Tone',
-    'lamppost': 'Light Bulb',
-    'lightrig': 'Light Bulb',
-    'kitchencounter': 'Fork and Knife with Plate',
-    'moon': 'Last Quarter Moon Face',
-    'musicalnotes': 'Musical Note',
-    'musicnotes': 'Musical Note',
-    'palms': "Palm Tree",
-    'personm': "Men's Room",
-    'personf': "Women's Room",
-    'pumpkin': 'Jack-O-Lantern',
-    'rocketship': 'Rocket',
-    'screen': 'Television',
-    'snowflakes': 'Snowflake',
-    'snowflakesice': 'Cloud with Snow',
-    'spacesky': 'Milky Way',
-    'spacestation': 'Satellite',
-    'speakers': 'Loudspeaker',
-    'whiteclouds': 'Cloud',
-    'xmastrees': 'Christmas Tree',
-}
 _ICON_CACHE = {}
-
-
-def install_work_icon_func(func):
-    """Install function to obtain an icon for a work file.
-
-    Args:
-        func (fn): work to icon function to apply
-    """
-    global _WORK_ICON_FUNC
-    _WORK_ICON_FUNC = func
 
 
 def is_active():
@@ -229,39 +186,13 @@ def _output_to_entity_icon(output):
     Returns:
         (str): path to icon
     """
-
-    # Try to match with mapped icon
-    _ety_name = output.asset or output.shot
-    while _ety_name and _ety_name[-1].isdigit():
-        _ety_name = _ety_name[:-1]
-    _ety_name = _ety_name.lower()
-    _name = _NAME_MAP.get(_ety_name, _ety_name)
-    _LOGGER.debug(' - ETY NAME %s %s', _ety_name, _name)
-
-    # Find icon
-    _icon = None
-    if _name in _ICON_CACHE:
-        _icon = _ICON_CACHE[_name]
-        _LOGGER.debug(' - USE NAME CACHE %s', _icon)
-    elif _name:
-        _icon = icons.find(_name, catch=True)
-        _LOGGER.debug(' - FIND ICON BY NAME %s %s', _name, _icon)
-    if not _icon:
-        if output.asset:
-            _uid = f'{output.asset_type}.{output.asset}'
-        elif output.shot:
-            _uid = output.stream
-        else:
-            raise ValueError(output)
-        _LOGGER.debug(' - USING RAND UID %s', _uid)
-        _rand = str_to_seed(_uid)
-        _icon = _rand.choice(_CACHE_ICONS)
-
-    # Cache result
-    if _name:
-        _ICON_CACHE[_name] = _icon
-
-    return _icon
+    if isinstance(output, cache.CCPOutputBase):
+        _ety = output.entity
+    elif isinstance(output, cache.CCPOutputGhost):
+        _ety = pipe.CACHE.obt_entity(output.path)
+    else:
+        raise ValueError(output)
+    return _ety.to_icon()
 
 
 def _add_icon_overlay(icon, overlay, mode='BL'):
@@ -505,6 +436,7 @@ def work_to_icon(work):
     Returns:
         (str): path to icon
     """
-    if _WORK_ICON_FUNC:
-        return _WORK_ICON_FUNC(work)
+    _callback = find_callback('HelperWorkIcon')
+    if _callback:
+        return _callback(work)
     return _basic_work_icon(work)

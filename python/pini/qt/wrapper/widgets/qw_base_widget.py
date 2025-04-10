@@ -15,6 +15,7 @@ class CBaseWidget:
 
     disable_save_settings = False
     save_policy = q_utils.SavePolicy.DEFAULT
+
     _settings_key = None
 
     @property
@@ -73,7 +74,9 @@ class CBaseWidget:
 
     def load_setting(self):
         """Apply value from settings."""
+        _LOGGER.debug('LOAD SETTING %s', self)
         _val = self.read_setting()
+        _LOGGER.debug(' - VAL %s', _val)
         if _val is not None:
             self.set_val(_val)
 

@@ -22,8 +22,7 @@ class CBasicPublish(eh_base.CExportHandler):
     LABEL = 'Makes a copy of this scene in the publish directory'
     ACTION = 'BasicPublish'
 
-    def build_metadata(
-            self, work=None, sanity_check_=True, task=None, force=False):
+    def build_metadata(self, **kwargs):
         """Obtain metadata for this publish.
 
         Args:
@@ -35,8 +34,7 @@ class CBasicPublish(eh_base.CExportHandler):
         Returns:
             (dict): metadata
         """
-        _data = super().build_metadata(
-            work=work, sanity_check_=sanity_check_, task=task, force=force)
+        _data = super().build_metadata(**kwargs)
         _data['publish_type'] = type(self).__name__
         return _data
 

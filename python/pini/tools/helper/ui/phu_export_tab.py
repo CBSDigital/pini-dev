@@ -125,7 +125,7 @@ class PHExportTab:
         self.ui.ECacheRefs.set_items([], emit=False)
 
     def _redraw__ECacheDevTab(self):
-        _LOGGER.info('REDRAW ECacheDevTab')
+        _LOGGER.debug('REDRAW ECacheDevTab')
         self.ui.ECacheHandler.redraw()
 
     def _redraw__ECacheHandler(self):
@@ -290,7 +290,7 @@ class PHExportTab:
             self.ui.EPublish.setEnabled(bool(self.entity))
         elif _tab == self.ui.EBlastTab:
             self.ui.EBlastHandler.redraw()
-        elif _tab == self.ui.ECacheTab:
+        elif _tab == self.ui.ECacheLegacyTab:
             self.ui.ECacheRefs.redraw()
             self._callback__ECacheRangeReset()
         elif _tab == self.ui.ECacheDevTab:

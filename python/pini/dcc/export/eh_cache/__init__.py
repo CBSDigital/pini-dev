@@ -2,7 +2,7 @@
 
 from pini import dcc
 
-from .ch_cache import cache
+from .ch_cache import abc_cache
 
 if dcc.NAME == 'maya':
 

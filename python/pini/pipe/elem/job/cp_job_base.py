@@ -16,7 +16,7 @@ from ... import cp_template, cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
-_DEFAULT_CFG_NAME = "Quirinus"
+_DEFAULT_CFG_NAME = "Rhea"
 _DEFAULT_CFG = {
     'defaults': {},
     'name': None,
@@ -102,7 +102,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         """
         from pini import qt
         qt.ok_cancel(
-            f'Create new job using <i>{cfg_name}</i> structure?'
+            f'Create new job "{self.name}" using "<i>{cfg_name}</i>" structure?'
             f'<br><br>{self.path}',
             icon=icons.find('Rosette'), title='Create job')
         self.mkdir()
@@ -372,7 +372,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         if not force:
             from pini import qt
             qt.ok_cancel(
-                f'Create new asset type {asset_type} in {self.name}?'
+                f'Create new asset type "{asset_type}" in job "{self.name}"?'
                 f'\n\n{_type_dir.path}',
                 icon=icons.BUILD, title='Create asset type',
                 parent=parent)

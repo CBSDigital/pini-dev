@@ -687,7 +687,7 @@ callbacks=cb_,
 dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_
 
 # Argument names that match this expression will be ignored.
-ignored-argument-names=_.*|^ignored_|^unused_|force|xargs|event
+ignored-argument-names=_.*|^ignored_|^unused_|force|emit|xargs|event
 
 # Tells whether we should check for unused import in __init__ files.
 init-import=no

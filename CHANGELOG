@@ -1,3 +1,44 @@
+## [6.65.0] - Thu 2025-04-10 13:51
+### Summary
+ - Pini Helper:
+    - disable save export/submit filter (nwray),
+ - Sanity Check:
+    - maya model/rig publish added check for unnecessary camera,
+### Updated
+ - pini.utils.system moved to separate submodule,
+ - pini.utils.DESKTOP_PATH added win11 handling,
+ - pini.utils.install_callback added HelperWorkIcon to approved list,
+ - pini.dcc set_scene_data/get_scene_data maya/hou added list handling,
+ - pini.dcc set_scene_data/get_scene_data hou added bool handling,
+ - pini.dcc.export.CExportHandler exec/exec_from_ui added,
+ - pini.dcc.export.CExportHandlerUI renamed add elem methods to remove _elem suffix,
+ - pini.dcc.export renamed cache -> abc_cache + working cache,
+ - pini.dcc.export added model_publish/lookdev_publish/local_render,
+ - pini.dcc.export.CExportHandlerUI added add_hbox_layout/add_label/add_icon_button/add_list_widget/to_kwargs,
+ - pini.dcc.export.CExportHandlerUI range added current frame opt,
+ - pini.pipe updated default cfg Quirinus -> Rhea,
+ - pini.pipe.CACHE.CCPEntity.to_icon added,
+ - pini.qt added apply_emit decorator,
+ - pini.qt.CListWidget.get_val return list if not single selection,
+ - pini.qt.CListWidget.select bugfix multi select,
+ - pini.qt.CTabWidget.set_val added emit,
+ - pini.qt.CUiDialog.save_settings added force arg,
+ - pini.tools.release.run_tests apply check test paths,
+ - pini.tools.sanity_check.CheckForCameras added,
+ - pini.tools.helper added handling for no job,
+ - pini.tools.helper added create job opts in admin mode,
+ - pini.tools.helper renamed ECacheTab -> ECacheLegacyTab,
+ - pini.tools.helper apply no save to ESubmitFilter,
+ - pini.tools.helper bugfix hide cache dev tab,
+ - pini.tools.helper.install_work_icon_func removed,
+ - pini.testing added check_test_paths/find_test_vdb,
+ - pini.testing added handling for no test job,
+ - maya_pini.ref.FileRef.__eq__ bugfix bad non-bool result,
+ - maya_pini.m_pipe.CPCacheable renamed asset -> output,
+ - maya_pini.hik.find_hik added CPipeRef handling + added catch,
+ - maya_pini.hik.find_hiks added task filter,
+
+
 ## [6.64.0] - Fri 2025-04-04 12:23
 ### Summary
  - Sanity Check:

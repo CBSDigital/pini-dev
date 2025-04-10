@@ -112,15 +112,12 @@ class TestHelper(unittest.TestCase):
     def test_output_referencing(self):
 
         _ety = pipe.CACHE.obt(testing.TEST_SHOT)
-        _abc = _ety.find_outputs(
-            extn='abc', task='anim', tag=pipe.DEFAULT_TAG, ver_n='latest',
-            content_type='PipeAbc', output_name='test01')[0]
+        _abc = testing.find_test_abc()
         _LOGGER.info(' - ABC %s', _abc)
-        _cam = _ety.find_outputs(
-            extn='abc', task='anim', tag=pipe.DEFAULT_TAG, ver_n='latest',
-            content_type='CameraAbc')[0]
+        _cam = testing.find_test_abc(camera=True)
         _LOGGER.info(' - CAM %s', _cam)
-        _vdb = _ety.find_outputs(extn='vdb', task='fx', ver_n='latest')[0]
+        assert _cam.content_type == 'CameraAbc'
+        _vdb = testing.find_test_vdb()
         _LOGGER.info(' - VDB %s', _vdb)
 
         dcc.new_scene(force=True)
@@ -164,7 +161,7 @@ class TestHelper(unittest.TestCase):
         # Test camera import
         print()
         _LOGGER.info('TEST CAM IMPORT %s', _cam)
-        assert _cam.content_type == 'CameraAbc'
+        assert_eq(_cam.content_type, 'CameraAbc')
         _helper.jump_to(_cam)
         assert _helper.ui.SOutputs.selected_data() == _cam
         _helper.ui.SAdd.click()

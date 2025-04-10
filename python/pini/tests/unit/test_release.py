@@ -1,4 +1,3 @@
-import os
 import logging
 import unittest
 
@@ -908,9 +907,10 @@ class TestRelease(unittest.TestCase):
                 raise RuntimeError('Results do not match')
 
     def test_repo(self):
-        _dev = os.environ['DEV']
-        _path = f'{_dev}/pini-dev'
-        _repo = release.PRRepo(_path)
+        # _dev = os.environ['DEV']
+        # _path = f'{_dev}/pini-dev'
+        # _repo = release.PRRepo(_path)
+        _repo = release.PINI
         print(_repo)
         print(_repo.read_version())
         print(_repo.version)

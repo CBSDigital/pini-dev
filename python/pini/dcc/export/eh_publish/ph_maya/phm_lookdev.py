@@ -43,7 +43,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         """
         super().build_ui(add_footer=False)
 
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
         self._build_pxy_opts()
         if add_footer:
             self.ui.add_footer_elems()

@@ -62,6 +62,7 @@ class CExportHandler:
         This should be implemeneted in the child class.
         """
         _LOGGER.debug('BUILD UI')
+        self.ui.layout.addStretch()
 
     def build_metadata(
             self, work=None, sanity_check_=True, task=None, notes=None,
@@ -184,11 +185,29 @@ class CExportHandler:
             return dcc.t_range(int)
         if _mode == 'Manual':
             return self.ui.RangeManStart.value(), self.ui.RangeManEnd.value()
+        if _mode == 'Current frame':
+            return [dcc.t_frame(int), dcc.t_frame(int)]
         raise ValueError(_mode)
+
+    def exec(self, notes=None, version_up=True, snapshot=True, force=False):
+        """Execute this export.
+
+        Args:
+            notes (str): cache notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            force (bool): replace existing outputs without confirmation
+        """
+        raise NotImplementedError
+
+    def exec_from_ui(self):
+        """Execuate this export using settings from ui."""
+        _kwargs = self.ui.to_kwargs()
+        self.exec(**_kwargs)
 
     def post_export(
             self, work=None, outs=(), version_up=None, update_cache=True,
-            notes=None):
+            notes=None, snapshot=True):
         """Execute post export code.
 
         This manages updating the shot publish cache and cache and can
@@ -200,12 +219,15 @@ class CExportHandler:
             version_up (bool): whether to version up on publish
             update_cache (bool): update work file cache
             notes (str): export notes
+            snapshot (bool): save snapshot to work thumbnail
         """
         _work = work or self.work
         _LOGGER.info('POST EXPORT %s', _work.path)
         _LOGGER.info(' - OUTS %d %s', len(outs), outs)
 
-        if self.ui and self.ui.snapshot_elem:
+        if (
+                (snapshot is not None and snapshot) or
+                (self.ui and self.ui.snapshot_elem)):
             self._apply_snapshot(work=_work)
 
         if update_cache:

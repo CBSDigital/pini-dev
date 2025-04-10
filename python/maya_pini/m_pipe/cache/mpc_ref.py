@@ -26,9 +26,9 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         """
         super().__init__(ref_node)
         self.node = pom.CReference(ref_node)
-
-        self.asset = pipe.CPOutputFile(self.path)
-        if self.asset.type_ != 'publish':
+        _out = pipe.CPOutputFile(self.path)
+        self.output = pipe.CACHE.obt(_out)
+        if self.output.type_ != 'publish':
             raise ValueError
         if not self.to_geo():
             raise ValueError('No export geo')
@@ -79,7 +79,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         _tmpl = _work.find_template('cache', has_key={'output_name': True})
         _LOGGER.debug(' - TMPL %s', _tmpl)
         _abc = _work.to_output(
-            _tmpl, extn=extn, output_type=_pub.asset_type or 'geo',
+            _tmpl, extn=extn, output_type=_pub.output_type or 'geo',
             output_name=self.output_name, task=_work.task)
         return _abc
 
@@ -108,4 +108,4 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
             (str): path to icon
         """
         from pini.tools import helper
-        return helper.output_to_icon(self.asset)
+        return helper.output_to_icon(self.output)
