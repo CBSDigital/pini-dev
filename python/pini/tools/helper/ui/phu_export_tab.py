@@ -124,7 +124,7 @@ class PHExportTab:
     def _redraw__ECacheRefs(self):
         self.ui.ECacheRefs.set_items([], emit=False)
 
-    def _redraw__ECacheDevTab(self):
+    def _redraw__ECacheTab(self):
         _LOGGER.debug('REDRAW ECacheDevTab')
         self.ui.ECacheHandler.redraw()
 

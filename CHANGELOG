@@ -1,3 +1,12 @@
+## [6.66.1] - Fri 2025-04-11 07:43
+### Summary
+ - Pini Helper:
+    - bugfix error on launch (mkim),
+### Updated
+ - pini.tools.helper bugfix hide cache tab outside dev mode,
+ - pini.tools.helper renamed ECacheDevTab -> ECacheTab,
+
+
 ## [6.66.0] - Fri 2025-04-11 06:54
 ### Summary
  - Pini Helper:

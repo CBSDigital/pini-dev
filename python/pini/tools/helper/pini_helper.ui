@@ -1401,7 +1401,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="ECacheDevTab">
+         <widget class="QWidget" name="ECacheTab">
           <attribute name="title">
            <string>CacheDev</string>
           </attribute>
