@@ -20,4 +20,4 @@ def abc_cache(cacheables, force=False):
     _LOGGER.info('ABC CACHE')
     _exporter = dcc.find_export_handler('AbcCache')
     _LOGGER.info('- EXPORTER %s', _exporter)
-    return _exporter.cache(cacheables, force=force)
+    return _exporter.exec(cacheables, force=force)

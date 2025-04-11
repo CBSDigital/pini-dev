@@ -10,6 +10,22 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
 
     __repr__ = qw_base_widget.CBaseWidget.__repr__
 
+    def find_tab_idx(self, tab):
+        """Find index of the given tab.
+
+        Args:
+            tab (int|str|QWidget): tab to match
+
+        Returns:
+            (int): index
+        """
+        for _idx in range(self.count()):
+            _tab = self.widget(_idx)
+            _text = self.tabText(_idx)
+            if tab in [_tab, _text, _idx]:
+                return _idx
+        raise ValueError(f'Failed to find tab {tab}')
+
     def find_tabs(self, enabled=None):
         """Find tab names.
 
@@ -97,6 +113,16 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
                 self.blockSignals(_signals)
                 return
         raise RuntimeError(name)
+
+    def set_tab_visible(self, tab, visible):
+        """Set visiblity of the given tab.
+
+        Args:
+            tab (int|str|QWidget): tab to update
+            visible (bool): visibility to apply
+        """
+        _idx = self.find_tab_idx(tab)
+        self.setTabVisible(_idx, visible)
 
     @q_utils.apply_emit
     def set_val(self, val, emit=None):

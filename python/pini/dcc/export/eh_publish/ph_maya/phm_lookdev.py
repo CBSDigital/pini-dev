@@ -62,24 +62,24 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             return
 
         if _ass:
-            self.ui.add_checkbox_elem(
+            self.ui.add_check_box(
                 val=True, name='ExportAss',
                 label="Export ass.gz of geo")
         if _vrm:
-            self.ui.add_checkbox_elem(
+            self.ui.add_check_box(
                 val=True, name='ExportVrmesh',
                 label="Export shaded vrmesh scene of geo")
         if _rs:
-            self.ui.add_checkbox_elem(
+            self.ui.add_check_box(
                 val=True, name='ExportRedshiftProxy',
                 label="Export redshift proxy of geo")
 
         if _vrm or _rs:
-            self.ui.add_checkbox_elem(
+            self.ui.add_check_box(
                 val=False, name='ProxyAnim',
                 label='Include animation in proxies')
 
-        self.ui.add_separator_elem()
+        self.ui.add_separator()
 
     def build_metadata(
             self, work=None, sanity_check_=True, task='lookdev', force=False):

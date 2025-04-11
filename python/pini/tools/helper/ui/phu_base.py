@@ -141,7 +141,8 @@ class PHUiBase(
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
 
         if not testing.dev_mode():
-            self.ui.EExportPane.setTabVisible(3, False)
+            self.ui.EExportPane.set_tab_visible(
+                self.ui.ECacheTab, False)
             self.ui.EExportPane.set_val(0, emit=False)
 
     def _start_timer(self):

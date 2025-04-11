@@ -365,6 +365,7 @@ class MayaDCC(BaseDCC):
                 export.CMayaLocalRender(),
                 export.CMayaPlayblast(),
                 export.CMayaAbcCache(),
+                export.CMayaFbxCache(),
             ]
             if farm.IS_AVAILABLE:
                 self._export_handlers.append(export.CMayaFarmRender())
