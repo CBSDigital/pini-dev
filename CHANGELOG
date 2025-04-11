@@ -1,3 +1,11 @@
+## [6.66.2] - Fri 2025-04-11 09:53
+### Summary
+ - Pini Helper:
+    - bugfix error on update export tab (lcayo),
+### Updated
+ - pini.tools.helper bugfix error on update export tab,
+
+
 ## [6.66.1] - Fri 2025-04-11 07:43
 ### Summary
  - Pini Helper:
