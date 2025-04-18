@@ -134,8 +134,8 @@ def _find_available_plugins():
     return sorted(_plugins)
 
 
-class RemoveBadPlugins(core.SCMayaCheck):
-    """Unload unwanted plugins."""
+class CheckPlugins(core.SCMayaCheck):
+    """Check plugins status."""
 
     def run(self):
         """Run this check."""
@@ -161,10 +161,8 @@ class RemoveBadPlugins(core.SCMayaCheck):
         self.write_log(' - checking unknown plugins')
         _unknown = cmds.unknownPlugin(query=True, list=True) or []
         for _plugin in _unknown:
-
             if _plugin in _whitelist:
                 continue
-
             if _plugin in _find_available_plugins():
                 self.write_log(
                     ' - ignoring available unknown plugin %s', _plugin)
@@ -173,10 +171,22 @@ class RemoveBadPlugins(core.SCMayaCheck):
                 self.write_log(
                     ' - ignoring benign unknown plugin %s', _plugin)
                 continue
-
             _msg = 'Scene is requesting missing plugin ' + _plugin
             _fix = wrap_fn(cmds.unknownPlugin, _plugin, remove=True)
             self.add_fail(_msg, fix=_fix)
+
+        # Disable slow autoload
+        for _plugin in [
+                'MASH', 'bifrostGraph', 'bifrostshellnode', 'bifrostvisplugin']:
+            self.write_log('Checking autoload ' + _plugin)
+            if _plugin not in _plugins:
+                self.write_log(' - not available')
+                continue
+            if cmds.pluginInfo(_plugin, query=True, autoload=True):
+                self.add_fail(
+                    f'Plugin "{_plugin}" is set to autoload - this can slow down '
+                    f'maya launch time', fix=wrap_fn(
+                        cmds.pluginInfo, _plugin, edit=True, autoload=False))
 
     def fix_bad_plugin(self, plugin, force=False):
         """Unload the given plugin.

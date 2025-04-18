@@ -227,11 +227,11 @@ class CheckFile(MetadataFile):
         Returns:
             (str): updated code
         """
-        _LOGGER.info('BATCH APPLY PYLINT UNUSED IMPORTS')
+        _LOGGER.debug('BATCH APPLY PYLINT UNUSED IMPORTS')
         _issues = self.find_pylint_issues(code='W0611')
         _cur = self.read()
         if len(_issues) < 2:
-            _LOGGER.info(' - NOT ENOUGH RESULTS')
+            _LOGGER.debug(' - NOT ENOUGH RESULTS')
             return _cur
         _fixed = r_issue.fix_unused_imports(file_=self, issues=_issues)
         if write and _fixed != _cur:

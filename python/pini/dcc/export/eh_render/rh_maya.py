@@ -228,8 +228,8 @@ class CMayaFarmRender(CMayaRenderHandler):
         _btn.setIconSize(qt.to_size(20))
         _btn.setIcon(qt.to_icon(icons.SELECT))
         _btn.setFlat(True)
-        _btn.clicked.connect(self._callback__LimitGroupsSelect)
-        self.ui.LimitGroupsSelect = _btn
+        _btn.clicked.connect(self._callback__LimitGrpsSelect)
+        self.ui.LimitGrpsSelect = _btn
 
         self.ui.add_line_edit(
             name='LimitGrps', add_elems=[_btn], label='Limit groups')
@@ -278,16 +278,16 @@ class CMayaFarmRender(CMayaRenderHandler):
         _signal = qt.widget_to_signal(self.ui.Layers)
         _signal.connect(self._callback__Layers)
 
-    def _callback__LimitGroupsSelect(self):
+    def _callback__LimitGrpsSelect(self):
         _LOGGER.info('CALLBACK LIMIT GROUPS SELECT')
-        _cur_grps = self.ui.LimitGroups.text().split(',')
+        _cur_grps = self.ui.LimitGrps.text().split(',')
         _msg = (
             'Select limit groups for deadline.\n\n'
             'Hold down ctrl to select more than one group.')
         _grps = qt.multi_select(
             items=farm.find_limit_groups(),
             select=_cur_grps, multi=True, msg=_msg, title='Select groups')
-        self.ui.LimitGroups.setText(','.join(_grps))
+        self.ui.LimitGrps.setText(','.join(_grps))
 
     def _callback__Layers(self):
         _sel_lyrs = self.ui.Layers.selected_datas()

@@ -1,3 +1,15 @@
+## [7.1.0] - Fri 2025-04-18 11:26
+### Summary
+ - Pini Helper:
+    - deadline render bugfix select limit grps dialog not working (cstewart),
+ - Sanity Check:
+    - check plugins flag bifrost/mash autoload (eehemann),
+### Updated
+ - pini.dcc.export bugfix select limit grps dialog not working,
+ - pini.tools.sanity_check renamed RemoveBadPlugins -> CheckPlugins,
+ - pini.tools.sanity_check.CheckPlugins check for mash/bifrost autoload,
+
+
 ## [7.0.0] - Fri 2025-04-18 09:44
 ### Summary
  - Pini Helper:
