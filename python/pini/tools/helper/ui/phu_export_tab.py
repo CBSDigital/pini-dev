@@ -5,11 +5,10 @@
 import collections
 import logging
 
-from pini import qt, pipe, icons, dcc
+from pini import qt, pipe, dcc
 from pini.qt import QtWidgets
-from pini.tools import usage, error
-from pini.utils import (
-    single, str_to_ints, passes_filter, wrap_fn, ints_to_str)
+from pini.tools import error
+from pini.utils import single, passes_filter
 
 from . import phu_output_item
 
@@ -25,17 +24,21 @@ class PHExportTab:
         """Inititate this tab's interface - triggered by selecting this tab."""
         _LOGGER.debug('INIT UI')
 
-        self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
-        self.ui.ERenderFrames.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
+        for _elem in [
+                self.ui.EExportPane,
+                self.ui.EPublishHandler,
+                self.ui.EBlastHandler,
+                self.ui.ECacheHandler,
+                self.ui.ERenderHandler,
+        ]:
+            _elem.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
 
         # Disable tabs if no handlers found
-        for _tab in ['Publish', 'Blast', 'Render']:
+        for _tab in ['Publish', 'Blast', 'Render', 'Cache']:
             _handlers = dcc.find_export_handlers(_tab)
             _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
             self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
             _LOGGER.debug(' - CHECKED TAB %s', _tab)
-        if dcc.NAME != 'maya':
-            self.ui.EExportPane.set_tab_enabled('Cache', False)
         self._init_submit_tab()
         _tabs = self.ui.EExportPane.find_tabs(enabled=True)
         _LOGGER.debug(' - TABS %s', _tabs)
@@ -93,13 +96,22 @@ class PHExportTab:
             _mode = QtWidgets.QAbstractItemView.SingleSelection
         self.ui.ESubmitOutputs.setSelectionMode(_mode)
 
+    def _redraw__EPublishTab(self):
+        self.ui.EPublishHandler.redraw()
+        self.ui.EPublishHandlerIcon.redraw()
+
     def _redraw__EPublishHandler(self):
 
         _handlers = dcc.find_export_handlers('Publish')
 
-        # Find selected publish handler
-        _select = dcc.find_export_handler(
-            'publish', filter_='basic', catch=True)
+        # Determine default publish handler to select
+        _select = None
+        _scene_data = dcc.get_scene_data('PiniQt.EPublishTab.EPublishHandler')
+        if _scene_data:
+            _select = _scene_data
+        if not _select:
+            _select = dcc.find_export_handler(
+                'publish', filter_='basic', catch=True)
         _work = pipe.CACHE.cur_work
         if _work:
             _task = pipe.map_task(_work.task, step=_work.step)
@@ -112,27 +124,46 @@ class PHExportTab:
         _LOGGER.debug(' - SELECT PUB HANDLER %s', _select)
         self.ui.EPublishHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers, select=_select)
+            data=_handlers, select=_select, emit=True)
+
+    def _redraw__EPublishHandlerIcon(self):
+        _exp = self.ui.EPublishHandler.selected_data()
+        if _exp:
+            self.ui.EPublishHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
+
+    def _redraw__EBlastTab(self):
+        self.ui.EBlastHandler.redraw()
+        self.ui.EBlastHandlerIcon.redraw()
 
     def _redraw__EBlastHandler(self):
-
         _handlers = dcc.find_export_handlers('Blast')
         self.ui.EBlastHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
             data=_handlers)
 
-    def _redraw__ECacheRefs(self):
-        self.ui.ECacheRefs.set_items([], emit=False)
+    def _redraw__EBlastHandlerIcon(self):
+        _exp = self.ui.EBlastHandler.selected_data()
+        if _exp:
+            self.ui.EBlastHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
 
     def _redraw__ECacheTab(self):
-        _LOGGER.debug('REDRAW ECacheTab')
         self.ui.ECacheHandler.redraw()
+        self.ui.ECacheHandlerIcon.redraw()
+
+    def _redraw__ECacheHandlerIcon(self):
+        _exp = self.ui.ECacheHandler.selected_data()
+        if _exp:
+            self.ui.ECacheHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
 
     def _redraw__ECacheHandler(self):
         _handlers = dcc.find_export_handlers('Cache')
         _labels = [_handler.NAME for _handler in _handlers]
         self.ui.ECacheHandler.set_items(
             data=_handlers, labels=_labels, emit=True)
+
+    def _redraw__ERenderTab(self):
+        self.ui.ERenderHandler.redraw()
+        self.ui.ERenderHandlerIcon.redraw()
 
     def _redraw__ERenderHandler(self):
         _handlers = sorted(dcc.find_export_handlers('Render'))
@@ -143,29 +174,10 @@ class PHExportTab:
             ' - BUILD RENDER HANDLERS %s',
             self.ui.ERenderHandler.selected_data())
 
-    def _redraw__ERender(self):
-        _handler = self.ui.ERenderHandler.selected_data()
-        _frames = self._get_render_frames()
-        _enabled = bool(_handler and _frames)
-        self.ui.ERender.setEnabled(_enabled)
-
-    def _redraw__ERenderFrames(self):
-        _opts = ['From timeline']
-        if dcc.NAME == 'maya':
-            _opts += ['From render globals', 'Current frame', 'Manual']
-        self.ui.ERenderFrames.set_items(_opts)
-
-    def _redraw__ERenderFramesLabel(self):
-        _frames = self._get_render_frames()
-        _mode = self.ui.ERenderFrames.currentText()
-        _text = '  '
-        if _mode != 'Manual':
-            _visible = True
-            _text = ' ' + ints_to_str(_frames)
-        else:
-            _visible = False
-        self.ui.ERenderFramesLabel.setVisible(_visible)
-        self.ui.ERenderFramesLabel.setText(_text)
+    def _redraw__ERenderHandlerIcon(self):
+        _exp = self.ui.ERenderHandler.selected_data()
+        if _exp:
+            self.ui.ERenderHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
 
     def _redraw__ESubmitTemplate(self):
         _LOGGER.debug('REDRAW ESubmitTemplate %s', self.entity)
@@ -286,20 +298,13 @@ class PHExportTab:
         _tab = self.ui.EExportPane.currentWidget()
         _LOGGER.debug('CALLBACK EExportPane %s', _tab)
         if _tab == self.ui.EPublishTab:
-            self.ui.EPublishHandler.redraw()
-            self.ui.EPublish.setEnabled(bool(self.entity))
+            self.ui.EPublishTab.redraw()
         elif _tab == self.ui.EBlastTab:
-            self.ui.EBlastHandler.redraw()
-        elif _tab == self.ui.ECacheLegacyTab:
-            self.ui.ECacheRefs.redraw()
-            self._callback__ECacheRangeReset()
+            self.ui.EBlastTab.redraw()
         elif _tab == self.ui.ECacheTab:
             self.ui.ECacheTab.redraw()
         elif _tab == self.ui.ERenderTab:
-            self.ui.ERenderHandler.redraw()
-            self.ui.ERenderFrames.redraw()
-            self.ui.ERenderFramesLabel.redraw()
-            self.ui.ERender.redraw()
+            self.ui.ERenderTab.redraw()
         elif _tab == self.ui.ESubmitTab:
             self.ui.ESubmitTemplate.redraw()
         else:
@@ -310,30 +315,7 @@ class PHExportTab:
         _LOGGER.debug('UPDATE PUBLISH HANDLER %s', _handler)
         if _handler:
             _handler.update_ui(parent=self, layout=self.ui.EPublishLyt)
-
-    @usage.get_tracker('PiniHelper.Publish')
-    def _callback__EPublish(self, force=False):
-        from pini.tools import helper
-
-        _LOGGER.info('PUBLISH SCENE force=%d', force)
-
-        _cur_work = pipe.CACHE.cur_work
-        if not _cur_work:
-            qt.notify(
-                f'No current work found.\n\nPlease save your scene using '
-                f'{helper.TITLE}.', title='No current work',
-                icon=icons.find('Vomit'))
-            return None
-
-        _handler = self.ui.EPublishHandler.selected_data()
-        _LOGGER.info(' - HANDLER %s', _handler)
-        _pub = _handler.publish(work=_cur_work, force=force)
-
-        # Update ui
-        self.jump_to(_cur_work)
-        self.ui.WTasks.redraw()
-
-        return _pub
+        self.ui.EPublishHandlerIcon.redraw()
 
     def _callback__EBlastHandler(self):
         _handler = self.ui.EBlastHandler.selected_data()
@@ -343,96 +325,17 @@ class PHExportTab:
             _update_func = _catch(_handler.update_ui)
             _update_func(parent=self, layout=self.ui.EBlastLyt)
 
-    @usage.get_tracker('PiniHelper.Blast')
-    def _callback__EBlast(self):
-        _handler = self.ui.EBlastHandler.selected_data()
-        _LOGGER.info('BLAST %s', _handler)
-        _handler.blast()
-
-    def _callback__ECacheRefs(self):
-        _refs = self.ui.ECacheRefs.selected_items()
-        self.ui.ECache.setEnabled(bool(_refs))
-
-    def _callback__ECacheRefsRefresh(self):
-        self.ui.ECacheRefs.redraw()
-
-    def _callback__ECacheRangeReset(self):
-        try:
-            _start, _end = dcc.t_range()
-        except NotImplementedError:
-            self.ui.ECacheStart.setEnabled(False)
-            self.ui.ECacheEnd.setEnabled(False)
-        else:
-            self.ui.ECacheStart.setValue(_start)
-            self.ui.ECacheEnd.setValue(_end)
-
-    def _callback__ECache(self):
-        raise NotImplementedError('Implemented in dcc subclass')
-
     def _callback__ECacheHandler(self):
         _handler = self.ui.ECacheHandler.selected_data()
         if _handler:
             _handler.update_ui(parent=self, layout=self.ui.ECacheLyt)
+        self.ui.ECacheHandlerIcon.redraw()
 
     def _callback__ERenderHandler(self):
         _handler = self.ui.ERenderHandler.selected_data()
-        self.save_settings()
-        _LOGGER.debug('UPDATE RENDER HANDLER %s', _handler)
         if _handler:
-            _build_ui = wrap_fn(
-                _handler.update_ui, parent=self, layout=self.ui.ERenderLyt)
-            _build_ui = error.get_catcher(parent=self, qt_safe=True)(_build_ui)
-            _build_ui()
-            self.save_settings()
-            _icon = _handler.to_icon()
-            _desc = _handler.description
-        else:
-            _icon = icons.find('Dizzy Face')
-            _desc = ''
-        self.ui.ERenderHandlerIcon.setIcon(qt.to_icon(_icon))
-        self.ui.ERenderHandlerDesc.setText(_desc)
-
-    def _callback__ERenderFramesReset(self):
-        self.ui.ERenderFramesLabel.redraw()
-        _rng = dcc.t_range(int)
-        _rng_str = f'{_rng[0]:d}-{_rng[1]:d}'
-        self.ui.ERenderFramesText.setText(_rng_str)
-
-    def _get_render_frames(self):
-        """Determine render frame range.
-
-        Returns:
-            (int list): render frames (eg. [1, 2, 3, 4, 5])
-        """
-        _rng_mode = self.ui.ERenderFrames.currentText()
-        if not _rng_mode:
-            return []
-        if _rng_mode == 'From timeline':
-            return dcc.t_frames()
-        if _rng_mode == 'Current frame':
-            return [dcc.cur_frame()]
-        if _rng_mode == 'From render globals':
-            return dcc.t_frames(mode='RenderGlobals')
-        if _rng_mode == 'Manual':
-            try:
-                return str_to_ints(self.ui.ERenderFramesText.text())
-            except ValueError:
-                return []
-        raise ValueError(_rng_mode)
-
-    def _callback__ERenderFrames(self):
-        _frames = self.ui.ERenderFrames.currentText()
-        self.ui.ERenderFramesLabel.redraw()
-        self.ui.ERenderFramesText.setVisible(_frames == 'Manual')
-
-    def _callback__ERenderFramesText(self):
-        self.ui.ERender.redraw()
-
-    @usage.get_tracker('PiniHelper.Render')
-    def _callback__ERender(self, render_=True, force=False):
-        _handler = self.ui.ERenderHandler.selected_data()
-        _handler.render(
-            frames=self._get_render_frames(), force=force, render_=render_)
+            _handler.update_ui(parent=self, layout=self.ui.ERenderLyt)
+        self.ui.ERenderHandlerIcon.redraw()
 
     def _callback__ESubmitTemplate(self):
         self.ui.ESubmitTask.redraw()
@@ -497,17 +400,6 @@ class PHExportTab:
                 title='Versions Submitted', icon=shotgrid.ICON)
 
         self.ui.ESubmitOutputs.redraw()
-
-    def _context__ECacheRefs(self, menu):
-        _cacheable = self.ui.ECacheRefs.selected_data(catch=True)
-        if _cacheable:
-            menu.add_label(f'Cacheable {_cacheable.output_name}')
-            menu.add_separator()
-            menu.add_action('Select in scene', _cacheable.select_in_scene,
-                            icon=icons.find('Hook'))
-            if _cacheable.path:
-                menu.add_separator()
-                menu.add_file_actions(_cacheable.path)
 
     def _context__ESubmitOutputs(self, menu):
         _out = self.ui.ESubmitOutputs.selected_data()

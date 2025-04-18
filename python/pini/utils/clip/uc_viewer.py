@@ -197,13 +197,14 @@ class _VLC(_Viewer):
     NAME = 'vlc'
     PLAYS_SEQS = False
 
-    def view(self, clip_, start_frame=None, fps=None):
+    def view(self, clip_, start_frame=None, fps=None, loop=True):
         """View the given clip in rv.
 
         Args:
             clip_ (Clip): clip to view
             start_frame (int): override start frame
             fps (float): apply frame rate
+            loop (bool): loop
         """
         from .. import clip
         if isinstance(clip_, clip.Seq):
@@ -217,6 +218,8 @@ class _VLC(_Viewer):
         assert self.exe
         _path = abs_path(_file.path, win=platform.system() == 'Windows')
         _cmds = [self.exe.path, _path]
+        if loop:
+            _cmds += ['--loop', '--no-video-title-show']
         _LOGGER.info('VIEW CLIP %s', ' '.join(_cmds))
         subprocess.Popen(_cmds)
 

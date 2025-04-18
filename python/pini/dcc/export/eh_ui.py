@@ -284,7 +284,7 @@ class CExportHandlerUI(qt.CUiContainer):
         return _lineedit
 
     def add_list_widget(
-            self, name, items=None, label=None,
+            self, name, items=None, label=None, icon_size=30,
             selection_mode=QtWidgets.QListView.ExtendedSelection):
         """Add CListWidget element to this interface.
 
@@ -292,6 +292,7 @@ class CExportHandlerUI(qt.CUiContainer):
             name (str): element name
             items (list): list items
             label (str): element label
+            icon_size (int): icon size (in pixels)
             selection_mode (SelectionMode): selection mode
         """
         self.add_separator()
@@ -312,9 +313,8 @@ class CExportHandlerUI(qt.CUiContainer):
 
         # Build list
         _list = qt.CListWidget(self.parent)
-        _list.setSpacing(2)
         _list.setSelectionMode(selection_mode)
-        _list.setIconSize(qt.to_size(30))
+        _list.setIconSize(qt.to_size(icon_size))
         _list.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.MinimumExpanding)
@@ -398,20 +398,21 @@ class CExportHandlerUI(qt.CUiContainer):
 
         return _spinbox
 
-    def add_footer_elems(self, snapshot=True):
+    def add_footer_elems(self, add_snapshot=True, version_up=True):
         """Add footer ui elements.
 
         These appear at the bottom of the export interface.
 
         Args:
-            snapshot (bool): add snapshot option
+            add_snapshot (bool): add snapshot option
+            version_up (bool): default version up setting
         """
-        if snapshot:
+        if add_snapshot:
             self.Snapshot = self.add_check_box(
                 'Snapshot', label='Take snapshot')
             self.snapshot_elem = self.Snapshot
         self.VersionUp = self.add_check_box(
-            'VersionUp', label='Version up')
+            'VersionUp', label='Version up', val=version_up)
         self.add_notes_elem()
 
     def add_notes_elem(self):

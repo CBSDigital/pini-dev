@@ -40,7 +40,10 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
 
     def build_ui(self):
         """Build basic render interface into the given layout."""
-        _LOGGER.debug('BUILD UI')
+        super().build_ui(add_range=True, add_snapshot=False)
+
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
@@ -58,14 +61,6 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
         self.ui.add_separator()
 
-    def render(self, frames=None):
-        """Execute render - to be implemented in child class.
-
-        Args:
-            frames (int list): list of frames to render
-        """
-        raise NotImplementedError
-
 
 class CMayaLocalRender(CMayaRenderHandler):
     """Maya basic render handler.
@@ -73,14 +68,15 @@ class CMayaLocalRender(CMayaRenderHandler):
     Facilities rendering to pipeline through the Render View window.
     """
 
-    NAME = 'Maya Local Arnold'
+    NAME = 'Maya Local Render'
+    ICON = icons.find('Teapot')
 
-    description = (
-        'Renders the current scene locally to disk using the maya interface')
+    LABEL = (
+        'Renders the current scene locally to disk using the maya interface.')
 
-    def build_ui(self):
+    def _add_custom_ui_elems(self):
         """Build basic render interface into the given layout."""
-        super().build_ui()
+        super()._add_custom_ui_elems()
 
         self.ui.add_check_box(
             name='View', val=True, label='View render')
@@ -90,48 +86,41 @@ class CMayaLocalRender(CMayaRenderHandler):
             name='Cleanup', val=True,
             label='Delete images after mov conversion')
 
-        self.ui.add_separator()
-        self.ui.add_footer_elems(snapshot=False)
-        self.ui.add_separator()
-
-        self.ui.layout.addStretch()
-
         self._callback__Mov()
 
     def _callback__Mov(self):
         self.ui.Cleanup.setVisible(self.ui.Mov.isChecked())
 
-    def render(
-            self, camera=None, frames=None, mov=None, view=None,
-            render_=True, force=False):
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=True, bkp=True, camera=None,
+            frames=None, mov=None, view=None, render_=True, cleanup=True,
+            force=False):
         """Execute render.
 
         Args:
+            notes (str): export notes
+            version_up (bool): version up after export
+            bkp (bool): save bkp file
             camera (str): render camera
             frames (int list): list of frames to render
             mov (bool): convert to mov
             view (bool): view render on completion
             render_ (bool): execute render (disable for debugging)
+            cleanup (bool): cleanup tmp files (video only)
             force (bool): replace existing without confirmation
         """
-        _data = self.build_metadata(force=force)
-        _cam = camera or self.ui.Camera.currentText()
-        _mov = mov if mov is not None else self.ui.Mov.isChecked()
-        if _mov:
-            _cleanup = self.ui.Cleanup.isChecked()
-        _view = view if view is not None else self.ui.View.isChecked()
+        _cam = camera or pom.find_render_cam()
 
         # Determine output paths
-        _work = pipe.CACHE.cur_work
         _output_name = _get_current_lyr()
-        if _mov:
-            if not _work.find_template('mov', catch=True):
+        if mov:
+            if not self.work.find_template('mov', catch=True):
                 qt.notify(
                     f'No mov template found in this job:'
-                    f'\n\n{_work.job.path}\n\nUnable to render.',
+                    f'\n\n{self.work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.ui.parent)
                 return
-            _out = _work.to_output(
+            _out = self.work.to_output(
                 'mov', output_name=_output_name, extn='mp4')
             _t_stamp = strftime("%y%m%d_%H%M%S")
             _tmp_path = TMP.to_seq(
@@ -139,43 +128,45 @@ class CMayaLocalRender(CMayaRenderHandler):
             _LOGGER.info('TMP PATH %s', _tmp_path)
             _out_seq = Seq(_tmp_path)
         else:
-            if not _work.find_template('render', catch=True):
+            if not self.work.find_template('render', catch=True):
                 qt.notify(
                     f'No render template found in this job:'
-                    f'\n\n{_work.job.path}\n\nUnable to render.',
+                    f'\n\n{self.work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.ui.parent)
                 return
             _fmt = cmds.getAttr(
                 'defaultArnoldDriver.ai_translator', asString=True)
             _extn = {'jpeg': 'jpg'}.get(_fmt, _fmt)
-            _out = _work.to_output(
+            _out = self.work.to_output(
                 'render', output_name=_output_name, extn=_extn)
             _out_seq = _out
         _out.delete(wording='replace', force=force)
 
         # Execute render
-        _bkp = _work.save(reason='render', result='bkp', force=True)
-        _data['bkp'] = _bkp.path
         if not render_:
             return
         render(seq=_out_seq, frames=frames, camera=_cam)
-        if _mov:
+        if mov:
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
-            if _cleanup:
+            if cleanup:
                 _out_seq.delete(force=True)
-        if _view:
+        self.outputs = [_out]
+        if view:
             _out.view()
 
-        # Save metadata
-        if _mov:
-            _data.update(_out.read_metadata())
-        else:
-            _data['size'] = _out.size()
-            _data['range'] = _out.to_range(force=True)
-        _out.set_metadata(_data, force=True)
+        _LOGGER.info(' - RENDER COMPLETE')
 
-        # Update pipeline
-        self.post_export(work=_work, outs=[_out])
+    def _update_metadata(self):
+        """Update outputs metadata."""
+        super()._update_metadata()
+        for _out in self.outputs:
+            if isinstance(_out, pipe.CPOutputVideo):
+                _data = _out.metadata
+                _data.update(_out.read_metadata())
+                _out.set_metadata(_data, force=True)
+            else:
+                _out.add_metadata(size=_out.size())
+                _out.add_metadata(range=_out.to_range(force=True))
 
 
 def _compile_video_with_scene_audio(seq, video):
@@ -199,10 +190,10 @@ def _compile_video_with_scene_audio(seq, video):
 class CMayaFarmRender(CMayaRenderHandler):
     """Render handler which submits using the pini.farm API."""
 
-    NAME = 'Maya Farm'
+    NAME = 'Maya Farm Render'
     ICON = farm.ICON
 
-    description = f'Renders the current scene to {farm.NAME}.'
+    LABEL = f'Renders the current scene to {farm.NAME}.'
 
     def __init__(self, priority=60, label_w=80):
         """Constructor.
@@ -214,11 +205,8 @@ class CMayaFarmRender(CMayaRenderHandler):
         """
         super().__init__(priority=priority, label_w=label_w)
 
-    def build_ui(self):
-        """Build basic render interface into the given layout."""
-        _LOGGER.debug('BUILD UI')
-        super().build_ui()
-
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
         self.ui.add_spin_box(name='Priority', val=50)
         self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
         self.ui.add_spin_box(name='MachineLimit', val=15)
@@ -231,8 +219,6 @@ class CMayaFarmRender(CMayaRenderHandler):
             name='HideImgPlanes', val=False,
             label='Hide image planes',
             tooltip='Hide image planes before submission')
-        self.ui.add_footer_elems(snapshot=False)
-        self.ui.add_separator()
 
     def _build_limit_groups_elems(self):
         """Build limit groups elements."""
@@ -246,8 +232,8 @@ class CMayaFarmRender(CMayaRenderHandler):
         self.ui.LimitGroupsSelect = _btn
 
         self.ui.add_line_edit(
-            name='LimitGroups', add_elems=[_btn])
-        self.ui.LimitGroups.setEnabled(False)
+            name='LimitGrps', add_elems=[_btn], label='Limit groups')
+        self.ui.LimitGrps.setEnabled(False)
 
     def _build_layers_elems(self):
         """Build render layer selection elements."""
@@ -279,7 +265,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             if _lyr.is_renderable():
                 _select.append(_lyr)
             _items.append(_item)
-        _LOGGER.info(' - SELECT LAYERS %s', _select)
+        _LOGGER.debug(' - SELECT LAYERS %s', _select)
         self.ui.Layers.set_items(_items, select=_select)
         self.ui.Layers.setIconSize(qt.to_size(30))
         self.ui.Layers.setSizePolicy(
@@ -311,26 +297,39 @@ class CMayaFarmRender(CMayaRenderHandler):
             _LOGGER.debug(' - %s %d', _lyr, _ren)
             _lyr.set_renderable(_ren)
 
-    def render(self, frames=None, render_=True, force=False):
-        """Launch deadline render ui.
+    def set_settings(self, **kwargs):
+        """Setup settings dict."""
+        super().set_settings(
+            update_metadata=False, update_cache=False, bkp=True, **kwargs)
+
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=True, camera=None, frames=None,
+            render_=True, limit_grps=None, hide_img_planes=False, priority=50,
+            machine_limit=15, chunk_size=1, force=False):
+        """Execute render.
 
         Args:
+            notes (str): export notes
+            version_up (bool): version up after export
+            camera (str): render camera
             frames (int list): list of frames to render
-            render_ (bool): execute render
-            force (bool): replace existing frames without confirmation
+            render_ (bool): execute render (disable for debugging)
+            limit_grps (str list): limit groups
+            hide_img_planes (bool): hide image planes on submit
+            priority (int): job priority (eg. 50)
+            machine_limit (int): job machine limit (eg. 20 machines)
+            chunk_size (int): job chunk size (frames to execute in one task)
+            force (bool): replace existing without confirmation
         """
         _lyrs = pom.find_render_layers(renderable=True)
         if not _lyrs:
             raise error.HandledError('No renderable layers')
-        _work = pipe.cur_work()
-        if not _work:
-            raise error.HandledError('No current work')
-        _cam = self.ui.Camera.currentText()
+        _cam = camera or pom.find_render_cam()
         pom.set_render_cam(_cam)
 
         # Apply hide image planes
         _reverts = []
-        if self.ui.HideImgPlanes.isChecked():
+        if hide_img_planes:
             for _img_plane in pom.CMDS.ls(type='imagePlane'):
                 _display_mode = _img_plane.plug['displayMode'].get_enum()
                 _LOGGER.info(' - CHECKING IMAGE PLANE %s displayMode=%s',
@@ -344,25 +343,28 @@ class CMayaFarmRender(CMayaRenderHandler):
                 _reverts.append(_revert)
 
         _prepare_scene_for_render()
-        _metadata = self.build_metadata(force=force)
-        _limit_groups_s = self.ui.LimitGroups.text()
-        _limit_groups = [_grp for _grp in _limit_groups_s.split(',') if _grp]
 
-        _msg = farm.submit_maya_render(
+        self.submit_msg = farm.submit_maya_render(
             submit=render_, force=True, result='msg',
-            metadata=_metadata, frames=frames, camera=_cam,
-            chunk_size=self.ui.ChunkSize.value(),
-            comment=_metadata['notes'],
-            priority=self.ui.Priority.value(),
-            machine_limit=self.ui.MachineLimit.value(),
-            limit_groups=_limit_groups)
+            metadata=self.metadata, frames=frames, camera=_cam,
+            chunk_size=chunk_size, comment=notes, priority=priority,
+            machine_limit=machine_limit, limit_groups=limit_grps)
 
         for _revert in _reverts:
             _revert()
-        self.post_export(
-            work=_work, notes=_metadata['notes'], update_cache=False)
-        if not force:
-            qt.notify(_msg, icon=farm.ICON, title='Render submitted')
+
+    def post_export(self):
+        """Execute post export code."""
+        _force = self.settings['force']
+        super().post_export()
+        if not _force:
+            qt.notify(self.submit_msg, icon=farm.ICON, title='Render submitted')
+
+    def exec_from_ui(self, **kwargs):
+        """Execute this export using settings from ui."""
+        _ui_kwargs = self.ui.to_kwargs()
+        _ui_kwargs['limit_grps'] = _ui_kwargs['limit_grps'].split(',')
+        super().exec_from_ui(ui_kwargs=_ui_kwargs, **kwargs)
 
     @cache_result
     def to_icon(self):

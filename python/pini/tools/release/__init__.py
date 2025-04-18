@@ -1,6 +1,6 @@
 """Tools for managing releasing code."""
 
-from .check import suggest_docs, CheckFile, check_file
+from .check import suggest_docs, CheckFile, check_file, transfer_kwarg_docs
 from .test import PRTestFile, find_tests, run_tests, find_test, to_test_sort_key
 
 from .r_deprecate import apply_deprecation

@@ -7,7 +7,7 @@ import os
 import pprint
 import webbrowser
 
-from pini import pipe, icons, dcc, qt, testing
+from pini import pipe, icons, dcc, qt
 from pini.dcc import pipe_ref
 from pini.utils import (
     File, wrap_fn, chain_fns, strftime, Video, Seq, VIDEO_EXTNS, to_str)
@@ -100,9 +100,9 @@ class PHUiBase(
             wrap_fn(self._callback__WLoad))
 
         if store_settings:
-            _LOGGER.debug(' - LOADING SETTINGS')
+            _LOGGER.debug(' - LOADING SETTINGS %s', self.entity)
             self.load_settings()
-            _LOGGER.debug(' - LOADED SETTINGS')
+            _LOGGER.debug(' - LOADED SETTINGS %s', self.entity)
         self.ui.MainPane.select_tab('Work')
         if show:
             self.show()
@@ -140,11 +140,6 @@ class PHUiBase(
         self.ui.EExportPane.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
 
-        if not testing.dev_mode():
-            self.ui.EExportPane.set_tab_visible(
-                self.ui.ECacheTab, False)
-            self.ui.EExportPane.set_val(0, emit=False)
-
     def _start_timer(self):
         """Start timer."""
         _LOGGER.debug('START TIMER')
@@ -160,27 +155,32 @@ class PHUiBase(
         Args:
             target (str): target passed on init ui
         """
+        _LOGGER.debug('SET TARGET %s', target)
         self.target = None
 
         # Apply target
         if target:
             self.target = _to_valid_target(target)
+            _LOGGER.debug(' - APPLIED VALID TARGET %s', self.target)
 
         # Fall back on cur scene
         if not self.target:
             _cur_work = pipe.cur_work()
             if _cur_work:
                 self.target = _cur_work
+            _LOGGER.debug(' - APPLIED CUR WORK %s', self.target)
         if not self.target:
             _cur_out = pipe.cur_output()
             if _cur_out:
                 _src = _cur_out.metadata.get('src')
                 if _src:
                     self.target = pipe.to_output(_src, catch=True)
+            _LOGGER.debug(' - APPLIED CUR OUTPUT %s', self.target)
         if not self.target:
             _recent = obt_recent_work()
             if _recent:
                 self.target = pipe.to_work(_recent[0].path)
+            _LOGGER.debug(' - APPLIED RECENT WORK %s', self.target)
         _LOGGER.debug(' - TARGET %s %s', type(self.target), self.target)
 
     def jump_to(self, path):

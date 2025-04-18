@@ -163,7 +163,7 @@ class TestDCC(unittest.TestCase):
         _LOGGER.info(' - WORK C OUTS %s', _work_c.find_outputs())
         assert not _work_c.find_outputs()
         assert not _work_c.outputs
-        _outs = _handler.publish(force=True, version_up=False)
+        _outs = _handler.exec(force=True, version_up=False, bkp=False)
         _ety_c = pipe.CACHE.obt(_ety_c)
         assert pipe.CACHE.cur_job is _ety_c.job
         _LOGGER.info(' - OUTS %s', _outs)
@@ -222,12 +222,13 @@ class TestDCC(unittest.TestCase):
         # Publish
         _progress.set_pc(70)
         _helper.ui.MainPane.select_tab('Export')
-        _pub = _helper.ui.EPublishHandler.selected_data()
-        _pub.ui.VersionUp.setChecked(False)
-        _pub.ui.ExportFbx.setChecked(False)
+        _exp = _helper.ui.EPublishHandler.selected_data()
+        _LOGGER.info(' - EXPORTER %s', _exp)
+        _exp.ui.VersionUp.setChecked(False)
+        _exp.ui.Fbx.setChecked(False)
         _helper.ui.MainPane.select_tab('Export')
         _helper.ui.EExportPane.select_tab('Publish')
-        _out = single(_helper._callback__EPublish(force=True))
+        _out = single(_exp.exec_from_ui(force=True))
         _LOGGER.info('CUR ETY %s', pipe.CACHE.cur_entity)
         assert _helper.entity is pipe.CACHE.cur_entity
         assert _helper.work_dir is pipe.CACHE.cur_work_dir

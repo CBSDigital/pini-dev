@@ -377,7 +377,11 @@ class CMayaShadersRef(CMayaRef):
 
             # Set light enabled/disabled based on whether target exists
             _en = bool(_trg)
-            _type = m_pipe.to_light_shp(_light).object_type()
+            _shp = m_pipe.to_light_shp(_light)
+            if not _shp:
+                _LOGGER.error(' - FAILED TO FIND LIGHT SHAPE %s', _light)
+                continue
+            _type = _shp.object_type()
             _plug = {'RedshiftPhysicalLight': 'on'}.get(_type, 'enabled')
             _light.set_visible(_en)
             _light.shp.plug[_plug].set_val(_en)

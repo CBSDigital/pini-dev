@@ -4,9 +4,7 @@
 
 import logging
 
-from pini import pipe
-from pini.pipe import cache
-from pini.qt import QtWidgets
+from pini import dcc
 from pini.utils import find_callback
 
 from .. import eh_base
@@ -18,6 +16,7 @@ class CBasicPublish(eh_base.CExportHandler):
     """Manages a basic publish."""
 
     NAME = 'Basic Publish'
+
     TYPE = 'Publish'
     LABEL = 'Makes a copy of this scene in the publish directory'
     ACTION = 'BasicPublish'
@@ -36,96 +35,22 @@ class CBasicPublish(eh_base.CExportHandler):
         """
         _data = super().build_metadata(**kwargs)
         _data['publish_type'] = type(self).__name__
+        _frame = dcc.t_frame(int)
+        _data['range'] = (_frame, _frame)
         return _data
 
-    def build_ui(self, add_footer=True):
-        """Build basic render interface into the given layout.
+    def _update_pipe_cache(self):
+        """Update pipeline cache."""
+        _LOGGER.info('UPDATE PIPE CACHE')
 
-        Args:
-            add_footer (bool): add footer elements
-        """
-        self.ui.Label = QtWidgets.QLabel(self.LABEL, self.ui.parent)
-        self.ui.Label.setWordWrap(True)
-        self.ui.Label.setObjectName('Label')
-        self.ui.layout.addWidget(self.ui.Label)
+        # Update publish cache
+        _LOGGER.info(' - UPDATING PUBLISH CACHE')
+        self.work.entity.find_publishes(force=True)
+        self.work.job.find_publishes(force=True)
 
-        if add_footer:
-            self.add_footer_elems()
+        super()._update_pipe_cache()
 
-    def publish(self, work=None, force=False):
-        """Publish this file.
-
-        Args:
-            work (CPWork): override publish work file
-            force (bool): overwrite existing without confirmation
-
-        Returns:
-            (CPOutput): new versioned output
-        """
-        _work = work or pipe.cur_work()
-        _LOGGER.info('PUBLISH %s', _work)
-
-        # Get versioned publish
-        _pub = _work.to_output('publish', has_key={'output_type': False})
-        _LOGGER.info(' - OUT VER %s', _pub)
-
-        # Save + copy to publish dirs
-        _metadata = self.build_metadata(work=_work, force=force)
-        _work.save(reason='published', force=force)
-        _LOGGER.info('SAVED SCENE')
-        _work.copy_to(_pub, force=force)
-        _LOGGER.info(' - PUBLISHED VERSIONED FILE %s', _pub.path)
-
-        # Write metadata
-        _pub.set_metadata(_metadata)
-
-        self.create_versionless(work=_work, metadata=_metadata, publish=_pub)
-
-        self.post_export(work=_work, outs=[_pub])
-
-        return _pub
-
-    def create_versionless(self, work, publish, metadata):
-        """Create versionless publish.
-
-        Args:
-            work (CPWork): source work file
-            publish (CPOutput): versioned publish output
-            metadata (dict): publish metadata
-        """
-        _tmpl = work.find_template(
-            'publish', has_key={'ver': False}, catch=True)
-        if not _tmpl:
-            _LOGGER.info('NO VERSIONLESS TEMPLATE FOUND %s', work)
-            return None
-
-        _versionless = work.to_output(_tmpl, output_name=None)
-        publish.copy_to(_versionless, force=True)
-        _versionless.set_metadata(metadata)
-        _LOGGER.info('CREATED VERSIONLESS PUBLISH %s', _versionless.path)
-
-        return _versionless
-
-    def _update_pipe_cache(self, work, outs):
-        """Update pipeline cache.
-
-        Args:
-            work (CPWork): work file being published
-            outs (CPOutput list): outputs being published
-        """
-        _job_c = work.job
-        _ety_c = work.entity
-
-        _LOGGER.info(' - UPDATING CACHE')
-        if not isinstance(work.entity, cache.CCPEntity):
-            _ety_c = pipe.CACHE.obt_entity(_ety_c)
-        _LOGGER.info(' - UPDATING ENTITY PUBLISH CACHE %s', _ety_c)
-        _ety_c.find_publishes(force=True)
-        _job_c.find_publishes(force=True)
-
-        super()._update_pipe_cache(work=work, outs=outs)
-
-    def post_export(self, outs, **kwargs):
+    def post_export(self, **kwargs):
         """Run post export scripts.
 
         For publish this allows any publish callback to be installed.
@@ -134,10 +59,12 @@ class CBasicPublish(eh_base.CExportHandler):
             outs (CPOutput list): outputs which were generated
         """
         _LOGGER.info('POST EXPORT %s', self)
-        super().post_export(outs=outs, **kwargs)
 
+        super().post_export(**kwargs)
+
+        # Execute post publish callback
         _callback = find_callback('Publish')
         _LOGGER.info(' - PUBLISH CALLBACK %s', _callback)
         if _callback:
-            for _out in outs:
+            for _out in self.outputs:
                 _callback(_out)

@@ -44,8 +44,9 @@ def import_abc_archive(abc, namespace):
     Returns:
         (CPipeRef): abc reference
     """
+    _LOGGER.debug('IMPORT ABC ARCHIVE %s', abc)
     _file = File(abc)
-    _LOGGER.debug('IMPORT ABC CAM %s', _file.path)
+    _LOGGER.debug(' - FILE %s', _file.path)
 
     _root = hou.node('/obj')
 
@@ -65,7 +66,9 @@ def import_abc_archive(abc, namespace):
         _abc.setInput(0, _null)
 
     _ref = dcc.find_pipe_ref(namespace)
-    _ref.update_res()
+    _LOGGER.debug(' - CONTENT TYPE %s', _ref.output.content_type)
+    if _ref.output.content_type == 'CameraAbc':
+        _ref.update_camera_res()
 
     return _ref
 

@@ -1,10 +1,46 @@
 """Tools for checking py file docstrings."""
 
 import logging
+import sys
 
 from pini.utils import to_nice, copy_text
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def transfer_kwarg_docs(mod, func):
+    """Transfer keyword argument docs from the given source.
+
+    This allows the docstrings for a function which uses *args/**kwargs
+    to be kept up to date.
+
+    Args:
+        mod (str): name of module (eg. "pini.dcc.export")
+        func (str): name of function to read docs from
+            (eg. "CMayaModelPublish.export")
+
+    Returns:
+        (fn): function with updated docs
+    """
+
+    def _transfer_docs_dec(func_):
+
+        _LOGGER.debug('TRANSFER KWARG DOCS %s', func)
+        _LOGGER.debug(' - MOD/FUNC %s %s', mod, func)
+        _mod = sys.modules.get(mod)
+        _LOGGER.debug(' - MOD %s', _mod)
+        _func = _mod
+        for _token in func.split('.'):
+            if not _func:
+                break
+            _func = getattr(_func, _token, None)
+        _LOGGER.debug(' - FUNC %s', _func)
+        if _func:
+            func_.__doc__ = _func.__doc__
+
+        return func_
+
+    return _transfer_docs_dec
 
 
 def _copy_suggestion_on_fail(func):

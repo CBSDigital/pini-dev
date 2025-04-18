@@ -84,7 +84,7 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         self.node.parm('buildHierarchy').pressButton()
         self.update_res()
 
-    def update_res(self):
+    def update_camera_res(self):
         """Update camera resolution.
 
         This should be stored in the camera abc's metadata on export. It's

@@ -8,12 +8,11 @@ import time
 
 from maya import cmds
 
-from pini import icons, qt, pipe, farm, dcc
+from pini import icons, qt, pipe, dcc
 from pini.dcc import pipe_ref
 from pini.tools import usage
 from pini.utils import wrap_fn, MaFile
 
-from maya_pini import m_pipe
 from maya_pini.utils import load_scene
 
 from .. import ui
@@ -68,73 +67,6 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
             self.show(dockable=True)
             self.apply_docking()
         _LOGGER.debug(' - LAUNCH COMPLETE')
-
-    def init_ui(self):
-        """Setup ui elements."""
-        ui.PHUiBase.init_ui(self)
-
-        # Apply farm option if available
-        _locs = ['Local']
-        if farm.IS_AVAILABLE:
-            _locs.append('Farm')
-        self.ui.ECacheLocation.set_items(_locs)
-
-    def _redraw__ECacheRefs(self):
-
-        _cacheables = m_pipe.find_cacheables()
-        _cacheables.sort(key=_sort_cacheables)
-
-        _items = []
-        for _cacheable in _cacheables:
-            _icon = _cacheable.to_icon()
-            _item = qt.CListWidgetItem(
-                _cacheable.label, data=_cacheable, icon=_icon)
-            _items.append(_item)
-        self.ui.ECacheRefs.set_items(_items, emit=False)
-        self.ui.ECacheRefs.selectAll()
-        self._callback__ECacheRefs()
-
-    def _callback__ECacheExtn(self):
-        _extn = self.ui.ECacheExtn.currentText()
-        if _extn == 'abc':
-            _fmts = ['Ogawa', 'HDF5']
-        elif _extn == 'fbx':
-            _fmts = ['FBX201600']
-        else:
-            raise NotImplementedError(_extn)
-        self.ui.ECacheFormat.set_items(_fmts)
-
-        for _abc_elem in [
-                self.ui.ECacheUvWrite,
-                self.ui.ECacheRenderableOnly,
-                self.ui.ECacheWorldSpace,
-        ]:
-            _abc_elem.setVisible(_extn == 'abc')
-
-    @usage.get_tracker('PiniHelper.Cache')
-    def _callback__ECache(self, force=False, save=True):
-
-        _LOGGER.info('CACHE')
-
-        _cacheables = self.ui.ECacheRefs.selected_datas()
-        _extn = self.ui.ECacheExtn.currentText()
-        _farm = self.ui.ECacheLocation.currentText() == 'Farm'
-        _format = self.ui.ECacheFormat.currentText()
-        _renderable_only = self.ui.ECacheRenderableOnly.isChecked()
-        _rng = self.ui.ECacheStart.value(), self.ui.ECacheEnd.value()
-        _step = self.ui.ECacheStep.value()
-        _uv_write = self.ui.ECacheUvWrite.isChecked()
-        _world_space = self.ui.ECacheWorldSpace.isChecked()
-        _version_up = self.ui.ECacheVersionUp.isChecked()
-        _snapshot = self.ui.ECacheSnapshot.isChecked()
-        _LOGGER.info(' - CACHEABLES %s', _cacheables)
-
-        m_pipe.cache(
-            _cacheables, format_=_format, world_space=_world_space,
-            uv_write=_uv_write, range_=_rng, force=force, save=save,
-            step=_step, renderable_only=_renderable_only, use_farm=_farm,
-            version_up=_version_up, snapshot=_snapshot, extn=_extn)
-        self.entity.find_outputs(force=True)
 
     def _add_load_ctx_opts(self, menu, work=None):
         """Add load scene context options to the given menu.

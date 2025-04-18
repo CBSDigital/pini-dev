@@ -395,12 +395,13 @@ class CUiBase:
         """
         self.settings.apply_to_widget(widget)
 
-    def load_settings(self, geometry=True, type_filter=None):
+    def load_settings(self, geometry=True, type_filter=None, filter_=None):
         """Load interface settings.
 
         Args:
             geometry (bool): load window position/size
             type_filter (str): apply widget type name filter
+            filter_ (str): apply widget name filter
         """
         if not self.store_settings:
             return
@@ -410,7 +411,8 @@ class CUiBase:
         if geometry:
             self._load_geometry_settings()
 
-        self.settings.apply_to_ui(self.ui, type_filter=type_filter)
+        self.settings.apply_to_ui(
+            self.ui, type_filter=type_filter, filter_=filter_)
 
     def _load_geometry_settings(self, screen=None):
         """Load geometry settings (ie. pos/size).

@@ -15,7 +15,8 @@ _LOGGER = logging.getLogger(__name__)
 def blast(
         settings='Nice', camera='<cur>', format_='mp4', output_name='blast',
         range_=None, res='Full', use_scene_audio=True, burnins=False, view=True,
-        cleanup=True, save=True, force=False):
+        cleanup=True, save=True, update_metadata=True, update_cache=True,
+        force=False):
     """Blast current scene to pipeline.
 
     Args:
@@ -30,6 +31,8 @@ def blast(
         view (bool): view blast on completion
         cleanup (bool): clean up tmp nodes/files
         save (bool): save scene on cache (default is true)
+        update_metadata (bool): apply metadata to outputs
+        update_cache (bool): update cache with new outputs
         force (bool): overwrite existing without confirmation
     """
     _work = pipe.CACHE.obt_cur_work()
@@ -66,24 +69,26 @@ def blast(
         force=force, use_scene_audio=use_scene_audio, burnins=burnins,
         view=view, cleanup=cleanup, tmp_seq=_tmp_seq,
         frame_to_thumb=_work.image)
-    _data = _obt_metadata(
-        range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res(),
-        save_disabled=not save)
-    _out.set_metadata(_data, force=True)
 
-    # Update shotgrid
-    if pipe.SHOTGRID_AVAILABLE:
-        if pipe.MASTER == 'disk':
-            _rng = range_ or dcc.t_range(int)
-            _update_shotgrid_range(entity=_work.entity, range_=_rng)
-        elif pipe.MASTER == 'shotgrid':
-            from pini.pipe import shotgrid
-            shotgrid.create_pub_file_from_output(
-                _out, thumb=_work.image, force=True, status='ip')
-        else:
-            raise ValueError(pipe.MASTER)
+    if update_metadata:
+        _data = _obt_metadata(
+            range_=range_, bkp=_bkp, camera=_cam, res=_out.to_res(),
+            save_disabled=not save)
+        _out.set_metadata(_data, force=True)
 
-    _work.update_outputs(update_helper=False)
+    # Update cache
+    if update_cache:
+        if pipe.SHOTGRID_AVAILABLE:
+            if pipe.MASTER == 'disk':
+                _rng = range_ or dcc.t_range(int)
+                _update_shotgrid_range(entity=_work.entity, range_=_rng)
+            elif pipe.MASTER == 'shotgrid':
+                from pini.pipe import shotgrid
+                shotgrid.create_pub_file_from_output(
+                    _out, thumb=_work.image, force=True, status='ip')
+            else:
+                raise ValueError(pipe.MASTER)
+        _work.update_outputs(update_helper=False)
 
     return _out
 

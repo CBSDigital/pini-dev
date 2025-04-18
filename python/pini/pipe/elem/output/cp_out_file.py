@@ -13,6 +13,7 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
     """Represents an output file on disk."""
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
+    set_metadata = cp_out_base.CPOutputBase.set_metadata
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,

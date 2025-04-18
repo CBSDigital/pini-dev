@@ -1,12 +1,11 @@
 """Tools for managing maya publish handlers."""
 
-import copy
 import logging
 import os
 
 from maya import cmds
 
-from pini import pipe, dcc, qt
+from pini import pipe, dcc, qt, icons
 from pini.utils import single, File, abs_path, passes_filter, to_seq, Seq, TMP
 
 from maya_pini import ref, m_pipe, open_maya as pom
@@ -24,111 +23,104 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     """Manages a maya lookdev publish."""
 
     NAME = 'Maya Lookdev Publish'
-    LABEL = '\n'.join([
-        ' - Builds lookdev files for abc attach',
-        ' - Shaders are stored in maya file and attached using yml',
-        ' - Nodes in JUNK group are ignored',
-        ' - Any sets in overrides_SET are saved and restored on abc attach',
-    ])
     ACTION = 'LookdevPublish'
+    ICON = icons.find('Palette')
+    COL = 'GreenYellow'
+    TYPE = 'Publish'
+
+    LABEL = '\n'.join([
+        'Builds lookdev files for abc attach. Shaders should be built on '
+        'a reference of the model or rig.',
+        '',
+        ' - Shaders are stored in maya file and attached using yml',
+        ' - Any sets in overrides_SET are saved and restored on abc attach',
+        ' - Nodes in JUNK group are ignored',
+        ' - Any lights found in the model/rig are saved and attached '
+        'to the matching transform on to the abc',
+    ])
 
     shd_yml = None
     textures = None
 
-    def build_ui(self, add_footer=True):
-        """Build basic render interface into the given layout.
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
+        self._add_pxy_opts()
 
-        Args:
-            add_footer (bool): add footer elements
-        """
-        super().build_ui(add_footer=False)
-
-        self.ui.add_separator()
-        self._build_pxy_opts()
-        if add_footer:
-            self.ui.add_footer_elems()
-
-    def _build_pxy_opts(self):
+    def _add_pxy_opts(self):
         """Build proxy publish options."""
         _ass = 'arnold' in dcc.allowed_renderers()
         _vrm = 'vray' in dcc.allowed_renderers()
         _rs = 'redshift' in dcc.allowed_renderers()
 
-        self.ui.ExportAss = None
-        self.ui.ExportVrmesh = None
-        self.ui.ExportRedshiftProxy = None
-
         if not (_ass or _vrm or _rs):
             return
 
+        self.ui.add_separator()
         if _ass:
             self.ui.add_check_box(
-                val=True, name='ExportAss',
+                val=True, name='Ass',
                 label="Export ass.gz of geo")
         if _vrm:
             self.ui.add_check_box(
-                val=True, name='ExportVrmesh',
+                val=True, name='VrmMa',
                 label="Export shaded vrmesh scene of geo")
         if _rs:
             self.ui.add_check_box(
-                val=True, name='ExportRedshiftProxy',
+                val=True, name='RsPxy',
                 label="Export redshift proxy of geo")
-
         if _vrm or _rs:
             self.ui.add_check_box(
-                val=False, name='ProxyAnim',
+                val=False, name='PxyAnim',
                 label='Include animation in proxies')
 
-        self.ui.add_separator()
+        # self.ui.add_separator()
 
-    def build_metadata(
-            self, work=None, sanity_check_=True, task='lookdev', force=False):
-        """Obtain publish metadata.
-
-        Args:
-            work (CPWork): override workfile to read metadata from
-            sanity_check_ (bool): run sanity checks before publish
-            task (str): task to pass to sanity check
-            force (bool): force completion without any confirmations
+    def build_metadata(self):
+        """Build publish metadata.
 
         Returns:
             (dict): metadata
         """
-        _data = super().build_metadata(
-            work=work, sanity_check_=sanity_check_, task=task, force=force)
+        _data = super().build_metadata()
         del _data['range']
         if self.shd_yml:
             _data['shd_yml'] = self.shd_yml.path
         return _data
 
     @restore_sel
-    def publish(self, work=None, force=False, version_up=None):
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=None, snapshot=True, bkp=True,
+            progress=True, ass=False, vrm_ma=False, rs_pxy=False,
+            pxy_anim=False, force=False):
         """Execute lookdev publish.
 
         Args:
-            work (CPWork): override publish work file
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            bkp (bool): save bkp file
+            progress (bool): show progress bar
+            ass (bool): export ass file
+            vrm_ma (bool): export vrmesh ma file
+            rs_pxy (bool): export redshift proxy
+            pxy_anim (bool): include anim in proxies
             force (bool): force overwrite without confirmation
-            version_up (bool): version up on publish
 
         Returns:
             (CPOutput): publish file
         """
         _LOGGER.info('LOOKDEV PUBLISH')
 
-        _work = work or pipe.CACHE.obt_cur_work()
-        _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
-        _data_dir = _pub.to_dir().to_subdir('data')
-        _metadata = self.build_metadata(force=force)
-
-        self.shd_yml = _pub.to_file(
-            dir_=_data_dir, base=_pub.base + '_shaders', extn='yml')
+        # Setup output attrs
+        self.publish = self.work.to_output(
+            'publish', output_type='lookdev', extn='ma')
+        _data_dir = self.publish.to_dir().to_subdir('data')
+        self.shd_yml = self.publish.to_file(
+            dir_=_data_dir, base=self.publish.base + '_shaders', extn='yml')
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
 
-        _bkp = _work.save(
-            reason='lookdev publish', force=True, update_outputs=False)
-        _metadata['bkp'] = _bkp.path
-
         # Check scene
+        self.progress.set_pc(15)
         _clean_junk()
         _assignments = lookdev.read_shader_assignments(referenced=False)
         if not _assignments:
@@ -141,97 +133,51 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         self.textures = _read_textures()
 
         # Generate outputs
-        _outs = []
-        _ass = self._handle_export_ass(force=force, metadata=_metadata)
-        if _ass:
-            _outs.append(_ass)
-        _vrm_ma = self._handle_export_vrm_ma(
-            force=force, metadata=_metadata)
-        if _vrm_ma:
-            _outs.append(_vrm_ma)
-        _rs_pxy = self._handle_export_rs_pxy(
-            force=force, metadata=_metadata, work=_work)
-        if _rs_pxy:
-            _outs.append(_rs_pxy)
-        self._handle_export_shaders_scene(
-            output=_pub, force=force, metadata=_metadata)
-        _outs.append(_pub)
+        self.outputs = []
+        self.progress.set_pc(20)
+        self._handle_export_ass()
+        self.progress.set_pc(30)
+        self._handle_export_vrm_ma()
+        self.progress.set_pc(40)
+        self._handle_export_rs_pxy()
+        self.progress.set_pc(50)
+        self._handle_export_shaders_scene()
+        self.progress.set_pc(60)
+        assert self.publish in self.outputs
 
-        _work.load(force=True)
-        self.post_export(work=_work, outs=_outs, version_up=version_up)
+        self.progress.set_pc(80)
+        self.work.load(force=True)
 
-        return _outs
+    def _handle_export_ass(self):
+        """Handle export ass file."""
+        _force = self.settings['force']
+        _ass = self.settings['ass']
+        if not _ass:
+            return
+        _ass_out = _export_ass(force=_force)
+        self.outputs.append(_ass_out)
 
-    def _handle_export_ass(self, metadata, force):
-        """Handle export ass file.
+    def _handle_export_vrm_ma(self):
+        """Handle export vray mesh ma file."""
+        _force = self.settings['force']
+        _export_vrm_ma = self.settings['vrm_ma']
+        _anim = self.settings['pxy_anim']
+        if not _export_vrm_ma:
+            return
+        _vrm = lookdev.export_vrmesh_ma(force=_force, animation=_anim)
+        _vrm.add_metadata(animated=_anim)
+        self.outputs.append(_vrm)
 
-        Args:
-            metadata (dict): publish metadata
-            force (bool): overwrite without confirmation
-
-        Returns:
-            (CPOutput|None): output (if any)
-        """
-        if self.ui and self.ui.ExportAss:
-            _tgl_export_ass = self.ui.ExportAss.isChecked()
-        else:
-            _tgl_export_ass = 'arnold' in dcc.allowed_renderers()
-
-        _ass = None
-        if _tgl_export_ass:
-            _ass = _export_ass(metadata=metadata, force=force)
-
-        return _ass
-
-    def _handle_export_vrm_ma(self, metadata, force):
-        """Handle export vray mesh ma file.
-
-        Args:
-            metadata (dict): publish metadata
-            force (bool): overwrite without confirmation
-
-        Returns:
-            (CPOutput|None): output (if any)
-        """
-        if self.ui and self.ui.ExportVrmesh:
-            _tgl_export_vrm = self.ui.ExportVrmesh.isChecked()
-            _anim = self.ui.ProxyAnim.isChecked()
-        else:
-            _tgl_export_vrm = 'vray' in dcc.allowed_renderers()
-            _anim = False
-
-        _vrm_ma = None
-        if _tgl_export_vrm:
-            _metadata = copy.deepcopy(metadata)
-            _metadata['animated'] = _anim
-            _vrm_ma = lookdev.export_vrmesh_ma(
-                metadata=_metadata, force=force, animation=_anim)
-
-        return _vrm_ma
-
-    def _handle_export_rs_pxy(self, work, metadata, force):
-        """Handle export redshift proxy file.
-
-        Args:
-            work (CPWork): publish work file
-            metadata (dict): publish metadata
-            force (bool): overwrite without confirmation
-
-        Returns:
-            (CPOutput|None): output (if any)
-        """
-        if self.ui and self.ui.ExportVrmesh:
-            _tgl_export_rs_pxy = self.ui.ExportRedshiftProxy.isChecked()
-            _anim = self.ui.ProxyAnim.isChecked()
-        else:
-            _tgl_export_rs_pxy = 'redshift' in dcc.allowed_renderers()
-            _anim = False
-
-        if not _tgl_export_rs_pxy:
-            return None
+    def _handle_export_rs_pxy(self):
+        """Handle export redshift proxy file."""
+        _force = self.settings['force']
+        _export_rs_pxy = self.settings['rs_pxy']
+        _anim = self.settings['pxy_anim']
+        if not _export_rs_pxy:
+            return
 
         _tmpl = 'publish' if not _anim else 'publish_seq'
-        _rs_pxy = work.to_output(
+        _rs_pxy = self.work.to_output(
             _tmpl, output_type='redshiftProxy', extn='rs')
         _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
 
@@ -249,28 +195,16 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         # Execute export
         try:
             save_redshift_proxy(
-                _rs_pxy, selection=True, animation=_anim, force=force)
+                _rs_pxy, selection=True, animation=_anim, force=_force)
         except RuntimeError as _exc:
             _LOGGER.error('FAILED TO EXPORT REDSHIFT PROXY %s', _exc)
-            return None
+            return
+        _rs_pxy.add_metadata(animated=_anim)
+        self.outputs.append(_rs_pxy)
 
-        _metadata = copy.deepcopy(metadata)
-        _metadata['animated'] = _anim
-        _rs_pxy.set_metadata(_metadata)
-
-        return _rs_pxy
-
-    def _handle_export_shaders_scene(self, output, metadata, force):
-        """Handle export shaders ma file.
-
-        Args:
-            output (CPOutput): publish file
-            metadata (dict): publish metadata
-            force (bool): overwrite without confirmation
-
-        Returns:
-            (CPOutput|None): output (if any)
-        """
+    def _handle_export_shaders_scene(self):
+        """Handle export shaders ma file."""
+        _force = self.settings['force']
 
         # Read shaders + save to yml
         _shd_data = lookdev.read_publish_metadata()
@@ -285,19 +219,15 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         cmds.select(_export_nodes, noExpand=True)
         if not _export_nodes:
             raise RuntimeError('No shaders/sets found to export')
-        save_scene(output.path, selection=True, force=force)
+        save_scene(self.publish.path, selection=True, force=_force)
 
-        _metadata = copy.deepcopy(metadata)
-        _metadata['shd_yml'] = self.shd_yml.path
-        output.set_metadata(_metadata)
+        self.publish.add_metadata(shd_yml=self.shd_yml.path)
+        self.outputs.append(self.publish)
 
-    def _register_in_shotgrid(
-            self, work, outs, upstream_files=None, link_textures=True):
+    def _register_in_shotgrid(self, upstream_files=None, link_textures=True):
         """Register outputs in shotgrid.
 
         Args:
-            work (CPWork): source work file
-            outs (CPOutput list): outputs that were generated
             upstream_files (list): list of upstream files
             link_textures (bool): register + link texture files in shotgrid
         """
@@ -309,10 +239,9 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             _link_textures = False
         if _link_textures and self.textures:
             _upstream_files += _build_upstream_textures(
-                paths=self.textures, work=work)
+                paths=self.textures, work=self.work)
 
-        super()._register_in_shotgrid(
-            work=work, outs=outs, upstream_files=_upstream_files)
+        super()._register_in_shotgrid(upstream_files=_upstream_files)
 
 
 def _build_upstream_textures(paths, work=None):
@@ -378,11 +307,10 @@ def _clean_junk():
         cmds.delete('JUNK')
 
 
-def _export_ass(metadata, force):
+def _export_ass(force):
     """Export ass file of cache_SET geo.
 
     Args:
-        metadata (dict): metadata to apply to ass file
         force (bool): overwrite existing without confirmation
     """
     _work = pipe.cur_work()
@@ -418,12 +346,6 @@ def _export_ass(metadata, force):
         boundingBox=True,
         cam='perspShape')
     assert _ass.exists()
-
-    # Apply metadata
-    _data = copy.copy(metadata)
-    for _key in ['shd_yml']:
-        _data.pop(_key, None)
-    _ass.set_metadata(_data)
 
     _LOGGER.info(' - EXPORTED ASS %s', _ass.path)
 

@@ -19,6 +19,8 @@ class TestQt(unittest.TestCase):
 
         qt.close_all_progress_bars(filter_='Test')
 
+        # When bot is opened, it should force mid to be show (this is
+        # implemented in _ProgressDialog.show method)
         _top = qt.progress_dialog(stack_key='TestTop')
         _mid = qt.progress_dialog(stack_key='TestMid', show_delay=1)
         assert _mid.pos().y() > _top.pos().y()

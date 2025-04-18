@@ -328,10 +328,11 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper.ui.SReset.click()
     _helper.ui.SRefresh.click()
     _helper.ui.SAdd.click()
+    _helper.ui.SAdd.click()
     _helper.apply_updates(force=True)
 
     # Test scene ref ctx
-    _rig_ref = single(_helper.ui.SSceneRefs.all_data())
+    _rig_ref = _helper.ui.SSceneRefs.all_data()[0]
     _helper.ui.SSceneRefs.select_data(_rig_ref)
     assert _helper.ui.SSceneRefs.selected_data()
     _test_ctx(
@@ -350,7 +351,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     _blast_h.ui.Format.select_text(_vid_fmt)
     _blast_h.ui.Force.setChecked(True)
     _blast_h.ui.View.setChecked(False)
-    _helper.ui.EBlast.click()
+    _blast_h.exec_from_ui(force=True)
     _LOGGER.info(' - WORK %s', _helper.work)
     _helper.ui.MainPane.select_tab('Work')
     assert _helper.work.outputs
@@ -361,13 +362,16 @@ def _test_anim_workflow(progress, force, show_ctx):
     assert not _helper.work.find_outputs(extn='abc')
     _helper.ui.MainPane.select_tab('Export')
     _helper.ui.EExportPane.select_tab('Cache')
+    _exp = _helper.ui.ECacheHandler.selected_data()
     assert (
-        _helper.ui.ECacheRefs.all_data() ==
-        _helper.ui.ECacheRefs.selected_datas())
-    _helper.ui.ECacheVersionUp.setChecked(False)
-    _helper.ui.ECache.click()
+        _exp.ui.Cacheables.all_data() ==
+        _exp.ui.Cacheables.selected_datas())
+    _exp.ui.VersionUp.setChecked(False)
+    _exp.ui.Notes.setText('integration test')
+    _exp.ui.Execute.click()
     assert _helper.work.find_outputs(extn='abc')
-    _abc = single(_helper.work.find_outputs(extn='abc'))
+    assert len(_helper.work.find_outputs(extn='abc')) == 2
+    _abc = _helper.work.find_outputs(extn='abc')[0]
     assert _abc.extn == 'abc'
 
     return _abc
@@ -405,7 +409,8 @@ def _test_lighting_workflow(progress, force, show_ctx):
     progress.set_pc(60)
     _helper.ui.MainPane.select_tab('Scene')
     pprint.pprint(_shot.find_outputs(extn='abc', tag='test'))
-    _abc = _shot.find_output(extn='abc', tag='test', ver_n='latest')
+    _abc = _shot.find_output(
+        extn='abc', tag='test', output_name='test01', ver_n='latest')
     _helper.ui.SOutputs.select_data(_abc)
     _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()
@@ -428,7 +433,9 @@ def _test_lighting_workflow(progress, force, show_ctx):
     _render_h = _helper.ui.ERenderHandler.selected_data()
     assert _render_h
     _render_h.ui.VersionUp.setChecked(False)
-    _helper._callback__ERender(force=True, render_=False)
+    if _render_h.NAME == 'Maya Farm Render':
+        _render_h.ui.LimitGrps.setText('gpu-nvidia-rtx,maya-2023,redshift')
+    _render_h.exec_from_ui(force=True, render_=False)
 
 
 def _test_ctx(widget, method, show_ctx):

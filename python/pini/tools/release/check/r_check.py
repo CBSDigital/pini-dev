@@ -173,7 +173,7 @@ class CheckFile(MetadataFile):
             _LOGGER.info(' - ISSUE %s %s %s', _issue, _issue.name, _issue.desc)
             _LOGGER.info(' - DISABLE # pylint: disable=%s', _issue.name)
             raise _issue.to_error(self)
-        _LOGGER.debug(' - LINT SUCCESFUL %s', self.path)
+        _LOGGER.debug(' - LINT SUCCESSFUL %s', self.path)
 
     def apply_simple_checks(self):
         """Apply simple checks."""
@@ -184,7 +184,7 @@ class CheckFile(MetadataFile):
         _check_line_len = (
             not self.is_test() and
             not passes_filter(self.path, _too_long_filter))
-        _LOGGER.info(
+        _LOGGER.debug(
             ' - CHECK LINE LEN %d %s', _check_line_len, _too_long_filter)
 
         for _line_n, _line in enumerate(self.read_lines()):

@@ -177,11 +177,12 @@ class PIMayaInstaller(i_installer.PIInstaller):
         testing.insert_env_path(env='MAYA_PLUG_IN_PATH', path=_plugins)
 
         # Install ui elements
-        self.menu_installer.run(parent=parent)
-        self.shelf_installer.run(parent=parent)
-        if launch_helper:
-            _LOGGER.info(' - LAUNCHING HELPER %s', helper)
-            helper.obt_helper()
+        if not cmds.about(batch=True):
+            self.menu_installer.run(parent=parent)
+            self.shelf_installer.run(parent=parent)
+            if launch_helper:
+                _LOGGER.info(' - LAUNCHING HELPER %s', helper)
+                helper.obt_helper()
 
 
 INSTALLER = PIMayaInstaller()

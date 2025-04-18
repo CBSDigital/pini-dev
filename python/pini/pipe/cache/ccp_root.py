@@ -291,6 +291,8 @@ class CCPRoot(elem.CPRoot):
         """
         if isinstance(obj, elem.CPJob):
             return self.obt_job(obj)
+        if isinstance(obj, (elem.CPSequence)):
+            return self.obt_sequence(obj)
         if isinstance(obj, (elem.CPAsset, elem.CPShot)):
             return self.obt_entity(obj)
         if isinstance(obj, elem.CPWork):

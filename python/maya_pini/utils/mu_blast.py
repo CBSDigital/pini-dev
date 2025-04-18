@@ -279,7 +279,7 @@ def _to_res(res, is_video):
     """
     from pini import dcc
 
-    if res == 'Full':
+    if res in (None, 'Full'):
         _res = dcc.get_res()
     elif res == 'Half':
         _revert_res = dcc.get_res()

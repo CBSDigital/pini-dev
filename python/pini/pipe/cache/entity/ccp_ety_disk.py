@@ -204,7 +204,6 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
             assert isinstance(_work_dir, cache.CCPWorkDir)
             assert isinstance(_work_dir.entity, cache.CCPEntity)
             _out = _work_dir.obt_output(output, catch=catch, force=force)
-            assert isinstance(_out.entity, cache.CCPEntity)
         else:  # Must be entity level output
             _LOGGER.debug(' - SEARCHING ENTITY OUTPUTS')
             _out = self.find_output(output, catch=catch)
@@ -214,6 +213,7 @@ class CCPEntityDisk(ccp_ety_base.CCPEntityBase):
         if _out:
             assert isinstance(_out, pipe.CPOutputBase)
             assert isinstance(_out, cache.CCPOutputBase)
+            assert isinstance(_out.entity, cache.CCPEntity)
 
         return _out
 

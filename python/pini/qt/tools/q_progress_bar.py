@@ -65,7 +65,7 @@ class _ProgressDialog(QtWidgets.QDialog):
 
     def __init__(
             self, items, title='Processing {:d} item{}', col=None, show=True,
-            pos=None, parent=None, stack_key='DefaultProgress',
+            pos=None, parent=None, stack_key='DefaultProgress', lock_vis=False,
             show_delay=None, plural_=None, raise_stop=True, auto_pos=True):
         """Constructor.
 
@@ -77,6 +77,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             pos (QPoint): override position
             parent (QDialog): parent dialog
             stack_key (str): dialog uid
+            lock_vis (bool): block unhide by child progress bars
             show_delay (float): delay in showing dialog (in secs)
             plural_ (str): override plural string in title
                 (eg. 'es' for 'fixes')
@@ -99,6 +100,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         self.stack_key = stack_key
         self.show_delay = show_delay
         self.raise_stop = raise_stop
+        self.lock_vis = lock_vis
 
         self.counter = 0
         self.last_update = time.time()
@@ -215,14 +217,29 @@ class _ProgressDialog(QtWidgets.QDialog):
 
     def show(self):
         """Show this dialog."""
-
-        # Show hidden progress bars above
-        for _bar in sys.QT_PROGRESS_BAR_STACK:
-            if _bar == self:
-                break
-            _bar.show()
-
+        _LOGGER.debug('SHOW %s', self)
+        self._unhide_progress_bars_above_this()
         super().show()
+
+    def _unhide_progress_bars_above_this(self):
+        """Show hidden progress bars above this one."""
+        for _bar in copy.copy(sys.QT_PROGRESS_BAR_STACK):
+
+            # Stop processing at this bar
+            if _bar == self:
+                _LOGGER.debug(' - MATCHED %s', self)
+                break
+            if _bar.lock_vis:
+                continue
+
+            # Attempt to show higher dialog
+            try:
+                _bar.show()
+            except RuntimeError as _exc:
+                # Remove bars that have been garbage collected
+                _LOGGER.info(
+                    ' - REMOVING GARBAGE COLLECTED PROGRESS BAR %s', _exc)
+                sys.QT_PROGRESS_BAR_STACK.remove(_bar)
 
     def update_ui(self):
         """Update interface."""

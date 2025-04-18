@@ -182,15 +182,16 @@ class SCCheck:
         """
         _LOGGER.debug('EXECUTE %s update_ui=%s', self, update_ui)
 
+        # Init vars
         self.reset()
         if self.is_disabled:
             self.write_log('Disabled')
             return
-        self.write_log('Starting check')
-
         self.status = 'running'
         self._update_ui = update_ui
 
+        # Run the actual check
+        self.write_log('Starting check')
         if not catch:
             self.run()
         else:
@@ -201,10 +202,10 @@ class SCCheck:
                 self.write_log('Errored - %s', str(_exc).strip())
                 self.status = 'errored'
                 self.error = error.PEError()
-
         if not self.error:
             self.status = 'failed' if self.fails else 'passed'
 
+        # Mark completed
         self.write_log('Completed check - status=%s', self.status)
         self.set_progress(100.0)
 

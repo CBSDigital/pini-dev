@@ -2,8 +2,7 @@
 
 import logging
 
-from pini import pipe, qt
-from pini.tools import error
+from pini import pipe
 
 from maya_pini import m_pipe, open_maya as pom
 
@@ -15,8 +14,8 @@ _LOGGER = logging.getLogger(__name__)
 class CMayaPlayblast(bh_base.CBlastHandler):
     """Blast handler for maya."""
 
-    NAME = 'Playblast Tool'
-    LABEL = 'Playblasts the current scene'
+    NAME = 'Playblast'
+    LABEL = 'Playblasts the current scene.'
 
     def __init__(self, label_w=80):
         """Constructor.
@@ -26,9 +25,9 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         """
         super().__init__(label_w=label_w)
 
-    def build_ui(self):
-        """Build ui elements for this handler."""
-        super().build_ui()
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
+        super()._add_custom_ui_elems()
 
         # Read cams
         _cams = [str(_cam) for _cam in pom.find_cams()]
@@ -40,39 +39,15 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             _cur_cam = str(_cur_cam)
         _LOGGER.debug('BUILD UI %s %s', _cur_cam, _cams)
 
+        self.ui.add_separator()
         self.ui.add_combo_box(
             name='Camera', items=_cams, val=_cur_cam)
         self.ui.add_combo_box(
             name='Settings', items=['As is', 'Nice'])
         self.ui.add_combo_box(
-            name='Resolution', items=['Full', 'Half', 'Quarter'])
+            name='Res', items=['Full', 'Half', 'Quarter'], label='Resolution')
         self.ui.add_combo_box(
             name='OutputName', items=['blast', '<camera>'])
-
-    @property
-    def output(self):
-        """Obtain blast output path.
-
-        Returns:
-            (CPOutput): blast output
-        """
-        _fmt = self.ui.Format.currentText()
-        _work = pipe.cur_work()
-        return _work.to_output(
-            self.template, output_name=self.output_name, extn=_fmt)
-
-    @property
-    def output_name(self):
-        """Obtain current output name.
-
-        Returns:
-            (str): output name
-        """
-        _output_name = self.ui.OutputName.currentText()
-        _cam = self.ui.Camera.currentText()
-        if _output_name == '<camera>':
-            _output_name = _cam.replace(':', '_')
-        return _output_name
 
     @property
     def template(self):
@@ -95,49 +70,43 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             _en = 'output_name' in self.template.keys()
         self.ui.OutputName.setEnabled(_en)
 
-    def _validate_output_name(self):
-        """Check output name is valid."""
-        if not self.ui.OutputName.isEnabled():
-            return
-        try:
-            self.output
-        except ValueError as _exc:
-            raise error.HandledError(
-                f'You have chosen "{self.output_name}" as the output name '
-                f'which is not valid within the pipeline.\n\nPlease select '
-                f'another output name.') from _exc
+    def _set_camera(self):
+        """Apply camera."""
+        _cam = self.settings['camera']
+        if _cam:
+            _cam = pom.CCamera(_cam)
+        if not _cam:
+            _cam = pom.find_render_cam()
+        assert isinstance(_cam, pom.CCamera)
+        self.camera = _cam
 
-    def blast(self):
-        """Excute blast."""
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=False, snapshot=True, save=True,
+            bkp=True, camera=None, view=True, range_=None, format_='mp4',
+            burnins=True, settings='As is', output_name='blast', res=None,
+            force=False):
+        """Blast current scene.
 
-        _work = pipe.cur_work()
-        if not _work:
-            qt.notify(
-                "Please save your scene using PiniHelper before blasting.\n\n"
-                "This allows the tools to tell what job/task you're working "
-                "in, to know where to save the blast to.",
-                title='Warning', parent=self.parent)
-            return
-        if not _work.find_template('blast', catch=True):
-            qt.notify(
-                f'No blast template found in this job:\n\n{_work.job.path}\n\n'
-                f'Unable to blast.',
-                title='Warning', parent=self.parent)
-            return
-
-        _force = self.ui.Force.isChecked()
-        _output_name = self.ui.OutputName.currentText()
-        _cam = self.ui.Camera.currentText()
-        self._validate_output_name()
-
-        m_pipe.blast(
-            format_=self.ui.Format.currentText(),
-            view=self.ui.View.isChecked(),
-            range_=self.to_range(),
-            burnins=self.ui.Burnins.isChecked(),
-            res=self.ui.Resolution.currentText(),
-            camera=_cam,
-            save=not self.ui.DisableSave.isChecked(),
-            settings=self.ui.Settings.currentText(),
-            output_name=_output_name,
-            force=_force)
+        Args:
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            save (bool): save work file on export
+            bkp (bool): save bkp file
+            camera (str): blast camera
+            view (bool): view blast
+            range_ (tuple): override range
+            format_ (str): blast format (eg. mp4/jpg)
+            burnins (bool): apply burnins (mov only)
+            settings (str): apply settings (eg. "Nice", "As is")
+            output_name (str): apply outputs name
+                <camera> - uses camera name
+            res (str): blast res (eg. "Full", "Half")
+            force (bool): replace existing outputs without confirmation
+        """
+        _out = m_pipe.blast(
+            format_=format_, view=view, range_=range_, burnins=burnins,
+            res=res, camera=camera, save=False, settings=settings,
+            output_name=output_name, force=force, update_metadata=False,
+            update_cache=False)
+        self.outputs = [_out]

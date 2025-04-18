@@ -1,8 +1,12 @@
 """Tools for managing QColor wrapper."""
 
+import logging
+
 from pini.utils import val_map, basic_repr, single
 
 from ...q_mgr import QtGui
+
+_LOGGER = logging.getLogger(__name__)
 
 # Added cols - note: case is ignored so much be lower
 _EXTENDED_COLS = {
@@ -17,6 +21,7 @@ class CColor(QtGui.QColor):
 
     def __init__(self, *args, **kwargs):
         """Constructor."""
+        _LOGGER.debug('INIT CColor %s %s', args, kwargs)
         _alpha = kwargs.pop('alpha', None)
 
         # Apply extended colour names
@@ -27,6 +32,7 @@ class CColor(QtGui.QColor):
             _args = _EXTENDED_COLS.get(_name, _args)
 
         assert not kwargs
+        _LOGGER.debug(' - ARGS %s', _args)
         super().__init__(*_args)
         if _alpha:
             self.setAlphaF(_alpha)

@@ -411,9 +411,9 @@ def set_render_extn(extn: str):
 
     # Check success
     _extn = to_render_extn()
-    if _extn == extn:
+    if _extn != extn:
         raise RuntimeError(
-            f'Failed to apply extn "{extn}" (currently "{_extn}"')
+            f'Failed to apply extn "{extn}" (currently "{_extn}")')
 
 
 def set_render_res(res: tuple):

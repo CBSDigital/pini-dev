@@ -2,10 +2,9 @@
 
 import logging
 
-from maya import cmds
 
-from pini import pipe, qt
-from maya_pini import open_maya as pom, m_pipe
+from pini import icons
+from maya_pini import m_pipe
 from maya_pini.utils import to_long
 
 from . import phm_basic
@@ -17,125 +16,74 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
     """Manages maya model publish."""
 
     NAME = 'Maya Model Publish'
+    ACTION = 'ModelPublish'
+    TYPE = 'Publish'
+
+    ICON = icons.find('Ice')
+    COL = 'Cornflower Blue'
+
     LABEL = (
         'Copies this scene to the publish directory - make sure there '
         'is only one top node named MDL and that it has a cache set named '
         'cache_SET')
-    ACTION = 'ModelPublish'
 
-    def build_ui(self, add_footer=True):
-        """Build basic render interface into the given layout.
-
-        Args:
-            add_footer (bool): add footer elements
-        """
-        super().build_ui(add_footer=False)
-
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
+        super()._add_custom_ui_elems()
+        self.ui.add_separator()
         self.ui.add_check_box(
             val=True, name='FreezeTfms', label="Freeze transforms")
         self.ui.add_check_box(
-            val=True, name='DeleteHistory')
-        self.ui.add_separator()
-        if add_footer:
-            self.ui.add_footer_elems()
+            val=True, name='DelHistory', label='Delete history')
 
-    def publish(
-            self, work=None, revert=True, metadata=None, notes=None,
-            sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None, progress=None, force=False):
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=True, snapshot=True, bkp=True,
+            progress=True, abc=True, fbx=True, references='Remove',
+            remove_alayers=True, remove_dlayers=True, remove_junk=True,
+            remove_sets=True, freeze_tfms=True, del_history=True, force=False):
         """Execute this publish.
 
         Args:
-            work (CPWork): override work
-            revert (bool): revert to work file on completion
-            metadata (dict): override metadata
-            notes (str): publish notes
-            sanity_check_ (bool): apply sanity check
-            export_abc (bool): whether to export rest cache abc
-            export_fbx (bool): whether to export rest cache fbx
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            bkp (bool): save bkp file
+            progress (bool): show progress bar
+            abc (bool): whether to export rest cache abc
+            fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
-            version_up (bool): whether to version up on publish
-            progress (ProgressDialog): override progress dialog
+            remove_alayers (bool): remove anim layers
+            remove_dlayers (bool): remove display layers
+            remove_junk (bool): remove JUNK group
+            remove_sets (bool): remove unused sets
+            freeze_tfms (bool): freeze transforms on geo
+            del_history (bool): delete history on geo
             force (bool): force overwrite without confirmation
 
         Returns:
             (CPOutput): publish file
         """
-        _LOGGER.info('PUBLISH')
 
-        _work = work or pipe.cur_work()
-        if not _work.job.find_templates('publish'):
-            qt.notify(
-                f'No publish template found in this job:'
-                f'\n\n{_work.job.path}\n\n'
-                f'Unable to publish.',
-                title='Warning', parent=self.parent)
-            return None
+        # Execute basic publish with model-specific opts removed
+        _basic_kwargs = locals()
+        for _name in ('del_history', 'freeze_tfms', 'self', '__class__'):
+            _basic_kwargs.pop(_name)
+        super().export(**_basic_kwargs)
 
-        _data = metadata or self.build_metadata(
-            work=work, force=force, sanity_check_=sanity_check_, task='model',
-            notes=notes)
-        _progress = progress or qt.progress_dialog(
-            'Publishing model', col='CornflowerBlue', stack_key='Publish')
+    def _clean_scene(self):
+        """Apply clean scene options to prepare for publish."""
+        _del_hist = self.settings['del_history']
+        _freeze_tfms = self.settings['freeze_tfms']
 
-        # Execute publish
-        _outs = super().publish(
-            work=work, force=force, revert=False, metadata=_data,
-            export_abc=export_abc, export_fbx=export_fbx, notes=notes,
-            references=references, version_up=False, progress=_progress)
-        _progress.set_pc(90)
+        super()._clean_scene()
 
-        if revert:
-            _work.load(force=True)
-            self._apply_version_up(version_up=version_up)
-        _progress.close()
-
-        return _outs
-
-    def _clean_scene(self, references=None):
-        """Apply clean scene options to prepare for publish.
-
-        Args:
-            references (str): how to handle references (eg. Remove)
-        """
-        self._apply_refs_opt(references=references)
-        _del_history = self.ui.DeleteHistory.isChecked() if self.ui else True
-        _freeze_tfms = self.ui.FreezeTfms.isChecked() if self.ui else True
-        self._clean_geos(
-            delete_history=_del_history, freeze_tfms=_freeze_tfms)
-        super()._clean_scene(references='No action')
-
-    def _clean_geos(
-            self, delete_history=True, freeze_tfms=True,
-            setup_pref=False):
-        """Clean geometry.
-
-        Args:
-            delete_history (bool): delete history
-            freeze_tfms (bool): freeze transforms
-            setup_pref (bool): setup Pref attribute (never got this working)
-        """
-        _LOGGER.info('CLEAN GEO')
-        if not cmds.objExists('cache_SET'):
-            _LOGGER.info(' - NO cache_SET FOUND')
-            return
-
+        # Clean geos
         _tfms = m_pipe.read_cache_set(mode='tfm')
         _LOGGER.info(' - TFMS %s', _tfms)
         for _tfm in sorted(_tfms, key=to_long, reverse=True):
             if not _tfm.exists():
                 continue
-            if delete_history:
+            if _del_hist:
                 _tfm.delete_history()
-            if freeze_tfms:
+            if _freeze_tfms:
                 _tfm.freeze_tfms(force=True)
-
-        if setup_pref:
-            _geos = pom.set_to_geos('cache_SET')
-            _LOGGER.info(' - GEOS %s', _geos)
-            for _geo in qt.progress_bar(
-                    _geos, 'Applying Pref to {:d} geo{}'):
-                for _vtx in _geo.to_vtxs():
-                    _pos = pom.CPoint(cmds.xform(
-                        _vtx, query=True, worldSpace=True, translation=True))
-                    cmds.polyColorPerVertex(_vtx, colorRGB=_pos.to_tuple())

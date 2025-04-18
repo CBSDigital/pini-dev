@@ -198,6 +198,35 @@ def _check_test_shots(force=False):
     find_test_render()
 
 
+def _build_test_abcs(work, force):
+    """Build test abcs.
+
+    Args:
+        work (CPWork): work file to export from
+        force (bool): lose unsaved changes without confirmation
+    """
+    from maya_pini import m_pipe, open_maya as pom
+
+    _LOGGER.info(' - WORK %s', work)
+    _rig = find_test_rig()
+    dcc.new_scene(force=force)
+    dcc.set_range(1001, 1005)
+
+    # Setup rig
+    _ref = dcc.create_ref(_rig, namespace='test01')
+
+    # Setup camera
+    _cam = pom.CMDS.camera(name='renderCam')
+    if _cam != 'renderCam':
+        _cam = _cam.rename('renderCam')
+    assert _cam == 'renderCam'
+
+    work.save(force=True)
+    _cbls = m_pipe.find_cacheables()
+    assert len(_cbls) == 2
+    export.cache(_cbls)
+
+
 def find_test_abc(camera=False, force=False):
     """Find test abc output, creating if needed.
 
@@ -208,7 +237,6 @@ def find_test_abc(camera=False, force=False):
     Returns:
         (CCPOutputFile): abc
     """
-    from maya_pini import m_pipe, open_maya as pom
 
     _ns = 'renderCam' if camera else 'test01'
     _ety = pipe.CACHE.obt(TEST_SHOT)
@@ -217,28 +245,7 @@ def find_test_abc(camera=False, force=False):
         task='anim', ver_n='latest', tag=_work.tag, extn='abc',
         output_name=_ns, versionless=False, catch=True)
     if not _abc:
-
-        _LOGGER.info(' - WORK %s', _work)
-        _rig = find_test_rig()
-        dcc.new_scene(force=force)
-        dcc.set_range(1001, 1005)
-        assert not _ety.find_outputs(
-            extn='abc', tag=pipe.DEFAULT_TAG, output_name=_ns,
-            task='anim')
-
-        # Setup rig
-        _ref = dcc.create_ref(_rig, namespace='test01')
-
-        # Setup camera
-        _cam = pom.CMDS.camera(name='renderCam')
-        if _cam != 'renderCam':
-            _cam = _cam.rename('renderCam')
-        assert _cam == 'renderCam'
-
-        _work.save(force=True)
-        _cbls = m_pipe.find_cacheables()
-        assert len(_cbls) == 2
-        m_pipe.cache(_cbls)
+        _build_test_abcs(_work, force=force)
         _abc = _ety.find_output(
             task='anim', ver_n='latest', tag=_work.tag, extn='abc',
             output_name=_ns, versionless=False, catch=True)

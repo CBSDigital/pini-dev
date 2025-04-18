@@ -8,7 +8,7 @@ import shiboken2
 
 from maya import cmds, mel
 
-from pini.utils import wrap_fn, single, apply_filter, EMPTY
+from pini.utils import wrap_fn, single, apply_filter, EMPTY, cache_result
 from maya_pini.utils import to_parent, to_node
 
 _LOGGER = logging.getLogger(__name__)
@@ -215,12 +215,15 @@ def get_active_model_editor(catch=True):
         'No active view found - try middle-mouse clicking the viewport')
 
 
+@cache_result
 def get_main_window():
     """Get main window element name.
 
     Returns:
         (str): main window name
     """
+    if cmds.about(batch=True):
+        raise RuntimeError('Batch mode')
     return mel.eval('$s=$gMainWindow')
 
 

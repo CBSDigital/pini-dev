@@ -93,6 +93,7 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
     else:
         _LOGGER.debug(' - BASIC ERROR')
         error.TRIGGERED = True
+        _LOGGER.warning(' - LAUNCHING ERROR DIALOG')
         e_dialog.launch_ui(_error, parent=parent)
         _show_traceback = True
 

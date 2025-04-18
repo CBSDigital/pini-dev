@@ -29,15 +29,6 @@ class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
             self, ui_file=ui_file, show=False, catch_errors=catch_errors,
             store_settings=store_settings, stack_key=stack_key)
 
-    def load_settings(self, geometry=True, type_filter=None):
-        """Load interface settings.
-
-        Args:
-            geometry (bool): load window position/size
-            type_filter (str): apply widget type name filter
-        """
-        super().load_settings(geometry=geometry, type_filter=type_filter)
-
     def delete(self):
         """Delete this interface."""
         _LOGGER.debug('DELETE')

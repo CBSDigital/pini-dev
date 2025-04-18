@@ -83,7 +83,7 @@ class TestPublish(unittest.TestCase):
         assert _work_1 not in _work_dir_c.works
         assert not _work_dir_c.works
         assert not error.TRIGGERED
-        print('')
+        print()
 
         # Test create work object
         _LOGGER.info('TESTING SAVE WORK')
@@ -127,6 +127,7 @@ class TestPublish(unittest.TestCase):
         _LOGGER.info('TESTING PUBLISH')
         _basic_pub = dcc.find_export_handler(
             'BasicPublish', type_='Publish', catch=True)
+        _LOGGER.info('BASIC PUB %s', _basic_pub)
         assert not error.TRIGGERED
         if not _basic_pub:
             assert dcc.NAME in ['hou', 'nuke']
@@ -135,6 +136,6 @@ class TestPublish(unittest.TestCase):
             assert _work_1.job is _job_c
             assert _work_1.job is pipe.CACHE.cur_job
             assert not error.TRIGGERED
-            _basic_pub.publish(work=_work_1, force=True, version_up=False)
+            _basic_pub.exec(work=_work_1, force=True, version_up=False)
             assert pipe.CACHE.obt(testing.TEST_JOB).find_publishes(asset='tmp')
         assert not error.TRIGGERED

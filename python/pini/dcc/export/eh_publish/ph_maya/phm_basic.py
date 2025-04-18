@@ -1,12 +1,11 @@
 """Tools for managing the basic maya publish handler."""
 
-import copy
 import enum
 import logging
 
 from maya import cmds
 
-from pini import pipe, dcc, qt
+from pini import dcc, qt, icons
 from pini.utils import single
 
 from maya_pini import ref, open_maya as pom
@@ -32,6 +31,10 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     """Manages a basic maya publish."""
 
     NAME = 'Maya Basic Publish'
+    ICON = icons.find('Beer Mug')
+    COL = 'Salmon'
+    TYPE = 'Publish'
+
     LABEL = '\n'.join([
         'Copies this scene to the publish directory - this is generally '
         'used to pass a rig/model/lookdev asset down the pipeline for '
@@ -47,15 +50,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         'You can use the sanity check tool to check your scene.',
     ])
 
-    def build_ui(self, add_footer=True):
-        """Build basic render interface into the given layout.
-
-        Args:
-            add_footer (bool): add footer elements
-        """
-        _LOGGER.debug('BUILD UI %s', self)
-        super().build_ui(add_footer=False)
-
+    def _add_custom_ui_elems(self):
+        """Add custom ui elements."""
         self.ui.add_separator()
 
         self.ui.add_check_box(
@@ -63,16 +59,16 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         self.ui.add_check_box(
             val=True, name='RemoveSets', label='Remove unused sets')
         self.ui.add_check_box(
-            val=True, name='RemoveDLayers', label='Remove display layers')
+            val=True, name='RemoveDlayers', label='Remove display layers')
         self.ui.add_check_box(
-            val=True, name='RemoveALayers', label='Remove anim layers')
+            val=True, name='RemoveAlayers', label='Remove anim layers')
         self.ui.add_separator()
 
         self.ui.add_check_box(
-            val=True, name='ExportAbc',
+            val=True, name='Abc',
             label="Export abc of cache_SET geo")
         self.ui.add_check_box(
-            val=False, name='ExportFbx',
+            val=False, name='Fbx',
             label="Export fbx of top node")
         self.ui.add_separator()
 
@@ -83,125 +79,95 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
             name='References', items=_items, data=_data,
             save_policy=qt.SavePolicy.SAVE_IN_SCENE,
             settings_key=_PUB_REFS_MODE_KEY)
-        self.ui.add_separator()
 
-        # Add notes
-        if add_footer:
-            self.ui.add_footer_elems()
+    def exec_from_ui(self, **kwargs):
+        """Execuate this export using settings from ui.
 
-        _LOGGER.debug(' - COMPLETED BUILD UI %s', self)
+        Args:
+            kwargs (dict): override exec kwargs
+        """
+
+        # Force references elem to save
+        self.ui.References.currentTextChanged.emit(
+            self.ui.References.currentText())
+
+        return super().exec_from_ui(**kwargs)
 
     @restore_sel
-    def publish(
-            self, work=None, revert=True, metadata=None, notes=None,
-            sanity_check_=True, export_abc=None, export_fbx=None,
-            references=None, version_up=None, progress=None, force=False):
+    def export(  # pylint: disable=unused-argument
+            self, notes=None, version_up=True, snapshot=True, save=True,
+            bkp=True, progress=True, update_metadata=True, update_cache=True,
+            abc=False, fbx=False, references='Remove', remove_alayers=True,
+            remove_dlayers=True, remove_junk=True, remove_sets=True,
+            work=None, force=False):
         """Execute this publish.
 
         Args:
-            work (CPWork): override work
-            revert (bool): revert to work file on completion
-            metadata (dict): override metadata
-            notes (bool): publish notes
-            sanity_check_ (bool): apply sanity check
-            export_abc (bool): whether to export rest cache abc
-            export_fbx (bool): whether to export rest cache fbx
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            save (bool): save work file on export
+            bkp (bool): save bkp file
+            progress (bool): show progress bar
+            update_metadata (bool): update output metadata
+            update_cache (bool): update pipe cache
+            abc (bool): whether to export rest cache abc
+            fbx (bool): whether to export rest cache fbx
             references (str): how to handle references (eg. Remove)
-            version_up (bool): whether to version up on publish
-            progress (ProgressDialog): override progress dialog
+            remove_alayers (bool): remove anim layers
+            remove_dlayers (bool): remove display layers
+            remove_junk (bool): remove JUNK group
+            remove_sets (bool): remove unused sets
+            work (CPWork): override work file (for testing)
             force (bool): force overwrite without confirmation
 
         Returns:
             (CPOutput): publish file
         """
-        _LOGGER.info('PUBLISH force=%d', force)
+        _LOGGER.info('EXEC %s force=%d', self, force)
 
-        # Force refs mode to write scene data for sanity check
-        if self.ui_is_active():
-            self.ui.References.currentTextChanged.emit(
-                self.ui.References.currentText())
+        self._clean_scene()
+        self.progress.set_pc(30)
 
-        # Read options/outputs
-        _work = work or pipe.CACHE.cur_work
-        _metadata = metadata or self.build_metadata(
-            work=_work, force=force, sanity_check_=sanity_check_,
-            notes=notes)
-        _progress = progress or qt.progress_dialog(
-            'Publishing', stack_key='Publish')
-        _LOGGER.info(' - OBTAINED METADATA %s', _metadata)
-        _pub = _work.to_output('publish', output_type=None, extn='ma')
+        # Save main publish file
+        _pub = self.work.to_output('publish', output_type=None, extn='ma')
         _LOGGER.info(' - OUTPUT %s', _pub.path)
-
-        if self.ui_is_active():
-            self.ui.save_settings()
         _pub.delete(wording='replace', force=force)
-        _bkp = _work.save(
-            reason='publish', force=True, update_outputs=False, notes=notes)
-        _metadata['bkp'] = _bkp.path
-        _progress.set_pc(20)
-
-        self._clean_scene(references=references)
-        _progress.set_pc(30)
-
-        # Save publish
         dcc.save(_pub)
-        _outs = [_pub]
-        _pub.set_metadata(_metadata)
-        _progress.set_pc(50)
-
-        # Export versionless
-        _pub_vl = self.create_versionless(
-            work=_work, publish=_pub, metadata=_metadata)
-        if _pub_vl:
-            _outs.append(_pub_vl)
-        _progress.set_pc(60)
+        self.outputs = [_pub]
+        self.progress.set_pc(60)
 
         # Export abc
-        _export_abc = export_abc
-        if _export_abc is None and self.ui_is_active():
-            _export_abc = self.ui.ExportAbc.isChecked()
-        if _export_abc is None:
-            _export_abc = True
-        if _export_abc:
-            _abc = _exec_export_abc(work=_work, metadata=_metadata, force=force)
+        if abc:
+            _abc = _exec_export_abc(work=self.work, force=force)
             if _abc:
-                _outs.append(_abc)
-        _progress.set_pc(70)
+                self.outputs.append(_abc)
+        self.progress.set_pc(70)
 
         # Export fbx
-        _export_fbx = export_fbx
-        if _export_fbx is None and self.ui_is_active():
-            _export_fbx = self.ui.ExportFbx.isChecked()
-        if _export_fbx:
-            _fbx = _exec_export_fbx(work=_work, metadata=_metadata, force=force)
+        if fbx:
+            _fbx = _exec_export_fbx(work=self.work, force=force)
             if _fbx:
-                _outs.append(_fbx)
-        _progress.set_pc(75)
+                self.outputs.append(_fbx)
 
-        if revert:
-            _work.load(force=True)
+        # Revert scene
+        self.progress.set_pc(75)
+        self.work.load(force=True)
+        self.progress.set_pc(85)
 
-        self.post_export(work=_work, outs=_outs, version_up=version_up)
-        _progress.set_pc(80 if progress else 100)
-
-        return _outs
-
-    def _clean_scene(self, references=None):
+    def _clean_scene(self):
         """Apply clean scene options to prepare for publish.
-
-        Args:
-            references (str): how to handle references (eg. Remove)
         """
-        _remove_junk = (
-            self.ui.RemoveJunk.isChecked() if self.ui_is_active() else True)
-        _remove_sets = (
-            self.ui.RemoveSets.isChecked() if self.ui_is_active() else True)
-        _remove_dlayers = (
-            self.ui.RemoveDLayers.isChecked() if self.ui_is_active() else True)
-        _remove_alayers = (
-            self.ui.RemoveALayers.isChecked() if self.ui_is_active() else True)
+        _remove_junk = self.settings['remove_junk']
+        _remove_sets = self.settings['remove_sets']
+        _remove_dlayers = self.settings['remove_dlayers']
+        _remove_alayers = self.settings['remove_alayers']
 
-        self._apply_refs_opt(references)
+        if not cmds.objExists('cache_SET'):
+            _LOGGER.info(' - NO cache_SET FOUND')
+            return
+
+        self._apply_refs_opt()
 
         # Remove JUNK
         if _remove_junk and cmds.objExists('JUNK'):
@@ -229,19 +195,9 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if _remove_alayers:
             cmds.delete(cmds.ls(type='animLayer'))
 
-    def _apply_refs_opt(self, references):
-        """Apply references option.
-
-        Args:
-            references (str): how to handle references (eg. Remove)
-        """
-
-        # Determine references option
-        _refs = references
-        if _refs is None and self.ui:
-            _refs = self.ui.References.currentText()
-        if _refs is None:
-            _refs = 'Remove'
+    def _apply_refs_opt(self):
+        """Apply references option."""
+        _refs = self.settings['references']
         _LOGGER.info(' - REFS OPT %s', _refs)
 
         # Apply reference option
@@ -266,12 +222,11 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
             raise ValueError(_refs)
 
 
-def _exec_export_abc(work, metadata, force=False):
+def _exec_export_abc(work, force=False):
     """Save restCache abc.
 
     Args:
         work (CPWork): work file
-        metadata (dict): publish metadata
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -300,20 +255,14 @@ def _exec_export_abc(work, metadata, force=False):
     save_abc(abc=_abc, range_=_rng, geo=_geo, force=force)
     _LOGGER.info(' - SAVED ABC %s', _abc.path)
 
-    # Save metadata
-    _data = copy.copy(metadata)
-    _data['range'] = (_frame, )
-    _abc.set_metadata(_data)
-
     return _abc
 
 
-def _exec_export_fbx(work, metadata, constraints=True, force=False):
+def _exec_export_fbx(work, constraints=True, force=False):
     """Save restCache fbx.
 
     Args:
         work (CPWork): work file
-        metadata (dict): publish metadata
         constraints (bool): export constraints
         force (bool): overwrite existing without confimation
 
@@ -342,8 +291,6 @@ def _exec_export_fbx(work, metadata, constraints=True, force=False):
 
     # Export fbx
     save_fbx(_fbx, constraints=constraints, selection=True)
-
-    _fbx.set_metadata(metadata)
 
     return _fbx
 

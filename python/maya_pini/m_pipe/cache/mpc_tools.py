@@ -119,7 +119,7 @@ def cache(
         cacheables, uv_write=True, world_space=True, extn='abc',
         format_='Ogawa', range_=None, step=1.0, save=True, clean_up=True,
         renderable_only=True, checks_data=None, use_farm=False, snapshot=True,
-        version_up=False, update_cache=True, force=False):
+        version_up=False, update_metadata=True, update_cache=True, force=False):
     """Cache the current scene.
 
     Args:
@@ -137,6 +137,7 @@ def cache(
         use_farm (bool): cache using farm
         snapshot (bool): take thumbnail snapshot on cache
         version_up (bool): version up on cache
+        update_metadata (bool): apply metadata to outputs
         update_cache (bool): update cache with new outputs
         force (bool): overwrite existing without confirmation
 
@@ -186,7 +187,8 @@ def cache(
     else:
         _exec_local_cache(
             cacheables=cacheables, outputs=_outs, work=_work, flags=_flags,
-            checks_data=_checks_data, clean_up=clean_up, extn=extn)
+            checks_data=_checks_data, clean_up=clean_up, extn=extn,
+            update_metadata=update_metadata, update_cache=update_cache)
         _updated = True
 
     # Post cache
@@ -207,7 +209,8 @@ def cache(
 
 
 def _exec_local_cache(
-        cacheables, outputs, work, checks_data, extn, flags, clean_up):
+        cacheables, outputs, work, checks_data, extn, flags, clean_up,
+        update_metadata, update_cache):
     """Exec cache locally.
 
     Args:
@@ -218,6 +221,8 @@ def _exec_local_cache(
         extn (str): cache output format (abc/fbx)
         flags (dict): cache flags
         clean_up (bool): clean up tmp nodes after cache (on by default)
+        update_metadata (bool): apply metadata to outputs
+        update_cache (bool): update cache with new outputs
     """
 
     # Pre cache
@@ -229,9 +234,10 @@ def _exec_local_cache(
         _exec_local_abc_cache(cacheables=cacheables, flags=flags)
     elif extn == 'fbx':
         _exec_local_fbx_cache(cacheables=cacheables, flags=flags)
-    _write_metadata(
-        outputs=outputs, cacheables=cacheables, range_=flags['range_'],
-        checks_data=checks_data, step=flags['step'])
+    if update_metadata:
+        _write_metadata(
+            outputs=outputs, cacheables=cacheables, range_=flags['range_'],
+            checks_data=checks_data, step=flags['step'])
 
     # Post cache
     if clean_up:
@@ -239,7 +245,7 @@ def _exec_local_cache(
             _cbl.post_cache()
 
     # Register in shotgrid
-    if pipe.SHOTGRID_AVAILABLE:
+    if update_cache and pipe.SHOTGRID_AVAILABLE:
         from pini.pipe import shotgrid
         _thumb = work.image if work.image.exists() else None
         for _last, _out in qt.progress_bar(
@@ -276,13 +282,16 @@ def _exec_local_fbx_cache(cacheables, flags):  # pylint: disable=unused-argument
         cacheables (Cacheable list): items to cache
         flags (dict): cache flags
     """
-    for _cbl in qt.progress_bar(cacheables, 'Exporting {:d} fbx{}'):
+    for _cbl in qt.progress_bar(
+            cacheables, 'Exporting {:d} fbx{}', stack_key='FbxCache',
+            auto_pos=False, col='LightPink'):
         _LOGGER.info(' - FBX CACHE %s', _cbl)
         cmds.select(_cbl.to_geo(extn='fbx'), hierarchy=True)
         _out = _cbl.to_output(extn='fbx')
         save_fbx(
             _out, animation=True, constraints=True, step=flags['step'],
             range_=flags['range_'])
+    # ffff
 
 
 @restore_frame
