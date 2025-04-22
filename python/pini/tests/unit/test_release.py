@@ -605,6 +605,27 @@ class TestRelease(unittest.TestCase):
                      '    arg_b (int): ',
                      '"""']) + '\n'),
 
+                ('Long args to multi-line test',
+                 '\n'.join([
+                     'def test_existing(arg_a, arg_b=1):',
+                     '    """Some existing docs.',
+                     '',
+                     '    Some extra text',
+                     '',
+                     '    Args:',
+                     '        arg_a (str): wowee this is some some long args that will spill over because there are so many words',
+                     '    """']),
+                 '    ' + '\n    '.join([
+                     '"""Some existing docs.',
+                     '',
+                     'Some extra text',
+                     '',
+                     'Args:',
+                     '    arg_a (str): wowee this is some some long args that will spill over',
+                     '        because there are so many words',
+                     '    arg_b (int): ',
+                     '"""']) + '\n'),
+
                 ('Kwarg types test',
                  '\n'.join([
                      'def kwargs_test(',
@@ -634,6 +655,15 @@ class TestRelease(unittest.TestCase):
                      'Args:',
                      '    arg_a (): ',
                      '"""',
+                     ''])),
+
+                ('Init has contructor',
+                 '\n'.join([
+                     'class Test:',
+                     '    def __init__(self):',
+                     '        pass']),
+                 '        ' + '\n        '.join([
+                     '"""Constructor."""',
                      ''])),
 
                 ('Class method ignore cls',

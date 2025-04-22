@@ -76,8 +76,6 @@ class PHUiBase(
         # Setup vars
         self.store_settings = store_settings
         self._notes_stack = {}
-        # if not pipe.CACHE.jobs:
-        #     raise RuntimeError('No valid jobs found in ' + pipe.ROOT.path)
 
         # Init ui
         _title = title or TITLE
@@ -104,12 +102,14 @@ class PHUiBase(
             self.load_settings()
             _LOGGER.debug(' - LOADED SETTINGS %s', self.entity)
         self.ui.MainPane.select_tab('Work')
+        _LOGGER.debug(' - SELECTED WORK TAB %s', self.entity)
         if show:
             self.show()
 
         self._start_timer()
 
         self.target = None
+        _LOGGER.debug(' - INIT COMPLETE %s', self.entity)
 
     def init_ui(self):
         """Build ui elements."""

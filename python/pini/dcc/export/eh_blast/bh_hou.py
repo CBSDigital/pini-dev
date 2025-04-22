@@ -24,7 +24,8 @@ class CHouFlipbook(bh_base.CBlastHandler):
 
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=False, snapshot=True, save=True,
-            format_='mp4', view=True, range_=None, burnins=True, force=False):
+            format_='mp4', view=True, range_=None, burnins=True,
+            force_replace=False, sanity_check_=False, force=False):
         """Execute flipbook.
 
         Args:
@@ -36,11 +37,13 @@ class CHouFlipbook(bh_base.CBlastHandler):
             view (bool): view blast
             range_ (tuple): override range
             burnins (bool): apply burnins (mov only)
-            force (bool): replace existing outputs without confirmation
+            force_replace (bool): replace existing without confirmation
+            sanity_check_ (bool): apply sanity check
+            force (bool): force blast with no confirmation dialogs
         """
         _LOGGER.info('EXEC %s', self)
         _out = h_pipe.flipbook(
             format_=format_, view=view, range_=self.to_range(), burnins=burnins,
-            save=False, force=force, update_cache=False,
+            save=False, force=force or force_replace, update_cache=False,
             update_metadata=False)
         self.outputs = [pipe.CACHE.obt(_out)]

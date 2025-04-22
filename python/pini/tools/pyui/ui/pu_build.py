@@ -1,7 +1,11 @@
 """Tools for managing build pyui interfaces."""
 
+import logging
+
 from pini import dcc, qt
 from pini.utils import to_str
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
@@ -17,6 +21,7 @@ def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
     Returns:
         (PUBaseUi): interface instance
     """
+    _LOGGER.debug('BUILD %s', py_file)
     from ... import pyui
     _path = to_str(py_file)
 
@@ -38,6 +43,7 @@ def build(py_file, title=None, base_col=None, load_settings=True, mode=None):
         raise ValueError(_mode)
 
     # Build interface
+    _LOGGER.debug(' - CLASS %s', _class)
     _pyui = _class(
         _path, title=title, base_col=base_col, load_settings=load_settings)
     pyui.UIS[_path] = _pyui

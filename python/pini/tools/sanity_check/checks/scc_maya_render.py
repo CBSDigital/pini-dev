@@ -434,8 +434,20 @@ class CheckRenderGlobals(SCMayaCheck):
                 f'Image format is not "{img_fmt}" (currently set to "{_fmt}")')
             self.add_fail(_msg, fix=_fix)
 
+        # Apply attr checks
         for _attr, _val in _attrs_to_check:
             self._check_attr(_attr, _val, catch=True)
+
+        # Check include all lights in render layers
+        _ial = cmds.optionVar(query='renderSetup_includeAllLights')
+        if not _ial:
+            self.add_fail(
+                'The render setup option "Include all lights in each render '
+                'layer by default" is disabled - as this setting cannot be '
+                'disabled in batch mode (due to a bug in maya), it needs to be'
+                'enabled', fix=wrap_fn(
+                    cmds.optionVar,
+                    intValue=('renderSetup_includeAllLights', True)))
 
         return not self.fails
 

@@ -1,5 +1,6 @@
 """Tools for managing the deadline farm object."""
 
+import getpass
 import logging
 import time
 
@@ -8,7 +9,7 @@ from pini.utils import (
     system, single, to_str, safe_zip, cache_result, find_exe, plural)
 
 from .. import base
-from . import d_job, d_utils
+from . import submit, d_farm_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class CDFarm(base.CFarm):
     """Represents the deadline farm."""
 
     NAME = 'Deadline'
-    ICON = d_utils.ICON
+    ICON = submit.ICON
 
     @cache_result
     def find_groups(self):
@@ -38,6 +39,52 @@ class CDFarm(base.CFarm):
         _cmds = [find_exe('deadlinecommand'), '-GetLimitGroupNames']
         return system(_cmds).split()
 
+    def find_jobs(self, read_metadata=False, user=None, force=False):
+        """Find existing deadline jobs for the current user.
+
+        Args:
+            read_metadata (bool): read job metadata
+            user (str): override user
+            force (bool): force reread jobs
+
+        Returns:
+            (CDFarmJob list): farm jobs
+        """
+        _jobs = self._read_jobs(user=user, force=force)
+
+        # Read metadata
+        if read_metadata:
+            for _job in qt.progress_bar(
+                    _jobs, 'Reading {:d} job{}', show_delay=2,
+                    stack_key='ReadDeadlineJobs'):
+                _job.to_details()
+
+        return _jobs
+
+    @cache_result
+    def _read_jobs(self, user=None, force=False):
+        """Read existing deadline jobs for the current user.
+
+        Args:
+            user (str): override user
+            force (bool): force reread jobs
+
+        Returns:
+            (CDFarmJob list): farm jobs
+        """
+        _user = user or getpass.getuser()
+        _cmds = [
+            find_exe('deadlinecommand'),
+            '-GetJobIdsFilter', f'UserName={_user}']
+        _start = time.time()
+        _results = system(_cmds, verbose=1).split()
+        _jobs = [d_farm_job.CDFarmJob(_result) for _result in _results]
+        _LOGGER.info(
+            ' - FOUND %d DEADLINE JOBS IN %.01fs', len(_jobs),
+            time.time() - _start)
+
+        return _jobs
+
     def submit_job(self, job):
         """Submit a job to the farm.
 
@@ -46,13 +93,13 @@ class CDFarm(base.CFarm):
         """
         return single(self.submit_jobs([job]))
 
-    def submit_jobs(self, jobs, name='jobs', submit=True):
+    def submit_jobs(self, jobs, name='jobs', submit_=True):
         """Submit jobs to the farm.
 
         Args:
             jobs (CJob list): jobs to submit
             name (str): override submission name (for .sub file)
-            submit (bool): execute submission
+            submit_ (bool): execute submission
 
         Returns:
             (str list): job ids
@@ -83,10 +130,10 @@ class CDFarm(base.CFarm):
         _cmds = [_deadline_cmd, _sub_file]
         _cmds = [to_str(_cmd) for _cmd in _cmds]
         _LOGGER.debug(' - CMDS %s', ' '.join(_cmds))
-        if submit:
+        if submit_:
             _result = system(_cmds)
             _LOGGER.debug(' - RESULT %s', _result)
-            _job_ids = d_utils.read_job_ids(_result)
+            _job_ids = submit.read_job_ids(_result)
         else:
             _job_ids = [None] * len(jobs)
         _LOGGER.info(' - JOB IDS %s', _job_ids)
@@ -95,7 +142,7 @@ class CDFarm(base.CFarm):
         for _job, _id in safe_zip(jobs, _job_ids):
             _job.jid = _id
 
-        d_utils.flush_old_submissions(job=pipe.cur_job(), force=True)
+        submit.flush_old_submissions(job=pipe.cur_job(), force=True)
 
         return _job_ids
 
@@ -118,7 +165,6 @@ class CDFarm(base.CFarm):
             (str list): job ids
         """
         from pini.tools import sanity_check
-        from . import d_maya_job
 
         _stime = time.time()
         _work = pipe.CACHE.cur_work
@@ -148,7 +194,7 @@ class CDFarm(base.CFarm):
             ]
             _py = '\n'.join(_lines)
             _name = f'{_batch} - {_cbl.output_name} [cache]'
-            _job = d_maya_job.CDMayaPyJob(
+            _job = submit.CDMayaPyJob(
                 py=_py, comment=comment, priority=priority, work=_work,
                 machine_limit=machine_limit, stime=_stime, error_limit=1,
                 name=_name, batch_name=_work.base)
@@ -168,7 +214,7 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, group=None, chunk_size=1, version_up=False,
-            limit_groups=None, checks_data=None, submit=True,
+            limit_groups=None, checks_data=None, submit_=True,
             metadata=None, result='jobs', force=False):
         """Submit maya render job to the farm.
 
@@ -184,7 +230,7 @@ class CDFarm(base.CFarm):
             limit_groups (str): comma separated limit groups
                 (eg. maya-2023,vray)
             checks_data (dict): override sanity checks data
-            submit (bool): submit render to deadline (disable for debugging)
+            submit_ (bool): submit render to deadline (disable for debugging)
             metadata (dict): override render metadata
             result (str): what to return
                 jobs - list of submitted jobs
@@ -196,7 +242,6 @@ class CDFarm(base.CFarm):
         """
         from maya_pini import open_maya as pom
         from pini.dcc import export
-        from . import d_maya_job
 
         _cam = camera or pom.find_render_cam()
         _stime = time.time()
@@ -219,7 +264,7 @@ class CDFarm(base.CFarm):
         # Submit render jobs
         _render_jobs = []
         for _lyr in _lyrs:
-            _job = d_maya_job.CDMayaRenderJob(
+            _job = submit.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=_cam, comment=comment,
                 machine_limit=machine_limit, group=group, chunk_size=chunk_size,
@@ -229,7 +274,7 @@ class CDFarm(base.CFarm):
             assert _job.scene == _render_scene
 
         assert not _render_jobs[0].jid
-        if submit:
+        if submit_:
             self.submit_jobs(_render_jobs, name='render')
             assert _render_jobs[0].jid
         _progress.set_pc(50)
@@ -238,7 +283,7 @@ class CDFarm(base.CFarm):
         _update_job = self._submit_update_job(
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
-            priority=priority, submit=submit,
+            priority=priority, submit_=submit_,
             outputs=[_job.output for _job in _render_jobs])
         _progress.set_pc(100)
         _progress.close()
@@ -251,7 +296,7 @@ class CDFarm(base.CFarm):
             f'Submitted {len(_lyrs):d} layer{plural(_lyrs)} to deadline.'
             f'\n\nBatch name:\n{_batch}')
         if not force:
-            qt.notify(_submit_msg, title='Render submitted', icon=d_utils.ICON)
+            qt.notify(_submit_msg, title='Render submitted', icon=submit.ICON)
 
         if result == 'jobs':
             _result = _render_jobs + [_update_job]
@@ -263,7 +308,7 @@ class CDFarm(base.CFarm):
 
     def submit_maya_py(
             self, name, py, comment='', priority=50, machine_limit=0,
-            error_limit=0, edit_py=False, tmp_py=None, submit=True):
+            error_limit=0, edit_py=False, tmp_py=None, submit_=True):
         """Submit mayapy job to farm.
 
         Args:
@@ -275,21 +320,20 @@ class CDFarm(base.CFarm):
             error_limit (int): job error limit
             edit_py (bool): edit tmp python file on submit
             tmp_py (File): override tmp py file path
-            submit (bool): execute submission
+            submit_ (bool): execute submission
 
         Returns:
             (str list): job ids
         """
-        from . import d_maya_job
-        _sub = d_maya_job.CDMayaPyJob(
+        _sub = submit.CDMayaPyJob(
             name=name, py=py, priority=priority, machine_limit=machine_limit,
             error_limit=error_limit, comment=comment, tmp_py=tmp_py,
             edit_py=edit_py)
-        return _sub.submit(submit=submit)
+        return _sub.submit(submit_=submit_)
 
     def submit_py(
             self, name, py, comment='', priority=50, machine_limit=0,
-            error_limit=0, edit_py=False, tmp_py=None, submit=True):
+            error_limit=0, edit_py=False, tmp_py=None, submit_=True):
         """Submit python job to farm.
 
         Args:
@@ -301,20 +345,20 @@ class CDFarm(base.CFarm):
             error_limit (int): job error limit
             edit_py (bool): edit py file on save to disk
             tmp_py (File): override path to tmp py file
-            submit (bool): execute submission
+            submit_ (bool): execute submission
 
         Returns:
             (str list): job ids
         """
-        _sub = d_job.CDPyJob(
+        _sub = submit.CDPyJob(
             name=name, py=py, priority=priority, machine_limit=machine_limit,
             error_limit=error_limit, comment=comment, tmp_py=tmp_py,
             edit_py=edit_py)
-        return _sub.submit(submit=submit)
+        return _sub.submit(submit_=submit_)
 
     def _submit_update_job(
             self, work, dependencies, comment, batch_name, stime,
-            priority=50, metadata=None, outputs=None, submit=True):
+            priority=50, metadata=None, outputs=None, submit_=True):
         """Submit job which updates work file output cache.
 
         Args:
@@ -326,7 +370,7 @@ class CDFarm(base.CFarm):
             priority (int): job priority (0 [low] - 100 [high])
             metadata (dict): metadata to apply to outputs
             outputs (CPOutput list): outputs to apply metadata to
-            submit (bool): execute submission
+            submit_ (bool): execute submission
 
         Returns:
             (CDPyJob): update job
@@ -335,12 +379,12 @@ class CDFarm(base.CFarm):
         # Submit job
         _py = _build_update_job_py(
             outputs=outputs, metadata=metadata, work=work)
-        _update_job = d_job.CDPyJob(
+        _update_job = submit.CDPyJob(
             name=f'{work.base} [update cache]', comment=comment,
             py=_py, batch_name=batch_name, dependencies=dependencies,
             stime=stime, priority=priority)
         assert not _update_job.jid
-        if submit:
+        if submit_:
             _update_job.submit(name='update')
             assert _update_job.jid
 

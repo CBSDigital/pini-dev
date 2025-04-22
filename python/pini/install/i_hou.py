@@ -86,7 +86,8 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _LOGGER.debug('    - ADD TOOL %s icon=%s', _uid, tool.icon)
 
         assert '\b' not in tool.command
-        assert isinstance(tool.icon, (str, File))
+        if not isinstance(tool.icon, (str, File)):
+            raise TypeError(tool.icon, type(tool.icon))
         assert os.path.exists(to_str(tool.icon))
 
         _tool = hou.shelves.newTool(

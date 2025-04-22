@@ -346,13 +346,17 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         """
         return self._read_users(force=force)
 
-    def find_version(self, match):
+    def find_ver(self, match):
         """Find a version.
 
         Args:
             match (str): match by name/path
         """
-        raise NotImplementedError
+        if isinstance(match, pipe.CPOutputBase):
+            _ety_s = match.entity.sg_entity
+        else:
+            raise NotImplementedError(match)
+        return _ety_s.find_ver(match)
 
     @pipe_cache_on_obj
     def _read_projs(self, force=False):

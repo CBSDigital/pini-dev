@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import textwrap
 
 from pini.utils import to_nice, copy_text
 
@@ -214,6 +215,63 @@ def check_class_docs(class_):
             file_=class_.py_file, line_n=class_.line_n)
 
 
+def _suggest_arg_docs(arg, max_len, indent):
+    """Build arg docs suggestion.
+
+    Args:
+        arg (PyArg): arg to suggest docs for
+        max_len (int): number of chars to apply wrapping at - if this limit
+            is not reached then newlines are maintained
+        indent (str): indent string
+
+    Returns:
+        (str): arg docs suggestion
+    """
+    _cur_docs = arg.to_docs()
+    _LOGGER.info(' - ADDING ARG %s %s %s', arg, arg.type_, _cur_docs)
+
+    # Get arg type
+    _type = ''
+    if _cur_docs and _cur_docs.type_:
+        _type = _cur_docs.type_
+    if not _type and arg.has_default and arg.default is not None:
+        _LOGGER.info(
+            '   - APPLY TYPE FROM DEFAULT %s %s', arg.type_,
+            arg.type_.__name__)
+        _type = arg.type_.__name__
+
+    _docs = ''
+    if _cur_docs and _cur_docs.body:
+        _docs = '\n        '.join(_cur_docs.body.split('\n'))
+
+    _arg_docs = f'    {arg.name} ({_type}): {_docs}'
+    _LOGGER.info('   - ARG DOCS |%s| (A)', _arg_docs)
+
+    # Apply wrapping
+    if _to_max_line_len(_arg_docs) > max_len:
+        _trailing_space = _arg_docs.endswith(' ')
+        _arg_docs = textwrap.fill(
+            _arg_docs, width=max_len, subsequent_indent=indent + ' ' * 8)
+        if _trailing_space:
+            _arg_docs += ' '
+        _LOGGER.info('   - ARG DOCS |%s| (B)', _arg_docs)
+        _LOGGER.info('   - MAX LINE LEN %d', _to_max_line_len(_arg_docs))
+
+    return _arg_docs
+
+
+def _to_max_line_len(text):
+    """Read max line length of the given text.
+
+    Args:
+        text (str): text to read
+
+    Returns:
+        (int): max line length
+    """
+    return max(len(_line) for _line in text.split('\n'))
+
+
 def suggest_docs(def_):
     """Suggest docstrings for the given def.
 
@@ -228,6 +286,8 @@ def suggest_docs(def_):
 
     _ast = def_.to_ast()
     _indent = ' ' * (_ast.col_offset + 4)
+    _max_len = 80 - len(_indent) - 4
+    _LOGGER.info(' - MAX LEN %d', _max_len)
     _LOGGER.info(' - INDENT %d "%s"', len(_indent), _indent)
     _code = def_.to_code()
     _cur_docs = def_.to_docs()
@@ -239,10 +299,11 @@ def suggest_docs(def_):
         _header = _cur_docs.to_str('Header')
         _header = '\n'.join(
             _line for _line in _header.split('\n'))
-        # _header = '\n'.join([_line.rstrip() for _line in _header.split('\n')])
     if not _header:
-        _header = to_nice(def_.clean_name).capitalize()
-    # _LOGGER.info(' - HEADER %s', _header)
+        if def_.clean_name == '__init__':
+            _header = 'Constructor.'
+        else:
+            _header = to_nice(def_.clean_name).capitalize()
     _header_lines = _header.split('\n')
 
     _lines = [f'"""{_header_lines[0]}']
@@ -257,25 +318,9 @@ def suggest_docs(def_):
             '',
             'Args:']
         for _idx, _arg in enumerate(_args):
-
-            _cur_docs = _arg.to_docs()
-            _LOGGER.info(' - ADDING ARG %s %s %s', _arg, _arg.type_, _cur_docs)
-
-            # Get arg type
-            _type = ''
-            if _cur_docs and _cur_docs.type_:
-                _type = _cur_docs.type_
-            if not _type and _arg.has_default and _arg.default is not None:
-                _LOGGER.info(
-                    '   - APPLY TYPE FROM DEFAULT %s %s', _arg.type_,
-                    _arg.type_.__name__)
-                _type = _arg.type_.__name__
-
-            _docs = ''
-            if _cur_docs and _cur_docs.body:
-                _docs = '\n        '.join(_cur_docs.body.split('\n'))
-
-            _lines += [f'    {_arg.name} ({_type}): {_docs}']
+            _arg_docs = _suggest_arg_docs(
+                _arg, max_len=_max_len, indent=_indent)
+            _lines += [_arg_docs]
 
     # Add returns
     if _return:

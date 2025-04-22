@@ -84,7 +84,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             self, notes=None, version_up=False, snapshot=True, save=True,
             bkp=True, camera=None, view=True, range_=None, format_='mp4',
             burnins=True, settings='As is', output_name='blast', res=None,
-            force=False):
+            force_replace=False, sanity_check_=False, force=False):
         """Blast current scene.
 
         Args:
@@ -102,11 +102,13 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             output_name (str): apply outputs name
                 <camera> - uses camera name
             res (str): blast res (eg. "Full", "Half")
-            force (bool): replace existing outputs without confirmation
+            force_replace (bool): replace existing without confirmation
+            sanity_check_ (bool): apply sanity check
+            force (bool): force blast with no confirmation dialogs
         """
         _out = m_pipe.blast(
             format_=format_, view=view, range_=range_, burnins=burnins,
             res=res, camera=camera, save=False, settings=settings,
-            output_name=output_name, force=force, update_metadata=False,
-            update_cache=False)
+            output_name=output_name, force=force or force_replace,
+            update_metadata=False, update_cache=False)
         self.outputs = [_out]

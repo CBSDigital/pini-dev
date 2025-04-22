@@ -1,3 +1,30 @@
+## [7.2.0] - Tue 2025-04-22 12:51
+### Summary
+ - Pini Helper:
+    - blast disabled sanity check (mkim),
+ - Sanity Check:
+    - check render globals checks include all lights in each render layer disabled (mkim),
+### Updated
+ - pini.dcc.export.CExportHandler.export added sanity_check_ arg,
+ - pini.dcc.export.CBlastHandler added force_replace arg to allow no sanity check force,
+ - pini.dcc.export.CBlastHandler disabled sanity check,
+ - pini.dcc.export.CMayaLocalRender.export added format_ arg,
+ - pini.pipe.CPOutput.to_output bugfix not matching dcc,
+ - pini.pipe.shotgrid.SGC.SGCVersion.name added from code,
+ - pini.pipe.shotgrid.SGC.SGCVersion.FIELDS added code field,
+ - pini.pipe.shotgrid.SGC.SGCEntity.find_ver bugfix bad match on single ver,
+ - pini.pipe.shotgrid.SGC.SGCRoot renamed find_version -> find_ver for symmetry,
+ - pini.pipe.shotgrid renamed submodule sg_version -> sg_ver,
+ - pini.farm.find_jobs added,
+ - pini.farm.deadline separated submit objects in submodule,
+ - pini.farm.deadline renamed arg submit -> submit_,
+ - pini.tools.pyui bugfix qt button colours in hou,
+ - pini.tools.release suggest docs added arg text wrap,
+ - pini.tools.CheckRenderGlobals check include all lights in each render layer disabled,
+ - pini.tools.helper bugfix PHUiBase.init_ui not running in maya,
+ - pini.tools.helper added submit dev WIP,
+
+
 ## [7.1.0] - Fri 2025-04-18 11:26
 ### Summary
  - Pini Helper:

@@ -10,7 +10,7 @@ import time
 from pini import pipe, dcc
 from pini.utils import strftime, get_user, to_pascal, File, ints_to_str
 
-from . import d_utils
+from . import ds_utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -227,17 +227,17 @@ class CDJob:
         _LOGGER.debug(' - INFO FILE %s', self.info_file.path)
         assert not self.info_file.exists()
         _info_data = self._build_info_data()
-        d_utils.write_deadline_data(
+        ds_utils.write_deadline_data(
             data=_info_data, file_=self.info_file,
-            sort=d_utils.info_key_sort)
+            sort=ds_utils.info_key_sort)
         _LOGGER.debug(' - INFO DATA %s', _info_data)
 
         # Write job file
         assert not self.job_file.exists()
         _job_data = self._build_job_data()
-        d_utils.write_deadline_data(
+        ds_utils.write_deadline_data(
             data=_job_data, file_=self.job_file,
-            sort=d_utils.job_key_sort)
+            sort=ds_utils.job_key_sort)
         _LOGGER.debug(' - JOB DATA %s', _job_data)
         _LOGGER.debug(' - JOB %s', self.job_file.path)
 
@@ -251,7 +251,7 @@ class CDJob:
         Returns:
             (str): job id
         """
-        from .. import deadline
+        from ... import deadline
         return deadline.FARM.submit_jobs(
             [self], submit=submit, name=name or self.tag)
 
@@ -338,7 +338,7 @@ class CDPyJob(CDJob):
         self.py_file = File(tmp_py or self._to_submission_file(extn='py'))
         self.py = py
         if wrap_py:
-            self.py = d_utils.wrap_py(py, py_file=self.py_file, name=self.name)
+            self.py = ds_utils.wrap_py(py, py_file=self.py_file, name=self.name)
         if edit_py:
             self.py_file.edit()
 

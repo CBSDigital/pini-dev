@@ -548,7 +548,8 @@ class CPOutputBase:
                 _has_key['output_name'] = bool(kwargs['output_name'])
             _LOGGER.debug(' - HAS KEY %s', _has_key)
             _tmpl = self.entity.find_template(
-                _tmpl, dcc_=kwargs.get('dcc_'), has_key=_has_key)
+                _tmpl, dcc_=kwargs.get('dcc_', self.dcc_),
+                has_key=_has_key)
         assert isinstance(_tmpl, pipe.CPTemplate)
         _LOGGER.debug(' - TEMPLATE %s', _tmpl)
 

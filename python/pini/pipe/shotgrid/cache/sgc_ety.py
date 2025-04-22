@@ -197,15 +197,18 @@ class _SGCEntity(sgc_elem.SGCElem):
         Returns:
             (SGCVersion): matching version
         """
-        _vers = self.find_vers(**kwargs)
-        if len(_vers) == 1:
-            return single(_vers)
-
+        _LOGGER.debug('FIND VER %s', match)
         _match_s = to_str(match)
+
+        _vers = self.find_vers(force=force, **kwargs)
+        if len(_vers) == 1:
+            _ver = single(_vers)
+            if not match or _apply_ver_match(match=match, version=_ver):
+                return _ver
+
         _matches = [
             _ver for _ver in _vers
-            if match in (_ver.path, _ver.name) or
-            _match_s in (_ver.path, _ver.name)]
+            if _apply_ver_match(match=match, version=_ver)]
         if len(_matches) == 1:
             return single(_matches)
 
@@ -392,3 +395,20 @@ class SGCShot(_SGCEntity):
     def __repr__(self):
         return basic_repr(
             self, f'{self.proj.name}:{self.shot}')
+
+
+def _apply_ver_match(match, version):
+    """Apply test whether the given version matches.
+
+    Args:
+        match (any): object to match to
+        version (SGCVersion): version to match with
+
+    Returns:
+        (bool): whether version is the same as match in terms of
+            name or path or object
+    """
+    _match_s = to_str(match)
+    return (
+        match in (version, ) or
+        _match_s in (version.path, version.name))

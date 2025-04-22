@@ -94,7 +94,7 @@ class CMayaLocalRender(CMayaRenderHandler):
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=True, bkp=True, camera=None,
             frames=None, mov=None, view=None, render_=True, cleanup=True,
-            force=False):
+            format_=None, force=False):
         """Execute render.
 
         Args:
@@ -107,6 +107,7 @@ class CMayaLocalRender(CMayaRenderHandler):
             view (bool): view render on completion
             render_ (bool): execute render (disable for debugging)
             cleanup (bool): cleanup tmp files (video only)
+            format_ (str): render format (eg. jpg, exr)
             force (bool): replace existing without confirmation
         """
         _cam = camera or pom.find_render_cam()
@@ -134,7 +135,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                     f'\n\n{self.work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.ui.parent)
                 return
-            _fmt = cmds.getAttr(
+            _fmt = format_ or cmds.getAttr(
                 'defaultArnoldDriver.ai_translator', asString=True)
             _extn = {'jpeg': 'jpg'}.get(_fmt, _fmt)
             _out = self.work.to_output(
@@ -345,7 +346,7 @@ class CMayaFarmRender(CMayaRenderHandler):
         _prepare_scene_for_render()
 
         self.submit_msg = farm.submit_maya_render(
-            submit=render_, force=True, result='msg',
+            submit_=render_, force=True, result='msg',
             metadata=self.metadata, frames=frames, camera=_cam,
             chunk_size=chunk_size, comment=notes, priority=priority,
             machine_limit=machine_limit, limit_groups=limit_grps)

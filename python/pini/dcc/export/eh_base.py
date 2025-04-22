@@ -144,10 +144,10 @@ class CExportHandler:
         """
         _force = self.settings['force']
         _notes = self._obt_notes()
-        _LOGGER.debug('NOTES %s', _notes)
+        _sanity_check = self.settings['sanity_check_']
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=self.work, handler=self.NAME,
-            sanity_check_=True, force=_force, task=self.work.pini_task,
+            sanity_check_=_sanity_check, force=_force, task=self.work.pini_task,
             notes=_notes, require_notes=True)
         return _data
 
@@ -290,11 +290,11 @@ class CExportHandler:
          - sets up work + metadata
          - applies save option
         """
+        _bkp = self.settings['bkp']
         _force = self.settings['force']
         _notes = self.settings['notes']
         _progress = self.settings['progress']
         _save = self.settings['save']
-        _bkp = self.settings['bkp']
         _work = self.settings['work']
 
         # Check current work
@@ -333,7 +333,7 @@ class CExportHandler:
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,
             bkp=True, progress=False, update_metadata=True, update_cache=True,
-            work=None, force=False):
+            work=None, sanity_check_=True, force=False):
         """Execute this export.
 
         This is the main export method, to be implemented in each exporter.
@@ -349,6 +349,7 @@ class CExportHandler:
             update_metadata (bool): update output metadata
             update_cache (bool): update pipe cache
             work (CPWork): override work file (for testing)
+            sanity_check_ (bool): apply sanity check
             force (bool): replace existing outputs without confirmation
         """
         raise NotImplementedError

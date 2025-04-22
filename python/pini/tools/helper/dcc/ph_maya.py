@@ -23,6 +23,8 @@ _LOGGER = logging.getLogger(__name__)
 class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
     """Pini Helper in maya which docks to the main ui."""
 
+    init_ui = ui.PHUiBase.init_ui
+
     abc_lookdev_attach = True
     abc_modes = ('Auto', 'aiStandIn')
     abc_cam_plates = True

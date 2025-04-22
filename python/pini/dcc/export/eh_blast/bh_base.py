@@ -45,7 +45,7 @@ class CBlastHandler(eh_base.CExportHandler):
 
         self.ui.add_separator()
         self.ui.add_check_box(
-            'Force', label='Replace existing without confirmation')
+            'ForceReplace', label='Replace existing without confirmation')
         self.ui.add_check_box(
             'View', label='View blast on completion', val=True)
         self.ui.add_check_box(

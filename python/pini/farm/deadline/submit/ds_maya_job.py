@@ -12,7 +12,7 @@ from pini.utils import File, Dir, abs_path, to_str
 from maya_pini import open_maya as pom, ref
 from maya_pini.utils import to_render_extn
 
-from . import d_job, d_utils
+from . import ds_job, ds_utils
 
 _DIR = File(__file__).to_dir()
 _LOGGER = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ _EMPTY_SCENE = File(
     os.environ.get('PINI_DEADLINE_EMPTY_MB', _DIR.to_file('empty.mb')))
 
 
-class _CDMayaJob(d_job.CDJob):
+class _CDMayaJob(ds_job.CDJob):
     """Base class for all deadline maya jobs."""
 
     def __init__(self, output, name=None, camera=None, **kwargs):
@@ -255,7 +255,7 @@ class CDMayaRenderJob(_CDMayaJob):
         return _data
 
 
-class CDMayaPyJob(d_job.CDPyJob):
+class CDMayaPyJob(ds_job.CDPyJob):
     """Represents a mayapy submission on deadline."""
 
     stype = 'MayaPy'
@@ -283,7 +283,7 @@ class CDMayaPyJob(d_job.CDPyJob):
         _work = work or _EMPTY_SCENE
         assert isinstance(_work, File)
         ast.parse(py)
-        _py = d_utils.wrap_py(
+        _py = ds_utils.wrap_py(
             py=py, name=name, work=_work, py_file=tmp_py, maya=True)
         super().__init__(
             name=name, py=_py, stime=stime, priority=priority, tmp_py=tmp_py,

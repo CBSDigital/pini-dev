@@ -349,7 +349,7 @@ def _test_anim_workflow(progress, force, show_ctx):
 
     _vid_fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
     _blast_h.ui.Format.select_text(_vid_fmt)
-    _blast_h.ui.Force.setChecked(True)
+    _blast_h.ui.ForceReplace.setChecked(True)
     _blast_h.ui.View.setChecked(False)
     _blast_h.exec_from_ui(force=True)
     _LOGGER.info(' - WORK %s', _helper.work)

@@ -186,7 +186,7 @@ class SGCVersion(sgc_elem.SGCElem):
     ENTITY_TYPE = 'Version'
     FIELDS = (
         'published_files', 'entity', 'project', 'sg_task', 'sg_path_to_movie',
-        'updated_at', 'updated_by', 'sg_status_list')
+        'updated_at', 'updated_by', 'sg_status_list', 'code')
 
     def __init__(self, data):
         """Constructor.
@@ -197,6 +197,7 @@ class SGCVersion(sgc_elem.SGCElem):
         _LOGGER.debug('INIT SGCVersion')
         super().__init__(data)
         self.path = abs_path(data['sg_path_to_movie'])
+        self.name = data['code']
 
     def __repr__(self):
         return basic_repr(self, self.path)

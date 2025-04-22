@@ -8,6 +8,22 @@ class CFarm:
     ICON = None
     IS_AVAILABLE = True
 
+    def find_jobs(self):
+        """Find jobs currently on the farm.
+
+        Returns:
+            (CFarmJob): jobs
+        """
+        return self._read_jobs()
+
+    def _read_jobs(self):
+        """Read farm jobs.
+
+        Returns:
+            (CFarmJob): jobs
+        """
+        raise NotImplementedError
+
     def submit_job(self, job):
         """Submit a job to the farm.
 

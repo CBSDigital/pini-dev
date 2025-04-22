@@ -244,6 +244,7 @@ class TestHelper(unittest.TestCase):
         _helper = helper.obt_helper()
         _helper.jump_to(_work)
         dcc.new_scene(force=True)
+        assert not dcc.get_scene_data('PiniQt.ExportTab.EExportPane')
         _work.save(force=True)
 
         # Select tab to store data in scene

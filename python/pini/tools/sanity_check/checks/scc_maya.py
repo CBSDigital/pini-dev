@@ -184,8 +184,8 @@ class CheckPlugins(core.SCMayaCheck):
                 continue
             if cmds.pluginInfo(_plugin, query=True, autoload=True):
                 self.add_fail(
-                    f'Plugin "{_plugin}" is set to autoload - this can slow down '
-                    f'maya launch time', fix=wrap_fn(
+                    f'Plugin "{_plugin}" is set to autoload - this can slow '
+                    f'down maya launch time', fix=wrap_fn(
                         cmds.pluginInfo, _plugin, edit=True, autoload=False))
 
     def fix_bad_plugin(self, plugin, force=False):

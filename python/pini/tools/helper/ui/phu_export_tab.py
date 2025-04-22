@@ -71,6 +71,9 @@ class PHExportTab:
             _LOGGER.debug(' - SELECT TAB (Z) %s', _tab)
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
+        self.ui.EExportPane.set_tab_visible('Submit Dev', False)
+        self.ui.EExportPane.set_tab_enabled('Submit Dev', False)
+
         self._callback__EExportPane()
 
     def _init_submit_tab(self):
@@ -307,6 +310,9 @@ class PHExportTab:
             self.ui.ERenderTab.redraw()
         elif _tab == self.ui.ESubmitTab:
             self.ui.ESubmitTemplate.redraw()
+        elif _tab == self.ui.ESubmitDevTab:
+            # self.ui.ESubmitDevTab.redraw()
+            pass
         else:
             raise ValueError(_tab)
 

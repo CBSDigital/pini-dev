@@ -10,7 +10,7 @@ from pini import qt, pipe
 from pini.tools import usage
 from pini.utils import single, to_time_f, strftime, basic_repr
 
-from . import sg_version, sg_utils, sg_handler
+from . import sg_ver, sg_utils, sg_handler
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -320,7 +320,7 @@ def _submit_video(video, progress, frames=None, comment=None, force=False):
         _url = _data.get('sg_uploaded_movie', {}).get('url')
         _mtime = to_time_f(_data.get('created_at'))
         raise _VersionAlreadyExists(user=_user, url=_url, mtime=_mtime)
-    _data = sg_version.create_version(
+    _data = sg_ver.create_version(
         video=video, frames=frames, comment=comment)
     progress.set_pc(45)
     _LOGGER.debug('VER %s', pprint.pformat(_data))

@@ -325,9 +325,9 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
         Just adding this to the collapse callback doesn't seem to work,
         so this function is called from within the timer event.
         """
-        _LOGGER.debug('TOGGLE SECTION COLLAPSE %s', self)
+        _LOGGER.log(9, 'TOGGLE SECTION COLLAPSE %s', self)
         _size = qt.to_size(self.width(), 0)
-        _LOGGER.debug(' - SIZE %s', _size)
+        _LOGGER.log(9, ' - SIZE %s', _size)
         self.resize(_size)
 
     def delete(self):
@@ -346,12 +346,13 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
             (dict): settings that were applied
         """
         _data = super().load_settings(settings=settings)
-        _LOGGER.info('LOAD SETTINGS %s', _data.get('geometry'))
+        _LOGGER.info('LOAD SETTINGS %s', self.settings_file)
+        _LOGGER.info(' - GEOMETRY %s', _data.get('geometry'))
 
         # Apply geom
         _geom = _data.get('geometry')
         if _geom:
-            self.setFixedWidth(_geom['width'])
+            self.setFixedWidth(max(_geom['width'], 300))
             _pos = _geom['x'], _geom['y']
             if qt.p_is_onscreen(_pos):
                 self.move(*_pos)
@@ -385,7 +386,7 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
         Args:
             event (QTimerEvent): triggered event
         """
-        _LOGGER.debug('TIMER')
+        _LOGGER.log(9, 'TIMER')
         self._apply_section_collapse_update()
 
     def close(self):
@@ -528,21 +529,52 @@ def _disable_btn_on_exec(func, btn, col):
     return _wrapped_fn
 
 
-def _set_btn_col(btn, col):
+def _set_btn_col(btn, col, mode='ss'):
     """Set colour of the given button.
 
     Args:
         btn (QPushButton): button to update
         col (CColor): colour to apply
+        mode (str): how to apply button colour
     """
-    _pal = btn.palette()
-    _pal.setColor(_pal.Button, col)
+    _LOGGER.debug('SET BTN COL %s %s', btn, col)
+    _text_col = 'black' if col.valueF() > 0.55 else 'white'
+    if mode == 'palette':
 
-    _text_col = QtGui.QColor('black' if col.valueF() > 0.55 else 'white')
-    _pal.setColor(_pal.ButtonText, _text_col)
+        _pal = QtGui.QPalette(btn.palette())
+        for _role in [
+                _pal.AlternateBase,
+                _pal.Background,
+                _pal.Base,
+                _pal.Button,
+                _pal.Dark,
+                _pal.Window,
+        ]:
+            _pal.setColor(_role, col)
+            _pal.setBrush(_role, col)
 
-    btn.setAutoFillBackground(True)
-    btn.setPalette(_pal)
+        _text_col = QtGui.QColor(_text_col)
+        _pal.setColor(_pal.ButtonText, _text_col)
+
+        btn.setAutoFillBackground(True)
+        btn.setPalette(_pal)
+        btn.update()
+
+    elif mode == 'ss':
+
+        _col = qt.to_col(col)
+        _ss = '\n'.join([
+            "QPushButton {",
+            "    border:  groove;",
+            f"    background-color : rgb{_col.to_tuple(int)};",
+            f"    color: {_text_col}",
+            "}"
+        ])
+        btn.setStyleSheet(_ss)
+        _LOGGER.debug(' - SS "%s" %s', btn.objectName(), btn.styleSheet())
+
+    else:
+        raise ValueError(mode)
 
 
 def _to_lazy_combobox_select(field):

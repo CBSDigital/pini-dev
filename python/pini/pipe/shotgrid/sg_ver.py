@@ -3,20 +3,20 @@
 import logging
 import pprint
 
-from pini.utils import Seq, get_user, File
+from pini.utils import Seq, get_user, File, TMP, Video, Image
 
 from . import sg_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def create_version(
-        video, frames, comment, thumb=None, filmstrip=None, pub_files=(),
+def create_ver(
+        render, frames, comment, thumb=None, filmstrip=None, pub_files=(),
         force=False):
     """Register the given video in shotgrid.
 
     Args:
-        video (CPOutputVideo): output video to register
+        render (CPOutputVideo|CPOutputSeq): output to register
         frames (CPOutputSeq): source frames
         comment (str): submission comment
         thumb (File): override thumbnail
@@ -31,15 +31,15 @@ def create_version(
     _LOGGER.info('CREATE VERSION')
 
     # Check for existing
-    _ety = shotgrid.SGC.find_entity(video.entity)
-    _cur_ver = _ety.find_ver(video, catch=True)
+    _ety = shotgrid.SGC.find_entity(render.entity)
+    _cur_ver = _ety.find_ver(render, catch=True)
     if not force and _cur_ver:
-        _LOGGER.info(' - VERSION ALREADY EXISTS %s', video)
+        _LOGGER.info(' - VERSION ALREADY EXISTS %s', render)
         return _cur_ver
 
     # Create version
     _data = _build_ver_data(
-        video, frames=frames, comment=comment, pub_files=pub_files)
+        render, frames=frames, comment=comment, pub_files=pub_files)
     _LOGGER.debug('DATA %s', pprint.pformat(_data))
     if not _cur_ver:
         shotgrid.create('Version', _data)
@@ -48,21 +48,37 @@ def create_version(
         _data.pop('created_by')
         shotgrid.update('Version', _cur_ver.id_, _data)
         _action = 'UPDATED'
-    _sg_ver = _ety.find_ver(video, force=True)
+    _sg_ver = _ety.find_ver(render, force=True)
     _LOGGER.info(' - %s VERSION %s', _action, _sg_ver)
     assert _sg_ver
 
-    # Upload movie
-    shotgrid.upload('Version', _sg_ver.id_, video)
+    # Upload video
+    _video = None
+    if isinstance(render, Video):
+        _video = render
+    if _video:
+        shotgrid.upload(
+            'Version', _sg_ver.id_, _video, field_name='sg_uploaded_movie')
 
     # Apply thumb
+    _thumb = None
     if thumb:
-        _thumb = File(thumb)
-        _LOGGER.debug(' - APPLY THUMB %s', _thumb)
+        _thumb = File(_thumb)
+    if isinstance(render, Seq):
+        _thumb = render.to_frame_file()
+    if not _thumb and _video:
+        _thumb = TMP.to_file('tmp.jpg')
+        render.to_frame(_thumb, force=True)
+    if _thumb and _thumb.extn == 'exr':
+        _tmp = TMP.to_file('tmp.jpg')
+        Image(_thumb).convert(_tmp, force=True)
+        _thumb = _tmp
+    if _thumb:
         assert _thumb.exists()
+        _LOGGER.info(' - APPLY THUMB %s', _thumb)
         shotgrid.upload_thumbnail('Version', _sg_ver.id_, _thumb.path)
 
-    # Apply filmstrip
+    # Apply filmstrip (generated automatically if thumb)
     if filmstrip:
         _strip = File(filmstrip)
         shotgrid.upload_filmstrip_thumbnail(
@@ -97,6 +113,7 @@ def _build_ver_data(video, frames, comment, pub_files):
         "project": _sg_job.to_entry(),
         "sg_task": _sg_task.to_entry(),
         "sg_path_to_movie": video.path,
+        "sg_version_number": video.ver_n,
     }
     if 'sg_pini_tag' in shotgrid.find_fields('Version'):
         _data["sg_pini_tag"] = video.tag or ''
