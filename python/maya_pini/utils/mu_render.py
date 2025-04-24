@@ -389,31 +389,32 @@ def set_render_extn(extn: str):
     """
     from maya_pini import open_maya as pom
     from maya_pini.utils import process_deferred_events
+    _extn = extn
 
     # Apply extn
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
     if _ren == 'arnold':
         process_deferred_events()
-        pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(extn)
+        pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(_extn)
     elif _ren == 'mayaSoftware':
         _map = _obt_image_fmts_map()
-        _idx = single(_map[extn])
+        _idx = single(_map[_extn])
         cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
         _LOGGER.info(' - SET defaultRenderGlobals.imageFormat %s', _idx)
     elif _ren == 'redshift':
         _map = _obt_image_fmts_map()
-        _idx = single(_map[extn])
+        _idx = single(_map[_extn])
         _apply_rs_fmt_idx(_idx)
     elif _ren == 'vray':
-        cmds.setAttr("vraySettings.imageFormatStr", extn, type='string')
+        cmds.setAttr("vraySettings.imageFormatStr", _extn, type='string')
     else:
         raise NotImplementedError(_ren)
 
     # Check success
-    _extn = to_render_extn()
-    if _extn != extn:
+    _cur_extn = to_render_extn()
+    if _cur_extn != _extn:
         raise RuntimeError(
-            f'Failed to apply extn "{extn}" (currently "{_extn}")')
+            f'Failed to apply extn "{_extn}" (currently "{_cur_extn}")')
 
 
 def set_render_res(res: tuple):

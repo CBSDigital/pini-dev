@@ -41,8 +41,8 @@ def get_tracker(name=None, write_after=False, args=None):
     Returns:
         (fn): usage tracking decorator
     """
-    if name:
-        assert is_pascal(name)
+    if name and not is_pascal(name):
+        raise NameError(f'Tracker name is not pascal - {name}')
 
     def _track_decorator(func):
 

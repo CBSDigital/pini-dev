@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-public-methods
 
+import copy
 import logging
 import os
 import sys
@@ -44,17 +45,22 @@ class BaseDCC:
         """
 
     def add_export_handler(self, handler):
-        """Add a render handler to the current list.
+        """Add an export handler to the current list.
 
-        Each new render handler is added as the top level renderer -
-        generally if you're adding a render handler for a site, that
-        should be at the top of the list.
+        This will replace any export handlers with the same action - ie. only
+        one export handler for each action can exist.
 
         Args:
             handler (CRenderHandler): render handler to add.
         """
         _LOGGER.debug('ADD RENDER HANDLER %s', handler)
         self._init_export_handlers()
+
+        # Flush existing
+        for _exp in copy.copy(self._export_handlers):
+            if _exp.ACTION == handler.ACTION:
+                self._export_handlers.remove(_exp)
+
         self._export_handlers.insert(0, handler)
         _LOGGER.debug(' - RENDER HANDLERS %s', self._export_handlers)
 

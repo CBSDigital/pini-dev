@@ -1,3 +1,29 @@
+## [7.3.0] - Thu 2025-04-24 10:54
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on vrm export (eehemann),
+### Updated
+ - pini.dcc.export.CExportHandlerUI.add_list_widget added redraw arg,
+ - pini.dcc.export.CExportHandler.build_ui added add_version_up/exec_label flags,
+ - pini.dcc.export.CExportHandler.update_ui pass error catcher to connect callbacks,
+ - pini.dcc.export.CMayaLookdevPublish bugfix error on vrm export,
+ - pini.pipe.passes_filters added latest arg,
+ - pini.pipe.CPEntity.find_outputs added latest flag,
+ - pini.pipe.shotgrid.SGC.SGCVersion.FIELDS added sg_version_type,
+ - pini.pipe.shotgrid.SGC.SGCRoot.find_ver allow match as path,
+ - pini.pipe.shotgrid.create_ver apply add to dailies playlist,
+ - pini.pipe.shotgrid.create_ver apply sg_version_type,
+ - pini.pipe.shotgrid.create_ver add pub files from work refs,
+ - pini.qt.block_signals added decorator,
+ - pini.qt.CListWidgetItem.__init__ added icon_scale arg,
+ - pini.qt.CTabWidget.set_tab_enabled allow tab as QWidget,
+ - pini.tools.helper implement Export/SubmitDev tab WIP,
+ - pini.tools.helper renamed ESubmitTab -> ESubmitLegacyTab,
+ - pini.tools.usage.get_tracker better error on non-pascal name,
+ - maya_pini.utils.revert_scene added,
+ - maya_pini.m_pipe.export_vrmesh_ma bugfix create proxy destroying scene,
+
+
 ## [7.2.0] - Tue 2025-04-22 12:51
 ### Summary
  - Pini Helper:

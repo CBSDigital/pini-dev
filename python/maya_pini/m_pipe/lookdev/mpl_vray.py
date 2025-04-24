@@ -4,16 +4,15 @@ This page has docs about adding vray attributes
 https://github.com/BigRoy/mayaVrayCommandDocs/wiki/vray-addAttributesFromGroup
 """
 
-import copy
 import logging
 
 from maya import cmds
 
-from pini import pipe
+from pini import pipe, dcc
 from pini.utils import File, cache_result
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import save_scene, restore_sel
+from maya_pini.utils import save_scene, restore_sel, revert_scene
 
 from .. import mp_utils
 
@@ -79,13 +78,13 @@ def _read_vray_type_map():
     return _map
 
 
-def export_vrmesh_ma(metadata, animation=False, force=False):
+@revert_scene
+def export_vrmesh_ma(animation=False, force=False):
     """Export vrmesh maya scene.
 
     Saves a maya scene containing a shaded vrmesh proxy file.
 
     Args:
-        metadata (dict): publish metadata
         animation (bool): export animation
         force (bool): overwrite existing without confirmation
 
@@ -107,15 +106,10 @@ def export_vrmesh_ma(metadata, animation=False, force=False):
     _LOGGER.info(' - VRM %s', _vrm)
     _vrm_ma = pipe.cur_work().to_output(
         'publish', output_type='vrmesh', extn='ma')
+    assert 'output_type' in _vrm_ma.template.source.keys()
     _LOGGER.info(' - MA %s', _vrm_ma)
     for _file in [_vrm, _vrm_ma]:
         _file.delete(wording='replace', force=force)
-
-    # Setup metadata
-    _data = copy.copy(metadata)
-    for _key in ['shd_yml']:
-        _data.pop(_key, None)
-    _data['vrmesh'] = _vrm.path
 
     _pxy = _build_vrmesh_proxy(
         file_=_vrm, geo=_geo, animation=animation, force=force)
@@ -125,7 +119,14 @@ def export_vrmesh_ma(metadata, animation=False, force=False):
     assert not _vrm_ma.exists()
     save_scene(_vrm_ma, selection=True, force=force)
     cmds.delete(_pxy)
-    _vrm_ma.set_metadata(_data)
+    _LOGGER.info(' - DELETE PROXY %s', _pxy)
+
+    # Apply vrm in metadata
+    for _out in [_vrm, _vrm_ma]:
+        _out.add_metadata(vrmesh=_vrm.path)
+        _out.add_metadata(animated=animation)
+        if animation:
+            _out.add_metadata(range=dcc.t_range(int))
 
     return _vrm_ma
 
@@ -136,6 +137,9 @@ def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
     Saves out a vrmesh proxy to disk from the given geo, and then uses the
     same script to rebuild the node with shaders. This is useful because
     it's hard to script attaching the shaders to the proxy node.
+
+    NOTE: this seems to have become destructive, ie. destroying the current scene
+    and ignoring the newProxyNode flag.
 
     Args:
         file_ (File): vrmesh file location to save to

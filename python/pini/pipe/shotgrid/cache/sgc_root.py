@@ -354,6 +354,9 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         """
         if isinstance(match, pipe.CPOutputBase):
             _ety_s = match.entity.sg_entity
+        elif isinstance(match, str):
+            _out = pipe.CACHE.obt_output(match)
+            _ety_s = _out.entity.sg_entity
         else:
             raise NotImplementedError(match)
         return _ety_s.find_ver(match)

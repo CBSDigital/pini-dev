@@ -5,7 +5,7 @@
 import collections
 import logging
 
-from pini import qt, pipe, dcc
+from pini import qt, pipe, dcc, testing
 from pini.qt import QtWidgets
 from pini.tools import error
 from pini.utils import single, passes_filter
@@ -34,8 +34,14 @@ class PHExportTab:
             _elem.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
 
         # Disable tabs if no handlers found
-        for _tab in ['Publish', 'Blast', 'Render', 'Cache']:
-            _handlers = dcc.find_export_handlers(_tab)
+        for _type, _tab in [
+                ('Publish', self.ui.EPublishTab),
+                ('Blast', self.ui.EBlastTab),
+                ('Render', self.ui.ERenderTab),
+                ('Cache', self.ui.ECacheTab),
+                ('Submit', self.ui.ESubmitDevTab),
+        ]:
+            _handlers = dcc.find_export_handlers(type_=_type)
             _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
             self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
             _LOGGER.debug(' - CHECKED TAB %s', _tab)
@@ -71,8 +77,8 @@ class PHExportTab:
             _LOGGER.debug(' - SELECT TAB (Z) %s', _tab)
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
-        self.ui.EExportPane.set_tab_visible('Submit Dev', False)
-        self.ui.EExportPane.set_tab_enabled('Submit Dev', False)
+        if not testing.dev_mode():
+            self.ui.EExportPane.set_tab_visible('Submit Dev', False)
 
         self._callback__EExportPane()
 
@@ -297,6 +303,24 @@ class PHExportTab:
 
         self.ui.ESubmitOutputs.set_items(_items)
 
+    def _redraw__ESubmitDevTab(self):
+        self.ui.ESubmitHandler.redraw()
+        self.ui.ESubmitHandlerIcon.redraw()
+
+    def _redraw__ESubmitHandler(self):
+        _handlers = sorted(dcc.find_export_handlers('Submit'))
+        self.ui.ESubmitHandler.set_items(
+            labels=[_handler.NAME for _handler in _handlers],
+            data=_handlers)
+        _LOGGER.debug(
+            ' - BUILD SUBMIT HANDLERS %s',
+            self.ui.ESubmitHandler.selected_data())
+
+    def _redraw__ESubmitHandlerIcon(self):
+        _exp = self.ui.ESubmitHandler.selected_data()
+        if _exp:
+            self.ui.ESubmitHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
+
     def _callback__EExportPane(self):
         _tab = self.ui.EExportPane.currentWidget()
         _LOGGER.debug('CALLBACK EExportPane %s', _tab)
@@ -308,11 +332,10 @@ class PHExportTab:
             self.ui.ECacheTab.redraw()
         elif _tab == self.ui.ERenderTab:
             self.ui.ERenderTab.redraw()
-        elif _tab == self.ui.ESubmitTab:
+        elif _tab == self.ui.ESubmitLegacyTab:
             self.ui.ESubmitTemplate.redraw()
         elif _tab == self.ui.ESubmitDevTab:
-            # self.ui.ESubmitDevTab.redraw()
-            pass
+            self.ui.ESubmitDevTab.redraw()
         else:
             raise ValueError(_tab)
 
@@ -406,6 +429,13 @@ class PHExportTab:
                 title='Versions Submitted', icon=shotgrid.ICON)
 
         self.ui.ESubmitOutputs.redraw()
+
+    def _callback__ESubmitHandler(self):
+        _handler = self.ui.ESubmitHandler.selected_data()
+        _LOGGER.debug('UPDATE SUBMIT HANDLER %s', _handler)
+        if _handler:
+            _handler.update_ui(parent=self, layout=self.ui.ESubmitLyt)
+        self.ui.ESubmitHandlerIcon.redraw()
 
     def _context__ESubmitOutputs(self, menu):
         _out = self.ui.ESubmitOutputs.selected_data()

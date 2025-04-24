@@ -284,7 +284,7 @@ class CExportHandlerUI(qt.CUiContainer):
         return _lineedit
 
     def add_list_widget(
-            self, name, items=None, label=None, icon_size=30,
+            self, name, items=None, label=None, icon_size=30, redraw=True,
             selection_mode=QtWidgets.QListView.ExtendedSelection):
         """Add CListWidget element to this interface.
 
@@ -293,6 +293,8 @@ class CExportHandlerUI(qt.CUiContainer):
             items (list): list items
             label (str): element label
             icon_size (int): icon size (in pixels)
+            redraw (bool): widget on build (this should be disabled if the
+                redraw function uses elements which haven't been created yet)
             selection_mode (SelectionMode): selection mode
         """
         self.add_separator()
@@ -304,11 +306,11 @@ class CExportHandlerUI(qt.CUiContainer):
         _lyt.addStretch()
 
         # Add refresh button
-        _refresh = getattr(self.handler, f'_redraw__{name}', None)
-        _LOGGER.debug(' - REFRESH %s %s', f'_redraw__{name}', _refresh)
-        if _refresh:
+        _redraw_fn = getattr(self.handler, f'_redraw__{name}', None)
+        _LOGGER.debug(' - REFRESH %s %s', f'_redraw__{name}', _redraw_fn)
+        if _redraw_fn:
             _btn = self.add_icon_button(
-                f'{name}Refresh', icon=icons.REFRESH, callback=_refresh)
+                f'{name}Refresh', icon=icons.REFRESH, callback=_redraw_fn)
             _lyt.addWidget(_btn)
 
         # Build list
@@ -321,8 +323,8 @@ class CExportHandlerUI(qt.CUiContainer):
         self._setup_elem(_list, name=name)
         if items:
             _list.set_items(items, emit=False)
-        elif _refresh:
-            _refresh()
+        elif redraw and _redraw_fn:
+            _redraw_fn()
         self.layout.addWidget(_list)
         self.layout.setStretch(self.layout.count() - 1, 1)
 
@@ -398,21 +400,24 @@ class CExportHandlerUI(qt.CUiContainer):
 
         return _spinbox
 
-    def add_footer_elems(self, add_snapshot=True, version_up=True):
+    def add_footer_elems(
+            self, add_snapshot=True, add_version_up=True, version_up=True):
         """Add footer ui elements.
 
         These appear at the bottom of the export interface.
 
         Args:
             add_snapshot (bool): add snapshot option
+            add_version_up (bool): add version up option
             version_up (bool): default version up setting
         """
         if add_snapshot:
             self.Snapshot = self.add_check_box(
                 'Snapshot', label='Take snapshot')
             self.snapshot_elem = self.Snapshot
-        self.VersionUp = self.add_check_box(
-            'VersionUp', label='Version up', val=version_up)
+        if add_version_up:
+            self.VersionUp = self.add_check_box(
+                'VersionUp', label='Version up', val=version_up)
         self.add_notes_elem()
 
     def add_notes_elem(self):

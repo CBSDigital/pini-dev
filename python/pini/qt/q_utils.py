@@ -37,6 +37,26 @@ class SavePolicy(enum.IntEnum):
     SAVE_ON_CLOSE = 5
 
 
+def block_signals(func):
+    """Block widget signals on execute.
+
+    Args:
+        func (fn): method to decorate
+
+    Returns:
+        (fn): decorated method
+    """
+
+    def _block_func(widget, *args, **kwargs):
+        _blocked = widget.signalsBlocked()
+        widget.blockSignals(True)
+        _result = func(widget, *args, **kwargs)
+        widget.blockSignals(_blocked)
+        return _result
+
+    return _block_func
+
+
 def build_tmp_icon(
         file_, base, overlay, base_scale=None, over_scale=0.45,
         mode='Map File'):

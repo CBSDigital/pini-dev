@@ -506,7 +506,7 @@
        <item row="0" column="0">
         <widget class="CTabWidget" name="EExportPane">
          <property name="currentIndex">
-          <number>0</number>
+          <number>5</number>
          </property>
          <widget class="QWidget" name="EPublishTab">
           <attribute name="title">
@@ -975,7 +975,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="ESubmitTab">
+         <widget class="QWidget" name="ESubmitLegacyTab">
           <attribute name="title">
            <string>Submit</string>
           </attribute>
@@ -1359,7 +1359,7 @@
                 <widget class="QLabel" name="label_13">
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>95</width>
                    <height>0</height>
                   </size>
                  </property>

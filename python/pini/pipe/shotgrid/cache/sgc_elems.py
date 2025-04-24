@@ -186,7 +186,8 @@ class SGCVersion(sgc_elem.SGCElem):
     ENTITY_TYPE = 'Version'
     FIELDS = (
         'published_files', 'entity', 'project', 'sg_task', 'sg_path_to_movie',
-        'updated_at', 'updated_by', 'sg_status_list', 'code')
+        'updated_at', 'updated_by', 'sg_status_list', 'code', 'sg_version_type',
+        'playlists')
 
     def __init__(self, data):
         """Constructor.

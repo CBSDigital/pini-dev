@@ -26,7 +26,7 @@ class CExportHandler:
     NAME = None
     TYPE = None
     ACTION = None
-    LABEL = 'Export handler'
+    LABEL = 'Export handler.'
     ICON = None
     COL = 'Red'
 
@@ -103,7 +103,8 @@ class CExportHandler:
         """
 
     def _build_ui_footer(
-            self, stretch=True, add_snapshot=True, version_up=True):
+            self, stretch=True, add_snapshot=True, add_version_up=True,
+            version_up=True, exec_label=None):
         """Build ui footer elements.
 
         Args:
@@ -111,30 +112,38 @@ class CExportHandler:
                 contains a stretch element, ie. the interface should
                 fill the whole layout)
             add_snapshot (bool): add snapshot checkbox
+            add_version_up (bool): add version up option
             version_up (bool): default version up setting
+            exec_label (str): override label for exec button
         """
         self.ui.add_separator()
         self.ui.add_footer_elems(
-            version_up=version_up, add_snapshot=add_snapshot)
+            add_version_up=add_version_up, version_up=version_up,
+            add_snapshot=add_snapshot)
 
         self.ui.add_separator()
-        self.ui.add_exec_button(self.title)
+        self.ui.add_exec_button(exec_label or self.title)
         if stretch:
             self.ui.layout.addStretch()
 
-    def build_ui(self, add_range=False, add_snapshot=True, version_up=True):
+    def build_ui(
+            self, add_range=False, add_snapshot=True,
+            add_version_up=True, version_up=True, exec_label=None):
         """Build any specific ui elements for this handler.
 
         Args:
             add_range (bool): add range elements
             add_snapshot (bool): add snapshot checkbox
+            add_version_up (bool): add version up option
             version_up (bool): default version up setting
+            exec_label (str): override label for exec button
         """
         _LOGGER.debug('BUILD UI')
         self._build_ui_header(add_range=add_range)
         self._add_custom_ui_elems()
         self._build_ui_footer(
-            stretch=True, version_up=version_up, add_snapshot=add_snapshot)
+            stretch=True, version_up=version_up, add_snapshot=add_snapshot,
+            add_version_up=add_version_up, exec_label=exec_label)
 
     def build_metadata(self):
         """Obtain metadata to apply to a generated export.
@@ -206,7 +215,9 @@ class CExportHandler:
         qt.flush_layout(self.ui.layout)
         self.build_ui()
         self.ui.load_settings()
-        qt.connect_callbacks(self, settings_container=self.ui)
+        qt.connect_callbacks(
+            self, settings_container=self.ui,
+            error_catcher=error.get_catcher(qt_safe=True, supress_error=True))
 
     def to_range(self):
         """Read range based on current ui settings.
@@ -271,7 +282,8 @@ class CExportHandler:
         _LOGGER.info('EXEC FROM UI %s', kwargs)
         _func = self.exec
         _LOGGER.info(' - EXEC FUNC %s', _func)
-        _func = usage.get_tracker(name=type(self).__name__)(_func)
+        _name = type(self).__name__.strip('_')
+        _func = usage.get_tracker(name=_name)(_func)
         _func = error.get_catcher(qt_safe=True)(_func)
 
         _kwargs = ui_kwargs or self.ui.to_kwargs()

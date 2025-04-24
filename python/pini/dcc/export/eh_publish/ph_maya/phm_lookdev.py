@@ -25,7 +25,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     NAME = 'Maya Lookdev Publish'
     ACTION = 'LookdevPublish'
     ICON = icons.find('Palette')
-    COL = 'GreenYellow'
+    COL = 'Gold'
     TYPE = 'Publish'
 
     LABEL = '\n'.join([
@@ -83,8 +83,6 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         """
         _data = super().build_metadata()
         del _data['range']
-        if self.shd_yml:
-            _data['shd_yml'] = self.shd_yml.path
         return _data
 
     @restore_sel
@@ -118,6 +116,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         self.shd_yml = self.publish.to_file(
             dir_=_data_dir, base=self.publish.base + '_shaders', extn='yml')
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
+        self.outputs = []
 
         # Check scene
         self.progress.set_pc(15)
@@ -131,22 +130,32 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             if to_namespace(_shd):
                 raise RuntimeError('Shader has namespace ' + _shd)
         self.textures = _read_textures()
+        self.progress.set_pc(20)
 
         # Generate outputs
-        self.outputs = []
-        self.progress.set_pc(20)
+        _LOGGER.debug(' - GENERATE ASS %s', self.outputs)
         self._handle_export_ass()
         self.progress.set_pc(30)
+
+        # Export vrmesh ma
+        _LOGGER.debug(' - GENERATE VRM MA %s', self.outputs)
         self._handle_export_vrm_ma()
         self.progress.set_pc(40)
+
+        # Export redshift proxy
+        _LOGGER.debug(' - GENERATE RS PROXY %s', self.outputs)
         self._handle_export_rs_pxy()
         self.progress.set_pc(50)
+
+        # Export shaders ma
+        _LOGGER.debug(' - GENERATE SHADERS %s', self.outputs)
         self._handle_export_shaders_scene()
         self.progress.set_pc(60)
         assert self.publish in self.outputs
 
         self.progress.set_pc(80)
         self.work.load(force=True)
+        _LOGGER.debug(' - COMPLETE %s', self.outputs)
 
     def _handle_export_ass(self):
         """Handle export ass file."""
@@ -165,7 +174,8 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         if not _export_vrm_ma:
             return
         _vrm = lookdev.export_vrmesh_ma(force=_force, animation=_anim)
-        _vrm.add_metadata(animated=_anim)
+        if not _vrm:
+            return
         self.outputs.append(_vrm)
 
     def _handle_export_rs_pxy(self):

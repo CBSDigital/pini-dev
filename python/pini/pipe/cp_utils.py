@@ -256,7 +256,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None, id_=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
-        extn=EMPTY, extns=None, filter_=None, filter_attr='path'):
+        extn=EMPTY, extns=None, filter_=None, filter_attr='path', latest=False):
     """Check whether the given object passes pipeline filters.
 
     Args:
@@ -284,6 +284,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         extns (str list): match by extension list
         filter_ (str): apply filter to filter attribute
         filter_attr (str): filter attribute (default is path)
+        latest (bool): filter out non-latest items
 
     Returns:
         (bool): whether object passed filters
@@ -346,6 +347,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         return False
 
     # Could be expensive so run last
+    if latest and obj.latest:
+        return obj.latest
     if ver_n is not EMPTY:
         if ver_n == 'latest':
             return obj.latest

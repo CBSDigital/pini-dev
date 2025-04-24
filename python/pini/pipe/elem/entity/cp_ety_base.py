@@ -391,7 +391,8 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             return None
         raise ValueError(match, kwargs)
 
-    def find_outputs(self, tag=EMPTY, ver_n=EMPTY, class_=None, **kwargs):
+    def find_outputs(
+            self, tag=EMPTY, ver_n=EMPTY, class_=None, latest=False, **kwargs):
         """Find outputs in this entity.
 
         This will only search outputs stored at entity level.
@@ -400,6 +401,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             tag (str|None): filter by tag
             ver_n (int|None): filter by version number
             class_ (class): filter by class
+            latest (bool): filter out non-latest items
 
         Returns:
             (CPOutput list): matching outputs
@@ -410,7 +412,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         # Apply latest filter
         _ver_n = ver_n
-        if _ver_n == 'latest':
+        if latest or _ver_n == 'latest':
             _LOGGER.debug(' - APPLYING LATEST FILTER %s', _all_outs)
             _latests = {}
             for _out in _all_outs:

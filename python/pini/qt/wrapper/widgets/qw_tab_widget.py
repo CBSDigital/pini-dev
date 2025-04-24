@@ -98,21 +98,16 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
 
         raise RuntimeError(match)
 
-    def set_tab_enabled(self, name, enabled=True):
+    @q_utils.block_signals
+    def set_tab_enabled(self, tab, enabled=True):
         """Set the enabled state of the named tab.
 
         Args:
-            name (str): name of tab to enable
+            tab (str): tab to enable
             enabled (bool): enabled state to apply
         """
-        for _idx in range(self.count()):
-            if name == self.tabText(_idx):
-                _signals = self.signalsBlocked()
-                self.blockSignals(True)
-                self.setTabEnabled(_idx, enabled)
-                self.blockSignals(_signals)
-                return
-        raise RuntimeError(name)
+        _idx = self.find_tab_idx(tab)
+        self.setTabEnabled(_idx, enabled)
 
     def set_tab_visible(self, tab, visible):
         """Set visiblity of the given tab.

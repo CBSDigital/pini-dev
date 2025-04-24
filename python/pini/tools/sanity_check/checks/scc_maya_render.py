@@ -444,7 +444,7 @@ class CheckRenderGlobals(SCMayaCheck):
             self.add_fail(
                 'The render setup option "Include all lights in each render '
                 'layer by default" is disabled - as this setting cannot be '
-                'disabled in batch mode (due to a bug in maya), it needs to be'
+                'disabled in batch mode (due to a bug in maya), it needs to be '
                 'enabled', fix=wrap_fn(
                     cmds.optionVar,
                     intValue=('renderSetup_includeAllLights', True)))

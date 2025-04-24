@@ -3,17 +3,18 @@
 import logging
 import pprint
 
-from pini.utils import Seq, get_user, File, TMP, Video, Image
+from pini import pipe, qt
+from pini.utils import Seq, get_user, File, TMP, Video, Image, strftime, single
 
-from . import sg_utils
+from . import sg_utils, sg_handler
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def create_ver(
-        render, frames, comment, thumb=None, filmstrip=None, pub_files=(),
+        render, frames, comment=None, thumb=None, filmstrip=None, pub_files=(),
         force=False):
-    """Register the given video in shotgrid.
+    """Register the given render in shotgrid.
 
     Args:
         render (CPOutputVideo|CPOutputSeq): output to register
@@ -28,29 +29,39 @@ def create_ver(
         (SGVersion): version
     """
     from pini.pipe import shotgrid
+    _progress = qt.progress_dialog(
+        'Submitting version', col='Orchid', stack_key='SubmitVersion')
     _LOGGER.info('CREATE VERSION')
 
+    _render = pipe.CACHE.obt(render)
+    _pub_files = set(pub_files)
+    _comment = comment
+    _ety = _render.entity.sg_entity
+
     # Check for existing
-    _ety = shotgrid.SGC.find_entity(render.entity)
-    _cur_ver = _ety.find_ver(render, catch=True)
-    if not force and _cur_ver:
-        _LOGGER.info(' - VERSION ALREADY EXISTS %s', render)
-        return _cur_ver
+    _progress.set_pc(5)
+    _sg_ver = _ety.find_ver(_render, catch=True)
+    if not force and _sg_ver:
+        _LOGGER.info(' - VERSION ALREADY EXISTS %s', _render)
+        _progress.set_pc(100)
+        return _sg_ver
+    _progress.set_pc(10)
+
+    # Read work
+    _work = _render.to_work()
+    if _work:
+        _pub_files.add(_work)
+        for _path in sorted(_work.metadata.get('refs', {}).values()):
+            _out = pipe.CACHE.obt_output(_path, catch=True)
+            if _out:
+                _pub_files.add(_out)
+        _comment = _comment or _work.notes
+    _progress.set_pc(20)
 
     # Create version
-    _data = _build_ver_data(
-        render, frames=frames, comment=comment, pub_files=pub_files)
-    _LOGGER.debug('DATA %s', pprint.pformat(_data))
-    if not _cur_ver:
-        shotgrid.create('Version', _data)
-        _action = 'CREATED'
-    else:
-        _data.pop('created_by')
-        shotgrid.update('Version', _cur_ver.id_, _data)
-        _action = 'UPDATED'
-    _sg_ver = _ety.find_ver(render, force=True)
-    _LOGGER.info(' - %s VERSION %s', _action, _sg_ver)
-    assert _sg_ver
+    _sg_ver = _obt_ver_elem(
+        version=_sg_ver, frames=frames, pub_files=sorted(_pub_files))
+    _progress.set_pc(50)
 
     # Upload video
     _video = None
@@ -59,39 +70,132 @@ def create_ver(
     if _video:
         shotgrid.upload(
             'Version', _sg_ver.id_, _video, field_name='sg_uploaded_movie')
+    _progress.set_pc(60)
 
     # Apply thumb
-    _thumb = None
-    if thumb:
-        _thumb = File(_thumb)
-    if isinstance(render, Seq):
-        _thumb = render.to_frame_file()
-    if not _thumb and _video:
-        _thumb = TMP.to_file('tmp.jpg')
-        render.to_frame(_thumb, force=True)
-    if _thumb and _thumb.extn == 'exr':
-        _tmp = TMP.to_file('tmp.jpg')
-        Image(_thumb).convert(_tmp, force=True)
-        _thumb = _tmp
-    if _thumb:
-        assert _thumb.exists()
-        _LOGGER.info(' - APPLY THUMB %s', _thumb)
-        shotgrid.upload_thumbnail('Version', _sg_ver.id_, _thumb.path)
+    _apply_thumb(thumb=thumb, version=_sg_ver, render=_render, video=_video)
+    _progress.set_pc(70)
 
     # Apply filmstrip (generated automatically if thumb)
     if filmstrip:
         _strip = File(filmstrip)
         shotgrid.upload_filmstrip_thumbnail(
             'Version', _sg_ver.id_, _strip.path)
+    _progress.set_pc(80)
+
+    if _work:
+        _work.add_metadata(submitted=True)
+    _progress.set_pc(90)
+
+    _add_to_dailies_playlist(render=render, version=_sg_ver)
+    _progress.set_pc(100)
 
     return _sg_ver
 
 
-def _build_ver_data(video, frames, comment, pub_files):
+def _add_to_dailies_playlist(render, version):
+    """Add this version to next dailies playlist.
+
+    If the playlist is marked as closed, the next index is used.
+
+    Args:
+        render (CCPOutputBase): render being submitted
+        version (SGCVersion): shotgrid version
+    """
+    _LOGGER.info(' - APPLY DAILIES PLAYLIST')
+    _ety = render.entity
+    _job = render.job
+    if version.data['playlists']:
+        _list = single(version.data['playlists'])['name']
+        raise RuntimeError(
+            f'Already in {_job.name} playlist {_list} - {render.base}')
+    _type = version.data['sg_version_type']
+    if not _type:
+        raise RuntimeError(
+            f'Missing version type data {version.id_} - {render.path}')
+
+    # Find today's playlists for this type
+    _prefix = (
+        f'{strftime("%Y%m%d")}_{_ety.entity_type}.{_ety.name}_{_type}Dailies')
+    _playlists = {
+        _item['code']: _item for _item in sg_handler.find(
+            'Playlist', job=render.job, fields=['code', 'sg_status'],
+            filters=[('code', 'starts_with', _prefix)])}
+
+    # Find next open playlist
+    _create = False
+    _playlist = None
+    for _idx in range(1, 100):
+        _name = f'{_prefix}_{_idx:02d}'
+        _LOGGER.info('CHECK NAME %s', _name)
+        if _name not in _playlists:
+            _create = True
+            break
+        _playlist = _playlists[_name]
+        if _playlist['sg_status'] != 'clsd':
+            break
+    else:
+        raise RuntimeError(f'Overflow {_prefix} - {_ety.path}')
+
+    # Create or add to playlist
+    if _create:
+        _LOGGER.info(' - CREATE PLAYLIST %s', _name)
+        _desc = (
+            'Automatic daily playlist generated by pini. After '
+            'reviewing, change the playlist status to Closed and a new '
+            f'version will be generated ie. {_name} -> '
+            f'{_prefix}_{_idx + 1:02d}')
+        _data = {
+            'code': _name,
+            'description': _desc,
+            'project': _ety.job.sg_proj.to_entry(),
+            'versions': [version.to_entry()]}
+        sg_handler.create('Playlist', _data)
+    else:
+        _LOGGER.info(' - ADD TO %s', _name)
+        assert _playlist
+        sg_handler.update(
+            'Version', version.id_, data={'playlists': [_playlist]})
+
+
+def _apply_thumb(thumb, version, render, video):
+    """Apply version thumbnail.
+
+    Args:
+        thumb (str): path to thumbnail
+        version (SGCVersion): version
+        render (CCPOutputBase): render
+        video (CCPOutputVideo): video
+    """
+
+    # Determine thumb path
+    _thumb = None
+    if thumb:
+        _thumb = File(_thumb)
+    if not _thumb and isinstance(render, Seq):
+        _thumb = render.to_frame_file()
+    if not _thumb and video:
+        _thumb = TMP.to_file('tmp.jpg')
+        render.to_frame(_thumb, force=True)
+
+    # Fix exr thumb
+    if _thumb and _thumb.extn == 'exr':
+        _tmp = TMP.to_file('tmp.jpg')
+        Image(_thumb).convert(_tmp, force=True)
+        _thumb = _tmp
+
+    # Apply thumb
+    if _thumb:
+        assert _thumb.exists()
+        _LOGGER.info(' - APPLY THUMB %s', _thumb)
+        sg_handler.upload_thumbnail('Version', version.id_, _thumb.path)
+
+
+def _build_ver_data(render, frames, comment, pub_files):
     """Build version data dict.
 
     Args:
-        video (CPOutputVideo): output video to register
+        render (CPOutputBase): output to register
         frames (CPOutputSeq): source frames
         comment (str): submission comment
         pub_files (CPOutput list): published files to link
@@ -101,22 +205,31 @@ def _build_ver_data(video, frames, comment, pub_files):
     """
     from pini.pipe import shotgrid
 
-    _work = sg_utils.output_to_work(video)
-    _sg_ety = shotgrid.SGC.find_entity(video.entity)
-    _sg_job = shotgrid.SGC.find_proj(video.job)
-    _sg_task = _sg_ety.find_task(task=video.task, step=video.step)
+    _work = sg_utils.output_to_work(render)
+    _sg_ety = shotgrid.SGC.find_entity(render.entity)
+    _sg_job = shotgrid.SGC.find_proj(render.job)
+    _sg_task = _sg_ety.find_task(task=render.task, step=render.step)
 
     # Build data
     _data = {
-        "code": video.base,
+        "code": render.base,
         "entity": _sg_ety.to_entry(),
         "project": _sg_job.to_entry(),
         "sg_task": _sg_task.to_entry(),
-        "sg_path_to_movie": video.path,
-        "sg_version_number": video.ver_n,
+        "sg_path_to_movie": render.path,
+        "sg_version_number": render.ver_n,
     }
     if 'sg_pini_tag' in shotgrid.find_fields('Version'):
-        _data["sg_pini_tag"] = video.tag or ''
+        _data["sg_pini_tag"] = render.tag or ''
+
+    # Add version type
+    _map = {
+        'model': 'model',
+        'rig': 'rig',
+        'lookdev': 'surf',
+    }
+    if render.pini_task in _map:
+        _data['sg_version_type'] = _map[render.pini_task]
 
     # Add frames data
     if frames:
@@ -127,7 +240,7 @@ def _build_ver_data(video, frames, comment, pub_files):
         _data['sg_last_frame'] = _end
 
     # Add user data
-    _user = video.metadata.get('owner') or get_user()
+    _user = render.metadata.get('owner') or get_user()
     if _user:
         _sg_user = shotgrid.SGC.find_user(_user)
         _data['user'] = _sg_user.to_entry()
@@ -142,7 +255,7 @@ def _build_ver_data(video, frames, comment, pub_files):
 
     # Add published files
     if pub_files:
-        _outs = sorted(set(pub_files) | {video})
+        _outs = sorted(set(pub_files) | {render})
         _LOGGER.info(' - OUTS %s', _outs)
         _data['published_files'] = []
         for _out in _outs:
@@ -150,3 +263,43 @@ def _build_ver_data(video, frames, comment, pub_files):
             _data['published_files'].append(_sg_pub_file.to_entry())
 
     return _data
+
+
+def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
+    """Obtain version element.
+
+    Args:
+        version (SGCVersion): existing version (if any)
+        render (CCPOutputBase): render
+        frames (CCPOutputSeq): source frames
+        comment (str): comment
+        pub_files (list): publish files to link
+        progress (ProgressDialog): progress dialog
+
+    Returns:
+        (SGCVersion): version
+    """
+    _ety = render.entity.sg_entity
+
+    # Build submit data
+    _data = _build_ver_data(
+        render, frames=frames, comment=comment, pub_files=pub_files)
+    _LOGGER.debug('DATA %s', pprint.pformat(_data))
+    progress.set_pc(30)
+
+    # Create or update shotgrid
+    if not version:
+        sg_handler.create('Version', _data)
+        _action = 'CREATED'
+    else:
+        _data.pop('created_by')
+        sg_handler.update('Version', version.id_, _data)
+        _action = 'UPDATED'
+
+    # Find updated element
+    progress.set_pc(40)
+    _sg_ver = _ety.find_ver(render, force=True)
+    _LOGGER.info(' - %s VERSION %s', _action, _sg_ver)
+    assert _sg_ver
+
+    return _sg_ver

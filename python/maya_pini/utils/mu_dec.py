@@ -5,6 +5,8 @@ import logging
 
 from maya import cmds
 
+from pini.utils import File, TMP
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -224,6 +226,42 @@ def restore_sel(func):
         return _result
 
     return _restore_sel_fn
+
+
+def revert_scene(func):
+    """Restore current current scene after executing function.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _revert_scene_fn(*args, **kwargs):
+        from pini import dcc
+        _LOGGER.info('REVERT SCENE')
+        _unsaved_changes = dcc.unsaved_changes()
+        _file = dcc.cur_file()
+        _extn = File(_file).extn if _file else 'mb'
+        _tmp = TMP.to_file(f'.pini/tmp.{_extn}')
+        _LOGGER.info(' - TMP %s', _tmp)
+        # _sel = cmds.ls(selection=True)
+        dcc.save(_tmp, force=True)
+        if _file:
+            cmds.file(rename=_file)
+        _result = func(*args, **kwargs)
+        dcc.load(_tmp, force=True)
+        if _file:
+            cmds.file(rename=_file)
+
+        # _sel = [_node for _node in _sel if cmds.objExists(_node)]
+        # if _sel:
+        #     cmds.select(_sel)
+        return _result
+
+    return _revert_scene_fn
 
 
 def use_tmp_ns(func):
