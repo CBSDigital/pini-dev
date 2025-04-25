@@ -1,7 +1,10 @@
+import logging
 import unittest
 
 from pini import testing, pipe
 from pini.utils import assert_eq
+
+_LOGGER = logging.getLogger()
 
 
 class TestCache(unittest.TestCase):

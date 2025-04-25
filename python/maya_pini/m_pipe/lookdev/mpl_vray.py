@@ -138,8 +138,8 @@ def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
     same script to rebuild the node with shaders. This is useful because
     it's hard to script attaching the shaders to the proxy node.
 
-    NOTE: this seems to have become destructive, ie. destroying the current scene
-    and ignoring the newProxyNode flag.
+    NOTE: this seems to have become destructive, ie. destroying the current
+    scene and ignoring the newProxyNode flag.
 
     Args:
         file_ (File): vrmesh file location to save to

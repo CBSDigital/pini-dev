@@ -5,7 +5,7 @@ import logging
 import hou
 
 from pini import dcc
-from pini.utils import File
+from pini.utils import File, single
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,23 +52,35 @@ def import_abc_archive(abc, namespace):
 
     _archive = _root.createNode('alembicarchive', namespace)
     _archive.parm('fileName').set(_file.path)
+    _archive.parm('buildSingleGeoNode').set(True)
     _archive.parm('buildHierarchy').pressButton()
 
     _input_1 = _archive.item('1')
-    _abcs = _input_1.outputs()
+    _geos = _input_1.outputs()
+    _LOGGER.debug(' - GEOS %s', _geos)
 
     # Apply scale
     _null = _archive.createNode('null', 'scale')
     _null.setInput(0, _input_1)
     _null.setPosition(_input_1.position() + hou.Vector2(0, -1))
     _null.parm('scale').set(0.01)
-    for _abc in _abcs:
-        _abc.setInput(0, _null)
+    for _geo in _geos:
+        _LOGGER.debug(' - GEO %s', _geo)
+        _geo.setInput(0, _null)
+
+        _abc = single([
+            _node for _node in _geo.children()
+            if _node.type().name() == 'alembic'], catch=True)
+        _LOGGER.debug('   - ABC %s', _abc)
+        if _abc:
+            _abc.parm('addpath').set(True)
 
     _ref = dcc.find_pipe_ref(namespace)
     _LOGGER.debug(' - CONTENT TYPE %s', _ref.output.content_type)
     if _ref.output.content_type == 'CameraAbc':
         _ref.update_camera_res()
+
+    _archive.layoutChildren()
 
     return _ref
 

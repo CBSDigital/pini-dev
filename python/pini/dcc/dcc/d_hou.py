@@ -87,6 +87,10 @@ class HouDCC(BaseDCC):
         """
         return not hou.isUIAvailable()
 
+    def clear_terminal(self):
+        """Clear python shell."""
+        print('\n' * 5000 + '[Console cleared]')
+
     def create_ref(self, path, namespace, force=False):
         """Create a reference of the given path in the current scene.
 
