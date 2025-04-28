@@ -8,7 +8,7 @@ from maya import cmds
 from pini import dcc, qt, icons
 from pini.utils import single
 
-from maya_pini import ref, open_maya as pom
+from maya_pini import ref, open_maya as pom, m_pipe
 from maya_pini.utils import (
     restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean,
     save_fbx)
@@ -234,7 +234,8 @@ def _exec_export_abc(work, force=False):
     """
 
     # Make sure we can cache
-    if not cmds.objExists('cache_SET'):
+    _cache_set = m_pipe.find_cache_set()
+    if not _cache_set:
         _LOGGER.info(' - UNABLE TO EXPORT ABC - MISSING cache_SET')
         return None
     _tmpl = work.find_template('cache', catch=True)
@@ -246,7 +247,7 @@ def _exec_export_abc(work, force=False):
     _abc = work.to_output(
         _tmpl, output_type='geo', output_name='restCache', extn='abc')
     _LOGGER.info(' - REST CACHE ABC %s', _abc)
-    _geo = cmds.sets('cache_SET', query=True)
+    _geo = m_pipe.read_cache_set(set_=_cache_set)
     if not _geo:
         _LOGGER.info(' - UNABLE TO EXPORT ABC - EMPTY cache_SET')
         return None

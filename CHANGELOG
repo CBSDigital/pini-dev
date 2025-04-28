@@ -1,3 +1,25 @@
+## [7.4.0] - Mon 2025-04-28 09:35
+### Summary
+ - Pini Helper:
+    - bugfix error on deadline submit render,
+### Updated
+ - pini.utils.MetadataFile.metadata_yml deprecated,
+ - pini.utils.MetadataFile metadata_file/get_metadata added,,
+ - pini.utils.MetadataFile allow list/tuple metadata,
+ - pini.utils.MetadataFile fixed pkl handling,
+ - pini.utils.Seq.copy_to added check_match,
+ - pini.dcc.export.CMayaBasicPublish abc bugfix not finding imported cache set,
+ - pini.pipe.CPJob.find_asset added label filter match,
+ - pini.pipe.CPWork.save add not replace on apply metadata,
+ - pini.pipe.CPOutputBase.find_work added,
+ - pini.pipe.CPOutputFile.metadata_yml bugfix not using CPOutputBase.metadata_yml,
+ - pini.pipe.CACHE.CCPRoot.obt_job added Seq handling,
+ - pini.pipe.shotgrid.create_entity working create asset + added mkdir arg,
+ - pini.farm.CDJob.submit renamed arg submit_ -> submit_,
+ - pini.farm.find_jobs added batch_name filter,
+ - pini.testing.print_exec_code added,
+
+
 ## [7.3.1] - Fri 2025-04-25 08:56
 ### Summary
  - Pini Helper:

@@ -324,6 +324,15 @@ class CCPOutputBase(elem.CPOutputBase):
                             break
         return _reps
 
+    @pipe_cache_on_obj
+    def find_work(self):
+        """Find this output's work file.
+
+        Returns:
+            (CCPWork): source work file
+        """
+        return pipe.CACHE.obt(super().find_work())
+
     def is_media(self):
         """Test whether this output is media.
 
@@ -339,6 +348,14 @@ class CCPOutputBase(elem.CPOutputBase):
             latest (bool): whether this is latest version
         """
         self._latest = latest
+
+    def to_file(self, **kwargs):
+        """Map this output to a file with the same attributes.
+
+        Returns:
+            (File): file
+        """
+        raise NotImplementedError
 
     def to_ghost(self):
         """Obtain ghost representation of this output for caching.
@@ -364,11 +381,3 @@ class CCPOutputBase(elem.CPOutputBase):
             range_=self.range_, submittable=self.submittable,
             src=self.src, src_ref=self.src_ref, handler=self.handler,
             stream=self.to_stream(), status=self.status)
-
-    def to_file(self, **kwargs):
-        """Map this output to a file with the same attributes.
-
-        Returns:
-            (File): file
-        """
-        raise NotImplementedError

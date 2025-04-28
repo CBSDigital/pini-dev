@@ -39,25 +39,33 @@ class CDFarm(base.CFarm):
         _cmds = [find_exe('deadlinecommand'), '-GetLimitGroupNames']
         return system(_cmds).split()
 
-    def find_jobs(self, read_metadata=False, user=None, force=False):
+    def find_jobs(
+            self, read_metadata=False, user=None, batch_name=None, force=False):
         """Find existing deadline jobs for the current user.
 
         Args:
             read_metadata (bool): read job metadata
             user (str): override user
+            batch_name (str): filter by batch name
             force (bool): force reread jobs
 
         Returns:
             (CDFarmJob list): farm jobs
         """
-        _jobs = self._read_jobs(user=user, force=force)
+        _all_jobs = self._read_jobs(user=user, force=force)
 
         # Read metadata
         if read_metadata:
             for _job in qt.progress_bar(
-                    _jobs, 'Reading {:d} job{}', show_delay=2,
+                    _all_jobs, 'Reading {:d} job{}', show_delay=2,
                     stack_key='ReadDeadlineJobs'):
                 _job.to_details()
+
+        _jobs = []
+        for _job in _all_jobs:
+            if batch_name and _job.batch_name != batch_name:
+                continue
+            _jobs.append(_job)
 
         return _jobs
 

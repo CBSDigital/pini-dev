@@ -614,16 +614,19 @@ class MetadataFile(File):
     cache_loc = 'adjacent'
     cache_namespace = None
 
-    def __init__(self, file_, cache_loc=None):
+    def __init__(self, file_, cache_loc=None, cache_file_extn=None):
         """Constructor.
 
         Args:
             file_ (str): path to file
             cache_loc (str): apply cache location (eg. home/tmp)
+            cache_file_extn (str): apply cache file extn (eg. yml/pkl)
         """
         super().__init__(file_)
         if cache_loc:
             self.cache_loc = cache_loc
+        if cache_file_extn:
+            self.cache_file_extn = cache_file_extn
 
     @property
     def cache_fmt(self):
@@ -666,13 +669,36 @@ class MetadataFile(File):
         return self._read_metadata()
 
     @property
-    def metadata_yml(self):
+    def metadata_file(self):
         """Obtain path to metadata yml file.
 
         Returns:
             (File): metadata yml
         """
         return File(self.cache_fmt.format(func='metadata'))
+
+    @property
+    def metadata_yml(self):
+        """Obtain path to metadata yml file.
+
+        Returns:
+            (File): metadata yml
+        """
+        from pini.tools import release
+        release.apply_deprecation('25/04/25', 'Use MetadataFile.metadata_file')
+        assert self.cache_file_extn == 'yml'
+        return File(self.cache_fmt.format(func='metadata'))
+
+    def get_metadata(self, key):
+        """Obtain item from metadata.
+
+        Args:
+            key (str): metadata dict key
+
+        Returns:
+            (any): stored metadata
+        """
+        return self.metadata.get(key)
 
     def add_metadata(self, **kwargs):
         """Add to this file's metadata.
@@ -686,7 +712,8 @@ class MetadataFile(File):
         _kwarg = single(list(kwargs.items()))
         _key, _val = _kwarg
         _LOGGER.debug(' - KEY/VAL %s %s', _key, _val)
-        assert isinstance(_val, (str, float, int, dict))
+        if not isinstance(_val, (str, float, int, dict, list, tuple)):
+            raise TypeError(_val, type(_val))
         _data = self._read_metadata()
         if _data.get(_key) == _val:
             _LOGGER.debug(' - VAL ALREADY SET')
@@ -700,7 +727,20 @@ class MetadataFile(File):
         Returns:
             (dict): metadata
         """
-        return self.metadata_yml.read_yml(catch=True)
+        if self.cache_file_extn == 'yml':
+            _data = self.metadata_file.read_yml(catch=True)
+        elif self.cache_file_extn == 'pkl':
+            _data = self.metadata_file.read_pkl(catch=True)
+        else:
+            raise NotImplementedError(self.cache_file_extn)
+        if not isinstance(_data, dict):
+            from pini import qt, icons
+            qt.ok_cancel(
+                f'Remove bad metadata file?\n\n{self.metadata_file}',
+                icon=icons.CLEAN)
+            self.metadata_file.delete(force=True)
+            _data = {}
+        return _data
 
     def set_metadata(self, data, force=False):
         """Set this file's metadata, replacing any existing metadata.
@@ -709,4 +749,10 @@ class MetadataFile(File):
             data (dict): metadata to apply
             force (bool): overwrite existing metadata without confirmation
         """
-        self.metadata_yml.write_yml(data, force=force)
+        assert isinstance(data, dict)
+        if self.cache_file_extn == 'yml':
+            self.metadata_file.write_yml(data, force=force)
+        elif self.cache_file_extn == 'pkl':
+            self.metadata_file.write_pkl(data, force=force)
+        else:
+            raise NotImplementedError(self.cache_file_extn)

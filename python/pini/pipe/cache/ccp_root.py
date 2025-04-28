@@ -15,7 +15,7 @@ import logging
 import time
 
 from pini.utils import (
-    single, passes_filter, nice_age, norm_path, Path, flush_caches)
+    single, passes_filter, nice_age, norm_path, Path, flush_caches, Seq)
 
 from .. import elem
 from . import job, ccp_utils, output
@@ -181,7 +181,7 @@ class CCPRoot(elem.CPRoot):
             _LOGGER.debug(' - FOUND EXISTING JOB %s', _result)
             return _result
 
-        if isinstance(_match, Path):
+        if isinstance(_match, (Path, Seq)):
             _match = _match.path
 
         if isinstance(_match, str):

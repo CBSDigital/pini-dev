@@ -1,11 +1,13 @@
 """General testing tools."""
 
+import functools
+import inspect
 import logging
 import os
 import sys
 
 from pini import icons
-from pini.utils import check_heart, TMP, Image
+from pini.utils import check_heart, TMP, Image, abs_path, PyFile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +51,70 @@ def obt_image(extn='exr'):
     assert _file.exists()
 
     return _file
+
+
+def _to_code_str(val):
+    """Convert the given attribute value to a printable string.
+
+    eg. 1 -> '1'
+        "blah" -> '"blah"'
+        0.12 -> '0.12'
+
+    Args:
+        val (str): value to convert
+
+    Returns:
+        (str): code string
+    """
+    if isinstance(val, str):
+        return f'"{val}"'
+    if isinstance(val, (bool, int, float)):
+        return f'{val}'
+    raise NotImplementedError(val, type(val))
+
+
+def print_exec_code(func):
+    """Decorator which prints the code to execute this function.
+
+    This includes the value of any args/kwargs.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _print_exec_code_fn(*args, **kwargs):
+        _LOGGER.info('PRINT EXEC CODE %s', func)
+
+        # Determine module info
+        _file = abs_path(inspect.getfile(func))
+        _LOGGER.debug(' - FILE %s', _file)
+        _mod = PyFile(_file).to_module()
+        _LOGGER.debug(' - MOD %s', _mod)
+        _mod_parent, _mod_name = _mod.__name__.rsplit('.', 1)
+
+        # Build args str
+        _args_s = ''
+        for _arg in args:
+            _arg_s = _to_code_str(_arg)
+            _args_s += f'{_arg_s}, '
+        for _key, _val in kwargs.items():
+            _args_s += f'{_key}={_to_code_str(_val)}, '
+        _args_s = _args_s.strip(', ')
+
+        # Print code
+        _code = '; '.join([
+            f'from {_mod_parent} import {_mod_name}',
+            f'{_mod_name}.{func.__name__}({_args_s})'])
+        _LOGGER.info(' - CODE %s', _code)
+
+        _result = func(*args, **kwargs)
+        return _result
+
+    return _print_exec_code_fn
 
 
 def set_dev_mode(value):

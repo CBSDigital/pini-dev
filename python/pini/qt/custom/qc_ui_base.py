@@ -594,8 +594,8 @@ def _rebuild_ui_on_error(func):
         try:
             _result = func(self, *args, **kwargs)
         except RuntimeError as _exc:
-            _LOGGER.info('UI WAS GARGAGE COLLECTED - REBUILDING %s',
-                         self.dialog)
+            _LOGGER.debug(
+                'UI WAS GARGAGE COLLECTED - REBUILDING %s', self.dialog)
             if (
                     not str(_exc).startswith('Internal C++ object') or
                     not str(_exc).endswith('already deleted.')):

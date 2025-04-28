@@ -574,7 +574,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         _refs_data = {_ref.namespace: _ref.path for _ref in _refs}
         _data['refs'] = _refs_data
 
-        self.set_metadata(_data)
+        self.set_metadata(_data, mode='add')
 
     def add_metadata(self, **kwargs):
         """Add to existing metadata."""
@@ -582,13 +582,22 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         _data.update(kwargs)
         self.set_metadata(_data)
 
-    def set_metadata(self, data):
+    def set_metadata(self, data, mode='replace'):
         """Set metadata for this work file.
 
         Args:
             data (dict): metadata to apply
+            mode (str): how to apply metadata (eg. replace/add)
         """
-        self.metadata_yml.write_yml(data, force=True)
+        _data = {}
+        if mode == 'replace':
+            pass
+        elif mode == 'add':
+            _data.update(self.metadata)
+        else:
+            raise NotImplementedError(mode)
+        _data.update(data)
+        self.metadata_yml.write_yml(_data, force=True)
         _LOGGER.debug('SAVED METADATA %s', self.metadata_yml.path)
 
     def set_notes(self, notes):

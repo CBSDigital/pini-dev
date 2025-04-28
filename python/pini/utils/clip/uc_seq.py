@@ -176,21 +176,40 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _f_idx = int(_f_str)
         return self.frame_expr % _f_idx == _f_str
 
-    def copy_to(self, target, frames=None):
+    def copy_to(self, target, frames=None, check_match=True):
         """Copy this file sequence to another location.
 
         Args:
             target (Seq): target location
             frames (int list): override frames to copy
+            check_match (bool): check existing frame match before replacing
         """
         from pini import qt
         assert isinstance(target, Seq)
         _frames = frames or self.frames
+
+        # Handle existing
         if target.exists():
+
+            # Check for target matches
+            if check_match:
+                _LOGGER.info(' - CHECK WHETHER EXISTING FRAMES MATCH')
+                for _frame in qt.progress_bar(
+                        _frames, 'Checking {:d} frame{}',
+                        stack_key='CheckFrames'):
+                    if not File(self[_frame]).matches(target[_frame]):
+                        break
+                else:
+                    _LOGGER.info(' - ALL FRAMES MATCH')
+                    return
+
+            # Replace existing
             qt.ok_cancel(
                 f'Replace existing frames {min(_frames):d}-{max(_frames):d}?'
                 f'\n\n{target.path}')
             target.delete(frames=_frames, force=True)
+
+        # Apply copy
         for _frame in qt.progress_bar(
                 _frames, 'Copying {:d} frame{}', stack_key='CopyFrames'):
             File(self[_frame]).copy_to(target[_frame])

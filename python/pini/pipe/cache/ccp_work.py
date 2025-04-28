@@ -278,13 +278,13 @@ class CCPWork(CPWork):
             raise ValueError(result)
         return _val
 
-    def set_metadata(self, data):
+    def set_metadata(self, *args, **kwargs):
         """Set work file metadata.
 
         Args:
             data (dict): metadata to apply
         """
-        super().set_metadata(data)
+        super().set_metadata(*args, **kwargs)
         self._read_metadata(force=True)
 
     def update_outputs(self, update_helper=True):

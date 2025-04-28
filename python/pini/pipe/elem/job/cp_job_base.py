@@ -159,7 +159,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             ({name: Template list} dict): template name/object data
         """
-        _LOGGER.debug('BUILD TEMPLATE %s', self)
+        _LOGGER.log(9, 'BUILD TEMPLATE %s', self)
         return cp_template.build_job_templates(job=self, catch=catch)
 
     def find_template(
@@ -252,8 +252,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPTemplate list): matching templates
         """
-        _LOGGER.debug(
-            'FIND TEMPLATES %s type_=%s dcc_=%s', self.name, type_, dcc_)
+        _LOGGER.log(
+            9, 'FIND TEMPLATES %s type_=%s dcc_=%s', self.name, type_, dcc_)
 
         # Apply simple filters
         assert profile in ['shot', 'asset', None]
@@ -268,7 +268,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             if alt is not EMPTY and _tmpl.alt != alt:
                 continue
             _tmpls.append(_tmpl)
-        _LOGGER.debug(' - MATCHED %d TMPLS %s', len(_tmpls), _tmpls)
+        _LOGGER.log(9, ' - MATCHED %d TMPLS %s', len(_tmpls), _tmpls)
 
         # Apply complex filters
         if dcc_ is not EMPTY:
@@ -430,9 +430,17 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         # Match by label
         for _asset in _assets:
             _label = f'{_asset.asset_type}.{_asset.name}'
-            _LOGGER.debug(' - TESTING %s', _label)
+            _LOGGER.log(9, ' - TESTING %s', _label)
             if _label == match:
                 return _asset
+        _LOGGER.debug(' - CHECKED LABEL MATCH')
+
+        # Filter match by label
+        _label_filter_matches = apply_filter(
+            _assets, match, key=operator.attrgetter('label'))
+        _LOGGER.debug(' - LABEL FILTER MATCHES %d', len(_label_filter_matches))
+        if len(_label_filter_matches) == 1:
+            return single(_label_filter_matches)
 
         if catch:
             return None
@@ -668,11 +676,6 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
     def find_entities(self, **kwargs):
         """Find entities in this job.
-
-        Args:
-            entity_type (str): filter by entity type (ie. asset type
-                or sequence name)
-            filter_ (str): apply path filter
 
         Returns:
             (CPEntity list): entities (shots + assets)

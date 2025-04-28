@@ -462,6 +462,15 @@ class CPOutputBase:
 
         return sorted(_vers, key=ver_sort)
 
+    def find_work(self):
+        """Find this output's work file.
+
+        Returns:
+            (CPWork): source work file
+        """
+        from pini import pipe
+        return pipe.to_work(self.metadata['src'])
+
     def is_latest(self):
         """Check whether this is the latest version.
 

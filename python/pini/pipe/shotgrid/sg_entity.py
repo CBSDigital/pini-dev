@@ -4,7 +4,6 @@ import logging
 import os
 
 from pini import qt, pipe
-from pini.utils import single
 
 from . import sg_handler, sg_utils
 
@@ -15,24 +14,35 @@ ASSET_TEMPLATE = os.environ.get(
 SHOT_TEMPLATE = os.environ.get(
     'PINI_SG_SHOT_TEMPLATE', 'Film VFX - Full CG Shot w/o Character')
 
-_ASSET_TYPE_TO_SG = {
-    'char': 'Character',
-    'env': 'Environment',
-    'prop': 'Prop',
-    'fx': 'FX',
-    'veh': 'Vehicle',
-    'utl': 'Utility',
-}
 
-
-def create_entity(entity, force=False):
+def create_entity(entity, mkdir=True, force=False):
     """Register the given entity on shotgrid.
 
     Args:
         entity (CPEntity): entity to register
+        mkdir (bool): create directory
         force (bool): register without confirmation
     """
-    raise NotImplementedError
+
+    _job = pipe.CACHE.obt(entity.job)
+    assert entity not in _job.entities
+
+    if isinstance(entity, pipe.CPAsset):
+        _create_asset(entity, force=force)
+    elif isinstance(entity, pipe.CPShot):
+        _create_shot(entity, force=force)
+    else:
+        raise NotImplementedError
+
+    if mkdir:
+        entity.mkdir()
+
+    pipe.CACHE.reset()
+    _job = pipe.CACHE.obt(entity.job)
+    _etys = _job.find_entities()
+    assert entity in _etys
+
+    return pipe.CACHE.obt(entity)
 
 
 def set_entity_range(entity, range_, force=False):
@@ -91,27 +101,30 @@ def _create_asset(asset, force=False):
     """
     from pini.pipe import shotgrid
 
-    _sg = shotgrid.to_handler()
-    _type = _ASSET_TYPE_TO_SG[asset.asset_type]
-
-    _LOGGER.debug(' - ASSET TEMPLATE %s', ASSET_TEMPLATE)
-    _tmpl = single(_sg.find(
+    # Find template
+    _LOGGER.info(' - ASSET TEMPLATE NAME %s', ASSET_TEMPLATE)
+    _tmpl = shotgrid.find_one(
         'TaskTemplate',
-        [('code', 'is', ASSET_TEMPLATE)]))
+        fields=['code', 'entity_type'],
+        filters=[
+            ('code', 'is', ASSET_TEMPLATE),
+            ('entity_type', 'is', 'Asset')])
+    _LOGGER.info(' - ASSET TEMPLATE %s', _tmpl)
+    assert _tmpl
+
     _data = {
         "project": shotgrid.SGC.find_proj(asset.job).to_entry(),
-        "sg_asset_type": _type,
+        "sg_asset_type": asset.asset_type,
         "code": asset.name,
         "task_template": _tmpl,
     }
-
     if not force:
         qt.ok_cancel(
-            f'Register asset {asset.job.name}/{asset.asset_type}/{asset.name} '
-            f'in shotgrid?\n\n{asset.path}',
+            f'Create shotgrid asset "{asset.asset_type}.{asset.name}" '
+            f'in "{asset.job.name}" project?\n\n{asset.path}',
             icon=shotgrid.ICON, title='Shotgrid')
 
-    return [_sg.create("Asset", _data)]
+    return shotgrid.create("Asset", _data)
 
 
 def _create_shot(shot, force=False):

@@ -82,7 +82,7 @@ class CDJob:
 
         _group = group or os.environ.get('PINI_DEADLINE_GROUP')
         if _group not in farm.find_groups():
-            raise RuntimeError(f'Bad group {_group}')
+            raise RuntimeError(f'Bad group "{_group}"')
         self.group = _group
         if limit_groups:
             _LOGGER.debug(' - LIMIT GROUPS %s', limit_groups)
@@ -90,7 +90,7 @@ class CDJob:
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:
                 if _group not in farm.find_limit_groups():
-                    raise RuntimeError('Bad limit group ' + _group)
+                    raise RuntimeError(f'Bad limit group "{_group}')
         self.limit_groups = limit_groups or ()
 
         assert self.stype
@@ -241,11 +241,11 @@ class CDJob:
         _LOGGER.debug(' - JOB DATA %s', _job_data)
         _LOGGER.debug(' - JOB %s', self.job_file.path)
 
-    def submit(self, submit=True, name=None):
+    def submit(self, submit_=True, name=None):
         """Submit this job to deadline.
 
         Args:
-            submit (bool): execute submission
+            submit_ (bool): execute submission
             name (str): override submission name (for .sub file)
 
         Returns:
@@ -253,7 +253,7 @@ class CDJob:
         """
         from ... import deadline
         return deadline.FARM.submit_jobs(
-            [self], submit=submit, name=name or self.tag)
+            [self], submit_=submit_, name=name or self.tag)
 
 
 class CDCmdlineJob(CDJob):

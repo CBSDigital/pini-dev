@@ -14,6 +14,7 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
     set_metadata = cp_out_base.CPOutputBase.set_metadata
+    metadata_yml = cp_out_base.CPOutputBase.metadata_yml
 
     def __init__(  # pylint: disable=unused-argument
             self, path, job=None, entity=None, work_dir=None, templates=None,
