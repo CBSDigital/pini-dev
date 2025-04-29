@@ -60,7 +60,8 @@ def create_ver(
 
     # Create version
     _sg_ver = _obt_ver_elem(
-        version=_sg_ver, frames=frames, pub_files=sorted(_pub_files))
+        version=_sg_ver, frames=frames, pub_files=sorted(_pub_files),
+        render=_render, comment=_comment, progress=_progress)
     _progress.set_pc(50)
 
     # Upload video

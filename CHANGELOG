@@ -1,3 +1,13 @@
+## [7.5.0] - Tue 2025-04-29 14:18
+### Summary
+ - Pini Helper:
+    - implemented select entity callback [PT-398],
+### Updated
+ - pini.utils.install_callback allow SelectEntity callback,
+ - pini.pipe.shotgrid.create_ver bugfix missing args to obt ver elem func,
+ - pini.tools.helper implemented select entity callback,
+
+
 ## [7.4.0] - Mon 2025-04-28 09:35
 ### Summary
  - Pini Helper:

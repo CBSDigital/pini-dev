@@ -10,7 +10,8 @@ import os
 
 from pini import pipe, icons, qt, dcc
 from pini.tools import usage
-from pini.utils import wrap_fn, chain_fns, copied_path, get_user, strftime
+from pini.utils import (
+    wrap_fn, chain_fns, copied_path, get_user, strftime, find_callback)
 
 from ..ph_utils import obt_recent_work
 
@@ -293,6 +294,10 @@ class PHHeader:
     def _callback__Entity(self):
         self._redraw__EntityCreate()
         self._callback__MainPane(save=False, switch_tabs=False)
+
+        _sel_ety_cb = find_callback('SelectEntity')
+        if _sel_ety_cb and self.entity:
+            _sel_ety_cb(self.entity)
 
     def _callback__EntityCreate(self, force=False, shotgrid_=True):
 

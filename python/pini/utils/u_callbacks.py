@@ -8,7 +8,13 @@ from .u_text import is_pascal
 _LOGGER = logging.getLogger(__name__)
 
 _APPROVED_TYPES = (
-    'SetWork', 'ReadSettings', 'Publish', 'Test', 'HelperWorkIcon')
+    'HelperWorkIcon',
+    'Publish',
+    'ReadSettings',
+    'SelectEntity',
+    'SetWork',
+    'Test',
+)
 CALLBACKS = {}
 
 
