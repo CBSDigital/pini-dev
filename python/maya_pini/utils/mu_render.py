@@ -10,6 +10,8 @@ from maya import cmds, mel
 from pini import icons
 from pini.utils import File, single, find_exe, system, check_heart, Res
 
+from . import mu_eval
+
 _LOGGER = logging.getLogger(__name__)
 _REN_FMTS_MAP = {}
 
@@ -31,6 +33,7 @@ def _revert_render_window(func):
         if not _win and cmds.window(
                 'renderViewWindow', query=True, exists=True):
             cmds.deleteUI('renderViewWindow')
+            mu_eval.process_deferred_events()
         return _result
 
     return _revert_render_window_func

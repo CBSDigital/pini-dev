@@ -108,7 +108,7 @@ def create_pub_file_from_output(
         _out_c = pipe.CACHE.obt(output)
         assert _out_c
         _LOGGER.info(' - UPDATED CACHE')
-        _sg_pub = shotgrid.SGC.find_pub_file(output).data
+        _sg_pub = _out_c.sg_pub_file.data
         assert _sg_pub
 
     return _sg_pub

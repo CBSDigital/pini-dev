@@ -6,13 +6,13 @@ import pprint
 from pini import pipe, qt
 from pini.utils import Seq, get_user, File, TMP, Video, Image, strftime, single
 
-from . import sg_utils, sg_handler
+from . import sg_utils, sg_handler, sg_pub_file
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def create_ver(
-        render, frames, comment=None, thumb=None, filmstrip=None, pub_files=(),
+        render, frames=None, comment=None, thumb=None, filmstrip=None, pub_files=(),
         force=False):
     """Register the given render in shotgrid.
 
@@ -33,22 +33,23 @@ def create_ver(
         'Submitting version', col='Orchid', stack_key='SubmitVersion')
     _LOGGER.info('CREATE VERSION')
 
-    _render = pipe.CACHE.obt(render)
     _pub_files = set(pub_files)
+    _render, _video, _frames = _read_render_video_frames(
+        render=render, frames=frames, pub_files=_pub_files)
+    _progress.set_pc(10)
     _comment = comment
     _ety = _render.entity.sg_entity
 
     # Check for existing
-    _progress.set_pc(5)
     _sg_ver = _ety.find_ver(_render, catch=True)
     if not force and _sg_ver:
         _LOGGER.info(' - VERSION ALREADY EXISTS %s', _render)
         _progress.set_pc(100)
         return _sg_ver
-    _progress.set_pc(10)
+    _progress.set_pc(15)
 
     # Read work
-    _work = _render.to_work()
+    _work = _render.find_work()
     if _work:
         _pub_files.add(_work)
         for _path in sorted(_work.metadata.get('refs', {}).values()):
@@ -60,14 +61,11 @@ def create_ver(
 
     # Create version
     _sg_ver = _obt_ver_elem(
-        version=_sg_ver, frames=frames, pub_files=sorted(_pub_files),
+        version=_sg_ver, frames=_frames, pub_files=sorted(_pub_files),
         render=_render, comment=_comment, progress=_progress)
     _progress.set_pc(50)
 
     # Upload video
-    _video = None
-    if isinstance(render, Video):
-        _video = render
     if _video:
         shotgrid.upload(
             'Version', _sg_ver.id_, _video, field_name='sg_uploaded_movie')
@@ -304,3 +302,48 @@ def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
     assert _sg_ver
 
     return _sg_ver
+
+
+def _read_render_video_frames(render, frames, pub_files):
+    """Read render, video and frames from submit args.
+
+    If an image sequence with more than one frame is submitted, it is converted
+    to a video using ffmpeg.
+
+    Args:
+        render (CPOutputSeq|CPOutputVideo): render arg
+        frames (CPOutputSeq): render frames
+        pub_files (set): pub files list
+
+    Returns:
+        (tuple): render, video, frames
+    """
+    _video = None
+    _frames = frames
+    _render = pipe.CACHE.obt(render)
+
+    if isinstance(_render, Video):
+        return _render, _video, _frames
+
+    if isinstance(_render, Seq):
+        assert not frames
+
+        # Single still image
+        if len(_render.frames) == 1:
+            return _render, None, _render
+
+        _frames = _render
+
+        # Render video
+        _video = _frames.to_output('mov', extn='mov')
+        if not _video.exists():
+            _work = _render.find_work()
+            _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
+            _frames.to_video(_video, fps=_fps)
+            assert _video.exists()
+            sg_pub_file.create_pub_file_from_output(_video, upstream_files=[_frames])
+            pub_files.add(_frames)
+
+        return _render, _video, _frames
+
+    raise NotImplementedError(render, frames)
