@@ -13,6 +13,7 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
     """Represents an output file on disk."""
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
+    get_metadata = cp_out_base.CPOutputBase.get_metadata
     set_metadata = cp_out_base.CPOutputBase.set_metadata
     metadata_yml = cp_out_base.CPOutputBase.metadata_yml
 
@@ -36,3 +37,13 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
             self, job=job, entity=entity, work_dir=work_dir,
             template=template, templates=templates, latest=latest,
             types=types or cp_out_base.OUTPUT_FILE_TYPES)
+
+    @property
+    def metadata(self):
+        """Obtain this output's metadata.
+
+        Returns:
+            (dict): metadata
+        """
+        _LOGGER.debug('METADATA %s', self)
+        return self.get_metadata()

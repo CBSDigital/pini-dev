@@ -223,13 +223,9 @@ class CMayaFarmRender(CMayaRenderHandler):
 
     def _build_limit_groups_elems(self):
         """Build limit groups elements."""
-        _btn = QtWidgets.QPushButton(self.ui.parent)
-        _btn.setFixedWidth(20)
-        _btn.setFixedHeight(20)
-        _btn.setIconSize(qt.to_size(20))
-        _btn.setIcon(qt.to_icon(icons.SELECT))
-        _btn.setFlat(True)
-        _btn.clicked.connect(self._callback__LimitGrpsSelect)
+        _btn = qt.CIconButton(
+            parent=self.ui.parent, icon=icons.SELECT,
+            name='LimitGrpsSelect')
         self.ui.LimitGrpsSelect = _btn
 
         self.ui.add_line_edit(

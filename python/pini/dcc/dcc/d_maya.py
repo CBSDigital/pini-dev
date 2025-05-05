@@ -353,22 +353,24 @@ class MayaDCC(BaseDCC):
             raise NotImplementedError(_type)
         return _data
 
-    def _init_export_handlers(self):
+    def _build_export_handlers(self):
         """Initiate export handlers."""
-        if self._export_handlers is None:
-            from .. import export
-            from pini import farm
-            self._export_handlers = [
-                export.CMayaBasicPublish(),
-                export.CMayaModelPublish(),
-                export.CMayaLookdevPublish(),
-                export.CMayaLocalRender(),
-                export.CMayaPlayblast(),
-                export.CMayaAbcCache(),
-                export.CMayaFbxCache(),
-            ]
-            if farm.IS_AVAILABLE:
-                self._export_handlers.append(export.CMayaFarmRender())
+        from pini import farm
+        from pini.dcc import export
+
+        _handlers = super()._build_export_handlers()
+        _handlers += [
+            export.CMayaBasicPublish(),
+            export.CMayaModelPublish(),
+            export.CMayaLookdevPublish(),
+            export.CMayaLocalRender(),
+            export.CMayaPlayblast(),
+            export.CMayaAbcCache(),
+            export.CMayaFbxCache(),
+        ]
+        if farm.IS_AVAILABLE:
+            _handlers.append(export.CMayaFarmRender())
+        return _handlers
 
     def _read_pipe_refs(self, selected=False):
         """Find references in the current scene.
@@ -475,6 +477,8 @@ class MayaDCC(BaseDCC):
         _val = val
         if isinstance(val, list):
             _val = str(_val)
+        if _val is None:
+            _val = ''
         cmds.fileInfo(key, _val)
         _type_key = '_TYPE_' + key
         _LOGGER.debug(' - SET TYPE KEY key=%s val=%s', _type, _type_key)

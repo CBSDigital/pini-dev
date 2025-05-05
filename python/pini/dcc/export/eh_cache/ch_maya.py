@@ -158,5 +158,6 @@ class CMayaFbxCache(CMayaCache):
 
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
-        self.ui.add_combo_box('Format', ['FBX201600'])
         self.ui.add_separator()
+        self.ui.add_combo_box(
+            'Format', ['FBX201300', 'FBX201600'], val='FBX201600')

@@ -54,7 +54,7 @@ class BaseDCC:
             handler (CRenderHandler): render handler to add.
         """
         _LOGGER.debug('ADD RENDER HANDLER %s', handler)
-        self._init_export_handlers()
+        self._check_export_handlers()
 
         # Flush existing
         for _exp in copy.copy(self._export_handlers):
@@ -215,6 +215,22 @@ class BaseDCC:
             _refs.append(_ref)
         return sorted(_refs)
 
+    def _build_export_handlers(self):
+        """Initiate export handlers list."""
+        from .. import export
+        from pini import pipe
+        _LOGGER.debug('INIT EXPORT HANDLERS')
+        _handlers = []
+        if pipe.SHOTGRID_AVAILABLE:
+            _submit = export.CBasicSubmitter()
+            _handlers.append(_submit)
+        return _handlers
+
+    def _check_export_handlers(self):
+        """Check export handlers have been set up."""
+        if self._export_handlers is None:
+            self._export_handlers = self._build_export_handlers()
+
     def find_export_handler(
             self, match=None, type_=None, filter_=None, catch=False):
         """Find an installed export handler.
@@ -278,7 +294,7 @@ class BaseDCC:
             (CExportHandler list): installed export handlers
         """
         _LOGGER.debug('FIND EXPORT HANDLERS %s', self._export_handlers)
-        self._init_export_handlers()
+        self._check_export_handlers()
         if not (is_pascal(type_) or type_ is None):
             raise ValueError(type_)
 
@@ -394,15 +410,6 @@ class BaseDCC:
         if _result == 'Save':
             self._force_save()
 
-    def _init_export_handlers(self):
-        """Initiate export handlers list."""
-        if self._export_handlers is None:
-            from .. import export
-            _LOGGER.debug('INIT EXPORT HANDLERS')
-            self._export_handlers = [
-                export.CBasicPublish(),
-            ]
-
     def load(self, file_, parent=None, force=False, lazy=False):
         """Load scene.
 
@@ -461,6 +468,15 @@ class BaseDCC:
 
     def refresh(self):
         """Refresh the ui."""
+
+    def remove_export_handler(self, name):
+        """Remove an export handler.
+
+        Args:
+            name (str): name of export handler to remove
+        """
+        _handler = self.find_export_handler(name)
+        self._export_handlers.remove(_handler)
 
     def render(self, seq):
         """Render the current scene.

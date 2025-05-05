@@ -219,6 +219,21 @@ class CPOutputBase:
         return _tmpls
 
     @property
+    def cmp_key(self):
+        """Key to use for sorting/comparison.
+
+        Makes sure that outputs without tags are always sorted first.
+
+        Sort by entity -> task -> dir -> tag -> filename
+
+        Returns:
+            (tuple): sort key
+        """
+        if not self._cmp_key:
+            self._cmp_key = tuple(self._build_cmp_key())
+        return self._cmp_key
+
+    @property
     def pini_task(self):
         """Obtain mapped/pini task.
 
@@ -248,19 +263,17 @@ class CPOutputBase:
         return release.PRVersion(_ver)
 
     @property
-    def cmp_key(self):
-        """Key to use for sorting/comparison.
-
-        Makes sure that outputs without tags are always sorted first.
-
-        Sort by entity -> task -> dir -> tag -> filename
+    def task_label(self):
+        """Obtain task label for this output.
 
         Returns:
-            (tuple): sort key
+            (str): task label (eg. surf/dev, modelling, plate)
         """
-        if not self._cmp_key:
-            self._cmp_key = tuple(self._build_cmp_key())
-        return self._cmp_key
+        if self.step:
+            return f'{self.step}/{self.task}'
+        if self.task:
+            return self.task
+        return self.type_
 
     def _build_cmp_key(self):
         """Build key to use for sorting/comparison.
@@ -282,6 +295,7 @@ class CPOutputBase:
         Returns:
             (dict): metadata
         """
+        _LOGGER.debug('METADATA %s', self)
         return self.get_metadata()
 
     @property
@@ -365,6 +379,8 @@ class CPOutputBase:
         Returns:
             (dict): metadata
         """
+        _LOGGER.debug('GET METADATA %s', self)
+        _LOGGER.debug(' - METADATA YML %s', self.metadata_yml)
         _data = self.metadata_yml.read_yml(catch=True) or {}
         return _data
 
@@ -469,7 +485,10 @@ class CPOutputBase:
             (CPWork): source work file
         """
         from pini import pipe
-        return pipe.to_work(self.metadata['src'])
+        _src = self.metadata.get('src')
+        if not _src:
+            return None
+        return pipe.to_work(_src)
 
     def is_latest(self):
         """Check whether this is the latest version.

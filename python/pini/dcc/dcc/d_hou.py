@@ -205,14 +205,15 @@ class HouDCC(BaseDCC):
                 raise ValueError(_type)
         return _val
 
-    def _init_export_handlers(self):
+    def _build_export_handlers(self):
         """Initiate export handlers list."""
-        if self._export_handlers is None:
-            from .. import export
-            _LOGGER.debug('INIT EXPORT HANDLERS')
-            self._export_handlers = [
-                export.CHouFlipbook(),
-            ]
+        from .. import export
+        _LOGGER.debug('INIT EXPORT HANDLERS')
+        _handlers = super()._build_export_handlers()
+        _handlers += [
+            export.CHouFlipbook(),
+        ]
+        return _handlers
 
     def _read_pipe_refs(self, selected=False):
         """Find reference in the current dcc.

@@ -12,8 +12,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def create_ver(
-        render, frames=None, comment=None, thumb=None, filmstrip=None, pub_files=(),
-        force=False):
+        render, frames=None, comment=None, thumb=None, filmstrip=None,
+        pub_files=(), force=False):
     """Register the given render in shotgrid.
 
     Args:
@@ -86,13 +86,13 @@ def create_ver(
         _work.add_metadata(submitted=True)
     _progress.set_pc(90)
 
-    _add_to_dailies_playlist(render=render, version=_sg_ver)
+    _add_to_dailies_playlist(render=_render, version=_sg_ver)
     _progress.set_pc(100)
 
     return _sg_ver
 
 
-def _add_to_dailies_playlist(render, version):
+def _add_to_dailies_playlist(render, version, catch=True):
     """Add this version to next dailies playlist.
 
     If the playlist is marked as closed, the next index is used.
@@ -100,14 +100,18 @@ def _add_to_dailies_playlist(render, version):
     Args:
         render (CCPOutputBase): render being submitted
         version (SGCVersion): shotgrid version
+        catch (bool): no error if fail to add to playlist
     """
     _LOGGER.info(' - APPLY DAILIES PLAYLIST')
     _ety = render.entity
     _job = render.job
     if version.data['playlists']:
         _list = single(version.data['playlists'])['name']
+        if catch:
+            return
         raise RuntimeError(
             f'Already in {_job.name} playlist {_list} - {render.base}')
+
     _type = version.data['sg_version_type']
     if not _type:
         raise RuntimeError(
@@ -166,6 +170,8 @@ def _apply_thumb(thumb, version, render, video):
         render (CCPOutputBase): render
         video (CCPOutputVideo): video
     """
+    _LOGGER.info(' - APPLY THUMB %s', thumb)
+    _LOGGER.info('   - VIDEO %s', video)
 
     # Determine thumb path
     _thumb = None
@@ -176,6 +182,7 @@ def _apply_thumb(thumb, version, render, video):
     if not _thumb and video:
         _thumb = TMP.to_file('tmp.jpg')
         render.to_frame(_thumb, force=True)
+        _LOGGER.info(' - APPLY THUMB FROM VIDEO %s', _thumb)
 
     # Fix exr thumb
     if _thumb and _thumb.extn == 'exr':
@@ -184,9 +191,9 @@ def _apply_thumb(thumb, version, render, video):
         _thumb = _tmp
 
     # Apply thumb
+    _LOGGER.info('   - THUMB %s', _thumb)
     if _thumb:
         assert _thumb.exists()
-        _LOGGER.info(' - APPLY THUMB %s', _thumb)
         sg_handler.upload_thumbnail('Version', version.id_, _thumb.path)
 
 
@@ -254,12 +261,19 @@ def _build_ver_data(render, frames, comment, pub_files):
 
     # Add published files
     if pub_files:
-        _outs = sorted(set(pub_files) | {render})
-        _LOGGER.info(' - OUTS %s', _outs)
+        _pub_files = sorted(set(pub_files) | {render})
+        _LOGGER.info(' - PUB FILES %s', _pub_files)
         _data['published_files'] = []
-        for _out in _outs:
-            _sg_pub_file = shotgrid.SGC.find_pub_file(_out)
-            _data['published_files'].append(_sg_pub_file.to_entry())
+        for _pub_file in _pub_files:
+            if isinstance(_pub_file, dict):
+                _pub_file_data = _pub_file
+            elif isinstance(_pub_file, pipe.CPOutputFile):
+                _out = pipe.CACHE.obt(_pub_file)
+                _pub_file_data = _out.sg_pub_file.to_entry()
+            else:
+                _pub_file_data = sg_pub_file.create_pub_file_from_path(
+                    _pub_file.path)
+            _data['published_files'].append(_pub_file_data)
 
     return _data
 
@@ -323,10 +337,10 @@ def _read_render_video_frames(render, frames, pub_files):
     _render = pipe.CACHE.obt(render)
 
     if isinstance(_render, Video):
-        return _render, _video, _frames
+        return _render, _render, _frames
 
     if isinstance(_render, Seq):
-        assert not frames
+        assert not _frames
 
         # Single still image
         if len(_render.frames) == 1:
@@ -341,7 +355,8 @@ def _read_render_video_frames(render, frames, pub_files):
             _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
             _frames.to_video(_video, fps=_fps)
             assert _video.exists()
-            sg_pub_file.create_pub_file_from_output(_video, upstream_files=[_frames])
+            sg_pub_file.create_pub_file_from_output(
+                _video, upstream_files=[_frames])
             pub_files.add(_frames)
 
         return _render, _video, _frames

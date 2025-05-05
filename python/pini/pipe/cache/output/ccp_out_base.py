@@ -331,7 +331,10 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (CCPWork): source work file
         """
-        return pipe.CACHE.obt(super().find_work())
+        _work = super().find_work()
+        if not _work:
+            return None
+        return pipe.CACHE.obt(_work)
 
     def is_media(self):
         """Test whether this output is media.

@@ -118,11 +118,12 @@ def _check_lookdev(force, model_pub):
     if not _ld_pub:
         _ld_work.load(lazy=True)
         export.lookdev_publish(force=True, version_up=False)
-        _ld_pub = _asset_c.find_publishes(
+        _ld_pub = _asset_c.find_publish(
             task='lookdev', ver_n='latest', tag=_to_default_tag(),
             versionless=False)
-        dcc.new_scene(force=True)
         assert _ld_pub
+        dcc.new_scene(force=True)
+
     assert _ld_pub
 
 

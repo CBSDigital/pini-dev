@@ -34,7 +34,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def _setup_elem(
             self, elem, name, disable_save_settings=False, save_policy=None,
-            settings_key=None, tooltip=None):
+            settings_key=None, tooltip=None, ui_only=False):
         """Setup element in the export handler's ui.
 
         This will:
@@ -51,6 +51,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 (default is save on change)
             settings_key (str): override settings key for element
             tooltip (str): add tooltip to element
+            ui_only (bool): element is ui only (ie. do not pass to exec func)
         """
         assert isinstance(elem, qt.CBaseWidget)
 
@@ -69,6 +70,7 @@ class CExportHandlerUI(qt.CUiContainer):
         elem.set_settings_key(_settings_key)
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
+        elem.ui_only = ui_only
         elem.load_setting()
 
         self._elems[name] = elem
@@ -76,7 +78,7 @@ class CExportHandlerUI(qt.CUiContainer):
     def _add_elem_lyt(
             self, name, elem, label=None, label_w=None, tooltip=None,
             disable_save_settings=False, save_policy=None, settings_key=None,
-            stretch=True, add_elems=()):
+            stretch=True, add_elems=(), ui_only=False):
         """Add a layout containing the given element.
 
         Args:
@@ -92,6 +94,7 @@ class CExportHandlerUI(qt.CUiContainer):
             stretch (bool): apply stretch to element to fill available
                 horizontal space
             add_elems (list): widgets to add to this layout
+            ui_only (bool): element is ui only (ie. do not pass to exec func)
         """
         _label = label or to_nice(name).capitalize()
         _LOGGER.debug('ADD ELEM LAYOUT')
@@ -110,12 +113,12 @@ class CExportHandlerUI(qt.CUiContainer):
 
         self._setup_elem(
             elem, disable_save_settings=disable_save_settings, name=name,
-            save_policy=save_policy, tooltip=tooltip,
-            settings_key=settings_key)
+            save_policy=save_policy, tooltip=tooltip, settings_key=settings_key,
+            ui_only=ui_only)
 
     def add_check_box(
             self, name, val=True, label=None, tooltip=None, enabled=True,
-            save_policy=None):
+            save_policy=None, ui_only=False):
         """Add QCheckBox element in this handler's interface.
 
         Args:
@@ -126,6 +129,7 @@ class CExportHandlerUI(qt.CUiContainer):
             enabled (bool): apply enabled state
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
+            ui_only (bool): element is ui only (ie. do not pass to exec func)
 
         Returns:
             (QCheckBox): checkbox element
@@ -139,14 +143,14 @@ class CExportHandlerUI(qt.CUiContainer):
 
         self._setup_elem(
             elem=_checkbox_e, save_policy=save_policy, name=name,
-            tooltip=tooltip)
+            ui_only=ui_only, tooltip=tooltip)
 
         return _checkbox_e
 
     def add_combo_box(
             self, name, items, data=None, val=None, width=None, label=None,
             label_w=None, tooltip=None, disable_save_settings=False,
-            save_policy=None, settings_key=None):
+            save_policy=None, settings_key=None, ui_only=False):
         """Add a combo box element.
 
         Args:
@@ -162,6 +166,7 @@ class CExportHandlerUI(qt.CUiContainer):
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
             settings_key (str): override settings key for element
+            ui_only (bool): element is ui only (ie. do not pass to exec func)
 
         Returns:
             (CComboBox): combo box element
@@ -177,7 +182,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
         self._add_elem_lyt(
             name=name, elem=_combo_box, label=label, tooltip=tooltip,
-            label_w=label_w, save_policy=save_policy,
+            label_w=label_w, save_policy=save_policy, ui_only=ui_only,
             disable_save_settings=disable_save_settings,
             settings_key=settings_key)
         if val:
@@ -285,7 +290,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_list_widget(
             self, name, items=None, label=None, icon_size=30, redraw=True,
-            selection_mode=QtWidgets.QListView.ExtendedSelection):
+            multi=True):
         """Add CListWidget element to this interface.
 
         Args:
@@ -295,7 +300,7 @@ class CExportHandlerUI(qt.CUiContainer):
             icon_size (int): icon size (in pixels)
             redraw (bool): widget on build (this should be disabled if the
                 redraw function uses elements which haven't been created yet)
-            selection_mode (SelectionMode): selection mode
+            multi (bool): allow multi selection
         """
         self.add_separator()
 
@@ -315,7 +320,11 @@ class CExportHandlerUI(qt.CUiContainer):
 
         # Build list
         _list = qt.CListWidget(self.parent)
-        _list.setSelectionMode(selection_mode)
+        if multi:
+            _sel_mode = QtWidgets.QListView.ExtendedSelection
+        else:
+            _sel_mode = QtWidgets.QListView.SingleSelection
+        _list.setSelectionMode(_sel_mode)
         _list.setIconSize(qt.to_size(icon_size))
         _list.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
@@ -401,7 +410,8 @@ class CExportHandlerUI(qt.CUiContainer):
         return _spinbox
 
     def add_footer_elems(
-            self, add_snapshot=True, add_version_up=True, version_up=True):
+            self, add_snapshot=True, add_version_up=True, add_notes=True,
+            version_up=True):
         """Add footer ui elements.
 
         These appear at the bottom of the export interface.
@@ -409,8 +419,12 @@ class CExportHandlerUI(qt.CUiContainer):
         Args:
             add_snapshot (bool): add snapshot option
             add_version_up (bool): add version up option
+            add_notes (bool): add notes element
             version_up (bool): default version up setting
         """
+        if add_snapshot or add_version_up or add_notes:
+            self.add_separator()
+
         if add_snapshot:
             self.Snapshot = self.add_check_box(
                 'Snapshot', label='Take snapshot')
@@ -418,7 +432,8 @@ class CExportHandlerUI(qt.CUiContainer):
         if add_version_up:
             self.VersionUp = self.add_check_box(
                 'VersionUp', label='Version up', val=version_up)
-        self.add_notes_elem()
+        if add_notes:
+            self.add_notes_elem()
 
     def add_notes_elem(self):
         """Add notes element to the ui."""
@@ -480,6 +495,8 @@ class CExportHandlerUI(qt.CUiContainer):
         _kwargs = {}
         for _name, _elem in self._elems.items():
             _LOGGER.info(' - ELEM %s', _elem)
+            if _elem.ui_only:
+                continue
             _name = to_snake(_name)
             _val = _elem.get_val()
             if _name == 'range':
@@ -488,7 +505,11 @@ class CExportHandlerUI(qt.CUiContainer):
             elif _name == 'format':
                 _name = 'format_'
             elif isinstance(_elem, qt.CListWidget):
-                _val = _elem.selected_datas()
+                _sel_mode = _elem.selectionMode()
+                if _sel_mode == _elem.SelectionMode.SingleSelection:
+                    _val = _elem.selected_data()
+                else:
+                    _val = _elem.selected_datas()
             _kwargs[_name] = _val
         return _kwargs
 

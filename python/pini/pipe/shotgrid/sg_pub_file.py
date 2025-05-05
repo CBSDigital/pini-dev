@@ -8,7 +8,7 @@ from pini import pipe
 from pini.pipe import cache
 from pini.tools import release
 from pini.utils import (
-    Seq, Video, TMP, Image, single, File, to_str, abs_path)
+    Seq, Video, TMP, Image, single, File, to_str, abs_path, check_heart)
 
 from . import sg_handler
 
@@ -53,6 +53,7 @@ def create_pub_file_from_output(
     """
     from pini.pipe import shotgrid
     _LOGGER.info('CREATE PUB FILE %s', output)
+    check_heart()
 
     _sg_proj = shotgrid.SGC.find_proj(output.job)
     _sg_ety = _sg_proj.find_entity(output.entity)

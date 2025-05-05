@@ -1,6 +1,5 @@
 """Tools for managing cacheable work objects."""
 
-import functools
 import logging
 
 from pini.utils import nice_id, File, nice_size
@@ -208,7 +207,6 @@ class CCPWork(CPWork):
             self.metadata.get('owner') or
             self.metadata.get('user'))
 
-    @functools.wraps(CPWork.save)
     def save(self, result='this', update_outputs=True, **kwargs):
         """Save this work.
 

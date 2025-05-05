@@ -126,6 +126,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         Returns:
             (SGCProj list): projs
         """
+        _LOGGER.debug('FIND PROJS')
         _projs = []
         for _proj in self._read_projs(force=force):
             if filter_ and not passes_filter(_proj.name, filter_):

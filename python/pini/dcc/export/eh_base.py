@@ -13,7 +13,7 @@ from pini import qt, icons, pipe, dcc
 from pini.qt import QtWidgets
 from pini.pipe import cache
 from pini.tools import error, usage
-from pini.utils import cache_result, str_to_seed, last
+from pini.utils import cache_result, str_to_seed, last, is_pascal
 
 from . import eh_utils, eh_ui
 
@@ -47,7 +47,10 @@ class CExportHandler:
         self.ui = None
         self.priority = priority
         self.label_w = label_w
+
+        assert self.NAME
         assert self.ACTION
+        assert is_pascal(self.ACTION)
         assert self.ICON
 
         _name = self.NAME or type(self).__name__
@@ -104,7 +107,7 @@ class CExportHandler:
 
     def _build_ui_footer(
             self, stretch=True, add_snapshot=True, add_version_up=True,
-            version_up=True, exec_label=None):
+            add_notes=True, version_up=True, exec_label=None):
         """Build ui footer elements.
 
         Args:
@@ -113,13 +116,13 @@ class CExportHandler:
                 fill the whole layout)
             add_snapshot (bool): add snapshot checkbox
             add_version_up (bool): add version up option
+            add_notes (bool): add notes element
             version_up (bool): default version up setting
             exec_label (str): override label for exec button
         """
-        self.ui.add_separator()
         self.ui.add_footer_elems(
             add_version_up=add_version_up, version_up=version_up,
-            add_snapshot=add_snapshot)
+            add_snapshot=add_snapshot, add_notes=add_notes)
 
         self.ui.add_separator()
         self.ui.add_exec_button(exec_label or self.title)
@@ -127,13 +130,14 @@ class CExportHandler:
             self.ui.layout.addStretch()
 
     def build_ui(
-            self, add_range=False, add_snapshot=True,
+            self, add_range=False, add_snapshot=True, add_notes=True,
             add_version_up=True, version_up=True, exec_label=None):
         """Build any specific ui elements for this handler.
 
         Args:
             add_range (bool): add range elements
             add_snapshot (bool): add snapshot checkbox
+            add_notes (bool): add notes element
             add_version_up (bool): add version up option
             version_up (bool): default version up setting
             exec_label (str): override label for exec button
@@ -143,7 +147,8 @@ class CExportHandler:
         self._add_custom_ui_elems()
         self._build_ui_footer(
             stretch=True, version_up=version_up, add_snapshot=add_snapshot,
-            add_version_up=add_version_up, exec_label=exec_label)
+            add_version_up=add_version_up, exec_label=exec_label,
+            add_notes=add_notes)
 
     def build_metadata(self):
         """Obtain metadata to apply to a generated export.
@@ -193,6 +198,7 @@ class CExportHandler:
             return False
         return True
 
+    @error.get_catcher(qt_safe=True)
     def update_ui(self, parent, layout):
         """Builds the ui into the given layout, flushing any existing widgets.
 
@@ -303,6 +309,7 @@ class CExportHandler:
          - applies save option
         """
         _bkp = self.settings['bkp']
+        _check_work = self.settings['check_work']
         _force = self.settings['force']
         _notes = self.settings['notes']
         _progress = self.settings['progress']
@@ -314,7 +321,7 @@ class CExportHandler:
             self.work = pipe.CACHE.obt_work(_work)
         else:
             self.work = pipe.CACHE.obt_cur_work()
-        if not self.work:
+        if _check_work and not self.work:
             raise error.HandledError(
                 "Please save your scene using PiniHelper before exporting."
                 "\n\n"
@@ -336,7 +343,7 @@ class CExportHandler:
             if _bkp:
                 _bkp_file = self.work.save(
                     reason=self.TYPE.lower(), parent=self._ui_parent,
-                    notes=_notes, force=True)
+                    notes=_notes, result='bkp', force=True)
                 self.metadata['bkp'] = _bkp_file.path
             else:
                 dcc.save()
@@ -345,7 +352,7 @@ class CExportHandler:
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,
             bkp=True, progress=False, update_metadata=True, update_cache=True,
-            work=None, sanity_check_=True, force=False):
+            work=None, sanity_check_=True, check_work=True, force=False):
         """Execute this export.
 
         This is the main export method, to be implemented in each exporter.
@@ -362,6 +369,7 @@ class CExportHandler:
             update_cache (bool): update pipe cache
             work (CPWork): override work file (for testing)
             sanity_check_ (bool): apply sanity check
+            check_work (bool): check for current work
             force (bool): replace existing outputs without confirmation
         """
         raise NotImplementedError
@@ -447,6 +455,7 @@ class CExportHandler:
             upstream_files (list): list of upstream files
         """
         _LOGGER.info('REGISTER IN SHOTGRID %s', self)
+        _LOGGER.info(' - OUTPUTS %d %s', len(self.outputs), self.outputs)
         from pini.pipe import shotgrid
         _thumb = self.work.image if self.work.image.exists() else None
         for _last, _out in last(self.outputs):

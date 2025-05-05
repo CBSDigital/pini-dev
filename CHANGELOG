@@ -1,3 +1,32 @@
+## [7.6.0] - Mon 2025-05-05 11:06
+### Summary
+ - Pini Helper:
+    - fbx cache added fbx2013 format option (mkim),,
+ - Pipeline module:
+    - CPEntity.find_outputs added filename/base filters (nkim),
+    - shotgrid.create_ver bugfix error on render missing metadata (nkim),
+### Updated
+ - pini.dcc renamed _init_export_handlers -> _check_export_handlers,
+ - pini.dcc added _build_export_handlers for easy subclassing,
+ - pini.dcc.remove_export_handler added,
+ - pini.dcc.MayaDCC.set_scene_data added handling for None,
+ - pini.dcc.export.CExportHandlerUI.add_list_widget added multi flag,
+ - pini.dcc.export.CExportHandlerUI.add_footer_elems added add_notes flag,
+ - pini.dcc.export.CBaseExportHandler add elems added ui_only flag,
+ - pini.dcc.export.CBaseExportHandler.update_ui added error catcher,
+ - pini.dcc.export.CBaseExportHandler.export added check_work flag,,
+ - pini.dcc.export.CMayaFbxCache added FBX201300 opt,,
+ - pini.dcc.export submit/CBasicSubmitter working,
+ - pini.pipe.passes_filters added filename/base filter,
+ - pini.pipe.CPOutputBase.task_label added,
+ - pini.pipe.CPOutputBase.find_work added handling for missing metadata,
+ - pini.pipe.CPOutputFile metadata/get_metadata bugfix bad inheritance,
+ - pini.pipe.shotgrid.create_ver added handling for off-pipeline pub files,
+ - pini.qt.CIconButton added,
+ - pini.qt.CListWidget.set_val added catch by default,
+ - maya_pini.m_pipe.cache fbx bugfix not using format flag,
+
+
 ## [7.5.1] - Tue 2025-04-29 15:27
 ### Summary
  - Shotgrid Wrapper:

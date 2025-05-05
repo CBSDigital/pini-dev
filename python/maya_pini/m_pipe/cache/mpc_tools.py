@@ -290,7 +290,7 @@ def _exec_local_fbx_cache(cacheables, flags):  # pylint: disable=unused-argument
         _out = _cbl.to_output(extn='fbx')
         save_fbx(
             _out, animation=True, constraints=True, step=flags['step'],
-            range_=flags['range_'])
+            range_=flags['range_'], version=flags['format_'])
     # ffff
 
 

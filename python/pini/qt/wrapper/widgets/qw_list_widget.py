@@ -302,7 +302,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         Args:
             val (str): text to select
         """
-        self.select(val)
+        self.select(val, catch=True)
 
     def mouseMoveEvent(self, event):
         """Triggered by mouse move.

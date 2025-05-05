@@ -256,7 +256,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         entity=None, asset=None, asset_type=None, profile=None,
         output_name=None, output_type=EMPTY, content_type=None, id_=None,
         step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
-        extn=EMPTY, extns=None, filter_=None, filter_attr='path', latest=False):
+        extn=EMPTY, extns=None, filter_=None, filter_attr='path', latest=False,
+        filename=None, base=None):
     """Check whether the given object passes pipeline filters.
 
     Args:
@@ -285,18 +286,31 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         filter_ (str): apply filter to filter attribute
         filter_attr (str): filter attribute (default is path)
         latest (bool): filter out non-latest items
+        filename (str): match by filename
+        base (str): match by filename base
 
     Returns:
         (bool): whether object passed filters
     """
     from pini import pipe
 
+    # Basic path filters
     if path and obj.path != path:
         return False
     if filter_:
         _filter_val = getattr(obj, filter_attr)
         if not passes_filter(_filter_val, filter_):
             return False
+    if base:
+        if obj.base != base:
+            return False
+    if filename:
+        if obj.filename != filename:
+            return False
+    if extn is not EMPTY and obj.extn != extn:
+        return False
+    if extns and obj.extn not in extns:
+        return False
 
     # Apply entity level filters
     assert profile in (None, 'asset', 'shot')
@@ -336,10 +350,6 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
     if user and obj.user != user:
         return False
     if status and obj.status != status:
-        return False
-    if extn is not EMPTY and obj.extn != extn:
-        return False
-    if extns and obj.extn not in extns:
         return False
     if versionless is not None and bool(obj.ver_n) == versionless:
         return False

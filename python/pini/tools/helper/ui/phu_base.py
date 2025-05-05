@@ -626,7 +626,7 @@ def _print_metadata(output):
     Args:
         output (CPOutput|CCPOutputGhost): output to print metadata for
     """
-    _out = pipe.to_output(output)
+    _out = pipe.CACHE.obt_output(output)
     pprint.pprint(_out.metadata, width=300)
 
 

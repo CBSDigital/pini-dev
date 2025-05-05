@@ -281,11 +281,6 @@ class NukeDCC(BaseDCC):
         _LOGGER.info('KNOB %s', _knob)
         return _knob.value()
 
-    def _init_export_handlers(self):
-        """Initiate export handlers list."""
-        if self._export_handlers is None:
-            self._export_handlers = []
-
     def _read_pipe_refs(self, selected=False, filter_=None):
         """Find reference in the current dcc.
 
