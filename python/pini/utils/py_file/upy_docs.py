@@ -14,15 +14,19 @@ _LOGGER = logging.getLogger(__name__)
 class PyDefDocs:
     """Represents docstrings of a python function."""
 
-    def __init__(self, body, def_):
+    def __init__(self, body, def_=None, def_name=None):
         """Constructor.
 
         Args:
             body (str): docstring
             def_ (PyDef): parent python function
+            def_name (str): name of parent def
+                (for repr if def not avaiable)
         """
+        _LOGGER.debug('INIT PyDefDocs')
         self.body = body or ''
         self.def_ = def_
+        self.def_name = def_name or def_.name
 
         _text = self.body
 
@@ -30,11 +34,13 @@ class PyDefDocs:
         if 'Raises:' in _text:
             _text, _raises = _text.rsplit('Raises:', 1)
             self.raises = _raises.strip()
+            _LOGGER.debug(' - ADDED RAISES %s', self.raises)
 
         self.returns = None
         if 'Returns:' in _text:
             _text, _returns = _text.rsplit('Returns:', 1)
             self.returns = _returns.strip()
+            _LOGGER.debug(' - ADDED RETURNS %s', self.returns)
 
         self.args_str = None
         _splitter = "\nArgs:\n"
@@ -46,6 +52,22 @@ class PyDefDocs:
         _LOGGER.debug(' - HEADER %s', self.header.split('\n'))
 
         self.title = self.header.split('\n')[0]
+
+    def add_arg(self, arg):
+        """Add an arg to these docs.
+
+        This can be used to automate adding kwargs docs.
+
+        Args:
+            arg (PyArgDoc): arg docs to add
+        """
+        _LOGGER.debug('ADD ARG %s', arg)
+        assert self.args_str
+        _new_arg_s = self.args_str + f'\n    {arg.docstring}'
+        assert self.body.count(self.args_str) == 1
+
+        self.body = self.body.replace(self.args_str, _new_arg_s)
+        self.args_str = _new_arg_s
 
     def find_arg(self, name, catch=False):
         """Find an argument of this docstring.
@@ -132,7 +154,7 @@ class PyDefDocs:
         return _result
 
     def __repr__(self):
-        return basic_repr(self, self.def_.name)
+        return basic_repr(self, self.def_name)
 
 
 class _PyArgDocs:

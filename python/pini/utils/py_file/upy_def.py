@@ -124,7 +124,8 @@ class PyDef(upy_elem.PyElem):
         Returns:
             (PyDefDocs|str): docs
         """
-        _docs = upy_docs.PyDefDocs(self.to_docstring(), def_=self)
+        _docs = upy_docs.PyDefDocs(
+            self.to_docstring(), def_=self, def_name=self.name)
         _result = None
         if mode == 'Object':
             _result = _docs

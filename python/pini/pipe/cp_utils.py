@@ -272,7 +272,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         asset_type (str): match asset type
         profile (str): apply profile filter (ie. asset/shot)
         output_name (str): match output name
-        output_type (str):  match output type
+        output_type (str): match output type
         content_type (str): filter by content type
         id_ (int): match by id (for shotgrid elements)
         step (str): apply step filter

@@ -5,12 +5,11 @@
 import collections
 import logging
 
-from pini import qt, pipe, dcc, testing
-from pini.qt import QtWidgets
+from pini import qt, pipe, dcc
+from pini.qt import QtWidgets, QtGui, Qt
 from pini.tools import error
-from pini.utils import single, passes_filter
+from pini.utils import single
 
-from . import phu_output_item
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,13 +38,12 @@ class PHExportTab:
                 ('Blast', self.ui.EBlastTab),
                 ('Render', self.ui.ERenderTab),
                 ('Cache', self.ui.ECacheTab),
-                ('Submit', self.ui.ESubmitDevTab),
+                ('Submit', self.ui.ESubmitTab),
         ]:
             _handlers = dcc.find_export_handlers(type_=_type)
             _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
             self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
             _LOGGER.debug(' - CHECKED TAB %s', _tab)
-        self._init_submit_tab()
         _tabs = self.ui.EExportPane.find_tabs(enabled=True)
         _LOGGER.debug(' - TABS %s', _tabs)
 
@@ -77,33 +75,7 @@ class PHExportTab:
             _LOGGER.debug(' - SELECT TAB (Z) %s', _tab)
             self.ui.EExportPane.select_tab(_tab, emit=False)
 
-        if not testing.dev_mode():
-            self.ui.EExportPane.set_tab_visible('Submit Dev', False)
-
         self._callback__EExportPane()
-
-    def _init_submit_tab(self):
-        """Setup submit tab."""
-        self.ui.EExportPane.set_tab_enabled('Submit', pipe.SUBMIT_AVAILABLE)
-        if not pipe.SUBMIT_AVAILABLE:
-            return
-        from pini.pipe import shotgrid
-
-        # Set up comments
-        self.ui.ESubmitComment.set_save_policy(qt.SavePolicy.NO_SAVE)
-        for _elem in [
-                self.ui.ESubmitComment,
-                self.ui.ESubmitCommentLabel,
-                self.ui.ESubmitCommentLine,
-        ]:
-            _elem.setVisible(shotgrid.SUBMITTER.supports_comment)
-
-        # Apply selection mode to outputs list
-        if shotgrid.SUBMITTER.supports_multi:
-            _mode = QtWidgets.QAbstractItemView.ExtendedSelection
-        else:
-            _mode = QtWidgets.QAbstractItemView.SingleSelection
-        self.ui.ESubmitOutputs.setSelectionMode(_mode)
 
     def _redraw__EPublishTab(self):
         self.ui.EPublishHandler.redraw()
@@ -188,130 +160,37 @@ class PHExportTab:
         if _exp:
             self.ui.ERenderHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
 
-    def _redraw__ESubmitTemplate(self):
-        _LOGGER.debug('REDRAW ESubmitTemplate %s', self.entity)
-        _outs = self.entity.find_outputs() if self.entity else []
-        _outs = [_out for _out in _outs if _out.submittable]
-        _work = pipe.CACHE.cur_work or self.work
-
-        # Determine selection
-        _select = 'render'
-        if _work:
-            if _work.find_outputs('render'):
-                _select = 'render'
-            elif _work.find_outputs('blast'):
-                _select = 'blast'
-        _LOGGER.debug(' - SELECT %s %s', _select, self.work)
-
-        _tmpls, _data = _sort_by_attr(_outs, attr='basic_type')
-        self.ui.ESubmitTemplate.set_items(
-            _tmpls, data=_data, select=_select, emit=True)
-        self.ui.ESubmitTemplate.setEnabled(len(_tmpls) > 1)
-
-    def _redraw__ESubmitTask(self):
-
-        _outs = self.ui.ESubmitTemplate.selected_data() or []
-        _tasks, _data = _sort_by_attr(_outs, attr='task')
-
-        # Apply default selection
-        _select = None
-        if self.work:
-            _select = self.work.task
-        elif dcc.NAME == 'maya':
-            _select = 'lighting'
-        elif dcc.NAME == 'hou':
-            _select = 'fx'
-        elif dcc.NAME == 'nuke':
-            _select = 'comp'
-
-        self.ui.ESubmitTask.set_items(
-            _tasks, data=_data, select=_select, emit=True)
-        self.ui.ESubmitTask.setEnabled(len(_tasks) > 1)
-
-    def _redraw__ESubmitTag(self):
-
-        _outs = self.ui.ESubmitTask.selected_data() or []
-        _tags, _data = _sort_by_attr(_outs, attr='tag')
-        _work = pipe.CACHE.cur_work or self.work
-
-        # Apply default selection
-        _select = None
-        if _work and _work.tag in _tags:
-            _select = _work.tag
-        if not _select and pipe.DEFAULT_TAG in _tags:
-            _select = pipe.DEFAULT_TAG
-
-        self.ui.ESubmitTag.set_items(
-            _tags, data=_data, select=_select, emit=True)
-        self.ui.ESubmitTag.setEnabled(len(_tags) > 1)
-
-    def _redraw__ESubmitFormat(self):
-
-        _LOGGER.debug('REDRAW ESubmitFormat')
-
-        _type = self.ui.ESubmitFormat.currentText()
-        _outs = self.ui.ESubmitTag.selected_data() or []
-        _fmts, _data = _sort_by_attr(_outs, attr='extn')
-
-        # Determine selection
-        _LOGGER.debug(' - TYPE %s', _type)
-        _select = None
-        if self.work:
-            for _fmt in _fmts:
-                _outs = self.work.find_outputs(_type, extn=_fmt)
-                _LOGGER.debug('   - FMT OUTS %s %s', _fmt, _outs)
-                if _outs:
-                    _select = _fmt
-                    break
-        _LOGGER.debug(' - SELECT %s', _select)
-
-        self.ui.ESubmitFormat.set_items(
-            _fmts, data=_data, select=_select, emit=True)
-        self.ui.ESubmitFormat.setEnabled(len(_fmts) > 1)
-
-    def _redraw__ESubmitOutputs(self):
-
-        _ver = self.ui.ESubmitVersion.currentText()
-        _outs = self.ui.ESubmitFormat.selected_data() or []
-        _hide_submitted = self.ui.ESubmitHideSubmitted.isChecked()
-        _filter = self.ui.ESubmitFilter.text()
-
-        _items = []
-        for _out in sorted(_outs, key=pipe.output_clip_sort):
-
-            if not passes_filter(_out.filename, _filter):
-                continue
-            _submitted = _out.metadata.get('submitted')
-            if _submitted and _hide_submitted:
-                continue
-
-            # Apply ver filter
-            if _ver == 'latest':
-                if not _out.is_latest():
-                    continue
-            elif _ver == 'all':
-                pass
-            else:
-                raise ValueError(_ver)
-
-            # Add output
-            _LOGGER.debug(' - BUILD PHOutputItem %s', _out)
-            _item = phu_output_item.PHOutputItem(
-                list_view=self.ui.ESubmitOutputs,
-                output=_out, helper=self, highlight=not _submitted)
-            _items.append(_item)
-
-        self.ui.ESubmitOutputs.set_items(_items)
-
-    def _redraw__ESubmitDevTab(self):
+    def _redraw__ESubmitTab(self):
         self.ui.ESubmitHandler.redraw()
         self.ui.ESubmitHandlerIcon.redraw()
 
     def _redraw__ESubmitHandler(self):
-        _handlers = sorted(dcc.find_export_handlers('Submit'))
+        _LOGGER.debug('REDRAW ESubmitHandler')
+
+        # Obtain list of submit handlers
+        if not self.entity:
+            _handlers = []
+            _fail = 'No current entity'
+        else:
+            _handlers = dcc.find_export_handlers(
+                'Submit', profile=self.entity.profile)
+            _fail = f'No {self.entity.profile} submitters found'
+        _LOGGER.debug(' - HANDLERS %d %s', len(_handlers), _handlers)
+
+        # Update ui elements
         self.ui.ESubmitHandler.set_items(
             labels=[_handler.NAME for _handler in _handlers],
             data=_handlers)
+        if not _handlers:
+            _LOGGER.debug(' - FLUSH SUBMIT LYT')
+            qt.flush_layout(self.ui.ESubmitLyt)
+            _sep = qt.CHLine(self)
+            self.ui.ESubmitLyt.addWidget(_sep)
+            _label = QtWidgets.QLabel(self)
+            _label.setAlignment(Qt.AlignTop)
+            _label.setText(_fail)
+            self.ui.ESubmitLyt.addWidget(_label)
+            self.ui.ESubmitHandlerIcon.setIcon(QtGui.QIcon())
         _LOGGER.debug(
             ' - BUILD SUBMIT HANDLERS %s',
             self.ui.ESubmitHandler.selected_data())
@@ -332,10 +211,8 @@ class PHExportTab:
             self.ui.ECacheTab.redraw()
         elif _tab == self.ui.ERenderTab:
             self.ui.ERenderTab.redraw()
-        elif _tab == self.ui.ESubmitLegacyTab:
-            self.ui.ESubmitTemplate.redraw()
-        elif _tab == self.ui.ESubmitDevTab:
-            self.ui.ESubmitDevTab.redraw()
+        elif _tab == self.ui.ESubmitTab:
+            self.ui.ESubmitTab.redraw()
         else:
             raise ValueError(_tab)
 
@@ -366,82 +243,12 @@ class PHExportTab:
             _handler.update_ui(parent=self, layout=self.ui.ERenderLyt)
         self.ui.ERenderHandlerIcon.redraw()
 
-    def _callback__ESubmitTemplate(self):
-        self.ui.ESubmitTask.redraw()
-
-    def _callback__ESubmitTask(self):
-        self.ui.ESubmitTag.redraw()
-
-    def _callback__ESubmitTag(self):
-        self.ui.ESubmitFormat.redraw()
-
-    def _callback__ESubmitFormat(self):
-        self.ui.ESubmitOutputs.redraw()
-
-    def _callback__ESubmitVersion(self):
-        self.ui.ESubmitOutputs.redraw()
-
-    def _callback__ESubmitHideSubmitted(self):
-        self.ui.ESubmitOutputs.redraw()
-
-    def _callback__ESubmitFilter(self):
-        self.ui.ESubmitOutputs.redraw()
-
-    def _callback__ESubmitView(self):
-        _out = self.ui.ESubmitOutputs.selected_data()
-        _out.view()
-
-    def _callback__ESubmitRefresh(self):
-        self._reread_entity_outputs()
-
-    def _callback__ESubmitFilterClear(self):
-        self.ui.ESubmitFilter.setText('')
-        self.ui.ESubmitOutputs.redraw()
-
-    def _callback__ESubmitOutputs(self):
-        _out = self.ui.ESubmitOutputs.selected_data()
-        self.ui.ESubmitView.setEnabled(bool(_out))
-
-    def _callback__ESubmit(self, force=False):
-
-        from pini.pipe import shotgrid
-
-        _outs = self.ui.ESubmitOutputs.selected_datas()
-        _comment = self.ui.ESubmitComment.text()
-
-        _LOGGER.info('SUBMIT %d %s', len(_outs), _outs)
-        _LOGGER.info(' - COMMENT %s', _comment)
-
-        # Submit
-        _kwargs = {}
-        if shotgrid.SUBMITTER.supports_comment:
-            _kwargs = {'comment': _comment}
-        if shotgrid.SUBMITTER.is_direct:
-            _kwargs = {'force': force}
-        for _out in _outs:
-            shotgrid.SUBMITTER.run(_out, **_kwargs)
-
-        # Notify
-        if not force and shotgrid.SUBMITTER.is_direct:
-            qt.notify(
-                f'Submitted {len(_outs):d} versions to shotgrid.\n\n'
-                f'See script editor for details.',
-                title='Versions Submitted', icon=shotgrid.ICON)
-
-        self.ui.ESubmitOutputs.redraw()
-
     def _callback__ESubmitHandler(self):
         _handler = self.ui.ESubmitHandler.selected_data()
         _LOGGER.debug('UPDATE SUBMIT HANDLER %s', _handler)
         if _handler:
             _handler.update_ui(parent=self, layout=self.ui.ESubmitLyt)
         self.ui.ESubmitHandlerIcon.redraw()
-
-    def _context__ESubmitOutputs(self, menu):
-        _out = self.ui.ESubmitOutputs.selected_data()
-        if _out:
-            self._add_output_opts(
-                menu=menu, output=_out, parent=self.ui.ESubmitOutputs)
 
 
 def _sort_by_attr(items, attr, key=None):

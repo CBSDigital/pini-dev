@@ -31,6 +31,7 @@ class CExportHandler:
     COL = 'Red'
 
     description = None
+    profile_filter = None
 
     work = None
     metadata = None

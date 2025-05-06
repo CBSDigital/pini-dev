@@ -8,6 +8,7 @@ import os
 import pprint
 
 from pini import dcc
+from pini.tools import release
 from pini.utils import single, EMPTY, passes_filter, cache_result
 
 from .. import cp_settings_elem
@@ -391,6 +392,10 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             return None
         raise ValueError(match, kwargs)
 
+    @release.transfer_kwarg_docs(
+        mod='pini.pipe', func='passes_filters', mode='add args',
+        ignore_args=(
+            'obj', 'filter_attr', 'content_type', 'tag', 'ver_n', 'latest'))
     def find_outputs(
             self, tag=EMPTY, ver_n=EMPTY, class_=None, latest=False, **kwargs):
         """Find outputs in this entity.

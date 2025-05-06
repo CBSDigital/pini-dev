@@ -415,6 +415,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         Returns:
             (CPAsset): matching asset
         """
+        _match_s = to_str(match)
         _LOGGER.debug('FIND ASSET %s', match)
         _assets = self.find_assets(**kwargs)
         _LOGGER.debug(' - FOUND %d ASSETS', len(_assets))
@@ -437,7 +438,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         # Filter match by label
         _label_filter_matches = apply_filter(
-            _assets, match, key=operator.attrgetter('label'))
+            _assets, _match_s, key=operator.attrgetter('label'))
         _LOGGER.debug(' - LABEL FILTER MATCHES %d', len(_label_filter_matches))
         if len(_label_filter_matches) == 1:
             return single(_label_filter_matches)

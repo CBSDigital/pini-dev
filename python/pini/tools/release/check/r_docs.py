@@ -4,12 +4,13 @@ import logging
 import sys
 import textwrap
 
-from pini.utils import to_nice, copy_text
+from pini.utils import to_nice, copy_text, PyDefDocs
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def transfer_kwarg_docs(mod, func):
+def transfer_kwarg_docs(
+        mod, func, mode='replace', ignore_args=()):
     """Transfer keyword argument docs from the given source.
 
     This allows the docstrings for a function which uses *args/**kwargs
@@ -19,6 +20,10 @@ def transfer_kwarg_docs(mod, func):
         mod (str): name of module (eg. "pini.dcc.export")
         func (str): name of function to read docs from
             (eg. "CMayaModelPublish.export")
+        mode (str): docs to transfer
+            - replace: simply replace these docs
+            - add args: add args to these docs
+        ignore_args (tuple): args to ignore
 
     Returns:
         (fn): function with updated docs
@@ -27,6 +32,8 @@ def transfer_kwarg_docs(mod, func):
     def _transfer_docs_dec(func_):
 
         _LOGGER.debug('TRANSFER KWARG DOCS %s', func)
+
+        # Find source function
         _LOGGER.debug(' - MOD/FUNC %s %s', mod, func)
         _mod = sys.modules.get(mod)
         _LOGGER.debug(' - MOD %s', _mod)
@@ -36,12 +43,61 @@ def transfer_kwarg_docs(mod, func):
                 break
             _func = getattr(_func, _token, None)
         _LOGGER.debug(' - FUNC %s', _func)
+
+        # Build replacement docs
+        _docs = None
         if _func:
-            func_.__doc__ = _func.__doc__
+            if mode == 'replace':
+                _docs = _func.__doc__
+            elif mode == 'add args':
+                _docs = _apply_add_args(
+                    base_fn=func_, add_fn=_func, ignore=ignore_args)
+            else:
+                raise NotImplementedError(mode)
+        if _docs:
+            func_.__doc__ = _docs
 
         return func_
 
     return _transfer_docs_dec
+
+
+def _func_to_docs(func):
+    """Obtain docstrings from the given function, removing indentation.
+
+    Args:
+        func (fn): function to read docstrings from
+
+    Returns:
+        (str): cleaned docstrings
+    """
+    _body = func.__doc__.strip('\n')
+    _lines = _body.split('\n')
+    _indent = _lines[-1]
+    _body = '\n'.join([
+        _line[len(_indent):] if _idx else _line
+        for _idx, _line in enumerate(_lines)])
+    return PyDefDocs(_body, def_name=func.__name__)
+
+
+def _apply_add_args(base_fn, add_fn, ignore=()):
+    """Add args to base function docs.
+
+    Args:
+        base_fn (fn): function to add args to docs
+        add_fn (fn): function to read args from
+        ignore (tuple): args to ignore
+
+    Returns:
+        (str): updated docstrings
+    """
+    _base = _func_to_docs(base_fn)
+    _add = _func_to_docs(add_fn)
+    for _arg in _add.find_args():
+        if _arg.name in ignore:
+            continue
+        _base.add_arg(_arg)
+    return _base.body
 
 
 def _copy_suggestion_on_fail(func):

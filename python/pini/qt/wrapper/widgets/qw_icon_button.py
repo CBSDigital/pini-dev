@@ -25,8 +25,16 @@ class CIconButton(QtWidgets.QPushButton, qw_base_widget.CBaseWidget):
         self.setFixedWidth(20)
         self.setFixedHeight(20)
         self.setIconSize(q_utils.to_size(20))
-        self.setIcon(q_utils.to_icon(icon))
+        self.set_icon(icon)
         self.setFlat(True)
 
         if name:
             self.setObjectName(name)
+
+    def set_icon(self, icon):
+        """Set icon for this button.
+
+        Args:
+            icon (str): path to icon
+        """
+        self.setIcon(q_utils.to_icon(icon))

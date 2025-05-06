@@ -232,7 +232,8 @@ class BaseDCC:
             self._export_handlers = self._build_export_handlers()
 
     def find_export_handler(
-            self, match=None, type_=None, filter_=None, catch=False):
+            self, match=None, type_=None, filter_=None, profile=None,
+            catch=False):
         """Find an installed export handler.
 
         Args:
@@ -240,12 +241,14 @@ class BaseDCC:
                 (eg. name/action/type)
             type_ (str): filter by export type (eg. Publish/Render)
             filter_ (str): filter by exporter name
+            profile (str): apply profile filter (eg. shot/asset)
             catch (bool): no error if no matching handler found
 
         Returns:
             (CExportHandler): matching export handler
         """
-        _handlers = self.find_export_handlers(type_=type_, filter_=filter_)
+        _handlers = self.find_export_handlers(
+            type_=type_, filter_=filter_, profile=profile)
         if len(_handlers) == 1:
             return single(_handlers)
 
@@ -283,12 +286,13 @@ class BaseDCC:
             return None
         raise ValueError(_handlers)
 
-    def find_export_handlers(self, type_=None, filter_=None):
+    def find_export_handlers(self, type_=None, filter_=None, profile=None):
         """Find render handlers for this dcc.
 
         Args:
             type_ (str): filter by exporter type (eg. Publish/Render)
             filter_ (str): filter by exporter name
+            profile (str): apply profile filter (eg. shot/asset)
 
         Returns:
             (CExportHandler list): installed export handlers
@@ -302,6 +306,14 @@ class BaseDCC:
         _handlers = []
         for _handler in self._export_handlers:
             if type_ and _handler.TYPE != type_:
+                _LOGGER.debug(
+                    ' - TYPE REJECTED %s %s %s', _handler,
+                    _handler.TYPE, type_)
+                continue
+            if profile and not passes_filter(profile, _handler.profile_filter):
+                _LOGGER.debug(
+                    ' - PROFILE REJECTED %s %s %s', _handler,
+                    _handler.profile_filter, profile)
                 continue
             if not passes_filter(_handler.NAME, filter_):
                 continue

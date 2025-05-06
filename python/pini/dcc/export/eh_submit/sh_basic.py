@@ -18,7 +18,7 @@ class CBasicSubmitter(export.CExportHandler):
     NAME = 'Basic Shotgrid Submit'
     TYPE = 'Submit'
     ACTION = 'BasicSubmit'
-    ICON = icons.find('Green Apple')
+    ICON = icons.find('Briefcase')
 
     LABEL = 'Submit renders to shotgrid.'
 
@@ -36,8 +36,12 @@ class CBasicSubmitter(export.CExportHandler):
         self._redraw__Task()
         self._redraw__Render()
 
-    def build_ui(self):
-        """Build interface."""
+    def build_ui(self, add_notes=True):
+        """Build interface.
+
+        Args:
+            add_notes (bool): add notes element
+        """
         _ety = helper.DIALOG.entity
         self._all_outputs = sorted([
             _out for _out in _ety.outputs
@@ -45,7 +49,8 @@ class CBasicSubmitter(export.CExportHandler):
             key=_submit_out_sort)
 
         super().build_ui(
-            add_version_up=False, add_snapshot=False, exec_label='Submit')
+            add_version_up=False, add_snapshot=False, exec_label='Submit',
+            add_notes=add_notes)
 
     def _redraw__Task(self):
         _tasks = sorted({_out.task_label for _out in self._all_outputs})

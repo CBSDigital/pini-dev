@@ -132,7 +132,6 @@ class PHUiBase(
 
                 self.ui.SOutputsFilter,
                 self.ui.SSceneRefsFilter,
-                self.ui.ESubmitFilter,
         ]:
             _LOGGER.debug(' - DISABLE SAVE %s', _elem)
             _elem.set_save_policy(qt.SavePolicy.NO_SAVE)

@@ -1,3 +1,21 @@
+## [7.7.0] - Tue 2025-05-06 15:22
+### Summary
+ - Pini Helper:
+    - updated export/submit tab to use submitter plugins,
+### Updated
+ - pini.utils.PyDefDocs added def name arg for use outside PyFile,
+ - pini.utils.PyDefDocs.add_arg added to allow editing,
+ - pini.dcc find_export_handler/find_export_handlers added profile filter,
+ - pini.dcc.export.CExportHandler.profile_filter added attr,
+ - pini.dcc.export.CBasicSubmitter.build_ui added add_notes arg,
+ - pini.pipe.CPJob.find_asset bugfix error on match as CPAsset,
+ - pini.pipe.CPEntity.find_outputs apply transfer docs,
+ - pini.qt.CIconButton.set_icon added,
+ - pini.tools.release.transfer_kwarg_docs added mode + add args option,
+ - pini.tools.helper added working ESubmit tab,
+ - pini.tools.helper removed ESubmitLegacy tab,
+
+
 ## [7.6.0] - Mon 2025-05-05 11:06
 ### Summary
  - Pini Helper:
