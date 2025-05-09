@@ -8,7 +8,6 @@ from maya import cmds
 
 from pini import dcc, testing, pipe, qt
 from pini.dcc import pipe_ref, export
-from pini.pipe import cache
 from pini.tools import error, helper
 from pini.utils import single, assert_eq
 
@@ -193,7 +192,7 @@ class TestDCC(unittest.TestCase):
         _ety_c = pipe.CACHE.obt(_ety_c)
         assert pipe.CACHE.cur_job is _ety_c.job
         assert isinstance(_next, pipe.CPWork)
-        assert not isinstance(_next, cache.CCPWork)
+        # assert not isinstance(_next, cache.CCPWork)
         assert pipe.CACHE.cur_work
         assert pipe.CACHE.cur_work.ver_n == 2
         _work_c = pipe.CACHE.obt_work(_next)

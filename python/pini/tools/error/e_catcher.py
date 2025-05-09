@@ -9,6 +9,7 @@ from pini.utils import File, abs_path
 from . import e_tools
 
 _LOGGER = logging.getLogger(__name__)
+_CATCHING_ERROR = False
 
 
 def get_catcher(parent=None, qt_safe=False, supress_error=False):
@@ -28,6 +29,15 @@ def get_catcher(parent=None, qt_safe=False, supress_error=False):
         @functools.wraps(func)
         def _catch_error_func(*args, **kwargs):
 
+            global _CATCHING_ERROR
+
+            # Prevent catcher nesting, only execute outer catcher
+            if _CATCHING_ERROR:
+                return func(*args, **kwargs)
+            _CATCHING_ERROR = True
+
+            _LOGGER.debug('CATCH ERROR FUNC %s', func)
+
             from pini import dcc
 
             if e_tools.is_disabled() or dcc.batch_mode():
@@ -40,6 +50,8 @@ def get_catcher(parent=None, qt_safe=False, supress_error=False):
                 return _handle_exception(
                     _exc, parent=parent, qt_safe=qt_safe,
                     supress_error=supress_error)
+            finally:
+                _CATCHING_ERROR = False
 
             return _result
 
@@ -73,9 +85,10 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     elif isinstance(exc, error.HandledError):
         _title = exc.title or 'Error'
+        _parent = exc.parent or parent
+        _LOGGER.info(' - HANDLED ERROR %s', _parent)
         qt.notify(
-            str(exc), title=_title, icon=exc.icon,
-            parent=exc.parent or parent)
+            str(exc), title=_title, icon=exc.icon, parent=_parent)
 
     elif (
             isinstance(exc, error.FileError) and
@@ -103,9 +116,12 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
 
     # Finalise error
     if supress_error:
+        _LOGGER.debug(' - SUPRESS ERROR')
         return
     if qt_safe or dcc.NAME not in ('maya', 'hou'):
+        _LOGGER.debug(' - RAISING EXC')
         raise exc
+    _LOGGER.debug(' - APPLY sys.exit')
     sys.exit()
 
 

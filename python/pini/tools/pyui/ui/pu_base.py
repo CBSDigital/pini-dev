@@ -9,7 +9,6 @@ import sys
 import time
 
 from pini import icons, qt
-from pini.tools import error
 from pini.utils import (
     PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime,
     basic_repr)
@@ -249,7 +248,6 @@ class PUBaseUi:
         """
         raise NotImplementedError
 
-    @error.catch
     def _execute_def(self, def_):
         """Called when function button is pressed.
 

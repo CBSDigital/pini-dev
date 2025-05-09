@@ -544,7 +544,7 @@ class PHWorkTab:
         self.jump_to(_work.path)
 
     def _callback__WVersionUp(self):
-        pipe.version_up()
+        pipe.version_up(parent=self)
 
     def _warn_on_switch_stream(self):
         """Pop up a warning dialog if we switch stream."""
