@@ -7,6 +7,7 @@ from maya import cmds
 
 from pini import qt
 from pini.dcc import export
+from pini.tools import release
 from pini.utils import single, wrap_fn, check_heart, to_list
 
 from maya_pini import open_maya as pom, m_pipe
@@ -323,6 +324,8 @@ def find_cache_set():
     Returns:
         (CNode|None): cache set (if any)
     """
+    release.apply_deprecation('05/05/25', 'Use maya_pipe.m_pipe.find_cache_set')
+
     if cmds.objExists('cache_SET'):
         return pom.CNode('cache_SET')
     _refs_mode = export.get_pub_refs_mode()
@@ -499,7 +502,7 @@ def read_cache_set_geo(filter_=None, apply_pub_refs_mode=False):
     Returns:
         (CBaseTransform list): cache set nodes
     """
-    _set = find_cache_set()
+    _set = m_pipe.find_cache_set()
     _include_referenced = True
     if apply_pub_refs_mode:
         _refs_mode = export.get_pub_refs_mode()

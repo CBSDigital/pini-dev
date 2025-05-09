@@ -5,11 +5,10 @@ it will cause a cyclical dependency error.
 """
 
 import logging
-import operator
 
 from maya import cmds
 
-from pini.utils import File, single, apply_filter
+from pini.utils import File, single, passes_filter
 from maya_pini.utils import restore_ns, del_namespace
 
 from .r_attr_ref import find_attr_refs
@@ -88,15 +87,21 @@ def create_ref(file_, namespace, parent=None, force=False):
     return FileRef(_ref.ref_node)
 
 
-def find_path_refs():
+def find_path_refs(referenced=None):
     """Find all path references in the current scene.
 
     This includes all file references and attribute references.
 
+    Args:
+        referenced (bool): filtered by referenced status
+
     Returns:
         (PathRef list): path references
     """
-    return find_refs(unloaded=True) + find_attr_refs()
+    _refs = []
+    _refs += find_refs(referenced=referenced, unloaded=True)
+    _refs += find_attr_refs(referenced=referenced)
+    return sorted(_refs)
 
 
 def find_ref(
@@ -122,7 +127,7 @@ def find_ref(
 
 def find_refs(
         filter_=None, class_=None, unloaded=False, extn=None, selected=None,
-        nested=False, allow_no_namespace=False):
+        nested=False, allow_no_namespace=False, referenced=None):
     """Find references in the current scene.
 
     Args:
@@ -133,22 +138,27 @@ def find_refs(
         selected (bool): filter by selected state
         nested (bool): include nested refs (disabled by default)
         allow_no_namespace (bool): include references with no namespace
+        referenced (bool): filtered by referenced status
 
     Returns:
         (FileRef list): matching references
     """
-    _refs = _read_refs(class_=class_, allow_no_namespace=allow_no_namespace)
-    if not unloaded:
-        _refs = [_ref for _ref in _refs if _ref.is_loaded]
-    if nested is not None:
-        _refs = [_ref for _ref in _refs if _ref.is_nested == nested]
-    if extn:
-        _refs = [_ref for _ref in _refs if _ref.extn == extn]
-    if selected is not None:
-        _refs = [_ref for _ref in _refs if _ref.is_selected == selected]
-    if filter_:
-        _refs = apply_filter(
-            _refs, filter_, key=operator.attrgetter('namespace'))
+    _refs = []
+    for _ref in _read_refs(
+            class_=class_, allow_no_namespace=allow_no_namespace):
+        if not unloaded and not _ref.is_loaded:
+            continue
+        if nested is not None and _ref.is_nested != nested:
+            continue
+        if extn and _ref.extn != extn:
+            continue
+        if selected is not None and _ref.is_selected != selected:
+            continue
+        if referenced is not None and _ref.is_referenced != referenced:
+            continue
+        if filter_ and not passes_filter(_ref.namespace, filter_):
+            continue
+        _refs.append(_ref)
     return _refs
 
 

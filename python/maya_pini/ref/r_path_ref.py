@@ -4,7 +4,7 @@
 class PathRef:
     """Represents a reference to a path on disk."""
 
-    cmp_str = None
+    cmp_key = None
 
     @property
     def path(self):
@@ -20,4 +20,4 @@ class PathRef:
         raise NotImplementedError
 
     def __lt__(self, other):
-        return self.cmp_str < other.cmp_str
+        return self.cmp_key < other.cmp_key

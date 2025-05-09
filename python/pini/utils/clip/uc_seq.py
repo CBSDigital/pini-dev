@@ -708,6 +708,9 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _type = type(self).__name__.strip('_')
         return f'<{_type}|{self.path}>'
 
+    def __str__(self):
+        return self.path
+
 
 class CacheSeq(Seq):
     """Sequence object which caches frame range to disk."""

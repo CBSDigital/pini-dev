@@ -1,3 +1,26 @@
+## [7.8.0] - Fri 2025-05-09 09:03
+### Summary
+ - Pini Helper:
+    - maya rig publish bugfix not cleaning scene if referenced cache set (mkim),
+### Updated
+ - pini.utils.to_time_f added %Y-%m-%d %H:%M + %d/%m/%y %H:%M str fmts,
+ - pini.utils.Seq.__str__ added for symmetry with Path,
+ - pini.dcc.export.CMayaBasicPublish delete existing before clean scene,
+ - pini.dcc.export.CMayaBasicPublish._clean_scene remove exit on no cache set,
+ - pini.pipe.DEFAULT_TAG apply main in absence of $PINI_PIPE_DEFAULT_TAG,
+ - pini.tools.sanity_check apply error.TRIGGERED on errored check,
+ - pini.tools.sanity_check.find_cache_set applied deprecation,
+ - pini.tools.helper RIG_TYPE_ICON/MODEL_TYPE_ICON made public,
+ - pini.testing.print_exec_code allow mod override,
+ - maya_pini.ref.PathRef added cmp_key to allow base/index sorting,
+ - maya_pini.ref.PathRef.exists added,
+ - maya_pini.ref.PathRef.path returns File/Seq not str,
+ - maya_pini.ref.AttrRef.has_udim_tiles added,
+ - maya_pini.ref.find_path_refs added referenced flag,
+ - maya_pini.m_pipe.find_cache_set take account of publish references mode,
+ - maya_pini.m_pipe.find_cache_set remove JUNK refs,
+
+
 ## [7.7.0] - Tue 2025-05-06 15:22
 ### Summary
  - Pini Helper:

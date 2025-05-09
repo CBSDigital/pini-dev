@@ -202,6 +202,7 @@ class SCCheck:
                 self.write_log('Errored - %s', str(_exc).strip())
                 self.status = 'errored'
                 self.error = error.PEError()
+                error.TRIGGERED = True
         if not self.error:
             self.status = 'failed' if self.fails else 'passed'
 

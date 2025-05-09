@@ -1,11 +1,14 @@
 """Tools for managing the FileRef reference object in maya."""
 
+# pylint: disable=too-many-public-methods
+
 import logging
 
 from maya import cmds
 
 from pini.utils import (
-    File, single, passes_filter, safe_zip, EMPTY, basic_repr)
+    File, single, passes_filter, safe_zip, EMPTY, basic_repr,
+    split_base_index)
 from maya_pini.utils import (
     to_namespace, set_namespace, del_namespace, to_clean)
 
@@ -25,13 +28,14 @@ class FileRef(r_path_ref.PathRef):
             allow_no_namespace (bool): check for namespace
         """
         self.ref_node = ref_node
+        self.node = ref_node
         if not allow_no_namespace:
             try:
                 assert self.namespace and self.namespace != ':'
             except (RuntimeError, AssertionError) as _exc:
                 raise ValueError(
                     f'Missing namespace {self.ref_node}') from _exc
-        self.cmp_str = self.namespace
+        self.cmp_key = split_base_index(self.namespace)
 
     @property
     def extn(self):
@@ -63,6 +67,15 @@ class FileRef(r_path_ref.PathRef):
         _parent = cmds.referenceQuery(
             self.ref_node, referenceNode=True, parent=True)
         return bool(_parent)
+
+    @property
+    def is_referenced(self):
+        """Test whether this reference is referenced (aka nested).
+
+        Returns:
+            (bool): whether referenced
+        """
+        return cmds.referenceQuery(self.ref_node, isNodeReferenced=True)
 
     @property
     def is_selected(self):
@@ -107,7 +120,7 @@ class FileRef(r_path_ref.PathRef):
         Returns:
             (str): reference path
         """
-        return self.path_uid.split('{', 1)[0]
+        return File(self.path_uid.split('{', 1)[0])
 
     @property
     def path_uid(self):
@@ -144,6 +157,14 @@ class FileRef(r_path_ref.PathRef):
             _foster_parent = str(self.ref_node) + 'fosterParent1'
             if cmds.objExists(_foster_parent):
                 cmds.delete(_foster_parent)
+
+    def exists(self):
+        """Test whether the target of this reference exists.
+
+        Returns:
+            (bool): whether file exists
+        """
+        return File(self.path).exists()
 
     def find_nodes(
             self, type_=None, full_path=False, dag_only=False, filter_=None):

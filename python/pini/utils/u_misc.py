@@ -826,8 +826,10 @@ def to_time_t(val=None):
     if isinstance(val, str):
         for _fmt in (
                 '%d/%m/%y',
+                '%d/%m/%y %H:%M',
                 '%Y-%m-%dT%H:%M:%SZ',
                 '%Y-%m-%dT%H:%M:%S.%fZ',
+                '%Y-%m-%d %H:%M',
         ):
             try:
                 return time.strptime(val, _fmt)

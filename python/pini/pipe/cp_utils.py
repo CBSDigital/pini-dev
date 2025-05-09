@@ -11,7 +11,7 @@ from pini.utils import (
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_TAG = os.environ.get('PINI_PIPE_DEFAULT_TAG')
+DEFAULT_TAG = os.environ.get('PINI_PIPE_DEFAULT_TAG', 'main')
 ASSET_PROFILE = 'asset'
 SHOT_PROFILE = 'shot'
 

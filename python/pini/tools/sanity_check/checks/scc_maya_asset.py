@@ -164,7 +164,7 @@ class CheckCacheSet(core.SCMayaCheck):
         self.write_log('top node priority %s', _top_node_priority)
 
         # Check set
-        _set = utils.find_cache_set()
+        _set = m_pipe.find_cache_set()
         if not _set:
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)

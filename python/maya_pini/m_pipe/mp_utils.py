@@ -5,6 +5,7 @@ import logging
 
 from maya import cmds
 
+from pini.dcc import export
 from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
@@ -25,10 +26,33 @@ def find_cache_set(catch=True):
     Returns:
         (CNode): cache set
     """
+    _LOGGER.debug('FIND CACHE SET')
     if cmds.objExists('cache_SET'):
         return pom.cast_node('cache_SET')
-    return single(pom.find_nodes(
-        clean_name='cache_SET', type_='objectSet'), catch=catch)
+
+    _refs_mode = export.get_pub_refs_mode()
+    if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT:
+
+        # Try namespace sets
+        _sets = pom.find_nodes(
+            clean_name='cache_SET', type_='objectSet')
+        _LOGGER.debug(' - SETS %s', _sets)
+        if len(_sets) == 1:
+            return single(_sets)
+
+        # Try remove JUNK refs
+        _no_junk_sets = [
+            _set for _set in _sets
+            if pom.find_ref(_set) and
+            pom.find_ref(_set).top_node and
+            not pom.find_ref(_set).top_node.to_long().startswith('|JUNK|')]
+        _LOGGER.debug(' - NO JUNK SETS %s', _no_junk_sets)
+        if len(_no_junk_sets) == 1:
+            return single(_no_junk_sets)
+
+    if catch:
+        return None
+    raise ValueError('No cache_SET found')
 
 
 def find_top_node():

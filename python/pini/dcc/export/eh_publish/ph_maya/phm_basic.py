@@ -126,13 +126,14 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         """
         _LOGGER.info('EXEC %s force=%d', self, force)
 
+        _pub = self.work.to_output('publish', output_type=None, extn='ma')
+        _pub.delete(wording='replace', force=force)
+
         self._clean_scene()
         self.progress.set_pc(30)
 
         # Save main publish file
-        _pub = self.work.to_output('publish', output_type=None, extn='ma')
         _LOGGER.info(' - OUTPUT %s', _pub.path)
-        _pub.delete(wording='replace', force=force)
         dcc.save(_pub)
         self.outputs = [_pub]
         self.progress.set_pc(60)
@@ -158,18 +159,16 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     def _clean_scene(self):
         """Apply clean scene options to prepare for publish.
         """
+        _LOGGER.debug('CLEAN SCENE')
         _remove_junk = self.settings['remove_junk']
         _remove_sets = self.settings['remove_sets']
         _remove_dlayers = self.settings['remove_dlayers']
         _remove_alayers = self.settings['remove_alayers']
 
-        if not cmds.objExists('cache_SET'):
-            _LOGGER.info(' - NO cache_SET FOUND')
-            return
-
         self._apply_refs_opt()
 
         # Remove JUNK
+        _LOGGER.debug(' - APPLY REMOVE JUNK %d', _remove_junk)
         if _remove_junk and cmds.objExists('JUNK'):
             cmds.delete('JUNK')
 
@@ -347,15 +346,15 @@ def get_pub_refs_mode():
     Returns:
         (PubRefsMode): current references mode
     """
-    _LOGGER.debug('GET PUB REFS MODE')
+    _LOGGER.log(9, 'GET PUB REFS MODE')
     _mode = None
     _scn = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
-    _LOGGER.debug(' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
+    _LOGGER.log(9, ' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
     if _scn:
         _mode = single(
             [_item for _item in list(PubRefsMode) if _item.value == _scn],
             catch=True)
-        _LOGGER.debug(' - MATCHED %s', _mode)
+        _LOGGER.log(9, ' - MATCHED %s', _mode)
 
     return _mode or PubRefsMode.REMOVE
 

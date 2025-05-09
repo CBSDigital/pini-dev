@@ -73,13 +73,14 @@ def _to_code_str(val):
     raise NotImplementedError(val, type(val))
 
 
-def print_exec_code(func):
+def print_exec_code(func, mod=None):
     """Decorator which prints the code to execute this function.
 
     This includes the value of any args/kwargs.
 
     Args:
         func (fn): function to decorate
+        mod (mod): parent module
 
     Returns:
         (fn): decorated function
@@ -89,12 +90,19 @@ def print_exec_code(func):
     def _print_exec_code_fn(*args, **kwargs):
         _LOGGER.info('PRINT EXEC CODE %s', func)
 
-        # Determine module info
-        _file = abs_path(inspect.getfile(func))
-        _LOGGER.debug(' - FILE %s', _file)
-        _mod = PyFile(_file).to_module()
-        _LOGGER.debug(' - MOD %s', _mod)
-        _mod_parent, _mod_name = _mod.__name__.rsplit('.', 1)
+        # Determine module info + import str
+        _mod = mod
+        if not _mod:
+            _file = abs_path(inspect.getfile(func))
+            _LOGGER.debug(' - FILE %s', _file)
+            _mod = PyFile(_file).to_module()
+            _LOGGER.debug(' - MOD %s', _mod)
+        _mod_name = _mod.__name__
+        if '.' in _mod_name:
+            _mod_parent, _mod_child = _mod_name.rsplit('.', 1)
+            _import_s = f'from {_mod_parent} import {_mod_child}'
+        else:
+            _import_s = f'import {_mod_name}'
 
         # Build args str
         _args_s = ''
@@ -107,7 +115,7 @@ def print_exec_code(func):
 
         # Print code
         _code = '; '.join([
-            f'from {_mod_parent} import {_mod_name}',
+            _import_s,
             f'{_mod_name}.{func.__name__}({_args_s})'])
         _LOGGER.info(' - CODE %s', _code)
 
