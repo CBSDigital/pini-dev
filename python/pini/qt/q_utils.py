@@ -10,7 +10,7 @@ from pini.utils import (
     cache_result, single, passes_filter, check_heart,
     basic_repr, File, build_cache_fmt, check_logging_level, HOME)
 
-from .q_mgr import QtWidgets, QtCore, QtGui
+from .q_mgr import QtWidgets, QtCore, QtGui, LIB
 
 _LOGGER = logging.getLogger(__name__)
 SETTINGS_DIR = HOME.to_subdir('.pini/settings').path
@@ -145,13 +145,16 @@ def _pformat_widget(widget):
     return basic_repr(widget, _name)
 
 
-def find_widget_children(widget, indent='', filter_=None):
+def find_widget_children(
+        widget, indent='', filter_=None, class_=None, name=None):
     """Recursive function to find all children of the given widget.
 
     Args:
         widget (QWidget): widget to read
         indent (str): indent for logging
         filter_ (str): apply name filter (for debugging)
+        class_ (class): apply widget type filter
+        name (str): apply name filter
 
     Returns:
         (QWidget list): widget children
@@ -177,14 +180,21 @@ def find_widget_children(widget, indent='', filter_=None):
         '%s - %s FOUND %d CHILDREN', indent, _pformat_widget(widget),
         len(_children))
 
-    # Apply filter
-    if filter_:
-        _children = [
-            _widget for _widget in _children
-            if hasattr(_widget, 'objectName') and
-            passes_filter(_widget.objectName(), filter_)]
+    # Apply filters
+    _results = []
+    for _widget in _children:
+        _name = None
+        if hasattr(_widget, 'objectName'):
+            _name = _widget.objectName()
+        if name and _name != name:
+            continue
+        if filter_ and (not _name or not passes_filter(_name, filter_)):
+            continue
+        if class_ and not isinstance(_widget, class_):
+            continue
+        _results.append(_widget)
 
-    return _children
+    return _results
 
 
 def flush_dialog_stack():
@@ -209,16 +219,24 @@ def get_application(force=False):
     _app = QtWidgets.QApplication.instance()
     if not _app:
         _app = QtWidgets.QApplication(sys.argv)
+
+    # Wrap QCoreApplication
     if type(_app) is QtCore.QCoreApplication:  # pylint: disable=unidiomatic-typecheck
         _LOGGER.debug('FOUND QCoreApplication')
         if force or not hasattr(sys, 'PINI_WRAPPED_QAPPLICATION'):
-            import shiboken2
-            _ptr = shiboken2.getCppPointer(_app)[0]
-            _app = shiboken2.wrapInstance(_ptr, QtWidgets.QApplication)
+            if LIB in ('PySide2', ):
+                import shiboken2 as shiboken
+            elif LIB in ('PySide6', ):
+                import shiboken6 as shiboken
+            else:
+                raise NotImplementedError(LIB)
+            _ptr = shiboken.getCppPointer(_app)[0]
+            _app = shiboken.wrapInstance(_ptr, QtWidgets.QApplication)
             sys.PINI_WRAPPED_QAPPLICATION = _app
             _LOGGER.info('WRAPPED QCoreApplication')
         else:
             _app = sys.PINI_WRAPPED_QAPPLICATION
+
     return _app
 
 

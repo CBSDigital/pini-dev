@@ -58,6 +58,15 @@ class CListViewWidgetItem(QtGui.QStandardItem):
         """
         return super().data(role)
 
+    def is_selected(self):
+        """Test whether this item is selected.
+
+        Returns:
+            (bool): whether selected
+        """
+        _idxs = self.list_view.selectionModel().selectedIndexes()
+        return self.index() in _idxs
+
     def get_data(self):
         """Obtain any data stored with this item.
 

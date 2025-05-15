@@ -6,10 +6,11 @@ import random
 
 from pini.utils import basic_repr, fr_range
 
-from ...q_mgr import QtGui
+from ...q_mgr import QtGui, LIB
 from . import qw_list_view_widget_item, qw_pixmap_label
 
 _LOGGER = logging.getLogger(__name__)
+_DRAW_SEL = LIB == 'PySide6'
 
 
 class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
@@ -21,14 +22,15 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
     _font = None
 
     def __init__(
-            self, list_view, text=None, col=None, height=25, data=None,
-            margin=4, draw_pixmap_func=None):
+            self, list_view, text=None, col=None, text_col='White', height=25,
+            data=None, margin=4, draw_pixmap_func=None):
         """Constructor.
 
         Args:
             list_view (CListView): parent list view widget
             text (str): text to display
             col (QColor): base colour
+            text_col (str): override text colour
             height (int): item height
             data (any): store item data
             margin (int): margin around image in pixels
@@ -41,6 +43,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
             draw_pixmap_func=draw_pixmap_func or self.draw_pixmap)
         self.text = text
         self.col = col or random.choice(qt.PASTEL_COLS)
+        self.text_col = text_col
 
         super().__init__(
             list_view=list_view, height=height, widget=_widget, data=data)
@@ -94,6 +97,8 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
             pix (QPixmap): pixmap to draw
         """
         self.widget.col = self.col
+        self.widget.text_col = self.text_col
+
         self.widget.draw_pixmap(pix)
 
     def _draw_right_fade(self, pix, offset=50, width=10):

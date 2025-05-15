@@ -16,8 +16,8 @@ class CHLine(QtWidgets.QFrame):
             parent (QWidget): parent widget
         """
         super().__init__(parent)
-        self.setFrameShape(self.HLine)
-        self.setFrameShadow(self.Sunken)
+        self.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
 
 
 class CVLine(QtWidgets.QFrame):

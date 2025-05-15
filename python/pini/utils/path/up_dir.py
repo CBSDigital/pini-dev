@@ -19,6 +19,14 @@ class Dir(up_path.Path):
     def browser(self):
         """Open this dir in a file browser."""
         _LOGGER.debug('BROWSER %s', self.path)
+        from pini import qt, icons
+
+        if not self.exists():
+            qt.ok_cancel(
+                f'Create missing directory?\n\n{self.path}',
+                icon=icons.BUILD, title='Create directory')
+            self.mkdir()
+
         if platform.system() == 'Windows':
             self._browser_win()
         elif platform.system() == "Linux":

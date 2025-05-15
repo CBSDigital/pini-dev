@@ -1,3 +1,23 @@
+## [7.9.0] - Thu 2025-05-15 11:26
+### Summary
+ - Pini Helper:
+    - right-click missing work file dir added create option (blee),
+### Updated
+ - pini.utils.to_time_t added %y%m%d %H:%M + %Y-%m-%d + %Y-%m-%d %H:%M fmts,
+ - pini.utils.Dir.browser added create opt if missing,
+ - pini.dcc.remove_export_handler catch missing,
+ - pini.dcc.SubstanceDCC working save/load/get_main_window_ptr/unsaved_changes,
+ - pini.qt.find_widget_children added class_/name filters,
+ - pini.qt.get_application added PySide6 QCoreApplication handling,
+ - pini.qt CPixmapLabel/CListViewPixmapItem added text_col arg,
+ - pini.qt.CPixmapLabel added draw selection highlight option,
+ - pini.qt.CListViewWidgetItem.is_selected added,
+ - pini.qt.CHLine added PySide6 handling,
+ - pini.qt.CUiDialog save_size_limits/_fix_size_limits added for substance compatibility,
+ - pini.testing.profile bugfix error on reload / fail to complete,
+ - pini.testing.setup_logging added file_/edit args,
+
+
 ## [7.8.1] - Fri 2025-05-09 12:48
 ### Summary
  - Pini Helper:

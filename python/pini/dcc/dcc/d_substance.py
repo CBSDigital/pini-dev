@@ -4,6 +4,7 @@
 
 import logging
 
+import substance_painter
 from substance_painter import project, exception
 
 from pini.utils import abs_path, to_str
@@ -18,6 +19,7 @@ class SubstanceDCC(BaseDCC):
 
     NAME = 'substance'
     DEFAULT_EXTN = 'spp'
+    VALID_EXTNS = 'spp'
 
     def cur_file(self):
         """Get path to current file.
@@ -25,13 +27,22 @@ class SubstanceDCC(BaseDCC):
         Returns:
             (str): current file
         """
-        _LOGGER.info('CUR FILE')
+        _LOGGER.debug('CUR FILE')
         try:
             _path = project.file_path()
         except exception.ProjectError:
             return None
-        _LOGGER.info(' - PATH %s', _path)
+        _LOGGER.debug(' - PATH %s', _path)
         return abs_path(_path)
+
+    def _force_load(self, file_):
+        """Force load the given scene.
+
+        Args:
+            file_ (str): scene to load
+        """
+        _file_s = to_str(file_)
+        project.open(_file_s)
 
     def _force_save(self, file_=None):
         """Force save the current scene without overwrite confirmation.
@@ -41,6 +52,10 @@ class SubstanceDCC(BaseDCC):
         """
         _file = to_str(file_) or self.cur_file()
         project.save_as(_file, mode=project.ProjectSaveMode.Incremental)
+
+    def get_main_window_ptr(self):
+        """None if no dcc."""
+        return substance_painter.ui.get_main_window()
 
     def get_scene_data(self, key):  # pylint: disable=unused-argument
         """Retrieve data stored with this scene.
@@ -68,3 +83,13 @@ class SubstanceDCC(BaseDCC):
             (None): N/A
         """
         return None
+
+    def unsaved_changes(self):
+        """Test whether the current scene has unsaved changes.
+
+        Returns:
+            (bool): unsaved changes
+        """
+        if not self.cur_file():
+            return False
+        return project.needs_saving()

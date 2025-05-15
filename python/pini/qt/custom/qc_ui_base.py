@@ -10,7 +10,7 @@ import sys
 from pini import dcc, icons
 from pini.utils import (
     TMP_PATH, abs_path, File, cache_property, nice_id, to_pascal, wrap_fn,
-    passes_filter, single, strftime, check_logging_level)
+    passes_filter, single, strftime, check_logging_level, is_pascal)
 
 from ..q_ui_container import CUiContainer
 from ..q_utils import (
@@ -28,6 +28,7 @@ class CUiBase:
     """Base class for any managed ui interface."""
 
     timer = None
+    _successful_load = None
 
     def __init__(
             self, ui_file, stack_key=None, store_settings=True, show=True,
@@ -97,14 +98,7 @@ class CUiBase:
         self._apply_default_font_size()
         self._check_tooltips()
         self._connect_callbacks()
-
-        # Setup QHBoxLayout size policies cache to fix bad transfer
-        # from designer to nuke
-        _file = File(self.ui_file)
-        self._hbox_size_policies_yml = _file.to_file(
-            base=_file.base + '_hsp', extn='yml', hidden=True)
-        if dcc.NAME in ('nuke', ):
-            self.fix_hbox_size_policies()
+        self._apply_env_hacks()
 
         if fps:
             self.start_timer(fps=fps)
@@ -321,6 +315,27 @@ class CUiBase:
         _icon = QtGui.QIcon(icon)
         self.setWindowIcon(_icon)
 
+    def _apply_env_hacks(self):
+        """Apply hacks to accomodate for different environment.
+
+        ie. setup nuke/substance qt fixes for this interface.
+        """
+
+        # Setup QHBoxLayout size policies cache to fix bad transfer
+        # from designer to nuke
+        _file = File(self.ui_file)
+        self._hbox_size_policies_yml = _file.to_file(
+            base=_file.base + '_hsp', extn='yml', hidden=True)
+        if dcc.NAME in ('nuke', ):
+            self._fix_hbox_size_policies()
+
+        # Apply button size constraints to accommodate bad transfer
+        # from designer to pyside6/substance
+        self._size_limits_yml = _file.to_file(
+            base=_file.base + '_bsl', extn='yml', hidden=True)
+        if dcc.NAME in ('substance', ):
+            self._fix_size_limits()
+
     def save_hbox_size_policies(self):
         """Save hbox layout size policies.
 
@@ -345,8 +360,10 @@ class CUiBase:
                 _hsps[_name] = _hsp
                 _LOGGER.debug('   - WIDGET %s %s', _widget.objectName(), _hsp)
         self._hbox_size_policies_yml.write_yml(_hsps, force=True)
+        _LOGGER.info(
+            ' - SAVED HBOX SIZE POLICIES %s', self._hbox_size_policies_yml)
 
-    def fix_hbox_size_policies(self):
+    def _fix_hbox_size_policies(self):
         """Fix hbox layout size policies.
 
         If the horizonal file policies of QHBoxLayout widgets has been
@@ -372,6 +389,44 @@ class CUiBase:
             _hsp = getattr(QtWidgets.QSizePolicy, _hsp)
             _cur_sp = _widget.sizePolicy()
             _widget.setSizePolicy(_hsp, _cur_sp.verticalPolicy())
+
+    def save_size_limits(self):
+        """Save widget size limits to yml.
+
+        The yml is then used to apply missing limits in substance, which
+        seemed to lose size limit data from ui files, most likely due
+        to PySide6 issues.
+        """
+        _data = {}
+        for _widget in self.find_widgets():
+            if isinstance(_widget, QtWidgets.QLayout):
+                continue
+            _name = _widget.objectName()
+            if not is_pascal(_name):
+                continue
+            _sizes = {}
+            for _attr in [
+                    'minimumWidth', 'maximumWidth',
+                    'minimumHeight', 'maximumHeight']:
+                _val = getattr(_widget, _attr)()
+                _sizes[_attr] = _val
+            _data[_name] = _sizes
+        self._size_limits_yml.write_yml(_data, force=True)
+        _LOGGER.info(' - SAVED SIZE LIMITS %s', self._size_limits_yml)
+
+    def _fix_size_limits(self):
+        """Apply size limits fix.
+
+        Read size limits from yml file and apply them to widgets.
+        """
+        for _name, _sizes in self._size_limits_yml.read_yml().items():
+            _widget = getattr(self.ui, _name, None)
+            if not _widget:
+                continue
+            _widget.setMinimumSize(
+                _sizes['minimumWidth'], _sizes['minimumHeight'])
+            _widget.setMaximumSize(
+                _sizes['maximumWidth'], _sizes['maximumHeight'])
 
     @cache_property
     def settings(self):

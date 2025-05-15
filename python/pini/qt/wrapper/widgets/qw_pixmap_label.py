@@ -14,7 +14,7 @@ class CPixmapLabel(QtWidgets.QLabel):
     """A QLabel which displays a pixmap."""
 
     def __init__(
-            self, parent=None, text=None, col=None, margin=4,
+            self, parent=None, text=None, col=None, text_col=None, margin=4,
             draw_pixmap_func=None):
         """Constructor.
 
@@ -22,6 +22,7 @@ class CPixmapLabel(QtWidgets.QLabel):
             parent (QWidget): parent widget (passed by designer on build ui)
             text (str): text to display in pixmap
             col (str): base colour for pixmap
+            text_col (str): text colour for pixmap text
             margin (int): margin size in pixels
             draw_pixmap_func (fn): override draw pixmap function
         """
@@ -33,6 +34,9 @@ class CPixmapLabel(QtWidgets.QLabel):
         _rand = str_to_seed(self.objectName())
         self.col = col or _rand.choice(qt.PASTEL_COLS)
         self.text = text  # Hidden to avoid clash with text method
+        self.text_col = text_col
+        self.draw_sel = False
+
         self.margin = margin
         self.draw_pixmap_func = draw_pixmap_func
         self.update_t = None
@@ -61,7 +65,20 @@ class CPixmapLabel(QtWidgets.QLabel):
         if self.text:
             _LOGGER.debug('TEXT %s', self.text)
             assert isinstance(self.text, str)
-            pix.draw_text(self.text, pos=pix.center(), anchor='C')
+            pix.draw_text(
+                self.text, pos=pix.center(), anchor='C', col=self.text_col)
+
+    def _draw_selection_highlight(self, pix):
+        """Draw selection highlight.
+
+        Args:
+            pix (CPixmap): pixmap to draw on
+        """
+        from pini import qt
+        _over = qt.CPixmap(pix.size())
+        _sel_col = qt.CColor('LightSteelBlue', alpha=0.45)
+        _over.fill(_sel_col)
+        pix.draw_overlay(_over)
 
     def redraw(self):
         """Redraw this widget.
@@ -78,6 +95,8 @@ class CPixmapLabel(QtWidgets.QLabel):
         _pix = qt.CPixmap(_size)
         _pix.fill('Transparent')
         _draw_pixmap_func = self.draw_pixmap_func or self.draw_pixmap
+        if self.draw_sel:
+            self._draw_selection_highlight(_pix)
         _draw_pixmap_func(_pix)
         self.setPixmap(_pix)
         self.update_t = time.time()

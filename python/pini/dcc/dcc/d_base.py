@@ -487,8 +487,9 @@ class BaseDCC:
         Args:
             name (str): name of export handler to remove
         """
-        _handler = self.find_export_handler(name)
-        self._export_handlers.remove(_handler)
+        _handler = self.find_export_handler(name, catch=True)
+        if _handler:
+            self._export_handlers.remove(_handler)
 
     def render(self, seq):
         """Render the current scene.

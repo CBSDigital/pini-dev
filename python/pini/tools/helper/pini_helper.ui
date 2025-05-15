@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -79,7 +79,7 @@
               <number>3</number>
              </property>
              <item>
-              <layout class="QHBoxLayout" name="WTagTextLyt">
+              <layout class="QHBoxLayout" name="WTagTextLyt" stretch="0,1,0,0,0">
                <property name="spacing">
                 <number>2</number>
                </property>

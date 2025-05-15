@@ -6,8 +6,9 @@ import logging
 import os
 import sys
 
-from pini import icons
-from pini.utils import check_heart, TMP, Image, abs_path, PyFile
+from pini import icons, dcc
+from pini.utils import (
+    check_heart, TMP, Image, abs_path, PyFile, strftime, File)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,19 +138,30 @@ def set_dev_mode(value):
         del os.environ['PINI_DEV']
 
 
-class _PiniHandler(logging.StreamHandler):
-    """Logging handler for pini.
+class _PStreamHandler(logging.StreamHandler):
+    """Stream handler for pini.
 
     Defined here to allow it to be distinguished from other handlers.
     """
 
 
-def setup_logging(flush='all'):
+class _PFileHandler(logging.FileHandler):
+    """File handler for pini.
+
+    Defined here to allow it to be distinguished from other handlers.
+    """
+
+
+def setup_logging(file_=False, edit=False, flush='all'):
     """Setup logging with a generic handler.
 
     Args:
+        file_ (bool): apply logging to file
+        edit (bool): edit log file
         flush (bool): remove existing handlers
     """
+    _LOGGER.info('SETUP LOGGING')
+
     _logger = logging.getLogger()
     _logger.setLevel(logging.INFO)
 
@@ -161,12 +173,12 @@ def setup_logging(flush='all'):
             _name = type(_handler).__name__
             _LOGGER.debug(
                 ' - REMOVE HANDLER %s %d %s', _handler,
-                isinstance(_handler, _PiniHandler), _name)
+                isinstance(_handler, _PStreamHandler), _name)
             _logger.removeHandler(_handler)
     elif flush == 'pini':
         for _handler in list(_logger.handlers):
             _name = type(_handler).__name__
-            if _name == _PiniHandler.__name__:
+            if _name in (_PStreamHandler.__name__, _PFileHandler.__name__):
                 _LOGGER.info(' - REMOVE HANDLER %s', _handler)
                 _logger.removeHandler(_handler)
     elif flush is False:
@@ -174,9 +186,24 @@ def setup_logging(flush='all'):
     else:
         raise ValueError(flush)
 
-    # Create default handler
-    _handler = _PiniHandler(sys.stdout)
-    _formatter = logging.Formatter(
-        '- %(name)s: %(message)s')
-    _handler.setFormatter(_formatter)
-    _logger.addHandler(_handler)
+    # Create handlers
+    _handlers = []
+    _stream_handler = _PStreamHandler(sys.stdout)
+    _handlers.append(_stream_handler)
+    if file_:
+        _date_stamp = strftime('%y%m%d')
+        _time_stamp = strftime('%H%M%S')
+        _file = File(f'~/tmp/log/{_date_stamp}/{_time_stamp}_{dcc.NAME}.log')
+        _LOGGER.info(' - FILE %s', _file)
+        _file.touch()
+        if edit:
+            _file.edit()
+        _file_hander = _PFileHandler(_file.path)
+        _handlers.append(_file_hander)
+    _LOGGER.info(' - HANDLERS %d %s', len(_handlers), _handlers)
+
+    # Setup handlers
+    for _handler in _handlers:
+        _formatter = logging.Formatter('- %(name)s: %(message)s')
+        _handler.setFormatter(_formatter)
+        _logger.addHandler(_handler)

@@ -26,6 +26,7 @@ def profile_start():
     global _PROFILE, _PROFILE_START
     _PROFILE_START = time.time()
     _PROFILE = cProfile.Profile()
+    _PROFILE.clear()
     _PROFILE.enable()
 
 
