@@ -34,10 +34,10 @@ def install_callback(type_, func):
     if func:
         assert isinstance(func, types.FunctionType)
         CALLBACKS[type_] = func
-        _LOGGER.info('INSTALLED CALLBACK %s %s', type_, func)
+        _LOGGER.debug('INSTALLED CALLBACK %s %s', type_, func)
     elif func is None:
         CALLBACKS.pop(type_, None)
-        _LOGGER.info('UNINSTALLED CALLBACK %s %s', type_, func)
+        _LOGGER.debug('UNINSTALLED CALLBACK %s %s', type_, func)
     else:
         raise ValueError(func)
 

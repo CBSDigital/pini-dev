@@ -5,6 +5,7 @@ import logging
 
 from maya import cmds
 
+from pini import pipe
 from pini.dcc import export
 from pini.utils import single, passes_filter
 
@@ -31,7 +32,11 @@ def find_cache_set(catch=True):
         return pom.cast_node('cache_SET')
 
     _refs_mode = export.get_pub_refs_mode()
-    if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT:
+    _LOGGER.debug(' - REFS MODE %s', _refs_mode)
+    _task = pipe.cur_task(fmt='pini')
+    _LOGGER.debug(' - PIPE %s', _task)
+
+    if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT or _task == 'lookdev':
 
         # Try namespace sets
         _sets = pom.find_nodes(

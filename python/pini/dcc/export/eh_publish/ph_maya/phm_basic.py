@@ -2,10 +2,11 @@
 
 import enum
 import logging
+import os
 
 from maya import cmds
 
-from pini import dcc, qt, icons
+from pini import dcc, icons
 from pini.utils import single
 
 from maya_pini import ref, open_maya as pom, m_pipe
@@ -25,6 +26,25 @@ class PubRefsMode(enum.Enum):
     REMOVE = "Remove"
     LEAVE_INTACT = "Leave intact"
     IMPORT_TO_ROOT = "Import into root namespace"
+
+
+def _to_default_pub_ref_mode():
+    """Read default publish references mode.
+
+    Returns:
+        (PubRefsMode): default value
+    """
+    if 'PINI_PUB_REFS_MODE' in os.environ:
+        _name = os.environ['PINI_PUB_REFS_MODE']
+        _match = single([
+            _item for _item in PubRefsMode if _item == _name],
+            catch=True)
+        if _match:
+            return _match
+    return PubRefsMode.REMOVE
+
+
+_PUB_REFS_DEFAULT = _to_default_pub_ref_mode()
 
 
 class CMayaBasicPublish(ph_basic.CBasicPublish):
@@ -75,10 +95,10 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         # Add reference option
         _data = list(PubRefsMode)
         _items = [_item.value for _item in _data]
+        _val = dcc.get_scene_data(_PUB_REFS_MODE_KEY) or _PUB_REFS_DEFAULT.value
         self.ui.add_combo_box(
             name='References', items=_items, data=_data,
-            save_policy=qt.SavePolicy.SAVE_IN_SCENE,
-            settings_key=_PUB_REFS_MODE_KEY)
+            val=_val, settings_key=_PUB_REFS_MODE_KEY)
 
     def exec_from_ui(self, **kwargs):
         """Execuate this export using settings from ui.
@@ -97,7 +117,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=True, snapshot=True, save=True,
             bkp=True, progress=True, update_metadata=True, update_cache=True,
-            abc=False, fbx=False, references='Remove', remove_alayers=True,
+            abc=False, fbx=False, references=None, remove_alayers=True,
             remove_dlayers=True, remove_junk=True, remove_sets=True,
             work=None, force=False):
         """Execute this publish.
@@ -196,7 +216,13 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
 
     def _apply_refs_opt(self):
         """Apply references option."""
+        _LOGGER.debug('APPLY REF OPTS')
         _refs = self.settings['references']
+        if not _refs:
+            _refs = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
+            _LOGGER.debug(' - READ SCENE DATA %s', _PUB_REFS_MODE_KEY)
+        if not _refs:
+            _refs = _PUB_REFS_DEFAULT.value
         _LOGGER.info(' - REFS OPT %s', _refs)
 
         # Apply reference option

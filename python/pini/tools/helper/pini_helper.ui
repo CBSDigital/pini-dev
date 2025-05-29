@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -2530,8 +2530,8 @@ icon</string>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>MainPane</tabstop>
   <tabstop>WTaskText</tabstop>
+  <tabstop>WTagText</tabstop>
   <tabstop>WTasks</tabstop>
   <tabstop>WTags</tabstop>
   <tabstop>WWorkRefresh</tabstop>
@@ -2541,6 +2541,64 @@ icon</string>
   <tabstop>WWorkPathCopy</tabstop>
   <tabstop>WLoad</tabstop>
   <tabstop>WSave</tabstop>
+  <tabstop>MainPane</tabstop>
+  <tabstop>WTagError</tabstop>
+  <tabstop>WTagTextClear</tabstop>
+  <tabstop>WWorksRefresh</tabstop>
+  <tabstop>WWorksShowAll</tabstop>
+  <tabstop>WWorks</tabstop>
+  <tabstop>WVersionUp</tabstop>
+  <tabstop>EExportPane</tabstop>
+  <tabstop>EPublishHandler</tabstop>
+  <tabstop>EPublishHandlerIcon</tabstop>
+  <tabstop>EBlastHandler</tabstop>
+  <tabstop>EBlastHandlerIcon</tabstop>
+  <tabstop>ECacheHandler</tabstop>
+  <tabstop>ECacheHandlerIcon</tabstop>
+  <tabstop>ERenderHandler</tabstop>
+  <tabstop>ERenderHandlerIcon</tabstop>
+  <tabstop>ESubmitHandler</tabstop>
+  <tabstop>ESubmitHandlerIcon</tabstop>
+  <tabstop>SOutputsPane</tabstop>
+  <tabstop>SOutputTag</tabstop>
+  <tabstop>SOutputTask</tabstop>
+  <tabstop>SOutputVers</tabstop>
+  <tabstop>SOutputType</tabstop>
+  <tabstop>SOutputFormat</tabstop>
+  <tabstop>SOutputs</tabstop>
+  <tabstop>SOutputsFilter</tabstop>
+  <tabstop>SOutputsFilterClear</tabstop>
+  <tabstop>SViewer</tabstop>
+  <tabstop>SView</tabstop>
+  <tabstop>SCamPlates</tabstop>
+  <tabstop>SAbcMode</tabstop>
+  <tabstop>SVdbMode</tabstop>
+  <tabstop>SLookdev</tabstop>
+  <tabstop>SAdd</tabstop>
+  <tabstop>SUpdateToLatest</tabstop>
+  <tabstop>SDelete</tabstop>
+  <tabstop>SReset</tabstop>
+  <tabstop>SInfo</tabstop>
+  <tabstop>SRefresh</tabstop>
+  <tabstop>SSceneRefs</tabstop>
+  <tabstop>SSceneRefsShowModels</tabstop>
+  <tabstop>SSceneRefsShowRigs</tabstop>
+  <tabstop>SSceneRefsShowLookdevs</tabstop>
+  <tabstop>SSceneRefsShowAbcs</tabstop>
+  <tabstop>SSceneRefsTypeFilterReset</tabstop>
+  <tabstop>SSceneRefsFilterClear</tabstop>
+  <tabstop>SSceneRefsFilter</tabstop>
+  <tabstop>SApply</tabstop>
+  <tabstop>Job</tabstop>
+  <tabstop>JobCreate</tabstop>
+  <tabstop>Profile</tabstop>
+  <tabstop>ToggleAdmin</tabstop>
+  <tabstop>EntityType</tabstop>
+  <tabstop>EntityTypeCreate</tabstop>
+  <tabstop>Entity</tabstop>
+  <tabstop>EntityCreate</tabstop>
+  <tabstop>JumpToCurrent</tabstop>
+  <tabstop>Refresh</tabstop>
  </tabstops>
  <resources/>
  <connections/>

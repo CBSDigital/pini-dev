@@ -11,6 +11,8 @@ from pini.dcc import export
 from pini.tools import helper
 from pini.utils import single, assert_eq
 
+from pini.dcc.export.eh_publish.ph_maya import phm_basic
+
 from maya_pini import open_maya as pom
 from maya_pini.utils import process_deferred_events
 
@@ -217,16 +219,23 @@ class TestHelper(unittest.TestCase):
         _LOGGER.info('LAUNCH HELPER')
         _helper = helper.launch(reset_cache=False)
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
+        assert dcc.get_scene_data('PiniQt.Publish.References') == 'Import into root namespace'
+        assert _m_pub.ui.References.currentText() == 'Import into root namespace'
         print('')
         _LOGGER.info('SELECT EXPORT TAB')
-        assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         _helper.ui.MainPane.select_tab('Export')
         _LOGGER.info('SELECTED EXPORT TAB')
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
         assert export.get_pub_refs_mode() is _import
+        print()
+        _LOGGER.info(' - SELECTING "Remove"')
+        assert _m_pub.ui.References.save_policy == qt.SavePolicy.SAVE_IN_SCENE
         _m_pub.ui.References.select_text('Remove')
+        assert _m_pub.ui.References.settings_key == 'PiniQt.Publish.References'
+        assert _m_pub.ui.References.settings_key == phm_basic._PUB_REFS_MODE_KEY
+        _LOGGER.info(' - SETTING %s', _m_pub.ui.References.get_scene_setting())
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
         assert export.get_pub_refs_mode() is _remove
         _helper.delete()

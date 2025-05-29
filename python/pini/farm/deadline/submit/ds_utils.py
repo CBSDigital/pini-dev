@@ -261,15 +261,19 @@ def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):
             '']
     _lines += [
         '    # Setup loggging',
-        '    from pini import testing, dcc, qt',
+        '    from pini import testing',
         '    testing.setup_logging()',
-        '    qt.get_application()',
         f'    _LOGGER.info("RUNNING {name} {py_file.path}")',
         '    _LOGGER.info(" - FILE %s", _FILE)',
+        '',
+        '    # Create QApplication to allow qt operations',
+        '    from pini import qt',
+        '    qt.get_application()',
         '']
     if maya and work:
         _lines += [
             '    # Load scene (deadline manages this but need for standalone)',
+            '    from pini import dcc',
             f'    dcc.load("{to_str(work)}", lazy=True, force=True)',
             '']
     _lines += ['']

@@ -211,6 +211,10 @@ class CMayaFarmRender(CMayaRenderHandler):
         self.ui.add_spin_box(name='Priority', val=50)
         self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
         self.ui.add_spin_box(name='MachineLimit', val=15)
+
+        # self.ui.add_check_box(name='IgnoreError211', val=False)
+        self.ui.add_check_box(name='StrictErrorChecking', val=True)
+
         self._build_limit_groups_elems()
         self.ui.add_separator()
 
@@ -302,7 +306,8 @@ class CMayaFarmRender(CMayaRenderHandler):
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=True, camera=None, frames=None,
             render_=True, limit_grps=None, hide_img_planes=False, priority=50,
-            machine_limit=15, chunk_size=1, force=False):
+            machine_limit=15, chunk_size=1, strict_error_checking=True,
+            force=False):
         """Execute render.
 
         Args:
@@ -316,6 +321,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             priority (int): job priority (eg. 50)
             machine_limit (int): job machine limit (eg. 20 machines)
             chunk_size (int): job chunk size (frames to execute in one task)
+            strict_error_checking (bool): apply deadline strict error checking
             force (bool): replace existing without confirmation
         """
         _lyrs = pom.find_render_layers(renderable=True)
@@ -341,11 +347,12 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         _prepare_scene_for_render()
 
-        self.submit_msg = farm.submit_maya_render(
-            submit_=render_, force=True, result='msg',
+        self.submit_msg, self.outputs = farm.submit_maya_render(
+            submit_=render_, force=True, result='msg/outs',
             metadata=self.metadata, frames=frames, camera=_cam,
             chunk_size=chunk_size, comment=notes, priority=priority,
-            machine_limit=machine_limit, limit_groups=limit_grps)
+            machine_limit=machine_limit, limit_groups=limit_grps,
+            strict_error_checking=strict_error_checking)
 
         for _revert in _reverts:
             _revert()

@@ -11,6 +11,7 @@ import math
 import random
 import time
 import types
+import typing
 import sys
 
 
@@ -747,7 +748,7 @@ def to_list(obj):
         return obj
     if isinstance(obj, str):
         return [obj]
-    if isinstance(obj, types.GeneratorType):
+    if isinstance(obj, (types.GeneratorType, typing.ValuesView)):
         return list(obj)
     raise NotImplementedError(obj)
 

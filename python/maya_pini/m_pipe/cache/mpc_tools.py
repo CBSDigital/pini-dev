@@ -116,7 +116,7 @@ def _write_metadata(outputs, cacheables, range_, step, checks_data):
 
 
 def cache(
-        cacheables, uv_write=True, world_space=True, extn='abc',
+        cacheables=None, uv_write=True, world_space=True, extn='abc',
         format_='Ogawa', range_=None, step=1.0, save=True, clean_up=True,
         renderable_only=True, checks_data=None, use_farm=False, snapshot=True,
         version_up=False, update_metadata=True, update_cache=True, force=False):
@@ -144,7 +144,8 @@ def cache(
     Returns:
         (COutputFile list): caches generated
     """
-    _LOGGER.info('CACHE SCENE %d %s', len(cacheables), cacheables)
+    _cbls = cacheables or find_cacheables()
+    _LOGGER.info('CACHE SCENE %d %s', len(_cbls), _cbls)
 
     _work = pipe.CACHE.obt_cur_work()
     _range = range_ or dcc.t_range(int, expand=1)
@@ -165,7 +166,7 @@ def cache(
         return None
 
     # Setup cache
-    _outs = _setup_cache(cacheables=cacheables, force=force, extn=extn)
+    _outs = _setup_cache(cacheables=_cbls, force=force, extn=extn)
     if save and not dcc.batch_mode():
         _work.save(reason='cache', force=True, update_outputs=False)
     if snapshot:
@@ -182,11 +183,11 @@ def cache(
         'step': step}
     if use_farm:
         farm.submit_maya_cache(
-            cacheables=cacheables, save=False, checks_data=_checks_data,
+            cacheables=_cbls, save=False, checks_data=_checks_data,
             flags=_flags, extn=extn)
     else:
         _exec_local_cache(
-            cacheables=cacheables, outputs=_outs, work=_work, flags=_flags,
+            cacheables=_cbls, outputs=_outs, work=_work, flags=_flags,
             checks_data=_checks_data, clean_up=clean_up, extn=extn,
             update_metadata=update_metadata, update_cache=update_cache)
         _updated = True
@@ -201,7 +202,7 @@ def cache(
 
     if use_farm and not force:
         qt.notify(
-            f'Submitted {len(cacheables):d} caches to {farm.NAME}.\n\n'
+            f'Submitted {len(_cbls):d} caches to {farm.NAME}.\n\n'
             f'Batch name:\n{_work.base}',
             title='Cache Submitted', icon=farm.ICON)
 

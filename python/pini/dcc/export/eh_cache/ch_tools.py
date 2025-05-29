@@ -7,7 +7,7 @@ from pini import dcc
 _LOGGER = logging.getLogger(__name__)
 
 
-def abc_cache(cacheables, **kwargs):
+def abc_cache(cacheables=None, **kwargs):
     """Execute cache operation.
 
     Args:
@@ -20,7 +20,7 @@ def abc_cache(cacheables, **kwargs):
     _LOGGER.info('ABC CACHE')
     _exporter = dcc.find_export_handler('AbcCache')
     _LOGGER.info('- EXPORTER %s', _exporter)
-    return _exporter.exec(cacheables, **kwargs)
+    return _exporter.exec(cacheables=cacheables, **kwargs)
 
 
 def fbx_cache(cacheables, **kwargs):

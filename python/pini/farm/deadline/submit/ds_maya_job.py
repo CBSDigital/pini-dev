@@ -23,15 +23,22 @@ _EMPTY_SCENE = File(
 class _CDMayaJob(ds_job.CDJob):
     """Base class for all deadline maya jobs."""
 
-    def __init__(self, output, name=None, camera=None, **kwargs):
+    def __init__(
+            self, output, name=None, camera=None, ignore_error_211=False,
+            strict_error_checking=False, **kwargs):
         """Constructor.
 
         Args:
             output (CPOutput): output file
             name (str): job name
             camera (CCamera): job camera
+            ignore_error_211 (bool): ignore render errors
+            strict_error_checking (bool): apply strict error checking
         """
         self.camera = camera
+        self.ignore_error_211 = ignore_error_211
+        self.strict_error_checking = strict_error_checking
+
         _name = name or output.output_name
         super().__init__(name=_name, output=output, **kwargs)
 
@@ -115,7 +122,7 @@ class _CDMayaJob(ds_job.CDJob):
             'Build': '64bit',
             'CountRenderableCameras': '1',
             'EnableOpenColorIO': '1',
-            'IgnoreError211': '0',
+            'IgnoreError211': self.ignore_error_211,
             'ImageHeight': str(_height),
             'ImageWidth': str(_width),
             'OCIOConfigFile': _col_cfg,
@@ -124,6 +131,7 @@ class _CDMayaJob(ds_job.CDJob):
             'OutputFilePrefix': _determine_img_prefix(),
             'ProjectPath': cmds.workspace(query=True, openWorkspace=True),
             'RenderSetupIncludeLights': '1',
+            'StrictErrorChecking': self.strict_error_checking,
             'StartupScript': '',
             'UseLegacyRenderLayers': '0',
             'UseLocalAssetCaching': '0',
@@ -156,26 +164,14 @@ class CDMayaRenderJob(_CDMayaJob):
     stype = 'MayaRender'
     plugin = 'MayaRender'
 
-    def __init__(
-            self, layer, stime, work, scene=None, camera=None, priority=50,
-            machine_limit=0, comment=None, frames=None, group=None,
-            chunk_size=1, limit_groups=None):
+    def __init__(self, layer, work, camera, frames=None, **kwargs):
         """Constructor.
 
         Args:
             layer (str): name of layer being rendered
-            stime (float): job submission time
             work (CPWork): work file
-            scene (File): render scene (if not work file)
             camera (CCamera): job camera
-            priority (int): job priority (0-100)
-            machine_limit (int): job machine limit
-            comment (str): job comment
             frames (int list): job frame list
-            group (str): submission group
-            chunk_size (int): apply job chunk size
-            limit_groups (str): comma separated limit groups
-                (eg. maya-2023,vray)
         """
         self.layer = layer
         assert camera
@@ -184,13 +180,11 @@ class CDMayaRenderJob(_CDMayaJob):
         _output = pipe.CACHE.cur_work.to_output(
             'render', output_name=self.layer, extn=_fmt, work=work)
         _name = f'{work.base} - {layer} - {camera}'
+        _frames = frames or dcc.t_frames()
 
         super().__init__(
-            stime=stime, camera=camera, priority=priority, output=_output,
-            machine_limit=machine_limit, comment=comment, work=work,
-            frames=frames or dcc.t_frames(), name=_name, group=group,
-            scene=scene, chunk_size=chunk_size, limit_groups=limit_groups,
-        )
+            camera=camera, output=_output, work=work, frames=_frames,
+            name=_name, **kwargs)
 
         assert self.output
         assert self.batch_name
@@ -237,7 +231,6 @@ class CDMayaRenderJob(_CDMayaJob):
             'RenderHalfFrames': '0',
             'RenderLayer': self.output.output_name,
             'Renderer': _ren,
-            'StrictErrorChecking': 'False',
             'UsingRenderLayers': '1'}
         _data.update(_shared_data)
 

@@ -146,7 +146,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             raise NotImplementedError(self.extn)
 
         _pix = _pix.resize(_res)
-        _pix.save_as(_thumb, force=force)
+        _pix.save_as(_thumb, verbose=0, force=force)
 
     def contains(self, file_):
         """Test whether this sequence contains the given file.

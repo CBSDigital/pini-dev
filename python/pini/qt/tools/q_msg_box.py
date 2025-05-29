@@ -225,7 +225,7 @@ def warning(msg, title='Warning', icon=None):
         title (str): warning title
         icon (str): override icon to apply
     """
-    notify(msg=msg, title=title, icon=icon or icons.find('Spider'))
+    ok_cancel(msg=msg, title=title, icon=icon or icons.find('Spider'))
 
 
 def yes_no_cancel(msg, title='Confirm', icon=None, parent=None):

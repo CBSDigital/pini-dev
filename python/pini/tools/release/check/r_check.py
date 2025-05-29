@@ -154,7 +154,7 @@ class CheckFile(MetadataFile):
                 stack_key="PycodestyleCheckFile"):
             _LOGGER.info(' - ISSUE %s %s', _issue, _issue.desc)
             raise _issue.to_error(self)
-        _LOGGER.info(' - PYCODESTYLE SUCCESFUL %s', self.path)
+        _LOGGER.info(' - PYCODESTYLE SUCCESSFUL %s', self.path)
 
     def apply_pylint_check(self, force=False):
         """Apply pylint checks.

@@ -66,9 +66,12 @@ class CDJob:
         self.name = name
         self.work = work
         self.error_limit = error_limit
+
         self.batch_name = batch_name
-        if not self.batch_name and work:
-            self.batch_name = work.base
+        if work:
+            self.batch_name = self.batch_name or work.base
+        self.batch_name = self.batch_name or self.name
+
         self.scene = scene or self.work
         self.output = output
         self.env = env
@@ -90,7 +93,7 @@ class CDJob:
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:
                 if _group not in farm.find_limit_groups():
-                    raise RuntimeError(f'Bad limit group "{_group}')
+                    raise RuntimeError(f'Bad limit group "{_group}"')
         self.limit_groups = limit_groups or ()
 
         assert self.stype
@@ -156,10 +159,17 @@ class CDJob:
         assert 0 < self.priority < 100
 
         # Add dependencies
-        for _job in self.dependencies:
-            assert _job.jid
-            assert isinstance(_job, CDJob)
-        _dep_str = ','.join(_job.jid for _job in self.dependencies)
+        _dep_ids = []
+        for _dep in self.dependencies:
+            if isinstance(_dep, CDJob):
+                _id = _dep.jid
+            elif isinstance(_dep, str):
+                _id = _dep
+            else:
+                raise NotImplementedError(f'Unhandled dependency {_dep}')
+            assert _id
+            _dep_ids.append(_id)
+        _dep_str = ','.join(_dep_ids)
         assert 'None' not in _dep_str
 
         _frames_s = ints_to_str(self.frames)
@@ -184,6 +194,7 @@ class CDJob:
             'InitialStatus': 'Active',
             'Frames': _frames_s,
             'ChunkSize': str(self.chunk_size),
+
             'ExtraInfo0': self.job.name,
         }
         _LOGGER.debug(
@@ -224,7 +235,7 @@ class CDJob:
         """Write job submission files to disk."""
 
         # Write info file
-        _LOGGER.debug(' - INFO FILE %s', self.info_file.path)
+        _LOGGER.info(' - INFO FILE %s', self.info_file.path)
         assert not self.info_file.exists()
         _info_data = self._build_info_data()
         ds_utils.write_deadline_data(
@@ -310,21 +321,14 @@ class CDPyJob(CDJob):
     plugin = 'Python'
 
     def __init__(
-            self, name, py, stime=None, priority=50, machine_limit=0,
-            comment=None, error_limit=1, batch_name=None, dependencies=(),
-            tmp_py=None, edit_py=False, wrap_py=True):
+            self, name, py, stime=None, tmp_py=None, edit_py=False,
+            wrap_py=True, **kwargs):
         """Constructor.
 
         Args:
             name (str): job name
             py (str): python code to execute
             stime (float): job submission time
-            priority (int): job priority (0-100)
-            machine_limit (int): job machine limit
-            comment (str): job comment
-            error_limit (int): job error limit
-            batch_name (str): job batch/group name
-            dependencies (CDJob list): jobs to depend on
             tmp_py (File): override tmp py file
             edit_py (bool): edit py file on save to disk
             wrap_py (bool): wrap py with pipeline init
@@ -343,10 +347,17 @@ class CDPyJob(CDJob):
             self.py_file.edit()
 
         super().__init__(
-            name=name, stime=stime, comment=comment, priority=priority,
-            machine_limit=machine_limit, work=self.py_file,
-            error_limit=error_limit, batch_name=batch_name,
-            dependencies=dependencies)
+            name=name, stime=stime, work=self.py_file, **kwargs)
+
+        _settings = self.job.settings.get('deadline', {}).get('python', {})
+        if self.group in (None, 'none') and 'group' in _settings:
+            self.group = _settings['group']
+        self.limit_groups = sorted(
+            set(self.limit_groups) |
+            set(_settings.get('limit_groups', [])))
+        self.py_ver = _settings.get(
+            'version',
+            sys.version_info.major + sys.version_info.minor / 10)
 
     def _build_job_data(self):
         """Build job data for this submission.
@@ -354,12 +365,9 @@ class CDPyJob(CDJob):
         Returns:
             (dict): submission job data
         """
-        _py_ver = os.environ.get(
-            'PINI_DEADLINE_PYVER',
-            f'{sys.version_info.major:d}.{sys.version_info.minor:d}')
         _data = {
             'Arguments': '',
-            'Version': str(_py_ver),
+            'Version': self.py_ver,
             'SingleFramesOnly': 'False',
         }
         return _data

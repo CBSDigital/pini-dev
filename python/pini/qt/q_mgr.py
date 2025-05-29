@@ -6,13 +6,15 @@ import logging
 import os
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.debug('IMPORT')
 _FORCE = os.environ.get('PINI_QT_LIB')
+_LOGGER.debug(' - FORCE %s', _FORCE)
 _SUCCESS = False
 LIB = None
 LIB_VERSION = None
 
 # Try to import qt mods from PySide2
-if (_FORCE and _FORCE == 'PySide2') or not _SUCCESS:
+if (not _FORCE or _FORCE == 'PySide2') and not _SUCCESS:
     try:
         from PySide2 import QtUiTools, QtCore, QtGui, QtWidgets
         from PySide2.QtCore import Qt
@@ -25,7 +27,7 @@ if (_FORCE and _FORCE == 'PySide2') or not _SUCCESS:
         LIB_VERSION = PySide2.__version__
 
 # Try to import qt mods from PySide
-if (_FORCE and _FORCE == 'PySide') or not _SUCCESS:
+if (not _FORCE or _FORCE == 'PySide') and not _SUCCESS:
     try:
         from PySide import QtUiTools, QtCore, QtGui
         _LOGGER.debug('LOADED QtUiTools, QtCore, QtGui')
@@ -40,7 +42,7 @@ if (_FORCE and _FORCE == 'PySide') or not _SUCCESS:
         LIB = 'PySide'
 
 # Try to import qt mods from PySide6
-if (_FORCE and _FORCE == 'PySide6') or not _SUCCESS:
+if (not _FORCE or _FORCE == 'PySide6') and not _SUCCESS:
     try:
         from PySide6 import QtUiTools, QtWidgets, QtCore, QtGui
         from PySide6.QtCore import Qt
@@ -54,7 +56,7 @@ if (_FORCE and _FORCE == 'PySide6') or not _SUCCESS:
         LIB_VERSION = PySide6.__version__
 
 # Try to import qt mods from PyQt5
-if (_FORCE and _FORCE == 'PyQt5') or not _SUCCESS:
+if (not _FORCE or _FORCE == 'PyQt5') and not _SUCCESS:
     try:
         from PyQt5 import QtCore, QtGui, QtWidgets, uic as QtUiTools
         from PyQt5.QtCore import Qt
@@ -65,7 +67,7 @@ if (_FORCE and _FORCE == 'PyQt5') or not _SUCCESS:
         LIB = 'PyQt5'
 
 # Try to import qt mods from PyQt4
-if (_FORCE and _FORCE == 'PyQt4') or not _SUCCESS:
+if (not _FORCE or _FORCE == 'PyQt4') and not _SUCCESS:
     try:
         from PyQt4 import QtCore, QtGui
         from PyQt4 import QtGui as QtWidgets

@@ -52,17 +52,22 @@ class CDFarm(base.CFarm):
         Returns:
             (CDFarmJob list): farm jobs
         """
+        _LOGGER.debug('FIND JOBS %d', read_metadata)
         _all_jobs = self._read_jobs(user=user, force=force)
 
         # Read metadata
         if read_metadata:
+            _LOGGER.debug(' - READ METADATA')
             for _job in qt.progress_bar(
                     _all_jobs, 'Reading {:d} job{}', show_delay=2,
                     stack_key='ReadDeadlineJobs'):
                 _job.to_details()
 
+        # Apply filters
+        _LOGGER.debug(' - APPLY FILTERS')
         _jobs = []
         for _job in _all_jobs:
+
             if batch_name and _job.batch_name != batch_name:
                 continue
             _jobs.append(_job)
@@ -221,9 +226,8 @@ class CDFarm(base.CFarm):
 
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
-            frames=None, group=None, chunk_size=1, version_up=False,
-            limit_groups=None, checks_data=None, submit_=True,
-            metadata=None, result='jobs', force=False):
+            frames=None, chunk_size=1, version_up=False, checks_data=None,
+            submit_=True, metadata=None, result='jobs', force=False, **kwargs):
         """Submit maya render job to the farm.
 
         Args:
@@ -232,11 +236,8 @@ class CDFarm(base.CFarm):
             priority (int): job priority (0 [low] - 100 [high])
             machine_limit (int): job machine limit
             frames (int list): frames to render
-            group (str): submission group
             chunk_size (int): apply job chunk size
             version_up (bool): version up on render
-            limit_groups (str): comma separated limit groups
-                (eg. maya-2023,vray)
             checks_data (dict): override sanity checks data
             submit_ (bool): submit render to deadline (disable for debugging)
             metadata (dict): override render metadata
@@ -271,15 +272,17 @@ class CDFarm(base.CFarm):
 
         # Submit render jobs
         _render_jobs = []
+        _outs = []
         for _lyr in _lyrs:
             _job = submit.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=_cam, comment=comment,
-                machine_limit=machine_limit, group=group, chunk_size=chunk_size,
-                limit_groups=limit_groups, scene=_render_scene)
+                machine_limit=machine_limit, chunk_size=chunk_size,
+                scene=_render_scene, **kwargs)
             _render_jobs.append(_job)
             _LOGGER.info(' - SCENE %s', _job.scene)
             assert _job.scene == _render_scene
+            _outs.append(_job.output)
 
         assert not _render_jobs[0].jid
         if submit_:
@@ -292,7 +295,7 @@ class CDFarm(base.CFarm):
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
             priority=priority, submit_=submit_,
-            outputs=[_job.output for _job in _render_jobs])
+            outputs=_outs)
         _progress.set_pc(100)
         _progress.close()
 
@@ -310,6 +313,8 @@ class CDFarm(base.CFarm):
             _result = _render_jobs + [_update_job]
         elif result == 'msg':
             _result = _submit_msg
+        elif result == 'msg/outs':
+            _result = _submit_msg, _outs
         else:
             raise ValueError(result)
         return _result
@@ -341,7 +346,8 @@ class CDFarm(base.CFarm):
 
     def submit_py(
             self, name, py, comment='', priority=50, machine_limit=0,
-            error_limit=0, edit_py=False, tmp_py=None, submit_=True):
+            error_limit=0, edit_py=False, tmp_py=None, submit_=True,
+            batch_name=None, **kwargs):
         """Submit python job to farm.
 
         Args:
@@ -354,6 +360,8 @@ class CDFarm(base.CFarm):
             edit_py (bool): edit py file on save to disk
             tmp_py (File): override path to tmp py file
             submit_ (bool): execute submission
+            batch_name (str): job batch name
+            dependencies (CDJob list): jobs to wait for before updating
 
         Returns:
             (str list): job ids
@@ -361,7 +369,7 @@ class CDFarm(base.CFarm):
         _sub = submit.CDPyJob(
             name=name, py=py, priority=priority, machine_limit=machine_limit,
             error_limit=error_limit, comment=comment, tmp_py=tmp_py,
-            edit_py=edit_py)
+            edit_py=edit_py, batch_name=batch_name, **kwargs)
         return _sub.submit(submit_=submit_)
 
     def _submit_update_job(

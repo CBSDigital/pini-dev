@@ -82,7 +82,7 @@ class CMayaAbcCache(CMayaCache):
     ICON = icons.find('Input Latin Letters')
 
     def export(  # pylint: disable=unused-argument
-            self, cacheables, notes=None, version_up=None, snapshot=True,
+            self, cacheables=None, notes=None, version_up=None, snapshot=True,
             save=True, bkp=True, use_farm=False, range_=None, substeps=1,
             format_='Ogawa', uv_write=True, world_space=True,
             renderable_only=True, force=False):

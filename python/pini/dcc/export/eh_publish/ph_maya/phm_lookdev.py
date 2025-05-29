@@ -6,7 +6,7 @@ import os
 from maya import cmds
 
 from pini import pipe, dcc, qt, icons
-from pini.utils import single, File, abs_path, passes_filter, to_seq, Seq, TMP
+from pini.utils import File, abs_path, passes_filter, to_seq, Seq, TMP
 
 from maya_pini import ref, m_pipe, open_maya as pom
 from maya_pini.m_pipe import lookdev
@@ -326,9 +326,7 @@ def _export_ass(force):
     _work = pipe.cur_work()
 
     # Find cache set
-    _cache_set = single([
-        _set for _set in cmds.ls(type='objectSet')
-        if _set.endswith('cache_SET')], catch=True)
+    _cache_set = m_pipe.find_cache_set()
     if not _cache_set:
         _LOGGER.info(' - EXPORT ASS FAILED: MISSING CACHE SET')
         return None

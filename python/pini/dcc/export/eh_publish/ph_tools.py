@@ -56,6 +56,6 @@ def publish(**kwargs):
         (CPOutput list): generated outputs
     """
     _LOGGER.info('PUBLISH')
-    _exporter = dcc.find_export_handler('basic')
+    _exporter = dcc.find_export_handler('BasicPublish')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)

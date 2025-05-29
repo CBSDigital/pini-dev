@@ -1,3 +1,30 @@
+## [7.10.0] - Thu 2025-05-29 08:57
+### Summary
+ - Pini Helper:
+    - maya deadline render added strict error checking option,
+    - maya publish ass bugfix not exporting ass in import references mode,
+### Updated
+ - pini.utils.to_list added handling for dict values,
+ - pini.dcc.export.to_settings_key made public,
+ - pini.dcc.export.publish apply default pub refs mode via $PINI_PUB_REFS_MODE,
+ - pini.dcc.export.publish export ass added handling for referenced cache set,
+ - pini.dcc.export.CMayaAbcCache allow cacheables as None,
+ - pini.dcc.export.CMayaFarmRender added strict error checking opt to ui,
+ - pini.qt.CComboBox.select added,
+ - pini.qt.CComboBox.set_items allow data as dict values,
+ - pini.qt.warning updated notify -> ok_cancel,
+ - pini.qt bugfix apply $PINI_QT_LIB for substance PySide6,
+ - pini.farm.deadline.CDJob.batch_name use name if no batch_name or work,
+ - pini.farm.deadline.CDJob added dependency as job id,
+ - pini.farm.deadline.CDPyJob.group add groups/limit_groups from job settings,
+ - pini.farm.deadline.CDPyJob.group read py_ver from job settings,
+ - pini.farm.deadline.CDMayaJob added ignore_error_211/strict_error_checking,
+ - pini.farm.deadline.CDMayaRenderJob apply dcc.frames if no arg,
+ - pini.farm.deadline.submit_maya_render added result as msg/outs handling,
+ - maya_pini.m_pipe.cache cacheables arg -> kwarg,
+ - maya_pini.m_pipe.find_cache_set from referenced cache set by default in lookdev,
+
+
 ## [7.9.0] - Thu 2025-05-15 11:26
 ### Summary
  - Pini Helper:

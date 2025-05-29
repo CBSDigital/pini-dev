@@ -2,6 +2,8 @@
 
 import logging
 
+from pini.utils import to_list
+
 from . import qw_base_widget
 from ...q_mgr import QtWidgets
 
@@ -36,6 +38,23 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
             (str): selected text
         """
         return self.currentText()
+
+    def select(self, item, catch=True):
+        """Select an item by text/data.
+
+        Args:
+            item (any): item to select
+            catch (bool): no error if fail to select
+        """
+        if item in self.all_text():
+            self.select_text(item)
+            return
+        if item in self.all_data():
+            self.select_data(item)
+            return
+        if catch:
+            return
+        raise ValueError(f'Failed to select {item}')
 
     def select_data(self, data, catch=False):
         """Select item based on its data.
@@ -129,23 +148,25 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         _LOGGER.debug('SET DATA %s %s', self, labels)
         _blocked = self.signalsBlocked()
         _cur_text = self.currentText()
-        if data:
-            assert len(labels) == len(data)
+        _data = data
+        if _data:
+            _data = to_list(data)
+            assert len(labels) == len(_data)
         self.blockSignals(True)
 
         # Populate list
         self.clear()
         for _idx, _label in enumerate(labels):
             self.addItem(_label)
-            if data:
-                self.setItemData(_idx, data[_idx])
+            if _data:
+                self.setItemData(_idx, _data[_idx])
 
         # Apply selection
         _LOGGER.debug('APPLY SELECTION %s', select)
         _select = select or self.read_setting()
         if _select and _select in labels:
             self.select_text(_select)
-        elif _select and data and _select in data:
+        elif _select and _data and _select in _data:
             self.select_data(_select)
         elif _cur_text in labels:
             self.select_text(_cur_text)

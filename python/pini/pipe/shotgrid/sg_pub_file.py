@@ -103,12 +103,12 @@ def create_pub_file_from_output(
 
     # Update cache
     if update_cache:
-        _LOGGER.info(' - UPDATING CACHE')
+        _LOGGER.debug(' - UPDATING CACHE')
         _ety_c = pipe.CACHE.obt(output.entity)
         _ety_c.find_outputs(force=True)
         _out_c = pipe.CACHE.obt(output)
         assert _out_c
-        _LOGGER.info(' - UPDATED CACHE')
+        _LOGGER.debug(' - UPDATED CACHE')
         _sg_pub = _out_c.sg_pub_file.data
         assert _sg_pub
 
@@ -156,6 +156,8 @@ def _build_path_data(file_, name=None):
     """
     if platform.system() == 'Windows':
         _local_path_key = 'local_path_windows'
+    elif platform.system() == 'Linux':
+        _local_path_key = 'local_path_linux'
     else:
         raise NotImplementedError(platform.system())
 

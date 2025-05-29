@@ -65,7 +65,7 @@ class CExportHandlerUI(qt.CUiContainer):
         if disable_save_settings:
             release.apply_deprecation('08/04/25', 'Use save_policy')
             _save_policy = qt.SavePolicy.NO_SAVE
-        _settings_key = settings_key or _to_settings_key(
+        _settings_key = settings_key or to_settings_key(
             name=name, handler=self)
         elem.set_settings_key(_settings_key)
         assert isinstance(_save_policy, qt.SavePolicy)
@@ -550,7 +550,7 @@ class CExportHandlerUI(qt.CUiContainer):
             raise ValueError(_mode)
 
 
-def _to_settings_key(handler, name):
+def to_settings_key(handler, name):
     """Build scene settings key based on the given handler/name.
 
     Args:
