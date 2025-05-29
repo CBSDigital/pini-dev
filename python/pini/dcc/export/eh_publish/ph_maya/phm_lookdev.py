@@ -164,22 +164,27 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         if not _ass:
             return
         _ass_out = _export_ass(force=_force)
+        if not _ass_out:
+            return
         self.outputs.append(_ass_out)
 
     def _handle_export_vrm_ma(self):
         """Handle export vray mesh ma file."""
+        _LOGGER.debug('HANDLE EXPORT VRM MA')
         _force = self.settings['force']
         _export_vrm_ma = self.settings['vrm_ma']
         _anim = self.settings['pxy_anim']
         if not _export_vrm_ma:
             return
         _vrm = lookdev.export_vrmesh_ma(force=_force, animation=_anim)
+        _LOGGER.debug(' - VRM %s', _vrm)
         if not _vrm:
             return
         self.outputs.append(_vrm)
 
     def _handle_export_rs_pxy(self):
         """Handle export redshift proxy file."""
+        _LOGGER.debug('HANDLE EXPORT RS PXY')
         _force = self.settings['force']
         _export_rs_pxy = self.settings['rs_pxy']
         _anim = self.settings['pxy_anim']
@@ -189,14 +194,9 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _tmpl = 'publish' if not _anim else 'publish_seq'
         _rs_pxy = self.work.to_output(
             _tmpl, output_type='redshiftProxy', extn='rs')
-        _LOGGER.info(' - PXY %s %s', _tmpl, _rs_pxy)
+        _LOGGER.info(' - RS PXY %s %s', _tmpl, _rs_pxy)
 
-        # Select export geo
-        _select = m_pipe.find_cache_set()
-        if not _select:
-            _assigns = lookdev.read_shader_assignments()
-            _select = sorted(set(sum(
-                [_item['geos'] for _item in _assigns.values()], [])))
+        _select = _read_cache_geo()
         if not _select:
             raise RuntimeError('No geo found')
         _LOGGER.info(' - RS SELECT GEO %s', _select)
@@ -411,6 +411,20 @@ def _flush_scene(keep_nodes=None):
     _unknown_nodes = cmds.ls(type='unknown') or []
     _LOGGER.debug(' - UNKNOWN NODES %s', _unknown_nodes)
     cmds.delete(_dag_nodes + _unknown_nodes)
+
+
+def _read_cache_geo():
+    """Get list of geo to put in archives.
+
+    Returns:
+        (str list): geos
+    """
+    _set = m_pipe.find_cache_set()
+    if _set:
+        return _set
+    _assigns = lookdev.read_shader_assignments()
+    return sorted(set(sum(
+        [_item['geos'] for _item in _assigns.values()], [])))
 
 
 def _read_textures(filter_=None):

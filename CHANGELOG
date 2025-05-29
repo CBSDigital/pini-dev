@@ -1,3 +1,12 @@
+## [7.10.1] - Thu 2025-05-29 10:10
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on export ass with no export geo found (eehemann),
+### Updated
+ - pini.dcc.export lookdev export ass bugfix export fail error,
+ - maya_pini.m_pipe.export_vrmesh_ma added geo arg,
+
+
 ## [7.10.0] - Thu 2025-05-29 08:57
 ### Summary
  - Pini Helper:

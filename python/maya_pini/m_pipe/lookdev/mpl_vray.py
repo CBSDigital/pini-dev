@@ -79,13 +79,14 @@ def _read_vray_type_map():
 
 
 @revert_scene
-def export_vrmesh_ma(animation=False, force=False):
+def export_vrmesh_ma(animation=False, geo=None, force=False):
     """Export vrmesh maya scene.
 
     Saves a maya scene containing a shaded vrmesh proxy file.
 
     Args:
         animation (bool): export animation
+        geo (str list): force geo to export
         force (bool): overwrite existing without confirmation
 
     Returns:
@@ -94,7 +95,7 @@ def export_vrmesh_ma(animation=False, force=False):
     _LOGGER.info('EXPORT VRMESH MA')
 
     # Find export geo
-    _geo = mp_utils.read_cache_set()
+    _geo = geo or mp_utils.read_cache_set()
     _LOGGER.info(' - GEO %s', _geo)
     if not _geo:
         _LOGGER.info(' - NO GEO FOUND')
