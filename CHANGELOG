@@ -1,3 +1,20 @@
+## [7.11.0] - Fri 2025-05-30 09:32
+### Summary
+ - Pini Install:
+    - added substance installer [PT-292],
+### Updated
+ - pini.dcc.BaseDCC._read_version return None if dcc named,
+ - pini.dcc.BaseDCC.to_version added handling for version as None,
+ - pini.dcc.SubstanceDCC add_menu_divider/add_menu_item/_read_version implemented,
+ - pini.pipe build ass gz templates independent of available renderers,
+ - pini.pipe.CPWork._save_metadata added handling for version as None,
+ - pini.qt.CMenu.prune_items added,
+ - pini.qt.CPixmap.draw_overlay bugfix PySide6 error,
+ - pini.qt.CUiDialog._save_size_limits bugfix error on missing size limits yml,
+ - pini.install.PIInstaller.style style is menu by default,
+ - pini.install.PISubstanceInstaller added,
+
+
 ## [7.10.1] - Thu 2025-05-29 10:10
 ### Summary
  - Pini Helper:

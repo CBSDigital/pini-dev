@@ -13,14 +13,14 @@ from .i_tools import (
 INSTALLER = None
 
 if dcc.NAME == 'hou':
-    from .i_hou import (
+    from .dcc.i_hou import (
         PIHouShelfInstaller, PIHouMenuInstaller, MENU_INSTALLER,
         SHELF_INSTALLER)
-
 elif dcc.NAME == 'maya':
-    from .i_maya import (
+    from .dcc.i_maya import (
         PIMayaInstaller, PIMayaShelfInstaller, PIMayaMenuInstaller,
         INSTALLER)
-
 elif dcc.NAME == 'nuke':
-    from .i_nuke import PINukeMenuInstaller, INSTALLER
+    from .dcc.i_nuke import PINukeMenuInstaller, INSTALLER
+elif dcc.NAME == 'substance':
+    from .dcc.i_substance import PISubstanceInstaller, INSTALLER

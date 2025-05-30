@@ -557,9 +557,14 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         """
         assert isinstance(mtime, int)
 
+        _dcc = dcc.NAME
+        _ver = dcc.to_version(str)
+        if _ver:
+            _dcc += f'-{_ver}'
+
         _data = {}
         _data['fps'] = dcc.get_fps()
-        _data['dcc'] = f'{dcc.NAME}-{dcc.to_version(str)}'
+        _data['dcc'] = _dcc
         _data['machine'] = platform.node()
         _data['mtime'] = mtime
         _data['notes'] = notes

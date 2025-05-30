@@ -64,11 +64,9 @@ class PIInstaller(object):
             (str): style (menu/shelf)
         """
         _name = type(self).__name__
-        if 'menu' in _name.lower():
-            return 'menu'
         if 'shelf' in _name.lower():
             return 'shelf'
-        raise ValueError(_name)
+        return 'menu'
 
     def _gather_items_list(self):
         """Gather list of tools/dividers to install.

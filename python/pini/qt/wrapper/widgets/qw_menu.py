@@ -1,14 +1,15 @@
 """Tools for managing the QMenu wrapper."""
 
+import logging
+
 from pini import icons, dcc
-from pini.utils import copy_text, wrap_fn, chain_fns, File, Video
+from pini.utils import (
+    copy_text, wrap_fn, chain_fns, File, Video, null_fn)
 
 from ...q_mgr import QtWidgets
 from ...q_utils import to_icon
 
-
-def _do_nothing():
-    """Dummy function for menu labels."""
+_LOGGER = logging.getLogger(__name__)
 
 
 class CMenu(QtWidgets.QMenu):
@@ -137,7 +138,7 @@ class CMenu(QtWidgets.QMenu):
         Returns:
             (QAction): new action
         """
-        _action = self.add_action(text=text, func=_do_nothing, icon=icon)
+        _action = self.add_action(text=text, func=null_fn, icon=icon)
         _action.setEnabled(0)
         return _action
 
@@ -163,6 +164,17 @@ class CMenu(QtWidgets.QMenu):
     def add_separator(self):
         """Add separator."""
         self.addSeparator()
+
+    def prune_items(self, name):
+        """Remove items with matching object name.
+
+        Args:
+            name (str): object name to remove
+        """
+        for _action in self.actions():
+            if _action.objectName() == name:
+                _LOGGER.debug(' - REMOVE EXISTING ACTION %s %s', name, _action)
+                _action.deleteLater()
 
     def set_icon(self, icon):
         """Set this menu's icon.

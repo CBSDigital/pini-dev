@@ -419,7 +419,8 @@ class CUiBase:
 
         Read size limits from yml file and apply them to widgets.
         """
-        for _name, _sizes in self._size_limits_yml.read_yml().items():
+        _limits = self._size_limits_yml.read_yml(catch=True)
+        for _name, _sizes in _limits.items():
             _widget = getattr(self.ui, _name, None)
             if not _widget:
                 continue

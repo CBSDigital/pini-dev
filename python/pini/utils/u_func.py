@@ -26,13 +26,12 @@ def chain_fns(*args):
     return _chained_fn
 
 
-def null_fn(*xargs, **xkwargs):
+def null_fn(*xargs, **xkwargs):  # pylint: disable=unused-argument
     """Function which does nothing.
 
     Placeholder for instance where callback is required, but no action
     is needed.
     """
-    del xargs, xkwargs  # For linter
 
 
 def wrap_fn(func, *args, **kwargs):

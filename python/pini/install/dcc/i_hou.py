@@ -9,7 +9,7 @@ from pini import qt, icons, dcc
 from pini.tools import release
 from pini.utils import cache_result, TMP, File, HOME, to_str
 
-from . import i_installer, i_tool
+from .. import i_installer, i_tool
 
 _LOGGER = logging.getLogger(__name__)
 

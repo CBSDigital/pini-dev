@@ -577,8 +577,7 @@ def build_job_templates(job, catch=True):
 
     _build_seq_dir_tmpls(_tmpls, job=job)
     _build_sequence_tmpl(_tmpls, job=job)
-    if 'arnold' in dcc.allowed_renderers():
-        _build_ass_gz_tmpls(_tmpls, job=job)
+    _build_ass_gz_tmpls(_tmpls, job=job)
     _LOGGER.debug(' - BUILT %s TEMPLATES IN %.02fs', job.name,
                   time.time() - _start)
 

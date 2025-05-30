@@ -179,7 +179,7 @@ class CPixmap(QtGui.QPixmap):
         if opacity is not None:
             _pnt.setOpacity(opacity)
         if rotate is not None:
-            _pnt.setRenderHint(_pnt.SmoothPixmapTransform)
+            _pnt.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
             _rect = _pnt.apply_rotate(rect=_rect, rotate=rotate, anchor=anchor)
         _pnt.drawPixmap(_rect.x(), _rect.y(), _pix)
         _pnt.end()

@@ -2,7 +2,7 @@
 
 import logging
 
-from . import i_installer
+from .. import i_installer
 
 _LOGGER = logging.getLogger(__name__)
 

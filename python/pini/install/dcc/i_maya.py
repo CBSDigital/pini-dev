@@ -11,7 +11,7 @@ from pini.utils import wrap_fn
 
 from maya_pini import ui
 
-from . import i_installer
+from .. import i_installer
 
 _LOGGER = logging.getLogger(__name__)
 

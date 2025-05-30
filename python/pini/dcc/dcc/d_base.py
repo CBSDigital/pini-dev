@@ -476,6 +476,8 @@ class BaseDCC:
         Returns:
             (tuple): major/minor/patch
         """
+        if self.NAME:
+            return None
         return sys.version_info.major, sys.version_info.minor, 0
 
     def refresh(self):
@@ -675,6 +677,10 @@ class BaseDCC:
         Returns:
             (any): version in specified type format
         """
+        _ver = self._read_version()
+        if not _ver:
+            return None
+
         _major, _minor, _patch = self._read_version()
         if type_ is tuple:
             if _patch is None:
@@ -686,6 +692,7 @@ class BaseDCC:
             if _patch is None:
                 return f'{_major:d}.{_minor:d}'
             return f'{_major:d}.{_minor:d}.{_patch:d}'
+
         raise NotImplementedError(type_)
 
     def unsaved_changes(self):
