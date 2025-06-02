@@ -13,8 +13,11 @@ from .ui import (
 from .ph_dialog import PiniHelper
 from .ph_launch import launch
 
-if dcc.NAME == 'nuke':
+if dcc.NAME == 'maya':
+    from .dcc.ph_maya import MayaPiniHelper
+elif dcc.NAME == 'nuke':
     from .dcc.ph_nuke import NukePiniHelper
+
 
 DIALOG = None
 MIXIN = None

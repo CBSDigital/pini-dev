@@ -6,6 +6,7 @@ import re
 import nuke
 
 from pini import pipe, qt
+from pini.dcc import export
 from pini.pipe import cache
 from pini.utils import basic_repr, single, cache_result
 
@@ -80,6 +81,28 @@ class CAutowrite:
         _work_dir = pipe.to_work_dir(path)
         self['task_mode'].setValue('Select')
         self['task'].setValue(_work_dir.task)
+
+    def _apply_render(self):
+        """Executed post-render.
+
+        Register render in the pipeline.
+        """
+        _LOGGER.info('APPLY RENDER %s', self.output)
+
+        _work = pipe.CACHE.cur_work
+        if not _work:
+            _LOGGER.info(' - NO CURRENT WORK')
+            return
+        _LOGGER.info(' - UPDATING OUTPUTS %s', _work)
+
+        assert self.output.exists()
+        _metadata = export.build_metadata(handler='PiniAutowrite')
+        self.output.set_metadata(_metadata)
+        if pipe.MASTER == 'shotgrid':
+            from pini.pipe import shotgrid
+            shotgrid.create_pub_file_from_output(self.output)
+
+        _work.update_outputs()
 
     def _update_ety_type(self, level):
         """Update entity type.
@@ -575,10 +598,7 @@ class CAutowrite:
         elif _name == 'file_type':
             self.update()
         elif _name == 'Render':
-            _work = pipe.CACHE.cur_work
-            if _work:
-                _LOGGER.info(' - UPDATING OUTPUTS %s', _work)
-                pipe.CACHE.cur_work.update_outputs()
+            self._apply_render()
         else:
             _LOGGER.info(' - UNHANDLED KNOB %s', _name)
             return

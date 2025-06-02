@@ -252,7 +252,7 @@ def _read_mod_ver(mod, force=False):
     # Check for env override to get mod dir
     _name = to_camel(mod.__name__).upper()
     _mod_env = f'PINI_USAGE_{_name}_REPO_ROOT'
-    _LOGGER.debug(' - MOD ENV %s', _mod_env)
+    _LOGGER.debug(' - MOD ENV $%s', _mod_env)
 
     if _mod_env in os.environ:
         _repo_root = os.environ[_mod_env]

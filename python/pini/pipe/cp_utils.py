@@ -253,11 +253,11 @@ def output_clip_sort(output):
 
 def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branches
         obj, type_=None, path=None, status=None, dcc_=EMPTY, user=None,
-        entity=None, asset=None, asset_type=None, profile=None,
-        output_name=None, output_type=EMPTY, content_type=None, id_=None,
-        step=None, task=None, tag=EMPTY, ver_n=EMPTY, versionless=None,
-        extn=EMPTY, extns=None, filter_=None, filter_attr='path', latest=False,
-        filename=None, base=None):
+        entity=None, entity_type=None, asset=None, asset_type=None,
+        profile=None, output_name=None, output_type=EMPTY, content_type=None,
+        id_=None, step=None, task=None, tag=EMPTY, ver_n=EMPTY,
+        versionless=None, extn=EMPTY, extns=None, filter_=None,
+        filter_attr='path', latest=False, filename=None, base=None):
     """Check whether the given object passes pipeline filters.
 
     Args:
@@ -268,6 +268,7 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         dcc_ (str): apply dcc filter
         user (str): apply user filter
         entity (CPEntity): match entity
+        entity_type (str): match entity type (ie. asset_type/sequence)
         asset (str): match asset name
         asset_type (str): match asset type
         profile (str): apply profile filter (ie. asset/shot)
@@ -323,6 +324,8 @@ def passes_filters(  # pylint: disable=too-many-return-statements,too-many-branc
         return False
     assert entity is None or isinstance(entity, pipe.CPEntity)
     if entity and obj.entity != entity:
+        return False
+    if entity_type and obj.entity_type != entity_type:
         return False
 
     if type_ and obj.type_ != type_:

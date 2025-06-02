@@ -139,6 +139,14 @@ class PHUiBase(
         self.ui.EExportPane.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
         self.ui.ERenderHandler.set_save_policy(qt.SavePolicy.SAVE_ON_CHANGE)
 
+    def is_active(self):
+        """Test whether this helper instance is active.
+
+        Returns:
+            (bool): whether active
+        """
+        return self.isVisible()
+
     def _start_timer(self):
         """Start timer."""
         _LOGGER.debug('START TIMER')

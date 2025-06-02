@@ -1,3 +1,21 @@
+## [7.12.0] - Mon 2025-06-02 09:48
+### Summary
+ - Pini Install:
+    - nuke install pini autowrite node [PT-401] (nhoyt),
+    - bugfix install pini-tools substance plugin if Documents in $HOME (eehemann),
+    - substance pini menu added icons,
+### Updated
+ - pini.utils.nice_age fix mins floor -> round,
+ - pini.utils.HOME remove Documents,
+ - pini.dcc.SubstanceDCC.add_menu_item add margin to image pixmap,
+ - pini.pipe.passes_filters added entity_type filter,
+ - pini.qt.CMenu.add_action added handling for image as QPixmap,
+ - pini.install.PINukeInstaller added with autowrite,
+ - pini.tools.helper.is_active bugfix bad result in nuke,
+ - pini.tools.helper.PiniHelper.is_active added,
+ - nuke_pini.tools.autowrite added shotgrid register post render + bugfix update helper,
+
+
 ## [7.11.0] - Fri 2025-05-30 09:32
 ### Summary
  - Pini Install:

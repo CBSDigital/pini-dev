@@ -43,14 +43,23 @@ class SubstanceDCC(BaseDCC):
             label (str): label for item
             name (str): uid for item
         """
+        from pini import qt
         from substance_pini import ui
 
         _LOGGER.debug('ADD MENU ITEM %s', name)
-        _LOGGER.debug(' - IMAGE (NOT USED) %s', image)
 
         _menu = ui.obt_menu(parent)
         _menu.prune_items(name=name)
-        _action = _menu.add_action(label, wrap_fn(exec, command))
+
+        _icon = None
+        if image:
+            _icon = qt.CPixmap(100, 100)
+            _icon.fill('Transparent')
+            _scale = 80
+            _icon.draw_overlay(
+                image, (50 + (100 - _scale) / 2, 50), anchor='C', size=90)
+
+        _action = _menu.add_action(label, wrap_fn(exec, command), icon=_icon)
         _action.setObjectName(name)
         _LOGGER.debug(' - CREATED ACTION %s %s', name, _action)
 

@@ -81,11 +81,18 @@ def is_active():
     Returns:
         (bool): whether pini helper is open and visible
     """
+    _LOGGER.debug('IS ACTIVE')
     from pini.tools import helper
-    try:
-        return bool(helper.DIALOG and helper.DIALOG.isVisible())
-    except RuntimeError:
+    if not helper.DIALOG:
+        _LOGGER.debug(' - MISSING GLOBAL')
         return False
+    try:
+        _active = helper.DIALOG.is_active()
+    except RuntimeError:
+        _LOGGER.debug(' - ERRORED READING ACTIVE')
+        return False
+    _LOGGER.debug(' - ACTIVE %d', _active)
+    return _active
 
 
 def obt_helper(reset_cache=False):

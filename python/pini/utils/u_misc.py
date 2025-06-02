@@ -296,7 +296,7 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
         (str): readable age
     """
     _LOGGER.debug('NICE AGE %s', age)
-    _secs = int(age)
+    _secs = round(age)
     _fmt = '{:d}' if not pad else f'{{:0{pad:d}d}}'
     _vals = []
 
@@ -326,7 +326,9 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
     if (
             (_vals and _secs) or  # secs left but no minutes
             _secs > 60):
-        _mins = int(_secs / 60)
+        _tail = len(_vals) + 1 >= depth
+        _mins_f = _secs / 60
+        _mins = round(_mins_f) if _tail else int(_mins_f)
         _str = (_fmt + 'm').format(_mins)
         _secs = _secs - _mins * 60
         _vals.append(_str)

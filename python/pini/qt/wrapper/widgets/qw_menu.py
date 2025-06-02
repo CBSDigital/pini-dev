@@ -35,7 +35,10 @@ class CMenu(QtWidgets.QMenu):
         _func = _catcher(func)
         _args = [text, _func]
         if icon:
-            _args = [qt.obt_pixmap(icon)] + _args
+            _pix = icon
+            if isinstance(_pix, str):
+                _pix = qt.obt_pixmap(icon)
+            _args = [_pix] + _args
         _action = self.addAction(*_args)
 
         if not enabled:

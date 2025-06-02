@@ -44,12 +44,24 @@ def _get_home_path():
     # Check for env overrides
     if 'PINI_HOME' in os.environ:
         _home = os.environ['PINI_HOME']
-    elif 'HOME' in os.environ:
+        _LOGGER.debug(' - USING $PINI_HOME %s', _home)
+        return _home
+
+    if 'HOME' in os.environ:
         _home = os.environ['HOME']
+        _LOGGER.debug(' - APPLIED $HOME %s', _home)
     else:
         _home = os.path.expanduser("~")
+        _LOGGER.debug(' - USING ~ %s', _home)
     _home = _home.replace('\\', '/')
-    _LOGGER.debug(' - HOME %s', _home)
+    _LOGGER.debug(' - CLEANED %s', _home)
+
+    # Remove Documents folder
+    _dir = 'Documents'
+    if _home.endswith(f'/{_dir}'):
+        _home = _home[: - len(_dir) - 1]
+        _LOGGER.debug(' - REMOVE DIR %s %s', _dir, _home)
+        # _home = asdasd
 
     # Check for clean mount
     if _home.count(_user) == 1:
@@ -68,6 +80,8 @@ def _get_home_path():
     if _home.startswith(_user_home) and 'OneDrive' in _home:
         _home = _user_home
         _LOGGER.debug(' - STRIPPING OneDrive %s', _home)
+
+    _LOGGER.debug(' - HOME %s', _home)
 
     return _home
 

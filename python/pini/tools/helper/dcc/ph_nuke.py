@@ -31,6 +31,17 @@ class NukePiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method,t
         except TypeError:
             _LOGGER.info('FAILED TO DELETE %s', self)
 
+    def is_active(self):
+        """Test whether the nuke helper is active.
+
+        Simply testing whether it is visible does not work because it could be
+        in an inactive tab.
+
+        Returns:
+            (bool): whether active
+        """
+        return bool(self.parent())
+
     def updateValue(self):  # pylint: disable=invalid-name
         """Seems to be required."""
 

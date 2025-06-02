@@ -23,7 +23,7 @@ class _PIHouBaseInstaller(i_installer.PIInstaller):
     parent = 'Pini'
 
     def _build_context_item(self, item, parent):
-        """Build a context (right-clikc) item.
+        """Build a context (right-click) item.
 
         Args:
             item (PITool/PIDivider): context item
@@ -32,7 +32,11 @@ class _PIHouBaseInstaller(i_installer.PIInstaller):
         raise NotImplementedError
 
     def _gather_dcc_items(self):
-        """Gather houdini-specific tools."""
+        """Gather houdini-specific items.
+
+        Returns:
+            (PITool list): houdini tools
+        """
         _fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
         _flipbook = i_installer.PITool(
             name='FlipbookMp4', command='\n'.join([
