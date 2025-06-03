@@ -13,7 +13,7 @@ from pini.utils import (
     single, basic_repr, apply_filter, get_user, passes_filter)
 
 from ...cache import pipe_cache_on_obj
-from . import sgc_proj, sgc_elems, sgc_elem_reader
+from . import sgc_proj, sgc_elems, sgc_elem_reader, sgc_utils
 
 _LOGGER = logging.getLogger(__name__)
 _GLOBAL_CACHE_DIR = pipe.GLOBAL_CACHE_ROOT.to_subdir('sgc')
@@ -301,7 +301,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             _steps.append(_step)
         return _steps
 
-    def find_user(self, match=None, catch=True, force=False):
+    def find_user(self, match=None, catch=True, force=False, **kwargs):
         """Find a user entry.
 
         Args:
@@ -315,15 +315,24 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         _match = match or get_user()
         _LOGGER.debug('FIND USER %s', _match)
 
-        _users = self.find_users(force=force)
+        _users = self.find_users(force=force, **kwargs)
         _users = [_user for _user in _users if _user.status != 'dis']
 
         _login_matches = [
             _user for _user in _users
-            if _name_to_login(_user.name) == _match]
+            if _match == _user.login]
         if len(_login_matches) == 1:
             return single(_login_matches)
-        _LOGGER.debug(' - FOUND %d LOGIN MATCHES', len(_login_matches))
+        _LOGGER.debug(
+            ' - FOUND %d LOGIN MATCHES', len(_login_matches))
+
+        _name_to_login_matches = [
+            _user for _user in _users
+            if _name_to_login(_user.name) == _match]
+        if len(_name_to_login_matches) == 1:
+            return single(_name_to_login_matches)
+        _LOGGER.debug(
+            ' - FOUND %d NAME TO LOGIN MATCHES', len(_name_to_login_matches))
 
         _email_matches = [
             _user for _user in _users
@@ -336,7 +345,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             return None
         raise ValueError(match)
 
-    def find_users(self, force=False):
+    def find_users(self, force=False, **kwargs):
         """Find users.
 
         Args:
@@ -345,7 +354,12 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         Returns:
             (SGCUser list): user entries
         """
-        return self._read_users(force=force)
+        _users = []
+        for _user in self._read_users(force=force):
+            if not sgc_utils.passes_filters(_user, **kwargs):
+                continue
+            _users.append(_user)
+        return _users
 
     def find_ver(self, match):
         """Find a version.

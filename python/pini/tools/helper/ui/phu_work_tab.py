@@ -146,12 +146,29 @@ class PHWorkTab:
             return self.job.cfg['tokens']['tag']['default']
         return None
 
+    def _to_default_tags(self):
+        """Obtain default tag for the current job.
+
+        Returns:
+            (str): default tag
+        """
+        _tags = set()
+
+        _def = self._to_default_tag()
+        if _def:
+            _tags.add(_def)
+
+        _def_tags_s = os.environ.get('PINI_PIPE_DEFAULT_TAGS', '')
+        _tags |= set(_def_tags_s.split(','))
+
+        return _tags
+
     def _redraw__WTags(self):
 
         _default_tag = self._to_default_tag()
         _LOGGER.debug('REDRAW TAGS default=%s', _default_tag)
 
-        _tags, _select, _default_exists = self._build_tags_list()
+        _tags, _select, _defaults, _existing = self._build_tags_list()
         _LOGGER.debug(' - TAGS %s select=%s', _tags, _select)
 
         # Build items
@@ -159,8 +176,8 @@ class PHWorkTab:
         for _tag in _tags:
             if not _tag:
                 _col = 'Yellow'
-            elif _tag == _default_tag:
-                if _default_exists:
+            elif _tag in _defaults:
+                if _tag in _existing:
                     _col = 'DeepSkyBlue'
                 else:
                     _col = 'LightSkyBlue'
@@ -184,6 +201,7 @@ class PHWorkTab:
         _cur_work = pipe.cur_work()
         _ui_tag = self.ui.WTagText.text()
         _default_tag = self._to_default_tag()
+        _default_tags = self._to_default_tags()
         _existing_tags = set()
 
         # Build tag list
@@ -192,6 +210,8 @@ class PHWorkTab:
             _tags = []
         else:
             _tags = set()
+            _tags |= _default_tags
+
             _works = self.work_dir.find_works(extns=dcc.VALID_EXTNS)
             _existing_tags = {_work.tag for _work in _works}
             _tags |= _existing_tags
@@ -202,6 +222,7 @@ class PHWorkTab:
                 'work', has_key={'tag': False}, catch=True)
             if _allow_no_tag:
                 _tags |= {None}
+
             _tags = sorted(_tags, key=pipe.tag_sort)
 
         # Apply default selection
@@ -220,7 +241,7 @@ class PHWorkTab:
         elif _tags:
             _select = sorted(_tags)[0]
 
-        return _tags, _select, _default_exists
+        return _tags, _select, _default_tags, _existing_tags
 
     def _redraw__WTagError(self):
 

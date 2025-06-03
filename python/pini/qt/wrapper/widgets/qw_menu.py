@@ -4,7 +4,7 @@ import logging
 
 from pini import icons, dcc
 from pini.utils import (
-    copy_text, wrap_fn, chain_fns, File, Video, null_fn)
+    copy_text, wrap_fn, chain_fns, File, Video, null_fn, Seq)
 
 from ...q_mgr import QtWidgets
 from ...q_utils import to_icon
@@ -45,6 +45,19 @@ class CMenu(QtWidgets.QMenu):
             _action.setEnabled(False)
 
         return _action
+
+    def add_clip_actions(self, clip):
+        """Add actions for a media clip (ie. Seq/Video).
+
+        Args:
+            clip (Clip): clip to add actions for
+        """
+        if isinstance(clip, Seq):
+            self.add_seq_actions(clip)
+        elif isinstance(clip, Video):
+            self.add_video_actions(clip)
+        else:
+            raise NotImplementedError(clip)
 
     def add_dir_actions(self, dir_):
         """Add actions for a directory (eg. copy path, open in explorer).

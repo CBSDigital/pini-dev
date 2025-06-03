@@ -29,7 +29,7 @@ def _read_mounts():
     return _mounts
 
 
-_MOUNTS = _read_mounts()
+MOUNTS = _read_mounts()
 
 
 def _get_home_path():
@@ -67,8 +67,8 @@ def _get_home_path():
     if _home.count(_user) == 1:
         _home_root, _ = _home.split(_user)
         _home_tail = _home[len(_home_root):].lstrip('/')
-        _LOGGER.debug(' - CHECKING MOUNTS %s %s', _home_tail, _MOUNTS)
-        for _mount in _MOUNTS:
+        _LOGGER.debug(' - CHECKING MOUNTS %s %s', _home_tail, MOUNTS)
+        for _mount in MOUNTS:
             _mount_home = os.path.abspath(_mount + '/' + _home_tail)
             if os.path.exists(_mount_home):
                 _home = _mount_home.replace('\\', '/')

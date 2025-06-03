@@ -1,3 +1,18 @@
+## [7.13.0] - Tue 2025-06-03 09:14
+### Summary
+ - Pini Helper:
+    - export/submit added right-click view option (mkim),
+### Updated
+ - pini.utils.MOUNTS made public,
+ - pini.dcc.export.CBasicSubmitter shade submitted,
+ - pini.dcc.export.CBasicSubmitter renders ctx added clip options,
+ - pini.pipe.shotgrid.SGC.find_user try login match,
+ - pini.pipe.shotgrid.SGC find_user/find_users added kwargs for login filter,
+ - pini.pipe.shotgrid.create_ver copy frames metadata on create video,
+ - pini.qt.CMenu.add_clip_actions added,
+ - pini.tools.helper allow multiple default tags via $PINI_PIPE_DEFAULT_TAGS,
+
+
 ## [7.12.0] - Mon 2025-06-02 09:48
 ### Summary
  - Pini Install:

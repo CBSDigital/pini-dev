@@ -7,7 +7,7 @@ from pini import icons, qt
 from pini.dcc import export
 from pini.pipe import shotgrid
 from pini.tools import helper
-from pini.utils import wrap_fn, copy_text
+from pini.utils import wrap_fn
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -74,15 +74,19 @@ class CBasicSubmitter(export.CExportHandler):
                 continue
             if _latest and not _out.is_latest():
                 continue
-            if _hide_submitted:
-                _work = _out.find_work()
-                if _work and _work.metadata.get('submitted'):
-                    continue
+
+            _submitted = False
+            _work = _out.find_work()
+            if _work:
+                _submitted = _work.metadata.get('submitted')
+            if _submitted and _hide_submitted:
+                continue
+            _col = 'Wheat' if _submitted else None
 
             # Build list item
             _icon = helper.output_to_icon(_out)
             _item = qt.CListWidgetItem(
-                _out.filename, icon=_icon, data=_out, icon_scale=0.8)
+                _out.filename, icon=_icon, data=_out, icon_scale=0.8, col=_col)
             _items.append(_item)
 
         self.ui.Render.set_items(_items)
@@ -99,13 +103,12 @@ class CBasicSubmitter(export.CExportHandler):
     def _context__Render(self, menu):
         _ren = self.ui.Render.selected_data()
         if _ren:
+            menu.add_clip_actions(_ren)
+            menu.add_separator()
             menu.add_action(
                 'Print metadata',
                 wrap_fn(pprint.pprint, _ren.metadata, width=200),
                 icon=icons.PRINT)
-            menu.add_action(
-                'Copy path', wrap_fn(copy_text, _ren.path), icon=icons.COPY)
-            _work = _ren.find_work()
 
     def set_settings(self, **kwargs):
         """Apply exec settings."""

@@ -355,6 +355,7 @@ def _read_render_video_frames(render, frames, pub_files):
             _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
             _frames.to_video(_video, fps=_fps)
             assert _video.exists()
+            _video.set_metadata(_render.metadata)
             sg_pub_file.create_pub_file_from_output(
                 _video, upstream_files=[_frames])
             pub_files.add(_frames)
