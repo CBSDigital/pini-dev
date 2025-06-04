@@ -295,9 +295,13 @@ def _build_upstream_textures(paths, work=None):
             _path.build_thumbnail(_thumb, force=True)
         else:
             _thumb = _path
-        _pub = shotgrid.create_pub_file_from_path(
-            _path.path, type_=_type, task=_work.work_dir.sg_task, user=_user,
-            ver_n=_work.ver_n, thumb=_thumb)
+        try:
+            _pub = shotgrid.create_pub_file_from_path(
+                _path.path, type_=_type, task=_work.work_dir.sg_task, user=_user,
+                ver_n=_work.ver_n, thumb=_thumb)
+        except ValueError:
+            _LOGGER.error(' - FAILED TO REGISTER TEXTURE %s', _path)
+            continue
         _up_pubs.append(_pub)
 
     return _up_pubs

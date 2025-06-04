@@ -1,3 +1,14 @@
+## [7.15.0] - Wed 2025-06-04 15:33
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on texture not in valid job (eehemann),
+ - Sanity Check:
+    - check aovs only apply on render,
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish bugfix error on texture not in job,
+ - pini.tools.sanity_check.CheckAOVs applied render action filter,
+
+
 ## [7.14.0] - Wed 2025-06-04 15:05
 ### Summary
  - Pini Helper:
