@@ -94,10 +94,10 @@ def to_profiler(name='pini'):
         @functools.wraps(func)
         def _profile_func(*args, **kwargs):
             profile_start()
-            _result = func(*args, **kwargs)
-            profile_stop(name=name)
-
-            return _result
+            try:
+                return func(*args, **kwargs)
+            finally:
+                profile_stop(name=name)
 
         return _profile_func
 

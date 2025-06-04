@@ -159,7 +159,8 @@ class PHWorkTab:
             _tags.add(_def)
 
         _def_tags_s = os.environ.get('PINI_PIPE_DEFAULT_TAGS', '')
-        _tags |= set(_def_tags_s.split(','))
+        if _def_tags_s:
+            _tags |= set(_def_tags_s.split(','))
 
         return _tags
 

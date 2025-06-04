@@ -17,7 +17,8 @@ _LOGGER = logging.getLogger(__name__)
 
 OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz']
 OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
-OUTPUT_SEQ_TYPES = ['render', 'plate', 'blast', 'cache_seq', 'publish_seq']
+OUTPUT_SEQ_TYPES = [
+    'render', 'plate', 'blast', 'cache_seq', 'publish_seq', 'texture_seq']
 
 STATUS_ORDER = ['cmpt', 'apr', 'lapr']
 

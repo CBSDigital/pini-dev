@@ -29,3 +29,6 @@ if dcc.NAME == 'maya':
 
 elif dcc.NAME == 'hou':
     from .eh_blast import CHouFlipbook
+
+elif dcc.NAME == 'substance':
+    from .eh_publish import CSubstanceTexturePublish

@@ -54,7 +54,9 @@ def build_metadata(
 
     _data['mtime'] = int(time.time())
     _data['owner'] = get_user()
-    _data['range'] = range_ or dcc.t_range(int)
+    _rng = range_ or dcc.t_range(int)
+    if _rng:
+        _data['range'] = _rng
     _data['dcc'] = dcc.NAME
     _data['fps'] = dcc.get_fps()
     _data['dcc_version'] = dcc.to_version()

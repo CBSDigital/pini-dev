@@ -11,11 +11,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @cache_result
-def _find_programs_exes():
+def _find_programs_exes(force=False):
     """Find all relevant exes in program files dirs.
 
     For now this is hardcoded to a few relevant vendors for
     efficiency.
+
+    Args:
+        force (bool): force re-read data from disk
 
     Returns:
         (File list): all exes
@@ -29,12 +32,13 @@ def _find_programs_exes():
     # Find application dirs
     _app_dirs = []
     for _app_root in _app_roots:
-        _LOGGER.debug('CHECKING APP ROOT %s', _app_root)
+        _LOGGER.debug(' - CHECKING APP ROOT %s', _app_root)
         _app_root = Dir(_app_root)
         if not Dir(_app_root).exists():
             continue
         for _vendor in [
                 'Autodesk',
+                'Adobe',
                 'DJV',
                 'DJV2',
                 'Diffinity',
@@ -44,7 +48,7 @@ def _find_programs_exes():
                 'VideoLAN',
         ]:
             _vendor_dir = _app_root.to_subdir(_vendor)
-            _LOGGER.debug('CHECKING VENDOR DIR %s', _vendor_dir)
+            _LOGGER.debug('   - CHECKING VENDOR DIR %s', _vendor_dir)
             if not _vendor_dir.exists():
                 continue
             _app_dirs += [_vendor_dir]
@@ -55,29 +59,30 @@ def _find_programs_exes():
     # Search application dirs for exes
     _exes = []
     for _app_dir in _app_dirs:
-        _LOGGER.debug('CHECKING APP DIR %s', _app_dir)
+        _LOGGER.debug(' - CHECKING APP DIR %s', _app_dir)
         for _dir in [_app_dir, _app_dir.to_subdir('bin')]:
             _dir_exes = _dir.find(
                 type_='f', extn='exe', depth=1, class_=True,
                 catch_missing=True)
             if _dir_exes:
-                _LOGGER.debug('FOUND %d EXES %s', len(_dir_exes), _dir.path)
+                _LOGGER.debug('   - FOUND %d EXES %s', len(_dir_exes), _dir.path)
             _exes += _dir_exes
 
     return _exes
 
 
 @cache_result
-def _find_programs_exe(name):
+def _find_programs_exe(name, force=False):
     """Find exe in program files dirs.
 
     Args:
         name (str): exe to match
+        force (bool): force re-read data from disk
 
     Returns:
         (File|None): matching exe (if any)
     """
-    _exes = [_exe for _exe in _find_programs_exes()
+    _exes = [_exe for _exe in _find_programs_exes(force=force)
              if _exe.base == name]
     if _exes:
         return _exes[0]
@@ -85,16 +90,17 @@ def _find_programs_exe(name):
 
 
 @cache_result
-def _find_path_exe(name):
+def _find_path_exe(name, force=False):
     """Find an executable in $PATH.
 
     Args:
         name (str): name of executable to find
+        force (bool): force re-read data from disk
 
     Returns:
         (File|None): executable if one is found - otherwise None
     """
-    _LOGGER.debug('FING PATH EXE %s', name)
+    _LOGGER.debug('FIND PATH EXE %s', name)
     if sys.platform == 'win32':
         _sep = ';'
     else:
@@ -106,7 +112,7 @@ def _find_path_exe(name):
             _exe = _dir.to_file(name + '.exe')
         else:
             _exe = _dir.to_file(name)
-        _LOGGER.debug('CHECKING FILE %s', _exe)
+        _LOGGER.debug(' - CHECKING FILE %s', _exe)
         if _exe.exists(catch=True):
             return _exe
 
@@ -125,9 +131,12 @@ def find_exe(name, catch=True, force=False):
     Returns:
         (File|None): executable if one is found - otherwise None
     """
-    _exe = _find_path_exe(name) or _find_programs_exe(name)
+    _LOGGER.debug('FIND EXE %s', name)
+    _exe = _find_path_exe(name, force=force) or _find_programs_exe(name, force=force)
     if _exe:
+        _LOGGER.debug(' - FOUND EXE %s', _exe)
         return _exe
+    _LOGGER.debug(' - FAILED TO FIND EXE %s', _exe)
     if catch:
         return None
     raise OSError('Failed to find exe ' + name)

@@ -79,7 +79,7 @@ class CheckAbcFpsMatchesScene(SCPipeCheck):
 class CheckRenderRes(SCCheck):
     """Check resolution matches resolution applied in settings."""
 
-    dcc_filter = '-hou'
+    dcc_filter = '-hou -substance'
 
     def run(self):
         """Run this check."""
@@ -105,6 +105,8 @@ class CheckRenderRes(SCCheck):
 
 class CheckFps(SCCheck):
     """Check fps matches fps applied in settings."""
+
+    dcc_filter = '-substance'
 
     def run(self):
         """Run this check."""

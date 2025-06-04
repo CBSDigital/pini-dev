@@ -65,6 +65,15 @@ class SubstanceDCC(BaseDCC):
 
         return _action
 
+    def _build_export_handlers(self):
+        """Initiate export handlers."""
+        from pini.dcc import export
+        _handlers = super()._build_export_handlers()
+        _handlers += [
+            export.CSubstanceTexturePublish(),
+        ]
+        return _handlers
+
     def cur_file(self):
         """Get path to current file.
 
@@ -122,7 +131,10 @@ class SubstanceDCC(BaseDCC):
             (tuple): major/minor/patch
         """
         _LOGGER.debug('READ VERSION %s', self)
-        _path = find_exe('Adobe Substance 3D Painter').path
+        _exe = find_exe('Adobe Substance 3D Painter')
+        if not _exe:
+            return None
+        _path = _exe.path
         _LOGGER.debug(' - PATH %s', _path)
         _ver_s = win32api.GetFileVersionInfo(
             _path, r'\StringFileInfo\040904B0\FileVersion')
@@ -135,6 +147,17 @@ class SubstanceDCC(BaseDCC):
             key (str): name of data to store
             val (any): value of data to store
         """
+
+    def t_frame(self, class_=float):  # pylint: disable=unused-argument
+        """Obtain current frame.
+
+        Args:
+            class_ (class): override type of data to return (eg. int)
+
+        Returns:
+            (float): current frame
+        """
+        return None
 
     def t_range(self, *args, **kwargs):  # pylint: disable=unused-argument
         """Get start/end frames.
