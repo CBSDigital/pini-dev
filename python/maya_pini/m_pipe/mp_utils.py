@@ -2,6 +2,7 @@
 
 import copy
 import logging
+import os
 
 from maya import cmds
 
@@ -58,6 +59,30 @@ def find_cache_set(catch=True):
     if catch:
         return None
     raise ValueError('No cache_SET found')
+
+
+def find_ctrls_set(mode='node', namespace=None):
+    """Find ctrls set.
+
+    Args:
+        mode (str): how to find set
+            node - find set node if it exists
+            name - find set name
+        namespace (str): search namespace for set
+
+    Returns:
+        (CNode|str): set node/name
+    """
+    if mode == 'node':
+        _name = find_ctrls_set(mode='name')
+        if namespace:
+            _name = f'{namespace}:{_name}'
+        if cmds.objExists(_name):
+            return pom.CNode(_name)
+        return None
+    if mode == 'name':
+        return os.environ.get('PINI_CTRLS_SET', 'ctrls_SET')
+    raise NotImplementedError(mode)
 
 
 def find_top_node():

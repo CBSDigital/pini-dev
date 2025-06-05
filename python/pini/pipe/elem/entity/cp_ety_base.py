@@ -422,7 +422,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             _latests = {}
             for _out in _all_outs:
                 _key = (_out.type_, _out.tag, _out.output_name, _out.task,
-                        _out.output_type)
+                        _out.output_type, _out.extn)
                 _LOGGER.debug(' - ADDING %s', _out)
                 _latests[_key] = _out
             _LOGGER.debug(' - LATESTS %s', _latests)

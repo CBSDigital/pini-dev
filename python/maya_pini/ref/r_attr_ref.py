@@ -103,12 +103,13 @@ class AttrRef(r_path_ref.PathRef):
         if self.has_udim_tiles:
             assert isinstance(self.path, Seq)
             _cur_path = abs_path(cmds.getAttr(self.attr))
-            if _cur_path != self.path[1001]:
+            _cur_frame = int(_cur_path.split('.')[-2])
+            if _cur_path != self.path[_cur_frame]:
                 _LOGGER.info(' - PATH       %s', self.path)
-                _LOGGER.info(' - FRAME 1001 %s', self.path[1001])
+                _LOGGER.info(' - FRAME %d %s', _cur_frame, self.path[_cur_frame])
                 _LOGGER.info(' - CUR PATH   %s', _cur_path)
                 raise RuntimeError(f'Bad cur path {_cur_path}')
-            _path = path[1001]
+            _path = path[_cur_frame]
         cmds.setAttr(self.attr, _path, type='string')
 
     def __repr__(self):

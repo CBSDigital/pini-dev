@@ -147,7 +147,7 @@ def abs_path(path, win=False, root=None):
     if isinstance(_path, Path):
         _path = _path.path
     if not isinstance(_path, str):
-        raise ValueError(f'bad type {_path}')
+        raise ValueError(f'bad type {_path} ({type(_path).__name__})')
     _path = str(_path)  # convert unicode
     _path = _path.strip('"')
 

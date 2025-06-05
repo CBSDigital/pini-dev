@@ -216,6 +216,32 @@ class CheckCacheSet(core.SCMayaCheck):
         utils.check_cacheable_set(set_=_set, check=self)
 
 
+class CheckCtrlsSet(core.SCMayaCheck):
+    """Check rig has controls set."""
+
+    task_filter = 'rig'
+
+    def run(self):
+        """Run this check."""
+        _name = m_pipe.find_ctrls_set(mode='name')
+        if not cmds.objExists(_name):
+            _fix = wrap_fn(cmds.sets, name=_name, empty=True)
+            self.add_fail(f'Missing ctrls set "{_name}"', fix=_fix)
+            return
+        _set = pom.CNode(_name)
+        _type = _set.object_type()
+        self.write_log('Found set %s %s', _set, _type)
+        if _type != 'objectSet':
+            self.add_fail('Bad ctrls set "{_name}" type "{_type}"')
+            return
+        _nodes = cmds.sets(_set, query=True)
+        self.write_log('Found %d nodes', len(_nodes))
+        if not _nodes:
+            self.add_fail('Empty ctrls set "{_name}" type')
+            return
+        self.write_log('Checked set %s %s', _name, _set)
+
+
 class CheckRenderStats(core.SCMayaCheck):
     """Check render stats section on shape nodes."""
 
@@ -226,7 +252,6 @@ class CheckRenderStats(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-
         _geos = m_pipe.read_cache_set()
         if not _geos:
             self.add_fail('No geo in cache_SET')

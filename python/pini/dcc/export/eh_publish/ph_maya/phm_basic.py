@@ -195,13 +195,14 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         # Remove unused sets
         if _remove_sets:
             _sets = _find_dag_sets()
-            _keep_sets = ('cache_SET', 'ctrls_SET')
+            _keep_sets = ('cache_SET', m_pipe.find_ctrls_set(mode='name'))
+            _LOGGER.debug(' - KEEP SETS %s', _keep_sets)
             _to_delete = [
                 _set for _set in _sets
                 if _set not in _keep_sets and
                 not cmds.referenceQuery(_set, isNodeReferenced=True) and
                 _set not in DEFAULT_NODES]
-            _LOGGER.info(' - CLEAN SETS %s', _to_delete)
+            _LOGGER.debug(' - CLEAN SETS %s', _to_delete)
             if _to_delete:
                 cmds.delete(_to_delete)
 

@@ -1,3 +1,21 @@
+## [7.16.0] - Thu 2025-06-05 14:47
+### Summary
+ - Pini Helper:
+    - publish remove ctrls set from unused sets on clean scene,
+ - Sanity Check:
+    - added check ctrls set on rig publish (mkim),
+### Updated
+ - pini.abs_path better error on bad type,
+ - pini.dcc.export removed ctrls set from unused sets on clean scene,
+ - pini.pipe.CPEntity.find_latest added extn to stream key,
+ - pini.tools.sanity_check added check controls set,
+ - maya_pini.ref.AttrRef.update match any udim frame on texture update,
+ - maya_pini.m_pipe.find_ctrls_set added,
+ - maya_pini.open_maya.CPlug.find_plugs added keyable flag,
+ - maya_pini.open_maya.CPlug.to_clean added,
+ - maya_pini.open_maya.CReference.to_ctrls_set added,
+
+
 ## [7.15.0] - Wed 2025-06-04 15:33
 ### Summary
  - Pini Helper:

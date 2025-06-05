@@ -89,7 +89,7 @@ class CReference(om.MFnReference, ref.FileRef):
             (CNode list): controls
         """
         from maya_pini import open_maya as pom
-        _set = self.to_node('ctrls_SET')
+        _set = self.to_ctrls_set('ctrls_SET')
         return [
             pom.cast_node(_node)
             for _node in cmds.sets(_set, query=True)]
@@ -244,6 +244,15 @@ class CReference(om.MFnReference, ref.FileRef):
     def select(self):
         """Select this reference."""
         self.top_node.select()
+
+    def to_ctrls_set(self):
+        """Find ctrls set for this rig.
+
+        Returns:
+            (CNode): ctrls set
+        """
+        from maya_pini import m_pipe
+        return m_pipe.find_ctrls_set(namespace=self.namespace)
 
     def to_node(self, name, clean=True, fmt='node', catch=False):
         """Obtain a node from this reference.

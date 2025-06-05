@@ -388,11 +388,12 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         return self.find_connections(
             source=False, type_=type_, connections=connections, plugs=plugs)
 
-    def find_plugs(self, user_defined=False, head=None, filter_=None):
+    def find_plugs(self, user_defined=False, keyable=None, head=None, filter_=None):
         """Find plugs on this node.
 
         Args:
             user_defined (bool): return only user defined attributes
+            keyable (bool): return only keyable plugs
             head (str): filter by start of attribute name (eg. vray/ai)
             filter_ (str): apply attibute name filter
 
@@ -400,7 +401,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (CPlug list): matching plugs
         """
         _plugs = []
-        for _plug in self.list_attr(user_defined=user_defined):
+        for _plug in self.list_attr(user_defined=user_defined, keyable=keyable):
             if head and not _plug.attr.startswith(head):
                 continue
             if filter_ and not passes_filter(str(_plug.attr), filter_):
@@ -558,6 +559,14 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         from maya_pini import open_maya as pom
         return pom.to_bbox(self)
+
+    def to_clean(self):
+        """Obtain clean node name (ie. without namespaces).
+
+        Returns:
+            (str): clean name
+        """
+        return to_clean(self)
 
     def to_long(self):
         """Get full path of this node.
