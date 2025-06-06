@@ -23,9 +23,9 @@ def find(
     Args:
         path (str): path to search in
         depth (int): maxiumum search depth
-        class_ (class|True): typecast results to the given class, or
+        class_ (class|bool): typecast results to the given class, or
             if True return File/Dir objects
-        type_ (char): filter results by type (d/f)
+        type_ (chr): filter results by type (d/f)
         catch_missing (bool): no error if path does not exist
         catch_access_error (bool): no error on access denied
         base (str): filter by exact file basename

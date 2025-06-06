@@ -65,7 +65,8 @@ def _find_programs_exes(force=False):
                 type_='f', extn='exe', depth=1, class_=True,
                 catch_missing=True)
             if _dir_exes:
-                _LOGGER.debug('   - FOUND %d EXES %s', len(_dir_exes), _dir.path)
+                _LOGGER.debug(
+                    '   - FOUND %d EXES %s', len(_dir_exes), _dir.path)
             _exes += _dir_exes
 
     return _exes
@@ -132,7 +133,9 @@ def find_exe(name, catch=True, force=False):
         (File|None): executable if one is found - otherwise None
     """
     _LOGGER.debug('FIND EXE %s', name)
-    _exe = _find_path_exe(name, force=force) or _find_programs_exe(name, force=force)
+    _exe = (
+        _find_path_exe(name, force=force) or
+        _find_programs_exe(name, force=force))
     if _exe:
         _LOGGER.debug(' - FOUND EXE %s', _exe)
         return _exe

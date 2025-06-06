@@ -19,7 +19,7 @@ def apply_filter(items, filter_, key=None):
     Args:
         items (list): items to filter
         filter_ (str): filter to apply
-        key (func): function to convert item to filterable text
+        key (fn): function to convert item to filterable text
 
     Returns:
         (list): list of items which pass filter

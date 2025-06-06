@@ -108,7 +108,8 @@ class AttrRef(r_path_ref.PathRef):
             _cur_frame = int(_cur_path.split('.')[-2])
             if _cur_path != self.path[_cur_frame]:
                 _LOGGER.info(' - PATH       %s', self.path)
-                _LOGGER.info(' - FRAME %d %s', _cur_frame, self.path[_cur_frame])
+                _LOGGER.info(
+                    ' - FRAME %d %s', _cur_frame, self.path[_cur_frame])
                 _LOGGER.info(' - CUR PATH   %s', _cur_path)
                 raise RuntimeError(f'Bad cur path {_cur_path}')
             _path = path[_cur_frame]

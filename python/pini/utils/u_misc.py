@@ -590,7 +590,7 @@ def strftime(fmt=None, time_=None):
             full - full readable format (eg. Fri 05/09/24 10:14:14)
             date - just date (eg. 05/09/24)
             time - just time (eg. 10:14:14)
-        time_ (float/struct_time): time value
+        time_ (float|struct_time): time value
 
     Returns:
         (str): formatted time string
@@ -787,7 +787,7 @@ def to_time_f(val):
     """Get a time float from the given value.
 
     Args:
-        val (float/struct_time): value to convert
+        val (float|struct_time): value to convert
 
     Returns:
         (float): time as float

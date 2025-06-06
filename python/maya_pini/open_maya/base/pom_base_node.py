@@ -388,7 +388,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         return self.find_connections(
             source=False, type_=type_, connections=connections, plugs=plugs)
 
-    def find_plugs(self, user_defined=False, keyable=None, head=None, filter_=None):
+    def find_plugs(
+            self, user_defined=False, keyable=None, head=None, filter_=None):
         """Find plugs on this node.
 
         Args:
