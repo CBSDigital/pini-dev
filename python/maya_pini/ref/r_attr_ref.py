@@ -70,14 +70,16 @@ class AttrRef(r_path_ref.PathRef):
         """Obtain path to this reference.
 
         Returns:
-            (str): path
+            (File|Seq|None): path
         """
         _path = cmds.getAttr(self.attr)
-        if _path:
-            if is_abs(_path):
-                _path = abs_path(_path)
-            else:
-                _path = norm_path(_path)
+        if not _path:
+            return None
+
+        if is_abs(_path):
+            _path = abs_path(_path)
+        else:
+            _path = norm_path(_path)
         _path = File(_path)
 
         if self.has_udim_tiles:

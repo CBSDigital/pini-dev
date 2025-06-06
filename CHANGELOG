@@ -1,3 +1,11 @@
+## [7.16.1] - Fri 2025-06-06 09:38
+### Summary
+ - Reference Tools:
+    - bugfix handling of empty reference paths,
+### Updated
+ - maya_pini.ref.AttrRef.path return None on empty path,
+
+
 ## [7.16.0] - Thu 2025-06-05 14:47
 ### Summary
  - Pini Helper:
