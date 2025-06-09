@@ -1,3 +1,11 @@
+## [7.17.1] - Mon 2025-06-09 10:11
+### Summary
+ - Pini Helper:
+    - lookdev publish bugfix error on off-pipeline textures (eehemann),
+### Updated
+ - pini.dcc.export.lookdev_publish sg register textures ignore off pipline textures,
+
+
 ## [7.17.0] - Mon 2025-06-09 08:58
 ### Summary
  - Pini Helper:

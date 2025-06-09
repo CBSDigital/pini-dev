@@ -277,7 +277,10 @@ def _build_upstream_textures(paths, work=None):
     _up_pubs = []
 
     # Find already registered
-    _rel_paths = {pipe.ROOT.rel_path(_path): _path for _path in paths}
+    _rel_paths = {
+        pipe.ROOT.rel_path(_path):
+        _path for _path in paths
+        if pipe.ROOT.contains(_path)}
     _filters = [('path_cache', 'in', list(_rel_paths.keys()))]
     _LOGGER.info(' - FILTERS %s', _filters)
     for _pub in shotgrid.find(

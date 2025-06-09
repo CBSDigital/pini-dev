@@ -406,9 +406,9 @@ def create_pub_file_from_path(
         _data = _build_pub_data(
             _file, name=name, job=job, entity=entity, type_=type_,
             user=user, task=task, ver_n=ver_n, notes=notes)
-        _LOGGER.info(' - SCENE DATA %s', _data)
+        _LOGGER.info('   - SCENE DATA %s', _data)
         _pub = shotgrid.create('PublishedFile', _data)
-        _LOGGER.info(' - SCENE ENTRY %s', _pub)
+        _LOGGER.info('   - SCENE ENTRY %s', _pub)
         if thumb:
             shotgrid.upload_thumbnail(
                 'PublishedFile', _pub['id'], to_str(thumb))
