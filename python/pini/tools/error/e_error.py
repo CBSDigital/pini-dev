@@ -119,6 +119,9 @@ def error_from_str(traceback_):
     _tb = _tb.split(
         'During handling of the above exception, another exception '
         'occurred:')[-1]
+    _tb = _tb.split(
+        'The above exception was the direct cause of the following '
+        'exception:')[-1]
     _tb_lines = _tb.strip().split('\n')
     _tb_lines = [_line for _line in _tb_lines if _line.strip(' ^')]
 

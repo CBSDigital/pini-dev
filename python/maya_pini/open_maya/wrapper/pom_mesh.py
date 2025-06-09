@@ -33,7 +33,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         except ValueError as _exc:
             _LOGGER.error(_exc)
             raise ValueError(
-                'Failed to construct MFnMesh object {_node}') from _exc
+                f'Failed to construct MFnMesh object {_node}') from _exc
 
         # Check shape
         _shp = self.shp

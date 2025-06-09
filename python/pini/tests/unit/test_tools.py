@@ -26,6 +26,26 @@ Traceback (most recent call last):
 AssertionError
 ''',
 
+r'''
+Traceback (most recent call last):
+  File "C:\Users\hvanderbeek\dev\pini-dev\python\maya_pini\open_maya\wrapper\pom_mesh.py", line 32, in __init__
+    om.MFnMesh.__init__(self, _m_dag)
+ValueError: object is incompatible with MFnMesh constructor
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\hvanderbeek\dev\pini-dev\python\maya_pini\utils\mu_dec.py", line 56, in _ns_clean_fn
+    _result = func(*args, **kwargs)
+  File "C:\Users\hvanderbeek\dev\pini-dev\python\maya_pini\tests\integration\test_open_maya.py", line 62, in test_camera
+    _sphere = pom.CMDS.polySphere()
+  File "C:\Users\hvanderbeek\dev\pini-dev\python\maya_pini\open_maya\pom_cmds.py", line 133, in _map_results_func
+    _result = pom.CMesh(_tfm)
+  File "C:\Users\hvanderbeek\dev\pini-dev\python\maya_pini\open_maya\wrapper\pom_mesh.py", line 35, in __init__
+    raise ValueError(
+ValueError: Failed to construct MFnMesh object tmp:pSphere1
+''',
+
 ]
 
 

@@ -143,7 +143,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             _img.convert(_tmp, force=True)
             _pix = qt.CPixmap(_tmp)
         else:
-            raise NotImplementedError(self.extn)
+            raise NotImplementedError(self.path)
 
         _pix = _pix.resize(_res)
         _pix.save_as(_thumb, verbose=0, force=force)

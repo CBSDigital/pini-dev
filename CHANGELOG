@@ -1,3 +1,15 @@
+## [7.17.0] - Mon 2025-06-09 08:58
+### Summary
+ - Pini Helper:
+    - maya farm render limit groups bugfix not registering sanity check update,
+    - bugfix error on iff image sequence in outputs (eehemann),
+### Updated
+ - pini.dcc.export.CMayaFarmRender allow limit grps as func,
+ - pini.pipe.CPWork._check_image ignore iff seqs on create thumb,
+ - pini.tools.error added handing for linked error tracebacks,
+ - maya_pini.ref.AttrRef.update udim path update allow any udim frame,
+
+
 ## [7.16.1] - Fri 2025-06-06 09:38
 ### Summary
  - Reference Tools:

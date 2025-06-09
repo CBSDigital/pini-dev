@@ -422,8 +422,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             return
 
         # Check seqs
-        _seqs = sorted(
-            [_out for _out in outputs if isinstance(_out, Seq)],
+        _seqs = sorted([
+            _out for _out in outputs
+            if isinstance(_out, Seq) and _out.extn != 'iff'],
             key=cp_utils.output_clip_sort)
         if _seqs:
             _seqs[0].build_thumbnail(self.image)

@@ -3,6 +3,7 @@
 # pylint: disable=abstract-method
 
 import logging
+import types
 
 from maya import cmds
 
@@ -328,6 +329,10 @@ class CMayaFarmRender(CMayaRenderHandler):
         if not _lyrs:
             raise error.HandledError('No renderable layers')
         _cam = camera or pom.find_render_cam()
+        _limit_grps = limit_grps
+        if isinstance(_limit_grps, types.MethodType):
+            _limit_grps = _limit_grps()
+
         pom.set_render_cam(_cam)
 
         # Apply hide image planes
@@ -351,7 +356,7 @@ class CMayaFarmRender(CMayaRenderHandler):
             submit_=render_, force=True, result='msg/outs',
             metadata=self.metadata, frames=frames, camera=_cam,
             chunk_size=chunk_size, comment=notes, priority=priority,
-            machine_limit=machine_limit, limit_groups=limit_grps,
+            machine_limit=machine_limit, limit_groups=_limit_grps,
             strict_error_checking=strict_error_checking)
 
         for _revert in _reverts:
@@ -367,8 +372,22 @@ class CMayaFarmRender(CMayaRenderHandler):
     def exec_from_ui(self, **kwargs):
         """Execute this export using settings from ui."""
         _ui_kwargs = self.ui.to_kwargs()
-        _ui_kwargs['limit_grps'] = _ui_kwargs['limit_grps'].split(',')
+        _ui_kwargs['limit_grps'] = self._read_limit_grps_from_ui
         super().exec_from_ui(ui_kwargs=_ui_kwargs, **kwargs)
+
+    def _read_limit_grps_from_ui(self):
+        """Read limit grps from interface.
+
+        This is a provided as a function so that it can be executed at
+        submission time, in case sanity check updates the limit groups.
+        If a static value was provided, the ui updates wouldn't make it
+        through to the exec or export kwargs.
+
+        Returns:
+            (str list): limit groups
+        """
+        _val = self.ui.LimitGrps.get_val()
+        return _val.split(',') if _val else []
 
     @cache_result
     def to_icon(self):
