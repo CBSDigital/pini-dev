@@ -234,10 +234,10 @@ class CheckCtrlsSet(core.SCMayaCheck):
         if _type != 'objectSet':
             self.add_fail('Bad ctrls set "{_name}" type "{_type}"')
             return
-        _nodes = cmds.sets(_set, query=True)
+        _nodes = cmds.sets(_set, query=True) or []
         self.write_log('Found %d nodes', len(_nodes))
         if not _nodes:
-            self.add_fail('Empty ctrls set "{_name}" type')
+            self.add_fail(f'Empty ctrls set "{_name}" type')
             return
         self.write_log('Checked set %s %s', _name, _set)
 

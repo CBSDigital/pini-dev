@@ -273,12 +273,12 @@ def _exec_export_abc(work, force=False):
     _abc = work.to_output(
         _tmpl, output_type='geo', output_name='restCache', extn='abc')
     _LOGGER.info(' - REST CACHE ABC %s', _abc)
-    _geo = m_pipe.read_cache_set(set_=_cache_set)
+    _geo = m_pipe.read_cache_set(set_=_cache_set, mode='top')
     if not _geo:
         _LOGGER.info(' - UNABLE TO EXPORT ABC - EMPTY cache_SET')
         return None
     _frame = int(cmds.currentTime(query=True))
-    _rng = (_frame, _frame)
+    _rng = _frame, _frame
     save_abc(abc=_abc, range_=_rng, geo=_geo, force=force)
     _LOGGER.info(' - SAVED ABC %s', _abc.path)
 
