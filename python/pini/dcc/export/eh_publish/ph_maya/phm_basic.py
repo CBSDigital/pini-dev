@@ -9,7 +9,7 @@ from maya import cmds
 from pini import dcc, icons
 from pini.utils import single
 
-from maya_pini import ref, open_maya as pom, m_pipe
+from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import (
     restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean,
     save_fbx)
@@ -218,22 +218,23 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     def _apply_refs_opt(self):
         """Apply references option."""
         _LOGGER.debug('APPLY REF OPTS')
-        _refs = self.settings['references']
-        if not _refs:
-            _refs = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
+        _refs_opt = self.settings['references']
+        if not _refs_opt:
+            _refs_opt = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
             _LOGGER.debug(' - READ SCENE DATA %s', _PUB_REFS_MODE_KEY)
-        if not _refs:
-            _refs = _PUB_REFS_DEFAULT.value
-        _LOGGER.info(' - REFS OPT %s', _refs)
+        if not _refs_opt:
+            _refs_opt = _PUB_REFS_DEFAULT.value
+        _LOGGER.info(' - REFS OPT %s', _refs_opt)
 
         # Apply reference option
-        if _refs == 'Remove':
-            for _ref in ref.find_refs():
+        _refs = pom.find_refs(allow_no_namespace=True)
+        if _refs_opt == 'Remove':
+            for _ref in _refs:
                 _ref.delete(force=True, delete_foster_parent=True)
-        elif _refs in ('Leave intact', 'No action'):
+        elif _refs_opt in ('Leave intact', 'No action'):
             pass
-        elif _refs == 'Import into root namespace':
-            for _ref in pom.find_refs():
+        elif _refs_opt == 'Import into root namespace':
+            for _ref in _refs:
                 if (
                         _ref.top_node and
                         _ref.top_node.to_long().startswith('|JUNK')):
@@ -242,10 +243,11 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
                 _LOGGER.info(' - IMPORT REF %s', _ref)
                 _ns = _ref.namespace  # Need to read before import
                 _ref.import_()
-                cmds.namespace(moveNamespace=(_ns, ':'), force=True)
-                del_namespace(_ns, force=True)
+                if _ns:
+                    cmds.namespace(moveNamespace=(_ns, ':'), force=True)
+                    del_namespace(_ns, force=True)
         else:
-            raise ValueError(_refs)
+            raise ValueError(_refs_opt)
 
 
 def _exec_export_abc(work, force=False):

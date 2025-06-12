@@ -1,3 +1,11 @@
+## [7.18.1] - Thu 2025-06-12 15:54
+### Summary
+ - Pini Helper:
+    - maya model/rig publish bugfix not applying import option to prefix references (mkim),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish._apply_refs_opt added handling for prefix refs,
+
+
 ## [7.18.0] - Thu 2025-06-12 15:32
 ### Summary
  - Sanity Check:
