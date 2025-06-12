@@ -1,3 +1,22 @@
+## [7.18.0] - Thu 2025-06-12 15:32
+### Summary
+ - Sanity Check:
+    - check references added handling for prefix references (mkim),
+ - Pini Helper:
+    - maya model/rig publish bugfix not applying import option to prefix references (mkim),
+    - maya scene references bugfix not displaying prefix references (mkim),
+### Updated
+ - pini.dcc.pipe_ref.CMayaRef added handling for prefix refs,
+ - pini.tools.sanity_check.CheckReferences bugfix stopping on failed ref,
+ - pini.tools.sanity_check.CheckReferences allow prefix refs,
+ - maya_pini.ref.FileRef removed allow_no_namespace arg,
+ - maya_pini.ref.FileRef added handling for prefix refs,
+ - maya_pini.ref.FileRef.namespace bugfix bad value for prefix ref,
+ - maya_pini.ref.FileRef.prefix added,
+ - maya_pini.open_maya.CReference removed allow_no_namespace arg,
+ - maya_pini.open_maya.find_refs reimplemented selected filter,
+
+
 ## [7.17.2] - Wed 2025-06-11 09:22
 ### Summary
  - Pini Helper:

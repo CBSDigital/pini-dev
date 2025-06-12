@@ -20,22 +20,18 @@ _LOGGER = logging.getLogger(__name__)
 class FileRef(r_path_ref.PathRef):
     """Represents a file reference."""
 
-    def __init__(self, ref_node, allow_no_namespace=False):
+    def __init__(self, ref_node):
         """Constructor.
 
         Args:
             ref_node (str): reference node
-            allow_no_namespace (bool): check for namespace
         """
+        _LOGGER.debug('INIT FileRef %s', ref_node)
         self.ref_node = ref_node
         self.node = ref_node
-        if not allow_no_namespace:
-            try:
-                assert self.namespace and self.namespace != ':'
-            except (RuntimeError, AssertionError) as _exc:
-                raise ValueError(
-                    f'Missing namespace {self.ref_node}') from _exc
-        self.cmp_key = split_base_index(self.namespace)
+
+        _name = self.namespace or self.prefix
+        self.cmp_key = split_base_index(_name)
 
     @property
     def extn(self):
@@ -98,20 +94,7 @@ class FileRef(r_path_ref.PathRef):
         Returns:
             (str): namespace
         """
-        if not self.is_loaded:
-            _ns = str(cmds.file(self.path_uid, query=True, namespace=True))
-            if _ns != 'unknown':
-                return _ns
-            _ns = str(self.ref_node)
-            if _ns.endswith('RN'):
-                _ns = _ns[:-2]
-            return _ns
-
-        _ns = str(cmds.file(self.path_uid, query=True, namespace=True))
-        _ref_ns = to_namespace(self.ref_node)
-        if _ref_ns:
-            _ns = f'{_ref_ns}:{_ns}'
-        return _ns
+        return self._read_ns()
 
     @property
     def path(self):
@@ -133,6 +116,25 @@ class FileRef(r_path_ref.PathRef):
             (str): path with copy number
         """
         return str(cmds.referenceQuery(self.ref_node, filename=True))
+
+    @property
+    def prefix(self):
+        """Obtain prefix for this reference.
+
+        This only has a value if the reference has been created using no
+        namespace and a string prefix has been applied to all its nodes.
+
+        Returns:
+            (str): node name prefix
+        """
+        if self.namespace:
+            return None
+        _parent_ns = to_namespace(self.ref_node)
+        _file_ns = cmds.file(
+            self.path_uid, query=True, namespace=True).lstrip(':')
+        if _parent_ns:
+            return f'{_parent_ns}:{_file_ns}'
+        return _file_ns
 
     def delete(self, force=False, delete_foster_parent=True):
         """Delete this reference.
@@ -283,6 +285,41 @@ class FileRef(r_path_ref.PathRef):
         """Load this reference."""
         cmds.file(self.path_uid, loadReference=True)
 
+    def _read_ns(self):
+        """Read namespace of this reference.
+
+        Returns:
+            (str): namespace
+        """
+        _LOGGER.debug(' - NAMESPACE %s', self.ref_node)
+        _ref_ns = str(cmds.referenceQuery(self.ref_node, namespace=True))
+        _LOGGER.debug('   - REF NS %s', _ref_ns)
+
+        if not self.is_loaded:
+            if _ref_ns != 'unknown':
+                return _ref_ns
+            _node_ns = str(self.ref_node)
+            if _node_ns.endswith('RN'):
+                _node_ns = _node_ns[:-2]
+            return _node_ns
+
+        # If the referenceQuery result is ":" then that means that this ref
+        # has been created using prefixes rather that namespaces
+        if _ref_ns == ':':
+            return None
+
+        _file_ns = str(cmds.file(self.path_uid, query=True, namespace=True))
+        _LOGGER.debug('   - FILE NS %s', _file_ns)
+
+        # Remove prefix nodes
+
+        _ns = _file_ns
+        _parent_ns = to_namespace(self.ref_node)
+        if _parent_ns:
+            _ns = f'{_parent_ns}:{_ns}'
+
+        return _ns
+
     def set_namespace(self, namespace, update_ref_node=True):
         """Update this reference's namespace.
 
@@ -378,4 +415,14 @@ class FileRef(r_path_ref.PathRef):
         return hash(self.path_uid)
 
     def __repr__(self):
-        return basic_repr(self, self.namespace, separator='|')
+        _name = None
+        _ns = self.namespace
+        if not _name:
+            _name = _ns
+        if not _name:
+            _prefix = self.prefix
+            if _prefix:
+                _name = f'{_prefix}[P]'
+        if not _name:
+            _name = f'{self.ref_node}[R]'
+        return basic_repr(self, _name, separator='|')

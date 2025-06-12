@@ -144,8 +144,8 @@ def find_refs(
         (FileRef list): matching references
     """
     _refs = []
-    for _ref in _read_refs(
-            class_=class_, allow_no_namespace=allow_no_namespace):
+    for _ref in _read_refs(class_=class_):
+
         if not unloaded and not _ref.is_loaded:
             continue
         if nested is not None and _ref.is_nested != nested:
@@ -156,29 +156,38 @@ def find_refs(
             continue
         if referenced is not None and _ref.is_referenced != referenced:
             continue
-        if filter_ and not passes_filter(_ref.namespace, filter_):
+        if not allow_no_namespace and not _ref.namespace:
             continue
+
+        if filter_ and not passes_filter(
+                _ref.namespace or _ref.prefix, filter_):
+            continue
+
         _refs.append(_ref)
+
     return _refs
 
 
-def _read_refs(class_=None, allow_no_namespace=False):
+def _read_refs(class_=None):
     """Read all references in the current scene.
 
     Args:
         class_ (class): override ref class
-        allow_no_namespace (bool): include references with no namespace
 
     Returns:
         (FileRef list): all references
     """
+    _LOGGER.debug('READ REFS')
     _refs = []
     for _ref_node in cmds.ls(type='reference'):
 
+        _LOGGER.debug('TEST REF %s', _ref_node)
+
         # Check ref node
         try:
-            _ref = FileRef(_ref_node, allow_no_namespace=allow_no_namespace)
-        except (ValueError, RuntimeError):
+            _ref = FileRef(_ref_node)
+        except (ValueError, RuntimeError) as _exc:
+            _LOGGER.debug(' - REJECTED %s', _exc)
             continue
 
         # Apply type cast

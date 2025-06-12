@@ -358,20 +358,20 @@ class CheckReferences(core.SCMayaCheck):
             self.write_log('Checking ref %s', _ref.namespace)
 
             # Check for no namespace
-            if not _ref.namespace:
+            if not _ref.namespace and not _ref.prefix:
                 _msg = (
-                    f'Reference "{_ref.ref_node}" has no namespace which '
-                    f'can make maya unstable.')
+                    f'Reference "{_ref.ref_node}" has no namespace or prefix '
+                    f'which can make maya unstable.')
                 _fail = core.SCFail(_msg, node=_ref.ref_node)
                 _fail.add_action('Import nodes', _ref.import_, is_fix=True)
                 _fail.add_action('Remove', _ref.delete, is_fix=True)
                 self.add_fail(_fail)
-                return
+                continue
 
             _out = pipe.to_output(_ref.path, catch=True)
             if not _out:
                 self.write_log(' - off pipeline')
-                return
+                continue
             _top_node = _ref.find_top_node(catch=True)
 
             # Check size

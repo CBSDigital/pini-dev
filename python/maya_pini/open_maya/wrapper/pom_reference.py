@@ -22,12 +22,11 @@ _LOGGER = logging.getLogger(__name__)
 class CReference(om.MFnReference, ref.FileRef):
     """Represents a file reference."""
 
-    def __init__(self, node, allow_no_namespace=False):
+    def __init__(self, node):
         """Constructor.
 
         Args:
             node (str): reference node or node in a reference
-            allow_no_namespace (bool): no error if ref has no namespace
         """
         _LOGGER.log(9, 'CReference INIT %s', node)
         super().__init__()  # pylint: disable=no-value-for-parameter
@@ -64,8 +63,7 @@ class CReference(om.MFnReference, ref.FileRef):
         _LOGGER.log(9, ' - LOCATED REF')
 
         _ref_node = pom_node.CNode(self.name())
-        ref.FileRef.__init__(
-            self, _ref_node, allow_no_namespace=allow_no_namespace)
+        ref.FileRef.__init__(self, _ref_node)
 
     @property
     def anim(self):
@@ -397,14 +395,17 @@ def find_refs(
     _LOGGER.debug('FIND REFS')
 
     # Get full list of refs using non-OpenMaya ref module
+    _refs = ref.find_refs(
+        unloaded=unloaded, allow_no_namespace=allow_no_namespace)
     if selected:
-        _refs = ref.get_selected(multi=True)
-    else:
-        _refs = ref.find_refs(
-            unloaded=unloaded, allow_no_namespace=allow_no_namespace)
+        _sel_ref_nodes = [
+            cmds.referenceQuery(_node, referenceNode=True)
+            for _node in cmds.ls(selection=True)
+            if cmds.referenceQuery(_node, isNodeReferenced=True)]
+        _refs = [_ref for _ref in _refs if _ref.ref_node in _sel_ref_nodes]
     _LOGGER.debug(' - REFS %s', _refs)
 
-    # Convert to
+    # Convert to CReference object
     _p_refs = []
     for _ref in _refs:
 
@@ -425,8 +426,7 @@ def find_refs(
 
         # Build pom ref
         try:
-            _p_ref = CReference(
-                _ref.ref_node, allow_no_namespace=allow_no_namespace)
+            _p_ref = CReference(_ref.ref_node)
         except ValueError:
             _LOGGER.debug('   - FAILED TO BUILD pom NODE')
             continue
