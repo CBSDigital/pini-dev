@@ -210,7 +210,9 @@ class CExportHandlerUI(qt.CUiContainer):
         self.layout.addLayout(_lyt)
         return _lyt
 
-    def add_label(self, name, text=None, label_w=None, tooltip=None):
+    def add_label(
+            self, name, text=None, label_w=None, tooltip=None,
+            add_layout=False):
         """Add QLabel to this inteface.
 
         Args:
@@ -218,19 +220,29 @@ class CExportHandlerUI(qt.CUiContainer):
             text (str): display text for label
             label_w (int): override label width
             tooltip (str): apply label tooltip
+            add_layout (bool): add label in a separate layout
 
         Returns:
             (QLabel): label
         """
         assert name.endswith('Label')
+
         _label = QtWidgets.QLabel(self.parent)
         _label.setText(text)
         _label.setObjectName(name)
-        _label.setFixedWidth(label_w or self.label_w)
         if tooltip:
             _label.setToolTip(tooltip)
         setattr(self, name, _label)
         _LOGGER.debug(' - ADD LABEL %s %s', name, _label)
+
+        if add_layout:
+            _name = name.replace('Label', '')
+            _lyt_name = f'{_name}Lyt'
+            _lyt = self.add_hbox_layout(_lyt_name)
+            _lyt.addWidget(_label)
+            _label.setWordWrap(True)
+        else:
+            _label.setFixedWidth(label_w or self.label_w)
 
         return _label
 

@@ -42,13 +42,14 @@ def build_metadata(
     if bkp:
         _data['bkp'] = to_str(bkp)
     if src_ref:
-        _data['src_ref'] = src_ref
+        _data['src_ref'] = to_str(src_ref)
 
     # Apply work metadata if available
     _work = work or pipe.cur_work()
     if _work:
         _data.update(_work.metadata)
         _data.pop('size', None)
+        _data.pop('refs', None)
         if not src:
             _data['src'] = _work.path
 

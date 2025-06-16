@@ -87,7 +87,7 @@ class CReference(om.MFnReference, ref.FileRef):
             (CNode list): controls
         """
         from maya_pini import open_maya as pom
-        _set = self.to_ctrls_set('ctrls_SET')
+        _set = self.to_ctrls_set()
         return [
             pom.cast_node(_node)
             for _node in cmds.sets(_set, query=True)]
@@ -306,6 +306,12 @@ class CReference(om.MFnReference, ref.FileRef):
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __hash__(self):
+        return hash(self.node)
+
+    def __lt__(self, other):
+        return str(self) < str(other)
+
     def __str__(self):
         return str(self.ref_node)
 
@@ -333,27 +339,17 @@ def create_ref(file_, namespace, parent=None, force=False):
     return CReference(_ref.ref_node)
 
 
-def find_ref(
-        match=None, namespace=None, selected=False, unloaded=False, task=None,
-        filter_=None, catch=True):
+def find_ref(match=None, catch=True, **kwargs):
     """Find a reference in the current scene.
 
     Args:
         match (str): match by filter or namespace
-        namespace (str): refs namespace to match
-        selected (bool): filter by selected refs
-        unloaded (bool): filter by loaded status (only loaded reference
-            are returned by default)
-        task (str): filter by task
-        filter_ (str): apply namespace filter
         catch (bool): no error if no matching reference found
 
     Returns:
         (CReference|None): matching reference (if any)
     """
-    _refs = find_refs(
-        selected=selected, namespace=namespace, unloaded=unloaded,
-        task=task, filter_=filter_)
+    _refs = find_refs(**kwargs)
 
     if len(_refs) == 1:
         return single(_refs)

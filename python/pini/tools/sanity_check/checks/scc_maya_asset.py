@@ -199,21 +199,46 @@ class CheckCacheSet(core.SCMayaCheck):
             self.add_fail(_msg, fix=_fix)
             return
 
-        # Check for referenced geo in cache set
-        _ref_mode = export.get_pub_refs_mode()
-        _import_refs = export.PubRefsMode.IMPORT_TO_ROOT
-        _refd_geo = [_geo for _geo in _geos if _geo.is_referenced()]
-        self.write_log('Referenced geos %s', _refd_geo)
-        if _refd_geo and _ref_mode != _import_refs:
-            _fix = wrap_fn(export.set_pub_refs_mode, _import_refs)
-            self.add_fail(
-                f'Referenced geo in cache set but references mode is '
-                f'set to "{_ref_mode.value}" (should be '
-                f'"{_import_refs.value}")',
-                fix=_fix)
-            return
+        self._check_for_referenced_tfm(tfms=_tfms)
 
         utils.check_cacheable_set(set_=_set, check=self)
+
+    def _check_for_referenced_tfm(self, tfms):
+        """Check for referenced export geo.
+
+        Args:
+            tfms (CTransform list): cache set transforms
+        """
+
+        # Check for referenced transforms
+        _refd_tfms = [_tfm for _tfm in tfms if _tfm.is_referenced()]
+        if not _refd_tfms:
+            return
+        self.write_log('Referenced tfms %s', _refd_tfms)
+        _refs = sorted({_tfm.to_reference() for _tfm in _refd_tfms})
+        self.write_log('Refs %s', _refs)
+        assert _refs
+
+        _refs_mode = export.get_pub_refs_mode()
+        _imp_root = export.PubRefsMode.IMPORT_TO_ROOT
+        _imp_underscores = export.PubRefsMode.IMPORT_USING_UNDERSCORES
+        self.write_log('Refs mode %s', _refs_mode)
+
+        if len(_refs) == 1 and _refs_mode != _imp_root:
+            _fix = wrap_fn(export.set_pub_refs_mode, _imp_root)
+            self.add_fail(
+                f'Referenced geo in cache set but references mode is '
+                f'set to "{_refs_mode.value}" (should be '
+                f'"{_imp_root.value}")',
+                fix=_fix)
+
+        elif len(_refs) != 1 and _refs_mode != _imp_underscores:
+            _fix = wrap_fn(export.set_pub_refs_mode, _imp_underscores)
+            self.add_fail(
+                f'Referenced geo from multiple references in cache set '
+                f'but references mode is "{_refs_mode.value}" (should be '
+                f'"{_imp_root.value}")',
+                fix=_fix)
 
 
 class CheckCtrlsSet(core.SCMayaCheck):
@@ -472,7 +497,9 @@ class CheckGeoNaming(core.SCMayaCheck):
         # Check for namespace
         _refs_mode = export.get_pub_refs_mode()
         _import = export.PubRefsMode.IMPORT_TO_ROOT
-        if geo.namespace and _refs_mode != _import:
+        if geo.namespace and _refs_mode not in (
+                export.PubRefsMode.IMPORT_TO_ROOT,
+                export.PubRefsMode.IMPORT_USING_UNDERSCORES):
             _clean_name = to_clean(geo)
             if geo.is_referenced():
                 _fix = None

@@ -364,6 +364,14 @@ class PUMayaUi(pu_base.PUBaseUi):
         """Close this interface."""
         cmds.deleteUI(self.uid)
 
+    def move(self, pos):
+        """Move this window to the given position.
+
+        Args:
+            pos (tuple): x/y pos
+        """
+        cmds.window(self.uid, edit=True, topLeftCorner=pos)
+
 
 def _build_apply_fn(field):
     """Build function which applies data to the given field.

@@ -200,10 +200,15 @@ def _check_for_duplicate_names(set_, check):
         set_ (str): name of cache_SET or CSET
         check (SCCheck): check to apply fails to
     """
-    _names = collections.defaultdict(list)
+    _pub_refs_mode = export.get_pub_refs_mode()
 
+    _names = collections.defaultdict(list)
     for _node in check.tfms:
-        _names[to_clean(_node)].append(_node)
+        if _pub_refs_mode == export.PubRefsMode.IMPORT_USING_UNDERSCORES:
+            _name = str(_node).replace(':', '_')
+        else:
+            _name = to_clean(_node)
+        _names[_name].append(_node)
 
     for _name, _nodes in _names.items():
         if len(_nodes) == 1:

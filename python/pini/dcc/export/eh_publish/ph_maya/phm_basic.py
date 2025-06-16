@@ -26,6 +26,7 @@ class PubRefsMode(enum.Enum):
     REMOVE = "Remove"
     LEAVE_INTACT = "Leave intact"
     IMPORT_TO_ROOT = "Import into root namespace"
+    IMPORT_USING_UNDERSCORES = "Import replacing namespaces with underscores"
 
 
 def _to_default_pub_ref_mode():
@@ -99,6 +100,29 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         self.ui.add_combo_box(
             name='References', items=_items, data=_data,
             val=_val, settings_key=_PUB_REFS_MODE_KEY)
+        self.ui.add_label(
+            name='ReferencesLabel', text=' - Blah blah blah', add_layout=True)
+        self._callback__References()
+
+    def _callback__References(self):
+        _LOGGER.debug('CALLBACK References')
+        _refs_mode_s = self.ui.References.selected_text()
+        _LOGGER.debug(' - REFS MODE %s', _refs_mode_s)
+        _refs_mode = PubRefsMode(_refs_mode_s)
+        _label = {
+            PubRefsMode.REMOVE: ' - Removes all references from the scene',
+            PubRefsMode.LEAVE_INTACT: '\n'.join([
+                ' - Leaves references in the scene as they are in the publish',
+                ' - This may cause abc export issues']),
+            PubRefsMode.IMPORT_TO_ROOT: '\n'.join([
+                ' - Imports references, removing their namespaces',
+                ' - Use this if you are referencing your model geo']),
+            PubRefsMode.IMPORT_USING_UNDERSCORES: '\n'.join([
+                ' - Imports references, replacing namespace for underscores',
+                ' - Makes sure each node has a unique name for abc export',
+                ' - Use if your model geo uses more than one reference']),
+        }[_refs_mode]
+        self.ui.ReferencesLabel.setText(_label)
 
     def exec_from_ui(self, **kwargs):
         """Execuate this export using settings from ui.
@@ -185,7 +209,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _remove_dlayers = self.settings['remove_dlayers']
         _remove_alayers = self.settings['remove_alayers']
 
-        self._apply_refs_opt()
+        _apply_refs_mode_opt(refs_mode=self.settings['references'])
 
         # Remove JUNK
         _LOGGER.debug(' - APPLY REMOVE JUNK %d', _remove_junk)
@@ -215,39 +239,68 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if _remove_alayers:
             cmds.delete(cmds.ls(type='animLayer'))
 
-    def _apply_refs_opt(self):
-        """Apply references option."""
-        _LOGGER.debug('APPLY REF OPTS')
-        _refs_opt = self.settings['references']
-        if not _refs_opt:
-            _refs_opt = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
-            _LOGGER.debug(' - READ SCENE DATA %s', _PUB_REFS_MODE_KEY)
-        if not _refs_opt:
-            _refs_opt = _PUB_REFS_DEFAULT.value
-        _LOGGER.info(' - REFS OPT %s', _refs_opt)
 
-        # Apply reference option
-        _refs = pom.find_refs(allow_no_namespace=True)
-        if _refs_opt == 'Remove':
-            for _ref in _refs:
-                _ref.delete(force=True, delete_foster_parent=True)
-        elif _refs_opt in ('Leave intact', 'No action'):
-            pass
-        elif _refs_opt == 'Import into root namespace':
-            for _ref in _refs:
-                if (
-                        _ref.top_node and
-                        _ref.top_node.to_long().startswith('|JUNK')):
-                    _ref.delete(force=True)
-                    continue
-                _LOGGER.info(' - IMPORT REF %s', _ref)
-                _ns = _ref.namespace  # Need to read before import
-                _ref.import_()
-                if _ns:
-                    cmds.namespace(moveNamespace=(_ns, ':'), force=True)
-                    del_namespace(_ns, force=True)
+def _apply_refs_mode_opt(refs_mode):
+    """Apply references mode option.
+
+    Args:
+        refs_mode (PubRefsMode): references mode
+    """
+    _LOGGER.debug('APPLY REF OPTS')
+
+    # Determine refs mode
+    _refs_mode = refs_mode
+    if not _refs_mode:
+        _refs_mode = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
+        _LOGGER.debug(' - READ SCENE DATA %s', _PUB_REFS_MODE_KEY)
+    if not _refs_mode:
+        _refs_mode = _PUB_REFS_DEFAULT.value
+    _LOGGER.info(' - REFS OPT %s', _refs_mode)
+
+    # Apply reference option
+    _refs = pom.find_refs(allow_no_namespace=True)
+    if _refs_mode == 'Remove':
+        for _ref in _refs:
+            _ref.delete(force=True, delete_foster_parent=True)
+    elif _refs_mode in ('Leave intact', 'No action'):
+        pass
+    elif _refs_mode.startswith('Import '):
+        _import_refs(refs_mode=_refs_mode, refs=_refs)
+    else:
+        raise ValueError(_refs_mode)
+
+
+def _import_refs(refs_mode, refs):
+    """Import references.
+
+    Args:
+        refs_mode (PubRefsMode): references mode
+        refs (CReference list): references
+    """
+    for _ref in refs:
+
+        # Delete JUNK refs
+        if (
+                _ref.top_node and
+                _ref.top_node.to_long().startswith('|JUNK')):
+            _ref.delete(force=True)
+            continue
+
+        # Apply import
+        _LOGGER.info(' - IMPORT REF %s', _ref)
+        _ns = _ref.namespace  # Need to read before import
+        _nodes = _ref.find_nodes(dag_only=True)
+        _ref.import_()
+
+        # Apply refs mode
+        if refs_mode == 'Import into root namespace':
+            cmds.namespace(moveNamespace=(_ns, ':'), force=True)
+            del_namespace(_ns, force=True)
+        elif refs_mode == 'Import replacing namespaces with underscores':
+            for _node in _nodes:
+                _node.rename(str(_node).replace(':', '_'))
         else:
-            raise ValueError(_refs_opt)
+            raise ValueError(refs_mode)
 
 
 def _exec_export_abc(work, force=False):

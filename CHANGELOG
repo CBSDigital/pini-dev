@@ -1,3 +1,22 @@
+## [7.19.0] - Mon 2025-06-16 10:55
+### Summary
+ - Pini Helper:
+    - maya model/rig publish added references option import using underscores (mkim),
+### Updated
+ - pini.dcc.export.build_metadata suppress copy refs from work metadata,
+ - pini.dcc.export.build_metadata allow src_ref as File,
+ - pini.dcc.export.CExportHandlerUI.add_label add_layout added,
+ - pini.dcc.export.PubRefsMode.IMPORT_USING_UNDERSCORES,
+ - pini.tools.pyui.find_ui added,
+ - pini.tools.pyui.PUMayaUi.move added,
+ - pini.tools.pyui store uis in sys.PYUI_INTERFACES,
+ - pini.tools.sanity_check added handling for import using underscores refs mode,
+ - maya_pini.open_maya.CBaseNode.to_reference added,
+ - maya_pini.open_maya.CReference.ctrls bugfix error on ctrls set name override,
+ - maya_pini.open_maya.CReference added __hash__/__lt__,
+ - maya_pini.open_maya.find_ref pass kwargs to find_refs,
+
+
 ## [7.18.1] - Thu 2025-06-12 15:54
 ### Summary
  - Pini Helper:

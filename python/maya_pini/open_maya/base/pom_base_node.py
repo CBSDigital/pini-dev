@@ -627,6 +627,19 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _name = _name.attr
         return pom.CPlug(self.to_attr(_name))
 
+    def to_reference(self):
+        """Obtain this node's parent reference.
+
+        Returns:
+            (CReference|None): reference (if any)
+        """
+        from maya_pini import open_maya as pom
+        try:
+            _ref = cmds.referenceQuery(self, referenceNode=True)
+        except RuntimeError:
+            return None
+        return pom.CReference(_ref)
+
     def to_shp(self, type_=None, catch=False):
         """Obtain this node's shape.
 
