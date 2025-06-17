@@ -70,15 +70,21 @@ class CheckLookdevAssign(SCMayaCheck):
         self.write_log(' - Check shading group %s', _sg)
 
         # Get list of assigned shapes
-        _sg_geos = set()
+        _sg_tfms = set()
         _sg_items = pom.CMDS.sets(_sg, query=True) or []
-        for _sg_shp in _sg_items:
-            _sg_geo = _sg_shp.to_parent()
-            _sg_geos.add(_sg_geo)
-        _sg_geos = sorted(_sg_geos)
+        for _sg_node in _sg_items:
+            self.write_log('   - Adding SG tfm %s', _sg_node)
+            if _sg_node.object_type() != 'transform':
+                _sg_node = _sg_node.to_parent()
+                self.write_log('     - Mapped to parent %s %s', _sg_node)
+            _sg_tfms.add(_sg_node)
+        _sg_tfms = sorted(_sg_tfms)
+        self.write_log('   - SG tfms %s', _sg_tfms)
 
         # Check geos have shader assigned
         for _geo in geos:
+
+            self.write_log('   - Checking geo %s', _geo)
 
             # Check node exists
             _geo = geo_ref.to_node(_geo)
@@ -93,7 +99,7 @@ class CheckLookdevAssign(SCMayaCheck):
                 continue
 
             # Check assignment
-            if _geo not in _sg_geos:
+            if _geo not in _sg_tfms:
                 _geo_s = _geo.to_shp(catch=True)
                 if not _geo_s:
                     _msg = (

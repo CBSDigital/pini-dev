@@ -391,7 +391,8 @@ class CExportHandler:
         _snapshot = self.settings['snapshot']
 
         _LOGGER.info(' - OUTS %d %s', len(self.outputs), self.outputs)
-        _LOGGER.info(' - METADATA %s', self.metadata)
+        _LOGGER.info(
+            ' - METADATA update=%d %s', _update_metadata, self.metadata)
 
         self.progress.set_pc(90)
         if _update_metadata:
@@ -437,7 +438,7 @@ class CExportHandler:
         if not _force and not _notes:  # Request from user
             _notes = qt.input_dialog(
                 'Please enter notes for this export:', title='Notes')
-            if self.ui.notes_elem:
+            if self.ui and self.ui.notes_elem:
                 _LOGGER.debug(
                     ' - APPLY NOTES %s %s', _notes, self.ui.notes_elem)
                 self.ui.notes_elem.setText(_notes)
@@ -474,6 +475,7 @@ class CExportHandler:
         # Check output paths + update to cacheable
         _LOGGER.info(' - UPDATE WORK OUTPUTS')
         self.work.update_outputs()
+
         _out_paths = [_out.path for _out in self.work.outputs]
         for _idx, _out in enumerate(self.outputs):
 

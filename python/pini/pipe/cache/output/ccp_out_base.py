@@ -35,7 +35,7 @@ class CCPOutputBase(elem.CPOutputBase):
             f'{self.base}_{self.extn}_{{func}}.{_cache_extn}')
 
     @property
-    def content_type(self):  # pylint: disable=too-many-branches
+    def content_type(self):  # pylint: disable=too-many-branches,too-many-statements
         """Obtain content type for this output (eg. ShadersMa, RigMa, Video).
 
         (NOTE: content type should be pascal)
@@ -48,30 +48,38 @@ class CCPOutputBase(elem.CPOutputBase):
             return _content_type
 
         _pub_type = self.metadata.get('publish_type')
+        _handler = self.metadata.get('handler')
+
         if self.extn == 'abc':
-            _type = self.metadata.get('handler')
-            _type = _type or self.metadata.get('type')   # Legacy 18/10/24
+            _type = _handler or self.metadata.get('type')   # Legacy 18/10/24
             if _type == 'CPCacheableCam':
                 _c_type = 'CameraAbc'
             elif _type == 'CPCacheableRef':
                 _c_type = 'PipeAbc'
             else:
                 _c_type = 'Abc'
+
         elif self.extn == 'ma':
             if 'vrmesh' in self.metadata:
                 _c_type = 'VrmeshMa'
             elif 'shd_yml' in self.metadata:
                 _c_type = 'ShadersMa'
-            elif _pub_type == 'CMayaModelPublish':
+            elif _handler == 'CMayaModelPublish':
                 _c_type = 'ModelMa'
-            elif _pub_type == 'CMayaBasicPublish' and self.pini_task == 'rig':
+            elif _handler == 'CMayaBasicPublish' and self.pini_task == 'rig':
                 _c_type = 'RigMa'
             else:
                 _c_type = 'BasicMa'
+
         elif self.extn == 'mb':
-            _c_type = 'BasicMb'
+            if _handler == 'CMayaCurvesCache':
+                _c_type = 'CurvesMb'
+            else:
+                _c_type = 'BasicMb'
+
         elif self.extn == 'rs':
             _c_type = 'RedshiftProxy'
+
         elif isinstance(self, Seq):
             if self.extn == 'obj':
                 _c_type = 'ObjSeq'
@@ -85,6 +93,7 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'Plate'
             else:
                 raise ValueError(self.path, _pub_type, self.basic_type)
+
         elif self.extn in ('mov', 'mp4'):
             _c_type = 'Video'
         elif self.extn in ('jpg', 'exr') and isinstance(self, File):
@@ -93,6 +102,7 @@ class CCPOutputBase(elem.CPOutputBase):
             _c_type = 'AssArchive'
         else:
             _c_type = self.extn.capitalize()
+
         assert is_pascal(_c_type) or _c_type[0].isdigit()
         return _c_type
 

@@ -1,3 +1,22 @@
+## [7.20.0] - Tue 2025-06-17 07:07
+### Summary
+ - Pini Helper:
+    - rig publish bugfix error on invalid mesh in geo (eehemann),
+    - lookdev publish shotgrid register textures added handling for bad case in jobs path (eehemann),
+### Updated
+ - pini.dcc.export.CMayaCrvsCache added wip,
+ - pini.pipe.CPAsset windows added fix for bad case in job path,
+ - pini.pipe.CACHE.CCPOutputBase.content_type added handling for CurvesMb,
+ - pini.pipe.shotgrid.create_pub_file_from_path windows added fix for bad case in job path,
+ - pini.farm.deadline.submit better error on submit fail,
+ - pini.tools.sanity_check.CheckLookdevAssign fix fail on shader applied to transform,
+ - pini.tools.helper added curves mb handling in ui,
+ - pini.tools.helper scene refs added arrow for linked curves/shaders refs,
+ - maya_pini.open_maya.CReference.find_nodes added catch,
+ - maya_pini.open_maya.CReference.find_plugs added,
+ - maya_pini.m_pipe.export_anim_curves added,
+
+
 ## [7.19.0] - Mon 2025-06-16 10:55
 ### Summary
  - Pini Helper:

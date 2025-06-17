@@ -108,8 +108,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CPlug list): plugs
         """
-        return sum(
-            (_ctrl.list_attr(keyable=True) for _ctrl in self.ctrls), [])
+        return self.find_plugs()
 
     @property
     def skel(self):
@@ -181,7 +180,8 @@ class CReference(om.MFnReference, ref.FileRef):
         return single(self.find_nodes(type_=type_))
 
     def find_nodes(
-            self, type_=None, full_path=False, dag_only=False, filter_=None):
+            self, type_=None, full_path=False, dag_only=False, filter_=None,
+            catch=True):
         """Find nodes in this reference.
 
         Args:
@@ -189,14 +189,24 @@ class CReference(om.MFnReference, ref.FileRef):
             full_path (bool): use full node path
             dag_only (bool): return only dag nodes
             filter_ (str): apply filter to node name
+            catch (bool): catch + ignore nodes that error on init
 
         Returns:
             (CBaseNode list): nodes
         """
-        _nodes = super().find_nodes(
+        _all_nodes = super().find_nodes(
             type_=type_, dag_only=dag_only, full_path=full_path,
             filter_=filter_)
-        return sorted({pom_utils.cast_node(_node) for _node in _nodes})
+        _nodes = set()
+        for _node in _all_nodes:
+            try:
+                _node = pom_utils.cast_node(_node)
+            except ValueError as _exc:
+                if not catch:
+                    raise _exc
+                continue
+            _nodes.add(_node)
+        return sorted(_nodes)
 
     def find_skeleton(self, catch=True):
         """Find this node's skeleton.
@@ -229,6 +239,21 @@ class CReference(om.MFnReference, ref.FileRef):
         _LOGGER.debug('FIND TOP NODES %s', _top_nodes)
 
         return [pom_transform.CTransform(_node) for _node in _top_nodes]
+
+    def find_plugs(self, keyable=True):
+        """Find animatable plugs on this reference.
+
+        Args:
+            keyable (bool): return only keyable plugs
+
+        Returns:
+            (CPlug list): plugs
+        """
+        _plugs = []
+        for _ctrl in self.ctrls:
+            for _plug in _ctrl.find_plugs(keyable=keyable):
+                _plugs.append(_plug)
+        return _plugs
 
     def hide(self):
         """Hide this reference."""

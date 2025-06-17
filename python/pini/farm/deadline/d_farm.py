@@ -144,9 +144,14 @@ class CDFarm(base.CFarm):
         _cmds = [to_str(_cmd) for _cmd in _cmds]
         _LOGGER.debug(' - CMDS %s', ' '.join(_cmds))
         if submit_:
-            _result = system(_cmds)
-            _LOGGER.debug(' - RESULT %s', _result)
-            _job_ids = submit.read_job_ids(_result)
+            _out, _err = system(_cmds, result='out/err')
+            _LOGGER.debug(' - OUT %s', _out)
+            _LOGGER.debug(' - ERR %s', _err)
+            _job_ids = submit.read_job_ids(_out)
+            if not _job_ids:
+                _LOGGER.error(' - OUT %s', _out)
+                _LOGGER.error(' - ERR %s', _err)
+                raise RuntimeError('Deadline submission failed')
         else:
             _job_ids = [None] * len(jobs)
         _LOGGER.info(' - JOB IDS %s', _job_ids)

@@ -25,7 +25,7 @@ if dcc.NAME == 'maya':
     from .eh_render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
     from .eh_blast import CMayaPlayblast
-    from .eh_cache import CMayaAbcCache, CMayaFbxCache
+    from .eh_cache import CMayaAbcCache, CMayaFbxCache, CMayaCrvsCache
 
 elif dcc.NAME == 'hou':
     from .eh_blast import CHouFlipbook

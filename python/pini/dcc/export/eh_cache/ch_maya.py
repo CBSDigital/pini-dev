@@ -161,3 +161,43 @@ class CMayaFbxCache(CMayaCache):
         self.ui.add_separator()
         self.ui.add_combo_box(
             'Format', ['FBX201300', 'FBX201600'], val='FBX201600')
+
+
+class CMayaCrvsCache(CMayaCache):
+    """Manages fbx caching in maya."""
+
+    NAME = 'Maya Curves Cache'
+    LABEL = 'Exports anim curves from maya'
+    ACTION = 'CurvesCache'
+    ICON = icons.find('Performing Arts')
+    COL = 'Red'
+
+    def export(  # pylint: disable=unused-argument
+            self, cacheables, notes=None, version_up=None, snapshot=True,
+            save=True, bkp=True, progress=False, use_farm=False, range_=None,
+            substeps=1, format_='FBX201600', force=False):
+        """Execute cache operation.
+
+        Args:
+            cacheables (Cacheable list): items to cache
+            notes (str): cache notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            save (bool): save work file on export
+            bkp (bool): save bkp file
+            progress (bool): show cache progress
+            use_farm (bool): cache using farm
+            range_ (tuple): override cache range
+            substeps (int): substeps per frame
+            format_ (str): abc format (eg. Ogawa/HDF5)
+            force (bool): replace existing without confirmation
+        """
+        self.outputs = m_pipe.export_anim_curves(
+            cacheables, range_=range_, force=force)
+
+    def set_settings(self, **kwargs):
+        """Setup export settings.
+
+        Bypass abc/fbx cache overrides + revert to base handler.
+        """
+        eh_base.CExportHandler.set_settings(self, **kwargs)

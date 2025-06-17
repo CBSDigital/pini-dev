@@ -27,6 +27,7 @@ VDB_ICON = icons.find('Cloud')
 VIDEO_ICON = icons.find('Videocassette')
 
 ABC_BG_ICON = icons.find('Blue Square')
+CURVES_MB_BG_ICON = icons.find('Yellow Circle')
 FBX_BG_ICON = icons.find('Green Square')
 LOOKDEV_BG_ICON = icons.find('Green Circle')
 RS_BG_ICON = icons.find('Red Circle')
@@ -36,7 +37,7 @@ ARCHIVE_TYPE_ICON = icons.find('Red Paper Lantern')
 DEFAULT_ICON = icons.find('Black Medium-Small Square')
 DEFAULT_BASE_ICON = icons.find('White Large Square')
 BLAST_TYPE_ICON = icons.find('Collision')
-CURVES_TYPE_ICON = icons.find('Thread')
+CURVES_TYPE_ICON = icons.find('Performing Arts')
 LOOKDEV_TYPE_ICON = icons.find('Palette')
 MODEL_TYPE_ICON = icons.find('Ice')
 PLATE_TYPE_ICON = icons.find('Plate')
@@ -149,6 +150,30 @@ def _cache_to_icon(output):
         if not _icon:
             _icon = DEFAULT_ICON
         _LOGGER.debug(' - ICON task=%s %s', output.pini_task, _icon)
+
+    return _icon
+
+
+def _curves_to_icon(curves):
+    """Build icons for CurveMa/CurveMb outputs.
+
+    Args:
+        curves (CPOutput): output to build icon for
+
+    Returns:
+        (CPixmap): icon
+    """
+    _base_icon = CURVES_MB_BG_ICON
+    _asset_icon = None
+    _asset = curves.metadata.get('src_ref')
+    if _asset:
+        _asset_out = pipe.CACHE.obt_output(_asset)
+        _asset_icon = _output_to_entity_icon(_asset_out)
+
+    _icon = qt.CPixmap(_base_icon)
+    _over = qt.CPixmap(_asset_icon)
+    _icon.draw_overlay(
+        _over, pos=_icon.center(), size=_over.size() * 0.6, anchor='C')
 
     return _icon
 
@@ -272,7 +297,7 @@ def obt_recent_work(force=False):
 
 
 @cache_result
-def output_to_icon(output, overlay=None, force=False):
+def output_to_icon(output, overlay=None, force=False):  # pylint: disable=too-many-branches
     """Obtain an icon for the given output.
 
     Args:
@@ -293,7 +318,10 @@ def output_to_icon(output, overlay=None, force=False):
     else:
 
         _bg = None
-        if output.basic_type == 'cache':
+        if output.content_type == 'CurvesMb':
+            _LOGGER.debug(' - APPLYING CURVES MB ICON')
+            _icon = _curves_to_icon(output)
+        elif output.basic_type == 'cache':
             _LOGGER.debug(' - APPLYING CACHE ICON')
             _icon = _cache_to_icon(output)
         elif output.output_type == 'cam':
@@ -396,7 +424,7 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         return ARCHIVE_TYPE_ICON
     if output.content_type == 'RedshiftProxy':
         return RS_TYPE_ICON
-    if output.content_type == 'CurvesMa':
+    if output.content_type in ['CurvesMa', 'CurvesMb']:
         return CURVES_TYPE_ICON
     if output.content_type == 'BasicMa':
         return MAYA_FILE_ICON

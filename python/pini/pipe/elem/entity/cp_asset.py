@@ -3,6 +3,7 @@
 # pylint: disable=too-many-instance-attributes
 
 import logging
+import platform
 
 import lucidity
 
@@ -42,7 +43,13 @@ class CPAsset(cp_ety.CPEntity):
             _job = pipe.CPJob(_path)
             self.job = pipe.ROOT.obt_job(_job.name)
             assert_eq(self.job, _job)
-            assert _path.startswith(_job.path)
+            if not _path.startswith(_job.path):
+                if (
+                        platform.system() == 'Windows' and
+                        _path.lower().startswith(_job.path.lower())):
+                    _path = f'{_job.path}/{_job.rel_path(_path)}'
+                else:
+                    raise RuntimeError(_path)
 
         # Crop path to asset depth
         self.template = self.job.find_template('entity_path', profile='asset')

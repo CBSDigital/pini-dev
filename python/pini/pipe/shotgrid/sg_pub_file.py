@@ -395,6 +395,7 @@ def create_pub_file_from_path(
     from pini.pipe import shotgrid
     assert isinstance(path, str)
     _path = abs_path(path)
+    _path = _normalise_path_to_pipeline(_path, entity=entity)
 
     # Try to find existing
     _pub = shotgrid.find_one('PublishedFile', path=_path)
@@ -402,6 +403,7 @@ def create_pub_file_from_path(
     # Create entry if required
     if not _pub:
         _LOGGER.info(' - CREATE PublishedFile %s', _path)
+
         _file = File(_path)
         _data = _build_pub_data(
             _file, name=name, job=job, entity=entity, type_=type_,
@@ -414,3 +416,31 @@ def create_pub_file_from_path(
                 'PublishedFile', _pub['id'], to_str(thumb))
 
     return _pub
+
+
+def _normalise_path_to_pipeline(path, entity):
+    """Normalise the given path to pipeline.
+
+    Make sure that artist hasn't changed cases in path to shot, which would
+    cause shotgrid register fails (on windows).
+
+    eg. //phoenix/projects/cgdev/blah.png
+     -> //phoenix/Projects/CGDev/blah.png
+
+    Args:
+        path (str): path to update
+        entity (CPEntity): shot path
+
+    Returns:
+        (str): normalised path
+    """
+    _path = path
+    if platform.system() != 'Windows':
+        return _path
+    _ety = entity or pipe.to_entity(path, catch=True)
+    if not _ety:
+        return _path
+    assert _ety.contains(_path)
+    if _path.startswith(_ety.path):
+        return _path
+    return f'{_ety.path}/{_ety.rel_path(_path)}'

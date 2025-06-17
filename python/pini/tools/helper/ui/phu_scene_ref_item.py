@@ -21,8 +21,9 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
 
     info = False
 
-    def __init__(self, list_view, ref, helper, status=None, output=None,
-                 namespace=None):
+    def __init__(
+            self, list_view, ref, helper, status=None, output=None,
+            namespace=None):
         """Constructor.
 
         Args:
@@ -37,7 +38,14 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         self.output = output or ref.output
         self.helper = helper
         self.status = status
-        self.namespace = namespace or self.ref.namespace
+
+        _ns = namespace or self.ref.namespace
+        _suffix = _ns.rsplit('_', 1)[1] if '_' in _ns else None
+        if (self.output.content_type, _suffix) in [
+                ('ShadersMa', 'shd'),
+                ('CurvesMb', 'crvs')]:
+            _ns = f'🡦 {_ns}'
+        self.namespace = _ns
 
         self.text_col = 'White'
 
