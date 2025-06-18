@@ -3,6 +3,7 @@
 # pylint: disable=too-many-instance-attributes
 
 from pini import qt, icons
+from pini.pipe import cache
 from pini.qt import QtGui
 from pini.utils import basic_repr, File
 
@@ -39,11 +40,14 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         self.helper = helper
         self.status = status
 
+        # Set display namespace - add prefix for linked shaders/curves
         _ns = namespace or self.ref.namespace
         _suffix = _ns.rsplit('_', 1)[1] if '_' in _ns else None
-        if (self.output.content_type, _suffix) in [
-                ('ShadersMa', 'shd'),
-                ('CurvesMb', 'crvs')]:
+        if (
+                isinstance(self.output, cache.CCPOutputBase) and
+                self.output.content_type, _suffix) in [
+                    ('ShadersMa', 'shd'),
+                    ('CurvesMb', 'crvs')]:
             _ns = f'🡦 {_ns}'
         self.namespace = _ns
 

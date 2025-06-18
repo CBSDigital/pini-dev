@@ -9,6 +9,7 @@ from .u_filter import apply_filter, passes_filter
 from .u_func import wrap_fn, chain_fns, null_fn
 from .u_heart import check_heart, HEART
 from .u_system import system
+from .u_url import read_url
 
 from .u_text import (
     is_pascal, is_camel, to_pascal, to_snake, to_ord, to_camel, copy_text,

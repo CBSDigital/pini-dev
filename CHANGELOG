@@ -1,3 +1,13 @@
+## [7.21.0] - Tue 2025-06-17 17:07
+### Summary
+ - Pini Helper:
+    - bugfix error on scene ref with output missing from shotgrid (cstewart),
+### Updated
+ - pini.utils.read_url added,
+ - pini.qt.CUiMainWindow bugfix parent arg not passed to parent,
+ - pini.tools.helper bugfix error on output missing from shotgrid,
+
+
 ## [7.20.0] - Tue 2025-06-17 07:07
 ### Summary
  - Pini Helper:
