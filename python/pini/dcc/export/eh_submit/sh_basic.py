@@ -3,7 +3,7 @@
 import logging
 import pprint
 
-from pini import icons, qt
+from pini import icons, qt, pipe
 from pini.dcc import export
 from pini.pipe import shotgrid
 from pini.tools import helper
@@ -112,8 +112,18 @@ class CBasicSubmitter(export.CExportHandler):
 
     def set_settings(self, **kwargs):
         """Apply exec settings."""
+        _LOGGER.debug('SET SETTINGS')
         super().set_settings(**kwargs)
+
+        # Read work from render
+        _work = None
+        _work_path = self.settings['render'].metadata.get('src')
+        if _work_path:
+            _work = pipe.CACHE.obt_work(_work_path)
+        _LOGGER.debug(' - APPLY WORK %s', _work)
+
         self.settings.update(dict(
+            work=_work,
             version_up=False,
             check_work=False,
             save=False,

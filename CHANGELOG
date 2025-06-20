@@ -1,3 +1,12 @@
+## [7.22.1] - Fri 2025-06-20 10:14
+### Summary
+ - Pini Helper:
+    - bugfix error on asset submit version in model task (kakuna),
+### Updated
+ - pini.dcc.export.CBasicSubmitter bugfix not passing work from render metadata,
+ - pini.pipe.shotgrid.create_ver apply sg_version_type as None for unmapped/unavailable tasks,
+
+
 ## [7.22.0] - Fri 2025-06-20 09:08
 ### Summary
  - Pini Helper:

@@ -114,6 +114,8 @@ def _add_to_dailies_playlist(render, version, catch=True):
 
     _type = version.data['sg_version_type']
     if not _type:
+        if catch:
+            return
         raise RuntimeError(
             f'Missing version type data {version.id_} - {render.path}')
 
@@ -230,12 +232,10 @@ def _build_ver_data(render, frames, comment, pub_files):
 
     # Add version type
     _map = {
-        'model': 'model',
         'rig': 'rig',
         'lookdev': 'surf',
     }
-    if render.pini_task in _map:
-        _data['sg_version_type'] = _map[render.pini_task]
+    _data['sg_version_type'] = _map.get(render.pini_task)
 
     # Add frames data
     if frames:
