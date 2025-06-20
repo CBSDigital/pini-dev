@@ -1,3 +1,17 @@
+## [7.22.0] - Fri 2025-06-20 09:08
+### Summary
+ - Pini Helper:
+    - working in nuke 16,
+    - nuke autowrite bugfix error on update format,
+### Updated
+ - pini.dcc.NukeDCC._force_save apply chdir to update current in nuke file browser,
+ - pini.qt.to_rect bugfix converting float -> int in QRectF,
+ - pini.qt.CUiMainWindow bugfix error on no parent arg passed,
+ - pini.tools.pyui fix PySide6 inheritance/constant issues,
+ - maya_pini.open_maya.find_node name arg matches non-unique name,
+ - nuke_pini.tools.autowrite bugfix error on update callback,
+
+
 ## [7.21.0] - Tue 2025-06-17 17:07
 ### Summary
  - Pini Helper:

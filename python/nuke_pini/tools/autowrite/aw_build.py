@@ -36,12 +36,12 @@ def _build_header(node):
     # Build update
     _cmd = '\n'.join([
         'from pini.tools import error',
-        'from nuke_pini.tools import autowrite2',
-        'autowrite2.flush_callbacks()',
-        '_node = autowrite2.CAutowrite2(nuke.thisNode())',
+        'from nuke_pini.tools import autowrite',
+        'autowrite.flush_callbacks()',
+        '_node = autowrite.CAutowrite2(nuke.thisNode())',
         '_func = error.catch(_node.update)',
         '_func()',
-        'autowrite2.install_callbacks()',
+        'autowrite.install_callbacks()',
     ])
     _update = nuke.PyScript_Knob('update', 'Update', _cmd)
     node.addKnob(_update)

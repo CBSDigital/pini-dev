@@ -44,7 +44,7 @@ def _safe_update_all():
 def update_all():
     """Update all autowrite nodes."""
 
-    # Find autowrite2 nodes
+    # Find autowrite nodes
     _aw2s = []
     for _grp in nuke.allNodes('Write'):
         try:

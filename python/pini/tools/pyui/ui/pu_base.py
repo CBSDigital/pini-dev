@@ -40,6 +40,7 @@ class PUBaseUi:
     def_h = 35
     sect_h = 22
 
+    name = None
     _mod = None
     _cur_section = None
 
@@ -405,7 +406,7 @@ class PUBaseUi:
             (dict): ui settings
         """
         _data = {'defs': {}, 'sections': {}}
-        _callbacks = CALLBACKS_CACHE[self.name]
+        _callbacks = CALLBACKS_CACHE.get(self.name, {})
 
         # Read defs
         for _def_name, _def_callbacks in _callbacks['defs'].items():

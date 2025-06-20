@@ -3,6 +3,7 @@
 # pylint: disable=abstract-method,too-many-public-methods
 
 import logging
+import os
 
 import nuke
 
@@ -217,6 +218,9 @@ class NukeDCC(BaseDCC):
         _file = File(_file)
         _LOGGER.info('FORCE SAVE %s', _file.path)
         nuke.scriptSaveAs(_file.path, overwrite=True)
+
+        # Update current shortcut in nuke file browser
+        os.chdir(_file.to_dir().path)
 
     def get_fps(self):
         """Obtain current frame rate from root node.

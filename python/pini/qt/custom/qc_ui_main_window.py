@@ -25,7 +25,7 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBaseDummy):
             parent (QWidget): parent widget
         """
         from pini import dcc
-        _parent = parent or dcc.get_main_window_pointer()
+        _parent = parent or dcc.get_main_window_ptr()
         super().__init__(parent=_parent)
         qc_ui_base.CUiBase.__init__(self, ui_file=ui_file, **kwargs)
 

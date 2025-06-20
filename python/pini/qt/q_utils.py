@@ -571,8 +571,9 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
 
     _LOGGER.debug('TO RECT %s %s', pos, size)
     _size = to_size(size)
+    _use_int = not isinstance(_size, QtCore.QSizeF)
     _LOGGER.debug(' - SIZE %s', _size)
-    _class = qt.CPointF if isinstance(_size, QtCore.QSizeF) else None
+    _class = qt.CPointF if not _use_int else None
     _pos = to_p(pos, class_=_class)
     _LOGGER.debug(' - POS %s', _pos)
 
@@ -580,9 +581,15 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
     if anchor == 'C':
         _root = _pos - to_p(_size) / 2
     elif anchor == 'L':
-        _root = _pos - to_p(0, int(_size.height() / 2))
+        _root_y = _size.height() / 2
+        if _use_int:
+            _root_y = round(_root_y)
+        _root = _pos - to_p(0, _root_y)
     elif anchor == 'R':
-        _root = _pos - to_p(_size.width(), int(_size.height() / 2))
+        _root_y = _size.height() / 2
+        if _use_int:
+            _root_y = round(_root_y)
+        _root = _pos - to_p(_size.width(), _root_y)
     elif anchor == 'T':
         _root = _pos - to_p(_size.width() / 2, 0)
     elif anchor == 'TL':

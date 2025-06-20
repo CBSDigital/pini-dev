@@ -291,7 +291,7 @@ def find_nodes(
                 continue
         if top_node and to_parent(_node):
             continue
-        if name and _node != name:
+        if name and name not in (_node, _node.name()):
             continue
 
         # Build node object

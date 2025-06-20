@@ -18,7 +18,19 @@ if not hasattr(sys, 'PYUI_QT_INTERFACES'):
 _LOGGER = logging.getLogger(__name__)
 
 
-class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
+class _PUBaseUiDummy(pu_base.PUBaseUi):
+    """Dummy class to fix PySide6/py11 inheritance.
+
+    In this configuration qt seems to call __init__ on all parent classes
+    when __init__ is called on the QObject class - this dummy allows the
+    parent __init__ to be disabled so that it can be called manually.
+    """
+
+    def __init__(self, **kwargs):  # pylint: disable=super-init-not-called
+        """Constructor."""
+
+
+class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
     """Qt interface built from a python file."""
 
     __repr__ = pu_base.PUBaseUi.__repr__
@@ -108,8 +120,8 @@ class PUQtUi(QtWidgets.QMainWindow, pu_base.PUBaseUi):
     def add_separator(self):
         """Add separator item to the interface."""
         _line = QtWidgets.QFrame(self.main_widget)
-        _line.setFrameShape(_line.HLine)
-        _line.setFrameShadow(_line.Sunken)
+        _line.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        _line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
 
         self.main_layout.addWidget(_line)
         self.main_layout.setAlignment(_line, Qt.AlignTop)
