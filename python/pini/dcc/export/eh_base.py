@@ -310,25 +310,13 @@ class CExportHandler:
          - applies save option
         """
         _bkp = self.settings['bkp']
-        _check_work = self.settings['check_work']
         _force = self.settings['force']
         _notes = self.settings['notes']
         _progress = self.settings['progress']
         _save = self.settings['save']
-        _work = self.settings['work']
 
         # Check current work
-        if _work:
-            self.work = pipe.CACHE.obt_work(_work)
-        else:
-            self.work = pipe.CACHE.obt_cur_work()
-        if _check_work and not self.work:
-            raise error.HandledError(
-                "Please save your scene using PiniHelper before exporting."
-                "\n\n"
-                "This allows the tools to tell what job/task you are working "
-                "in, to know where to save the files to.",
-                title='Warning', parent=self._ui_parent)
+        self._set_work()
 
         # Setup metadata + progress - show progress after init metadata as
         # init metadata may launch sanity check which requires user input
@@ -349,6 +337,35 @@ class CExportHandler:
             else:
                 dcc.save()
         self.progress.set_pc(10)
+
+    def _set_work(self):
+        """Set work."""
+        _check_work = self.settings['check_work']
+        _work = self.settings['work']
+
+        if _work:
+            self.work = pipe.CACHE.obt_work(_work)
+        else:
+            self.work = pipe.CACHE.obt_cur_work()
+
+        if not _check_work or self.work:
+            return
+
+        # Check for shot missing from
+        _work_u = pipe.cur_work()
+        if _work_u and pipe.SHOTGRID_AVAILABLE:
+            raise error.HandledError(
+                f"Current work file is invalid.\n\n{_work_u}\n\n"
+                f"This could be because the {_work_u.profile} is missing "
+                "or omitted in shotgrid.",
+                title='Error', parent=self._ui_parent)
+
+        raise error.HandledError(
+            "No current work file - please save your scene using "
+            "PiniHelper before exporting.\n\n"
+            "This allows the tools to tell what job/task you are working "
+            "in, to know where to save the files to.",
+            title='Error', parent=self._ui_parent)
 
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,

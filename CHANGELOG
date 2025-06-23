@@ -1,3 +1,12 @@
+## [7.22.2] - Mon 2025-06-23 10:43
+### Summary
+ - Pini Helper:
+    - better error on asset missing from shotgrid (cstewart),
+### Updated
+ - pini.dcc.export.CBaseExporter better error on asset missing from sg,
+ - pini.pipe.CACHE. cur_work_dir/cur_work/obt_cur_work catch error on missing,
+
+
 ## [7.22.1] - Fri 2025-06-20 10:14
 ### Summary
  - Pini Helper:

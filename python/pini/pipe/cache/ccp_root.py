@@ -409,6 +409,8 @@ class CCPRoot(elem.CPRoot):
         """
         from .. import cache
         _ety = self.obt_entity(work_dir.entity)
+        if not _ety:
+            return None
         _LOGGER.debug(' - ETY %s', _ety)
         assert isinstance(_ety, cache.CCPEntity)
         return single([
@@ -464,6 +466,8 @@ class CCPRoot(elem.CPRoot):
             (CPOutput): output
         """
         _ety = self.obt_entity(match)
+        if not _ety:
+            return None
         return _ety.obt_output(match, catch=catch, force=force)
 
     def obt_output_seq_dir(self, dir_, force=False):
@@ -497,7 +501,8 @@ class CCPRoot(elem.CPRoot):
         if elem.cur_work():
             _LOGGER.info('CUR WORK MISSING FROM CACHE - REBUILD')
             self.reset()
-            assert self.cur_work
+            if not self.cur_work:
+                return None
             return self.cur_work
         if not catch:
             raise ValueError('No current work')
