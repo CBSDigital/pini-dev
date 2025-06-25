@@ -20,6 +20,9 @@ class CMayaCache(eh_base.CExportHandler):
 
     TYPE = 'Cache'
 
+    block_update_metadata = False
+    add_use_farm = False
+
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
 
@@ -30,7 +33,7 @@ class CMayaCache(eh_base.CExportHandler):
 
         self.ui.add_list_widget(name='Cacheables')
         self.ui.add_spin_box('Substeps', 1, min_=1, max_=20)
-        if farm.IS_AVAILABLE:
+        if farm.IS_AVAILABLE and self.add_use_farm:
             self.ui.add_check_box('UseFarm', False)
         self._add_custom_ui_elems()
         self._build_ui_footer()
@@ -40,10 +43,10 @@ class CMayaCache(eh_base.CExportHandler):
         super().set_settings(**kwargs)
 
         # Handled in m_pipe to allow embed asset path
-        if not self.settings['update_metadata']:
-            raise NotImplementedError
-
-        self.settings['update_metadata'] = False
+        if self.block_update_metadata:
+            if not self.settings['update_metadata']:
+                raise NotImplementedError
+            self.settings['update_metadata'] = False
 
     def _redraw__Cacheables(self):
         _LOGGER.debug('REDRAW Cacheables')
@@ -81,11 +84,15 @@ class CMayaAbcCache(CMayaCache):
     ACTION = 'AbcCache'
     ICON = icons.find('Input Latin Letters')
 
+    block_update_metadata = True
+    add_use_farm = True
+
     def export(  # pylint: disable=unused-argument
             self, cacheables=None, notes=None, version_up=None, snapshot=True,
             save=True, bkp=True, use_farm=False, range_=None, substeps=1,
             format_='Ogawa', uv_write=True, world_space=True,
-            renderable_only=True, force=False):
+            update_cache=True, renderable_only=True, checks_data=None,
+            force=False):
         """Execute cache operation.
 
         Args:
@@ -101,16 +108,18 @@ class CMayaAbcCache(CMayaCache):
             format_ (str): abc format (eg. Ogawa/HDF5)
             uv_write (bool): write uvs to abc
             world_space (bool): write in world space
+            update_cache (bool): update pipe cache
             renderable_only (bool): write renderable geometry only
+            checks_data (dict): apply sanity checks data
             force (bool): replace existing without confirmation
         """
-        self.outputs = m_pipe.cache(
+        return m_pipe.cache(
             cacheables, version_up=False, update_cache=False,
             use_farm=use_farm, update_metadata=True,
             range_=range_, format_=format_, uv_write=uv_write,
             world_space=world_space, renderable_only=renderable_only,
             step=1 / substeps, force=force, extn='abc', save=False,
-            checks_data=self.metadata['sanity_check'])
+            checks_data=checks_data or self.metadata['sanity_check'])
 
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
@@ -130,10 +139,14 @@ class CMayaFbxCache(CMayaCache):
     ICON = icons.find('Worm')
     COL = 'LightPink'
 
+    block_update_metadata = True
+    add_use_farm = True
+
     def export(  # pylint: disable=unused-argument
             self, cacheables, notes=None, version_up=None, snapshot=True,
             save=True, bkp=True, progress=False, use_farm=False, range_=None,
-            substeps=1, format_='FBX201600', force=False):
+            substeps=1, format_='FBX201600',
+            update_cache=True, checks_data=None, force=False):
         """Execute cache operation.
 
         Args:
@@ -148,13 +161,16 @@ class CMayaFbxCache(CMayaCache):
             range_ (tuple): override cache range
             substeps (int): substeps per frame
             format_ (str): abc format (eg. Ogawa/HDF5)
+            update_cache (bool): update pipe cache
+            checks_data (dict): apply sanity checks data
             force (bool): replace existing without confirmation
         """
-        self.outputs = m_pipe.cache(
-            cacheables, version_up=False, update_cache=False, extn='fbx',
-            use_farm=use_farm, checks_data=self.metadata['sanity_check'],
+        return m_pipe.cache(
+            cacheables, version_up=False, extn='fbx',
+            use_farm=use_farm, update_metadata=True,
+            checks_data=checks_data or self.metadata['sanity_check'],
             range_=range_, format_=format_, step=1 / substeps, save=False,
-            force=force, update_metadata=True)
+            update_cache=False, force=force)
 
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
@@ -192,12 +208,5 @@ class CMayaCrvsCache(CMayaCache):
             format_ (str): abc format (eg. Ogawa/HDF5)
             force (bool): replace existing without confirmation
         """
-        self.outputs = m_pipe.export_anim_curves(
+        return m_pipe.export_anim_curves(
             cacheables, range_=range_, force=force)
-
-    def set_settings(self, **kwargs):
-        """Setup export settings.
-
-        Bypass abc/fbx cache overrides + revert to base handler.
-        """
-        eh_base.CExportHandler.set_settings(self, **kwargs)

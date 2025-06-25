@@ -200,6 +200,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         self.work.load(force=True)
         self.progress.set_pc(85)
 
+        return self.outputs
+
     def _clean_scene(self):
         """Apply clean scene options to prepare for publish.
         """

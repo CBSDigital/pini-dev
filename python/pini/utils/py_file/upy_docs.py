@@ -63,7 +63,8 @@ class PyDefDocs:
         """
         _LOGGER.debug('ADD ARG %s', arg)
         assert self.args_str
-        _new_arg_s = self.args_str + f'\n    {arg.docstring}'
+        _arg_docs = arg.docstring.replace('\n', '\n    ')
+        _new_arg_s = self.args_str + f'\n    {_arg_docs}'
         assert self.body.count(self.args_str) == 1
 
         self.body = self.body.replace(self.args_str, _new_arg_s)

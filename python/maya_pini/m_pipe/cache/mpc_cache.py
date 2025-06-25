@@ -235,24 +235,28 @@ def _exec_local_cache(
         _exec_local_abc_cache(cacheables=cacheables, flags=flags)
     elif extn == 'fbx':
         _exec_local_fbx_cache(cacheables=cacheables, flags=flags)
+
+    # Update metadata + pipeline cache
     if update_metadata:
         _write_metadata(
             outputs=outputs, cacheables=cacheables, range_=flags['range_'],
             checks_data=checks_data, step=flags['step'])
+        if pipe.SHOTGRID_AVAILABLE:
+            from pini.pipe import shotgrid
+            _thumb = work.image if work.image.exists() else None
+            for _last, _out in qt.progress_bar(
+                    last(outputs), 'Registering {:d} output{} in shotgrid'):
+                shotgrid.create_pub_file_from_output(
+                    _out, thumb=_thumb,
+                    update_cache=_last and update_cache,
+                    force=True)
+        elif update_cache:
+            pipe.cache_reset()
 
     # Post cache
     if clean_up:
         for _cbl in cacheables:
             _cbl.post_cache()
-
-    # Register in shotgrid
-    if update_cache and pipe.SHOTGRID_AVAILABLE:
-        from pini.pipe import shotgrid
-        _thumb = work.image if work.image.exists() else None
-        for _last, _out in qt.progress_bar(
-                last(outputs), 'Registering {:d} output{} in shotgrid'):
-            shotgrid.create_pub_file_from_output(
-                _out, thumb=_thumb, update_cache=_last, force=True)
 
 
 @hide_img_planes

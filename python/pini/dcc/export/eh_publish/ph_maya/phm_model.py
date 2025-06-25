@@ -68,7 +68,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _basic_kwargs = locals()
         for _name in ('del_history', 'freeze_tfms', 'self', '__class__'):
             _basic_kwargs.pop(_name)
-        super().export(**_basic_kwargs)
+        return super().export(**_basic_kwargs)
 
     def _clean_scene(self):
         """Apply clean scene options to prepare for publish."""

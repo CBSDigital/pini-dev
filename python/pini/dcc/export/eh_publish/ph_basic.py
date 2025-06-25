@@ -26,7 +26,7 @@ class CBasicPublish(eh_base.CExportHandler):
 
         Args:
             work (CPWork): override workfile to read metadata from
-            sanity_check_ (bool): run sanity checks before publish
+            run_checks (bool): run sanity checks before publish
             task (str): task to pass to sanity check
             force (bool): force completion without any confirmations
 

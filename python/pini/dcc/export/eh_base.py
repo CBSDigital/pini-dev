@@ -157,13 +157,18 @@ class CExportHandler:
         Returns:
             (dict): metadata
         """
+        _checks_data = self.settings['checks_data']
         _force = self.settings['force']
+        _run_checks = self.settings['run_checks']
+        _LOGGER.debug('BUILD METADATA force=%d')
+        _LOGGER.debug(' - RUN CHECKS %d %s', _run_checks, _checks_data)
+
         _notes = self._obt_notes()
-        _sanity_check = self.settings['sanity_check_']
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=self.work, handler=self.NAME,
-            sanity_check_=_sanity_check, force=_force, task=self.work.pini_task,
-            notes=_notes, require_notes=True)
+            run_checks=_run_checks, force=_force, task=self.work.pini_task,
+            notes=_notes, require_notes=True, checks_data=_checks_data)
+
         return _data
 
     @cache_result
@@ -252,8 +257,12 @@ class CExportHandler:
         """
         self.set_settings(**kwargs)
         self.init_export()
-        self.export(*args, **kwargs)
+
+        self.outputs = self.export(*args, **kwargs)
+        assert isinstance(self.outputs, list)
+
         self.post_export()
+
         return self.outputs
 
     def set_settings(self, **kwargs):
@@ -332,7 +341,8 @@ class CExportHandler:
             if _bkp:
                 _bkp_file = self.work.save(
                     reason=self.TYPE.lower(), parent=self._ui_parent,
-                    notes=_notes, result='bkp', force=True)
+                    notes=_notes, result='bkp', update_outputs=False,
+                    force=True)
                 self.metadata['bkp'] = _bkp_file.path
             else:
                 dcc.save()
@@ -369,8 +379,9 @@ class CExportHandler:
 
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,
-            bkp=True, progress=False, update_metadata=True, update_cache=True,
-            work=None, sanity_check_=True, check_work=True, force=False):
+            bkp=True, progress=False, work=None, check_work=True,
+            update_metadata=True, update_cache=True,
+            run_checks=True, checks_data=None, force=False):
         """Execute this export.
 
         This is the main export method, to be implemented in each exporter.
@@ -383,11 +394,12 @@ class CExportHandler:
             save (bool): save work file on export
             bkp (bool): save bkp file
             progress (bool): show progress bar
+            work (CPWork): override work file (for testing)
+            check_work (bool): check for current work
             update_metadata (bool): update output metadata
             update_cache (bool): update pipe cache
-            work (CPWork): override work file (for testing)
-            sanity_check_ (bool): apply sanity check
-            check_work (bool): check for current work
+            run_checks (bool): apply sanity check
+            checks_data (dict): apply sanity checks data
             force (bool): replace existing outputs without confirmation
         """
         raise NotImplementedError
@@ -402,10 +414,10 @@ class CExportHandler:
         """
         _LOGGER.info('POST EXPORT %s', self.work)
 
-        _version_up = self.settings['version_up']
         _update_metadata = self.settings['update_metadata']
         _update_cache = self.settings['update_cache']
         _snapshot = self.settings['snapshot']
+        _version_up = self.settings['version_up']
 
         _LOGGER.info(' - OUTS %d %s', len(self.outputs), self.outputs)
         _LOGGER.info(
@@ -418,9 +430,10 @@ class CExportHandler:
         if _snapshot:
             dcc.take_snapshot(self.work.image)
         self.progress.set_pc(94)
-        if _update_cache:
+        if _update_metadata:
             if pipe.SHOTGRID_AVAILABLE:
                 self._register_in_shotgrid()
+        if _update_cache:
             self._update_pipe_cache()
         self.progress.set_pc(96)
         if _version_up:
@@ -473,6 +486,8 @@ class CExportHandler:
         Args:
             upstream_files (list): list of upstream files
         """
+        _update_cache = self.settings['update_cache']
+
         _LOGGER.info('REGISTER IN SHOTGRID %s', self)
         _LOGGER.info(' - OUTPUTS %d %s', len(self.outputs), self.outputs)
         from pini.pipe import shotgrid
@@ -483,16 +498,16 @@ class CExportHandler:
                 _out, thumb=_thumb, force=True, update_cache=_last,
                 upstream_files=upstream_files)
 
-        self.work = pipe.CACHE.obt(self.work)  # Cache was reset
-
     def _update_pipe_cache(self):
         """Update pipeline cache."""
         _LOGGER.info('UPDATE PIPE CACHE')
 
-        # Check output paths + update to cacheable
         _LOGGER.info(' - UPDATE WORK OUTPUTS')
+        pipe.CACHE.reset()
+        self.work = pipe.CACHE.obt(self.work)
         self.work.update_outputs()
 
+        # Check output paths + update to cacheable
         _out_paths = [_out.path for _out in self.work.outputs]
         for _idx, _out in enumerate(self.outputs):
 

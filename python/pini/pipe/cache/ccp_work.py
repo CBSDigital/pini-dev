@@ -2,6 +2,7 @@
 
 import logging
 
+from pini.tools import release
 from pini.utils import nice_id, File, nice_size
 
 from .ccp_utils import pipe_cache_result, pipe_cache_to_file
@@ -207,6 +208,7 @@ class CCPWork(CPWork):
             self.metadata.get('owner') or
             self.metadata.get('user'))
 
+    @release.transfer_kwarg_docs(CPWork.save, mode='add args')
     def save(self, result='this', update_outputs=True, **kwargs):
         """Save this work.
 

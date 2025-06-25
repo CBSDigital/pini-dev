@@ -1,3 +1,22 @@
+## [7.23.0] - Wed 2025-06-25 14:02
+### Summary
+ - Pini Helper:
+    - enabled sorting for custom cache handlers [PT-296],
+### Updated
+ - pini.utils.PyDocs.add_arg bugfix multi-line indent,
+ - pini.dcc.find_export_handlers applied priority sorting,
+ - pini.dcc.export.CBaseExportHandler renamed arg sanity_check_ -> run_checks,
+ - pini.dcc.export.CBaseExportHandler.exec outputs attr set from export result,
+ - pini.dcc.export.CBaseExportHandler.init_export block update outputs on save,
+ - pini.dcc.export.CBaseExportHandler.export added checks_data arg,
+ - pini.dcc.export.CBaseExportHandler update shotgrid applied in update metadata not update cache,
+ - pini.dcc.export.CMayaCache made public,
+ - pini.dcc.export.CMayaCache added attrs block_update_metadata/add_use_farm,
+ - pini.pipe CPWorkSG.save/CCPWork.save applied release.transfer_kwarg_docs,
+ - pini.tools.release.transfer_kwarg_docs allow bare func as arg,
+ - maya_pini.m_pipe.cache renamed submodule mpc_tools -> mpc_cache,
+
+
 ## [7.22.2] - Mon 2025-06-23 10:43
 ### Summary
  - Pini Helper:

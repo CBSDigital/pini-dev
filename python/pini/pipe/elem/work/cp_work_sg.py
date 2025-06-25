@@ -2,6 +2,7 @@
 
 import logging
 
+from pini.tools import release
 from pini.utils import get_user
 
 from . import cp_work_base
@@ -58,6 +59,7 @@ class CPWorkSG(cp_work_base.CPWorkBase):
 
         return _outs
 
+    @release.transfer_kwarg_docs(cp_work_base.CPWorkBase.save)
     def save(self, **kwargs):
         """Save this work file in the current dcc.
 

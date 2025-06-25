@@ -157,6 +157,8 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         self.work.load(force=True)
         _LOGGER.debug(' - COMPLETE %s', self.outputs)
 
+        return self.outputs
+
     def _handle_export_ass(self):
         """Handle export ass file."""
         _force = self.settings['force']

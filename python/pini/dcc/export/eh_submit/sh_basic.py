@@ -128,7 +128,7 @@ class CBasicSubmitter(export.CExportHandler):
             check_work=False,
             save=False,
             snapshot=False,
-            sanity_check_=False))
+            run_checks=False))
 
     def export(self, render, notes=None, force=False):
         """Execute submission.
@@ -139,6 +139,7 @@ class CBasicSubmitter(export.CExportHandler):
             force (bool): force update any existing submission
         """
         shotgrid.create_ver(render, comment=notes, force=force)
+        return []
 
 
 def _submit_out_sort(output):

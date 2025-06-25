@@ -557,7 +557,9 @@ class PHSceneTab:
                 _output = _ref.to_output(use_cache=False)
             else:
                 _status = None
-            _LOGGER.debug(' - ADDING REF %s status=%s', _ref, _status)
+            _LOGGER.debug(
+                ' - ADDING REF %s status=%s output=%s', _ref, _status,
+                _output or _ref.output)
             _item = phu_scene_ref_item.PHSceneRefItem(
                 self.ui.SSceneRefs, ref=_ref, status=_status, output=_output,
                 helper=self, namespace=_namespace)
@@ -594,9 +596,14 @@ class PHSceneTab:
         _LOGGER.debug(
             ' - TYPE FILTER %d show_models=%d', _type_filter, _show_models)
 
+        # Find list of all refs
+        _all_refs = sorted(
+            _scene_refs + self._staged_imports, key=_sort_scene_ref)
+        _LOGGER.debug(' - BUILD REFS LIST %d %s', len(_all_refs), _all_refs)
+
+        # Build filtered list of display refs
         _refs = []
-        for _ref in sorted(
-                _scene_refs + self._staged_imports, key=_sort_scene_ref):
+        for _ref in _all_refs:
             if not passes_filter(_ref.namespace, _filter):
                 continue
             if _type_filter:
@@ -613,6 +620,7 @@ class PHSceneTab:
                         ' - REJECTED %s task=%s extn=%s', _ref,
                         _ref.task, _ref.extn)
                     continue
+            _LOGGER.debug('   - ADD REF %s %s', _ref, _ref.output)
             _refs.append(_ref)
 
         return _refs
@@ -1107,20 +1115,22 @@ class PHSceneTab:
             namespace (str): force namespace of import
             reset (bool): reset imports before adding import
         """
-        _LOGGER.debug('STAGE IMPORT')
+        _LOGGER.debug('STAGE IMPORT %s', repr(output))
 
         if reset:
             self._callback__SReset()
 
         _out = pipe.CACHE.obt(output)
+        _LOGGER.debug(' - OUT %s', repr(_out))
         _ignore = [_ref.namespace for _ref in self._staged_imports]
         _ns = namespace or output_to_namespace(
             _out, attach_to=attach_to, ignore=_ignore, base=base)
-        _ref = _StagedRef(output=output, namespace=_ns, attach_to=attach_to)
+        _ref = _StagedRef(output=_out, namespace=_ns, attach_to=attach_to)
         if attach_to:
             _existing = dcc.find_pipe_ref(_ns, catch=True)
             if _existing:
                 self._stage_delete(_existing, redraw=False)
+        _LOGGER.debug(' - ADDING STAGED REF %s %s', _ref, _out)
         self._staged_imports.append(_ref)
 
         # Add lookdev attach
@@ -1144,6 +1154,7 @@ class PHSceneTab:
                 _lookdev_ref = _StagedRef(
                     output=_lookdev, namespace=_lookdev_ns,
                     attach_to=_ref)
+                _LOGGER.debug(' - ADDING LOOKDEV %s', _lookdev)
                 self._staged_imports.append(_lookdev_ref)
 
         if redraw:

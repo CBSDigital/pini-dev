@@ -319,7 +319,7 @@ class BaseDCC:
                 continue
             _handlers.append(_handler)
 
-        return _handlers
+        return sorted(_handlers)
 
     def _force_load(self, file_):
         """Force load the given scene.

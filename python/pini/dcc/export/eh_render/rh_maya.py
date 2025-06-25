@@ -121,7 +121,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                     f'No mov template found in this job:'
                     f'\n\n{self.work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.ui.parent)
-                return
+                return []
             _out = self.work.to_output(
                 'mov', output_name=_output_name, extn='mp4')
             _t_stamp = strftime("%y%m%d_%H%M%S")
@@ -135,7 +135,7 @@ class CMayaLocalRender(CMayaRenderHandler):
                     f'No render template found in this job:'
                     f'\n\n{self.work.job.path}\n\nUnable to render.',
                     title='Warning', parent=self.ui.parent)
-                return
+                return []
             _fmt = format_ or cmds.getAttr(
                 'defaultArnoldDriver.ai_translator', asString=True)
             _extn = {'jpeg': 'jpg'}.get(_fmt, _fmt)
@@ -146,17 +146,18 @@ class CMayaLocalRender(CMayaRenderHandler):
 
         # Execute render
         if not render_:
-            return
+            return []
         render(seq=_out_seq, frames=frames, camera=_cam)
         if mov:
             _compile_video_with_scene_audio(seq=_out_seq, video=_out)
             if cleanup:
                 _out_seq.delete(force=True)
-        self.outputs = [_out]
+        _outs = [_out]
         if view:
             _out.view()
 
         _LOGGER.info(' - RENDER COMPLETE')
+        return _outs
 
     def _update_metadata(self):
         """Update outputs metadata."""
@@ -352,7 +353,7 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         _prepare_scene_for_render()
 
-        self.submit_msg, self.outputs = farm.submit_maya_render(
+        self.submit_msg, _outs = farm.submit_maya_render(
             submit_=render_, force=True, result='msg/outs',
             metadata=self.metadata, frames=frames, camera=_cam,
             chunk_size=chunk_size, comment=notes, priority=priority,
@@ -361,6 +362,8 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         for _revert in _reverts:
             _revert()
+
+        return _outs
 
     def post_export(self):
         """Execute post export code."""

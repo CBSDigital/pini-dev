@@ -1,13 +1,16 @@
 """General utilities for export handlers."""
 
 import time
+import logging
 
 from pini import pipe, dcc, qt
 from pini.utils import get_user, to_str
 
+_LOGGER = logging.getLogger(__name__)
+
 
 def build_metadata(
-        handler, action=None, work=None, sanity_check_=False, checks_data=None,
+        handler, action=None, work=None, run_checks=False, checks_data=None,
         range_=None, notes=None, task=None, src=None, bkp=None,
         content_type=None, src_ref=None, require_notes=False, force=False):
     """Obtain metadata to apply to a generated export.
@@ -16,7 +19,7 @@ def build_metadata(
         handler (str): name of export handler
         action (str): name of action (to pass to sanity check)
         work (CPWork): override workfile to read metadata from
-        sanity_check_ (bool): run sanity checks before publish
+        run_checks (bool): run sanity checks before publish
         checks_data (dict): override sanity checks data (passing this
             data will block sanity check from launching)
         range_ (tuple): override range start/end
@@ -33,6 +36,8 @@ def build_metadata(
     Returns:
         (dict): metadata
     """
+    _LOGGER.debug('BUILD METADATA')
+    _LOGGER.debug(' - RUN CHECKS %d %s', run_checks, checks_data)
     from pini.tools import sanity_check, release
 
     _data = {}
@@ -77,7 +82,7 @@ def build_metadata(
     # Add sanity checks data
     if checks_data:
         _data['sanity_check'] = checks_data
-    elif sanity_check_:
+    elif run_checks:
         _action = action or handler
         _results = sanity_check.launch_export_ui(
             action=_action, force=force, task=task)

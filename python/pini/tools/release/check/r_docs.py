@@ -3,6 +3,7 @@
 import logging
 import sys
 import textwrap
+import types
 
 from pini.utils import to_nice, copy_text, PyDefDocs
 
@@ -10,16 +11,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def transfer_kwarg_docs(
-        mod, func, mode='replace', ignore_args=()):
+        func=None, mod=None, mode='replace', ignore_args=()):
     """Transfer keyword argument docs from the given source.
 
     This allows the docstrings for a function which uses *args/**kwargs
     to be kept up to date.
 
     Args:
-        mod (str): name of module (eg. "pini.dcc.export")
-        func (str): name of function to read docs from
+        func (func|str): function or name of function to read docs from
             (eg. "CMayaModelPublish.export")
+        mod (str): name of module (eg. "pini.dcc.export")
         mode (str): docs to transfer
             - replace: simply replace these docs
             - add args: add args to these docs
@@ -33,15 +34,28 @@ def transfer_kwarg_docs(
 
         _LOGGER.debug('TRANSFER KWARG DOCS %s', func)
 
-        # Find source function
         _LOGGER.debug(' - MOD/FUNC %s %s', mod, func)
-        _mod = sys.modules.get(mod)
-        _LOGGER.debug(' - MOD %s', _mod)
-        _func = _mod
-        for _token in func.split('.'):
-            if not _func:
-                break
-            _func = getattr(_func, _token, None)
+
+        # Obtain func object
+        _func = func
+        if isinstance(func, (types.FunctionType, types.MethodType)):
+            pass
+        else:
+
+            # Obtain module
+            _mod = mod
+            if isinstance(_mod, str):
+                _mod = sys.modules.get(mod)
+            _LOGGER.debug(' - MOD %s', _mod)
+
+            # Find source function
+            _func = func
+            for _token in func.split('.'):
+                if not _func:
+                    break
+                _func = getattr(_func, _token, None)
+                _LOGGER.debug(' - READ FUNC TOKEN %s %s', _token, _func)
+
         _LOGGER.debug(' - FUNC %s', _func)
 
         # Build replacement docs
@@ -54,6 +68,7 @@ def transfer_kwarg_docs(
                     base_fn=func_, add_fn=_func, ignore=ignore_args)
             else:
                 raise NotImplementedError(mode)
+        _LOGGER.debug(' - DOCS %s', _docs)
         if _docs:
             func_.__doc__ = _docs
 
