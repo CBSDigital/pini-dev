@@ -191,7 +191,26 @@ def _parse_issue_data(issue, line):
     else:
         raise NotImplementedError(issue.desc)
 
+    _LOGGER.info('   - ROOT %s', _root)
+    _LOGGER.info('   - TO REMOVE %s', _to_remove)
+
     return _root, _to_remove
+
+
+def _line_to_imports(line):
+    """Obtain list of imports from the given line of code.
+
+    Args:
+        line (str): line of code
+
+    Returns:
+        (str list): imports
+    """
+    _tokens = line.split()
+    if len(_tokens) > 3 and _tokens[0] == 'from' and _tokens[2] == 'import':
+        _, _imports_s = line.split(' import ', 1)
+        return _imports_s.split(', ')
+    raise NotImplementedError(line)
 
 
 def _fix_unused_from_import(issue, lines, line):
@@ -205,32 +224,10 @@ def _fix_unused_from_import(issue, lines, line):
         line (str): issue's line of code (cleaned)
     """
     assert issue.desc.startswith('Unused ')
-    _line_n = issue.line_n - 1
+    assert line.strip().startswith('from ')
 
-    # _tail = issue.desc[len('Unused '):]
-    # if ' as ' in issue.desc:
-    #     # eg. from xxx import yyy as zzz
-    #     _submod, _tail = _tail.split(' imported from ')
-    #     _LOGGER.info('   - SUBMOD %s', _submod)
-    #     _root, _alias = _tail.split(' as ')
-    #     _LOGGER.info('   - ALIAS %s', _alias)
-    #     _to_remove = f'{_submod} as {_alias}'
-    # elif ' imported from ' in issue.desc:
-    #     _to_remove, _root = _tail.split(' imported from ')
-    # elif issue.desc.startswith('Unused import '):
-    #     _LOGGER.info(' - LINE %s', line)
-    #     _tokens = line.split()
-    #     _LOGGER.info(' - TOKENS %s', _tokens)
-    #     assert _tokens[0] == 'from'
-    #     assert _tokens[2] == 'import'
-    #     _root = _tokens[1]
-    #     _, _to_remove = issue.desc.rsplit(maxsplit=1)
-    # else:
-    #     raise NotImplementedError(issue.desc)
+    _line_n = issue.line_n - 1
     _root, _to_remove = _parse_issue_data(issue=issue, line=line)
-    _LOGGER.info('   - ROOT %s', _root)
-    _LOGGER.info('   - TO REMOVE %s', _to_remove)
-    assert line.count(_to_remove) == 1
 
     # Handle single from import
     _match_full_line = f'from {_root} import {_to_remove}'
@@ -239,21 +236,16 @@ def _fix_unused_from_import(issue, lines, line):
         lines.pop(_line_n)
         return
 
-    _root_name = line.split()[1]
-    assert _root_name.endswith(_root)  # eg. "..q_mgr", "c_pipe"
-    _prefix = f'from {_root_name} import '
-    _LOGGER.info('   - PREFIX %s', _prefix)
-    assert line.strip().startswith(_prefix)
-    assert line.count(_prefix) == 1
-    _imports = line[len(_prefix):].split(', ')
+    _imports = _line_to_imports(line)
     _LOGGER.info('   - IMPORTS %s', _imports)
+    if _to_remove in _imports:
+        _imports.remove(_to_remove)
+        _new_imports_s = ', '.join(_imports)
+    else:
+        raise NotImplementedError
 
     # Build new line(s)
-    _new_line = line.replace(_to_remove, '')
-    _new_line = _new_line.replace(', , ', ', ')
-    if _new_line.endswith(', '):
-        _new_line = _new_line[:-2]
-    _new_line = _new_line.replace(' , ', ' ')
+    _new_line = f'from {_root} import {_new_imports_s}'
     _LOGGER.info('   - NEW LINE %s', _new_line)
     if len(line) <= 80:
         lines[_line_n] = _new_line

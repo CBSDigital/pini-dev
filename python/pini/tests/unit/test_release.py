@@ -903,6 +903,20 @@ class TestRelease(unittest.TestCase):
                  '    print(sys, cache_result, File)']),
              ),
 
+            ('Overlapping from',
+             '\n'.join([
+                 'import sys',
+                 'from PySide2 import QPainter, QPainterPath',
+                 '',
+                 'def _test():',
+                 '    print(QPainterPath)']),
+             '\n'.join([
+                 'from PySide2 import QPainterPath',
+                 '',
+                 'def _test():',
+                 '    print(QPainterPath)']),
+             ),
+
         ]):
 
             _LOGGER.info('RUNNING CHECK %s', _name)

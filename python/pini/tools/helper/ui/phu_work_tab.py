@@ -713,7 +713,7 @@ class PHWorkTab:
 
         self._add_output_opts(
             menu=_out_menu, output=out, find_work=False, ignore_ui=True,
-            parent=self.ui.WWorks, delete_callback=self._callback__WWorkRefresh)
+            delete_callback=self._callback__WWorkRefresh)
 
     def _context__WWorkRefresh(self, menu):
         menu.add_action(
