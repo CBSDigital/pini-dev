@@ -17,6 +17,6 @@ def submit(render, **kwargs):
         render (CPOutputBase): render to submit
     """
     _LOGGER.info('SUBMIT')
-    _exporter = dcc.find_export_handler('BasicSubmitter')
+    _exporter = dcc.find_export_handler('Submit', profile=render.profile)
     _LOGGER.info(' - EXPORTER %s', _exporter)
     _exporter.exec(render, **kwargs)

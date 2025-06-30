@@ -503,10 +503,10 @@ class CExportHandlerUI(qt.CUiContainer):
         Returns:
             (dict): kwargs
         """
-        _LOGGER.info('TO KWARGS %s', self)
+        _LOGGER.debug('TO KWARGS %s', self)
         _kwargs = {}
         for _name, _elem in self._elems.items():
-            _LOGGER.info(' - ELEM %s', _elem)
+            _LOGGER.debug(' - ELEM %s', _elem)
             if _elem.ui_only:
                 continue
             _name = to_snake(_name)

@@ -8,7 +8,7 @@ import pprint
 import webbrowser
 
 from pini import pipe, icons, dcc, qt
-from pini.dcc import pipe_ref
+from pini.dcc import pipe_ref, export
 from pini.utils import (
     File, wrap_fn, chain_fns, strftime, Video, Seq, VIDEO_EXTNS, to_str)
 
@@ -283,8 +283,7 @@ class PHUiBase(
 
     def _add_output_opts(
             self, menu, output, find_work=True, header=True, delete=True,
-            add=True, ignore_ui=False, ref=None, parent=None,
-            delete_callback=None):
+            add=True, ignore_ui=False, ref=None, delete_callback=None):
         """Add menu options for the given output.
 
         Args:
@@ -297,7 +296,6 @@ class PHUiBase(
             ignore_ui (bool): don't add options relating to ui selection
                 (eg. apply lookdev to selected scene ref)
             ref (CPipeRef): scene ref associated with this output
-            parent (QWidget): widget to update if outputs change
             delete_callback (fn): callback to execute on output deletion
         """
         _LOGGER.debug(' - ADD OUT OPTS %s', output)
@@ -321,10 +319,9 @@ class PHUiBase(
         if _out_c and pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid
             if _out_c.submittable:
-                _submit = wrap_fn(shotgrid.SUBMITTER.run, _out_c)
-                _func = chain_fns(_submit, parent.redraw)
                 menu.add_action(
-                    'Submit to shotgrid', icon=shotgrid.ICON, func=_func)
+                    'Submit to shotgrid', icon=shotgrid.ICON,
+                    func=wrap_fn(export.submit, _out_c))
             _pub = shotgrid.SGC.find_pub_file(_out_c, catch=True)
             if _pub:
                 _open_url = wrap_fn(webbrowser.open, _pub.to_url())

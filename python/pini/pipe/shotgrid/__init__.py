@@ -18,7 +18,6 @@ from .sg_pub_file import (
     create_pub_file, create_pub_file_from_output, create_pub_file_from_path)
 
 from .sg_tools import update_work_task
-from .sg_submit import submit, set_submitter, CPSubmitter, SUBMITTER
 
 from . import cache
 from .cache import SGCPubFile, SGC

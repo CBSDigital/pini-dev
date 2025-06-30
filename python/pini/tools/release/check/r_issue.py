@@ -106,7 +106,6 @@ def fix_unused_imports(file_, issues):
 
     issues.sort(key=operator.attrgetter('line_n'), reverse=True)
     _lines = file_.read_lines()
-    # pprint.pprint(_lines)
 
     for _issue in issues:
 
@@ -135,20 +134,11 @@ def fix_unused_imports(file_, issues):
 
         # Simple one line imports (eg. "import sys")
         if _issue.desc.startswith('Unused import '):
-
-            assert _issue.desc.count('Unused import ') == 1
-            _token = _issue.desc.replace('Unused import ', '')
-            _LOGGER.info('   - TOKEN %s', _token)
-            if _line == f'import {_token}':
-                _lines.pop(_line_n)
-            elif _line.endswith(f' import {_token}'):
-                _lines.pop(_line_n)
-            else:
-                raise NotImplementedError
+            _fix_unused_mod(
+                lines=_lines, issue=_issue, line=_line, line_n=_line_n)
 
         # Batch from imports (eg. "from pini import pipe, install")
         elif ' imported from ' in _issue.desc:
-
             _fix_unused_from_import(
                 lines=_lines, issue=_issue, line=_line)
 
@@ -168,6 +158,42 @@ def fix_unused_imports(file_, issues):
     return '\n'.join(_lines)
 
 
+def _parse_issue_data(issue, line):
+    """Parse issue root + to remove tokens.
+
+    Args:
+        issue (PylintIssue): issue to parse
+        line (str): issue's line of code (cleaned)
+
+    Returns:
+        (tuple): root, to remove
+    """
+    _tail = issue.desc[len('Unused '):]
+    if ' as ' in issue.desc:
+        # eg. from xxx import yyy as zzz
+        _submod, _tail = _tail.split(' imported from ')
+        _LOGGER.info('   - SUBMOD %s', _submod)
+        _root, _alias = _tail.split(' as ')
+        _LOGGER.info('   - ALIAS %s', _alias)
+        _to_remove = f'{_submod} as {_alias}'
+    elif ' imported from ' in issue.desc:
+        _to_remove, _root = _tail.split(' imported from ')
+
+    elif issue.desc.startswith('Unused import '):
+        # No root specified means relative import
+        _LOGGER.info(' - LINE %s', line)
+        _tokens = line.split()
+        _LOGGER.info(' - TOKENS %s', _tokens)
+        assert _tokens[0] == 'from'
+        assert _tokens[2] == 'import'
+        _root = _tokens[1]
+        _, _to_remove = issue.desc.rsplit(maxsplit=1)
+    else:
+        raise NotImplementedError(issue.desc)
+
+    return _root, _to_remove
+
+
 def _fix_unused_from_import(issue, lines, line):
     """Fix unused "from" style import.
 
@@ -181,15 +207,27 @@ def _fix_unused_from_import(issue, lines, line):
     assert issue.desc.startswith('Unused ')
     _line_n = issue.line_n - 1
 
-    _tail = issue.desc[len('Unused '):]
-    if ' as ' in issue.desc:  # eg. from xxx import yyy as zzz
-        _submod, _tail = _tail.split(' imported from ')
-        _LOGGER.info('   - SUBMOD %s', _submod)
-        _root, _alias = _tail.split(' as ')
-        _LOGGER.info('   - ALIAS %s', _alias)
-        _to_remove = f'{_submod} as {_alias}'
-    else:
-        _to_remove, _root = _tail.split(' imported from ')
+    # _tail = issue.desc[len('Unused '):]
+    # if ' as ' in issue.desc:
+    #     # eg. from xxx import yyy as zzz
+    #     _submod, _tail = _tail.split(' imported from ')
+    #     _LOGGER.info('   - SUBMOD %s', _submod)
+    #     _root, _alias = _tail.split(' as ')
+    #     _LOGGER.info('   - ALIAS %s', _alias)
+    #     _to_remove = f'{_submod} as {_alias}'
+    # elif ' imported from ' in issue.desc:
+    #     _to_remove, _root = _tail.split(' imported from ')
+    # elif issue.desc.startswith('Unused import '):
+    #     _LOGGER.info(' - LINE %s', line)
+    #     _tokens = line.split()
+    #     _LOGGER.info(' - TOKENS %s', _tokens)
+    #     assert _tokens[0] == 'from'
+    #     assert _tokens[2] == 'import'
+    #     _root = _tokens[1]
+    #     _, _to_remove = issue.desc.rsplit(maxsplit=1)
+    # else:
+    #     raise NotImplementedError(issue.desc)
+    _root, _to_remove = _parse_issue_data(issue=issue, line=line)
     _LOGGER.info('   - ROOT %s', _root)
     _LOGGER.info('   - TO REMOVE %s', _to_remove)
     assert line.count(_to_remove) == 1
@@ -231,6 +269,29 @@ def _fix_unused_from_import(issue, lines, line):
             subsequent_indent='    ')
         for _line in reversed(_mod_lines):
             lines.insert(_line_n + 1, _line)
+
+
+def _fix_unused_mod(issue, lines, line, line_n):
+    """Fix unused module.
+
+    Args:
+        issue (PylintIssue): unused import issue
+        lines (str list): lines of code being fixed
+        line (str): issue's line of code (cleaned)
+        line_n (int): line number
+    """
+    assert issue.desc.count('Unused import ') == 1
+    _token = issue.desc.replace('Unused import ', '')
+    _LOGGER.info('   - TOKEN %s', _token)
+    if line == f'import {_token}':
+        lines.pop(line_n)
+    elif line.endswith(f' import {_token}'):
+        lines.pop(line_n)
+    elif line.startswith('from '):
+        _fix_unused_from_import(
+            lines=lines, issue=issue, line=line)
+    else:
+        raise NotImplementedError
 
 
 def to_pycodestyle_issues(reading):

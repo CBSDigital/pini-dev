@@ -333,12 +333,7 @@ class CPOutputBase:
         Returns:
             (bool): submittable
         """
-        from pini import pipe
-        if not pipe.SUBMIT_AVAILABLE:
-            return False
-        if isinstance(self, pipe.CPOutputVideo):
-            return True
-        return self.type_ in ['render', 'plate', 'blast']
+        return self._read_submittable()
 
     @property
     def type_(self):
@@ -509,6 +504,25 @@ class CPOutputBase:
         _LOGGER.debug(' - LATEST %s', _latest)
         return self == _latest
 
+    def _read_submittable(self):
+        """Test whether this output is submittable.
+
+        ie. whether it can be submitted to shotgrid.
+
+        Returns:
+            (bool): submittable
+        """
+        from pini import pipe
+        _LOGGER.debug('SUBMITTABLE %s', self)
+        if not pipe.SUBMIT_AVAILABLE:
+            _LOGGER.debug(' - SUBMIT NOT AVALIABLE')
+            return False
+        if isinstance(self, pipe.CPOutputVideo):
+            _LOGGER.debug(' - IS VIDEO')
+            return True
+        _LOGGER.debug(' - TYPE %s', self.type_)
+        return self.type_ in ['render', 'plate', 'blast']
+
     def set_latest(self, latest):
         """Set latest status of this output.
 
@@ -517,17 +531,6 @@ class CPOutputBase:
         """
         assert isinstance(latest, bool)
         self._latest = latest
-
-    def strftime(self, fmt=None):
-        """Get mtime as formatted string.
-
-        Args:
-            fmt (str): format to apply
-
-        Returns:
-            (str): formatted time string
-        """
-        return strftime(fmt=fmt, time_=self.updated_at)  # pylint: disable=no-member
 
     def set_metadata(self, data, mode='replace', force=True):
         """Set metadata for this output.
@@ -547,6 +550,17 @@ class CPOutputBase:
         else:
             raise ValueError(mode)
         self.metadata_yml.write_yml(_data, force=True)
+
+    def strftime(self, fmt=None):
+        """Get mtime as formatted string.
+
+        Args:
+            fmt (str): format to apply
+
+        Returns:
+            (str): formatted time string
+        """
+        return strftime(fmt=fmt, time_=self.updated_at)  # pylint: disable=no-member
 
     def to_file(self, **kwargs):
         """Map this output to a file with the same attributes.

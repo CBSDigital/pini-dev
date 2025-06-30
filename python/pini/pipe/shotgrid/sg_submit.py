@@ -7,12 +7,12 @@ import pprint
 import time
 
 from pini import qt, pipe
-from pini.tools import usage
+from pini.tools import usage, release
 from pini.utils import single, to_time_f, strftime, basic_repr
 
 from . import sg_ver, sg_utils, sg_handler
 
-# release.apply_deprecation('06/05/25', 'Use dcc.export.CBasicSubmitter')
+release.apply_deprecation('27/06/25', 'Use dcc.export.CBasicSubmitter')
 
 _LOGGER = logging.getLogger(__name__)
 

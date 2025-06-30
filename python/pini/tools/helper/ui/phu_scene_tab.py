@@ -872,8 +872,7 @@ class PHSceneTab:
         _outs = self.ui.SOutputs.selected_datas()
         if _out:
 
-            self._add_output_opts(
-                menu=menu, output=_out, parent=self.ui.SOutputs)
+            self._add_output_opts(menu=menu, output=_out)
             menu.add_separator()
 
             # Add replace options
@@ -963,7 +962,7 @@ class PHSceneTab:
 
         self._add_output_opts(
             menu=menu, output=_out, header=False, delete=False,
-            add=False, ref=ref, parent=self.ui.SSceneRefs)
+            add=False, ref=ref)
 
     def _ctx_scene_refs_add_update_tag_opts(self, menu, refs):
         """Add options relating to swapping to a different tag.

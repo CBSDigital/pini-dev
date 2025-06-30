@@ -110,6 +110,15 @@ class CBasicSubmitter(export.CExportHandler):
                 wrap_fn(pprint.pprint, _ren.metadata, width=200),
                 icon=icons.PRINT)
 
+    def exec(self, render, **kwargs):
+        """Execute this exporter.
+
+        Args:
+            render (CPOutput): render to submit
+        """
+        self.render = render
+        super().exec(render, **kwargs)
+
     def set_settings(self, **kwargs):
         """Apply exec settings."""
         _LOGGER.debug('SET SETTINGS')
@@ -117,7 +126,7 @@ class CBasicSubmitter(export.CExportHandler):
 
         # Read work from render
         _work = None
-        _work_path = self.settings['render'].metadata.get('src')
+        _work_path = self.render.metadata.get('src')
         if _work_path:
             _work = pipe.CACHE.obt_work(_work_path)
         _LOGGER.debug(' - APPLY WORK %s', _work)

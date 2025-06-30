@@ -89,6 +89,7 @@ class CleanBadSceneNodes(core.SCMayaCheck):
                 # 'RedshiftPostEffects',
                 # 'VRaySettingsNode',
                 'unknown',
+                'polyBlindData',
         ]:
             if _type not in _all_types:
                 self.write_log('Type %s does not exist', _type)
