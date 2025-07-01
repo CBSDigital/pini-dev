@@ -119,10 +119,10 @@ class CBasicSubmitter(export.CExportHandler):
         self.render = render
         super().exec(render, **kwargs)
 
-    def set_settings(self, **kwargs):
+    def set_settings(self, *args, **kwargs):
         """Apply exec settings."""
         _LOGGER.debug('SET SETTINGS')
-        super().set_settings(**kwargs)
+        super().set_settings(*args, **kwargs)
 
         # Read work from render
         _work = None

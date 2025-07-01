@@ -29,9 +29,9 @@ class CRenderHandler(eh_base.CExportHandler):
         """
         super().__init__(label_w=label_w, priority=priority)
 
-    def set_settings(self, **kwargs):
+    def set_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(snapshot=False, **kwargs)
+        super().set_settings(*args, snapshot=False, **kwargs)
 
     def exec_from_ui(self, ui_kwargs=None, **kwargs):
         """Execuate this export using settings from ui.

@@ -223,6 +223,7 @@ good-names=i,
            # Qt
            boundingRect,
            closeEvent,
+           drawForeground,
            deleteLater,
            dockCloseEventTriggered,
            isVisible,

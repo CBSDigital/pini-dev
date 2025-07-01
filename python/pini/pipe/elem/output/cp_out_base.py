@@ -441,6 +441,17 @@ class CPOutputBase:
             _ver_n = _latest.ver_n + 1
         return self.to_output(ver_n=_ver_n)
 
+    def find_ver(self, ver_n):
+        """Find the given version.
+
+        Args:
+            ver_n (int): match version number
+
+        Returns:
+            (CPOutput): matching output version
+        """
+        return single(self.find_vers(ver_n=ver_n))
+
     def find_vers(self, ver_n=EMPTY):
         """Find versions of this output.
 

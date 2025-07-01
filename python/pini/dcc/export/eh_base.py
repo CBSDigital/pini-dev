@@ -26,8 +26,9 @@ class CExportHandler:
     NAME = None
     TYPE = None
     ACTION = None
-    LABEL = 'Export handler.'
     ICON = None
+
+    LABEL = 'Export handler.'
     COL = 'Red'
 
     description = None
@@ -165,7 +166,7 @@ class CExportHandler:
 
         _notes = self._obt_notes()
         _data = eh_utils.build_metadata(
-            action=self.ACTION, work=self.work, handler=self.NAME,
+            action=self.ACTION, work=self.work, handler=type(self).__name__,
             run_checks=_run_checks, force=_force, task=self.work.pini_task,
             notes=_notes, require_notes=True, checks_data=_checks_data)
 
@@ -255,7 +256,7 @@ class CExportHandler:
             snapshot (bool): take thumbnail snapshot on export
             force (bool): replace existing outputs without confirmation
         """
-        self.set_settings(**kwargs)
+        self.set_settings(*args, **kwargs)
         self.init_export()
 
         self.outputs = self.export(*args, **kwargs)
@@ -265,7 +266,7 @@ class CExportHandler:
 
         return self.outputs
 
-    def set_settings(self, **kwargs):
+    def set_settings(self, *args, **kwargs):
         """Setup settings dict.
 
         Settings are initiated from the base class export methods kwargs (eg.
@@ -285,8 +286,17 @@ class CExportHandler:
             }
             _LOGGER.info(' - ADD %s SETTINGS %s', _func, _settings)
             self.settings.update(_settings)
-
         self.settings.update(kwargs)
+
+        # Apply args
+        _sig = inspect.signature(self.export)
+        _parms = list(_sig.parameters.values())
+        for _idx, _arg in enumerate(args):
+            _LOGGER.info(' - ADD ARG %s', _arg)
+            _arg_name = _parms[_idx].name
+            _LOGGER.info('   - SIG %s', )
+            self.settings[_arg_name] = _arg
+
         _LOGGER.info(' - SET SETTINGS %s', self.settings)
 
     def exec_from_ui(self, ui_kwargs=None, **kwargs):

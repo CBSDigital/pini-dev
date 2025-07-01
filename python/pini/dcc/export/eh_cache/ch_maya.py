@@ -6,7 +6,7 @@ import pprint
 from maya import cmds
 
 from pini import qt, farm, icons
-from pini.utils import wrap_fn
+from pini.utils import wrap_fn, safe_zip, to_str
 
 from maya_pini import m_pipe
 
@@ -38,9 +38,9 @@ class CMayaCache(eh_base.CExportHandler):
         self._add_custom_ui_elems()
         self._build_ui_footer()
 
-    def set_settings(self, **kwargs):
+    def set_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(**kwargs)
+        super().set_settings(*args, **kwargs)
 
         # Handled in m_pipe to allow embed asset path
         if self.block_update_metadata:
@@ -74,6 +74,23 @@ class CMayaCache(eh_base.CExportHandler):
                 'Print metadata', wrap_fn(pprint.pprint, _out.metadata))
         menu.add_action(
             'Select', wrap_fn(cmds.select, _cbl.node))
+
+    def _update_metadata(self, content_type=None):
+        """Update outputs metadata.
+
+        Args:
+            content_type (str): apply content type
+        """
+        super()._update_metadata()
+
+        # Apply src ref to metadata
+        _cbls = self.settings['cacheables']
+        for _cbl, _out in safe_zip(_cbls, self.outputs):
+            _LOGGER.info(' - CBL %s -> %s', _cbl, _out)
+            assert _cbl.namespace == _out.output_name
+            _out.add_metadata(src_ref=to_str(_cbl.path))
+            if content_type:
+                _out.add_metadata(content_type=content_type)
 
 
 class CMayaAbcCache(CMayaCache):
@@ -210,3 +227,11 @@ class CMayaCrvsCache(CMayaCache):
         """
         return m_pipe.export_anim_curves(
             cacheables, range_=range_, force=force)
+
+    def _update_metadata(self, content_type='CurvesMb'):
+        """Update metadata.
+
+        Args:
+            content_type (str): apply content type
+        """
+        super()._update_metadata(content_type=content_type)

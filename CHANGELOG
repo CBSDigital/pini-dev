@@ -1,3 +1,17 @@
+## [7.25.0] - Tue 2025-07-01 13:46
+### Summary
+ - Pini Helper:
+    - scene/outputs store type/task/tag/fmt setting in scene,
+### Updated
+ - pini.dcc.export use handler name as handler in metadata,
+ - pini.dcc.export.CExportHandler.set_settings add arg values,
+ - pini.dcc.export.CMayaCache._update_metadata apply src_ref,
+ - pini.dcc.export.CMayaCrvsCache._update_metadata apply content_type,
+ - pini.pipe.CPOutput.find_ver added,
+ - pini.tools.helper scene/outputs type/task/tag/fmt apply save in scene,
+ - pini.tools.helper scene/refs added crvs handling,
+
+
 ## [7.24.1] - Mon 2025-06-30 11:33
 ### Summary
  - Pini Helper:

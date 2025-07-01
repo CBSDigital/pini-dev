@@ -300,10 +300,11 @@ class CMayaFarmRender(CMayaRenderHandler):
             _LOGGER.debug(' - %s %d', _lyr, _ren)
             _lyr.set_renderable(_ren)
 
-    def set_settings(self, **kwargs):
+    def set_settings(self, *args, **kwargs):
         """Setup settings dict."""
         super().set_settings(
-            update_metadata=False, update_cache=False, bkp=True, **kwargs)
+            *args, update_metadata=False, update_cache=False,
+            bkp=True, **kwargs)
 
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=True, camera=None, frames=None,

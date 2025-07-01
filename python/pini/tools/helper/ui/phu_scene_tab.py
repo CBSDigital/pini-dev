@@ -52,6 +52,12 @@ class PHSceneTab:
         """
         _LOGGER.debug('INIT UI switch=%d', switch_tabs)
 
+        # Apply save policies
+        for _elem in [
+                self.ui.SOutputType, self.ui.SOutputTask, self.ui.SOutputTag,
+                self.ui.SOutputFormat]:
+            _elem.set_save_policy(qt.SavePolicy.SAVE_IN_SCENE)
+
         # Update abc/vdb options based on dcc
         for _elem, _opts in [
                 (self.ui.SAbcMode, self.abc_modes),
@@ -182,6 +188,10 @@ class PHSceneTab:
         else:
             raise ValueError(_tab)
         _LOGGER.debug('   - TYPES %s', _types)
+        _scene_select = dcc.get_scene_data(self.ui.SOutputType.settings_key)
+        if not self.target and _scene_select in _types:
+            _select = _scene_select
+        _LOGGER.debug('   - SCENE SELECT %s %s', _scene_select, _select)
 
         # Add all
         if _add_all and len(_types) > 1:
@@ -228,7 +238,7 @@ class PHSceneTab:
 
         return _label, _types, _data, _select
 
-    def _redraw__SOutputTask(self):
+    def _redraw__SOutputTask(self):  # pylint: disable=too-many-branches
 
         _LOGGER.debug(' - REDRAW SOutputTask')
         _LOGGER.debug('   - TARGET %s', self.target)
@@ -256,6 +266,10 @@ class PHSceneTab:
             _LOGGER.debug(
                 '   - FIND SELECTED TASK FROM TARGET %s %s', _sel,
                 self.target)
+        if not _sel:
+            _sel = dcc.get_scene_data(self.ui.SOutputTask.settings_key)
+            if _sel not in _tasks:
+                _sel = None
         if not _sel:
             if _pane == self.ui.SMediaTab:
                 _sel = 'lighting'
@@ -311,7 +325,11 @@ class PHSceneTab:
 
         # Determine selection
         _sel = None
-        if pipe.DEFAULT_TAG in _tags and _tab == self.ui.SAssetsTab:
+        _scene_sel = dcc.get_scene_data(self.ui.SOutputTag.settings_key)
+        _LOGGER.debug('   - SCENE SEL %s', _scene_sel)
+        if _scene_sel and _scene_sel in _tags:
+            _sel = _scene_sel
+        elif pipe.DEFAULT_TAG in _tags and _tab == self.ui.SAssetsTab:
             _sel = pipe.DEFAULT_TAG
         elif len(_tags) > 1:
             _sel = 'all'
@@ -319,6 +337,7 @@ class PHSceneTab:
                 isinstance(self.target, pipe.CPOutputBase) and
                 self.target.tag in _tags):
             _sel = self.target.tag
+        _LOGGER.debug('   - SEL %s', _sel)
 
         self.ui.SOutputTag.set_items(
             _labels, data=_data, emit=True, select=_sel)
@@ -343,6 +362,10 @@ class PHSceneTab:
         _sel = None
         if not _sel and self.target and self.target.extn in _extns:
             _sel = self.target.extn
+        _scene_sel = dcc.get_scene_data(self.ui.SOutputFormat.settings_key)
+        _LOGGER.debug('   - SCENE SEL %s', _scene_sel)
+        if not _sel and _scene_sel in _extns:
+            _sel = _scene_sel
         if not _sel:
             _fmts_order = []
             if _tab == self.ui.SAssetsTab:
@@ -1292,8 +1315,9 @@ def _sort_scene_ref(ref):
         (tuple): sort key
     """
     if dcc.NAME == 'maya':
-        if ref.namespace.endswith('_shd'):
-            return ref.namespace[:-4], 1
+        for _suffix, _offs in [('_shd', 1), ('_crvs', 2)]:
+            if ref.namespace.endswith(_suffix):
+                return ref.namespace[:-len(_suffix)], _offs
         return ref.namespace, 0
     return ref.cmp_str
 
