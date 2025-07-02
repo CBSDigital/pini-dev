@@ -48,7 +48,7 @@ class TestHelper(unittest.TestCase):
         _LOGGER.info('CHECK SWITCH OUTPUT TABS')
         _helper = helper.obt_helper()
         _helper.jump_to(testing.TEST_SHOT)
-        for _en in (True, False):
+        for _en in (True, True, False):
 
             print()
             _LOGGER.info(' - APPLYING SCENE TAB %s en=%d', _helper.job, _en)

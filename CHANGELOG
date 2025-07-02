@@ -1,3 +1,21 @@
+## [7.26.0] - Wed 2025-07-02 16:01
+### Summary
+ - Pini Helper:
+    - bugfix error on launch in houdini (acheprakov),
+    - basic install working in houdini 20.5,
+### Updated
+ - pini.qt.obt_pixmap better error on non-str,
+ - pini.qt.widget_to_signal use toggled for checkable push buttons,
+ - pini.qt.CBaseWidget.disable_save_settings removed deprecated attr,
+ - pini.qt CSettings/CBaseWidget removed deprecated disable_save_settings attr,
+ - pini.qt.CSettings._check_save_policy bugfix error on SAVE_ON_CLOSE,
+ - pini.qt.CUiBase connect callback discards args/kwargs,
+ - pini.qt.block_signals made public,
+ - pini.tools.release.CheckFile.apply_deprecation_check implemented fail,
+ - pini.tools.helper bugfix not used cached icon for some overlays,
+ - startup/hou/python3.11libs added,
+
+
 ## [7.25.0] - Tue 2025-07-01 13:46
 ### Summary
  - Pini Helper:

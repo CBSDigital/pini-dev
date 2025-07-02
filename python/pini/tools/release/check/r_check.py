@@ -123,9 +123,10 @@ class CheckFile(MetadataFile):
 
         Any deprecations older than half a year should be removed.
         """
+        from pini.tools import error
         if abs_path(__file__) == self.path:
             return
-        for _line in self.read_lines():
+        for _line_n, _line in enumerate(self.read_lines(), start=1):
             if (
                     'release.apply_deprecation(' in _line and
                     not _line.strip().startswith('#')):
@@ -138,7 +139,8 @@ class CheckFile(MetadataFile):
                 _age = time.time() - to_time_f(_date_s)
                 _LOGGER.info(' - AGE %s', nice_age(_age))
                 if _age > 60 * 60 * 24 * 7 * 25:
-                    raise NotImplementedError
+                    raise error.FileError(
+                        'Out of date deprecation', file_=self, line_n=_line_n)
 
     def apply_pycodestyle_check(self, force=False):
         """Apply pycodestyle checks.

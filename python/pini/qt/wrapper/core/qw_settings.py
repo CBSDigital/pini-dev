@@ -47,7 +47,6 @@ class CSettings(QtCore.QSettings, _FileDummy):
             type_filter (str): filter by widget type name
         """
         from pini import qt
-        from pini.tools import release
 
         _keys = [_key for _key in self.allKeys()
                  if _key.startswith('widgets/')]
@@ -80,12 +79,6 @@ class CSettings(QtCore.QSettings, _FileDummy):
                     qt.SavePolicy.SAVE_IN_SCENE,
                     qt.SavePolicy.NO_SAVE):
                 _LOGGER.debug('   - FILTERED BY SAVE POLICY %s', _save_policy)
-                continue
-            _disable_save_settings = getattr(
-                _widget, 'disable_save_settings', False)
-            if _disable_save_settings:
-                release.apply_deprecation('15/11/24', 'Use save_policy attr')
-                _LOGGER.debug('   - DISABLED')
                 continue
 
             # Apply
@@ -191,10 +184,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
 
         # Make sure save policy is default or save on change
         _save_policy = getattr(widget, 'save_policy', qt.SavePolicy.DEFAULT)
-        if _save_policy not in (
-                qt.SavePolicy.DEFAULT,
-                qt.SavePolicy.NO_SAVE,
-                qt.SavePolicy.SAVE_ON_CHANGE):
+        if not isinstance(_save_policy, qt.SavePolicy):
             _LOGGER.info(' - SAVE POLICY %s %s', widget, _save_policy)
             raise RuntimeError(widget, _save_policy)
 
@@ -217,17 +207,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
             widget (QWidget): widget to save
         """
         from pini import qt
-        from pini.tools import release
         _LOGGER.debug('SAVE WIDGET %s', widget)
-
-        # Check for disabled
-        if (
-                hasattr(widget, 'disable_save_settings') and
-                widget.disable_save_settings):
-            _LOGGER.info(' - LEGACY SAVE DISABLED %s', widget)
-            release.apply_deprecation('15/11/24', 'Use save_policy attr')
-            _LOGGER.debug(' - DISABLED')
-            return
 
         # Aquire name to build settings key
         try:

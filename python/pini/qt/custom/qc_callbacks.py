@@ -232,6 +232,7 @@ def _connect_signal_callback(
     _signal = qt.widget_to_signal(_widget)
 
     # Prepare callback
+    _callback = wrap_fn(_callback)  # Ignore any args/kwargs
     if isinstance(_widget, QtWidgets.QPushButton):
         if error_catcher:
             _callback = error_catcher(_callback)

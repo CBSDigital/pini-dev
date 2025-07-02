@@ -247,7 +247,9 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
         _overlay = icons.find(_overlay)
 
     # Build pixmap
-    _icon = qt.CPixmap(icon)
+    _icon = icon
+    if not isinstance(_icon, QtGui.QPixmap):
+        _icon = qt.obt_pixmap(_icon)
     _over_scale = 0.6
     _over_size = _icon.size() * _over_scale
     if mode == 'BL':

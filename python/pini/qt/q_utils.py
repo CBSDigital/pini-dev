@@ -49,9 +49,11 @@ def block_signals(func):
 
     def _block_func(widget, *args, **kwargs):
         _blocked = widget.signalsBlocked()
+        _LOGGER.debug('BLOCK SIGNALS %s %s', widget, _blocked)
         widget.blockSignals(True)
         _result = func(widget, *args, **kwargs)
         widget.blockSignals(_blocked)
+        _LOGGER.debug(' - BLOCK SIGNALS COMPLETE %s %s', widget, _blocked)
         return _result
 
     return _block_func
@@ -307,7 +309,8 @@ def obt_pixmap(file_: str):
     Returns:
         (CPixmap): pixmap
     """
-    assert isinstance(file_, str)
+    if not isinstance(file_, str):
+        raise RuntimeError(f'Bad type {file_} ({type(file_).__name__}')
     return to_pixmap(file_)
 
 
@@ -349,8 +352,8 @@ def safe_timer_event(func):
             _stop = True
 
         check_logging_level()
-        _LOGGER.debug(
-            'SAFE TIMER EVENT %d vis=%d %s', _stop, self.isVisible(), self)
+        _LOGGER.log(
+            9, 'SAFE TIMER EVENT %d vis=%d %s', _stop, self.isVisible(), self)
 
         _stop = _stop or not self.isVisible()
         if _stop:
@@ -698,7 +701,10 @@ def widget_to_signal(widget):  # pylint: disable=too-many-branches
     elif isinstance(widget, QtWidgets.QListWidget):
         _signal = widget.itemSelectionChanged
     elif isinstance(widget, QtWidgets.QPushButton):
-        _signal = widget.clicked
+        if widget.isCheckable():
+            _signal = widget.toggled
+        else:
+            _signal = widget.clicked
     elif isinstance(widget, QtWidgets.QSlider):
         _signal = widget.valueChanged
     elif isinstance(widget, QtWidgets.QSpinBox):
