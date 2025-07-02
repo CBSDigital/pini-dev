@@ -216,6 +216,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         # Remove JUNK
         _LOGGER.debug(' - APPLY REMOVE JUNK %d', _remove_junk)
         if _remove_junk and cmds.objExists('JUNK'):
+            _remove_junk_refs()
             cmds.delete('JUNK')
 
         # Remove unused sets
@@ -379,6 +380,21 @@ def _exec_export_fbx(work, constraints=True, force=False):
     return _fbx
 
 
+def _find_dag_sets():
+    """Find sets in the outliner in the current scene.
+
+    Returns:
+        (CNode list): sets
+    """
+    _sets = set(pom.CMDS.ls(type='objectSet'))
+    _sets -= set(cmds.listSets(type=1) or [])  # Remove render sets
+    _sets -= set(cmds.listSets(type=2) or [])  # Remove deform sets
+    _sets = [_set for _set in sorted(_sets)
+             if _set.object_type() == 'objectSet' and
+             not _is_deform_set(_set)]
+    return _sets
+
+
 def _find_top_node():
     """Find current scene top node.
 
@@ -389,6 +405,25 @@ def _find_top_node():
         to_clean(_node) for _node in cmds.ls(long=True, dagObjects=True)
         if _node.count('|') == 1 and
         to_clean(_node) not in DEFAULT_NODES], catch=True)
+
+
+def get_pub_refs_mode():
+    """Obtain current publish references mode setting.
+
+    Returns:
+        (PubRefsMode): current references mode
+    """
+    _LOGGER.log(9, 'GET PUB REFS MODE')
+    _mode = None
+    _scn = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
+    _LOGGER.log(9, ' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
+    if _scn:
+        _mode = single(
+            [_item for _item in list(PubRefsMode) if _item.value == _scn],
+            catch=True)
+        _LOGGER.log(9, ' - MATCHED %s', _mode)
+
+    return _mode or PubRefsMode.REMOVE
 
 
 def _is_deform_set(set_):
@@ -409,38 +444,14 @@ def _is_deform_set(set_):
     return bool(_dfm_types & _types)
 
 
-def _find_dag_sets():
-    """Find sets in the outliner in the current scene.
-
-    Returns:
-        (CNode list): sets
-    """
-    _sets = set(pom.CMDS.ls(type='objectSet'))
-    _sets -= set(cmds.listSets(type=1) or [])  # Remove render sets
-    _sets -= set(cmds.listSets(type=2) or [])  # Remove deform sets
-    _sets = [_set for _set in sorted(_sets)
-             if _set.object_type() == 'objectSet' and
-             not _is_deform_set(_set)]
-    return _sets
-
-
-def get_pub_refs_mode():
-    """Obtain current publish references mode setting.
-
-    Returns:
-        (PubRefsMode): current references mode
-    """
-    _LOGGER.log(9, 'GET PUB REFS MODE')
-    _mode = None
-    _scn = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
-    _LOGGER.log(9, ' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
-    if _scn:
-        _mode = single(
-            [_item for _item in list(PubRefsMode) if _item.value == _scn],
+def _remove_junk_refs():
+    """Remove references in JUNK group."""
+    for _ref in pom.find_refs():
+        _grp = single(
+            {_node.to_parent() for _node in _ref.top_nodes},
             catch=True)
-        _LOGGER.log(9, ' - MATCHED %s', _mode)
-
-    return _mode or PubRefsMode.REMOVE
+        if _grp == 'JUNK':
+            _ref.delete(force=True)
 
 
 def set_pub_refs_mode(mode):

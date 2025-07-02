@@ -1,3 +1,11 @@
+## [7.26.1] - Wed 2025-07-02 16:38
+### Summary
+ - Pini Helper:
+    - basic maya publish removed JUNK refs if leave refs intact applied (cstewart),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish delete JUNK remove all refs in grp regardless of pub refs mode,
+
+
 ## [7.26.0] - Wed 2025-07-02 16:01
 ### Summary
  - Pini Helper:

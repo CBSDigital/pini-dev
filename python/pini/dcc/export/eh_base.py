@@ -284,7 +284,7 @@ class CExportHandler:
                 _parm.name: _parm.default for _parm in _parms
                 if _parm.default != inspect.Parameter.empty  # ignore args
             }
-            _LOGGER.info(' - ADD %s SETTINGS %s', _func, _settings)
+            _LOGGER.debug(' - ADD %s SETTINGS %s', _func, _settings)
             self.settings.update(_settings)
         self.settings.update(kwargs)
 
@@ -292,12 +292,12 @@ class CExportHandler:
         _sig = inspect.signature(self.export)
         _parms = list(_sig.parameters.values())
         for _idx, _arg in enumerate(args):
-            _LOGGER.info(' - ADD ARG %s', _arg)
+            _LOGGER.debug(' - ADD ARG %s', _arg)
             _arg_name = _parms[_idx].name
-            _LOGGER.info('   - SIG %s', )
+            _LOGGER.debug('   - SIG %s', )
             self.settings[_arg_name] = _arg
 
-        _LOGGER.info(' - SET SETTINGS %s', self.settings)
+        _LOGGER.debug(' - SET SETTINGS %s', self.settings)
 
     def exec_from_ui(self, ui_kwargs=None, **kwargs):
         """Execute this export using settings from ui.
@@ -305,19 +305,19 @@ class CExportHandler:
         Args:
             ui_kwargs (dict): override interface kwargs
         """
-        _LOGGER.info('EXEC FROM UI %s', kwargs)
+        _LOGGER.debug('EXEC FROM UI %s', kwargs)
         _func = self.exec
-        _LOGGER.info(' - EXEC FUNC %s', _func)
+        _LOGGER.debug(' - EXEC FUNC %s', _func)
         _name = type(self).__name__.strip('_')
         _func = usage.get_tracker(name=_name)(_func)
         _func = error.get_catcher(qt_safe=True)(_func)
 
         _kwargs = ui_kwargs or self.ui.to_kwargs()
         _kwargs.update(kwargs)
-        _LOGGER.info(' - EXEC KWARGS %s', _kwargs)
+        _LOGGER.debug(' - EXEC KWARGS %s', _kwargs)
 
         _result = _func(**_kwargs)
-        _LOGGER.info(' - EXEC RESULT %s', _result)
+        _LOGGER.debug(' - EXEC RESULT %s', _result)
         return _result
 
     def init_export(self):
