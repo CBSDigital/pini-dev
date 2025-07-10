@@ -268,9 +268,12 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
 
     def lock_tfms(self):
         """Lock transforms on this node."""
+        _LOGGER.debug('LOCK TFMS %s', self)
         for _axis in 'xyz':
-            for _attr, _val in [('t', 0), ('r', 0), ('s', 1)]:
-                self.plug[_attr + _axis].locked = True
+            for _attr in 'trs':
+                _plug = self.plug[_attr + _axis]
+                _LOGGER.debug(' - LOCK %s', _plug)
+                _plug.lock()
 
     def move(self, *args):
         """Move this object relative to its current position."""

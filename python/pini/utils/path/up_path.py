@@ -5,7 +5,7 @@ import os
 import pathlib
 import time
 
-from . import up_utils
+from . import up_utils, up_norm
 from ..u_misc import nice_size, nice_id, strftime
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,12 +20,12 @@ class Path:
         Args:
             path (str): path on disk
         """
-        _path = up_utils.norm_path(path)
+        _path = up_norm.norm_path(path)
 
         self.path = _path
 
         self.filename = self.path.rsplit('/', 1)[-1]
-        self.dir = up_utils.norm_path(str(self._pathlib.parent))
+        self.dir = up_norm.norm_path(str(self._pathlib.parent))
         self.base = self._pathlib.stem
         self.extn = self._pathlib.suffix[1:]
         if not self.extn:
@@ -84,7 +84,7 @@ class Path:
         Returns:
             (bool): whether absolute
         """
-        return up_utils.is_abs(self.path)
+        return up_norm.is_abs(self.path)
 
     def is_dir(self):
         """Test whether is path is a directory.
@@ -228,7 +228,7 @@ class Path:
         if self.is_abs():
             return self
         _root = path.Dir(root or os.getcwd())
-        _path = path.abs_path(_root.path + '/' + self.path)
+        _path = up_norm.abs_path(_root.path + '/' + self.path)
         return type(self)(_path)
 
     def to_dir(self, levels=1):
@@ -388,7 +388,7 @@ def _get_data_dir():
     _dir = None
     for _ in range(5):
         _dir = os.path.dirname(_dir or __file__)
-    return up_utils.abs_path(_dir + '/data')
+    return up_norm.abs_path(_dir + '/data')
 
 
 DATA_PATH = _get_data_dir()

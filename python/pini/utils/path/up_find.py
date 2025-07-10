@@ -6,7 +6,7 @@ import os
 from ..u_error import DebuggingError
 from ..u_misc import EMPTY
 
-from . import up_utils
+from . import up_norm
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def find(
         raise DebuggingError(
             "Read yaml disabled using PINI_DISABLE_FILE_SYSTEM")
 
-    _dir = Dir(up_utils.abs_path(path))
+    _dir = Dir(up_norm.abs_path(path))
     _data = _read_find_data(
         dir_=_dir, depth=depth, catch_missing=catch_missing,
         hidden=hidden, catch_access_error=catch_access_error)
@@ -137,7 +137,7 @@ def _read_find_data(
         if not hidden and _rc_path.startswith('.'):
             continue
 
-        _c_path = up_utils.abs_path(  # Clean path
+        _c_path = up_norm.abs_path(  # Clean path
             f'{dir_.path}/{_rc_path}')
         _LOGGER.debug(' - TESTING %s %s', _rc_path, _c_path)
 

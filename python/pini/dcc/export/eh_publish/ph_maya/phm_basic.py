@@ -112,7 +112,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _label = {
             PubRefsMode.REMOVE: ' - Removes all references from the scene',
             PubRefsMode.LEAVE_INTACT: '\n'.join([
-                ' - Leaves references in the scene as they are in the publish',
+                ' - Leaves references in the as publish they are in the scene',
                 ' - This may cause abc export issues']),
             PubRefsMode.IMPORT_TO_ROOT: '\n'.join([
                 ' - Imports references, removing their namespaces',

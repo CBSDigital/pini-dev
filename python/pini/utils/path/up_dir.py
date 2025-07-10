@@ -8,7 +8,7 @@ import shutil
 import sys
 
 from .. u_misc import EMPTY, to_str
-from . import up_path, up_utils, up_find
+from . import up_path, up_utils, up_find, up_norm
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,8 +75,8 @@ class Dir(up_path.Path):
             (bool): whether this dir is a parent of the given path
         """
         _LOGGER.debug('CONTAINS')
-        _this = up_utils.abs_path(self.path).rstrip('/')
-        _path = up_utils.abs_path(to_str(path))
+        _this = up_norm.abs_path(self.path).rstrip('/')
+        _path = up_norm.abs_path(to_str(path))
         if sys.platform == 'win32':
             _path = _path.lower()
             _this = _this.lower()
@@ -191,7 +191,7 @@ class Dir(up_path.Path):
         """
         _LOGGER.debug('REL PATH %s', path)
         _LOGGER.debug(' - ROOT %s', self.path)
-        _path = up_utils.norm_path(path)
+        _path = up_norm.norm_path(path)
 
         _outside = not self.contains(path)
         if _outside and not allow_outside:
@@ -398,15 +398,15 @@ def _get_desktop_path():
     _desktop = os.environ.get('DESKTOP')
     _LOGGER.debug(' - $DESKTOP %s', _desktop)
     if _desktop:
-        return up_utils.abs_path(_desktop)
+        return up_norm.abs_path(_desktop)
     _home = os.environ.get('HOME')
     _LOGGER.debug(' - $HOME %s', _home)
     if _home:
         _desktop = Dir(_home).to_subdir('../_Desktop')
         _LOGGER.debug(' - $HOME DESKTOP %s', _desktop)
         if _desktop.exists():
-            return up_utils.abs_path(_desktop.path)
-    return up_utils.abs_path('~/Desktop')
+            return up_norm.abs_path(_desktop.path)
+    return up_norm.abs_path('~/Desktop')
 
 
 DESKTOP_PATH = _get_desktop_path()

@@ -1,3 +1,15 @@
+## [7.27.0] - Thu 2025-07-10 13:16
+### Summary
+ - Pini Helper:
+    - maya model publish added lock option (mkim),
+### Updated
+ - pini.utils.path abs_path/is_abs/norm_path moved to submodule,
+ - pini.dcc.export.CMayaBasicPublish better wording on leave intact refs opt,
+ - pini.dcc.export.CMayaModelPublish added lock opt,
+ - pini.pipe.CPEntity.to_output added kwargs to allow arbitrary args,
+ - maya_pini.open_maya.CTransform.lock_tfms bugfix not working,
+
+
 ## [7.26.1] - Wed 2025-07-02 16:38
 ### Summary
  - Pini Helper:

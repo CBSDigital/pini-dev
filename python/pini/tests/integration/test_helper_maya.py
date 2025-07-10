@@ -377,7 +377,7 @@ def _test_anim_workflow(progress, force, show_ctx):
         _exp.ui.Cacheables.selected_datas())
     _exp.ui.VersionUp.setChecked(False)
     _exp.ui.Notes.setText('integration test')
-    _exp.ui.Execute.click()
+    _exp.exec_from_ui(force=True)
     assert _helper.work.find_outputs(extn='abc')
     assert len(_helper.work.find_outputs(extn='abc')) == 2
     _abc = _helper.work.find_outputs(extn='abc')[0]

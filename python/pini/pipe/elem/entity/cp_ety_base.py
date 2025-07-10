@@ -459,7 +459,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
     def to_output(
             self, template, task=None, step=None, tag=None,
             output_type=None, output_name=None, dcc_=None, user=None, ver_n=1,
-            extn=None):
+            extn=None, **kwargs):
         """Build an output object for this entity.
 
         Args:
@@ -504,6 +504,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
 
         # Build data dict
         _data = copy.copy(self.data)
+        _data.update(kwargs)
         _data['user'] = user
         _data['ver'] = _ver
         _data['entity'] = self.name
@@ -531,6 +532,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             raise RuntimeError(f'Missing keys {"/".join(_missing)}')
 
         # Construct output
+        _LOGGER.debug(' - DATA %s', _data)
         _path = _tmpl.format(_data)
         _LOGGER.debug(' - PATH %s', _path)
         return pipe.to_output(_path, template=_tmpl)
