@@ -1,3 +1,14 @@
+## [7.27.1] - Fri 2025-07-11 11:38
+### Summary
+ - Pini Helper:
+    - bugfix error on publish with import references using underscores with disappearing cluster node (mkim),
+ - Sanity Check:
+    - check cache set bugfix unable to fix bad shape name if correctly named shape node already exists in scene,
+### Updated
+ - pini.dcc.export.CMayaBasicPublish import refs using underscores catch missing node,
+ - pini.tools.sanity_check.CheckCacheSet bugfix unable to fix badly named shape node if correct name already exists,
+
+
 ## [7.27.0] - Thu 2025-07-10 13:16
 ### Summary
  - Pini Helper:

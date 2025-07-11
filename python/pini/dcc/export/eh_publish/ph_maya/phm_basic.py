@@ -300,8 +300,15 @@ def _import_refs(refs_mode, refs):
             cmds.namespace(moveNamespace=(_ns, ':'), force=True)
             del_namespace(_ns, force=True)
         elif refs_mode == 'Import replacing namespaces with underscores':
+            _LOGGER.debug(' - IMPORT REFS USING UNDERSCORES')
             for _node in _nodes:
-                _node.rename(str(_node).replace(':', '_'))
+                if not cmds.objExists(_node):
+                    _LOGGER.info(
+                        '   - FAILED TO RENAME "%s" -> "%s"', _node, _new_name)
+                    continue
+                _new_name = str(_node).replace(':', '_')
+                _LOGGER.debug('   - RENAME "%s" -> "%s"', _node, _new_name)
+                _node.rename(_new_name)
         else:
             raise ValueError(refs_mode)
 

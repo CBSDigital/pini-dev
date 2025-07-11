@@ -173,10 +173,11 @@ class CheckCacheSet(core.SCMayaCheck):
             self.add_fail('Bad cache set type')
             return
 
-        # Check set geos
         _geos = m_pipe.read_cache_set(set_=_set, mode='geo')
         _tfms = m_pipe.read_cache_set(set_=_set, mode='tfm')
         self.write_log('Geos %s', _geos)
+
+        # Flag no geo
         if not _geos:
 
             # Find top node

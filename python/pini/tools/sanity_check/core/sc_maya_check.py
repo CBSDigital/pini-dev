@@ -84,8 +84,20 @@ class SCMayaCheck(sc_check.SCCheck):
             if pom.CNode(_shp).is_referenced():
                 _fix = None
             else:
-                _fix = wrap_fn(cmds.rename, _shp, _correct_shp)
+                _fix = wrap_fn(_fix_bad_shape, _shp, _correct_shp)
             _msg = (
                 f'Node "{node}" has badly named shape node "{_shp}" (should '
                 f'be "{_correct_shp}")')
             self.add_fail(_msg, fix=_fix, node=node)
+
+
+def _fix_bad_shape(cur_shp, new_shp):
+    """Fix a badly named shape.
+
+    Args:
+        cur_shp (str): current shape
+        new_shp (str): correctly named shape
+    """
+    if cmds.objExists(new_shp):
+        cmds.rename(new_shp, f'{new_shp}1')
+    cmds.rename(cur_shp, new_shp)
