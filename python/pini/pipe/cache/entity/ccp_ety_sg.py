@@ -177,18 +177,18 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
 
         # Map ids to asset objects
         _ids = [_item['id'] for _item in self.sg_entity.data['assets']]
-        _LOGGER.info(' - IDS %s', _ids)
+        _LOGGER.debug(' - IDS %s', _ids)
         for _asset_d in shotgrid.find(
                 'Asset', ids=_ids, fields=['project', 'code', 'sg_asset_type']):
-            _LOGGER.info(' - ADDING ASSET %s', _asset_d)
+            _LOGGER.debug(' - ADDING ASSET %s', _asset_d)
             _proj = shotgrid.SGC.find_proj(_asset_d['project']['id'])
-            _LOGGER.info('   - PROJ %s', _proj)
+            _LOGGER.debug('   - PROJ %s', _proj)
             _job = pipe.CACHE.find_job(_proj.name)
-            _LOGGER.info('   - JOB %s', _job)
+            _LOGGER.debug('   - JOB %s', _job)
             _asset = _job.find_asset(
                 asset=_asset_d['code'],
                 asset_type=_asset_d['sg_asset_type'])
-            _LOGGER.info('   - ASSET %s', _asset)
+            _LOGGER.debug('   - ASSET %s', _asset)
             yield _asset
 
     def _obt_output_cacheable(self, output, catch, force):

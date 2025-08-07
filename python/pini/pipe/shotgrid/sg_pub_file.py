@@ -6,7 +6,6 @@ import platform
 
 from pini import pipe
 from pini.pipe import cache
-from pini.tools import release
 from pini.utils import (
     Seq, Video, TMP, Image, single, File, to_str, abs_path, check_heart)
 
@@ -16,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 _TMP_THUMB = TMP.to_file('PiniTmp/thumb_tmp.jpg')
 
 
-def create_pub_file(path, **kwargs):
+def create_pub_file(path):
     """Create PublishedFile entry in shotgrid.
 
     Args:
@@ -25,10 +24,8 @@ def create_pub_file(path, **kwargs):
     Returns:
         (dict): registered data
     """
-    if kwargs:
-        release.apply_deprecation('16/01/25', 'Use create_pub_file_from_output')
     if isinstance(path, pipe.CPOutputBase):
-        return create_pub_file_from_output(path, **kwargs)
+        return create_pub_file_from_output(path)
     if isinstance(path, File):
         return create_pub_file_from_path(path)
     raise ValueError(path)
@@ -71,8 +68,7 @@ def create_pub_file_from_output(
         update_cache)
     _notes = output.metadata.get('notes')
 
-    _sg_type = shotgrid.SGC.find_pub_type(
-        output.extn, type_='Sequence' if isinstance(output, Seq) else 'File')
+    _sg_type = _to_pub_type(output)
     _sg_user = shotgrid.SGC.find_user()
     _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
 
@@ -113,6 +109,24 @@ def create_pub_file_from_output(
         assert _sg_pub
 
     return _sg_pub
+
+
+def _to_pub_type(output):
+    """Obtain shotgrid publish type for the given output.
+
+    Args:
+        output (CCPOuput): output to get type for
+
+    Returns:
+        (SGCPubType): publish type
+    """
+    from pini.pipe import shotgrid
+    if output.basic_type == 'texture':
+        _match = 'Texture'
+    else:
+        _match = output.extn
+    _type = 'Sequence' if isinstance(output, Seq) else 'File'
+    return shotgrid.SGC.find_pub_type(_match, type_=_type)
 
 
 def _apply_thumb(path, thumb, id_):

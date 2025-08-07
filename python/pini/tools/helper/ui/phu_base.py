@@ -184,6 +184,14 @@ class PHUiBase(
                     self.target = pipe.to_output(_src, catch=True)
             _LOGGER.debug(' - APPLIED CUR OUTPUT %s', self.target)
         if not self.target:
+            _ety = pipe.cur_entity()
+            if _ety:
+                self.target = _ety
+        if not self.target:
+            _job = pipe.cur_job()
+            if _job:
+                self.target = _job
+        if not self.target:
             _recent = obt_recent_work()
             if _recent:
                 self.target = pipe.to_work(_recent[0].path)

@@ -6,13 +6,13 @@ import os
 from maya import cmds
 
 from pini import pipe, dcc, qt, icons
-from pini.utils import File, abs_path, passes_filter, to_seq, Seq, TMP
+from pini.utils import passes_filter, Seq, TMP
 
 from maya_pini import ref, m_pipe, open_maya as pom
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
-    save_redshift_proxy, disable_scanner_callbacks)
+    save_redshift_proxy, disable_scanner_callbacks, fix_dup_name)
 
 from .. import ph_basic
 
@@ -404,6 +404,9 @@ def _flush_scene(keep_nodes=None):
     _lights = m_pipe.read_cache_set(mode='lights')
     _LOGGER.debug(' - LIGHTS %s', _lights)
     for _light in _lights:
+        _LOGGER.debug('   - ADD LIGHT %s', _light)
+        if '|' in str(_light):
+            _light = pom.CTransform(fix_dup_name(_light))
         _lights_grp = _light.add_to_grp('LIGHTS')
         _keep_nodes.add(_light)
         _keep_nodes.add(m_pipe.to_light_shp(_light))
@@ -446,25 +449,13 @@ def _read_textures(filter_=None):
         (File list): textures
     """
     _ftns = set()
-    for _file in pom.find_nodes('file'):
-        _ftn = _file.plug['fileTextureName'].get_val()
-        if not _ftn:
-            continue
-        _path = File(abs_path(_ftn))
-        if filter_ and not passes_filter(_path.path, filter_):
+    for _file in ref.find_attr_refs(type_='file'):
+        if filter_ and not passes_filter(str(_file.path), filter_):
             continue
         _LOGGER.debug('FILE %s', _file)
-        _LOGGER.debug(' - FTN %s', _path)
-        _udims = _file.plug['uvTilingMode'].get_val()
-        _LOGGER.debug(' - UDIMS %s', _udims)
-        if _udims:
-            _path = _path.replace('<UDIM>', '%04d')
-            _path = _path.replace('1001.', '%04d.')
-            _LOGGER.debug(' - CONVERT TO SEQ %s', _path)
-            _path = to_seq(_path, safe=False)
-            _LOGGER.debug(' - FTN %s', _path)
-        if not _path or not _path.exists():
-            _LOGGER.debug(' - REJECTED %s', _path)
+        _LOGGER.debug(' - FTN %s', _file.path)
+        if not _file.path.exists():
+            _LOGGER.debug(' - REJECTED %s', _file.path)
             continue
-        _ftns.add(_path)
+        _ftns.add(_file.path)
     return sorted(_ftns)

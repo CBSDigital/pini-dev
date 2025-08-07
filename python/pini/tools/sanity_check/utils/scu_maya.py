@@ -11,7 +11,8 @@ from pini.tools import release
 from pini.utils import single, wrap_fn, check_heart, to_list
 
 from maya_pini import open_maya as pom, m_pipe
-from maya_pini.utils import to_unique, to_long, to_node, to_clean, to_parent
+from maya_pini.utils import (
+    to_unique, to_long, to_node, to_clean, to_parent, fix_dup_name)
 
 from .. import core
 
@@ -50,6 +51,7 @@ def _fix_dup_name(geo, idxs=None, reject=None):
     Returns:
         (str): updated name
     """
+    release.apply_deprecation('30/07/25', 'Use maya_pini.utils.fix_dup_name')
     _LOGGER.debug(' - GEO %s', geo)
 
     _idxs = idxs or {}
@@ -93,7 +95,7 @@ def _fix_basic_dup_names(tfms):
         reversed(tfms), 'Applying {:d} fixes', parent=sanity_check.DIALOG)
     _progress.raise_()
     for _tfm in _progress:
-        _fix_dup_name(_tfm, idxs=_idxs, reject=_reject)
+        fix_dup_name(_tfm, idxs=_idxs, reject=_reject)
 
 
 def _batch_check_for_basic_dup_names(set_, check, threshold=20):
@@ -176,7 +178,7 @@ def _fix_cleaned_dup_names(to_fix, reject):
             _LOGGER.info(' - FAILED TO SORT %s', _tfms)
             continue
         for _tfm in _tfms[1:]:
-            _fix_dup_name(_tfm, idxs=_idxs, reject=reject)
+            fix_dup_name(_tfm, idxs=_idxs, reject=reject)
 
 
 def _check_geo_shapes(set_, check):
@@ -221,7 +223,7 @@ def _check_for_duplicate_names(set_, check):
             _fixable = bool([
                 _node for _node in _nodes if not _node.is_referenced()])
             if _fixable:
-                _fix = wrap_fn(_fix_dup_name, _node)
+                _fix = wrap_fn(fix_dup_name, _node)
             _fail = core.SCFail(_msg, fix=_fix)
             _fail.add_action('Select nodes', wrap_fn(cmds.select, _nodes))
             check.add_fail(_fail)

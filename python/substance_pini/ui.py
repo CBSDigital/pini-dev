@@ -11,12 +11,25 @@ from pini.utils import single
 _LOGGER = logging.getLogger(__name__)
 
 
-def obt_menu(name, flush=False):
+def delete_menu(name):
+    """Delete any menu with the given name.
+
+    Args:
+        name (str): name of menu to delete
+    """
+    _menu = obt_menu(name, create=False)
+    if _menu:
+        _menu.deleteLater()
+        substance_painter.ui.delete_ui_element(_menu)
+
+
+def obt_menu(name, flush=False, create=True):
     """Find a menu, creating it if needed.
 
     Args:
         name (str): menu name
         flush (bool): remove existing actions
+        create (bool): create menu if it doesn't exist
 
     Returns:
         (CMenu): menu
@@ -29,7 +42,7 @@ def obt_menu(name, flush=False):
         substance_painter.ui.delete_ui_element(_menu)
         _menu = None
 
-    if not _menu:
+    if create and not _menu:
         _LOGGER.debug('CREATE MENU %s', name)
         _menu = qt.CMenu(name, parent=to_main_window())
         substance_painter.ui.add_menu(_menu)

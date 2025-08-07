@@ -85,13 +85,15 @@ def find_ctrls_set(mode='node', namespace=None):
     raise NotImplementedError(mode)
 
 
-def find_top_node():
+def find_top_node(catch=False):
     """Find geometry top node in the current scene.
+
+    Args:
+        catch (bool): no error if no top node found
 
     Returns:
         (CTransform): top node
     """
-
     _top_node = None
     _from_set = read_cache_set(mode='top')
     if _from_set and len(_from_set) == 1:
@@ -104,7 +106,10 @@ def find_top_node():
         top_node=True, default=False, catch=True, filter_='-JUNK')
     if _dag:
         return _dag
-    raise NotImplementedError('Failed to find top node')
+
+    if catch:
+        return None
+    raise ValueError('Failed to find top node')
 
 
 def _read_cache_set_nodes(set_, mode, remove_junk=True):

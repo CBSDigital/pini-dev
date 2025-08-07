@@ -91,6 +91,8 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'Render'
             elif self.basic_type == 'plate':
                 _c_type = 'Plate'
+            elif self.basic_type == 'texture':
+                _c_type = 'Texture'
             else:
                 raise ValueError(self.path, _pub_type, self.basic_type)
 
@@ -344,7 +346,7 @@ class CCPOutputBase(elem.CPOutputBase):
         _work = super().find_work()
         if not _work:
             return None
-        return pipe.CACHE.obt(_work)
+        return pipe.CACHE.obt_work(_work, catch=True)
 
     def is_media(self):
         """Test whether this output is media.

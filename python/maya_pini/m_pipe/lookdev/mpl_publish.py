@@ -265,7 +265,7 @@ def _read_map_top_node_attrs():
         (list): top node attributes to map
     """
     _attrs = []
-    _top_node = mp_utils.find_top_node()
+    _top_node = mp_utils.find_top_node(catch=True)
     if _top_node:
         for _plug in _top_node.list_attr(user_defined=True):
             if not _plug.find_outgoing():

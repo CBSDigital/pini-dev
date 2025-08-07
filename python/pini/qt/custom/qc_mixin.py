@@ -4,14 +4,13 @@ This is a dialog which can be docked to maya's ui.
 """
 
 import logging
-import shiboken2
 
 from maya import OpenMayaUI, cmds, mel
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin, MayaQDockWidget
 
 from pini.utils import wrap_fn
 
-from ..q_mgr import QtWidgets, Qt
+from ..q_mgr import QtWidgets, Qt, shiboken
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ class CDockableMixin(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         # Important that it's QMainWindow, and not QWidget/QDialog
         _main_win_ptr = int(OpenMayaUI.MQtUtil.mainWindow())
-        _main_win = shiboken2.wrapInstance(
+        _main_win = shiboken.wrapInstance(
             _main_win_ptr, QtWidgets.QMainWindow)
 
         # Go through main window's children to find any previous instances

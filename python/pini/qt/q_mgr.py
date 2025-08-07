@@ -5,11 +5,14 @@
 import logging
 import os
 
+shiboken = None
+
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.debug('IMPORT')
 _FORCE = os.environ.get('PINI_QT_LIB')
 _LOGGER.debug(' - FORCE %s', _FORCE)
 _SUCCESS = False
+
 LIB = None
 LIB_VERSION = None
 
@@ -19,6 +22,7 @@ if (not _FORCE or _FORCE == 'PySide2') and not _SUCCESS:
         from PySide2 import QtUiTools, QtCore, QtGui, QtWidgets
         from PySide2.QtCore import Qt
         import PySide2
+        import shiboken2 as shiboken
     except ImportError as _exc:
         _LOGGER.debug('FAILED TO LOAD PySide2 %s', _exc)
     else:
@@ -47,6 +51,7 @@ if (not _FORCE or _FORCE == 'PySide6') and not _SUCCESS:
         from PySide6 import QtUiTools, QtWidgets, QtCore, QtGui
         from PySide6.QtCore import Qt
         import PySide6
+        import shiboken6 as shiboken
         _LOGGER.debug('LOADED Qt')
     except ImportError as _exc:
         _LOGGER.debug('FAILED TO LOAD PySide6 %s', _exc)

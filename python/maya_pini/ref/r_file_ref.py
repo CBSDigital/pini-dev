@@ -387,15 +387,28 @@ class FileRef(r_path_ref.PathRef):
         """Unload this reference."""
         cmds.file(self.path_uid, unloadReference=True)
 
-    def update(self, path):
+    def update(self, path, catch=False):
         """Update this reference's path.
 
         Args:
             path (str): path to apply
+            catch (bool): no error if update fails
         """
+        from pini import qt
+
+        # Check for missing file
         _file = File(path)
         if not _file.exists():
+            if catch:
+                qt.warning(
+                    f'Failed to update reference "{self.namespace}" to:'
+                    f'\n\n{path}\n\n'
+                    f'The file is missing from disk - ask your producer/'
+                    f'coordinator which file you should use.')
+                return
             raise OSError(f"Missing file: {_file.path}")
+
+        # Apply update
         try:
             cmds.file(
                 _file.path, loadReference=self.ref_node, ignoreVersion=True,

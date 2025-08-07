@@ -84,7 +84,10 @@ class CPJobSG(cp_job_base.CPJobBase):
             _path = _tmpl.format(
                 job_path=self.path, asset=_sg_asset.asset,
                 asset_type=_sg_asset.asset_type)
-            _asset = _class(_path, job=self)
+            try:
+                _asset = _class(_path, job=self)
+            except ValueError:
+                continue
             if not _asset.sg_entity:
                 _LOGGER.warning(
                     ' - FAILED TO FIND SG ENTITY %s (%s)', _asset.path,

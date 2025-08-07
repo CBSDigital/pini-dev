@@ -230,7 +230,7 @@ class CMayaRef(prm_base.CMayaPipeRef):
                     out, namespace=self.namespace, group=_grp)
 
             # Apply update
-            self.ref.update(out)
+            self.ref.update(out, catch=True)
             self._init_path_attrs(out)
             if _mtx and self.top_node:
                 _mtx.apply_to(self.top_node)

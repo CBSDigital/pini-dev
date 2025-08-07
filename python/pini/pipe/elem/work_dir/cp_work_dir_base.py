@@ -377,22 +377,17 @@ class CPWorkDir(Dir):
         """
         return single(self.find_outputs(**kwargs), catch=catch)
 
-    def find_outputs(
-            self, type_=None, output_name=None, output_type=EMPTY, ver_n=EMPTY,
-            tag=EMPTY, extn=None):
+    def find_outputs(self, ver_n=EMPTY, **kwargs):
         """Find outputs within this work dir.
 
         Args:
-            type_ (str): filter by type (eg. cache/publish)
-            output_name (str): filter by output name
-            output_type (str): filter by output type
             ver_n (int): filter by version number
-            tag (str): filter by tag
-            extn (str): filter by file extension
 
         Returns:
             (CPOutput list): outputs
         """
+        from pini import pipe
+
         _LOGGER.debug('FIND OUTPUTS %s', self.path)
         _all_outs = self._read_outputs()
         _LOGGER.debug(' - READ %d OUTPUTS', len(_all_outs))
@@ -415,15 +410,7 @@ class CPWorkDir(Dir):
         _outs = []
         for _out in _all_outs:
 
-            if type_ and not _out.type_ == type_:
-                continue
-            if output_name and _out.output_name != output_name:
-                continue
-            if output_type is not EMPTY and _out.output_type != output_type:
-                continue
-            if tag is not EMPTY and _out.tag != tag:
-                continue
-            if extn and _out.extn != extn:
+            if not pipe.passes_filters(_out, **kwargs):
                 continue
 
             if _ver_n is EMPTY:

@@ -253,7 +253,7 @@ class CheckFile(MetadataFile):
         Returns:
             (str): pycodestyle reading
         """
-        _exe = find_exe('pycodestyle')
+        _exe = _find_pycodestyle_exe()
         _ignore = list(ignore) + [
             'E402',  # module level import not at top of file (use pylint)
             'E501',  # line too long
@@ -333,7 +333,7 @@ class CheckFile(MetadataFile):
                 _init.append(f"sys.path.insert(0, '{_py_dir.path}')")
 
         # Build lint cmd
-        _pylint = find_exe('pylint', catch=False)
+        _pylint = _find_pylint_exe()
         _cmds = [
             _pylint,
             self,
@@ -368,6 +368,46 @@ def check_file(file_, pylint=True, pycodestyle=True):
     _path = abs_path(to_str(file_))
     _file = CheckFile(_path)
     _file.apply_checks(pylint=pylint, pycodestyle=pycodestyle)
+
+
+@cache_result
+def _find_pycodestyle_exe():
+    """Find pycodestyle exe.
+
+    Returns:
+        (File): exe
+    """
+    _exe = find_exe('pycodestyle')
+    if _exe:
+        return _exe
+
+    import pycodestyle
+    _exe = File(pycodestyle.__file__).to_dir(levels=2).to_file(
+        'Scripts/pycodestyle.exe')
+    if _exe.exists():
+        return _exe
+
+    raise ValueError
+
+
+@cache_result
+def _find_pylint_exe():
+    """Find pylint exe.
+
+    Returns:
+        (File): exe
+    """
+    _exe = find_exe('pylint')
+    if _exe:
+        return _exe
+
+    import pylint
+    _exe = File(pylint.__file__).to_dir(levels=3).to_file(
+        'Scripts/pylint.exe')
+    if _exe.exists():
+        return _exe
+
+    raise ValueError
 
 
 @cache_result

@@ -501,9 +501,15 @@ class CExportHandler:
         _LOGGER.info('REGISTER IN SHOTGRID %s', self)
         _LOGGER.info(' - OUTPUTS %d %s', len(self.outputs), self.outputs)
         from pini.pipe import shotgrid
-        _thumb = self.work.image if self.work.image.exists() else None
+        _work_thumb = self.work.image if self.work.image.exists() else None
         for _last, _out in last(self.outputs):
+
             _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
+
+            _thumb = _work_thumb
+            if _out.basic_type in ('texture', 'render', 'video'):
+                _thumb = None
+
             shotgrid.create_pub_file_from_output(
                 _out, thumb=_thumb, force=True, update_cache=_last,
                 upstream_files=upstream_files)

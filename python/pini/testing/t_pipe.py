@@ -51,7 +51,8 @@ def _check_model(force):
     _mod_task = os.environ.get('PINI_PIPE_MODEL_TASK', 'model')
 
     # Check work
-    _mdl_work = _asset_c.to_work(task=_mod_task)
+    _mdl_work_dir = _asset_c.to_work_dir(_mod_task)
+    _mdl_work = _mdl_work_dir.to_work()
     if not _mdl_work.exists():
         dcc.new_scene(force=force)
         _cube = pom.CMDS.polyCube(name='cube_GEO')

@@ -55,6 +55,7 @@ def find_pipe_refs(filter_=None, selected=False, extn=None):
 
     _refs += prm_node.find_ai_standins(selected=selected)
     _refs += prm_node.find_ai_vols(selected=selected)
+    _refs += prm_node.find_file_nodes(selected=selected)
     _refs += prm_node.find_img_planes(selected=selected)
     _refs += prm_node.find_rs_dome_lights(selected=selected)
     _refs += prm_node.find_rs_pxys(selected=selected)

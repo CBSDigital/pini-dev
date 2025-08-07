@@ -518,7 +518,8 @@ class CPixmap(QtGui.QPixmap):
             os.remove(_file.path)
         _file.to_dir().mkdir()
 
-        self.save(abs_path(_file.path, win=os.name == 'nt'),
+        _win = os.name == 'nt'
+        self.save(abs_path(_file.path, mode='win' if _win else None),
                   format=_fmt, quality=quality)
 
         if apply_cmyk:

@@ -48,7 +48,10 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         self.filename = _path.filename
 
         # Split base to extract frame str
-        if safe:
+        if safe or (
+                self.filename.count('.') <= 2 and
+                '.%0' in self.filename and
+                'd.' in self.filename):
             if self.filename.count('.') < 2:
                 raise ValueError(self.path)
             self.base, self.frame_expr, self.extn = self.filename.rsplit('.', 2)
@@ -62,7 +65,9 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             for _expr in [
                     '%04d', '%d',
                     '%03d', '%02d',
-                    '%05d', '%07d', '%09d']:
+                    '%05d', '%07d', '%09d',
+
+                    '<UDIM>', '<U>_<V>']:
 
                 if self.filename.count(_expr) != 1:
                     continue
@@ -176,15 +181,17 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _f_idx = int(_f_str)
         return self.frame_expr % _f_idx == _f_str
 
-    def copy_to(self, target, frames=None, check_match=True):
+    def copy_to(self, target, frames=None, check_match=True, progress=True):
         """Copy this file sequence to another location.
 
         Args:
             target (Seq): target location
             frames (int list): override frames to copy
             check_match (bool): check existing frame match before replacing
+            progress (bool): show progress
         """
         from pini import qt
+
         assert isinstance(target, Seq)
         _frames = frames or self.frames
 
@@ -195,7 +202,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             if check_match:
                 _LOGGER.info(' - CHECK WHETHER EXISTING FRAMES MATCH')
                 for _frame in qt.progress_bar(
-                        _frames, 'Checking {:d} frame{}',
+                        _frames, 'Checking {:d} frame{}', show=progress,
                         stack_key='CheckFrames'):
                     if not File(self[_frame]).matches(target[_frame]):
                         break
@@ -211,7 +218,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
         # Apply copy
         for _frame in qt.progress_bar(
-                _frames, 'Copying {:d} frame{}', stack_key='CopyFrames'):
+                _frames, 'Copying {:d} frame{}', stack_key='CopyFrames',
+                show=progress):
             File(self[_frame]).copy_to(target[_frame])
             target.add_frame(_frame)
 
@@ -268,41 +276,6 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             _LOGGER.debug(' - MISSING FRAMES %s', _missing)
             return not _missing
         return bool(_frames)
-
-    def _read_frames(self):
-        """Read frames of this sequence from disk.
-
-        Returns:
-            (int str): frames
-        """
-        _frames = set()
-        _LOGGER.debug('SEARCHING FOR FRAMES')
-        _LOGGER.debug(' - TOKENS %s %s %s', self.base, self.frame_expr,
-                      self.extn)
-        _head, _tail = self.filename.split(self.frame_expr)
-        _LOGGER.debug(' - HEAD/TAIL %s/%s', _head, _tail)
-        _dir = Dir(abs_path(self.dir))
-        for _file in _dir.find(
-                depth=1, extn=self.extn, type_='f', full_path=False,
-                catch_missing=True):
-            _LOGGER.debug(' - CHECKING %s', _file)
-            if not _file.startswith(_head):
-                _LOGGER.debug('   - BAD HEAD')
-                continue
-            if not _file.endswith(_tail):
-                _LOGGER.debug('   - BAD TAIL')
-                continue
-            _fr_str = _file[len(_head):-len(_tail)]
-            if not _fr_str.isdigit():
-                _LOGGER.debug('   - BAD FRSTR')
-                continue
-            _idx = int(_fr_str)
-            if self.frame_expr % _idx != _fr_str:
-                _LOGGER.debug('   - BAD REMAP')
-                continue
-            _frames.add(_idx)
-
-        return _frames
 
     def find_range(self, force=False):
         """Find start/end frames of this sequence.
@@ -362,15 +335,28 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             target (Seq): target sequence
             progress (bool): show progress bar
         """
+        _LOGGER.debug('MOVE TO')
+        _LOGGER.debug(' - SRC %s', self)
+        _LOGGER.debug(' - TRG %s', target)
         _frames = self.to_frames(force=True)
+        _LOGGER.debug(' - FRAMES %s', _frames)
         assert not target.exists(frames=_frames)
         assert isinstance(target, Seq)
+
+        # Apply move
         if progress:
             from pini import qt
             _frames = qt.progress_bar(
                 _frames, 'Moving {:d} frame{}')
         for _frame in _frames:
-            File(self[_frame]).move_to(target[_frame])
+            _src_file = File(self[_frame])
+            _trg_file = target[_frame]
+            _LOGGER.debug(' - FRAMES %s', _frames)
+            _src_file.move_to(_trg_file)
+
+        # Update cache
+        self.to_frames(frames=[])
+        target.to_frames(frames=_frames)
 
     def mtime(self):
         """Obtain mtime of this sequence using the middle frame.
@@ -486,6 +472,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _frame = frame
         if not _frame:
             _frames = self.to_frames()
+            if not _frames:
+                raise RuntimeError('No frames found')
             _frame = _frames[int(len(_frames) / 2)]
         return File(self[_frame])
 
@@ -497,7 +485,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         return [self.to_frame_file(_frame) for _frame in self.frames]
 
-    def to_frames(self, force=False):
+    def to_frames(self, frames=None, force=False):
         """Find frames of this sequence.
 
         This is read from disk the first time, and then subsequently
@@ -505,14 +493,77 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         force flag.
 
         Args:
+            frames (int list): force list of frames into cache
             force (bool): force read from disk
 
         Returns:
             (int list): list of frame numbers
         """
+        if frames is not None:
+            self._frames = frames
         if force or self._frames is None:
             self._frames = self._read_frames()
         return sorted(self._frames)
+
+    def _read_frames(self):
+        """Read frames of this sequence from disk.
+
+        Returns:
+            (int str): frames
+        """
+        _frames = set()
+        _LOGGER.debug('READ FRAMES %s', self)
+        _LOGGER.debug(' - TOKENS %s %s %s', self.base, self.frame_expr,
+                      self.extn)
+        _head, _tail = self.filename.split(self.frame_expr)
+        _LOGGER.debug(' - HEAD/TAIL "%s" // "%s"', _head, _tail)
+        _dir = Dir(abs_path(self.dir))
+        for _file in _dir.find(
+                depth=1, extn=self.extn, type_='f', full_path=False,
+                catch_missing=True, head=_head, tail=_tail):
+            _LOGGER.debug(' - CHECKING %s', _file)
+            if not _file.startswith(_head):
+                _LOGGER.debug('   - BAD HEAD')
+                continue
+            if not _file.endswith(_tail):
+                _LOGGER.debug('   - BAD TAIL')
+                continue
+
+            # Check frame str
+            _fr_str = _file[len(_head):-len(_tail)]
+            if self.frame_expr == '<U>_<V>':
+                if (
+                        len(_fr_str) != 5 or
+                        _fr_str[2] != '_' or
+                        not _fr_str[:2].isdigit() or
+                        not _fr_str[-2:].isdigit()):
+                    _LOGGER.debug(
+                        '   - BAD U/V FR_STR %s %d %d %d %d', _fr_str,
+                        len(_fr_str), _fr_str[2] != '_',
+                        _fr_str[:2].isdigit(), _fr_str[-2:].isdigit())
+                    continue
+                _idx = int(_fr_str[:2] + _fr_str[-2:])
+                _idxs = int(_fr_str[:2]), int(_fr_str[-2:])
+            else:
+                if not _fr_str.isdigit():
+                    _LOGGER.debug('   - BAD FR_STR %s', _fr_str)
+                    continue
+                _idx = int(_fr_str)
+                _idxs = (_idx, )
+
+            # Check frame expr
+            _expr = self.frame_expr
+            if _expr == '<UDIM>':
+                _expr = '%04d'
+            elif _expr == '<U>_<V>':
+                _expr = '%02d_%02d'
+            if _expr % _idxs != _fr_str:
+                _LOGGER.debug('   - BAD REMAP')
+                continue
+
+            _frames.add(_idx)
+
+        return _frames
 
     def to_range(self, force=False):
         """Find start/end frames of this sequence.
@@ -694,6 +745,14 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
     def __getitem__(self, idx):
         assert isinstance(idx, int)
+        if self.frame_expr == '<U>_<V>':
+            _idx_s = f'{idx:04d}'
+            assert len(_idx_s) == 4
+            _uv_s = f'{_idx_s[:2]}_{_idx_s[-2:]}'
+            return self.path.replace(self.frame_expr, _uv_s)
+        if self.frame_expr == '<UDIM>':
+            _idx_s = f'{idx:04d}'
+            return self.path.replace(self.frame_expr, _idx_s)
         return self.path % idx
 
     def __hash__(self):
@@ -851,7 +910,7 @@ def _tokenise_base(base, split_chrs):
     return re.split('[' + split_chrs + ']', base)
 
 
-def file_to_seq(file_, safe=True, catch=False):
+def file_to_seq(file_, safe=True, frame_expr=None, catch=False):
     """Build a sequence object from the given file path.
 
     eg. /blah/test.0123.jpg -> Seq("/blah/test.%04d.jpg")
@@ -859,6 +918,7 @@ def file_to_seq(file_, safe=True, catch=False):
     Args:
         file_ (str): file to convert
         safe (bool): only allow 4-zero frame padding (ie. %04d)
+        frame_expr (str): override frame expression (eg. "<UDIM>")
         catch (bool): no error if file fails to map to sequence
 
     Returns:
@@ -867,13 +927,23 @@ def file_to_seq(file_, safe=True, catch=False):
     Raises:
         (ValueError): if the file is not a valid frame
     """
+    _LOGGER.debug('FILE TO SEQ %s', file_)
     _file = File(file_)
-    if _file.filename.count('.') < 2:
+    if safe and _file.filename.count('.') < 2:
         if catch:
             return None
         raise ValueError(_file.path)
 
-    _base, _f_str, _extn = _file.filename.rsplit('.', 2)
+    if safe >= 2:
+        _base, _f_str, _extn = _file.filename.rsplit('.', 2)
+        _head, _tail = f'{_base}.', f'.{_extn}'
+    else:
+        _tokens = re.split('[._]', _file.filename)
+        _f_str, _extn = _tokens[-2], _tokens[-1]
+        _head_len = len(_file.filename) - len(_f_str) - len(_extn) - 1
+        _head = _file.filename[:_head_len]
+        _tail = _file.filename[-len(_extn) - 1:]
+    _LOGGER.debug(' - TOKENS %s // %s // %s', _head, _f_str, _tail)
     if not _f_str.isdigit():
         if catch:
             return None
@@ -882,10 +952,10 @@ def file_to_seq(file_, safe=True, catch=False):
         if catch:
             return None
         raise ValueError(_f_str)
-    _f_expr = f'%0{len(_f_str):d}d'
+    _f_expr = frame_expr or f'%0{len(_f_str):d}d'
 
-    _path = f'{_file.dir}/{_base}.{_f_expr}.{_extn}'
-    return Seq(_path)
+    _path = f'{_file.dir}/{_head}{_f_expr}{_tail}'
+    return Seq(_path, safe=safe)
 
 
 def to_seq(obj, catch=True, safe=False):

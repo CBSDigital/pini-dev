@@ -80,57 +80,6 @@ class MayaDCC(BaseDCC):
         """Clear script editor."""
         ui.clear_script_editor()
 
-    def create_cache_ref(
-            self, cache, namespace, lookdev=None, attach_mode='Reference',
-            build_plates=True, abc_mode='Auto', force=False):
-        """Create a reference of the given path in the current scene.
-
-        Args:
-            cache (File): path to cache (eg. abc) to reference
-            namespace (str): namespace for reference
-            lookdev (CPOutput): attach this lookdev publish
-            attach_mode (str): how to attach shaders (Reference/Import)
-            build_plates (bool): rebuild camera plates if applicable
-            abc_mode (str): how to reference abcs (Reference/aiStandIn)
-            force (bool): replace existing without confirmation
-        """
-        from pini.tools import release
-        release.apply_deprecation('22/01/25', 'Use pipe_ref.create_abc_ref')
-
-        from pini import pipe
-        from pini.dcc import pipe_ref
-        _LOGGER.debug('CREATE CACHE REF')
-
-        # Determine abc mode
-        _abc_mode = abc_mode
-        if _abc_mode == 'Auto':
-            _out = pipe.to_output(cache, catch=True)
-            if 'arnold' in self.allowed_renderers() and _out.task == 'fx':
-                _abc_mode = 'aiStandIn'
-            else:
-                _abc_mode = 'Reference'
-        _LOGGER.debug(' - ABC MODE %s', _abc_mode)
-
-        # Create reference
-        if _abc_mode == 'Reference':
-            _ref = self.create_ref(cache, namespace=namespace, force=force)
-            _ref.attach_shaders(lookdev, mode=attach_mode)
-        elif _abc_mode == 'aiStandIn':
-            _ref = pipe_ref.create_ai_standin(path=cache, namespace=namespace)
-        else:
-            raise ValueError(abc_mode)
-        _LOGGER.debug(' - REF %s', _ref)
-
-        # Apply cam setting
-        _out = _ref.output
-        if (
-                build_plates and
-                _abc_mode == 'Reference' and
-                _out.metadata.get('type') == 'CPCacheableCam'):
-            _ref.build_plates()
-
-        return _ref
-
     def create_ref(
             self, path, namespace, group=EMPTY, parent=None, force=False):
         """Create reference instance of the given path.

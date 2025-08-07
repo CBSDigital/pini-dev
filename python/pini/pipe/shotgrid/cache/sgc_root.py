@@ -202,6 +202,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
 
         # Try using mapping
         _map = {
+            'spp': 'Substance Painter Project File',
             'hip': 'Houdini Scene',
             'mp4': 'Movie',
             'mov': 'Movie',

@@ -92,16 +92,6 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             _LOGGER.debug(' - FIXED NAME %s', _node)
         return _node
 
-    def get_ktvs(self):
-        """Read keyframe time/value list from this curve.
-
-        Returns:
-            (float/float list): frame/value data list
-        """
-        from pini.tools import release
-        release.apply_deprecation('12/12/24', 'Use CAnimCurve.to_ktvs')
-        return self.to_ktvs()
-
     def loop(self, offset=False):
         """Loop this animation curve.
 

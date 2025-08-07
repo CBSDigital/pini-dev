@@ -229,7 +229,7 @@ def get_application(force=False):
             if LIB in ('PySide2', ):
                 import shiboken2 as shiboken
             elif LIB in ('PySide6', ):
-                import shiboken6 as shiboken
+                import shiboken6 as shiboken  # pylint: disable=import-error
             else:
                 raise NotImplementedError(LIB)
             _ptr = shiboken.getCppPointer(_app)[0]
@@ -425,8 +425,10 @@ def to_col(*args):
     if _arg:
         if isinstance(_arg, (qt.CColor, QtGui.QLinearGradient)):
             return _arg
-        if isinstance(_arg, (str, QtGui.QColor)):
+        if isinstance(_arg, str):
             return qt.CColor(_arg)
+        if isinstance(_arg, QtGui.QColor):
+            return qt.CColor(_arg.rgba())
     if len(_args) in (3, 4):
         if (
                 any(_arg for _arg in _args if isinstance(_arg, float)) and
@@ -438,20 +440,25 @@ def to_col(*args):
     raise ValueError(args)
 
 
-def to_font(obj):
+def to_font(obj, size=None):
     """Obtain a font from the given object.
 
     Args:
         obj (any): font name (eg. Arial) or font
+        size (float): apply font size
 
     Returns:
         (QFont|None): font (if available)
     """
     if isinstance(obj, QtGui.QFont):
-        return obj
-    if obj not in QtGui.QFontDatabase().families():
-        return QtGui.QFont()
-    return QtGui.QFont(obj)
+        _font = obj
+    elif obj not in QtGui.QFontDatabase().families():
+        _font = QtGui.QFont()
+    else:
+        _font = QtGui.QFont(obj)
+    if size:
+        _font.setPointSize(size)
+    return _font
 
 
 def to_icon(arg):
@@ -594,7 +601,10 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
             _root_y = round(_root_y)
         _root = _pos - to_p(_size.width(), _root_y)
     elif anchor == 'T':
-        _root = _pos - to_p(_size.width() / 2, 0)
+        _root_x = _size.width() / 2
+        if _use_int:
+            _root_x = int(_root_x)
+        _root = _pos - to_p(_root_x, 0)
     elif anchor == 'TL':
         _root = _pos
     elif anchor == 'TR':

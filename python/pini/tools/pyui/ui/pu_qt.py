@@ -308,7 +308,7 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
             parent=self, height=self.sect_h)
         _section.setMinimumSize(100, 22)
         _policy = _section.sizePolicy()
-        _policy.setHorizontalPolicy(_policy.Expanding)
+        _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)
         _policy.setHorizontalStretch(100)
         _section.setSizePolicy(_policy)
         self.main_layout.addWidget(_section)

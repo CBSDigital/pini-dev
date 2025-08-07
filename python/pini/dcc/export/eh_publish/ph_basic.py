@@ -66,5 +66,4 @@ class CBasicPublish(eh_base.CExportHandler):
         _callback = find_callback('Publish')
         _LOGGER.info(' - PUBLISH CALLBACK %s', _callback)
         if _callback:
-            for _out in self.outputs:
-                _callback(_out)
+            _callback(self.outputs)

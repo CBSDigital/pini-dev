@@ -96,24 +96,6 @@ class BaseDCC:
     def clear_terminal(self):
         """Clear current terminal or script editor (if applicable)."""
 
-    def create_cache_ref(  # pylint: disable=unused-argument
-            self, cache, namespace, lookdev=None, attach_mode='Reference',
-            build_plates=True, abc_mode='Auto', force=False):
-        """Create a reference of the given path in the current scene.
-
-        Args:
-            cache (str): path to cache (eg. abc) to reference
-            namespace (str): namespace for reference
-            lookdev (CPOutput): attach this lookdev publish
-            attach_mode (str): how to attach shaders (Reference/Import)
-            build_plates (bool): rebuild camera plates if applicable
-            abc_mode (str): how to reference abcs (Reference/aiStandIn)
-            force (bool): replace existing without confirmation
-        """
-        from pini.tools import release
-        release.apply_deprecation('22/01/25', 'Use pipe_ref.create_abc_ref')
-        raise NotImplementedError
-
     def create_ref(self, path, namespace, force=False):
         """Create a reference of the given path in the current scene.
 

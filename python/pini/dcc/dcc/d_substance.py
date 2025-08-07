@@ -167,6 +167,28 @@ class SubstanceDCC(BaseDCC):
         """
         return None
 
+    def take_snapshot(self, file_):
+        """Take snapshot of the current scene.
+
+        Args:
+            file_ (str): path to save image to
+        """
+        from pini import qt
+        from pini.qt import QtWidgets
+        from substance_pini import ui
+
+        # Find viewer
+        _win = ui.to_main_window()
+        _LOGGER.info('WIN %s', _win)
+        _view = _win.findChild(QtWidgets.QWidget, name='Viewer3D')
+        _LOGGER.info('VIEW %s', _view)
+
+        # Render to pixmap
+        _pix = qt.CPixmap(_view.size())
+        _pix.fill('Transparent')
+        _view.render(_pix)
+        _pix.save_as(file_, force=True)
+
     def unsaved_changes(self):
         """Test whether the current scene has unsaved changes.
 

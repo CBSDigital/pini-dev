@@ -831,6 +831,7 @@ def to_time_t(val=None):
                 '%d/%m/%y',
                 '%d/%m/%y %H:%M',
 
+                '%y%m%d',
                 '%y%m%d %H:%M',
 
                 '%Y-%m-%d',

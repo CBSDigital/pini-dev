@@ -37,7 +37,7 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
             latest (bool): apply static latest status of this output
         """
         _LOGGER.debug('INIT CPOutputSeq %s', path)
-        super().__init__(path=path, frames=frames)
+        super().__init__(path=path, frames=frames, safe=False)
         cp_out_base.CPOutputBase.__init__(
             self, job=job, entity=entity, work_dir=work_dir,
             template=template, templates=templates, latest=latest,

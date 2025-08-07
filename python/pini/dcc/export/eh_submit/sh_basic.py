@@ -61,6 +61,8 @@ class CBasicSubmitter(export.CExportHandler):
 
     def _redraw__Render(self):
 
+        _LOGGER.debug('REDRAW Render')
+
         _hide_submitted = self.ui.HideSubmitted.isChecked()
         _latest = self.ui.Latest.isChecked()
         _task = self.ui.Task.currentText()
@@ -74,6 +76,8 @@ class CBasicSubmitter(export.CExportHandler):
                 continue
             if _latest and not _out.is_latest():
                 continue
+
+            _LOGGER.debug(' - CHECKING OUT %s', _out)
 
             _submitted = False
             _work = _out.find_work()

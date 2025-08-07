@@ -45,6 +45,7 @@ class CGraphWindow(custom.CUiMainWindow):
             bg_col (str): override space background colour
             legend (str): override space legend
         """
+        self.ui.Graph.set_window(self)
         self.ui.Graph.setup_shortcuts()
 
         # Setup space

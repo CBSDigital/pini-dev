@@ -164,6 +164,47 @@ def cycle_check():
         cmds.cycleCheck(evaluation=False)
 
 
+def fix_dup_name(geo, idxs=None, reject=None):
+    """Fix node with duplicate name.
+
+    Args:
+        geo (str): node to fix
+        idxs (dict): index of current suffix indices for each node name
+        reject (set): names to reject
+
+    Returns:
+        (str): updated name
+    """
+    _LOGGER.debug(' - GEO %s', geo)
+
+    _idxs = idxs or {}
+    _reject = reject or set()
+    _root = to_clean(geo, strip_digits=True)
+    _idx = _idxs.get(_root, 1)
+    _LOGGER.debug('   - ROOT %s %d', _root, _idx)
+
+    while True:
+        check_heart()
+        if _root.endswith('_'):
+            _new_name = f'{_root}{_idx}'
+        else:
+            _new_name = f'{_root}_{_idx}'
+        _idx += 1
+        if _new_name in _reject:
+            _LOGGER.debug('     - REJECTED IN USE %s', _new_name)
+            continue
+        if cmds.objExists(_new_name):
+            _LOGGER.debug('     - REJECTED EXISTING %s', _new_name)
+            continue
+        break
+
+    _LOGGER.debug('   - RENAME %s (FROM %s)', _new_name, geo)
+    cmds.rename(geo, _new_name)
+    _idxs[_root] = _idx + 1
+
+    return _new_name
+
+
 def is_attr(token):
     """Test if the given token is an attibute.
 

@@ -614,11 +614,67 @@ class TestSeq(unittest.TestCase):
         _seq = file_to_seq(_file)
         assert _seq == Seq('/asdasd/test.%04d.jpg')
 
+        # Test <UDIM> as frame expr
+        _path = 'C:/udim/v13/T_solid_BC_1001.png'
+        try:
+            _seq = file_to_seq(_path)
+        except ValueError:
+            pass
+        else:
+            raise RuntimeError('Test failed')
+        _seq = file_to_seq(_path, safe=False)
+        assert_eq(_seq.path, 'C:/udim/v13/T_solid_BC_%04d.png')
+        _seq = file_to_seq(_path, safe=False, frame_expr='<UDIM>')
+        assert_eq(_seq.path, 'C:/udim/v13/T_solid_BC_<UDIM>.png')
+
+        # Test 5-padding
+        _path = 'C:/udim/v13/T_solid_BC_10010.png'
+        _seq = file_to_seq(_path, safe=False)
+        assert_eq(_seq.path, 'C:/udim/v13/T_solid_BC_%05d.png')
+
     def test_is_missing_frames(self):
+
         _seq = Seq('/tmp/test.%04d.jpg', frames=[1, 2, 3])
         assert not _seq.is_missing_frames()
         _seq = Seq('/tmp/test.%04d.jpg', frames=[1, 2, 4])
         assert _seq.is_missing_frames()
+
+    def test_udim_seqs(self):
+
+        _test_dir = TMP.to_subdir('.pini/test')
+        _test_dir.flush(force=True)
+
+        _seq = _test_dir.to_seq('test.%04d.png')
+        _seq = _test_dir.to_seq('test_%04d.png')
+
+        # Test udim
+        _seq = _test_dir.to_seq('test_<UDIM>.png')
+        assert not _seq.to_frames()
+        for _file in [
+                'test_1001.png',
+                'test_1002.png',
+        ]:
+            _test_dir.to_file(_file).touch()
+        assert not _seq.to_frames()
+        assert _seq.to_frames(force=True)
+        assert len(_seq.to_frames()) == 2
+        assert _seq.to_frames() == [1001, 1002]
+        assert _seq[1001].endswith('test_1001.png')
+
+        # Test u/v
+        _test_dir.flush(force=True)
+        _seq = _test_dir.to_seq('test_<U>_<V>.png')
+        assert not _seq.to_frames()
+        for _file in [
+                'test_10_01.png',
+                'test_10_02.png',
+        ]:
+            _test_dir.to_file(_file).touch()
+        assert not _seq.to_frames()
+        assert _seq.to_frames(force=True)
+        assert len(_seq.to_frames()) == 2
+        assert _seq.to_frames() == [1001, 1002]
+        assert _seq[1001].endswith('test_10_01.png')
 
 
 class TestPyFile(unittest.TestCase):

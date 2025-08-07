@@ -15,7 +15,7 @@ from ... import cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
-OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz']
+OUTPUT_FILE_TYPES = ['publish', 'cache', 'ass_gz', 'texture']
 OUTPUT_VIDEO_TYPES = ['blast_mov', 'mov', 'render_mov', 'plate_mov']
 OUTPUT_SEQ_TYPES = [
     'render', 'plate', 'blast', 'cache_seq', 'publish_seq', 'texture_seq']
@@ -469,6 +469,7 @@ class CPOutputBase:
                    'tag': self.tag,
                    'type_': self.type_,
                    'extn': self.extn,
+                   'stream': self.to_stream(),
                    'ver_n': ver_n}
         _LOGGER.debug(' - KWARGS %s', _kwargs)
 

@@ -7,7 +7,7 @@ from maya import cmds
 from pini import dcc, pipe
 from pini.utils import single, Seq, file_to_seq, to_seq, abs_path
 
-from maya_pini import open_maya as pom, ui
+from maya_pini import open_maya as pom, ui, ref
 from maya_pini.utils import load_redshift_proxy
 
 from . import prm_base, prm_utils
@@ -147,6 +147,33 @@ class CMayaAiVolume(_CMayaNodeRef):
         assert isinstance(out, Seq)
         _path = out.path.replace('.%04d.', '.####.')
         self.node.shp.plug['filename'].set_val(_path)
+
+
+class CMayaFileRef(_CMayaNodeRef):
+    """Represents an file node referencing a pipelined path."""
+
+    TYPE = 'file'
+
+    def __init__(self, file_):
+        """Constructor.
+
+        Args:
+            file_ (CNode): file node
+        """
+        _LOGGER.debug('INIT CMayaFileRef')
+        self.ref = ref.AttrRef(str(file_.plug['fileTextureName']))
+        _LOGGER.debug(' - PATH %s', self.ref.path)
+        super().__init__(
+            node=file_, path=self.ref.path, namespace=str(file_),
+            top_node=file_)
+
+    def update(self, out):
+        """Update this node to a new output.
+
+        Args:
+            out (CPOutputFile|CPOutputSeq): new output
+        """
+        self.ref.update(out)
 
 
 class CMayaImgPlaneRef(_CMayaNodeRef):
@@ -386,6 +413,39 @@ def create_rs_vol(output, namespace):
     return CMayaRsVolume(_vol)
 
 
+def _find_type_nodes(class_, selected=False):
+    """Read nodes of the given class in the current scene.
+
+    Args:
+        class_ (class): type of node to search for
+        selected (bool): apply selected nodes filter
+
+    Returns:
+        (CMayaNodeRef list): matching node ref objects
+    """
+    _LOGGER.debug('READ TYPE NODES %s', class_)
+    if class_.TYPE not in cmds.allNodeTypes():
+        return []
+    _sel = cmds.ls(selection=True)
+
+    _refs = []
+    assert class_.TYPE
+    for _node in pom.find_nodes(type_=class_.TYPE):
+        _LOGGER.debug(' - ADDING NODE %s', _node)
+        try:
+            _ref = class_(_node)
+        except (ValueError, RuntimeError) as _exc:
+            _LOGGER.debug('   - FAILED TO BUILD REF %s', _exc)
+            continue
+        if selected and _ref.top_node not in _sel and _ref.node not in _sel:
+            _LOGGER.debug('   - SELECTION FILTER REJECTED %s', _ref)
+            continue
+        _LOGGER.debug('   - CREATED REF %s', _ref)
+        _refs.append(_ref)
+
+    return _refs
+
+
 def find_ai_standins(selected=False):
     """Find pipelined aiStandIn references in the current scene.
 
@@ -482,39 +542,6 @@ def find_ai_vols(selected=False):
     return _vdbs
 
 
-def _find_type_nodes(class_, selected=False):
-    """Read nodes of the given class in the current scene.
-
-    Args:
-        class_ (class): type of node to search for
-        selected (bool): apply selected nodes filter
-
-    Returns:
-        (CMayaNodeRef list): matching node ref objects
-    """
-    _LOGGER.debug('READ TYPE NODES %s', class_)
-    if class_.TYPE not in cmds.allNodeTypes():
-        return []
-    _sel = cmds.ls(selection=True)
-
-    _refs = []
-    assert class_.TYPE
-    for _node in pom.find_nodes(type_=class_.TYPE):
-        _LOGGER.debug(' - ADDING NODE %s', _node)
-        try:
-            _ref = class_(_node)
-        except (ValueError, RuntimeError) as _exc:
-            _LOGGER.debug('   - FAILED TO BUILD REF %s', _exc)
-            continue
-        if selected and _ref.top_node not in _sel and _ref.node not in _sel:
-            _LOGGER.debug('   - SELECTION FILTER REJECTED %s', _ref)
-            continue
-        _LOGGER.debug('   - CREATED REF %s', _ref)
-        _refs.append(_ref)
-
-    return _refs
-
-
 def find_img_planes(selected=False):
     """Read image planes from the current scene.
 
@@ -525,6 +552,18 @@ def find_img_planes(selected=False):
         (CMayaImgPlaneRef list): image plane refs
     """
     return _find_type_nodes(class_=CMayaImgPlaneRef, selected=selected)
+
+
+def find_file_nodes(selected=False):
+    """Read file from the current scene.
+
+    Args:
+        selected (bool): apply selected filter
+
+    Returns:
+        (CMayaFileRef list): file refs
+    """
+    return _find_type_nodes(class_=CMayaFileRef, selected=selected)
 
 
 def find_rs_dome_lights(selected=False):
