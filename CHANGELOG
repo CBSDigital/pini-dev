@@ -1,3 +1,11 @@
+## [7.29.2] - Fri 2025-08-08 07:22
+### Summary
+ - Sanity Check:
+    - maya check path mapping bugfix error on udim texture (bsheppherd),
+### Updated
+ - pini.utils.file_to_seq added udim handling,
+
+
 ## [7.29.1] - Thu 2025-08-07 15:13
 ### Summary
  - Pini Helper:

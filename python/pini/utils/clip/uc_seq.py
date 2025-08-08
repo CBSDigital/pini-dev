@@ -944,7 +944,7 @@ def file_to_seq(file_, safe=True, frame_expr=None, catch=False):
         _head = _file.filename[:_head_len]
         _tail = _file.filename[-len(_extn) - 1:]
     _LOGGER.debug(' - TOKENS %s // %s // %s', _head, _f_str, _tail)
-    if not _f_str.isdigit():
+    if not (_f_str.isdigit() or _f_str in ['<UDIM>', '<U>_<V>']):
         if catch:
             return None
         raise ValueError(_f_str)
