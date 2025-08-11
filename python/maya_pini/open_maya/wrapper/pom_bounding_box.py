@@ -68,7 +68,7 @@ class CBoundingBox(om.MBoundingBox):
         return _cube
 
     def __repr__(self):
-        return f'<{type(self).__name__}'
+        return f'<{type(self).__name__}>'
 
 
 def to_bbox(obj):

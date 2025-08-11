@@ -1,7 +1,16 @@
+## [7.29.3] - Mon 2025-08-11 11:51
+### Summary
+ - Pini Helper:
+    - maya publish fbx bugfix constraints not exported (mkim),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish export fbx select hierarchy,
+ - pini.pipe.cache.CCPWork.update_outputs added image arg,
+
+
 ## [7.29.2] - Fri 2025-08-08 07:22
 ### Summary
  - Sanity Check:
-    - maya check path mapping bugfix error on udim texture (bsheppherd),
+    - maya check path mapping bugfix error on udim texture (bshepperd),
 ### Updated
  - pini.utils.file_to_seq added udim handling,
 

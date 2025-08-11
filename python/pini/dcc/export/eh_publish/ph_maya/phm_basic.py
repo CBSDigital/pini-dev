@@ -372,8 +372,10 @@ def _exec_export_fbx(work, constraints=True, force=False):
     if not _tmpl:
         _LOGGER.info(' - UNABLE TO EXPORT ABC - NO CACHE TEMPLATE %s', work)
         return None
-    cmds.select(_top_node)
     _LOGGER.debug(' - TOP NODE %s', _top_node)
+
+    # Select all otherwise constraints don't get exported
+    cmds.select(_top_node, hierarchy=True)
 
     # Get fbx path
     _fbx = work.to_output(

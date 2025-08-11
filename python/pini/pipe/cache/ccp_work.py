@@ -287,7 +287,7 @@ class CCPWork(CPWork):
         super().set_metadata(*args, **kwargs)
         self._read_metadata(force=True)
 
-    def update_outputs(self, update_helper=True):
+    def update_outputs(self, update_helper=True, image=None):
         """To be called when outputs are added.
 
         If the PiniHelper is active then this is updated (which updates the
@@ -296,11 +296,15 @@ class CCPWork(CPWork):
         Args:
             update_helper (bool): switch helper back to work tab to
                 show new outputs
+            image (File): apply thumbnail image
         """
         from pini.tools import helper
         _LOGGER.info('UPDATE OUTPUTS %s image=%d', self, self.image.exists())
 
         self._read_outputs(force=True)
+        if image:
+            _img = File(image)
+            _img.copy_to(self.image, force=True)
         if self.image.exists():
             _LOGGER.info(' - REREADING IMAGE %s', self.image)
             helper.obt_pixmap(self.image, force=True)
