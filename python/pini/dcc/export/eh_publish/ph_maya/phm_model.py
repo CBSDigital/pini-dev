@@ -36,7 +36,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         self.ui.add_check_box(
             val=True, name='DelHistory', label='Delete history')
         self.ui.add_combo_box(
-            val='All locked except top node', name='Lock',
+            val='No change', name='Lock',
             items=('All locked except top node', 'All locked', 'No change'),
             label_w=35)
 
@@ -106,6 +106,9 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
 
         # Apply locking
         for _tfm in _tfms:
+            if not _tfm.exists():
+                continue
+            _LOGGER.debug(' - LOCK TFM %s', _tfm)
             if _lock_s == 'All locked except top node':
                 _lock = _tfm != _top_node
             elif _lock_s == 'No change':

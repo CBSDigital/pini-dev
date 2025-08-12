@@ -1,3 +1,14 @@
+## [7.29.4] - Tue 2025-08-12 09:17
+### Summary
+ - Pini Helper:
+    - maya model publish default lock mode is no change (mkim),
+    - maya model publish bugfix error on clean scene (eehemann),
+### Updated
+ - pini.dcc.export.CMayaModelPublish default lock mode is no change,
+ - pini.dcc.export.CMayaModelPublish clean scene catch missing transform,
+ - pini.tools.sanity_check.FindUnneccessarySkinClusters only run in rig task,
+
+
 ## [7.29.3] - Mon 2025-08-11 11:51
 ### Summary
  - Pini Helper:

@@ -585,7 +585,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
     issues and unnecessarily large abcs.
     """
 
-    task_filter = 'model rig'
+    task_filter = 'rig'
     depends_on = (CheckCacheSet, )
 
     def run(self):
