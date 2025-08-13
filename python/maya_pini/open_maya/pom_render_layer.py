@@ -95,7 +95,7 @@ def cur_render_layer():
     return single(_lyr for _lyr in find_render_layers() if _lyr == _crl)
 
 
-def find_render_layer(match, catch=False):
+def find_render_layer(match=None, catch=False, **kwargs):
     """Find render layer.
 
     Args:
@@ -105,23 +105,30 @@ def find_render_layer(match, catch=False):
     Returns:
         (CRenderLayer): render layer
     """
-    _lyrs = find_render_layers()
+    _lyrs = find_render_layers(**kwargs)
+    if not match and len(_lyrs) == 1:
+        return single(_lyrs)
+
     _name_match = [
         _lyr for _lyr in _lyrs if match in (_lyr.name, _lyr.pass_name)]
     if len(_name_match) == 1:
         return single(_name_match)
+
+    # Handle fail
     if catch:
         return None
     raise ValueError(match)
 
 
-def find_render_layers(referenced=False, renderable=None):
+def find_render_layers(
+        referenced=False, renderable=None, pass_name=None):
     """Find render layers in the current scene.
 
     Args:
         referenced (bool): filter by referenced status
             (use None to find all render layers)
         renderable (bool): filter by layer renderable status
+        pass_name (str): filter by pass name
 
     Returns:
         (CRenderLayer list): render layers
@@ -131,6 +138,8 @@ def find_render_layers(referenced=False, renderable=None):
         _LOGGER.debug('CHECKING LAYER %s', _lyr)
         _lyr = CRenderLayer(_lyr)
         if not _lyr.pass_name:
+            continue
+        if pass_name and pass_name != _lyr.pass_name:
             continue
         if referenced is not None and _lyr.is_referenced() != referenced:
             continue

@@ -45,7 +45,8 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         self.ui.add_combo_box(
             name='Settings', items=['As is', 'Nice'])
         self.ui.add_combo_box(
-            name='Res', items=['Full', 'Half', 'Quarter'], label='Resolution')
+            name='Res', items=['Full', 'Half', 'Quarter', '1920 Width'],
+            label='Resolution', val='1920 Width')
         self.ui.add_combo_box(
             name='OutputName', items=['blast', '<camera>'])
 

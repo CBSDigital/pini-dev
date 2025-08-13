@@ -1,3 +1,16 @@
+## [7.30.0] - Wed 2025-08-13 11:55
+### Summary
+ - Pini Helper:
+    - maya playblast added 1920 width res option (eehemann),
+    - maya camera cache added plateResX/plateResY attrs on top node (rcalderon),
+### Updated
+ - pini.utils.Dir.delete added verbose arg,
+ - pini.dcc.export.CMayaPlayblast added res 1920 width option,
+ - maya_pini.m_pipe.find_cacheable updated match arg -> kwarg,
+ - maya_pini.m_pipe.CPCacheableCam write plateResX/Y attrs on top node,
+ - maya_pini.open_maya.find_render_layers added pass_name arg,
+
+
 ## [7.29.4] - Tue 2025-08-12 09:17
 ### Summary
  - Pini Helper:

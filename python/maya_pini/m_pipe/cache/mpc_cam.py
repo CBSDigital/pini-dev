@@ -6,7 +6,7 @@ import re
 from maya import cmds
 
 from pini import icons, dcc
-from pini.utils import single
+from pini.utils import single, to_seq
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
@@ -22,10 +22,9 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
     """Represents a camera that can be cached in the current scene."""
 
     ref = None
-    cam_attrs = (
-        'focalLength', 'focusDistance',
-        'filmTranslateH', 'filmTranslateV')
-    attrs = cam_attrs
+    cam_attrs = [
+        'focalLength', 'focusDistance', 'filmTranslateH', 'filmTranslateV']
+    attrs = cam_attrs + ['plateResX', 'plateResY']
 
     def __init__(self, cam):
         """Constructor.
@@ -74,39 +73,43 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                 bug out if camera scale is not 1)
         """
         _LOGGER.info('BUILD TMP CAM %s', self)
+        _src_cam = pom.CCamera(self.cam)
+
         set_namespace(self._tmp_ns, clean=True)
-        _dup = cmds.duplicate(self.cam, name='CAM')[0]
-        if to_clean(_dup) != 'CAM':
-            _dup = cmds.rename(_dup, 'CAM')
-        _dup = pom.CCamera(_dup)
-        _dup.unhide(unlock=True)
-        _dup.fix_shp_name()
-        _dup.shp.plug['overscan'].set_locked(False)
+        _dup_cam = cmds.duplicate(self.cam, name='CAM')[0]
+        if to_clean(_dup_cam) != 'CAM':
+            _dup_cam = cmds.rename(_dup_cam, 'CAM')
+        _dup_cam = pom.CCamera(_dup_cam)
+        _dup_cam.unhide(unlock=True)
+        _dup_cam.fix_shp_name()
+        _dup_cam.shp.plug['overscan'].set_locked(False)
 
         # Tag shape as tmp cam
-        _dup.shp.add_attr('piniTmpCam', True)
+        _dup_cam.shp.add_attr('piniTmpCam', True)
 
         # More to world + parent constrain to cam to keep anim
-        _dup.unlock_tfms()
-        if to_parent(_dup):
-            cmds.parent(_dup, world=True)
-        _cons = pom.CMDS.parentConstraint(self.cam, _dup)
+        _dup_cam.unlock_tfms()
+        if to_parent(_dup_cam):
+            cmds.parent(_dup_cam, world=True)
+        _cons = pom.CMDS.parentConstraint(self.cam, _dup_cam)
         _LOGGER.info(' - CONS %s', _cons)
-        set_col(_dup, 'green', force=True)
-        _dup.u_scale(scale)
+        set_col(_dup_cam, 'green', force=True)
+        _dup_cam.u_scale(scale)
 
         # Move rotate axis off export cam
-        _rot_axis = single(_dup.plug['rotateAxis'].get_val())
+        _rot_axis = single(_dup_cam.plug['rotateAxis'].get_val())
         _LOGGER.info(' - ROT AXIS %s', _rot_axis)
-        _dup.plug['rotateAxis'].set_val([0, 0, 0])
+        _dup_cam.plug['rotateAxis'].set_val([0, 0, 0])
         _cons.plug['target[0].targetOffsetRotate'].set_val(_rot_axis)
 
         # Connect shape attrs
         for _attr in self.cam_attrs:
-            _src = pom.CCamera(self.cam).shp.to_plug(_attr)
-            _trg = _dup.shp.to_plug(_attr)
-            _trg.set_locked(False)
-            _src.connect(_trg)
+            _src_attr = _src_cam.shp.to_plug(_attr)
+            _trg_attr = _dup_cam.shp.to_plug(_attr)
+            _trg_attr.set_locked(False)
+            _src_attr.connect(_trg_attr)
+
+        _add_plate_res_attrs(trg_cam=_dup_cam, src_cam=_src_cam)
 
         set_namespace(":")
 
@@ -195,6 +198,30 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
             (str): job arg
         """
         return super().to_job_arg(check_geo=False, **kwargs)
+
+
+def _add_plate_res_attrs(src_cam, trg_cam):
+    """Add plate res attrs to TMP cam.
+
+    Args:
+        src_cam (CCamera): source camera
+        trg_cam (CCamera): tmp camera
+    """
+    _img = src_cam.shp.plug['imagePlane[0]'].find_incoming(plugs=False)
+    _LOGGER.info(' - IMG %s', _img)
+    if not _img:
+        return
+
+    _seq = to_seq(_img.shp.plug['imageName'].get_val())
+    _LOGGER.info(' - SEQ %s', _seq)
+    _res = _seq.to_res()
+    _LOGGER.info(' - RES %s', _res)
+    _width, _height = _res.to_tuple()
+
+    _res_x = trg_cam.add_attr('plateResX', _width)
+    _LOGGER.info(' - ADDED RES X %s %s', _res_x, _width)
+    _res_y = trg_cam.add_attr('plateResY', _height)
+    _LOGGER.info(' - ADDED RES Y %s %s', _res_y, _height)
 
 
 def find_cams():

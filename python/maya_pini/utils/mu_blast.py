@@ -287,6 +287,10 @@ def _to_res(res, is_video):
     elif res == 'Quarter':
         _revert_res = dcc.get_res()
         _res = [int(_item / 4) for _item in dcc.get_res()]
+    elif res == '1920 Width':
+        _width, _height = dcc.get_res()
+        _aspect = _width / _height
+        _res = [1920, round(1920 / _aspect)]
     else:
         raise ValueError(res)
 

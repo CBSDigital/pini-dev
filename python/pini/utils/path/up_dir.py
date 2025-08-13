@@ -97,12 +97,13 @@ class Dir(up_path.Path):
         _target.delete(force=force)
         shutil.copytree(self.path, _target.path)
 
-    def delete(self, wording='Delete', force=False):
+    def delete(self, wording='Delete', force=False, verbose=True):
         """Delete this directory and its contents.
 
         Args:
             wording (str): override wording of warning dialog
             force (bool): delete contents without warning dialog
+            verbose (bool): print process data
         """
         if not self.exists():
             return
@@ -111,7 +112,7 @@ class Dir(up_path.Path):
             _icon = icons.find('Sponge')
             qt.ok_cancel(
                 msg=f'{wording} directory and contents?\n\n{self.path}',
-                icon=_icon, title=wording)
+                icon=_icon, title=wording, verbose=verbose)
         shutil.rmtree(self.path)
 
     @functools.wraps(up_find.find, assigned=('__doc__', ))

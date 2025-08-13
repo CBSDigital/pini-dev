@@ -17,6 +17,6 @@ class TestDCC(unittest.TestCase):
                 1.0,
                 ['A', 'B'],
         ]:
-            _LOGGER.info(' - DATA', _data)
+            _LOGGER.info(' - DATA %s', _data)
             dcc.set_scene_data('Test', _data)
             assert dcc.get_scene_data('Test') == _data

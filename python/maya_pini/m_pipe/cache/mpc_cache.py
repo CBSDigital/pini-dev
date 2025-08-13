@@ -312,7 +312,7 @@ def _take_snapshot(frame, image):
 
 
 def find_cacheable(
-        match, filter_=None, type_=None, output_name=None, catch=False):
+        match=None, filter_=None, type_=None, output_name=None, catch=False):
     """Find a cacheable in the current scene.
 
     Args:
