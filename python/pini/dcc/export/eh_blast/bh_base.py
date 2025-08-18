@@ -39,6 +39,7 @@ class CBlastHandler(eh_base.CExportHandler):
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""
+        self.ui.add_separator()
         _vid_fmt = os.environ.get('PINI_VIDEO_FORMAT', 'mp4')
         self.ui.add_combo_box(
             'Format', items=[_vid_fmt, 'jpg', 'png'])

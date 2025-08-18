@@ -939,6 +939,10 @@ def file_to_seq(file_, safe=True, frame_expr=None, catch=False):
         _head, _tail = f'{_base}.', f'.{_extn}'
     else:
         _tokens = re.split('[._]', _file.filename)
+        if len(_tokens) < 2:
+            if catch:
+                return None
+            raise ValueError(f'Failed to convert to path seq {file_}')
         _f_str, _extn = _tokens[-2], _tokens[-1]
         _head_len = len(_file.filename) - len(_f_str) - len(_extn) - 1
         _head = _file.filename[:_head_len]

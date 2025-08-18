@@ -7,7 +7,7 @@ from . import qc_ui_base, qc_mixin
 _LOGGER = logging.getLogger(__name__)
 
 
-class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBase):
+class CUiDockableMixin(qc_mixin.CDockableMixin, qc_ui_base.CUiBaseDummy):
     """Dockable maya interface defined by a ui file."""
 
     def __init__(self, ui_file, catch_errors=True, show=True, parent=None,

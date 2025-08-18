@@ -9,7 +9,7 @@ from pini import dcc, pipe, testing, qt
 from pini.pipe import cache
 from pini.dcc import export
 from pini.tools import helper
-from pini.utils import single, assert_eq
+from pini.utils import single, assert_eq, ints_to_str
 
 from pini.dcc.export.eh_publish.ph_maya import phm_basic
 
@@ -165,6 +165,56 @@ class TestHelper(unittest.TestCase):
         _helper.jump_to(_ren)
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Media'
         assert _helper.ui.SOutputs.selected_data() == _ren
+
+    def test_export_range_opts(self):
+
+        _helper = helper.obt_helper()
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Render')
+        _helper.ui.ERenderHandler.select('Local')
+
+        _ren = _helper.ui.ERenderHandler.selected_data()
+        _custom = '1001,1003,1010-1015'
+        _LOGGER.info('REN %s', _ren)
+
+        dcc.set_range(1001, 1020)
+        dcc.set_frame(1001)
+        _ren.ui.RangeStepSize.set_val(3)
+        _ren.ui.RangeCustom.setText(_custom)
+        assert dcc.t_range() == (1001, 1020)
+        assert dcc.t_frame() == 1001
+
+        print()
+        for _mode, _frame_str in [
+                ('From timeline', '1001-1019x3'),
+                ('Current frame', '1001'),
+                ('Custom', _custom),
+        ]:
+            _LOGGER.info(' - TEST %s', _mode)
+            _ren.ui.Range.select(_mode)
+            _frames = _ren.ui.to_frames()
+            _frames_s = ints_to_str(_frames)
+            _LOGGER.info(' - FRAMES %s %s', _frames_s, _frames)
+            assert_eq(_frame_str, _frames_s)
+            assert f'frames: {_frame_str}' == _ren.ui.RangeFramesLabel.text()
+        print()
+
+        # Check manual range
+        _helper.ui.EExportPane.select_tab('Cache')
+        _cache = _helper.ui.ECacheHandler.selected_data()
+        assert _cache.ui.range_mode == 'Continuous'
+        _cache.ui.Range.select('From timeline')
+        assert _cache.ui.RangeFramesLabel.text() == 'frames: 1001-1020'
+        assert_eq(ints_to_str(_cache.ui.to_frames()), '1001-1020')
+        _cache.ui.Range.select('Manual')
+        _cache.ui.RangeManualStart.setValue(1005)
+        _cache.ui.RangeManualEnd.setValue(1010)
+        assert _cache.ui.RangeFramesLabel.text() == 'frames: 1005-1010'
+        assert_eq(ints_to_str(_cache.ui.to_frames()), '1005-1010')
+        _helper.ui.EExportPane.select_tab('Render')
+        _helper.ui.EExportPane.select_tab('Cache')
+        assert _cache.ui.RangeManualStart.value() == 1005
+        assert _cache.ui.RangeManualEnd.value() == 1010
 
     def test_shot_workflow(self, show_ctx=False, force=True):
 

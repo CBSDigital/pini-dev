@@ -1,3 +1,28 @@
+## [8.0.0] - Mon 2025-08-18 13:16
+### Summary
+ - Pini Helper:
+    - bugfix error on deadline submit with bad file node in scene (bshepperd),
+    - deadline submit added step size (eehemann),
+    - bugfix error on launch in maya2025 (tvoll),
+### Updated
+ - pini.utils.file_to_seq catch bad error on wrong tokens,
+ - pini.utils.VLC.play updated use of deprecated abs_path arg,
+ - pini.dcc.cur_frame deprecated for t_frame,
+ - pini.dcc.set_frame added,
+ - pini.dcc.export.CExportHandlerUI major rewrite,
+ - pini.dcc.export.CExportHandlerUI apply build_ prefix for single widgets,
+ - pini.dcc.export.CExportHandlerUI apply assemble_ prefix for widgets groups,
+ - pini.dcc.export.CExportHandlerUI added custom range mode,
+ - pini.dcc.export.CExportHandlerUI added step size,
+ - pini.dcc.export.CExportHandlerUI.to_frames added,
+ - pini.qt.CBaseWidget.disable_save_settings removed deprecated attr,
+ - pini.qt.CSpinBox.set_val added,
+ - pini.qt.CUiBase added custom_widgets arg,
+ - pini.qt.CUiDockableMixin inherits from CUiBaseDummy for PySide6,
+ - pini.tools.pyui.PUMayaUi bugfix showing scrollbar,
+ - maya_pini.ui.get_main_window_ptr updated shiboken2 -> qt.shiboken,
+
+
 ## [7.30.0] - Wed 2025-08-13 11:55
 ### Summary
  - Pini Helper:

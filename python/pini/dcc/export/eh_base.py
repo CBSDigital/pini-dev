@@ -99,7 +99,7 @@ class CExportHandler:
 
         if add_range:
             self.ui.add_separator()
-            self.ui.add_range_elems()
+            self.ui.assemble_range_elems(mode=add_range)
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements.
@@ -122,12 +122,12 @@ class CExportHandler:
             version_up (bool): default version up setting
             exec_label (str): override label for exec button
         """
-        self.ui.add_footer_elems(
+        self.ui.assemble_footer_elems(
             add_version_up=add_version_up, version_up=version_up,
             add_snapshot=add_snapshot, add_notes=add_notes)
 
         self.ui.add_separator()
-        self.ui.add_exec_button(exec_label or self.title)
+        self.ui.add_exec_btn(exec_label or self.title)
         if stretch:
             self.ui.layout.addStretch()
 
@@ -232,6 +232,14 @@ class CExportHandler:
             self, settings_container=self.ui,
             error_catcher=error.get_catcher(qt_safe=True, supress_error=True))
 
+    def to_frames(self):
+        """Obtain list of export frames.
+
+        Returns:
+            (int list): frames
+        """
+        return self.ui.to_frames()
+
     def to_range(self):
         """Read range based on current ui settings.
 
@@ -242,7 +250,9 @@ class CExportHandler:
         if _mode == 'From timeline':
             return dcc.t_range(int)
         if _mode == 'Manual':
-            return self.ui.RangeManStart.value(), self.ui.RangeManEnd.value()
+            return (
+                self.ui.RangeManualStart.value(),
+                self.ui.RangeManualEnd.value())
         if _mode == 'Current frame':
             return [dcc.t_frame(int), dcc.t_frame(int)]
         raise ValueError(_mode)

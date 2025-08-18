@@ -41,10 +41,11 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
 
     def build_ui(self):
         """Build basic render interface into the given layout."""
-        super().build_ui(add_range=True, add_snapshot=False)
+        super().build_ui(add_range='Frames', add_snapshot=False)
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""
+        self.ui.add_separator()
 
         # Read cams from scene
         _cams = find_cams(orthographic=False)
@@ -210,11 +211,11 @@ class CMayaFarmRender(CMayaRenderHandler):
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""
+        self.ui.add_separator()
         self.ui.add_spin_box(name='Priority', val=50)
         self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
         self.ui.add_spin_box(name='MachineLimit', val=15)
 
-        # self.ui.add_check_box(name='IgnoreError211', val=False)
         self.ui.add_check_box(name='StrictErrorChecking', val=True)
 
         self._build_limit_groups_elems()

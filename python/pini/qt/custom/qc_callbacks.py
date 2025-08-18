@@ -256,6 +256,7 @@ def _connect_signal_callback(
                 _LOGGER.info(
                     '    - DISCONNECT CALLBACK FAILED %s %s', _widget, _signal)
         _signal.connect(_callback)
+        _LOGGER.debug('     - BUILD CONNECTION %s', _callback)
 
 
 def _connect_simple_callbacks(

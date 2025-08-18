@@ -345,7 +345,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         """Resize interface to fit child elements."""
         cmds.refresh()
         _col_h = cmds.columnLayout(self.master, query=True, height=True)
-        _height = _col_h + 25
+        _height = _col_h + 27
         _LOGGER.debug(' - TO FIT CHILDREN RESIZE %s %d', self.uid, _height)
         cmds.window(self.uid, edit=True, height=_height)
 

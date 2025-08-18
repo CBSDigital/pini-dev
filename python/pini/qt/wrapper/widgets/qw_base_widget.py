@@ -13,7 +13,6 @@ _LOGGER = logging.getLogger(__name__)
 class CBaseWidget:
     """Virtual base class for wrapped widgets."""
 
-    disable_save_settings = False
     save_policy = q_utils.SavePolicy.DEFAULT
 
     _settings_key = None

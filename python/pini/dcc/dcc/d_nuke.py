@@ -166,6 +166,8 @@ class NukeDCC(BaseDCC):
         Returns:
             (int): current frame
         """
+        from pini.tools import release
+        release.apply_depreaction('14/08/25', 'Use t_frame')
         return nuke.frame()
 
     def _force_load(self, file_, clear=True):

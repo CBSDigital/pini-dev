@@ -249,6 +249,8 @@ class TestHelper(unittest.TestCase):
 
         # Select tab to store data in scene
         _helper.ui.MainPane.select_tab('Export')
+        # if dcc.to_version()[0] == 2025:
+        #     raise RuntimeError
         _tab = _helper.ui.EExportPane.find_tabs(enabled=True)[-1]
         _LOGGER.info(' - TAB %s', _tab)
         assert _helper.ui.EExportPane.save_policy == qt.SavePolicy.SAVE_IN_SCENE

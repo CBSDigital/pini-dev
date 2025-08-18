@@ -216,7 +216,8 @@ class _VLC(_Viewer):
         _file = File(clip_)
         assert _file.exists()
         assert self.exe
-        _path = abs_path(_file.path, win=platform.system() == 'Windows')
+        _mode = 'win' if platform.system() == 'Windows' else None
+        _path = abs_path(_file.path, mode=_mode)
         _cmds = [self.exe.path, _path]
         if loop:
             _cmds += ['--loop', '--no-video-title-show']

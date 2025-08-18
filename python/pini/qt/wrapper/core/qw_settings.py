@@ -174,13 +174,7 @@ class CSettings(QtCore.QSettings, _FileDummy):
         Args:
             widget (QWidget): widget being updated
         """
-        from pini import testing, qt
-
-        # Check for deprecated disable save settings 04/11/24
-        if (
-                testing.dev_mode() and
-                getattr(widget, 'disable_save_settings', False)):
-            raise DeprecationWarning(widget)
+        from pini import qt
 
         # Make sure save policy is default or save on change
         _save_policy = getattr(widget, 'save_policy', qt.SavePolicy.DEFAULT)

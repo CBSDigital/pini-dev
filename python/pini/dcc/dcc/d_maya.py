@@ -145,6 +145,8 @@ class MayaDCC(BaseDCC):
         Returns:
             (int): current frame
         """
+        from pini.tools import release
+        release.apply_depreaction('14/08/25', 'Use t_frame')
         return int(cmds.currentTime(query=True))
 
     def error(self, error):
@@ -390,6 +392,14 @@ class MayaDCC(BaseDCC):
         else:
             _name = f'{fps}fps'
         cmds.currentUnit(time=_name)
+
+    def set_frame(self, frame):
+        """Set current frame.
+
+        Args:
+            frame (float): frame to apply
+        """
+        cmds.currentTime(frame)
 
     def set_range(self, start, end):
         """Set current frame range.

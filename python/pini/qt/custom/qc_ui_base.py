@@ -19,6 +19,7 @@ from ..q_utils import (
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
+from .. import q_ui_loader
 from . import qc_callbacks
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,7 +34,8 @@ class CUiBase:
     def __init__(
             self, ui_file, stack_key=None, store_settings=True, show=True,
             catch_errors=True, modal=False, ui_loader=None, title=None,
-            settings_file=None, settings_suffix=None, fps=None):
+            settings_file=None, settings_suffix=None, fps=None,
+            custom_widgets=()):
         """Constructor.
 
         Args:
@@ -51,6 +53,7 @@ class CUiBase:
             settings_suffix (str): apply suffix to default settings
                 file name
             fps (float): start timer at the given frame rate
+            custom_widgets (list): custom widgets to apply to ui loader
         """
 
         # Setup basic vars
@@ -82,7 +85,9 @@ class CUiBase:
 
         # Setup ui
         self._ui = self.ui = None
-        self._load_ui(ui_file=ui_file, ui_loader=ui_loader)
+        self._load_ui(
+            ui_file=ui_file, ui_loader=ui_loader,
+            custom_widgets=custom_widgets)
         self.init_ui()
 
         # Initiate interface
@@ -116,13 +121,13 @@ class CUiBase:
 
         Any existing dialog with this ui file is closed.
         """
-        # pylint: disable=no-member
         if self._dialog_stack_key in sys.QT_DIALOG_STACK:
             sys.QT_DIALOG_STACK[self._dialog_stack_key].delete()
         sys.QT_DIALOG_STACK[self._dialog_stack_key] = self
 
     def _load_ui(
-            self, ui_file, ui_loader=None, fix_icon_paths=True):
+            self, ui_file, ui_loader=None, fix_icon_paths=True,
+            custom_widgets=()):
         """Load ui file into ui object.
 
         Args:
@@ -130,8 +135,8 @@ class CUiBase:
             ui_loader (QUiLoader): override ui loader
             fix_icon_paths (bool): update icon paths
                 to be relative to current pini_icons module
+            custom_widgets (list): custom widgets to apply to ui loader
         """
-        from pini import qt
 
         # Load ui
         _ui_file = ui_file
@@ -139,7 +144,9 @@ class CUiBase:
         if fix_icon_paths:
             _ui_file = _fix_icon_paths(_ui_file)
             _LOGGER.debug(' - UPDATED UI FILE %s', _ui_file)
-        _loader = ui_loader or qt.build_ui_loader()
+        _loader = ui_loader or q_ui_loader.build_ui_loader()
+        for _widget in custom_widgets:
+            _loader.registerCustomWidget(_widget)
         self._ui = _loader.load(_ui_file)
 
         # Link to this instance based on type
@@ -619,7 +626,7 @@ class CUiBase:
 
 
 class CUiBaseDummy(CUiBase):
-    """Dummy class to fix PySide6/py11 inheritance.
+    """Dummy class to fix PySide6 inheritance.
 
     In this configuration qt seems to call __init__ on all parent classes
     when __init__ is called on the QObject class - this dummy allows the

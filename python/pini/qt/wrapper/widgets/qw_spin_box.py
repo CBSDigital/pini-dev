@@ -21,10 +21,16 @@ class CSpinBox(QtWidgets.QSpinBox, qw_base_widget.CBaseWidget):
         """
         return self.value()
 
-    def set_val(self, val):
+    def set_val(self, val, catch=True):
         """Set value of this element.
 
         Args:
             val (int): value to apply
+            catch (bool): no error if fail to apply value
         """
-        self.setValue(val)
+        try:
+            self.setValue(val)
+        except TypeError as _exc:
+            if catch:
+                return
+            raise _exc

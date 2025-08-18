@@ -101,7 +101,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
             name='References', items=_items, data=_data,
             val=_val, settings_key=_PUB_REFS_MODE_KEY)
         self.ui.add_label(
-            name='ReferencesLabel', text=' - Blah blah blah', add_layout=True)
+            name='ReferencesLabel', text='<reference mode description>')
         self._callback__References()
 
     def _callback__References(self):

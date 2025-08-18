@@ -4,8 +4,6 @@ import inspect
 import logging
 import sys
 
-import shiboken2
-
 from maya import cmds, mel
 
 from pini.utils import wrap_fn, single, apply_filter, EMPTY, cache_result
@@ -237,7 +235,7 @@ def get_main_window_ptr(fix_core=False):
     Returns:
         (QDialog): main window pointer
     """
-    from pini.qt import QtWidgets, QtCore
+    from pini.qt import QtWidgets, QtCore, shiboken
 
     _app = QtWidgets.QApplication.instance()
 
@@ -245,8 +243,8 @@ def get_main_window_ptr(fix_core=False):
     if fix_core and type(_app) is QtCore.QCoreApplication:  # pylint: disable=unidiomatic-typecheck
         if not hasattr(sys, 'PINI_WRAPPED_QT_CORE_APPLICATION'):
             _LOGGER.info('WRAPPING QCoreApplication')
-            _ptr = shiboken2.getCppPointer(_app)[0]
-            _app = shiboken2.wrapInstance(_ptr, QtWidgets.QApplication)
+            _ptr = shiboken.getCppPointer(_app)[0]
+            _app = shiboken.wrapInstance(_ptr, QtWidgets.QApplication)
             sys.PINI_WRAPPED_QT_CORE_APPLICATION = _app
         else:
             _app = sys.PINI_WRAPPED_QT_CORE_APPLICATION
