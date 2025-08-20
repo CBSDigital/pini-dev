@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -79,7 +79,7 @@
               <number>3</number>
              </property>
              <item>
-              <layout class="QHBoxLayout" name="WTagTextLyt" stretch="0,1,0,0,0">
+              <layout class="QHBoxLayout" name="WTagTextLyt" stretch="0,1,0,0">
                <property name="spacing">
                 <number>2</number>
                </property>
@@ -149,35 +149,6 @@
                  <property name="icon">
                   <iconset>
                    <normaloff>../../../../../pini-icons/icons/android_12l/icon.3282.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3282.png</iconset>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>20</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="flat">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="WWorksRefresh">
-                 <property name="maximumSize">
-                  <size>
-                   <width>20</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                 <property name="toolTip">
-                  <string>Reread list of work files</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="icon">
-                  <iconset>
-                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3198.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -2544,7 +2515,6 @@ icon</string>
   <tabstop>MainPane</tabstop>
   <tabstop>WTagError</tabstop>
   <tabstop>WTagTextClear</tabstop>
-  <tabstop>WWorksRefresh</tabstop>
   <tabstop>WWorksShowAll</tabstop>
   <tabstop>WWorks</tabstop>
   <tabstop>WVersionUp</tabstop>

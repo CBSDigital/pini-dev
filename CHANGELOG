@@ -1,3 +1,19 @@
+## [8.1.0] - Wed 2025-08-20 12:20
+### Summary
+ - Pini Helper:
+    - maya render range added 'From render globals' mode,
+    - maya farm render hide image planes applies to redshift dome light backplates (rcalderon),
+    - scene tab bugfix error on display output info for assets missing owner metadata (rcalderon),
+ - Sanity Check:
+    - check refs disabled warn on large refs (rcalderon),
+### Updated
+ - pini.dcc.export range added from render globals mode,
+ - pini.dcc.export.CMayaFarmRender hide image planes includes rs dome lights,
+ - pini.tools.sanity_check.CheckReferences disable warn on large refs,
+ - pini.tools.helper scene tab bugfix error on display output info on assets missing owner,
+ - pini.tools.helper removed WWorksRefresh btn,
+
+
 ## [8.0.0] - Mon 2025-08-18 13:16
 ### Summary
  - Pini Helper:

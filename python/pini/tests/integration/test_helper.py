@@ -198,8 +198,8 @@ class TestHelper(unittest.TestCase):
         _helper.ui.Refresh.click()
         _helper.jump_to(_work)
         assert_eq(_helper.work, _work)
-        _helper.ui.WWorksRefresh.click()
-        assert_eq(_helper.work, pipe.CACHE.cur_work)
+        # _helper.ui.WWorksRefresh.click()
+        # assert_eq(_helper.work, pipe.CACHE.cur_work)
 
         _work_dir_c = _helper.work_dir
         assert _helper.job is pipe.CACHE.cur_job

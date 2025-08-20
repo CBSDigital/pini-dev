@@ -261,7 +261,7 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
             _font.setPointSize(self.info_font_size)
             _font.setBold(False)
             pix.draw_text(
-                self.output.owner(),
+                self.output.owner() or '-',
                 pos=(_right_m, self.info_y), col=self.text_col,
                 font=_font, anchor='BR')
 

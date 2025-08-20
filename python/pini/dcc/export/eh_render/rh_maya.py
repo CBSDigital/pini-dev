@@ -338,22 +338,7 @@ class CMayaFarmRender(CMayaRenderHandler):
 
         pom.set_render_cam(_cam)
 
-        # Apply hide image planes
-        _reverts = []
-        if hide_img_planes:
-            for _img_plane in pom.CMDS.ls(type='imagePlane'):
-                _display_mode = _img_plane.plug['displayMode'].get_enum()
-                _LOGGER.info(' - CHECKING IMAGE PLANE %s displayMode=%s',
-                             _img_plane, _display_mode)
-                if _display_mode == 'None':
-                    continue
-                _LOGGER.info('   - HIDING')
-                _img_plane.plug['displayMode'].set_enum('None')
-                _revert = wrap_fn(
-                    _img_plane.plug['displayMode'].set_enum, _display_mode)
-                _reverts.append(_revert)
-
-        _prepare_scene_for_render()
+        _reverts = _prepare_scene_for_render(hide_img_planes=hide_img_planes)
 
         self.submit_msg, _outs = farm.submit_maya_render(
             submit_=render_, force=True, result='msg/outs',
@@ -404,8 +389,59 @@ class CMayaFarmRender(CMayaRenderHandler):
         return farm.ICON
 
 
-def _prepare_scene_for_render():
-    """Setup scene to prepare for render."""
+def _apply_hide_img_planes():
+    """Hide image planes.
+
+    Returns:
+        (fn list): functions to revert scene
+    """
+    _LOGGER.debug('APPLY HIDE IMG PLANES')
+    _reverts = []
+
+    # Hide image planes
+    for _img_plane in pom.CMDS.ls(type='imagePlane'):
+        _display_mode = _img_plane.plug['displayMode'].get_enum()
+        _LOGGER.info(' - CHECKING IMAGE PLANE %s displayMode=%s',
+                     _img_plane, _display_mode)
+        if _display_mode == 'None':
+            continue
+        _LOGGER.info('   - HIDING %s', _img_plane)
+        _img_plane.plug['displayMode'].set_enum('None')
+        _revert = wrap_fn(
+            _img_plane.plug['displayMode'].set_enum, _display_mode)
+        _reverts.append(_revert)
+
+    # Hide rs dome light backdrops
+    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    if _ren == 'redshift':
+        for _dome in pom.CMDS.ls(type='RedshiftDomeLight'):
+            _plate = _dome.plug['backPlateEnabled']
+            if not _plate.get_val():
+                continue
+            _LOGGER.debug(' - HIDING %s', _dome)
+            _plate.set_val(False)
+            _reverts.append(wrap_fn(_plate.set_val, True))
+
+    return _reverts
+
+
+def _prepare_scene_for_render(hide_img_planes=False):
+    """Setup scene to prepare for render.
+
+    Args:
+        hide_img_planes (bool): hide image planes on render
+
+    Returns:
+        (fn list): functions to revert scene
+    """
+    _reverts = []
+
+    # Apply vray padding to avoid badly named files
     _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
     if _ren == 'vray':
         cmds.setAttr('vraySettings.fileNamePadding', 4)
+
+    if hide_img_planes:
+        _reverts += _apply_hide_img_planes()
+
+    return _reverts

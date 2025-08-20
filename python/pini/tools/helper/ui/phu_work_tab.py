@@ -474,17 +474,17 @@ class PHWorkTab:
 
         self.ui.WWorkPath.redraw()
 
-    def _callback__WWorksRefresh(self):
-        _LOGGER.info('REFRESH WORKS')
-        if not self.work_dir:
-            _LOGGER.info('NO WORKDIR TO REFRESH')
-            return
-        _work = self.work
-        self.work_dir.find_works(force=True)
-        self.ui.WTagText.setText('')
-        self.ui.WTags.redraw()
-        if _work and _work.exists():
-            self.jump_to(_work)
+    # def _callback__WWorksRefresh(self):
+    #     _LOGGER.info('REFRESH WORKS')
+    #     if not self.work_dir:
+    #         _LOGGER.info('NO WORKDIR TO REFRESH')
+    #         return
+    #     _work = self.work
+    #     self.work_dir.find_works(force=True)
+    #     self.ui.WTagText.setText('')
+    #     self.ui.WTags.redraw()
+    #     if _work and _work.exists():
+    #         self.jump_to(_work)
 
     def _callback__WWorksShowAll(self):
         self.ui.WWorks.redraw()
@@ -539,7 +539,7 @@ class PHWorkTab:
         _LOGGER.debug('LOAD %s', _work)
         _work.load(parent=self, force=force)
         if _new:
-            self._callback__WWorksRefresh()
+            self._callback__Refresh()
 
     @usage.get_tracker('PiniHelper.Save', write_after=True)
     def _callback__WSave(self, force=False):
@@ -627,7 +627,7 @@ class PHWorkTab:
         menu.add_label(f'Work: {_work.filename}')
         menu.add_separator()
         menu.add_file_actions(
-            _work, delete_callback=self._callback__WWorksRefresh)
+            _work, delete_callback=self._callback__Refresh)
         menu.add_separator()
         self._add_load_ctx_opts(menu=menu, work=_work)
         menu.add_separator()

@@ -558,7 +558,9 @@ class CExportHandlerUI(qt.CUiContainer):
         if _mode == 'Continuous':
             _opts = ['From timeline', 'Manual', 'Current frame']
         elif _mode == 'Frames':
-            _opts = ['From timeline', 'Custom', 'Current frame']
+            _opts = [
+                'From timeline', 'From render globals',
+                'Custom', 'Current frame']
         else:
             raise ValueError(_mode)
         _refresh = self.build_icon_btn(
@@ -617,9 +619,10 @@ class CExportHandlerUI(qt.CUiContainer):
             _frames = list(range(_start, _end + 1, 1))
         elif _mode == 'Current frame':
             _frames = [dcc.t_frame(int)]
-            # self.RangeLabel.setText(f'{_frame}{_space}')
         elif _mode == 'From timeline':
             _frames = list(range(_start, _end + 1, _step))
+        elif _mode == 'From render globals':
+            _frames = dcc.t_frames(mode='RenderGlobals')
         elif _mode == 'Custom':
             _frame_s = self.RangeCustom.text()
             _frames = str_to_ints(_frame_s)

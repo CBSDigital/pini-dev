@@ -351,8 +351,12 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
 class CheckReferences(core.SCMayaCheck):
     """Check each reference for common errors."""
 
-    def run(self):
-        """Run this check."""
+    def run(self, warn_on_large=False):
+        """Run this check.
+
+        Args:
+            warn_on_large (bool): warn on large files
+        """
         _cur_ver = dcc.to_version()
         for _ref in pom.find_refs(allow_no_namespace=True):
 
@@ -379,7 +383,7 @@ class CheckReferences(core.SCMayaCheck):
             _size = _ref.size()
             self.write_log(' - checking size %d %s',
                            _size, nice_size(_size))
-            if _size > 500 * 1000 * 1000:
+            if warn_on_large and _size > 500 * 1000 * 1000:
                 _size_s = nice_size(_size)
                 _msg = (
                     f'Reference {_ref.namespace} is large ({_size_s}) - '
