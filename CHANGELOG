@@ -1,3 +1,12 @@
+## [8.3.0] - Thu 2025-08-21 14:59
+### Summary
+ - Sanity Check:
+    - maya added check for locked initialShadingGroup (mkim/kakuna),
+### Updated
+ - pini.tools.sanity_check.find_check check py class names to remove deleted checks,
+ - pini.tools.sanity_check.FixLockedShadingGroup added,
+
+
 ## [8.2.0] - Thu 2025-08-21 12:36
 ### Summary
  - Pini Helper:

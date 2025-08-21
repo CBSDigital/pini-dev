@@ -132,6 +132,7 @@ class PyElem:
             # Check if ast object is addable
             _LOGGER.debug(' - CHECK ITEM %d %s', _idx, _item)
             _child = self._map_ast_item_to_child(_item, parent=_parent)
+            _LOGGER.debug('   - CHILD %s', _child)
             if not _child:
                 _LOGGER.debug('   - FAILED TO MAP')
                 continue
