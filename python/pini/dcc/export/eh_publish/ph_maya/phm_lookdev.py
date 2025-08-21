@@ -29,14 +29,18 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     TYPE = 'Publish'
 
     LABEL = '\n'.join([
-        'Builds lookdev files for abc attach. Shaders should be built on '
-        'a reference of the model or rig.',
+        'Builds lookdev files for abc attach.',
         '',
+        ' - Shaders should be built on a reference of the model or rig',
         ' - Shaders are stored in maya file and attached using yml',
         ' - Any sets in overrides_SET are saved and restored on abc attach',
         ' - Nodes in JUNK group are ignored',
-        ' - Any lights found in the model/rig are saved and attached '
-        'to the matching transform on to the abc',
+        '',
+        'Lights:',
+        '',
+        ' - Any lights found in the model/rig are saved in the publish',
+        ' - Lights are constrained to the matching transform in the abc',
+        ' - Make sure lights are added to the cache_SET',
     ])
 
     shd_yml = None

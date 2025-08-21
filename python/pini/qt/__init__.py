@@ -38,6 +38,8 @@ from .tools import (
 from .graph import (
     CGraphSpace, CGraphWindow, CGBasicElem, CGPixmapElem, CGMoveElem,
     CGTextElem, CGIconElem, CGStretchElem)
+from .graph_2 import (
+    PNGNode, PNGNodeGraph, PNGImgNode, PNGRectNode, PNGRectImgNode)
 
 if dcc.NAME == 'maya':
     from .custom import CUiDockableMixin, CDockableMixin

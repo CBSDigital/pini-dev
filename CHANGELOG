@@ -1,3 +1,16 @@
+## [8.2.0] - Thu 2025-08-21 12:36
+### Summary
+ - Pini Helper:
+    - maya attach lookdev lights attach to top node if no light transform found (mkim),
+    - maya lookdev publish improved explanation of lights publishing,
+### Updated
+ - pini.dcc.pipe_ref.CMayaShadersRef._apply_lights attach to top node with maintain offset in case of no light transform found,
+ - pini.dcc.export.CMayaLookdevPublish better lights instructions in label,
+ - pini.qt.to_p return None on arg as None,
+ - pini.qt.to_pen added,
+ - pini.qt added PNGNodeGraph + nodes,
+
+
 ## [8.1.0] - Wed 2025-08-20 12:20
 ### Summary
  - Pini Helper:

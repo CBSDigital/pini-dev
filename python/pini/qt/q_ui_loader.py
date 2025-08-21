@@ -25,4 +25,6 @@ def build_ui_loader():
     _loader.registerCustomWidget(qt.CTileWidget)
     _loader.registerCustomWidget(qt.CTreeWidget)
 
+    _loader.registerCustomWidget(qt.PNGNodeGraph)
+
     return _loader

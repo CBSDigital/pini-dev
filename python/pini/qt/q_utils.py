@@ -541,10 +541,28 @@ def _arg_to_p(arg):
         _result = QtCore.QPoint(arg, arg)
     elif isinstance(arg, QtGui.QVector2D):
         _result = QtCore.QPointF(arg.x(), arg.y())
+    elif arg is None:
+        return None
     else:
         raise ValueError(arg)
 
     return _result
+
+
+def to_pen(pen):
+    """Obtain a pen object from the given arg.
+
+    Args:
+        pen (QPen|str): pen/colour
+
+    Returns:
+        (QPen): pen
+    """
+    if pen is None:
+        return None
+    if isinstance(pen, QtGui.QPen):
+        return pen
+    raise NotImplementedError(pen)
 
 
 def to_pixmap(arg):

@@ -363,18 +363,26 @@ class CMayaShadersRef(CMayaRef):
         for _light in _lights:
 
             _LOGGER.debug(' - LIGHT %s', _light)
-            _trg = target.to_node(_light, catch=True)
-            _LOGGER.debug('   - TRG %s', _trg)
-            if _trg:
 
-                # Build constraint
+            # Find target transform to constrain to
+            _trg = target.to_node(_light, catch=True)
+            _offs = False
+            _LOGGER.debug('   - TRG (lgt tfm) %s', _trg)
+            if not _trg:
+                _trg = target.top_node
+                _offs = True
+                _LOGGER.debug('   - TRG (top node) %s', _trg)
+
+            # Build constraint
+            if _trg:
                 _name = str(_light.clean_name) + '_CONS'
                 _cons = self.ref.to_node(_name, fmt='str')
                 _LOGGER.debug('   - CONS %s', _cons)
                 if cmds.objExists(_cons):
                     cmds.delete(_cons)
                     _LOGGER.debug('   - DELETING EXISTING CONS')
-                _trg.parent_constraint(_light, name=_name)
+                _trg.parent_constraint(
+                    _light, name=_name, maintain_offset=_offs)
 
             # Set light enabled/disabled based on whether target exists
             _en = bool(_trg)
