@@ -1,3 +1,12 @@
+## [8.4.1] - Mon 2025-08-25 15:46
+### Summary
+ - Pini Helper:
+    - bugfix export handler notes field being saved/restores (blee),
+### Updated
+ - pini.dcc.export.CExportHandlerUI bugfix elems not getting settings key name from handler,
+ - pini.dcc.CBaseWidget.read_setting bugfix reading setting on NO_SAVE save policy,
+
+
 ## [8.4.0] - Mon 2025-08-25 11:05
 ### Summary
  - Sanity Check:

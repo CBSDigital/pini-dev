@@ -105,8 +105,9 @@ class CExportHandlerUI(qt.CUiContainer):
         # Setup settings
         _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         _settings_key = settings_key or to_settings_key(
-            name=name, handler=self)
+            name=name, handler=self.handler)
         elem.set_settings_key(_settings_key)
+        _LOGGER.debug(' - APPLY SETTINGS KEY %s %s', elem, _settings_key)
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
         elem.ui_only = ui_only

@@ -88,6 +88,8 @@ class CBaseWidget:
         _val = None
         if self.save_policy == q_utils.SavePolicy.SAVE_IN_SCENE:
             _val = dcc.get_scene_data(self.settings_key)
+        elif self.save_policy == q_utils.SavePolicy.NO_SAVE:
+            pass
         else:
             _settings = getattr(self.parent(), 'settings', None)
             if _settings:

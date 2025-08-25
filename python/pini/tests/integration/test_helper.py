@@ -11,6 +11,20 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestHelper(unittest.TestCase):
 
+    def test_export_handler_notes(self):
+
+        _helper = helper.obt_helper(reset_cache=False)
+
+        _helper.ui.MainPane.select_tab('Work')
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Publish')
+        _helper.ui.EPublishHandler.select('Maya Basic Publish')
+
+        _pub = _helper.ui.EPublishHandler.selected_data()
+        _LOGGER.info(' - PUB %s', _pub)
+        assert _pub.ui.Notes.settings_key == 'PiniQt.CMayaBasicPublish.Notes'
+        assert not _pub.ui.Notes.text()
+
     def test_for_cyclical_import(self):
 
         # NOTE: doesn't seem to give output for some reason (could pipe out
