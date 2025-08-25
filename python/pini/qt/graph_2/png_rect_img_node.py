@@ -4,7 +4,7 @@ from .. import q_utils
 from . import png_rect_node
 
 
-class PNGRectImgNode(png_rect_node.PNGRectNode):
+class PNGImgNode(png_rect_node.PNGNode):
     """Node which displays a pixmap."""
 
     def __init__(self, scene, name, img, **kwargs):

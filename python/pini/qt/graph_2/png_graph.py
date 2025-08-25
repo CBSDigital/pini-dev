@@ -5,7 +5,7 @@ import logging
 from ..q_mgr import QtWidgets, QtGui, Qt
 from .. import q_utils, wrapper
 
-from . import png_node
+from . import png_rect_node
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
         self.base_r = base or q_utils.to_rect((0, 0), (1920, 1080))
-        self.base = png_node.PNGNode(
+        self.base = png_rect_node.PNGRectNode(
             scene=self.scene, name='Base',
             col=wrapper.CColor('Grey', alpha=0.1),
             rect=self.base_r)

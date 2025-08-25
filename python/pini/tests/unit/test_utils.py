@@ -632,6 +632,14 @@ class TestSeq(unittest.TestCase):
         _seq = file_to_seq(_path, safe=False)
         assert_eq(_seq.path, 'C:/udim/v13/T_solid_BC_%05d.png')
 
+        # Test unsafe udim
+        _path = 'C:/dir/15d_V3-NM1006.tif'
+        assert not file_to_seq(_path, catch=True)
+        assert file_to_seq(_path, safe=False)
+        assert file_to_seq(_path, safe=False).frame_expr == '%04d'
+        assert file_to_seq(_path, frame_expr='<UDIM>', safe=False)
+        assert file_to_seq(_path, frame_expr='<UDIM>', safe=False).frame_expr == '<UDIM>'
+
     def test_is_missing_frames(self):
 
         _seq = Seq('/tmp/test.%04d.jpg', frames=[1, 2, 3])

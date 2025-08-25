@@ -98,8 +98,11 @@ class AttrRef(r_path_ref.PathRef):
 
         _LOGGER.debug('     - UDIM TILES %d', self.has_udim_tiles)
         if self.has_udim_tiles:
-            _path = file_to_seq(_path, safe=False, frame_expr='<UDIM>')
-            _LOGGER.debug('     - TO SEQ %s', _path)
+            try:
+                _path = file_to_seq(_path, safe=False, frame_expr='<UDIM>')
+                _LOGGER.debug('     - TO SEQ %s', _path)
+            except ValueError:
+                _LOGGER.debug('     - FAILED TO READ UDIM %s', _path)
 
         return _path
 

@@ -1,3 +1,13 @@
+## [8.4.0] - Mon 2025-08-25 11:05
+### Summary
+ - Sanity Check:
+    - check unmapped paths bugfix error on non-standard UDIM texture (mkim),
+### Updated
+ - pini.utils.file_to_seq added handling for badly tokenised udim files,
+ - pini.qt replaced PNGRectNode/PNGRectImgNode -> PNGNode/PNGImgNode,
+ - maya_pini.ref.find_attr_refs catch bad file_to_seq,
+
+
 ## [8.3.0] - Thu 2025-08-21 14:59
 ### Summary
  - Sanity Check:

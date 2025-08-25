@@ -10,7 +10,7 @@ from .. import q_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
+class PNGNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
     """Displays a coloured rectangle on a graph."""
 
     pos_changed = QtCore.Signal(QtWidgets.QGraphicsItem)
@@ -19,8 +19,8 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             self, name, scene, rect, col='Red',
             # selected_col=None,
             moveable=False, selectable=False, bevel=20, label=None,
-            text_size=32, text_align=None, pen=None, parent=None,
-            limit=None):
+            text_size=20, text_align=None, pen=None, parent=None,
+            limit=None, callback=None):
         """Constructor.
 
         Args:
@@ -41,8 +41,9 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             pen (QPen): pen for drawing outline
             parent (QGraphicsItem): parent node
             limit (QRect): movement bound limits
+            callback (fn): callback on node clicked
         """
-        _LOGGER.debug('INIT PNGRectNode parent=%s', parent)
+        _LOGGER.debug('INIT PNGNode parent=%s', parent)
         super().__init__(parent=parent)
         # assert not parent
         QtCore.QObject.__init__(self)
@@ -51,6 +52,7 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
 
         self.name = name
         self.label = label
+        self.callback = callback
 
         # self.local_rect = rect
         # self.local_p_0 = q_utils.to_p(0, 0)
@@ -62,7 +64,7 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
         # self.col = q_utils.to_col(col) if col else None
         self.setPen(q_utils.to_pen(pen) or Qt.NoPen)
         if col:
-            self.setBrush(QtGui.QBrush(q_utils.to_col(col)))
+            self.set_col(col)
 
         self.limit = limit
         if limit and not isinstance(limit, (QtCore.QRect, QtCore.QRectF)):
@@ -87,6 +89,14 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             (QGraphicsView): view
         """
         return single(self.scene().views())
+
+    def set_col(self, col):
+        """Set colour of this node.
+
+        Args:
+            col (str|QColor): colour to apply
+        """
+        self.setBrush(QtGui.QBrush(q_utils.to_col(col)))
 
     def itemChange(self, change, value):
         """Triggered by item change.
@@ -139,8 +149,7 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
         _LOGGER.debug(' - PARENT %s', _parent)
 
         # Apply left
-        _x_offs = self.rect_0.left()
-        _x_offs = 0
+        _x_offs = self.rect().left()
         if _parent:
             _x_min = self.limit.left()
         else:
@@ -151,17 +160,17 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             _LOGGER.debug(' - APPLY X MIN LIMIT')
 
         # Apply right limit
-        _x_offs = self.rect_0.left()
+        _x_offs = self.rect().left()
         if _parent:
-            _x_max = self.limit.right() - self.rect_0.width()
+            _x_max = self.limit.right() - self.rect().width()
         else:
-            _x_max = self.limit.right() - _x_offs - self.rect_0.width()
+            _x_max = self.limit.right() - _x_offs - self.rect().width()
         if _val.x() > _x_max:
             _val.setX(_x_max)
             _LOGGER.debug(' - APPLY X MAX LIMIT')
 
         # Apply top limit
-        _y_offs = self.rect_0.top()
+        _y_offs = self.rect().top()
         if _parent:
             _y_min = self.limit.top()
         else:
@@ -171,11 +180,11 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             _LOGGER.debug(' - APPLY Y MIN LIMIT')
 
         # Apply bottom limit
-        _y_offs = self.rect_0.top()
+        _y_offs = self.rect().top()
         if _parent:
-            _y_max = self.limit.bottom() - self.rect_0.height()
+            _y_max = self.limit.bottom() - self.rect().height()
         else:
-            _y_max = self.limit.bottom() - _y_offs - self.rect_0.height()
+            _y_max = self.limit.bottom() - _y_offs - self.rect().height()
         if _val.y() > _y_max:
             _val.setY(_y_max)
             _LOGGER.debug(' - APPLY Y MAX LIMIT')
@@ -193,6 +202,26 @@ class PNGRectNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
         painter.setBrush(self.brush())
         painter.setPen(self.pen())
         painter.drawRoundedRect(self.rect(), self.bevel, self.bevel)
+
+        if self.label:
+            painter.setFont(QtGui.QFont("Arial", self.text_size))
+            painter.setPen(QtGui.QColor('Black'))
+            _align = self.text_align or Qt.AlignCenter
+            painter.drawText(self.rect(), _align, self.label)
+
+    def mousePressEvent(self, event):
+        """Mouse press event.
+
+        Args:
+            event (QEvent): event
+        """
+        if self.callback:
+            from pini.tools import error
+            _catcher = error.get_catcher(qt_safe=True)
+            _callback = _catcher(self.callback)
+            _callback()
+        else:
+            super().mousePressEvent(event)
 
     def __repr__(self):
         _type = type(self).__name__.strip('_')
