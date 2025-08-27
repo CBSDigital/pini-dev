@@ -35,18 +35,28 @@ def _build_tmp_blast_cam(cam):
     _LOGGER.debug(' - BUILD TMP BLAST CAM %s', cam)
     from maya_pini import open_maya as pom
 
-    set_namespace(":" + _BLAST_TMP_NS, clean=True)
+    set_namespace(f':{_BLAST_TMP_NS}', clean=True)
 
-    # Duplicate camera + remove unwanted childre + move dulplicate to world
+    # Duplicate camera
     _src = pom.CCamera(cam)
     _cam = _src.duplicate(upstream_nodes=True)
-    for _node in _cam.find_children():
-        if _node != _cam.shp:
-            _node.delete()
-    _LOGGER.debug(' - TMP BLAST CAM %s %s', _cam, type(_cam))
+    _LOGGER.debug('   - TMP CAM %s', _cam)
+
+    # Remove unwanted nodes in tmp ns
+    _nodes = cmds.ls(f'{_BLAST_TMP_NS}:*')
+    for _node in _nodes:
+        if _node in [_cam, _cam.shp]:
+            continue
+        if not cmds.objExists(_node):
+            continue
+        _LOGGER.debug('     - REMOVE %s', _node)
+        cmds.delete(_node)
+
+    # Unlock attrs
     for _plug in [_cam.plug[_attr] for _attr in 'trs'] + _cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
+
     _src.parent_constraint(_cam, force=True)
 
     # Fix any image place colspaces - it seems these are not necessarily
@@ -201,15 +211,22 @@ def _exec_blast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True, forceOverwrite=True,
         percent=100, editorPanelName=_blast_editor)
+    _LOGGER.debug(' - PLAYBLAST CMD COMPLETE')
     assert seq.to_frames(force=True)
     if cleanup:
         if _tmp_window:
+            _LOGGER.debug(' - DELETE TMP WINDOW %s', _tmp_window)
             cmds.deleteUI(_tmp_window)
         if _tmp_cam:
+            _LOGGER.debug(' - DELETE TMP CAM %s', _tmp_cam)
             cmds.delete(_tmp_cam)
+        _LOGGER.debug(' - DELETE TMP NS %s', _BLAST_TMP_NS)
         del_namespace(':' + _BLAST_TMP_NS, force=True)
+    _LOGGER.debug(' - CLEANUP COMPLETE')
 
+    _LOGGER.debug(' - POPPED GLOBALS')
     _fmt_mgr.popRenderGlobals()
+    _LOGGER.debug(' - BLAST COMPLETE')
 
 
 def _make_video_res_even(res):

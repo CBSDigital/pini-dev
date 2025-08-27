@@ -28,7 +28,7 @@ from .q_utils import (
     X_AXIS, Y_AXIS, SETTINGS_DIR, to_icon, find_widget_children,
     set_application_icon, DialogCancelled, widget_to_signal, obt_icon,
     flush_dialog_stack, obt_pixmap, build_tmp_icon, p_is_onscreen,
-    block_signals)
+    block_signals, to_brush, to_pen)
 
 from .tools import (
     file_browser, input_dialog, raise_dialog, ok_cancel, yes_no_cancel,

@@ -35,7 +35,7 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
         self.base_r = base or q_utils.to_rect((0, 0), (1920, 1080))
-        self.base = png_rect_node.PNGRectNode(
+        self.base = png_rect_node.PNGNode(
             scene=self.scene, name='Base',
             col=wrapper.CColor('Grey', alpha=0.1),
             rect=self.base_r)
@@ -54,9 +54,9 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
             _sel = self.scene.selectedItems()
             if _sel:
                 _LOGGER.info(' - SEL NODES %s', _sel)
-                _fit = _sel[0].rect
+                _fit = _sel[0].rect()
                 for _item in _sel[1:]:
-                    _fit |= _sel.rect
+                    _fit |= _sel.rect()
             else:
                 _fit = self.scene.itemsBoundingRect()
         elif mode == 'all':

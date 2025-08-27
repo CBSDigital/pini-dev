@@ -1,3 +1,15 @@
+## [8.5.0] - Wed 2025-08-27 12:11
+### Summary
+ - Pini Helper:
+    - maya blast bugfix segfault on clean tmp nodes if cam constrained (mkim/cmiller),
+### Updated
+ - pini.qt.to_brush added,
+ - pini.qt.to_p added conversion QPointF -> QPoint,
+ - pini.qt.to_pen added QColor + col name handling,
+ - pini.qt.to_pen made public,
+ - maya_pini.blast clean unneeded tmp nodes on build tmp cam to avoid del ns crash,
+
+
 ## [8.4.1] - Mon 2025-08-25 15:46
 ### Summary
  - Pini Helper:

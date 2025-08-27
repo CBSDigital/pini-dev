@@ -42,6 +42,7 @@ def del_namespace(namespace, force=False):
     from maya_pini import ref
 
     cmds.namespace(set=':')
+    _LOGGER.debug(' - APPLY ROOT NS')
 
     _ref = ref.find_ref(namespace=namespace.strip(':'))
     _LOGGER.debug(' - REF %s', _ref)
@@ -58,9 +59,12 @@ def del_namespace(namespace, force=False):
     if _ref:
         _ref.delete(force=_force)
     if cmds.namespace(exists=namespace):
+        _LOGGER.debug(' - DELETE NS %s %s', namespace)
         cmds.namespace(removeNamespace=namespace, deleteNamespaceContent=True)
     if cmds.namespace(exists=namespace):
         raise RuntimeError('Failed to delete namespace ' + namespace)
+
+    _LOGGER.debug(' - DELETE NS COMPELTE %s', namespace)
 
 
 def set_namespace(namespace, clean=False):

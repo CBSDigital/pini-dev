@@ -405,6 +405,16 @@ def set_application_icon(icon, name=None):
     _app.setWindowIcon(_icon)
 
 
+def to_brush(*args):
+    """Obtain a brush object from the given args.
+
+    Returns:
+        (QBrush): brush
+    """
+    _col = to_col(*args)
+    return QtGui.QBrush(_col)
+
+
 def to_col(*args):
     """Map the given arg to a QColor object.
 
@@ -514,7 +524,14 @@ def to_p(*args, **kwargs):
 
     if _class:
         _LOGGER.log(9, ' - CASTING RESULT %s', _result)
-        _result = _class(_result)
+        if isinstance(_result, _class):
+            pass
+        elif (
+                isinstance(_result, QtCore.QPointF) and
+                issubclass(_class, QtCore.QPoint)):
+            _result = _class(round(_result.x()), round(_result.y()))
+        else:
+            _result = _class(_result)
         _LOGGER.log(9, ' - RESULT %s', _result)
 
     return _result
@@ -562,6 +579,8 @@ def to_pen(pen):
         return None
     if isinstance(pen, QtGui.QPen):
         return pen
+    if isinstance(pen, str):
+        return QtGui.QPen(to_col(pen))
     raise NotImplementedError(pen)
 
 
