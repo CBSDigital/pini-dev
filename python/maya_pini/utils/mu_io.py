@@ -411,7 +411,8 @@ def _bool_to_mel(val):
 
 def save_fbx(
         file_, selection=True, constraints=True, animation=False,
-        version='FBX201600', range_=None, step=1.0, force=False):
+        version='FBX201600', range_=None, step=1.0, ascii_=False,
+        force=False):
     """Save fbx file to disk.
 
     Args:
@@ -422,6 +423,7 @@ def save_fbx(
         version (str): fbx version
         range_ (tuple): start/end (for complex animation)
         step (float): step size in frames (for complex animation)
+        ascii_ (bool): save as ascii (otherwise binary)
         force (bool): replace existing without confirmation
     """
     from pini import dcc
@@ -444,6 +446,7 @@ def save_fbx(
     _mel('FBXExportSkins -v true')
     _mel('FBXExportTangents -v true')
     _mel('FBXExportSmoothMesh -v false')
+    _mel(f'FBXExportInAscii -v {_bool_to_mel(ascii_)}')
 
     _mel(f'FBXExportBakeComplexAnimation -v {_bool_to_mel(animation)}')
     _mel(f'FBXExportConstraints -v {_bool_to_mel(constraints)}')

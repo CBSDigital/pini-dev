@@ -1,3 +1,12 @@
+## [8.5.1] - Thu 2025-08-28 10:48
+### Summary
+ - Pini Helper:
+    - maya bugfix error on blast/snapshot (kakuna),
+### Updated
+ - maya_pini.utils.blast bugfix not maintaining img planes on build tmp cam,
+ - maya_pini.utils.save_fbx added ascii opt,
+
+
 ## [8.5.0] - Wed 2025-08-27 12:11
 ### Summary
  - Pini Helper:

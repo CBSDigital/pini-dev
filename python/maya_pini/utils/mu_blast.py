@@ -49,7 +49,12 @@ def _build_tmp_blast_cam(cam):
             continue
         if not cmds.objExists(_node):
             continue
-        _LOGGER.debug('     - REMOVE %s', _node)
+        _type = cmds.objectType(_node)
+        if _type in ('imagePlane', 'expression'):
+            continue
+        if _type == 'transform' and '->' in _node:
+            continue
+        _LOGGER.debug('     - REMOVE %s (%s)', _node, _type)
         cmds.delete(_node)
 
     # Unlock attrs
