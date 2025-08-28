@@ -443,6 +443,38 @@ class CheckModelGeo(core.SCMayaCheck):
                         fix=_plug.break_conns)
 
 
+class CheckForVertexColorSets(core.SCMayaCheck):
+    """Check geometry has no vertex colour sets."""
+
+    task_filter = 'model rig'
+    depends_on = (CheckCacheSet, )
+
+    def run(self):
+        """Run this check."""
+        _geos = m_pipe.read_cache_set()
+        self.write_log('Found %d geos: %s', len(_geos), _geos)
+        for _geo in _geos:
+            _vcss = cmds.polyColorSet(_geo, query=True, allColorSets=True)
+            if not _vcss:
+                continue
+            _vcss_s = str(_vcss).strip('[]')
+            self.add_fail(
+                f'Geo "{_geo} has {len(_vcss)} vertex color sets: {_vcss_s}',
+                fix=wrap_fn(_remove_vtx_col_sets, geo=_geo, vcss=_vcss))
+
+
+def _remove_vtx_col_sets(geo, vcss):
+    """Remove vertex colour sets from geo.
+
+    Args:
+        geo (CMesh): geo to update
+        vcss (str list): colour sets to remove
+    """
+    _LOGGER.info('REMOVE VTX COL SETS %s %s', geo, vcss)
+    for _vcs in vcss:
+        cmds.polyColorSet(geo, delete=True, colorSet=_vcs)
+
+
 class CheckGeoNaming(core.SCMayaCheck):
     """Check naming of cache set geometry."""
 
