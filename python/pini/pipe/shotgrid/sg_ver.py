@@ -2,6 +2,7 @@
 
 import logging
 import pprint
+import time
 
 from pini import pipe, qt
 from pini.utils import Seq, get_user, File, TMP, Video, Image, strftime, single
@@ -351,15 +352,35 @@ def _read_render_video_frames(render, frames, pub_files):
         # Render video
         _video = _frames.to_output('mov', extn='mov')
         if not _video.exists():
-            _work = _render.find_work()
-            _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
-            _frames.to_video(_video, fps=_fps)
-            assert _video.exists()
-            _video.set_metadata(_render.metadata)
-            sg_pub_file.create_pub_file_from_output(
-                _video, upstream_files=[_frames])
+            _render_to_video(render=_render, video=_video)
             pub_files.add(_frames)
 
         return _render, _video, _frames
 
     raise NotImplementedError(render, frames)
+
+
+def _render_to_video(render, video, burnins=False, force=False):
+    """Compile a video from the given render.
+
+    Args:
+        render (CPOutputSeq): source render
+        video (CPOutputVideo): target video
+        burnins (bool): add burnins
+        force (bool): replace existing without confirmation
+    """
+    _LOGGER.info(' - BUILDING VIDEO FROM FRAMES %s', render)
+    _LOGGER.info('   - VIDEO %s', video)
+
+    _work = render.find_work()
+    _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
+
+    _start = time.time()
+    render.to_video(video, fps=_fps, burnins=burnins, force=force)
+    _dur = time.time() - _start
+    _LOGGER.info('   - COMPILED VIDEO IN %.02fs', _dur)
+    assert video.exists()
+
+    video.set_metadata(render.metadata)
+    sg_pub_file.create_pub_file_from_output(
+        video, upstream_files=[render], force=force)

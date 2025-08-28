@@ -3,7 +3,6 @@
 # pylint: disable=abstract-method
 
 import logging
-import win32api
 
 from substance_painter import project, exception
 
@@ -97,14 +96,28 @@ class SubstanceDCC(BaseDCC):
         _file_s = to_str(file_)
         project.open(_file_s)
 
+    def _force_new_scene(self):
+        """Force new scene in current dcc."""
+        from pini.tools import error
+        raise error.HandledError(
+            'Substance does not support empty scenes.\n\nYou need to open '
+            'an fbx file.')
+
     def _force_save(self, file_=None):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
         """
+        from pini.tools import error
         _file = to_str(file_) or self.cur_file()
-        project.save_as(_file, mode=project.ProjectSaveMode.Incremental)
+        try:
+            project.save_as(_file, mode=project.ProjectSaveMode.Incremental)
+        except exception.ProjectError as _exc:
+            if str(_exc) == 'Cannot save because no project is opened.':
+                raise error.HandledError(
+                    'Unable to save because no project is open') from _exc
+            raise _exc
 
     def get_main_window_ptr(self):
         """None if no dcc."""
@@ -133,6 +146,11 @@ class SubstanceDCC(BaseDCC):
         _LOGGER.debug('READ VERSION %s', self)
         _exe = find_exe('Adobe Substance 3D Painter')
         if not _exe:
+            return None
+        try:
+            import win32api
+        except ImportError:
+            _LOGGER.error('FAILED TO IMPORT win32api MODULE')
             return None
         _path = _exe.path
         _LOGGER.debug(' - PATH %s', _path)

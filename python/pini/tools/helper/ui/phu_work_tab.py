@@ -395,6 +395,13 @@ class PHWorkTab:
             self.ui.WWorkPath.signalsBlocked(), _work_path)
         self.ui.WWorkPath.blockSignals(_blocked)
 
+    def _redraw__WLoad(self, enabled=None):
+        _work = self.ui.WWorks.selected_data()
+        _enabled = enabled if enabled is not None else bool(_work)
+        _load_text = "Load" if _work is not self.next_work else "New Scene"
+        self.ui.WLoad.setEnabled(_enabled)
+        self.ui.WLoad.setText(_load_text)
+
     def _callback__WTasks(self):
         _LOGGER.debug('CALLBACK TASKS')
         self.ui.WTaskText.setText(self.ui.WTasks.selected_text())
@@ -454,11 +461,7 @@ class PHWorkTab:
         self.ui.WWorkPathCopy.setEnabled(bool(_work))
         self.ui.WWorkPathBrowser.setEnabled(bool(_work))
 
-        # Update load button
-        _loadable = bool(_work)
-        _load_text = "Load" if _work is not self.next_work else "New Scene"
-        self.ui.WLoad.setEnabled(_loadable)
-        self.ui.WLoad.setText(_load_text)
+        self.ui.WLoad.redraw()
 
         _saveable = bool(
             _work and _work.user in (None, get_user(), pipe.cur_user()))

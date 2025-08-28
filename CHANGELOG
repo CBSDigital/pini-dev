@@ -1,3 +1,20 @@
+## [8.7.0] - Thu 2025-08-28 14:32
+### Summary
+ - Pini Install:
+    - bugfix failing substance install due to bad win32api module import (blee),
+ - Pini Helper:
+    - substance better error on new scene (eehemann),
+    - substance better error on save empty (eehemann),
+### Updated
+ - pini.dcc.SubstanceDCC removed global win32api import,
+ - pini.dcc.SubstanceDCC better error on new scene,
+ - pini.dcc.SubstanceDCC better error on save empty scene,
+ - pini.pipe.CACHE.CPOutputBase.content_type added CameraFbx/PipeFbx classifications,
+ - pini.pipe.shotgrid.create_ver render to mov as separate func,
+ - pini.tools.helper._redraw__WLoad added,
+ - pini.tools.helper added substance helper class,
+
+
 ## [8.6.0] - Thu 2025-08-28 11:10
 ### Summary
  - Sanity Check:

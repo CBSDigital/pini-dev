@@ -52,6 +52,9 @@ def launch(
     elif dcc.NAME == 'hou':
         from .dcc import ph_hou
         _class = ph_hou.HouPiniHelper
+    elif dcc.NAME == 'substance':
+        from .dcc import ph_substance
+        _class = ph_substance.SubstancePiniHelper
 
     # Build ui
     _LOGGER.debug(' - KWARGS (B) %s', _kwargs)

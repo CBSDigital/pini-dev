@@ -50,14 +50,15 @@ class CCPOutputBase(elem.CPOutputBase):
         _pub_type = self.metadata.get('publish_type')
         _handler = self.metadata.get('handler')
 
-        if self.extn == 'abc':
+        if self.extn in ('abc', 'fbx'):
             _type = _handler or self.metadata.get('type')   # Legacy 18/10/24
+            _extn_type = self.extn.capitalize()
             if _type == 'CPCacheableCam':
-                _c_type = 'CameraAbc'
+                _c_type = f'Camera{_extn_type}'
             elif _type == 'CPCacheableRef':
-                _c_type = 'PipeAbc'
+                _c_type = f'Pipe{_extn_type}'
             else:
-                _c_type = 'Abc'
+                _c_type = _extn_type
 
         elif self.extn == 'ma':
             if 'vrmesh' in self.metadata:
