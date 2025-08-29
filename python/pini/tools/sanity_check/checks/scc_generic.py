@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 class CheckRefsLatest(SCPipeCheck):
     """Check all pipeline references are using the latest version."""
 
-    dcc_filter = '-nuke'
+    dcc_filter = '-nuke -substance'
 
     def run(self):
         """Run this check."""
@@ -52,6 +52,8 @@ class CheckRefsLatest(SCPipeCheck):
 
 class CheckAbcFpsMatchesScene(SCPipeCheck):
     """Check frame rate of referenced abcs matches current scene FPS."""
+
+    dcc_filter = '-substance'
 
     def run(self):
         """Run this check."""

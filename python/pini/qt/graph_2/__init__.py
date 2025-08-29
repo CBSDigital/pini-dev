@@ -2,5 +2,5 @@
 
 from .png_graph import PNGNodeGraph
 
-from .png_rect_node import PNGNode
-from .png_rect_img_node import PNGImgNode
+from .png_node import PNGNode
+from .png_img_node import PNGImgNode

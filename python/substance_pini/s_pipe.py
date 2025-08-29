@@ -6,7 +6,7 @@ import os
 import substance_painter
 
 from pini import qt, pipe
-from pini.utils import File, Dir, abs_path
+from pini.utils import File, Dir, abs_path, single
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +42,7 @@ def export_textures(
             'unable to export textures')
 
     _pub_dir = _to_pub_dir(work=_work, template=_tmpl)
-    _cfg = _to_export_cfg(
+    _cfg = to_export_cfg(
         pub_dir=_pub_dir, extn=extn, size=size, sets=sets)
     _LOGGER.info(' - CFG %s', _cfg)
 
@@ -126,7 +126,7 @@ def _to_pub_dir(work, template):
     return _pub_dir
 
 
-def _to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
+def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
     """Build export config dict.
 
     Args:
@@ -174,6 +174,40 @@ def _to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
             }}]}
 
     return _cfg
+
+
+def to_export_data(sets=None):
+    """Build dict of export data for the current scene.
+
+    Args:
+        sets (str list): export only these sets
+
+    Returns:
+        (dict): texture set / list of export files data
+    """
+    _pub_dir = Dir(abs_path('~/tmp'))
+    _cfg = to_export_cfg(_pub_dir, extn='png')
+    _parms = single(_cfg['exportParameters'])['parameters']
+    _res = _parms['size']
+    _bits = _parms['bitDepth']
+    _sets = [_item['rootPath'] for _item in _cfg['exportList']]
+
+    # Build export data
+    _raw_exports = substance_painter.export.list_project_textures(_cfg)
+    _exports = {}
+    for _set in _sets:
+        if sets and _set not in sets:
+            continue
+        _files = _raw_exports[(_set, '')]
+        _data = []
+        for _file in _files:
+            _data.append({
+                'filename': File(_file).filename,
+                'res': _res,
+                'bits': _bits})
+        _exports[_set] = _data
+
+    return _exports
 
 
 def _exec_export_textures(pub_dir, cfg, browser=False, force=False):

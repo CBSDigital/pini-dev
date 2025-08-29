@@ -1,3 +1,19 @@
+## [8.9.0] - Fri 2025-08-29 13:21
+### Summary
+ - Pini Helper:
+    - substance texture export added view outputs option (blee),
+ - Sanity Check:
+    - substance added check for project using udims (blee),
+### Updated
+ - pini.dcc.export.CExportHandlerUI.build_icon_btn bugfix added Refresh suffix to name,
+ - pini.dcc.export.CExportHandlerUI.build_push_btn added,
+ - pini.dcc.export.CExportHandlerUI.add_list_widget added add_elems arg,
+ - pini.dcc.export.CSubstanceTexturePublish added view outputs button,
+ - pini.tools.sanity_check CheckAbcFpsMatchesScene/CheckRefsLatest block in substance,
+ - pini.tools.sanity_check.CheckProjectUsesUdims added,
+ - substance_pini.s_pipe.to_export_data added,
+
+
 ## [8.8.0] - Fri 2025-08-29 09:18
 ### Summary
  - Pini Helper:

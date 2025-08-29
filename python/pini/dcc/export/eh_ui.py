@@ -170,7 +170,7 @@ class CExportHandlerUI(qt.CUiContainer):
             (QPushButton): icon button
         """
         _btn = QtWidgets.QPushButton(self.parent)
-        _btn.setObjectName(f'{name}Refresh')
+        _btn.setObjectName(name)
         _btn.setIcon(qt.obt_icon(icon))
         _btn.setFixedSize(qt.to_size(20))
         _btn.setIconSize(qt.to_size(20))
@@ -233,6 +233,27 @@ class CExportHandlerUI(qt.CUiContainer):
             QtWidgets.QSizePolicy.Fixed)
         self._setup_elem(elem=_line_edit, name=name, **kwargs)
         return _line_edit
+
+    def build_push_btn(self, name, callback, label=None, width=80):
+        """Add push button element.
+
+        Args:
+            name (str): element name
+            callback (fn): button callback
+            label (str): button label
+            width (int): button width
+
+        Returns:
+            (QPushButton): button
+        """
+        _btn = QtWidgets.QPushButton(self.parent)
+        _btn.setObjectName(name)
+        _label = label or to_nice(name).capitalize()
+        _btn.setText(_label)
+        _btn.setFixedSize(qt.to_size(width, 20))
+        _btn.clicked.connect(callback)
+        setattr(self, name, _btn)
+        return _btn
 
     def build_spin_box(self, name, min_=0, max_=10000, **kwargs):
         """Build a QSpinBox element in this interface.
@@ -391,7 +412,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_list_widget(
             self, name, items=None, label=None, icon_size=30, redraw=True,
-            multi=True, select=None):
+            multi=True, select=None, add_elems=()):
         """Add CListWidget element to this interface.
 
         Args:
@@ -403,6 +424,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 redraw function uses elements which haven't been created yet)
             multi (bool): allow multi selection
             select (list|any): apply selection
+            add_elems (tuple): add elements to label layout
         """
         self.add_separator()
 
@@ -411,13 +433,15 @@ class CExportHandlerUI(qt.CUiContainer):
         _lyt = self._add_hbox_layout(f'{name}Lyt')
         _lyt.addWidget(_label)
         _lyt.addStretch()
+        for _elem in add_elems:
+            _lyt.addWidget(_elem)
 
         # Add refresh button
         _redraw_fn = getattr(self.handler, f'_redraw__{name}', None)
         _LOGGER.debug(' - REFRESH %s %s', f'_redraw__{name}', _redraw_fn)
         if _redraw_fn:
             _btn = self.build_icon_btn(
-                f'{name}Refresh', icon=icons.REFRESH, callback=_redraw_fn)
+                name=f'{name}Refresh', icon=icons.REFRESH, callback=_redraw_fn)
             _lyt.addWidget(_btn)
 
         # Build list
