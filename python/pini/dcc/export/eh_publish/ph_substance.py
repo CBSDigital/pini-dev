@@ -33,8 +33,8 @@ class CSubstanceTexturePublish(ph_basic.CBasicPublish):
         """Add custom ui elements."""
 
         _view_outputs = self.ui.build_push_btn(
-            name='Outputs', callback=self._raise_outputs_dialog,
-            width=60)
+            name='Preview Outputs', callback=self._raise_outputs_dialog,
+            width=70)
 
         # Add texture sets
         _emoji = qt.CPixmap(icons.find('Diamond Suit'))
