@@ -23,7 +23,7 @@ def abs_path(path, win=False, root=None, mode=None):
             [DEPRECATED - use mode='win']
         root (str): override cwd as root
         mode (str): pathing mode
-            disk - replace UNC paths for disk mounts
+            drive - replace UNC paths for disk mounts
                 eg: //mount/Projects -> P:
                 NOTE: mapping must be set up using $PINI_ABS_PATH_DRIVE_MAP
             win - use windows normalisation (eg. C:\path)

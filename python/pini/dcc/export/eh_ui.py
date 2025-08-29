@@ -391,7 +391,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_list_widget(
             self, name, items=None, label=None, icon_size=30, redraw=True,
-            multi=True):
+            multi=True, select=None):
         """Add CListWidget element to this interface.
 
         Args:
@@ -402,6 +402,7 @@ class CExportHandlerUI(qt.CUiContainer):
             redraw (bool): widget on build (this should be disabled if the
                 redraw function uses elements which haven't been created yet)
             multi (bool): allow multi selection
+            select (list|any): apply selection
         """
         self.add_separator()
 
@@ -435,6 +436,8 @@ class CExportHandlerUI(qt.CUiContainer):
             _list.set_items(items, emit=False)
         elif redraw and _redraw_fn:
             _redraw_fn()
+        if select:
+            _list.select(select)
         self.layout.addWidget(_list)
         self.layout.setStretch(self.layout.count() - 1, 1)
 

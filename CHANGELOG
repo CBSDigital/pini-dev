@@ -1,3 +1,20 @@
+## [8.8.0] - Fri 2025-08-29 09:18
+### Summary
+ - Pini Helper:
+    - substance bugfix error on load scene with existing scene open (blee),
+    - substance texture export added option to select texture sets (blee),
+    - substance texture export added option to open output dir in browser,
+    - substance texture export apply export resolution as 4096x4096 (blee),
+### Updated
+ - pini.dcc.SubstanceDCC._force_load close existing project,
+ - pini.dcc.export.CExportHandlerUI.add_list_widget added select arg,
+ - pini.dcc.export.CSubstanceTexturePublish added texture sets list,
+ - pini.dcc.export.CSubstanceTexturePublish added open browser,
+ - substance_pini.s_pipe.export_textures added sets arg,
+ - substance_pini.s_pipe.export_textures apply size as 4096,
+ - substance_pini.s_pipe.export_textures allow preset override via $PINI_SUBSTANCE_EXPORT_PRESET,
+
+
 ## [8.7.0] - Thu 2025-08-28 14:32
 ### Summary
  - Pini Install:

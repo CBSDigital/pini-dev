@@ -4,6 +4,7 @@
 
 import logging
 
+import substance_painter
 from substance_painter import project, exception
 
 from pini.utils import abs_path, to_str, wrap_fn, find_exe
@@ -94,6 +95,8 @@ class SubstanceDCC(BaseDCC):
             file_ (str): scene to load
         """
         _file_s = to_str(file_)
+        if self.cur_file():
+            substance_painter.project.close()
         project.open(_file_s)
 
     def _force_new_scene(self):
