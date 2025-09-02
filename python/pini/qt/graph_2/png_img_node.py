@@ -7,17 +7,18 @@ from . import png_node
 class PNGImgNode(png_node.PNGNode):
     """Node which displays a pixmap."""
 
-    def __init__(self, scene, name, img, **kwargs):
+    def __init__(self, scene, name, img, col=None, **kwargs):
         """Constructor.
 
         Args:
             scene (QGraphicsScene): scene
             name (str): item name
             img (QPixmap|str): item pixmap
+            col (QColor): background colour
         """
         self.img = img
         self.raw_pix = q_utils.to_pixmap(img)
-        super().__init__(scene=scene, name=name, col=None, **kwargs)
+        super().__init__(scene=scene, name=name, col=col, **kwargs)
 
     def paint(self, painter, option, widget=None):
         """Paint event.

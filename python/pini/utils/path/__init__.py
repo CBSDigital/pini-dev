@@ -7,6 +7,7 @@ from .up_utils import (
 
 from .up_norm import abs_path, is_abs, norm_path
 from .up_find import find
-from .up_file import File, MetadataFile, ReadDataError
+from .up_file import File, ReadDataError
+from .up_metadata_file import MetadataFile
 from .up_dir import Dir, TMP, HOME, DESKTOP
 from .up_path import Path, DATA_PATH

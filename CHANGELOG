@@ -1,3 +1,18 @@
+## [8.10.0] - Tue 2025-09-02 15:57
+### Summary
+ - Pini Helper:
+    - maya blast bugfix output name set to <camera> by default (cmiller),
+    - maya blast better error if camera name causes bad output path (cmiller),
+### Updated
+ - pini.utils.MetadataFile moved to separate submodule,
+ - pini.utils.MetadataFile.add_metadata added bkp/parent args,
+ - pini.dcc.export.CExportHandlerUI.add_combo_box set items after elem setup to apply save policy,
+ - pini.qt.PNGGraph.flush added,
+ - pini.qt.PNGGraph.keyPressEvent added handling for editable text elems,
+ - pini.qt.PNGImgNode added col arg,
+ - maya_pini.m_pipe.blast better error on invalid cam name causing bad path,
+
+
 ## [8.9.1] - Fri 2025-08-29 15:01
 ### Summary
  - Pini Helper:

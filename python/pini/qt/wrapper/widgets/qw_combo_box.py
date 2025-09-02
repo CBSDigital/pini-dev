@@ -145,7 +145,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
             select (str): item text to select
             emit (bool): emit changed signal after update
         """
-        _LOGGER.debug('SET DATA %s %s', self, labels)
+        _LOGGER.debug('SET ITEMS %s %s', self, labels)
         _blocked = self.signalsBlocked()
         _cur_text = self.currentText()
         _data = data
@@ -162,8 +162,9 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
                 self.setItemData(_idx, _data[_idx])
 
         # Apply selection
-        _LOGGER.debug('APPLY SELECTION %s', select)
+        _LOGGER.debug(' - APPLY SELECTION %s', select)
         _select = select or self.read_setting()
+        _LOGGER.debug(' - SELECT %s', _select)
         if _select and _select in labels:
             self.select_text(_select)
         elif _select and _data and _select in _data:

@@ -263,8 +263,6 @@ class TestHelper(unittest.TestCase):
 
         # Select tab to store data in scene
         _helper.ui.MainPane.select_tab('Export')
-        # if dcc.to_version()[0] == 2025:
-        #     raise RuntimeError
         _tab = _helper.ui.EExportPane.find_tabs(enabled=True)[-1]
         _LOGGER.info(' - TAB %s', _tab)
         assert _helper.ui.EExportPane.save_policy == qt.SavePolicy.SAVE_IN_SCENE
@@ -280,6 +278,18 @@ class TestHelper(unittest.TestCase):
         _helper = helper.launch(reset_cache=False)
         _helper.ui.MainPane.select_tab('Export')
         assert_eq(_helper.ui.EExportPane.current_tab_text(), _tab)
+
+        # Test build blast ui
+        _key = 'PiniQt.CMayaPlayblast.OutputName'
+        assert not dcc.get_scene_data(_key)
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Blast')
+        _blast = _helper.ui.EBlastHandler.selected_data()
+        _out_name = _blast.ui.OutputName
+        _LOGGER.info(' - SAVE POLICY %s', _out_name.save_policy)
+        _LOGGER.info(' - SETTINGS KEY %s', _out_name.settings_key)
+        assert _out_name.settings_key == _key
+        assert _out_name.currentText() == 'blast'
 
 
 class TestDiskPiniHelper(TestHelper):

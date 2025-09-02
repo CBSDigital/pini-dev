@@ -2,9 +2,9 @@
 
 import logging
 
-from pini import dcc, qt
+from pini import dcc, qt, pipe
 from pini.dcc import export
-from pini import pipe
+from pini.tools import error
 
 from maya_pini import open_maya as pom, ui
 from maya_pini.utils import blast as u_blast
@@ -44,19 +44,8 @@ def blast(
     else:
         _cam = camera
 
-    # Determine output path
-    _output_name = output_name
-    if output_name == '<camera>':
-        _output_name = str(pom.CCamera(_cam))
-    if format_ in ['mp4', 'mov']:
-        _tmpl = 'blast_mov'
-        _tmp_seq = _work.to_output('blast', output_name='BlastTmp', extn='jpg')
-        _tmp_seq.delete(force=True)
-    else:
-        _tmpl = 'blast'
-        _tmp_seq = None
-    _out = _work.to_output(_tmpl, output_name=_output_name, extn=format_)
-    _LOGGER.info(' - OUT %s', _out)
+    _out, _tmp_seq = _to_blast_output(
+        output_name=output_name, format_=format_, cam=_cam, work=_work)
 
     # Execute blast
     _bkp = None
@@ -91,6 +80,45 @@ def blast(
         _work.update_outputs(update_helper=False)
 
     return _out
+
+
+def _to_blast_output(output_name, format_, cam, work):
+    """Determine blast output file.
+
+    Args:
+        output_name (str): output name token
+        format_ (str): blast format
+        cam (str): blast camera
+        work (CPWork): work file
+
+    Returns:
+        (CPOutput): blast output
+    """
+
+    # Determine output name
+    _output_name = output_name
+    if output_name == '<camera>':
+        _output_name = str(pom.CCamera(cam))
+        if ':' in _output_name:
+            raise error.HandledError(
+                f'You have chosen to use the camera name "{_output_name}" '
+                f'as the name of your blast output.\n\n'
+                f'This name contains the ":" character which is not allowed '
+                f'by the file system.')
+
+    # Determine template + tmp seq (if applicable)
+    if format_ in ['mp4', 'mov']:
+        _tmpl = 'blast_mov'
+        _tmp_seq = work.to_output('blast', output_name='BlastTmp', extn='jpg')
+        _tmp_seq.delete(force=True)
+    else:
+        _tmpl = 'blast'
+        _tmp_seq = None
+
+    _out = work.to_output(_tmpl, output_name=_output_name, extn=format_)
+    _LOGGER.info(' - OUT %s', _out)
+
+    return _out, _tmp_seq
 
 
 def _obt_metadata(range_, bkp, camera, res, save_disabled):

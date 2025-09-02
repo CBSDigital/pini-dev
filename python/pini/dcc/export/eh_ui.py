@@ -59,7 +59,7 @@ class CExportHandlerUI(qt.CUiContainer):
         _lyt.setObjectName(name)
         _lyt.setSpacing(2)
         setattr(self, name, _lyt)
-        _LOGGER.debug(' - ADDED LAYOUT %s %s', name, _lyt)
+        _LOGGER.debug('     - ADDED LAYOUT %s %s', name, _lyt)
         self.layout.addLayout(_lyt)
         return _lyt
 
@@ -88,12 +88,14 @@ class CExportHandlerUI(qt.CUiContainer):
             settings_key (str): override settings key for element
             ui_only (bool): element is ui only (ie. do not pass to exec func)
         """
+        _LOGGER.debug('   - SETUP ELEM %s', name)
         assert isinstance(elem, qt.CBaseWidget)
 
         elem.setObjectName(name)
         setattr(self, name, elem)
 
         if val is not None:
+            _LOGGER.debug('     - APPLY VAL %s', val)
             elem.set_val(val)
         if enabled is not None:
             elem.setEnabled(enabled)
@@ -107,7 +109,7 @@ class CExportHandlerUI(qt.CUiContainer):
         _settings_key = settings_key or to_settings_key(
             name=name, handler=self.handler)
         elem.set_settings_key(_settings_key)
-        _LOGGER.debug(' - APPLY SETTINGS KEY %s %s', elem, _settings_key)
+        _LOGGER.debug('     - APPLY SETTINGS KEY %s %s', elem, _settings_key)
         assert isinstance(_save_policy, qt.SavePolicy)
         elem.save_policy = _save_policy
         elem.ui_only = ui_only
@@ -137,8 +139,7 @@ class CExportHandlerUI(qt.CUiContainer):
             enabled (bool): apply enabled state
         """
         _name = elem.objectName()
-        _LOGGER.debug(' - ADD ELEM LYT %s %s', _name, elem)
-        _LOGGER.debug('ADD ELEM LAYOUT')
+        _LOGGER.debug('     - SETUP ELEM LYT %s %s', _name, elem)
 
         _h_lyt = self._add_hbox_layout(f'{_name}Lyt')
 
@@ -147,7 +148,7 @@ class CExportHandlerUI(qt.CUiContainer):
         _label_e = self.build_label(
             f'{_name}Label', text=_label, tooltip=tooltip,
             width=label_w or self.label_w, enabled=enabled)
-        _LOGGER.debug('   - LABEL %s %s', _label_e.objectName(), _label_e)
+        _LOGGER.debug('     - LABEL %s %s', _label_e.objectName(), _label_e)
         _h_lyt.addWidget(_label_e)
         _h_lyt.addWidget(elem)
 
@@ -169,6 +170,8 @@ class CExportHandlerUI(qt.CUiContainer):
         Returns:
             (QPushButton): icon button
         """
+        _LOGGER.debug(' - BUILD ICON BTN %s', name)
+
         _btn = QtWidgets.QPushButton(self.parent)
         _btn.setObjectName(name)
         _btn.setIcon(qt.obt_icon(icon))
@@ -177,6 +180,8 @@ class CExportHandlerUI(qt.CUiContainer):
         _btn.setFlat(True)
         _btn.clicked.connect(callback)
         setattr(self, name, _btn)
+        _LOGGER.debug('   - BUILD ICON BTN COMPLETE %s', name)
+
         return _btn
 
     def build_label(
@@ -211,7 +216,7 @@ class CExportHandlerUI(qt.CUiContainer):
             _label.setEnabled(enabled)
         setattr(self, name, _label)
         self._elems[name] = _label
-        _LOGGER.debug(' - ADD LABEL %s %s', name, _label)
+        _LOGGER.debug('     - ADD LABEL %s %s', name, _label)
 
         if width:
             _label.setFixedWidth(width)
@@ -298,6 +303,7 @@ class CExportHandlerUI(qt.CUiContainer):
         Returns:
             (QCheckBox): checkbox element
         """
+        _LOGGER.debug(' - ADD CHECKBOX %s', name)
         _label = label or to_nice(name).capitalize()
         _checkbox_e = qt.CCheckBox(_label, self.parent)
         _checkbox_e.setChecked(val)
@@ -336,14 +342,13 @@ class CExportHandlerUI(qt.CUiContainer):
         Returns:
             (CComboBox): combo box element
         """
+        _LOGGER.debug(' - ADD COMBOBOX %s', name)
 
         # Build combo box element
         _combo_box = qt.CComboBox(self.parent)
-        _combo_box.setObjectName(name)
         if width:
             _combo_box.setFixedWidth(width)
-        _combo_box.set_items(items, data=data)
-        _LOGGER.debug(' - BUILT COMBOBOX %s', _combo_box)
+
         self._setup_elem(
             name=name, elem=_combo_box, tooltip=tooltip,
             save_policy=save_policy, ui_only=ui_only,
@@ -353,7 +358,11 @@ class CExportHandlerUI(qt.CUiContainer):
             _combo_box, label=label, tooltip=tooltip, stretch=stretch,
             label_w=label_w, add_elems=add_elems)
 
-        _LOGGER.debug(' - COMPLETED ADD COMBOBOX %s', _combo_box)
+        # Need to set items after elem set up to apply save policy
+        _combo_box.set_items(items, data=data, emit=False)
+        _LOGGER.debug(
+            '   - COMPLETED ADD COMBOBOX %s %s', _combo_box,
+            _combo_box.currentText())
 
         return _combo_box
 
@@ -536,6 +545,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_notes_elem(self):
         """Add notes element to the ui."""
+        _LOGGER.debug(' - ADD NOTES')
         _work = pipe.cur_work()
         _notes = _work.notes if _work else ''
         self.Notes = self.add_line_edit(
@@ -576,6 +586,7 @@ class CExportHandlerUI(qt.CUiContainer):
         Args:
             mode (str): apply range mode
         """
+        _LOGGER.debug(' - ASSEMBLE RANGE ELEMS')
         _start, _end = dcc.t_range()
         _width = 40
         _mode = {True: 'Continuous', None: 'Continuous'}.get(mode, mode)
@@ -619,8 +630,9 @@ class CExportHandlerUI(qt.CUiContainer):
             self.add_spin_box(
                 'RangeStepSize', 1, label='Step size', min_=1, ui_only=True)
 
+        _LOGGER.debug('   - ADD RangeFramesLabel')
         self.add_label(
-            'RangeFramesLabel', align=Qt.AlignRight, text='<frames not set>')
+            name='RangeFramesLabel', align=Qt.AlignRight, text='<frames not set>')
 
         self._callback__Range()
 

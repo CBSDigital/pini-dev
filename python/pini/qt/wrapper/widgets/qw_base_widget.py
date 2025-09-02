@@ -85,9 +85,12 @@ class CBaseWidget:
         Returns:
             (any): widget setting
         """
+        _LOGGER.debug('READ SETTING %s', self)
+        _LOGGER.debug(' - SAVE POLICY %s', self.save_policy)
         _val = None
         if self.save_policy == q_utils.SavePolicy.SAVE_IN_SCENE:
             _val = dcc.get_scene_data(self.settings_key)
+            _LOGGER.debug(' - READ SCENE DATA %s', _val)
         elif self.save_policy == q_utils.SavePolicy.NO_SAVE:
             pass
         else:
@@ -95,6 +98,7 @@ class CBaseWidget:
             if _settings:
                 _key = f'widgets/{self.objectName()}'
                 _val = _settings.value(_key)
+            _LOGGER.debug(' - READ SETTINGS %s', _val)
         return _val
 
     def set_save_policy(self, policy):

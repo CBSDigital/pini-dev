@@ -68,6 +68,13 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         self.fitInView(_fit, Qt.KeepAspectRatio)
         self.scale(1 / over)
 
+    def flush(self):
+        """Flush all items from the graph."""
+        for _item in self.scene.items():
+            if _item is self.base:
+                continue
+            self.scene.removeItem(_item)
+
     def scale(self, factor, anchor=None):
         """Scale the current scene.
 
@@ -99,11 +106,23 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         Args:
             event (QEvent): event
         """
-        _LOGGER.info('KEY PRESS %s', event)
-        if event.text() == 'f':
-            self.fit_view()
-        else:
-            super().keyPressEvent(event)
+        _LOGGER.debug('KEY PRESS %s', event)
+
+        _focus_item = self.scene.focusItem()
+        _blocks = getattr(_focus_item, 'blocks_key_press', False)
+        _LOGGER.debug(' - FOCUS %s blocks=%d', _focus_item, _blocks)
+        if _blocks:
+            _LOGGER.debug(' - KEY PRESS BLOCKED')
+
+        if not _blocks:
+            if event.text() == 'a':
+                self.fit_view(mode='all')
+                return
+            if event.text() == 'f':
+                self.fit_view()
+                return
+
+        super().keyPressEvent(event)
 
     def wheelEvent(self, event):
         """Mouse wheel event.
