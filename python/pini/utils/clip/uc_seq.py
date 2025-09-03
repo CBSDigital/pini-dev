@@ -2,8 +2,10 @@
 
 import logging
 
+from ..u_misc import single, ints_to_str
 from ..u_text import plural
-from ..u_misc import single, strftime, ints_to_str
+from ..u_time import strftime
+
 from ..path import Path, norm_path, Dir, File, abs_path
 
 from . import uc_ffmpeg, uc_clip

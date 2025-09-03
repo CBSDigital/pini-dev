@@ -9,17 +9,19 @@ from .u_filter import apply_filter, passes_filter
 from .u_func import wrap_fn, chain_fns, null_fn
 from .u_heart import check_heart, HEART
 from .u_system import system
+from .u_time import (
+    nice_age, strftime, to_time_f, to_time_t, WEEK_SECS, DAY_SECS, YEAR_SECS)
 from .u_url import read_url
 
 from .u_text import (
     is_pascal, is_camel, to_pascal, to_snake, to_ord, to_camel, copy_text,
     to_nice, plural, add_indent, split_base_index, nice_cmds)
 from .u_misc import (
-    lprint, single, to_time_t, strftime, to_time_f, search_dict_for_key,
-    str_to_seed, dprint, str_to_ints, val_map, safe_zip,
-    nice_age, get_user, last, ints_to_str, basic_repr, nice_id, to_list,
-    fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size, merge_dicts,
-    null_dec, to_str, read_func_kwargs, check_logging_level, first)
+    lprint, single, search_dict_for_key, str_to_seed, dprint, str_to_ints,
+    val_map, safe_zip, get_user, last, ints_to_str, basic_repr, nice_id,
+    to_list, fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size,
+    merge_dicts, null_dec, to_str, read_func_kwargs, check_logging_level,
+    first)
 
 from .u_mel_file import MelFile
 from .u_ma_file import MaFile

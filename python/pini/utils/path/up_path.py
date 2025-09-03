@@ -6,7 +6,8 @@ import pathlib
 import time
 
 from . import up_utils, up_norm
-from ..u_misc import nice_size, nice_id, strftime
+from ..u_misc import nice_size, nice_id
+from ..u_time import strftime
 
 _LOGGER = logging.getLogger(__name__)
 

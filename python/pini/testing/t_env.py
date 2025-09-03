@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from pini.utils import abs_path, Path
+from pini.utils import abs_path, Path, passes_filter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -180,22 +180,27 @@ def print_sys_paths(sort=False):
         print(f'{os.path.exists(_path):d} {_path}')
 
 
-def read_env_paths(env, existing=None):
+def read_env_paths(env, existing=None, filter_=None):
     """Read paths from the given environment variable.
 
     Args:
         env (str): name of environment variable to read
         existing (bool): filter by existing state of paths
+        filter_ (str): apply path filter
 
     Returns:
         (str list): paths
     """
     _val = os.environ.get(env, '')
-    _path = sorted({
-        abs_path(_path)
-        for _path in _val.split(os.pathsep)
-        if existing is None or os.path.exists(_path) == existing})
-    return _path
+    _paths = set()
+    for _path in _val.split(os.pathsep):
+        _path = abs_path(_path)
+        if existing is not None and os.path.exists(_path) != existing:
+            continue
+        if not passes_filter(_path, filter_):
+            continue
+        _paths.add(_path)
+    return sorted(_paths)
 
 
 def remove_env_path(env, path):
@@ -206,11 +211,11 @@ def remove_env_path(env, path):
         path (str): path to remove
     """
     _path = abs_path(path)
-    if _path not in read_env_paths(env):
+    _paths = read_env_paths(env)
+    if _path not in _paths:
         return
-    import pprint
-    pprint.pprint(read_env_paths(env))
-    raise NotImplementedError
+    _paths.remove(_path)
+    os.environ[env] = os.pathsep.join(_paths)
 
 
 def reset_enable_filesystem(func):

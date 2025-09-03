@@ -1,3 +1,15 @@
+## [8.10.1] - Wed 2025-09-03 11:46
+### Summary
+ - Pini Helper:
+    - bugfix error on build cache tool if reference missing from cache in scene (mkim/cmiller),
+### Updated
+ - pini.utils.u_time added submodule,
+ - pini.utils added DAY_SECS/HOUR_SECS,
+ - pini.testing.read_env_paths added filter_ arg,
+ - pini.testing.remove_env_path implemented,
+ - maya_pini.m_pipe.find_cacheables ValueError on output missing from cache,
+
+
 ## [8.10.0] - Tue 2025-09-02 15:57
 ### Summary
  - Pini Helper:

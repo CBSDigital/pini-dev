@@ -139,7 +139,7 @@ def find_checks(  # pylint: disable=too-many-branches
         _LOGGER.debug('   - ACCEPTED %s', _check)
         _checks.append(_check)
 
-    _LOGGER.info(' - FOUND %d %s CHECKS', len(_checks), _task)
+    _LOGGER.info(' - FOUND %d "%s" CHECKS', len(_checks), _task)
 
     return sorted(_checks)
 
@@ -219,7 +219,7 @@ def _checks_from_py(py_file) -> list:
         if (
                 not issubclass(_type, sc_check.SCCheck) or
                 _type.__name__.startswith('_')):
-            _LOGGER.debug('     - REJECTED %s', _type)
+            _LOGGER.debug('     - REJECTED NON-CHECK %s', _type)
         _types.append(_type)
     _LOGGER.debug('   - TYPES %d %s', len(_types), _types)
 
@@ -230,7 +230,7 @@ def _checks_from_py(py_file) -> list:
         _src = abs_path(inspect.getfile(_type))
         _src = File(_src).to_file(extn='py')
         if _src != py_file:
-            _LOGGER.debug('   - REJECTED type=%s path=%s', _type, _src.path)
+            _LOGGER.debug('   - REJECTED type="%s" path="%s"', _type, _src.path)
             continue
         if _type.__name__ not in _class_names:
             _LOGGER.debug('   - REJECTED MISSING NAME %s', _type.__name__)

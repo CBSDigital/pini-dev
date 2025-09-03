@@ -632,7 +632,8 @@ class CExportHandlerUI(qt.CUiContainer):
 
         _LOGGER.debug('   - ADD RangeFramesLabel')
         self.add_label(
-            name='RangeFramesLabel', align=Qt.AlignRight, text='<frames not set>')
+            name='RangeFramesLabel', align=Qt.AlignRight,
+            text='<frames not set>')
 
         self._callback__Range()
 

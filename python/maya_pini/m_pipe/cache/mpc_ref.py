@@ -28,8 +28,10 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         self.node = pom.CReference(ref_node)
         _out = pipe.CPOutputFile(self.path)
         self.output = pipe.CACHE.obt(_out)
+        if not self.output:
+            raise ValueError(_out.path)
         if self.output.type_ != 'publish':
-            raise ValueError
+            raise ValueError(self.output)
         if not self.to_geo():
             raise ValueError('No export geo')
         self.output_name = self.namespace.split(':')[-1]

@@ -360,6 +360,7 @@ def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
     Returns:
         (CPCacheable list): cacheables
     """
+    _LOGGER.debug('FIND CACHEABLES')
 
     # Find all cacheables in scene
     _all = []
