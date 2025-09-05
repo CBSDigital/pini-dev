@@ -128,6 +128,10 @@ class TestPipe(unittest.TestCase):
         assert _shot.settings
         testing.enable_file_system(True)
 
+    def test_task_sort(self):
+
+        assert pipe.task_sort('ani/anim') > pipe.task_sort('ani/lay')
+
     def test_templates(self):
 
         assert testing.TEST_JOB

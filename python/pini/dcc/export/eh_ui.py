@@ -352,14 +352,14 @@ class CExportHandlerUI(qt.CUiContainer):
         self._setup_elem(
             name=name, elem=_combo_box, tooltip=tooltip,
             save_policy=save_policy, ui_only=ui_only,
-            settings_key=settings_key, callback=callback, val=val)
+            settings_key=settings_key, callback=callback)
 
         self._setup_elem_lyt(
             _combo_box, label=label, tooltip=tooltip, stretch=stretch,
             label_w=label_w, add_elems=add_elems)
 
         # Need to set items after elem set up to apply save policy
-        _combo_box.set_items(items, data=data, emit=False)
+        _combo_box.set_items(items, data=data, emit=False, select=val)
         _LOGGER.debug(
             '   - COMPLETED ADD COMBOBOX %s %s', _combo_box,
             _combo_box.currentText())

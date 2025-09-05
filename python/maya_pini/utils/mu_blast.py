@@ -1,5 +1,6 @@
 """Tool for managing playblasting."""
 
+import functools
 import logging
 import os
 import time
@@ -7,13 +8,61 @@ import time
 from maya import cmds
 from maya.app.general import createImageFormats
 
-from pini.utils import Seq, str_to_ints, File, TMP, single, safe_zip, Video
+from pini.utils import (
+    Seq, str_to_ints, File, TMP, single, safe_zip, Video, wrap_fn)
 
 from .mu_dec import reset_ns
 from .mu_namespace import del_namespace, set_namespace
 
 _LOGGER = logging.getLogger(__name__)
 _BLAST_TMP_NS = os.environ.get('PINI_BLAST_TMP_NAMESPACE', 'BlastTmp')
+
+
+def _apply_img_planes_cam_only(func):
+    """Decorator which applies image planes "looking through cam" only setting.
+
+    After the function has executed, the setting is reverted to the previous
+    setting.
+
+    This is to fix an issue where the plate appeared to be scaling
+    strangely on blast. It may have been caused by two similar plates
+    appearing on top of other and tiny discrepancies in the constraint
+    between the camera and the tmp blast cam, but it was difficult to
+    observe and diagnose.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _img_planes_cam_only(*args, **kwargs):
+
+        # Set all image planes to looking through camera only
+        _reverts = []
+        for _img_plane in cmds.ls(type='imagePlane'):
+            _all_views = single(cmds.imagePlane(
+                _img_plane, query=True, showInAllViews=True))
+            if not _all_views:
+                continue
+            _LOGGER.info(' - SET IMG PLANE %s TO CAM ONLY', _img_plane)
+            cmds.imagePlane(
+                _img_plane, edit=True, showInAllViews=False)
+            _revert = wrap_fn(
+                cmds.imagePlane, _img_plane, edit=True, showInAllViews=True)
+            _reverts.append(_revert)
+
+        # Execute the function
+        try:
+            _result = func(*args, **kwargs)
+        finally:
+            for _revert in _reverts:
+                _revert()
+        return _result
+
+    return _img_planes_cam_only
 
 
 @reset_ns
@@ -57,12 +106,12 @@ def _build_tmp_blast_cam(cam):
         _LOGGER.debug('     - REMOVE %s (%s)', _node, _type)
         cmds.delete(_node)
 
-    # Unlock attrs
+    # Unlock attrs then constrain
     for _plug in [_cam.plug[_attr] for _attr in 'trs'] + _cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
-
-    _src.parent_constraint(_cam, force=True)
+    _src.point_constraint(_cam, force=True)
+    _src.orient_constraint(_cam, force=True)
 
     # Fix any image place colspaces - it seems these are not necessarily
     # made to match on duplicate
@@ -165,6 +214,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     return _window, _editor
 
 
+@_apply_img_planes_cam_only
 def _exec_blast(
         seq, range_=None, res=None, camera=None, cleanup=True, settings='Nice',
         use_tmp_cam=True, use_tmp_viewport=True):

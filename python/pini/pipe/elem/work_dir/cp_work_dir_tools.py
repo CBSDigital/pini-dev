@@ -9,6 +9,10 @@ _LOGGER = logging.getLogger(__name__)
 _TASK_MAP = {
     'prev': 'previs',
     'previz': 'previs',
+
+    'lay': 'layout',
+    'lyt': 'layout',
+
     'animation': 'anim',
     'ani': 'anim',
     'anm': 'anim',

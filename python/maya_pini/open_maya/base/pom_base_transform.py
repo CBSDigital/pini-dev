@@ -300,17 +300,23 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.aimConstraint(
             self, target, maintainOffset=maintain_offset)
 
-    def orient_constraint(self, target, maintain_offset=False):
+    def orient_constraint(self, target, maintain_offset=False, force=False):
         """Build an orient constraint from this node to the given target.
 
         Args:
             target (CTransform): node to constrain
             maintain_offset (bool): maintain offset
+            force (bool): break connections before create constraint
 
         Returns:
             (CTransform): constraint
         """
         from maya_pini import open_maya as pom
+        _trg = pom.CTransform(target)
+        if force:
+            for _plug in _trg.to_tfm_plugs(scale=False, translate=False):
+                _LOGGER.debug(' - BREAK CONNECT %s', _plug)
+                _plug.break_conns()
         return pom.CMDS.orientConstraint(
             self, target, maintainOffset=maintain_offset)
 
@@ -341,21 +347,28 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.parentConstraint(
             self, target, maintainOffset=maintain_offset, **_kwargs)
 
-    def point_constraint(self, target, maintain_offset=False, skip=None):
+    def point_constraint(
+            self, target, maintain_offset=False, skip=None, force=False):
         """Build a point constraint from this node to the given target.
 
         Args:
             target (CTransform): node to constrain
             maintain_offset (bool): maintain offset
             skip (str): axes to skip (eg. y)
+            force (bool): break connections before create constraint
 
         Returns:
             (CTransform): constraint
         """
         from maya_pini import open_maya as pom
+        _trg = pom.CTransform(target)
         _kwargs = {}
         if skip is not None:
             _kwargs['skip'] = skip
+        if force:
+            for _plug in _trg.to_tfm_plugs(scale=False, rotate=False):
+                _LOGGER.debug(' - BREAK CONNECT %s', _plug)
+                _plug.break_conns()
         return pom.CMDS.pointConstraint(
             self, target, maintainOffset=maintain_offset, **_kwargs)
 

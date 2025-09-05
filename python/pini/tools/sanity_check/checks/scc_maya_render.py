@@ -141,6 +141,7 @@ class CheckAOVs(SCMayaCheck):
     If no job AOV template has been published, the check does nothing.
     """
 
+    profile_filter = 'shot'
     action_filter = 'render'
     task_filter = 'lookdev lighting'
     label = 'Check AOVs'

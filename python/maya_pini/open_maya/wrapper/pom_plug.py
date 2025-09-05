@@ -186,24 +186,18 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         _dest, _src = _incoming
         cmds.disconnectAttr(_src, _dest)
 
-    def break_connections(self):
-        """Break any incoming connection to this plug."""
-        from pini.tools import release
-        release.apply_deprecation('01/02/25', 'Use break_conns')
-        self.break_conns()
-
-    def connect(self, target, break_connections=False, force=False):
+    def connect(self, target, break_conns=False, force=False):
         """Connect this plug to another one.
 
         Args:
             target (str): plug to connect to
-            break_connections (bool): break incoming connections to target
+            break_conns (bool): break incoming connections to target
                 before making connection (supressed already connected
                 warning)
             force (bool): replace any existing connections
         """
-        if break_connections:
-            target.break_connections()
+        if break_conns:
+            target.break_conns()
         cmds.connectAttr(self, target, force=force)
 
     def delete(self):
@@ -678,19 +672,19 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """
         self.to_anim().set_tangents(type_)
 
-    def set_val(self, val, break_connections=False, unlock=False):
+    def set_val(self, val, break_conns=False, unlock=False):
         """Set value of this attribute.
 
         Args:
             val (any): value to apply
-            break_connections (bool): break connections on apply value
+            break_conns (bool): break connections on apply value
             unlock (bool): unlock attr before apply
         """
         _LOGGER.debug('SET VAL %s %s', self, val)
         from maya_pini import open_maya as pom
 
-        if break_connections:
-            self.break_connections()
+        if break_conns:
+            self.break_conns()
         if unlock:
             self.unlock()
 

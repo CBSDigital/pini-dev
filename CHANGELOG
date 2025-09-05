@@ -1,3 +1,19 @@
+## [8.11.0] - Fri 2025-09-05 13:28
+### Summary
+ - Pini Helper:
+    - maya blast bugfix scaling on plate (kakuna),
+    - blast handler bugfix render cam not selected by default,
+### Updated
+ - pini.dcc.export.CExportHandlerUI.add_combo_box bugfix not apply selection on add items,
+ - pini.pipe.task_sort added lay/lyt to sorting,
+ - pini.tools.sanity_check.CheckAOVs disable in assets,
+ - maya_pini.utils.blast apply image planes camera only on blast,
+ - maya_pini.utils.blast tmp cam uses point/orient constraint not parent,
+ - maya_pini.open_maya.CBaseTransform point/orient constraint added force flag,
+ - maya_pini.open_maya.CPlug.break_connections removed deprecated code,
+ - maya_pini.open_maya.CPlug connect/set_val updated deprecated arg break_connections -> break_conns,
+
+
 ## [8.10.1] - Wed 2025-09-03 11:46
 ### Summary
  - Pini Helper:
