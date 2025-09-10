@@ -19,7 +19,7 @@ class SGCProj(sgc_elem.SGCElem):
     ENTITY_TYPE = 'Project'
     FIELDS = (
         'updated_at', 'tank_name', 'sg_short_name', 'sg_frame_rate',
-        'sg_status', 'created_at')
+        'sg_status', 'created_at', 'cached_display_name')
     STATUS_KEY = 'sg_status'
 
     def __init__(self, data):

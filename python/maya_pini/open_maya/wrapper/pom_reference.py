@@ -168,16 +168,21 @@ class CReference(om.MFnReference, ref.FileRef):
                      simulation=simulation, add_offs=add_offs)
         _LOGGER.debug(' - BAKED RESULTS IN %.01fs', time.time() - _start)
 
-    def find_node(self, type_=None):
+    def find_node(self, type_=None, name=None, catch=False):
         """Find a node in this reference.
 
         Args:
             type_ (str): filter by type
+            name (str): filter by node name
+            catch (bool): no error if no node found
 
         Returns:
             (CBaseNode): matching node
         """
-        return single(self.find_nodes(type_=type_))
+        _nodes = self.find_nodes(type_=type_)
+        if name:
+            _nodes = [_node for _node in _nodes if _node.clean_name == name]
+        return single(_nodes, catch=catch)
 
     def find_nodes(
             self, type_=None, full_path=False, dag_only=False, filter_=None,

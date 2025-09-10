@@ -251,6 +251,7 @@ class FileRef(r_path_ref.PathRef):
         if not _nodes:
             return []
         _paths = self.find_nodes(dag_only=True, full_path=True)
+        _LOGGER.debug(' - PATHS %s', _paths)
         assert len(_nodes) == len(_paths)
         _min_depth = min(str(_path).count('|') for _path in _paths)
 

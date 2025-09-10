@@ -225,6 +225,9 @@ class CMayaRef(prm_base.CMayaPipeRef):
                 _grp = None
                 if self.ref.top_node:
                     _grp = self.ref.top_node.to_parent()
+                _LOGGER.debug(
+                    '   - APPLY RESET top_node="%s" grp="%s"',
+                    self.ref.top_node, _grp)
                 self.delete(force=True)
                 return dcc.create_ref(
                     out, namespace=self.namespace, group=_grp)
@@ -304,6 +307,7 @@ class CMayaShadersRef(CMayaRef):
         self._apply_shaders(shds=_shd_data, target=target)
         self._apply_settings(settings=_settings, target=target)
         self._apply_override_sets(target=target)
+        self._apply_3d_place_nodes(target=target)
         if _data.get('lights'):
             self._apply_lights(target)
         if _data.get('top_node_attrs'):
@@ -313,6 +317,30 @@ class CMayaShadersRef(CMayaRef):
         _LOGGER.info(' - CONNECT TOP NODE %s', target.top_node)
         if target.top_node:
             target.top_node.add_attr('shaders', self.ref.ref_node, force=True)
+
+    @restore_ns
+    def _apply_3d_place_nodes(self, target):
+        """Attach place 3D texture nodes.
+
+        Args:
+            target (CPipeRef): target reference
+        """
+        _grp = self.ref.find_node(name='PLACE', catch=True)
+        if not _grp:
+            return
+        set_namespace(f':{self.namespace}:constrain', clean=True)
+        for _loc in _grp.find_children():
+            _LOGGER.info(' - LOC %s', _loc)
+            _parent_name = _loc.plug['ParentNode'].get_val()
+            _LOGGER.info('   - PARENT NAME %s', _parent_name)
+            _parent = None
+            if _parent_name:
+                _parent = target.ref.find_node(name=_parent_name)
+            if not _parent:
+                _parent = target.top_node
+            _LOGGER.info('   - PARENT %s', _parent)
+            _parent.parent_constraint(_loc)
+            _parent.scale_constraint(_loc)
 
     def _apply_override_sets(self, target):
         """Add abc geometry to ai override sets.
@@ -357,7 +385,7 @@ class CMayaShadersRef(CMayaRef):
         Args:
             target (CReference):  reference to apply cache to
         """
-        set_namespace(':' + self.namespace)
+        set_namespace(f':{self.namespace}:lights', clean=True)
         _lights = self.to_node('LIGHTS').find_children()
         _LOGGER.debug(' - LIGHTS %s', _lights)
         for _light in _lights:

@@ -152,13 +152,14 @@ class _PFileHandler(logging.FileHandler):
     """
 
 
-def setup_logging(file_=False, edit=False, flush='all'):
+def setup_logging(file_=False, edit=False, flush='all', name=None):
     """Setup logging with a generic handler.
 
     Args:
         file_ (bool): apply logging to file
         edit (bool): edit log file
         flush (bool): remove existing handlers
+        name (str): override log file label (default is dcc name)
     """
     _LOGGER.info('SETUP LOGGING')
 
@@ -191,9 +192,10 @@ def setup_logging(file_=False, edit=False, flush='all'):
     _stream_handler = _PStreamHandler(sys.stdout)
     _handlers.append(_stream_handler)
     if file_:
+        _name = name or dcc.NAME
         _date_stamp = strftime('%y%m%d')
         _time_stamp = strftime('%H%M%S')
-        _file = File(f'~/tmp/log/{_date_stamp}/{_time_stamp}_{dcc.NAME}.log')
+        _file = File(f'~/tmp/log/{_date_stamp}/{_time_stamp}_{_name}.log')
         _LOGGER.info(' - FILE %s', _file)
         _file.touch()
         if edit:

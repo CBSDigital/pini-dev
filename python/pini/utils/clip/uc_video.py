@@ -10,7 +10,7 @@ from ..u_misc import single
 from . import uc_clip, uc_ffmpeg
 
 _LOGGER = logging.getLogger(__name__)
-VIDEO_EXTNS = ['mov', 'mp4', 'avi', 'cine']
+VIDEO_EXTNS = ['mov', 'mp4', 'avi', 'cine', 'm2ts']
 
 
 class Video(path.MetadataFile, uc_clip.Clip):

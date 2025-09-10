@@ -36,6 +36,7 @@ class PHWorkTab:
         self.ui.WTasks.redraw()
         if not self.ui.WWorkPath.signalsBlocked():
             self.ui.WWorkPath.redraw()
+        self.ui.WWorkNotes.save_policy = qt.SavePolicy.NO_SAVE
 
     @property
     def tag(self):

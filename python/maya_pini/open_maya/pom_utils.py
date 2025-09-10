@@ -120,17 +120,24 @@ def _cast_tfm(node):
     return _class
 
 
-def create_loc(name='loc'):
+def create_loc(name='loc', col=None, outliner_col=None):
     """Create locator.
 
     Args:
         name (str): override locator name
+        col (str): apply viewport colour
+        outliner_col (str): apply outliner colour
 
     Returns:
         (CTransform): locator
     """
     from maya_pini import open_maya as pom
-    return pom.CPoint().to_loc(name=name)
+    _loc = pom.CPoint().to_loc(name=name)
+    if col:
+        _loc.set_col(col)
+    if outliner_col:
+        _loc.set_outliner_col(outliner_col)
+    return _loc
 
 
 def create_square(name='square', width=1.0, col=None):

@@ -54,11 +54,13 @@ def add_to_grp(node, grp):
         node (str): node to add
         grp (str): name of group to add to
     """
+    _LOGGER.debug('ADD TO GRP %s %s', node, grp)
     if to_parent(node) == grp:
         return grp
     cmds.namespace(setNamespace=':')
     if not cmds.objExists(grp):
         cmds.group(empty=True, name=grp)
+    _LOGGER.debug(' - APPLY PARENT %s -> %s', node, grp)
     cmds.parent(node, grp)
     return grp
 

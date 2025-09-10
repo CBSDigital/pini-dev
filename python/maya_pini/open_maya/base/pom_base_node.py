@@ -265,14 +265,21 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         add_to_dlayer(self, layer)
 
-    def add_to_grp(self, grp):
+    def add_to_grp(self, grp, col=None):
         """Add this node to a group.
 
         Args:
             grp (str): name of group to add to
+            col (str): outliner colour for group
+
+        Returns:
+            (CTransform): group
         """
         from maya_pini import open_maya as pom
-        return pom.CTransform(add_to_grp(node=self.node, grp=grp))
+        _grp = pom.CTransform(add_to_grp(node=self.node, grp=grp))
+        if col:
+            _grp.set_outliner_col(col)
+        return _grp
 
     def add_to_set(self, set_):
         """Add this node to a set.
@@ -666,17 +673,24 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         from maya_pini import open_maya as pom
         return [pom.CNode(_node) for _node in to_shps(self.node, type_=type_)]
 
-    def _to_preset_tmp_file(self):
-        """Obtain tmp preset file for this node.
+    def _to_preset_tmp(self, fmt):
+        """Obtain present tmp file.
+
+        Args:
+            fmt (str): preset format (mpa/mpb)
 
         Returns:
-            (File): preset file
+            (File): tmp file for this node
         """
-        _LOGGER.debug('TO PRESET TMP FILE')
         _type = self.object_type()
         _presets_dir = abs_path(cmds.internalVar(userPresetsDir=True))
-        _LOGGER.debug(' - PRESETS DIR %s', _presets_dir)
-        return File(f"{_presets_dir}/attrPresets/{_type}/tmp.mel")
+        if fmt == 'mpa':
+            _file = f"{_presets_dir}/attrPresets/{_type}/tmp.mel"
+        elif fmt == 'mpb':
+            _file = f"{_presets_dir}/{_type}Preset_tmp.mel"
+        else:
+            raise ValueError(fmt)
+        return File(_file)
 
     def load_preset(self, file_):
         """Load the given preset to this node.
@@ -685,17 +699,27 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             file_ (str): path to preset file
         """
         _file = File(file_)
-        _tmp = self._to_preset_tmp_file()
-        if _file != _tmp:
-            _file.copy_to(_tmp, force=True)
-        _cmd = f'{_get_load_preset_mel()} "{self}" "" "" "tmp" 1'
-        mel.eval(_cmd)
+        assert _file.exists()
+        _tmp_file = self._to_preset_tmp(fmt=_file.extn)
+        if _tmp_file != _file:
+            _file.copy_to(_tmp_file, force=True, verbose=0)
 
-    def save_preset(self, file_=None, force=False):
+        if _file.extn == 'mpa':
+            _cmd = f'{_get_load_preset_mel()} "{self}" "" "" "tmp" 1'
+            mel.eval(_cmd)
+        elif _file.extn == 'mpb':
+            cmds.nodePreset(load=(self, "tmp"))
+        else:
+            raise ValueError(_file.path)
+
+    def save_preset(self, file_=None, fmt='auto', force=False):
         """Save this node's settings to a preset file.
 
         Args:
             file_ (str): override preset file
+            fmt (str): preset format
+                mpa - mel format, can cause random crash
+                mpb - python format
             force (bool): overwrite existing without confirmation
 
         Returns:
@@ -706,19 +730,36 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _file = file_
         if _file:
             _file = File(file_)
+            _file.delete(force=force, wording='Replace')
+        _LOGGER.debug(' - FILE %s', _file)
 
-        _tmp = self._to_preset_tmp_file()
-        if _tmp.exists():
-            _tmp.delete(force=True)
+        _fmt = fmt
+        if _fmt == 'auto':
+            if not _file:
+                raise RuntimeError
+            _fmt = _file.extn
+        _LOGGER.debug(' - FMT %s', _fmt)
 
-        mel.eval(f'saveAttrPreset "{self}" "tmp" false')
-        _LOGGER.debug(" - SAVED PRESET %s", _tmp)
-        if not _tmp.exists():
-            raise RuntimeError(f'Failed to save preset: {_tmp}')
-        if not _file:
-            return _tmp
-        _tmp.move_to(_file, force=force)
-        return _file
+        _tmp_file = self._to_preset_tmp(_fmt)
+        if _tmp_file.exists():
+            _tmp_file.delete(force=True)
+
+        if _fmt == 'mpa':
+            # _file = self._save_mpa_preset(_file)
+            mel.eval(f'saveAttrPreset "{self}" "tmp" false')
+        elif _fmt == 'mpb':
+            # _file = self._save_mpb_preset(_file)
+            cmds.nodePreset(save=(self, "tmp"))
+        else:
+            raise NotImplementedError(_file)
+
+        if not _tmp_file.exists():
+            raise RuntimeError(f'Failed to save preset: {_tmp_file}')
+
+        if _file:
+            _tmp_file.copy_to(_file, verbose=0)
+
+        return _file or _tmp_file
 
     def __eq__(self, other):
         if isinstance(other, CBaseNode):

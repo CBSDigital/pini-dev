@@ -6,11 +6,13 @@ import re
 
 from maya import cmds
 
-from pini import dcc
+from pini import dcc, pipe
 from pini.utils import passes_filter
 
 from maya_pini import open_maya as pom, tex
-from maya_pini.utils import to_clean, to_long, to_namespace, to_parent
+from maya_pini.utils import (
+    to_clean, to_long, to_namespace, to_parent, get_ns_cleaner,
+    restore_ns, fix_dup_name)
 
 from .. import mp_utils
 
@@ -88,6 +90,28 @@ def _build_dummy_top_node():
         for _trg in _conns:
             _dummy_attr.connect(_trg, force=True)
     return str(_dummy)
+
+
+@restore_ns
+def obt_top_node():
+    """Obtain export top node, building if needed.
+
+    In some cases, the lookdev export needs to contains dag nodes (eg. if
+    there are lights or place3dTexture nodes in the scene). In this case,
+    the nodes should be grouped under a SHD top node.
+
+    Returns:
+        (CTransform): top node
+    """
+    cmds.namespace(setNamespace=':')
+    if not cmds.objExists('SHD'):
+        cmds.select(clear=True)
+        _grp = pom.CMDS.group(empty=True, name='SHD')
+        _grp.parent(world=True)
+        _grp.set_outliner_col('Orange')
+    else:
+        _grp = pom.CTransform('SHD')
+    return _grp
 
 
 def read_override_sets(crop_namespace=True):
@@ -408,3 +432,68 @@ def _read_se(engine, referenced, allow_face_assign, filter_):
             _shd_data['ai_shd'] = str(_ai_ss)
 
     return _shd, _shd_data
+
+
+def setup_lights():
+    """Setup lights for export.
+
+    Returns:
+        (str set): lights nodes
+    """
+    _nodes = set()
+
+    # Move any lights in cache set into group
+    _lights_grp = None
+    _lights = mp_utils.read_cache_set(mode='lights')
+    _LOGGER.debug(' - LIGHTS %s', _lights)
+    for _light in _lights:
+        _LOGGER.debug('   - ADD LIGHT %s', _light)
+        if '|' in str(_light):
+            _light = pom.CTransform(fix_dup_name(_light))
+        _lights_grp = _light.add_to_grp('LIGHTS', col='Orange')
+        _shd_grp = _lights_grp.add_to_grp(obt_top_node())
+
+        _nodes |= {_light, mp_utils.to_light_shp(_light), _lights_grp, _shd_grp}
+
+    return _nodes
+
+
+@get_ns_cleaner(':place')
+def setup_place_3d_nodes():
+    """Setup place3dTexture nodes for export.
+
+    Returns:
+        (str set): texture place nodes
+    """
+    _nodes = set()
+
+    _work = pipe.cur_work()
+    _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
+    _data_dir = _pub.to_dir().to_subdir('data')
+
+    for _place in pom.find_nodes(type_='place3dTexture'):
+
+        _LOGGER.info(' - PLACE %s', _place)
+
+        # Obtain parent to constrain to
+        _parent = _place.to_parent()
+        _LOGGER.info('   - PARENT %s', _parent)
+
+        # Build loc
+        _loc = pom.create_loc(col='Orange', outliner_col='Orange')
+        _LOGGER.info('   - LOC %s', _loc)
+        if _parent:
+            _mtx = _parent.to_m()
+            _mtx.apply_to(_loc)
+            _pivot = _parent.plug['rotatePivot'].get_val(class_=pom.CPoint)
+            _pivot.apply_to(_loc)
+            _loc.freeze_tfms()
+        _place.parent(_loc)
+        _loc.add_attr('ParentNode', str(_parent or ''))
+
+        _place_grp = _loc.add_to_grp('PLACE', col='Orange')
+        _shd_grp = _place_grp.add_to_grp(obt_top_node())
+
+        _nodes |= {_place, _loc, _place_grp, _shd_grp}
+
+    return _nodes

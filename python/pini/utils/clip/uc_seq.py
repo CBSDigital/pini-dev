@@ -611,38 +611,19 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         return self.to_range()[0]
 
     def to_video(  # pylint: disable=unused-argument
-            self, video, fps=None, audio=None, audio_offset=0.0,
-            use_scene_audio=False, crf=15, bitrate=None, denoise=None,
-            tune=None, speed=None, burnins=False, res=None, range_=None,
-            force=False, verbose=0):
+            self, video, burnins=False, force=False, **kwargs):
         """Convert this image sequence to a video.
+
+        NOTE: for docs see clip.seq_to_video
 
         Args:
             video (File): file to create
-            fps (float): frame rate
-            audio (File): apply audio
-            audio_offset (float): audio offset in secs
-            use_scene_audio (bool): apply audio from current scene
-                (overrides all other audio flags)
-            crf (int): constant rate factor (default is 25,
-                visually lossless is 15, highest is 1)
-            bitrate (str): apply bitrate to conversion (eg. 1M)
-            denoise (float): apply nlmeans denoise (20.0 is recommended)
-            tune (str): apply tuning preset (eg. animation, film)
-            speed (str): apply speed preset (eg. slow, medium, slowest)
             burnins (bool): add burnins
-            res (tuple): override output res
-            range_ (tuple): override frame range
             force (bool): overwrite existing without confirmation
-            verbose (int): print process data
 
         Returns:
             (Video): video file
         """
-        _kwargs = locals()
-        _kwargs.pop('self')
-        _kwargs.pop('force')
-
         from pini import dcc
         from .. import clip
 
@@ -651,14 +632,15 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _video.delete(force=force, wording='replace')
         assert not _video.exists()
         if _video.extn.lower() not in ('mp4', 'mov'):
-            raise RuntimeError('Bad extn ' + _video.path)
+            raise RuntimeError(f'Bad extn {_video.path}')
         _video.test_dir()
 
         # Build video
         if dcc.NAME == 'nuke':
             # Catch nuke hanging bug
             return self._to_video_nuke(video=_video, burnins=burnins)
-        return uc_ffmpeg.seq_to_video(seq=self, **_kwargs)
+        return uc_ffmpeg.seq_to_video(
+            seq=self, video=_video, burnins=burnins, **kwargs)
 
     def _to_video_nuke(self, video, clean_up=True, burnins=False, force=False):
         """Compile video using nuke.

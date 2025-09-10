@@ -540,3 +540,50 @@ class CheckCacheables(core.SCMayaCheck):
                 else:
                     self.add_fail(
                         f'Set "{_cache_set}" has name clash: {_nodes}')
+
+
+class CheckColorManagement(core.SCMayaCheck):
+    """Check color management options are applied."""
+
+    enabled = False
+
+    def run(self):
+        """Run this check."""
+
+        # Obtain current job ocio file
+        _job = pipe.CACHE.cur_job
+        self.write_log('JOB %s', _job)
+        if not _job:
+            return
+        _ocio = _job.settings.get('ocio')
+        self.write_log('ocio %s', _ocio)
+        if not _ocio:
+            self.write_log('ocio not found in job settings')
+            return
+
+        # Check col mgt enabled
+        if not cmds.colorManagementPrefs(query=True, cmEnabled=True):
+            self.add_fail(
+                'Color management not enabled', fix=wrap_fn(
+                    cmds.colorManagementPrefs, edit=True, cmEnabled=True))
+        else:
+            self.write_log('col mgt enabled')
+
+        # Check ocio cfg enabled
+        if not cmds.colorManagementPrefs(query=True, cmConfigFileEnabled=True):
+            self.add_fail(
+                'Color management config file not enabled', fix=wrap_fn(
+                    cmds.colorManagementPrefs, edit=True,
+                    cmConfigFileEnabled=True))
+        else:
+            self.write_log('col mgt config file enabled')
+
+        # Check ocio file
+        _cur_ocio = cmds.colorManagementPrefs(query=True, configFilePath=True)
+        self.write_log('cur ocio %s', _cur_ocio)
+        if _cur_ocio != _ocio:
+            self.add_fail(
+                f'OCIO file not set to "{_ocio}" '
+                f'(currently set to "{_cur_ocio}")', fix=wrap_fn(
+                    cmds.colorManagementPrefs, edit=True,
+                    configFilePath=_ocio))

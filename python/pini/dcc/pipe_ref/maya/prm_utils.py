@@ -16,6 +16,7 @@ def apply_grouping(top_node, output, group=EMPTY):
         output (CPOutput): reference output
         group (str): group name (if any)
     """
+    _LOGGER.debug('APPLY GROUPING %s group=%s', top_node, group)
     _LOGGER.debug(' - OUT %s', output)
 
     # Determine group to add
@@ -23,7 +24,7 @@ def apply_grouping(top_node, output, group=EMPTY):
     if output and _grp is EMPTY:
         if output.entity.name == 'camera':
             _grp = 'CAM'
-        elif pipe.map_task(output.task) == 'LOOKDEV':
+        elif pipe.map_task(output.task) == 'lookdev':
             _grp = 'LOOKDEV'
         elif output.asset_type:
             _grp = output.asset_type.upper()

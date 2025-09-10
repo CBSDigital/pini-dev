@@ -87,16 +87,18 @@ def is_pascal(text):
     return True
 
 
-def nice_cmds(cmds):
+def nice_cmds(cmds, fmt='text'):
     """Build commands into a string which can be run in a terminal.
 
     Args:
         cmds (str list): commands list
+        fmt (str): how to format commands (text/list)
 
     Returns:
         (str): commands as string
     """
     _str = ''
+    _list = []
     for _cmd in cmds:
         _cmd = str(_cmd)
         for _chr in ' []%':
@@ -104,7 +106,13 @@ def nice_cmds(cmds):
                 _cmd = f'"{_cmd}"'
                 break
         _str += f'{_cmd} '
-    return _str.strip()
+        _list.append(_cmd)
+
+    if fmt == 'text':
+        return _str.strip()
+    if fmt == 'list':
+        return _list
+    raise ValueError(fmt)
 
 
 def plural(items, singular='', plural_='s'):

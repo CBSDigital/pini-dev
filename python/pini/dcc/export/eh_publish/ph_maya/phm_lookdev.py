@@ -8,11 +8,11 @@ from maya import cmds
 from pini import pipe, dcc, qt, icons
 from pini.utils import passes_filter, Seq, TMP
 
-from maya_pini import ref, m_pipe, open_maya as pom
+from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
-    save_redshift_proxy, disable_scanner_callbacks, fix_dup_name)
+    save_redshift_proxy, disable_scanner_callbacks)
 
 from .. import ph_basic
 
@@ -228,10 +228,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _LOGGER.info(' - WROTE SHD YML %s', self.shd_yml)
 
         # Export shaders scene
-        _export_nodes = lookdev.find_export_nodes()
-        _flush_scene(keep_nodes=_export_nodes)
-        _export_nodes = [  # Empty sets are deleted on import ref (?)
-            _node for _node in _export_nodes if cmds.objExists(_node)]
+        _export_nodes = _clean_scene()
         cmds.select(_export_nodes, noExpand=True)
         if not _export_nodes:
             raise RuntimeError('No shaders/sets found to export')
@@ -374,17 +371,14 @@ def _export_ass(force):
 
 
 @disable_scanner_callbacks
-def _flush_scene(keep_nodes=None):
-    """Remove nodes from scene to prepare for lookdev export.
+def _clean_scene():
+    """Setup for lookdev export."""
+    _LOGGER.debug('CLEAN SCENE')
+    _shd_grp = None
 
-    Args:
-        keep_nodes (list): list of nodes to keep in scene
-    """
-    _LOGGER.debug('FLUSH SCENE %s', keep_nodes)
-
-    _keep_nodes = set(DEFAULT_NODES)
-    if keep_nodes:
-        _keep_nodes |= set(keep_nodes)
+    _keep_nodes = set()
+    _keep_nodes |= set(DEFAULT_NODES)
+    _keep_nodes |= set(lookdev.find_export_nodes())
 
     # Import refs (NOTE: needs to happen before remove geos from sets
     # otherwise redshift sets get randomly deleted)
@@ -403,23 +397,11 @@ def _flush_scene(keep_nodes=None):
         cmds.sets(_geos, remove=_set)
         _LOGGER.debug(' - CLEAN GEO %s set=%s', _geos, _set)
 
-    # Move any lights in cache set into group
-    _lights_grp = None
-    _lights = m_pipe.read_cache_set(mode='lights')
-    _LOGGER.debug(' - LIGHTS %s', _lights)
-    for _light in _lights:
-        _LOGGER.debug('   - ADD LIGHT %s', _light)
-        if '|' in str(_light):
-            _light = pom.CTransform(fix_dup_name(_light))
-        _lights_grp = _light.add_to_grp('LIGHTS')
-        _keep_nodes.add(_light)
-        _keep_nodes.add(m_pipe.to_light_shp(_light))
-    if _lights_grp:
-        _lights_grp.parent(world=True)
-        _lights_grp.set_outliner_col('Orange')
-        _keep_nodes.add(_lights_grp)
+    _keep_nodes |= set(lookdev.setup_lights())
+    _keep_nodes |= set(lookdev.setup_place_3d_nodes())
 
     # Delete dag/unknown nodes
+    _keep_nodes = sorted(str(_node) for _node in _keep_nodes)
     _LOGGER.debug(' - KEEP NODES %s', _keep_nodes)
     _dag_nodes = [_node for _node in cmds.ls(dag=True)
                   if _node not in _keep_nodes]
@@ -427,6 +409,8 @@ def _flush_scene(keep_nodes=None):
     _unknown_nodes = cmds.ls(type='unknown') or []
     _LOGGER.debug(' - UNKNOWN NODES %s', _unknown_nodes)
     cmds.delete(_dag_nodes + _unknown_nodes)
+
+    return [_node for _node in _keep_nodes if cmds.objExists(_node)]
 
 
 def _read_cache_geo():

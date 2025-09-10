@@ -4,7 +4,7 @@ import unittest
 from maya import cmds
 
 from pini import dcc
-from pini.utils import single
+from pini.utils import single, TMP
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import use_tmp_ns
@@ -164,6 +164,36 @@ class TestOpenMaya(unittest.TestCase):
         assert len(_conns) == 2
         assert isinstance(_conns[0], pom.CNode)
         assert _conns[0] == _grp1
+
+    @use_tmp_ns
+    def test_save_preset(self):
+
+        _sphere_a = pom.CMDS.polySphere(name='SphereA')
+        _sphere_b = pom.CMDS.polySphere(name='SphereB')
+        assert not round((_sphere_a.to_p() - _sphere_b.to_p()).length(), 4)
+
+        # Test preset fmt a
+        _mtx_1 = pom.CMatrix([
+            0.9019, -0.2978, -0.3129, 0.0000, 0.2347, 0.9459, -0.2240, 0.0000,
+            0.3626, 0.1286, 0.9230, 0.0000, 1.4026, 4.0941, -4.4732, 1.0000])
+        _mtx_1.apply_to(_sphere_a)
+        assert round((_sphere_a.to_p() - _sphere_b.to_p()).length(), 4)
+        _mpa = TMP.to_file('.pini/test.mpa')
+        _sphere_a.save_preset(_mpa, force=True)
+        assert _mpa.exists()
+        _sphere_b.load_preset(_mpa)
+        assert not round((_sphere_a.to_p() - _sphere_b.to_p()).length(), 4)
+
+        # Test preset fmt b
+        _mtx_2 = pom.CMatrix([
+            3.1062, -0.2362, 0.0059, 0.0000, 0.2356, 3.0913, -0.3042, 0.0000,
+            0.0172, 0.3038, 3.1003, 0.0000, -4.9101, 4.2355, 1.7335, 1.0000])
+        _mtx_2.apply_to(_sphere_a)
+        assert round((_sphere_a.to_p() - _sphere_b.to_p()).length(), 4)
+        _mpb = TMP.to_file('.pini/test.mpb')
+        _sphere_a.save_preset(_mpb, force=True)
+        _sphere_b.load_preset(_mpb)
+        assert not round((_sphere_a.to_p() - _sphere_b.to_p()).length(), 4)
 
     @use_tmp_ns
     def test_plug(self):

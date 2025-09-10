@@ -59,7 +59,7 @@ def del_namespace(namespace, force=False):
     if _ref:
         _ref.delete(force=_force)
     if cmds.namespace(exists=namespace):
-        _LOGGER.debug(' - DELETE NS %s %s', namespace)
+        _LOGGER.debug(' - DELETE NS %s', namespace)
         cmds.namespace(removeNamespace=namespace, deleteNamespaceContent=True)
     if cmds.namespace(exists=namespace):
         raise RuntimeError('Failed to delete namespace ' + namespace)

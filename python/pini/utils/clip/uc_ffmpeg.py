@@ -216,11 +216,11 @@ def read_ffprobe(video):
     return _lines
 
 
-def seq_to_video(
+def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         seq, video, fps=None, audio=None, audio_offset=0.0,
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
         tune=None, speed=None, burnins=False, res=None, range_=None,
-        verbose=0):
+        lut=None, result='file', verbose=0):
     """Build video file using ffmpeg.
 
     Args:
@@ -240,6 +240,8 @@ def seq_to_video(
         burnins (bool): add burnins
         res (tuple): override resolution
         range_ (tuple): override frame range
+        lut (str): apply lut
+        result (str): value to return (file/cmds)
         verbose (int): print process data
 
     Returns:
@@ -265,6 +267,10 @@ def seq_to_video(
     if _start != 1:
         _args += ['-start_number', _start]
     _args += ['-i', seq.path]
+    if lut:
+        _lut = File(lut)
+        assert _lut.exists()
+        _args += ['-vf', f"lut3d=file={_lut}"]
     if _n_frames:
         _args += ['-frames:v', _n_frames]
     # if colspace:
@@ -303,7 +309,14 @@ def seq_to_video(
     if not _video.exists() or not _video.size():
         _handle_conversion_fail(seq=seq, err=_err, video=_video, args=_args)
 
-    return _video
+    if result == 'file':
+        _result = _video
+    elif result == 'cmds':
+        _result = _args
+    else:
+        raise ValueError(result)
+
+    return _result
 
 
 def _handle_conversion_fail(seq, video, err, args):

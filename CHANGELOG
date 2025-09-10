@@ -1,3 +1,27 @@
+## [8.12.0] - Wed 2025-09-10 15:30
+### Summary
+ - Pini Helper:
+    - lookdev publish store place3dTexture nodes (mkim),
+    - bugfix work notes being maintained across scenes (cstewart),
+### Updated
+ - pini.utils.nice_cmds added fmt arg for list output,
+ - pini.utils.seq_to_video added lut/result args,
+ - pini.utils.Seq.to_video updated args -> kwargs ref,
+ - pini.utils.VIDEO_EXTNS added m2ts,
+ - pini.dcc.pipe_ref.apply_grouping bugfix lookdev grouping,
+ - pini.dcc.pipe_ref.CMayaShadersRef.attach_to added place3dTexture attach,
+ - pini.dcc.export.CMayaLookdevPublish simplified clean scene func + maintain place3dTexture nodes,
+ - pini.pipe.shotgrid.SGCProj.FIELDS added cached_display_name,
+ - pini.tools.sanity_check.CheckColorManagement added,
+ - pini.tools.helper.ui.WWorkNotes apply save policy NO_SAVE,
+ - pini.testing.setup_logging added name arg for file logging,
+ - maya_pini.m_pipe added setup_lights/setup_place_3d_nodes,
+ - maya_pini.open_maya.create_loc added col/outliner_col args,
+ - maya_pini.open_maya.CBaseNode.add_to_grp added col arg,
+ - maya_pini.open_maya.CBaseNode load/save preset added mpa/mpb fmts,
+ - maya_pini.open_maya.CReference.find_node added name/catch args,
+
+
 ## [8.11.0] - Fri 2025-09-05 13:28
 ### Summary
  - Pini Helper:

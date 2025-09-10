@@ -336,7 +336,7 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """
         from maya_pini import open_maya as pom
         _trg = pom.CTransform(target)
-        _LOGGER.info('PARENT CONSTRAINT %s -> %s', self, _trg)
+        _LOGGER.debug('PARENT CONSTRAINT %s -> %s', self, _trg)
         _kwargs = {}
         if name:
             _kwargs['name'] = name
