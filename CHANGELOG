@@ -1,3 +1,11 @@
+## [8.13.2] - Thu 2025-09-11 14:02
+### Summary
+ - Sanity Check:
+    - check face assignments only apply on lookdev publish (eehemann),
+### Updated
+ - pini.tools.sanity_check.CheckForFaceAssignments bugfix apply action filter LookdevPublish,
+
+
 ## [8.13.1] - Thu 2025-09-11 13:59
 ### Summary
  - Sanity Check:

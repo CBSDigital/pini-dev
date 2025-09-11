@@ -661,6 +661,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
 class CheckForFaceAssignments(core.SCMayaCheck):
     """Checks for shaders assigned to faces rather than geometry."""
 
+    task_filter = 'lookdev'
     action_filter = 'LookdevPublish'
 
     def run(self):
