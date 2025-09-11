@@ -143,15 +143,16 @@ class CBasicSubmitter(export.CExportHandler):
             snapshot=False,
             run_checks=False))
 
-    def export(self, render, notes=None, force=False):
+    def export(self, render, notes=None, lut=None, force=False):
         """Execute submission.
 
         Args:
             render (CPOutputBase): render to submit
             notes (str): submit notes
+            lut (str): path to lut to apply on video compile
             force (bool): force update any existing submission
         """
-        shotgrid.create_ver(render, comment=notes, force=force)
+        shotgrid.create_ver(render, comment=notes, lut=lut, force=force)
         return []
 
 

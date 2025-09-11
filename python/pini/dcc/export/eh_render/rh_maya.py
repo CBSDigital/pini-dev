@@ -61,7 +61,6 @@ class CMayaRenderHandler(rh_base.CRenderHandler):
             name='Camera', items=_cams, val=_cam, label_w=60,
             save_policy=qt.SavePolicy.NO_SAVE)
         _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
-        self.ui.add_separator()
 
 
 class CMayaLocalRender(CMayaRenderHandler):
@@ -211,18 +210,19 @@ class CMayaFarmRender(CMayaRenderHandler):
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""
+        super()._add_custom_ui_elems()
+
         self.ui.add_separator()
         self.ui.add_spin_box(name='Priority', val=50)
         self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
         self.ui.add_spin_box(name='MachineLimit', val=15)
 
-        self.ui.add_check_box(name='StrictErrorChecking', val=True)
-
-        self._build_limit_groups_elems()
         self.ui.add_separator()
+        self.ui.add_check_box(name='StrictErrorChecking', val=True)
+        self._build_limit_groups_elems()
 
+        self.ui.add_separator()
         self._build_layers_elems()
-
         self.ui.add_check_box(
             name='HideImgPlanes', val=False,
             label='Hide image planes',

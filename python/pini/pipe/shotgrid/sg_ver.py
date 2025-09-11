@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def create_ver(
         render, frames=None, comment=None, thumb=None, filmstrip=None,
-        pub_files=(), force=False):
+        pub_files=(), lut=None, force=False):
     """Register the given render in shotgrid.
 
     Args:
@@ -24,6 +24,7 @@ def create_ver(
         thumb (File): override thumbnail
         filmstrip (File): override filmstrip
         pub_files (CPOutput list): published files to link
+        lut (str): path to lut to apply on video compile
         force (bool): force re-register if already exists
 
     Returns:
@@ -36,7 +37,7 @@ def create_ver(
 
     _pub_files = set(pub_files)
     _render, _video, _frames = _read_render_video_frames(
-        render=render, frames=frames, pub_files=_pub_files)
+        render=render, frames=frames, pub_files=_pub_files, lut=lut)
     _progress.set_pc(10)
     _comment = comment
     _ety = _render.entity.sg_entity
@@ -63,7 +64,7 @@ def create_ver(
     # Create version
     _sg_ver = _obt_ver_elem(
         version=_sg_ver, frames=_frames, pub_files=sorted(_pub_files),
-        render=_render, comment=_comment, progress=_progress)
+        render=_render, comment=_comment, progress=_progress, video=_video)
     _progress.set_pc(50)
 
     # Upload video
@@ -200,7 +201,7 @@ def _apply_thumb(thumb, version, render, video):
         sg_handler.upload_thumbnail('Version', version.id_, _thumb.path)
 
 
-def _build_ver_data(render, frames, comment, pub_files):
+def _build_ver_data(render, frames, comment, pub_files, video):
     """Build version data dict.
 
     Args:
@@ -208,6 +209,7 @@ def _build_ver_data(render, frames, comment, pub_files):
         frames (CPOutputSeq): source frames
         comment (str): submission comment
         pub_files (CPOutput list): published files to link
+        video (CPOutputVideo): video to submit
 
     Returns:
         (dict): version data
@@ -225,7 +227,7 @@ def _build_ver_data(render, frames, comment, pub_files):
         "entity": _sg_ety.to_entry(),
         "project": _sg_job.to_entry(),
         "sg_task": _sg_task.to_entry(),
-        "sg_path_to_movie": render.path,
+        "sg_path_to_movie": video.path,
         "sg_version_number": render.ver_n,
     }
     if 'sg_pini_tag' in shotgrid.find_fields('Version'):
@@ -279,7 +281,8 @@ def _build_ver_data(render, frames, comment, pub_files):
     return _data
 
 
-def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
+def _obt_ver_elem(
+        version, render, frames, comment, pub_files, video, progress):
     """Obtain version element.
 
     Args:
@@ -288,6 +291,7 @@ def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
         frames (CCPOutputSeq): source frames
         comment (str): comment
         pub_files (list): publish files to link
+        video (CPOutputVideo): video to submit
         progress (ProgressDialog): progress dialog
 
     Returns:
@@ -297,7 +301,8 @@ def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
 
     # Build submit data
     _data = _build_ver_data(
-        render, frames=frames, comment=comment, pub_files=pub_files)
+        render, frames=frames, comment=comment, pub_files=pub_files,
+        video=video)
     _LOGGER.debug('DATA %s', pprint.pformat(_data))
     progress.set_pc(30)
 
@@ -312,14 +317,14 @@ def _obt_ver_elem(version, render, frames, comment, pub_files, progress):
 
     # Find updated element
     progress.set_pc(40)
-    _sg_ver = _ety.find_ver(render, force=True)
+    _sg_ver = _ety.find_ver(video, force=True)
     _LOGGER.info(' - %s VERSION %s', _action, _sg_ver)
     assert _sg_ver
 
     return _sg_ver
 
 
-def _read_render_video_frames(render, frames, pub_files):
+def _read_render_video_frames(render, frames, pub_files, lut):
     """Read render, video and frames from submit args.
 
     If an image sequence with more than one frame is submitted, it is converted
@@ -329,6 +334,7 @@ def _read_render_video_frames(render, frames, pub_files):
         render (CPOutputSeq|CPOutputVideo): render arg
         frames (CPOutputSeq): render frames
         pub_files (set): pub files list
+        lut (str): path to lut to apply on video compile
 
     Returns:
         (tuple): render, video, frames
@@ -352,7 +358,7 @@ def _read_render_video_frames(render, frames, pub_files):
         # Render video
         _video = _frames.to_output('mov', extn='mov')
         if not _video.exists():
-            _render_to_video(render=_render, video=_video)
+            _render_to_video(render=_render, video=_video, lut=lut)
             pub_files.add(_frames)
 
         return _render, _video, _frames
@@ -360,23 +366,25 @@ def _read_render_video_frames(render, frames, pub_files):
     raise NotImplementedError(render, frames)
 
 
-def _render_to_video(render, video, burnins=False, force=False):
+def _render_to_video(render, video, burnins=False, lut=None, force=False):
     """Compile a video from the given render.
 
     Args:
         render (CPOutputSeq): source render
         video (CPOutputVideo): target video
         burnins (bool): add burnins
+        lut (str): path to lut to apply on video compile
         force (bool): replace existing without confirmation
     """
     _LOGGER.info(' - BUILDING VIDEO FROM FRAMES %s', render)
     _LOGGER.info('   - VIDEO %s', video)
+    _LOGGER.info('   - LUT %s', lut)
 
     _work = render.find_work()
     _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
 
     _start = time.time()
-    render.to_video(video, fps=_fps, burnins=burnins, force=force)
+    render.to_video(video, fps=_fps, burnins=burnins, lut=lut, force=force)
     _dur = time.time() - _start
     _LOGGER.info('   - COMPILED VIDEO IN %.02fs', _dur)
     assert video.exists()

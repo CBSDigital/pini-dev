@@ -1,3 +1,15 @@
+## [8.13.0] - Thu 2025-09-11 12:23
+### Summary
+ - Pini Helper:
+    - maya deadline submit bugfix camera select missing from ui,
+    - shotgrid submit version bugfix path movie field set to frames,
+### Updated
+ - pini.dcc.export.CMayaFarmRender bugfix camera missing from ui,
+ - pini.dcc.export.CBasicSubmitter added lut arg,
+ - pini.pipe.shotgrid.create_ver added lut arg,
+ - pini.pipe.shotgrid.create_ver bugfix bad path to movie,
+
+
 ## [8.12.0] - Wed 2025-09-10 15:30
 ### Summary
  - Pini Helper:
