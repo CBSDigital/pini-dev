@@ -1,3 +1,11 @@
+## [8.13.3] - Fri 2025-09-12 06:51
+### Summary
+ - Pini Helper:
+    - maya cache camera bugfix error on export image plane (kakuna),
+### Updated
+ - maya_pini.m_pipe bugfix bad extn on export img plane preset,
+
+
 ## [8.13.2] - Thu 2025-09-11 14:02
 ### Summary
  - Sanity Check:

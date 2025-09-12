@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Res.html">Res</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+
+    <h2>Represents a resolution, eg. 640x640.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['duplicate', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.duplicate(name=None, mult=1.0)</b></font><br><br><small>&ensp;Duplicate this resolution</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Res): duplicate of this res</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/u_res.py</font></small>', '<small><b>name</b> (str): apply new name</small><br><small><b>mult</b> (float): apply multiplication</small>'],
+             ['to_tuple', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.to_tuple()</b></font><br><br><small>&ensp;Convert to tuple</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/u_res.py</font></small>', ''],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                var _name = Object.values(_item)[0]
+                if (_filter && !_name.includes(_filter)) {
+                    return; }
+                var _docs = Object.values(_item)[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _name, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _row = document.createElement("tr");
+                Object.values(_item).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

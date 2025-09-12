@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+
+    <h2>Represents a path on disk.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['age', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.age()</b></font><br><br><small>&ensp;Obtain age of this path, time since modified time</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): age in seconds</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['ctime', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.ctime()</b></font><br><br><small>&ensp;Get creation time for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['exists', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.exists(catch=False, root=None)</b></font><br><br><small>&ensp;Test whether this path exists</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether exists</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error if permission denied (returns False)</small><br><small><b>root</b> (str): override pwd for relative paths</small>'],
+             ['is_abs', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.is_abs()</b></font><br><br><small>&ensp;Test whether this path is absolute</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether absolute</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['is_dir', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.is_dir()</b></font><br><br><small>&ensp;Test whether is path is a directory</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether directory</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['is_file', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.is_file()</b></font><br><br><small>&ensp;Test whether is path is a file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether file</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['mkdir', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.mkdir()</b></font><br><br><small>&ensp;Create this path as a directory, with all parent dirs</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['mtime', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.mtime()</b></font><br><br><small>&ensp;Get last modified time for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['nice_age', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.nice_age()</b></font><br><br><small>&ensp;Get nice age for this file (eg. 1w2d)</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): nice age</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['nice_size', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.nice_size(catch=False)</b></font><br><br><small>&ensp;Get size of this file in a readable for (eg. 10GB)</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error on missing file</small>'],
+             ['owner', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.owner()</b></font><br><br><small>&ensp;Get file owner</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): owner</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['replace', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.replace(find, replace)</b></font><br><br><small>&ensp;Apply string find/replace to this path object</small><br><br><small>&ensp;Returns a Path object of matching type.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Path): updated path</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>find</b> (str): find string</small><br><small><b>replace</b> (str): replace string</small>'],
+             ['size', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.size(catch=False)</b></font><br><br><small>&ensp;Obtain size of this path and its contents</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error if path is missing/unreadable</small>'],
+             ['strftime', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.strftime(fmt=None)</b></font><br><br><small>&ensp;Get mtime as formatted string</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>fmt</b> (str): format to apply</small>'],
+             ['test_dir', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.test_dir()</b></font><br><br><small>&ensp;Test this path\'s parent directory exists, creating if needed</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['to_abs', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.to_abs(root=None)</b></font><br><br><small>&ensp;Map this path to an absolute path</small><br><br><small>&ensp;If the path is already absolute, it is simply returned.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Path): absolute path</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>root</b> (str): apply root for relative path (if none provided<br>&ensp;&ensp;the cwd is used)</small>'],
+             ['to_dir', 'pini.utils.Path', '<font color="DarkMagenta"><b>Path.to_dir(levels=1)</b></font><br><br><small>&ensp;Get parent directory for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Dir): parent dir</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>levels</b> (int): how many levels to go up</small>'],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                var _name = Object.values(_item)[0]
+                if (_filter && !_name.includes(_filter)) {
+                    return; }
+                var _docs = Object.values(_item)[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _name, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _row = document.createElement("tr");
+                Object.values(_item).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

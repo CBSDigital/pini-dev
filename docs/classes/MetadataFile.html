@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/MetadataFile.html">MetadataFile</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+
+    <h2>File object with build in caching functionality.
+
+    Data is cached to .pini subdirectory in the same directory as
+    the file itself.
+    </h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">age</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.age()</b></font><br><br><small>&ensp;Obtain age of this path, time since modified time</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): age in seconds</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">apply_extn</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.apply_extn(extn)</b></font><br><br><small>&ensp;Swap out the extension of this file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(File): updated file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>extn</b> (str): extension to apply</small>'],
+             ['<font color="Grey">bkp</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.bkp(force=True, verbose=1)</b></font><br><br><small>&ensp;Backup this file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(File): bkp file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>force</b> (bool): overwrite existing without confirmation</small><br><small><b>verbose</b> (int): print process data</small>'],
+             ['<font color="Grey">browser</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.browser()</b></font><br><br><small>&ensp;Open a browser in this file\'s parent directory</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">copy_to</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.copy_to(trg, force=False, diff=False, verbose=1)</b></font><br><br><small>&ensp;Copy this file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>trg</b> (str): target location</small><br><small><b>force</b> (bool): overwrite existing without warning dialog</small><br><small><b>diff</b> (bool): show diffs</small><br><small><b>verbose</b> (int): print process data (required)</small>'],
+             ['<font color="Grey">ctime</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.ctime()</b></font><br><br><small>&ensp;Get creation time for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">delete</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.delete(wording="delete", execute=True, icon=None, force=False, verbose=True)</b></font><br><br><small>&ensp;Delete this file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>wording</b> (str): override wording of warning dialog</small><br><small><b>execute</b> (bool): execute the deletion (this can be disabled<br>&ensp;&ensp;if deletion will occur later but the warning is useful)</small><br><small><b>icon</b> (str): path to icon for confirmation dialog</small><br><small><b>force</b> (bool): delete without warning dialog</small><br><small><b>verbose</b> (int): print out contents of confirmation dialog</small>'],
+             ['<font color="Grey">diff</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.diff(other, check_extn=True)</b></font><br><br><small>&ensp;Show diffs between this and another file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>other</b> (str): file to compare with</small><br><small><b>check_extn</b> (bool): check file extension is approved</small>'],
+             ['<font color="Grey">edit</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.edit(line_n=None, verbose=0)</b></font><br><br><small>&ensp;Edit this file in text editor</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>line_n</b> (int): line number to open file at</small><br><small><b>verbose</b> (int): print process data</small>'],
+             ['<font color="Grey">exists</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.exists(catch=False, root=None)</b></font><br><br><small>&ensp;Test whether this path exists</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether exists</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error if permission denied (returns False)</small><br><small><b>root</b> (str): override pwd for relative paths</small>'],
+             ['<font color="Grey">find_and_replace_text</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.find_and_replace_text(find, replace, force=False, diff=False)</b></font><br><br><small>&ensp;Find and replace the body of this file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>find</b> (str): string to find</small><br><small><b>replace</b> (str): string to replace</small><br><small><b>force</b> (bool): overwrite without confirmation</small><br><small><b>diff</b> (bool): show diffs</small>'],
+             ['<font color="Grey">find_bkps</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.find_bkps()</b></font><br><br><small>&ensp;Find backups of this file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(File list): backup files</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">flush_bkps</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.flush_bkps(count=10, force=False)</b></font><br><br><small>&ensp;Flush old backup files</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>count</b> (int): how many backups to leave.</small><br><small><b>force</b> (bool): remove old backups without confirmation</small>'],
+             ['<font color="Grey">is_abs</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.is_abs()</b></font><br><br><small>&ensp;Test whether this path is absolute</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether absolute</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">is_dir</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.is_dir()</b></font><br><br><small>&ensp;Test whether is path is a directory</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether directory</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">is_editable</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.is_editable()</b></font><br><br><small>&ensp;Test whether this file can be opened in a text editor</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): editable</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">is_file</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.is_file()</b></font><br><br><small>&ensp;Test whether is path is a file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">matches</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.matches(other)</b></font><br><br><small>&ensp;Test if this file matches another one</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether files match</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>other</b> (str): path to other file</small>'],
+             ['<font color="Grey">mkdir</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.mkdir()</b></font><br><br><small>&ensp;Create this path as a directory, with all parent dirs</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">move_to</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.move_to(target, force=False)</b></font><br><br><small>&ensp;Move this file to another location</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>target</b> (str): target location</small><br><small><b>force</b> (bool): overwrite existing target without confirmation</small>'],
+             ['<font color="Grey">mtime</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.mtime()</b></font><br><br><small>&ensp;Get last modified time for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">nice_age</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.nice_age()</b></font><br><br><small>&ensp;Get nice age for this file (eg. 1w2d)</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): nice age</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">nice_size</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.nice_size(catch=False)</b></font><br><br><small>&ensp;Get size of this file in a readable for (eg. 10GB)</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error on missing file</small>'],
+             ['<font color="Grey">owner</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.owner()</b></font><br><br><small>&ensp;Get file owner</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): owner</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">read</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.read(encoding="utf-8", catch=False)</b></font><br><br><small>&ensp;Read contents of this file as text</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): file contents</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>encoding</b> (str): override default encoding (utf-8)</small><br><small><b>catch</b> (bool): no error if file missing</small>'],
+             ['<font color="Grey">read_json</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.read_json()</b></font><br><br><small>&ensp;Read this file as json</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(dict): json data</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">read_lines</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.read_lines(encoding="utf-8")</b></font><br><br><small>&ensp;Read lines of this file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str list): text lines</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>encoding</b> (str): override default encoding (utf-8)</small>'],
+             ['<font color="Grey">read_pkl</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.read_pkl(catch=False)</b></font><br><br><small>&ensp;Read pickle file</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): pickled data</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>catch</b> (bool): no error if fail to read (return empty dict)</small>'],
+             ['<font color="Grey">read_yml</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.read_yml(encoding=None, catch=False)</b></font><br><br><small>&ensp;Read this file as yaml</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): file contents</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>encoding</b> (str): force encoding (eg. utf-8)</small><br><small><b>catch</b> (bool): no error on file missing or yaml parse fail</small>'],
+             ['<font color="Grey">replace</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.replace(find, replace)</b></font><br><br><small>&ensp;Apply string find/replace to this path object</small><br><br><small>&ensp;Returns a Path object of matching type.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Path): updated path</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>find</b> (str): find string</small><br><small><b>replace</b> (str): replace string</small>'],
+             ['<font color="Grey">size</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.size(catch=False)</b></font><br><br><small>&ensp;Obtain size of this path and its contents</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>catch</b> (bool): no error if path is missing/unreadable</small>'],
+             ['<font color="Grey">strftime</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.strftime(fmt=None)</b></font><br><br><small>&ensp;Get mtime as formatted string</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>fmt</b> (str): format to apply</small>'],
+             ['<font color="Grey">test_dir</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.test_dir()</b></font><br><br><small>&ensp;Test this path\'s parent directory exists, creating if needed</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', ''],
+             ['<font color="Grey">to_abs</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.to_abs(root=None)</b></font><br><br><small>&ensp;Map this path to an absolute path</small><br><br><small>&ensp;If the path is already absolute, it is simply returned.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Path): absolute path</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>root</b> (str): apply root for relative path (if none provided<br>&ensp;&ensp;the cwd is used)</small>'],
+             ['<font color="Grey">to_bkp</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.to_bkp()</b></font><br><br><small>&ensp;Obtain backup file for this file</small><br><br><small>&ensp;Backups are stored in a hidden folder with a date and user</small><br><small>&ensp;stamp appended to the filename.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(File): backup file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">to_dir</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.to_dir(levels=1)</b></font><br><br><small>&ensp;Get parent directory for this path</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Dir): parent dir</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Path.html">Path</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_path.py</font></small>', '<small><b>levels</b> (int): how many levels to go up</small>'],
+             ['<font color="Grey">to_file</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.to_file(filename=None, dir_=None, base=None, extn=None, hidden=False, class_=None)</b></font><br><br><small>&ensp;Build a file object with matching attributes to this one</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(File): updated file object</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>filename</b> (str): update filename</small><br><small><b>dir_</b> (str): update directory</small><br><small><b>base</b> (str): update filename base</small><br><small><b>extn</b> (str): update extension</small><br><small><b>hidden</b> (bool): make file hidden (add . prefix to filename)</small><br><small><b>class_</b> (class): override file class</small>'],
+             ['<font color="Grey">touch</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.touch()</b></font><br><br><small>&ensp;Touch this file</small><br><br><small>&ensp;Create an empty file if it doesn\'t exist, otherwise just update</small><br><small>&ensp;the mtime.</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', ''],
+             ['<font color="Grey">write</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.write(text, force=False, wording="Overwrite", encoding="utf-8", diff=False)</b></font><br><br><small>&ensp;Write text to this file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>text</b> (str): text to write</small><br><small><b>force</b> (bool): replace existing contents without warning</small><br><small><b>wording</b> (str): override warning dialog wording</small><br><small><b>encoding</b> (str): apply encoding (eg. utf-8)</small><br><small><b>diff</b> (bool): offer to show diffs before overwrite</small>'],
+             ['<font color="Grey">write_json</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.write_json(data)</b></font><br><br><small>&ensp;Write the given data as json</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>data</b> (dict): data to write</small>'],
+             ['<font color="Grey">write_pkl</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.write_pkl(data, catch=False, force=False)</b></font><br><br><small>&ensp;Write data to pickle file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>data</b> (any): data to pickle</small><br><small><b>catch</b> (bool): no error if fail to write</small><br><small><b>force</b> (bool): replace existing file without confirmation</small>'],
+             ['<font color="Grey">write_yml</font>', 'pini.utils.MetadataFile', '<font color="Fuchsia"><b>MetadataFile.write_yml(data, force=False, mode="w", fix_unicode=False, wording="replace")</b></font><br><br><small>&ensp;Write yaml data to this file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_file.py</font></small>', '<small><b>data</b> (any): data to write</small><br><small><b>force</b> (bool): replace existing contents without warning</small><br><small><b>mode</b> (str): write mode (default is w)</small><br><small><b>fix_unicode</b> (bool): save unicode as str - need to execute in<br>&ensp;&ensp;safe mode which prevents arbitrary objects from being saved</small><br><small><b>wording</b> (str): override warning dialog wording</small>'],
+             ['add_metadata', 'pini.utils.MetadataFile', '<font color="DarkMagenta"><b>MetadataFile.add_metadata(parent=None, bkp=False, force=False)</b></font><br><br><small>&ensp;Add to this file\'s metadata</small><br><br><small>&ensp;USAGE: file.add_metadata(key=value)</small><br><small>&ensp;    use a single kwarg to apply the given metadata value</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_metadata_file.py</font></small>', '<small><b>parent</b> (QDialog): parent dialog for prompt</small><br><small><b>bkp</b> (bool): backup metadata file on update</small><br><small><b>force</b> (bool): overwrite existing metadata without confirmation</small>'],
+             ['get_metadata', 'pini.utils.MetadataFile', '<font color="DarkMagenta"><b>MetadataFile.get_metadata(key)</b></font><br><br><small>&ensp;Obtain item from metadata</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): stored metadata</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_metadata_file.py</font></small>', '<small><b>key</b> (str): metadata dict key</small>'],
+             ['set_metadata', 'pini.utils.MetadataFile', '<font color="DarkMagenta"><b>MetadataFile.set_metadata(data, bkp=False, force=False)</b></font><br><br><small>&ensp;Set this file\'s metadata, replacing any existing metadata</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/path/up_metadata_file.py</font></small>', '<small><b>data</b> (dict): metadata to apply</small><br><small><b>bkp</b> (bool): backup metadata file on update</small><br><small><b>force</b> (bool): overwrite existing metadata without confirmation</small>'],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                var _name = Object.values(_item)[0]
+                if (_filter && !_name.includes(_filter)) {
+                    return; }
+                var _docs = Object.values(_item)[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _name, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _row = document.createElement("tr");
+                Object.values(_item).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

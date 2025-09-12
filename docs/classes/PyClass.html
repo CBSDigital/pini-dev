@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyClass.html">PyClass</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+
+    <h2>Represents a python class.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">edit</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.edit()</b></font><br><br><small>&ensp;Edit the element\'s definition in a text editor</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
+             ['<font color="Grey">find_child</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_child(match, recursive=False)</b></font><br><br><small>&ensp;Find a child of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyElem): matching child element</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): name to match</small><br><small><b>recursive</b> (bool): include children of children</small>'],
+             ['<font color="Grey">find_children</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_children(recursive=False, internal=None, filter_=None)</b></font><br><br><small>&ensp;Find children of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyElem list): child elements</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>recursive</b> (bool): include children of children</small><br><small><b>internal</b> (bool): filter by internal state of elements</small><br><small><b>filter_</b> (str): filter by name</small>'],
+             ['<font color="Grey">find_class</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_class(match=None, catch=False)</b></font><br><br><small>&ensp;Find a matching child class within this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyClass): matching class</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): class name to match</small><br><small><b>catch</b> (bool): no error if fail to find class</small>'],
+             ['<font color="Grey">find_classes</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_classes()</b></font><br><br><small>&ensp;Find child classes of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyClass list): child classes</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
+             ['<font color="Grey">find_def</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_def(match=None, internal=None, recursive=False, catch=False)</b></font><br><br><small>&ensp;Find a child def of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyDef): child def</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): def name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small><br><small><b>catch</b> (bool): no error if fail to find def</small>'],
+             ['<font color="Grey">find_defs</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.find_defs(filter_=None, internal=None, recursive=False)</b></font><br><br><small>&ensp;Find child defs of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyDef list): child defs</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>filter_</b> (str): filter by name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small>'],
+             ['<font color="Grey">to_ast</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.to_ast(catch=False)</b></font><br><br><small>&ensp;Obtain ast object associated with this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Module): ast module</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>catch</b> (bool): included for symmetry</small>'],
+             ['<font color="Grey">to_code</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.to_code()</b></font><br><br><small>&ensp;Obtain this element\'s code</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): element code</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
+             ['<font color="Grey">to_docstring</font>', 'pini.utils.PyClass', '<font color="Fuchsia"><b>PyClass.to_docstring()</b></font><br><br><small>&ensp;Obtain docstring</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): docs</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a></small><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                var _name = Object.values(_item)[0]
+                if (_filter && !_name.includes(_filter)) {
+                    return; }
+                var _docs = Object.values(_item)[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _name, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _row = document.createElement("tr");
+                Object.values(_item).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

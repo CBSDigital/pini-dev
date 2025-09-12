@@ -133,7 +133,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                     ('shp', _img_plane.shp),
             ]:
                 _file = _abc.to_dir().to_file(
-                    f'.pini/imgPlanes/{_abc.base}_{_name}_{_tag}.mel')
+                    f'.pini/imgPlanes/{_abc.base}_{_name}_{_tag}.mpa')
                 _node.save_preset(_file, force=True)
                 assert _file.exists()
                 _data[_tag] = _file.path
