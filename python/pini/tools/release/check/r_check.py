@@ -259,6 +259,7 @@ class CheckFile(MetadataFile):
             'E501',  # line too long
             'E722',  # bare except (use pylint)
             'W504',  # line break after binary operator'
+            'E252',  # missing whitespace around parameter equals
         ]
         _cmds = [
             _exe,

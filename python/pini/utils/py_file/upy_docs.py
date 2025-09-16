@@ -6,7 +6,8 @@ Docs are assumed to be google style.
 import logging
 import re
 
-from .. u_misc import basic_repr, single
+from ..u_misc import basic_repr, single
+from ..u_text import add_indent
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -132,7 +133,17 @@ class PyDefDocs:
 
         return _args
 
-    def to_str(self, mode='Raw'):
+    def set_title(self, title):
+        """Update title of these docs.
+
+        Args:
+            title (str): new title to apply
+        """
+        assert self.body.count(self.title) == 1
+        self.body = self.body.replace(self.title, title)
+        self.title = title
+
+    def to_str(self, mode='Raw', def_=None):
         """Obtain this docstring as a string.
 
         Args:
@@ -140,16 +151,30 @@ class PyDefDocs:
                 Raw - full raw docstring
                 Header - just the description (no args/result)
                 SingleLine - header as a single line
+                Code - as this docstring appears in the code (ie. with indent)
+                Clean - with indentation removed (but with triple quotes)
+            def_ (PyDef): override def to read indent from (useful for
+                transferring docs between different functions)
 
         Returns:
             (str): docstring component
         """
+        _def = def_ or self.def_
         if mode == 'Raw':
             _result = self.body
         elif mode == 'Header':
             _result = self.header
         elif mode == 'SingleLine':
             _result = ' '.join(self.header.split())
+        elif mode == 'Code':
+            assert _def
+            _indent = _def.indent + '    '
+            _result = add_indent(self.to_str('Clean'), indent=_indent)
+            _result = '\n'.join(_line.rstrip() for _line in _result.split('\n'))
+        elif mode == 'Clean':
+            assert self.def_
+            _tail = '"""' if '\n' not in self.body else '\n"""'
+            _result = f'"""{self.body}{_tail}'
         else:
             raise ValueError(mode)
         return _result

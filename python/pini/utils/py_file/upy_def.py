@@ -36,44 +36,51 @@ class PyDef(upy_elem.PyElem):
         """
         return tuple(self.find_args())
 
-    def find_arg(self, name, catch=False):
+    def find_arg(self, name, args: ast.arguments=None, catch=False):
         """Find an arg from this def.
 
         Args:
             name (str): arg name
+            args (arguments): override args object to read from
             catch (bool): no error of no arg found
 
         Returns:
             (PyArg): matching arg
         """
+        _args = self.find_args(args=args)
         return single(
-            [_arg for _arg in self.find_args() if _arg.name == name],
+            [_arg for _arg in _args if _arg.name == name],
             catch=catch)
 
-    def find_args(self):
+    def find_args(self, args: ast.arguments=None):
         """Find args of this def.
+
+        Args:
+            args (arguments): override args object to read from
 
         Returns:
             (PyArg list): args
         """
         from pini.utils import PyArg
         _LOGGER.debug('FIND ARGS %s', self)
+        _args = args or self._ast.args
+        assert isinstance(_args, ast.arguments)
 
-        _n_args = len(self._ast.args.args) - len(self._ast.args.defaults)
-        _ast_args = self._ast.args.args[:_n_args]
-        _ast_kwargs = self._ast.args.args[_n_args:]
+        _n_args = len(_args.args) - len(_args.defaults)
+        _ast_args = _args.args[:_n_args]
+        _ast_kwargs = _args.args[_n_args:]
 
-        _args = []
+        _py_args = []
 
         # Add args
         for _ast_arg in _ast_args:
             _arg = PyArg(
                 _ast_arg_to_name(_ast_arg), parent=self, has_default=False)
-            _args.append(_arg)
+            _py_args.append(_arg)
 
         # Add kwargs
         for _ast_arg, _ast_default in safe_zip(
-                _ast_kwargs, self._ast.args.defaults):
+                _ast_kwargs, _args.defaults):
             _name = _ast_arg_to_name(_ast_arg)
             _LOGGER.debug(
                 ' - ADDING KWARG %s %s', _name, _ast_arg)
@@ -96,9 +103,9 @@ class PyDef(upy_elem.PyElem):
             _LOGGER.debug('   - DEFAULT %s', _default)
             _arg = PyArg(_name, default=_default, parent=self, has_default=True)
             _LOGGER.debug('   - ARG %s type=%s', _arg, _arg.type_)
-            _args.append(_arg)
+            _py_args.append(_arg)
 
-        return _args
+        return _py_args
 
     def to_func(self):
         """Obtain this def's fuction.

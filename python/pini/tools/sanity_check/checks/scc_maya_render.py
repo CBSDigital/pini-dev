@@ -444,7 +444,7 @@ class CheckRenderGlobals(SCMayaCheck):
 
         # Apply attr checks
         for _attr, _val in _attrs_to_check:
-            self._check_attr(_attr, _val, catch=True)
+            self.check_attr(_attr, _val, catch=True)
 
         # Check include all lights in render layers
         _ial = cmds.optionVar(query='renderSetup_includeAllLights')

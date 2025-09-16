@@ -27,7 +27,7 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
-    def _check_attr(self, attr, val, catch=False):
+    def check_attr(self, attr, val, catch=False):
         """Check a attribute has the given value.
 
         Args:
@@ -51,6 +51,25 @@ class SCMayaCheck(sc_check.SCCheck):
         _msg = f'Attribute "{_plug}" is not set to "{val}"'
         _fix = wrap_fn(_plug.set_val, val)
         self.add_fail(_msg, fix=_fix, node=_plug.node)
+
+    def check_pref(self, func, flag, val, fail=None):
+        """Check a preference is set to the given value.
+
+        Args:
+            func (fn): maya.cmds function to query/edit
+            flag (str): name of flag to read
+            val (any): required value for preference
+            fail (str): override fail message
+        """
+        _cur_val = func(query=True, **{flag: True})
+        self.write_log(
+            f'check "{func.__name__}|{flag}" set to "{val}" '
+            f'(current val "{_cur_val}"')
+        if _cur_val != val:
+            _fail = fail or (
+                f'Setting "{func.__name__}|{flag}" is set to "{_cur_val}" '
+                f'(should be "{val}")')
+            self.add_fail(_fail, fix=wrap_fn(func, edit=True, **{flag: val}))
 
     def check_shp(self, node):
         """Check node shapes.

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/EmojiSet.html">EmojiSet</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
+
+    <h2>Represents a set of emojis with an index.html descriptor.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">add_frame</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.add_frame(frame)</b></font><br><br><small>&ensp;Add a frame to the frames cache</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>frame</b> (int): frame to add</small>', 'pini.icons.EmojiSet.add_frame'],
+             ['<font color="Grey">browser</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.browser()</b></font><br><br><small>&ensp;Open a browser in this seq\'s parent directory</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.browser'],
+             ['<font color="Grey">build_thumbnail</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.build_thumbnail(file_, width=100, frame=None, force=False)</b></font><br><br><small>&ensp;Build thumbnail for this video</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>file_</b> (str): thumbnail path</small><br><small><b>width</b> (int): thumbnail width in pixels</small><br><small><b>frame</b> (int): select frame to export (default is middle frame)</small><br><small><b>force</b> (bool): overwrite existing without confirmation</small>', 'pini.icons.EmojiSet.build_thumbnail'],
+             ['<font color="Grey">contains</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.contains(file_)</b></font><br><br><small>&ensp;Test whether this sequence contains the given file</small><br><br><small>&ensp;eg. Seq(\'blah.%04d.jpg\').contains(\'blah.0001.jpg\') -> True</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether file follows sequence pattern</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>file_</b> (str): file to test</small>', 'pini.icons.EmojiSet.contains'],
+             ['<font color="Grey">copy_to</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.copy_to(target, frames=None, check_match=True, progress=True)</b></font><br><br><small>&ensp;Copy this file sequence to another location</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>target</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">(Seq)</a>: target location</small><br><small><b>frames</b> (int list): override frames to copy</small><br><small><b>check_match</b> (bool): check existing frame match before replacing</small><br><small><b>progress</b> (bool): show progress</small>', 'pini.icons.EmojiSet.copy_to'],
+             ['<font color="Grey">delete</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.delete(wording="delete", frames=None, icon=None, parent=None, force=False)</b></font><br><br><small>&ensp;Delete this image sequence</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>wording</b> (str): override wording on warning dialog</small><br><small><b>frames</b> (int list): limit list of frames to delete</small><br><small><b>icon</b> (str): override icon on warning dialog</small><br><small><b>parent</b> (QDialog): parent for warning dialog</small><br><small><b>force</b> (bool): delete without confirmation</small>', 'pini.icons.EmojiSet.delete'],
+             ['EmojiSet', 'pini.icons.EmojiSet', '<font color="DarkMagenta"><b>EmojiSet()</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/icons/i_set.py</font></small>', '', 'pini.icons.EmojiSet.EmojiSet'],
+             ['<font color="Grey">exists</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.exists(frames=None, force=False)</b></font><br><br><small>&ensp;Test whether this sequence exists</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether sequence exists</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>frames</b> (int list): list of frames to check exist - if any<br>&ensp;&ensp;of these frames are missing then the result is False</small><br><small><b>force</b> (bool): force reread from disk</small>', 'pini.icons.EmojiSet.exists'],
+             ['find', 'pini.icons.EmojiSet', '<font color="DarkMagenta"><b>EmojiSet.find(match, catch=False, verbose=0)</b></font><br><br><small>&ensp;Find the path to an emoji in this set</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): path to emoji</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/icons/i_set.py</font></small>', '<small><b>match</b> (str|int): match by name or index</small><br><small><b>catch</b> (bool): no error if exactly one emoji is not found</small><br><small><b>verbose</b> (int): print process data</small>', 'pini.icons.EmojiSet.find'],
+             ['find_emoji', 'pini.icons.EmojiSet', '<font color="DarkMagenta"><b>EmojiSet.find_emoji(match, catch=False, verbose=0)</b></font><br><br><small>&ensp;Find an emoji in this set</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Emoji): matching emoji</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/icons/i_set.py</font></small>', '<small><b>match</b> (str|int): match by name or index</small><br><small><b>catch</b> (bool): no error if exactly one emoji is not found</small><br><small><b>verbose</b> (int): print process data</small>', 'pini.icons.EmojiSet.find_emoji'],
+             ['find_grp', 'pini.icons.EmojiSet', '<font color="DarkMagenta"><b>EmojiSet.find_grp(name)</b></font><br><br><small>&ensp;Find named group of emojis within this set</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str list): list of emoji paths</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/cache/uc_memory.py</font></small>', '<small><b>name</b> (str): name of group (eg. fruit)</small>', 'pini.icons.EmojiSet.find_grp'],
+             ['<font color="Grey">find_range</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.find_range(force=False)</b></font><br><br><small>&ensp;Find start/end frames of this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>force</b> (bool): force reread from disk</small>', 'pini.icons.EmojiSet.find_range'],
+             ['<font color="Grey">has_frames_cache</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.has_frames_cache()</b></font><br><br><small>&ensp;Check whether this sequence has a frames cache</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether frames cache</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.has_frames_cache'],
+             ['<font color="Grey">is_editable</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.is_editable()</b></font><br><br><small>&ensp;Test whether this is editable in a text editor</small><br><br><small>&ensp;Provided for symmetry with Path object.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): false</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.is_editable'],
+             ['<font color="Grey">is_missing_frames</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.is_missing_frames(frames=None)</b></font><br><br><small>&ensp;Test whether this sequence\'s frame range is incomplete</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether frames are missing</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>frames</b> (int list): expected frames</small>', 'pini.icons.EmojiSet.is_missing_frames'],
+             ['<font color="Grey">move_to</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.move_to(target, progress=False)</b></font><br><br><small>&ensp;Move this sequence</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>target</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">(Seq)</a>: target sequence</small><br><small><b>progress</b> (bool): show progress bar</small>', 'pini.icons.EmojiSet.move_to'],
+             ['<font color="Grey">mtime</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.mtime()</b></font><br><br><small>&ensp;Obtain mtime of this sequence using the middle frame</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(float): mtime</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.mtime'],
+             ['<font color="Grey">nice_range</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.nice_range()</b></font><br><br><small>&ensp;Get this sequence\'s frame range in a readable form</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): readable range (eg. 1-100)</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.nice_range'],
+             ['<font color="Grey">nice_size</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.nice_size()</b></font><br><br><small>&ensp;Get size of this file in a readable for (eg. 10GB)</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.nice_size'],
+             ['<font color="Grey">owner</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.owner()</b></font><br><br><small>&ensp;Obtain owner of this sequence using the middle frame</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): owner</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.owner'],
+             ['<font color="Grey">size</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.size()</b></font><br><br><small>&ensp;Obtain total size of this file sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.size'],
+             ['<font color="Grey">strftime</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.strftime(fmt=None)</b></font><br><br><small>&ensp;Get formatted time string using this sequence\'s mtime</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>fmt</b> (str): time format string</small>', 'pini.icons.EmojiSet.strftime'],
+             ['<font color="Grey">test_dir</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.test_dir()</b></font><br><br><small>&ensp;Test this sequence\'s parent directory exists</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.test_dir'],
+             ['<font color="Grey">to_dir</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_dir()</b></font><br><br><small>&ensp;Get this sequence\'s parent directory</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Dir.html">Dir</a>): parent dir</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_dir'],
+             ['<font color="Grey">to_dur</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_dur()</b></font><br><br><small>&ensp;Obtain duration (in frames) of this image sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): duration</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_dur'],
+             ['<font color="Grey">to_end</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_end()</b></font><br><br><small>&ensp;Obtain last/end frame of this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): last frame</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_end'],
+             ['<font color="Grey">to_file</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_file()</b></font><br><br><small>&ensp;Map this sequence to a file object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a>): file using this seq\'s attributes</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_file'],
+             ['<font color="Grey">to_frame_file</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_frame_file(frame=None)</b></font><br><br><small>&ensp;Obtain the file for the given frame</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a>): frame file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>frame</b> (int): frame number to request - by default the central<br>&ensp;&ensp;frame is used</small>', 'pini.icons.EmojiSet.to_frame_file'],
+             ['<font color="Grey">to_frame_files</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_frame_files()</b></font><br><br><small>&ensp;Build list of all files in this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">File</a> list): frame files</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_frame_files'],
+             ['<font color="Grey">to_frames</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_frames(frames=None, force=False)</b></font><br><br><small>&ensp;Find frames of this sequence</small><br><br><small>&ensp;This is read from disk the first time, and then subsequently</small><br><small>&ensp;the cached value is used. This can be overridden using the</small><br><small>&ensp;force flag.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int list): list of frame numbers</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>frames</b> (int list): force list of frames into cache</small><br><small><b>force</b> (bool): force read from disk</small>', 'pini.icons.EmojiSet.to_frames'],
+             ['<font color="Grey">to_range</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_range(force=False)</b></font><br><br><small>&ensp;Find start/end frames of this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>force</b> (bool): force reread from disk</small>', 'pini.icons.EmojiSet.to_range'],
+             ['<font color="Grey">to_res</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_res()</b></font><br><br><small>&ensp;Obtain resolution for this image sequence</small><br><br><small>&ensp;Resolution is read from the middle frame.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_res'],
+             ['<font color="Grey">to_seq</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_seq(extn=None)</b></font><br><br><small>&ensp;Build a sequence object based on this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a>): new sequence object</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>extn</b> (str): override extension</small>', 'pini.icons.EmojiSet.to_seq'],
+             ['<font color="Grey">to_start</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_start()</b></font><br><br><small>&ensp;Obtain start/first frame of this sequence</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(int): first frame</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '', 'pini.icons.EmojiSet.to_start'],
+             ['<font color="Grey">to_video</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.to_video(video, burnins=False, force=False)</b></font><br><br><small>&ensp;Convert this image sequence to a video</small><br><br><small>&ensp;NOTE: for docs see clip.seq_to_video</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Video.html">Video</a>): video file</small><br><br><small>Inherited from: <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_seq.py</font></small>', '<small><b>video</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/File.html">(File)</a>: file to create</small><br><small><b>burnins</b> (bool): add burnins</small><br><small><b>force</b> (bool): overwrite existing without confirmation</small>', 'pini.icons.EmojiSet.to_video'],
+             ['<font color="Grey">view</font>', 'pini.icons.EmojiSet', '<font color="Fuchsia"><b>EmojiSet.view(viewer=None, start_frame=None)</b></font><br><br><small>&ensp;View this clip</small><br><br><small>Inherited from: <font color="DeepSkyBlue">Clip</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/clip/uc_clip.py</font></small>', '<small><b>viewer</b> (str): force viewer</small><br><small><b>start_frame</b> (int): override start frame</small>', 'pini.icons.EmojiSet.view'],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            const _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                
+                var _name = Object.values(_item)[0]
+                var _loc = Object.values(_item)[1]
+                var _docs = Object.values(_item)[2]
+                var _args = Object.values(_item)[3]
+                const _path = Object.values(_item)[4]
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+                
+                // Appply filter
+                if (
+                        _filter && 
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _path, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _values = Object.values(_item);
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

@@ -12,30 +12,43 @@ _LOGGER = logging.getLogger(__name__)
 
 @functools.wraps(i_const.EMOJI.find)
 def find(*args, **kwargs):
-    """Find an emoji path from the default set.
+    """Find the path to an emoji in the default set.
+
+    Args:
+        match (str|int): match by name or index
+        catch (bool): no error if exactly one emoji is not found
+        verbose (int): print process data
 
     Returns:
-        (str): path to matching emoji
+        (str): path to emoji
     """
     return i_const.EMOJI.find(*args, **kwargs)
 
 
 @functools.wraps(i_const.EMOJI.find_emoji)
 def find_emoji(*args, **kwargs):
-    """Find an emoji from the default set.
+    """Find an emoji in the default set.
+
+    Args:
+        match (str|int): match by name or index
+        catch (bool): no error if exactly one emoji is not found
+        verbose (int): print process data
 
     Returns:
-        (Emoji): path to matching emoji
+        (Emoji): matching emoji
     """
     return i_const.EMOJI.find_emoji(*args, **kwargs)
 
 
 @functools.wraps(i_const.EMOJI.find_grp)
 def find_grp(*args, **kwargs):
-    """Find a group of emojis (eg. fruit).
+    """Find a named group of emojis within the default set.
+
+    Args:
+        name (str): name of group (eg. fruit)
 
     Returns:
-        (str list): emojis in group
+        (str list): list of emoji paths
     """
     return i_const.EMOJI.find_grp(*args, **kwargs)
 

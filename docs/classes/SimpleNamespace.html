@@ -28,7 +28,7 @@
 
     </style>
 
-    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/SimpleNamespace.html">SimpleNamespace</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/SimpleNamespace.html">SimpleNamespace</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
 
     <h2>A simple empty object which can have attributes added.
 
@@ -74,6 +74,7 @@
     <script type="text/javascript" charset="utf-8">
 
         var _objs = [
+             ['SimpleNamespace', 'pini.utils.SimpleNamespace', '<font color="DarkMagenta"><b>SimpleNamespace()</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_misc.py</font></small>', '', 'pini.utils.SimpleNamespace.SimpleNamespace'],
          ]
 
         // Add text filter
@@ -96,7 +97,7 @@
 
             console.log('DRAW TABLE');
             // console.log(' - TEXT FILTER', filter);
-            _filter = document.getElementById('TextFilter').value
+            const _filter = document.getElementById('TextFilter').value
             console.log(' - TEST FILTER', _filter);
             _show_inherited = document.getElementById('ShowInherited').checked
             console.log(' - SHOW INHERITED', _show_inherited);
@@ -109,20 +110,33 @@
             _objs.forEach(_item => {
                 
                 _total += 1;
+                
                 var _name = Object.values(_item)[0]
-                if (_filter && !_name.includes(_filter)) {
-                    return; }
+                var _loc = Object.values(_item)[1]
                 var _docs = Object.values(_item)[2]
+                var _args = Object.values(_item)[3]
+                const _path = Object.values(_item)[4]
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+                
+                // Appply filter
+                if (
+                        _filter && 
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
                 var _is_inherited = _docs.includes('Inherited from:')
-                console.log(' - ADD', _name, _is_inherited)
+                console.log(' - ADD', _path, _is_inherited)
                 
                 if (!_show_inherited && _is_inherited) {
                     return; }
 
                 // Build row
                 _count += 1;
+                let _values = Object.values(_item);
                 let _row = document.createElement("tr");
-                Object.values(_item).forEach((_value) => {
+                _values.slice(0, 4).forEach((_value) => {
                     let _cell = document.createElement("td");
                     _cell.innerHTML = _value;
                     _cell.style.verticalAlign = "top";

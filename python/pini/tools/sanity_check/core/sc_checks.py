@@ -87,8 +87,11 @@ def find_checks(  # pylint: disable=too-many-branches
 
         _LOGGER.debug(' - CHECKING %s', _check)
 
+        _settings = _sc_settings.get(_check.name, {})
+
         # Check enabled
-        if not _check.enabled:
+        _enabled = _settings.get('enabled', _check.enabled)
+        if not _enabled:
             _LOGGER.debug('   - CHECK NOT ENABLED')
             continue
 
@@ -130,11 +133,6 @@ def find_checks(  # pylint: disable=too-many-branches
                     continue
             else:
                 raise ValueError(_task)
-
-        # Apply settings filter
-        if not _sc_settings.get(_check.name, {}).get('enabled', True):
-            _LOGGER.debug(' - SETTINGS FILTER')
-            continue
 
         _LOGGER.debug('   - ACCEPTED %s', _check)
         _checks.append(_check)

@@ -71,7 +71,7 @@ class PRRepo(Dir):
 
         Args:
             filter_ (str): apply filter to the list
-            class_ (type): override py file class
+            class_ (class): override py file class
             force (bool): force reread file list
 
         Returns:

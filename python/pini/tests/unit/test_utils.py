@@ -1,6 +1,7 @@
 import getpass
-import os
+import inspect
 import logging
+import os
 import pprint
 import platform
 import random
@@ -754,6 +755,18 @@ class TestPyFile(unittest.TestCase):
         _def = _py.find_def('_test')
         assert not _def.to_docstring()
         assert not _def.to_docs().find_args()
+
+        # Check docs to code
+        _src = icons.EmojiSet.find
+        _trg = icons.find
+        for _func in [_src, _trg]:
+            _py = PyFile(inspect.getfile(_func))
+            _LOGGER.info(' - PY %s', _py)
+            _def = _py.find_def(_func.__name__, recursive=True)
+            _docs = _def.to_docs()
+            _code = _docs.to_str('Code')
+            _body = _py.read()
+            assert _code in _body
 
 
 def _test(

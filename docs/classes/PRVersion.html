@@ -28,9 +28,13 @@
 
     </style>
 
-    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Res.html">Res</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRVersion.html">PRVersion</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
 
-    <h2>Represents a resolution, eg. 640x640.</h2>
+    <h2>Represents a release version.
+
+    This is defined by a 3 number string with value representing
+    major/minor/patch indices (eg. 1.2.3).
+    </h2>
     <br>
 
     <!-- Add search field -->
@@ -67,9 +71,9 @@
     <script type="text/javascript" charset="utf-8">
 
         var _objs = [
-             ['duplicate', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.duplicate(name=None, mult=1.0)</b></font><br><br><small>&ensp;Duplicate this resolution</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Res.html">Res</a>): duplicate of this res</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '<small><b>name</b> (str): apply new name</small><br><small><b>mult</b> (float): apply multiplication</small>', 'pini.utils.Res.duplicate'],
-             ['Res', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res(width, height, name=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '<small><b>width</b> (int): width (in pixels)</small><br><small><b>height</b> (int): height (in pixels)</small><br><small><b>name</b> (str): optional name/label for this res</small>', 'pini.utils.Res.Res'],
-             ['to_tuple', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.to_tuple()</b></font><br><br><small>&ensp;Convert to tuple</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '', 'pini.utils.Res.to_tuple'],
+             ['PRVersion', 'pini.tools.PRVersion', '<font color="DarkMagenta"><b>PRVersion(string, mtime=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_version.py</font></small>', '<small><b>string</b> (str): version string (eg. 1.2.3)</small><br><small><b>mtime</b> (float): release time</small>', 'pini.tools.PRVersion.PRVersion'],
+             ['to_next', 'pini.tools.PRVersion', '<font color="DarkMagenta"><b>PRVersion.to_next(type_)</b></font><br><br><small>&ensp;Get next increment from this version</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRVersion.html">PRVersion</a>): next version</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_version.py</font></small>', '<small><b>type_</b> (str): increment type</small>', 'pini.tools.PRVersion.to_next'],
+             ['to_str', 'pini.tools.PRVersion', '<font color="DarkMagenta"><b>PRVersion.to_str()</b></font><br><br><small>&ensp;Get version as string</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): version string</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_version.py</font></small>', '', 'pini.tools.PRVersion.to_str'],
          ]
 
         // Add text filter

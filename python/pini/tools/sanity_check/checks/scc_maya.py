@@ -542,6 +542,21 @@ class CheckCacheables(core.SCMayaCheck):
                         f'Set "{_cache_set}" has name clash: {_nodes}')
 
 
+@cache_result
+def _find_default_ocio():
+    """Find path to default ocio file (inside maya install).
+
+    Returns:
+        (File|None): default ocio (if any)
+    """
+    _root = Dir(os.environ['MAYA_SCRIPT_BASE'])
+    _ocio_dir = _root.to_subdir('resources/OCIO-configs')
+    _ocios = _ocio_dir.find(
+        depth=2, extn='ocio', filter_='legacy', class_=True,
+        catch_missing=True)
+    return single(_ocios, catch=True)
+
+
 class CheckColorManagement(core.SCMayaCheck):
     """Check color management options are applied."""
 
@@ -555,35 +570,17 @@ class CheckColorManagement(core.SCMayaCheck):
         self.write_log('JOB %s', _job)
         if not _job:
             return
-        _ocio = _job.settings.get('ocio')
+        _ocio = _job.settings.get('ocio') or _find_default_ocio()
         self.write_log('ocio %s', _ocio)
         if not _ocio:
             self.write_log('ocio not found in job settings')
             return
 
-        # Check col mgt enabled
-        if not cmds.colorManagementPrefs(query=True, cmEnabled=True):
-            self.add_fail(
-                'Color management not enabled', fix=wrap_fn(
-                    cmds.colorManagementPrefs, edit=True, cmEnabled=True))
-        else:
-            self.write_log('col mgt enabled')
-
-        # Check ocio cfg enabled
-        if not cmds.colorManagementPrefs(query=True, cmConfigFileEnabled=True):
-            self.add_fail(
-                'Color management config file not enabled', fix=wrap_fn(
-                    cmds.colorManagementPrefs, edit=True,
-                    cmConfigFileEnabled=True))
-        else:
-            self.write_log('col mgt config file enabled')
-
-        # Check ocio file
-        _cur_ocio = cmds.colorManagementPrefs(query=True, configFilePath=True)
-        self.write_log('cur ocio %s', _cur_ocio)
-        if _cur_ocio != _ocio:
-            self.add_fail(
-                f'OCIO file not set to "{_ocio}" '
-                f'(currently set to "{_cur_ocio}")', fix=wrap_fn(
-                    cmds.colorManagementPrefs, edit=True,
-                    configFilePath=_ocio))
+        self.check_pref(
+            func=cmds.colorManagementPrefs, flag='cmEnabled', val=True)
+        self.check_pref(
+            func=cmds.colorManagementPrefs, flag='cmConfigFileEnabled', val=True)
+        self.check_pref(
+            func=cmds.colorManagementPrefs, flag='configFilePath', val=_ocio)
+        self.check_pref(
+            func=cmds.colorManagementPrefs, flag='viewName', val='Raw')

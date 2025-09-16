@@ -49,6 +49,15 @@ class PyElem:
         return tuple(self.find_defs())
 
     @property
+    def indent(self):
+        """Obtain indent of this element.
+
+        Returns:
+            (str): indent (string of spaces)
+        """
+        return ' ' * self.to_ast().col_offset
+
+    @property
     def internal(self):
         """Whether this element is internal/private.
 

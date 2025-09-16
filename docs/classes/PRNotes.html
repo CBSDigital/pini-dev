@@ -28,9 +28,12 @@
 
     </style>
 
-    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Res.html">Res</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRNotes.html">PRNotes</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
 
-    <h2>Represents a resolution, eg. 640x640.</h2>
+    <h2>Represents release notes.
+
+    These consist of a summary and a more detail tech notes.
+    </h2>
     <br>
 
     <!-- Add search field -->
@@ -67,9 +70,11 @@
     <script type="text/javascript" charset="utf-8">
 
         var _objs = [
-             ['duplicate', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.duplicate(name=None, mult=1.0)</b></font><br><br><small>&ensp;Duplicate this resolution</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/Res.html">Res</a>): duplicate of this res</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '<small><b>name</b> (str): apply new name</small><br><small><b>mult</b> (float): apply multiplication</small>', 'pini.utils.Res.duplicate'],
-             ['Res', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res(width, height, name=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '<small><b>width</b> (int): width (in pixels)</small><br><small><b>height</b> (int): height (in pixels)</small><br><small><b>name</b> (str): optional name/label for this res</small>', 'pini.utils.Res.Res'],
-             ['to_tuple', 'pini.utils.Res', '<font color="DarkMagenta"><b>Res.to_tuple()</b></font><br><br><small>&ensp;Convert to tuple</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/u_res.py</font></small>', '', 'pini.utils.Res.to_tuple'],
+             ['get_users', 'pini.tools.PRNotes', '<font color="DarkMagenta"><b>PRNotes.get_users()</b></font><br><br><small>&ensp;Get users mentioned in notes</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str set): set of users</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_notes.py</font></small>', '', 'pini.tools.PRNotes.get_users'],
+             ['PRNotes', 'pini.tools.PRNotes', '<font color="DarkMagenta"><b>PRNotes(summary, tech_notes)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_notes.py</font></small>', '<small><b>summary</b> (str): summary of changes</small><br><small><b>tech_notes</b> (str): module by module technical breakdown<br>&ensp;&ensp;of changes</small>', 'pini.tools.PRNotes.PRNotes'],
+             ['to_changelog', 'pini.tools.PRNotes', '<font color="DarkMagenta"><b>PRNotes.to_changelog(ver, mtime)</b></font><br><br><small>&ensp;Express these notes in CHANGELOG format</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): notes in CHANGELOG format</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_notes.py</font></small>', '<small><b>ver</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRVersion.html">(PRVersion)</a>: version being released</small><br><small><b>mtime</b> (float): release time</small>', 'pini.tools.PRNotes.to_changelog'],
+             ['to_cmdline', 'pini.tools.PRNotes', '<font color="DarkMagenta"><b>PRNotes.to_cmdline(repo, ver)</b></font><br><br><small>&ensp;Express these notes in a command line format for git commit</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): notes in command line format</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_notes.py</font></small>', '<small><b>repo</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRRepo.html">(PRRepo)</a>: repo being released</small><br><small><b>ver</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRVersion.html">(PRVersion)</a>: version being released</small>', 'pini.tools.PRNotes.to_cmdline'],
+             ['to_email', 'pini.tools.PRNotes', '<font color="DarkMagenta"><b>PRNotes.to_email(repo, ver, mtime, diffs_link=None, links=(), get_ticket_url=None)</b></font><br><br><small>&ensp;To get email body version of these notes</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): email body</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/release/r_notes.py</font></small>', '<small><b>repo</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRRepo.html">(PRRepo)</a>: repo being released</small><br><small><b>ver</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PRVersion.html">(PRVersion)</a>: release version</small><br><small><b>mtime</b> (float): release time</small><br><small><b>diffs_link</b> (str): view diffs url</small><br><small><b>links</b> (tuple list): list of label/link items to add</small><br><small><b>get_ticket_url</b> (fn): function to retrieve ticket urls</small>', 'pini.tools.PRNotes.to_email'],
          ]
 
         // Add text filter

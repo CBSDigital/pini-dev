@@ -28,7 +28,7 @@
 
     </style>
 
-    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.2</a></div></h1>
+    <h1><a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a> <div style="float: right"><a href="C:/Users/ninhe/dev/pini-dev/docs/index.html">pini-8.13.3</a></div></h1>
 
     <h2>Base class for any python element - eg. file, def, class.</h2>
     <br>
@@ -67,16 +67,17 @@
     <script type="text/javascript" charset="utf-8">
 
         var _objs = [
-             ['edit', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.edit()</b></font><br><br><small>&ensp;Edit the element\'s definition in a text editor</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
-             ['find_child', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_child(match, recursive=False)</b></font><br><br><small>&ensp;Find a child of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyElem): matching child element</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): name to match</small><br><small><b>recursive</b> (bool): include children of children</small>'],
-             ['find_children', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_children(recursive=False, internal=None, filter_=None)</b></font><br><br><small>&ensp;Find children of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyElem list): child elements</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>recursive</b> (bool): include children of children</small><br><small><b>internal</b> (bool): filter by internal state of elements</small><br><small><b>filter_</b> (str): filter by name</small>'],
-             ['find_class', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_class(match=None, catch=False)</b></font><br><br><small>&ensp;Find a matching child class within this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyClass): matching class</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): class name to match</small><br><small><b>catch</b> (bool): no error if fail to find class</small>'],
-             ['find_classes', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_classes()</b></font><br><br><small>&ensp;Find child classes of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyClass list): child classes</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
-             ['find_def', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_def(match=None, internal=None, recursive=False, catch=False)</b></font><br><br><small>&ensp;Find a child def of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyDef): child def</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): def name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small><br><small><b>catch</b> (bool): no error if fail to find def</small>'],
-             ['find_defs', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_defs(filter_=None, internal=None, recursive=False)</b></font><br><br><small>&ensp;Find child defs of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyDef list): child defs</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>filter_</b> (str): filter by name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small>'],
-             ['to_ast', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_ast(catch=False)</b></font><br><br><small>&ensp;Obtain ast object associated with this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Module): ast module</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>catch</b> (bool): included for symmetry</small>'],
-             ['to_code', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_code()</b></font><br><br><small>&ensp;Obtain this element\'s code</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): element code</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
-             ['to_docstring', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_docstring()</b></font><br><br><small>&ensp;Obtain docstring</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): docs</small><br><br><small>Defined in: <font color="DeepSkyBlue">C:/Users/ninhe/dev/pini-dev/python/pini/utils/py_file/upy_elem.py</font></small>', ''],
+             ['edit', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.edit()</b></font><br><br><small>&ensp;Edit the element\'s definition in a text editor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '', 'pini.utils.PyElem.edit'],
+             ['find_child', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_child(match, recursive=False)</b></font><br><br><small>&ensp;Find a child of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a>): matching child element</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): name to match</small><br><small><b>recursive</b> (bool): include children of children</small>', 'pini.utils.PyElem.find_child'],
+             ['find_children', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_children(recursive=False, internal=None, filter_=None)</b></font><br><br><small>&ensp;Find children of this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">PyElem</a> list): child elements</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>recursive</b> (bool): include children of children</small><br><small><b>internal</b> (bool): filter by internal state of elements</small><br><small><b>filter_</b> (str): filter by name</small>', 'pini.utils.PyElem.find_children'],
+             ['find_class', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_class(match=None, catch=False)</b></font><br><br><small>&ensp;Find a matching child class within this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyClass.html">PyClass</a>): matching class</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): class name to match</small><br><small><b>catch</b> (bool): no error if fail to find class</small>', 'pini.utils.PyElem.find_class'],
+             ['find_classes', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_classes()</b></font><br><br><small>&ensp;Find child classes of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyClass.html">PyClass</a> list): child classes</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '', 'pini.utils.PyElem.find_classes'],
+             ['find_def', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_def(match=None, internal=None, recursive=False, catch=False)</b></font><br><br><small>&ensp;Find a child def of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyDef.html">PyDef</a>): child def</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>match</b> (str): def name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small><br><small><b>catch</b> (bool): no error if fail to find def</small>', 'pini.utils.PyElem.find_def'],
+             ['find_defs', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.find_defs(filter_=None, internal=None, recursive=False)</b></font><br><br><small>&ensp;Find child defs of this object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyDef.html">PyDef</a> list): child defs</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>filter_</b> (str): filter by name</small><br><small><b>internal</b> (bool): filter by def internal state</small><br><small><b>recursive</b> (bool): include children of children</small>', 'pini.utils.PyElem.find_defs'],
+             ['PyElem', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem(ast_, parent=None, py_file=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>ast_</b> (Module): ast object</small><br><small><b>parent</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyElem.html">(PyElem)</a>: parent element</small><br><small><b>py_file</b> <a href="C:/Users/ninhe/dev/pini-dev/docs/classes/PyFile.html">(PyFile)</a>: parent py file</small>', 'pini.utils.PyElem.PyElem'],
+             ['to_ast', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_ast(catch=False)</b></font><br><br><small>&ensp;Obtain ast object associated with this element</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(Module): ast module</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '<small><b>catch</b> (bool): included for symmetry</small>', 'pini.utils.PyElem.to_ast'],
+             ['to_code', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_code()</b></font><br><br><small>&ensp;Obtain this element\'s code</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): element code</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '', 'pini.utils.PyElem.to_code'],
+             ['to_docstring', 'pini.utils.PyElem', '<font color="DarkMagenta"><b>PyElem.to_docstring()</b></font><br><br><small>&ensp;Obtain docstring</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): docs</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_elem.py</font></small>', '', 'pini.utils.PyElem.to_docstring'],
          ]
 
         // Add text filter
@@ -99,7 +100,7 @@
 
             console.log('DRAW TABLE');
             // console.log(' - TEXT FILTER', filter);
-            _filter = document.getElementById('TextFilter').value
+            const _filter = document.getElementById('TextFilter').value
             console.log(' - TEST FILTER', _filter);
             _show_inherited = document.getElementById('ShowInherited').checked
             console.log(' - SHOW INHERITED', _show_inherited);
@@ -112,20 +113,33 @@
             _objs.forEach(_item => {
                 
                 _total += 1;
+                
                 var _name = Object.values(_item)[0]
-                if (_filter && !_name.includes(_filter)) {
-                    return; }
+                var _loc = Object.values(_item)[1]
                 var _docs = Object.values(_item)[2]
+                var _args = Object.values(_item)[3]
+                const _path = Object.values(_item)[4]
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+                
+                // Appply filter
+                if (
+                        _filter && 
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
                 var _is_inherited = _docs.includes('Inherited from:')
-                console.log(' - ADD', _name, _is_inherited)
+                console.log(' - ADD', _path, _is_inherited)
                 
                 if (!_show_inherited && _is_inherited) {
                     return; }
 
                 // Build row
                 _count += 1;
+                let _values = Object.values(_item);
                 let _row = document.createElement("tr");
-                Object.values(_item).forEach((_value) => {
+                _values.slice(0, 4).forEach((_value) => {
                     let _cell = document.createElement("td");
                     _cell.innerHTML = _value;
                     _cell.style.verticalAlign = "top";

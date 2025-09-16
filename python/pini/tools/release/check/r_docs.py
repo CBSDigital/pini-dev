@@ -18,7 +18,7 @@ def transfer_kwarg_docs(
     to be kept up to date.
 
     Args:
-        func (func|str): function or name of function to read docs from
+        func (fn|str): function or name of function to read docs from
             (eg. "CMayaModelPublish.export")
         mod (str): name of module (eg. "pini.dcc.export")
         mode (str): docs to transfer
