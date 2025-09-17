@@ -213,6 +213,30 @@ class PIInstaller(object):
             parent (any): item parent
         """
 
+    def _install_ui_elements(self, parent):
+        """Install interface elements (eg. menu/shelf items).
+
+        Args:
+            parent (str): name of parent menu/shelf
+
+        Returns:
+            (PITool list): tools which were installed
+        """
+        _LOGGER.debug(' - INSTALL UI ELEMS %d', dcc.batch_mode())
+
+        if dcc.batch_mode():
+            return []
+
+        _parent = parent or self.name
+        _items = []
+        for _item in self.items:
+            _LOGGER.debug(' - BUILD ITEM %s parent=%s', _item, _parent)
+            _result = self._build_item(_item, parent=_parent)
+            _items.append(_result)
+            _LOGGER.debug('   - RESULT %s', _result)
+
+        return _items
+
     def run(self, parent=None, launch_helper=None):  # pylint: disable=unused-argument
         """Execute this installer - build the items into the current dcc.
 
@@ -224,14 +248,10 @@ class PIInstaller(object):
             (list): new tools
         """
         _LOGGER.info('RUN %s', self)
-        _parent = parent or self.name
-        _results = []
-        for _item in self.items:
-            _LOGGER.debug(' - BUILD ITEM %s parent=%s', _item, _parent)
-            _result = self._build_item(_item, parent=_parent)
-            _results.append(_result)
-            _LOGGER.debug('   - RESULT %s', _result)
-        return _results
+
+        _items = self._install_ui_elements(parent=parent)
+
+        return _items
 
     def to_uid(self):
         """Obtain uid for this installer.

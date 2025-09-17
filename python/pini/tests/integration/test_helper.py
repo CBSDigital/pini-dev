@@ -13,6 +13,8 @@ class TestHelper(unittest.TestCase):
 
     def test_export_handler_notes(self):
 
+        dcc.new_scene(force=True)
+
         _helper = helper.obt_helper(reset_cache=False)
 
         _helper.ui.MainPane.select_tab('Work')

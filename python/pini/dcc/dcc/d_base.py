@@ -80,7 +80,7 @@ class BaseDCC:
         Returns:
             (bool): batch mode
         """
-        return False
+        return bool(not self.NAME)
 
     def can_reference_output(self, output):
         """Test whether the dcc can reference the given output.

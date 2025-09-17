@@ -579,7 +579,8 @@ class CheckColorManagement(core.SCMayaCheck):
         self.check_pref(
             func=cmds.colorManagementPrefs, flag='cmEnabled', val=True)
         self.check_pref(
-            func=cmds.colorManagementPrefs, flag='cmConfigFileEnabled', val=True)
+            func=cmds.colorManagementPrefs, flag='cmConfigFileEnabled',
+            val=True)
         self.check_pref(
             func=cmds.colorManagementPrefs, flag='configFilePath', val=_ocio)
         self.check_pref(

@@ -17,7 +17,7 @@ import pini
 from pini import dcc
 from pini.utils import (
     File, Dir, cache_result, strftime, assert_eq, is_pascal, get_user,
-    read_func_kwargs, Seq, to_camel)
+    read_func_kwargs, Seq, to_camel, Path)
 
 _SESSION_START = time.time()
 _LOGGER = logging.getLogger(__name__)
@@ -37,7 +37,8 @@ def get_tracker(name=None, write_after=False, args=None):
         name (str): override function name
         write_after (bool): write to log after execute - this allows
             the scene file to be recorded in the case of a scene load
-        args (str list): list of args to read and track values of
+        args (str list|bool): list of args to read and track values of,
+            or bool (as True) for all args
 
     Returns:
         (fn): usage tracking decorator
@@ -56,25 +57,12 @@ def get_tracker(name=None, write_after=False, args=None):
             if os.environ.get('PINI_DISABLE_WRITE_USAGE'):
                 return func(*fn_args, **fn_kwargs)
 
-            # Read args
-            _args = {}
-            if args:
-                assert isinstance(args, (list, tuple))
-                _LOGGER.debug(' - ADDING ARGS %s', args)
-                _kwargs = read_func_kwargs(
-                    func=func, args=fn_args, kwargs=fn_kwargs)
-                _LOGGER.debug(' - KWARGS %s', _kwargs)
-                for _arg in args:
-                    _val = _kwargs[_arg]
-                    if isinstance(_val, (File, Seq)):
-                        _val = _val.path
-                    _args[_arg] = _val
-                _LOGGER.debug(' - ADDING ARGS %s', _args)
-
             _result = None
             if write_after:
                 _result = func(*fn_args, **fn_kwargs)
             if not dcc.batch_mode():
+                _args = _build_args_data(
+                    args=args, func=func, fn_args=fn_args, fn_kwargs=fn_kwargs)
                 log_usage_event(name or func.__name__, args=_args)
             if not write_after:
                 _result = func(*fn_args, **fn_kwargs)
@@ -84,6 +72,51 @@ def get_tracker(name=None, write_after=False, args=None):
         return _track_usage_func
 
     return _track_decorator
+
+
+def _build_args_data(args, func, fn_args, fn_kwargs):
+    """Build args to track.
+
+    Args:
+        args (str list|bool): list of args to read and track values of,
+            or bool (as True) for all args
+        func (fn): decorated function
+        fn_args (tuple): args passed to function
+        fn_kwargs (dict): kwargs passed to function
+
+    Returns:
+        (dict): args data to write to usage
+    """
+    if not args:
+        return {}
+
+    assert isinstance(args, (list, tuple, bool))
+    _LOGGER.debug(' - ADDING ARGS %s', args)
+
+    # Read kwarg values from func
+    _kwargs = read_func_kwargs(func=func, args=fn_args, kwargs=fn_kwargs)
+    for _key, _val in _kwargs.items():
+        if isinstance(_val, (Path, Seq)):
+            _val = _val.path
+            _kwargs[_key] = _val
+        if not isinstance(_val, (bool, int, float, str)):
+            raise TypeError(_val)
+    _LOGGER.debug(' - KWARGS %s', _kwargs)
+
+    # Build result based on args flag type
+    if isinstance(args, bool):
+        assert args is True
+        _LOGGER.debug(' - ADDING ALL ARGS %s', _kwargs)
+        return _kwargs
+    if isinstance(args, (list, tuple)):
+        _args = {}
+        for _arg in args:
+            _val = _kwargs[_arg]
+            _args[_arg] = _val
+        _LOGGER.debug(' - ADDING SPECIFIC ARGS %s', _args)
+        return _args
+
+    raise TypeError(args)
 
 
 def track(func):

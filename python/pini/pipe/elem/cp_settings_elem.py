@@ -8,8 +8,7 @@ import logging
 import os
 
 from pini.utils import (
-    cache_on_obj, Dir, single, File, cache_result, merge_dicts,
-    install_callback, find_callback)
+    cache_on_obj, Dir, single, File, cache_result, merge_dicts, find_callback)
 
 _LOGGER = logging.getLogger(__name__)
 _DEFAULT_SETTINGS = {
@@ -28,26 +27,15 @@ _DEFAULT_SETTINGS = {
 }
 
 
-def install_read_settings_callback(func):
-    """Install callback for reading job resolution.
-
-    This allows pipeline-specific job resolutions to be used (eg. using
-    custom shotgrid entities).
-
-    Args:
-        func (fn): function to read job resolution
-    """
-    from pini.tools import release
-    release.apply_deprecation('11/03/25', 'Use pini.utils.install_callback')
-    install_callback('ReadSettings', func)
-
-
 @cache_result
-def _obt_default_settings():
+def _obt_default_settings(force=False):
     """Obtain default settings.
 
     If $PINI_PIPE_DEFAULT_SETTINGS is set, then this file is read as
     yaml and used to update the default settings.
+
+    Args:
+        force (bool): force reread from disk
 
     Returns:
         (dict): default settings

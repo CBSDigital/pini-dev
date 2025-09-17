@@ -1,3 +1,15 @@
+## [8.15.0] - Wed 2025-09-17 14:31
+### Summary
+ - Usage Tracking:
+    - added option to store all args,
+### Updated
+ - pini.utils.read_func_kwargs bugfix editing kwargs dict,
+ - pini.dcc.batch_mode returns true outside dcc,
+ - pini.pipe.install_read_settings_callback removed deprecated func,
+ - pini.install.PIInstaller.run block install ui elems in batch mode,
+ - pini.tools.usage.get_tracker allow args as True for all args,
+
+
 ## [8.14.0] - Tue 2025-09-16 11:45
 ### Summary
  - Sanity Check:

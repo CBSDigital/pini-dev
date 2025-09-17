@@ -357,7 +357,7 @@ def read_func_kwargs(func, args, kwargs):
     _args = list(_spec.args)
     _LOGGER.debug(' - ARGS %s', _args)
 
-    _kwargs = kwargs
+    _kwargs = copy.copy(kwargs)
     for _idx, _arg_name in enumerate(_args):
         _LOGGER.debug('ARG %s %s', _arg_name, _idx)
         _arg_idx = _idx - len(_args)
