@@ -543,6 +543,7 @@ class CheckOverscan(SCMayaCheck):
     """Check overscan settings are applied."""
 
     task_filter = 'lighting'
+    enabled = False
 
     def run(self):
         """Run this check."""
