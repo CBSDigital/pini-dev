@@ -6,12 +6,12 @@ import re
 from maya import cmds, mel
 from maya.app.renderSetup.views import renderSetup
 
-from pini import dcc
+from pini import dcc, pipe
 from pini.utils import single, wrap_fn, is_camel, to_camel
 
 from maya_pini import ref, open_maya as pom
 from maya_pini.utils import (
-    to_render_extn, set_render_extn)
+    to_render_extn, set_render_extn, cur_renderer)
 
 from ..core import SCFail, SCMayaCheck
 
@@ -149,7 +149,7 @@ class CheckAOVs(SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+        _ren = cur_renderer()
         if _ren not in ['redshift']:
             self.write_log('Not implemented for renderer %s', _ren)
             return
@@ -229,7 +229,7 @@ def _find_aovs():
     Returns:
         (CNode list): aovs
     """
-    _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+    _ren = cur_renderer()
     if _ren == 'arnold':
         _type = 'aiAOV'
     elif _ren == 'redshift':
@@ -248,7 +248,7 @@ def _create_aov(type_, name=None):
         type_ (str): AOV type
         name (str): AOV name (if required)
     """
-    _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+    _ren = cur_renderer()
     _LOGGER.info('CREATE AOV (%s) %s %s', _ren, type_, name)
     if _ren == 'arnold':
         from mtoa import aovs
@@ -376,7 +376,7 @@ def _fix_bad_aov_conn(disconnect, connect):
 class CheckRenderGlobals(SCMayaCheck):
     """Check render format is exr."""
 
-    task_filter = 'lighting lookdev'
+    task_filter = 'lighting lookdev fx'
     depends_on = (CheckAOVs, )
 
     def run(self, img_fmt='exr'):
@@ -388,7 +388,7 @@ class CheckRenderGlobals(SCMayaCheck):
         Returns:
             (bool): whether check completed successfully
         """
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+        _ren = cur_renderer()
         self.write_log('renderer %s', _ren)
 
         # Check renderer
@@ -467,7 +467,7 @@ class CheckRenderGlobals(SCMayaCheck):
         Returns:
             (bool): whether globals have been initialised
         """
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+        _ren = cur_renderer()
         if _ren != 'redshift':
             return True
         try:
@@ -537,3 +537,30 @@ class CheckRenderLayers(SCMayaCheck):
                 _fix = wrap_fn(_lyr.set_pass_name, _new_name)
                 self.add_fail(_msg, fix=_fix)
                 continue
+
+
+class CheckOverscan(SCMayaCheck):
+    """Check overscan settings are applied."""
+
+    task_filter = 'lighting'
+
+    def run(self):
+        """Run this check."""
+        _shot = pipe.cur_shot()
+        self.write_log('shot %s', _shot)
+        _overscan = float(_shot.settings.get('overscan', 0) or 0)
+        self.write_log('overscan %s', _shot)
+        assert isinstance(_overscan, float)
+        _ren = cur_renderer()
+        self.write_log('renderer %s', _ren)
+        _cam = pom.find_render_cam()
+        self.write_log('cam %s', _cam)
+
+        if _ren == 'redshift':
+            self.check_attr(_cam.shp.plug['panZoomEnabled'], False)
+            self.check_attr(_cam.shp.plug['zoom'], 1)
+            self.check_attr('redshiftOptions.overscanType', 2)
+            self.check_attr('redshiftOptions.overscanX', _overscan)
+            self.check_attr('redshiftOptions.overscanY', _overscan)
+        else:
+            self.write_log('renderer not implemented')

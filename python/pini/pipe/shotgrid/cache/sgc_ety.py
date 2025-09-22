@@ -377,7 +377,7 @@ class SGCShot(_SGCEntity):
     ENTITY_TYPE = 'Shot'
     FIELDS = (
         'sg_head_in', 'code', 'sg_sequence', 'sg_status_list', 'assets',
-        'updated_at', 'sg_has_3d', 'project', 'sg_tail_out')
+        'updated_at', 'sg_has_3d', 'project', 'sg_tail_out', 'sg_overscan')
 
     def __init__(self, data):
         """Constructor.

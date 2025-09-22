@@ -16,6 +16,15 @@ _LOGGER = logging.getLogger(__name__)
 _REN_FMTS_MAP = {}
 
 
+def cur_renderer():
+    """Obtain current renderer.
+
+    Returns:
+        (str): name of current renderer (eg. arnold)
+    """
+    return cmds.getAttr("defaultRenderGlobals.currentRenderer")
+
+
 def _revert_render_window(func):
     """Decorator to revert render window .
 
@@ -94,7 +103,7 @@ def render_frame(
     """
     from maya_pini import open_maya as pom
 
-    _ren = cmds.getAttr("defaultRenderGlobals.currentRenderer")
+    _ren = cur_renderer()
     if _ren != 'arnold':
         raise NotImplementedError(_ren)
 
@@ -102,15 +111,6 @@ def render_frame(
     cmds.loadPlugin('mtoa', quiet=True)
     _LOGGER.debug(' - LOADED PLUGIN')
 
-    # Check renderer
-    _renderer = cmds.getAttr(
-        "defaultRenderGlobals.currentRenderer", asString=True)
-    if _renderer != 'arnold':
-        cmds.setAttr(
-            "defaultRenderGlobals.currentRenderer", 'arnold', type='string')
-        _renderer = cmds.getAttr(
-            "defaultRenderGlobals.currentRenderer", asString=True)
-    assert _renderer == 'arnold'
     _quality = cmds.getAttr('defaultArnoldDriver.quality')
     _LOGGER.debug(' - CHECK QUALITY %d', _quality)
     assert _quality == 100
@@ -124,7 +124,7 @@ def render_frame(
     # Prepare output path
     _file = File(file_)
     _file.test_dir()
-    _file.delete(force=force, wording='Replace')
+    _file.delete(force=force, wording='replace')
 
     # Get res
     if not res:
@@ -337,7 +337,7 @@ def _obt_image_fmts_map():
     Returns:
         (dict): map of index to format name
     """
-    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _ren = cur_renderer()
     if _ren not in _REN_FMTS_MAP:
         _fmts = collections.defaultdict(list)
         if _ren == 'mayaSoftware':
@@ -395,7 +395,7 @@ def set_render_extn(extn: str):
     _extn = extn
 
     # Apply extn
-    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _ren = cur_renderer()
     if _ren == 'arnold':
         process_deferred_events()
         pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(_extn)
@@ -426,7 +426,7 @@ def set_render_res(res: tuple):
     Args:
         res (tuple): width/height to apply
     """
-    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _ren = cur_renderer()
     if _ren in ('mayaSoftware', 'redshift', 'arnold'):
         cmds.setAttr('defaultResolution.width', res[0])
         cmds.setAttr('defaultResolution.height', res[1])
@@ -443,7 +443,7 @@ def to_render_extn():
     Returns:
         (str): render extn (eg. jpg/exr)
     """
-    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _ren = cur_renderer()
     _LOGGER.debug('TO RENDER EXTN %s', _ren)
     _fmt = None
     if _ren == 'arnold':
@@ -487,7 +487,7 @@ def to_render_res(name=None):
     Returns:
         (Res): render resolution
     """
-    _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
+    _ren = cur_renderer()
     if _ren in ('arnold', 'mayaSoftware', 'redshift'):
         _res_x, _res_y = (
             cmds.getAttr(f'defaultResolution.{_attr}')

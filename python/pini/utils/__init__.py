@@ -15,7 +15,7 @@ from .u_url import read_url
 
 from .u_text import (
     is_pascal, is_camel, to_pascal, to_snake, to_ord, to_camel, copy_text,
-    to_nice, plural, add_indent, split_base_index, nice_cmds)
+    to_nice, plural, add_indent, split_base_index, nice_cmds, is_snake)
 from .u_misc import (
     lprint, single, search_dict_for_key, str_to_seed, dprint, str_to_ints,
     val_map, safe_zip, get_user, last, ints_to_str, basic_repr, nice_id,

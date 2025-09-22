@@ -87,6 +87,23 @@ def is_pascal(text):
     return True
 
 
+def is_snake(text):
+    """Test if the given string is snake (eg. some_snake_text).
+
+    Args:
+        text (str): text to check
+
+    Returns:
+        (bool): whether valid snake case
+    """
+    for _token in text.split('_'):
+        if not _token.islower():
+            return False
+        if not _token.isalnum():
+            return False
+    return True
+
+
 def nice_cmds(cmds, fmt='text'):
     """Build commands into a string which can be run in a terminal.
 

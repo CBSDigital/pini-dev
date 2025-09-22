@@ -1,3 +1,29 @@
+## [8.16.0] - Mon 2025-09-22 11:05
+### Summary
+ - Sanity Check:
+    - maya check colorspace find/fix file nodes with broken colspace (nhoyt/bshepperd),
+    - maya check render globals apply in fx (mkim),
+ - Pini Helper:
+    - maya bugfix error on update file texture nodes with <UDIM> in path (bshepperd),
+### Updated
+ - pini.utils.is_snake added,
+ - pini.pipe.map_task use step in preference to task for mapping,
+ - pini.pipe.shotgrid.SGCShot.FIELDS added sg_overscan,
+ - pini.tools.sanity_check.SCMayaCheck.check_attr added fail arg,
+ - pini.tools.sanity_check.SCMayaCheck.check_pref added elem + kwargs,
+ - pini.tools.sanity_check.CheckViewport added (disabled),
+ - pini.tools.sanity_check.CheckColorManagement check for file nodes with broken colspace,
+ - pini.tools.sanity_check.CheckRenderGlobals apply in fx,
+ - maya_pini.utils.cur_renderer added,
+ - maya_pini.utils.blast bugfix creating multiple model editors on blast,
+ - maya_pini.utils.blast allow res as tuple,
+ - maya_pini.ref.AttrRef.update bugfix error on update with <UDIM> in path,
+ - maya_pini.ui.get_active_model_editor refactored to mp_vp submodule,
+ - maya_pini.ui.find_model_editors added,
+ - maya_pini.hik.build_hik catch benign error on mel call,
+ - maya_pini.hik.find_hiks catch error on off-pipe hik ref,
+
+
 ## [8.15.0] - Wed 2025-09-17 14:31
 ### Summary
  - Usage Tracking:

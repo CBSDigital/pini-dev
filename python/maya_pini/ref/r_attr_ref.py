@@ -121,18 +121,25 @@ class AttrRef(r_path_ref.PathRef):
             path (str): path to update to
         """
         _path = path
+
         if self.has_udim_tiles:
+
             _path = to_seq(_path)
             assert isinstance(self.path, Seq)
+
+            # Maintain same frame (if applicable)
             _cur_path = abs_path(cmds.getAttr(self.attr))
-            _cur_frame = int(re.split('[_.]', _cur_path)[-2])
-            if _cur_path != self.path[_cur_frame]:
-                _LOGGER.info(' - PATH       %s', self.path)
-                _LOGGER.info(
-                    ' - FRAME %d %s', _cur_frame, self.path[_cur_frame])
-                _LOGGER.info(' - CUR PATH   %s', _cur_path)
-                raise RuntimeError(f'Bad cur path {_cur_path}')
-            _path = _path[_cur_frame]
+            _f_str = re.split('[_.]', _cur_path)[-2]
+            if _f_str.isdigit():
+                _cur_frame = int(_f_str)
+                if _cur_path != self.path[_cur_frame]:
+                    _LOGGER.info(' - PATH       %s', self.path)
+                    _LOGGER.info(
+                        ' - FRAME %d %s', _cur_frame, self.path[_cur_frame])
+                    _LOGGER.info(' - CUR PATH   %s', _cur_path)
+                    raise RuntimeError(f'Bad cur path {_cur_path}')
+                _path = _path[_cur_frame]
+
         cmds.setAttr(self.attr, _path, type='string')
 
     def __repr__(self):

@@ -268,7 +268,10 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
     assert not pom.find_nodes(type_='HIKCharacterNode', namespace=None)
     # mel.eval('hikCreateDefinition')
     cmds.HIKCharacterControlsTool()
-    mel.eval('hikCreateDefinition()')
+    try:
+        mel.eval('hikCreateDefinition()')
+    except SystemError:
+        pass
     assert pom.find_nodes(type_='HIKCharacterNode', namespace=None)
     _hikc = single(pom.find_nodes(type_='HIKCharacterNode', namespace=None))
 
@@ -366,7 +369,7 @@ def find_hiks(referenced=None, task=None):
         _out = None
         _ref = pom.find_ref(namespace=_hik.namespace)
         if _ref:
-            _out = pipe.to_output(_ref.path)
+            _out = pipe.to_output(_ref.path, catch=True)
         if task and (not _out or not _out.task == task):
             continue
         _hiks.append(_hik)

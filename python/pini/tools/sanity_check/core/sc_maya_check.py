@@ -1,5 +1,6 @@
 """Tools for managing the maya sanity check object."""
 
+import copy
 import logging
 
 from maya import cmds
@@ -27,12 +28,13 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
-    def check_attr(self, attr, val, catch=False):
+    def check_attr(self, attr, val, fail=None, catch=False):
         """Check a attribute has the given value.
 
         Args:
             attr (str): attribute to check
             val (any): expected value
+            fail (str): override fail message
             catch (bool): no error if attr missing
         """
         try:
@@ -48,11 +50,11 @@ class SCMayaCheck(sc_check.SCCheck):
             ' - check setting %s == %s passed=%d', attr, val, _passed)
         if _passed:
             return
-        _msg = f'Attribute "{_plug}" is not set to "{val}"'
+        _msg = fail or f'Attribute "{_plug}" is not set to "{val}"'
         _fix = wrap_fn(_plug.set_val, val)
         self.add_fail(_msg, fix=_fix, node=_plug.node)
 
-    def check_pref(self, func, flag, val, fail=None):
+    def check_pref(self, func, flag, val, fail=None, elem=None, **kwargs):
         """Check a preference is set to the given value.
 
         Args:
@@ -60,16 +62,28 @@ class SCMayaCheck(sc_check.SCCheck):
             flag (str): name of flag to read
             val (any): required value for preference
             fail (str): override fail message
+            elem (str): element arg (if required)
         """
-        _cur_val = func(query=True, **{flag: True})
+        _args = []
+        if elem:
+            _args = [elem]
+
+        _kwargs = copy.copy(kwargs)
+        _kwargs[flag] = True
+
+        _cur_val = func(*_args, query=True, **_kwargs)
+
         self.write_log(
             f'check "{func.__name__}|{flag}" set to "{val}" '
             f'(current val "{_cur_val}"')
+
         if _cur_val != val:
             _fail = fail or (
                 f'Setting "{func.__name__}|{flag}" is set to "{_cur_val}" '
                 f'(should be "{val}")')
-            self.add_fail(_fail, fix=wrap_fn(func, edit=True, **{flag: val}))
+            _kwargs[flag] = val
+            _fix = wrap_fn(func, *_args, edit=True, **_kwargs)
+            self.add_fail(_fail, fix=_fix)
 
     def check_shp(self, node):
         """Check node shapes.

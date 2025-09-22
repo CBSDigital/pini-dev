@@ -87,6 +87,7 @@ def map_task(task, step=None, fmt='pini'):
             _TASK_MAP.get(f'{step}/{task}') or
             _TASK_MAP.get(step) or
             _TASK_MAP.get(task) or
+            step or
             task)
     else:
         raise ValueError(fmt)

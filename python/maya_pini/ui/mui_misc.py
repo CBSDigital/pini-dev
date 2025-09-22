@@ -174,7 +174,8 @@ def get_active_cam():
     Returns:
         (str): camera transform
     """
-    _editor = get_active_model_editor()
+    from . import mui_vp
+    _editor = mui_vp.get_active_model_editor()
     if not _editor:
         return None
     _cam = cmds.modelEditor(_editor, query=True, camera=True)
@@ -183,34 +184,6 @@ def get_active_cam():
     if cmds.objectType(_cam) == 'camera':
         _cam = to_parent(_cam)
     return _cam
-
-
-def get_active_model_editor(catch=True):
-    """Get model editor for the active viewport.
-
-    Args:
-        catch (bool): no error if no active editor found
-
-    Returns:
-        (str): active model editor
-    """
-    _editors = []
-    for _panel in cmds.lsUI(panels=True):
-        if not cmds.modelPanel(_panel, query=True, exists=True):
-            continue
-        _editor = cmds.modelPanel(_panel, query=True, modelEditor=True)
-        _editors.append(_editor)
-    if len(_editors) == 1:
-        return single(_editors)
-    _editors = [_editor for _editor in _editors
-                if cmds.modelEditor(_editor, query=True, activeView=True)]
-    _LOGGER.debug(' - EDITORS %s', _editors)
-    if len(_editors) == 1:
-        return single(_editors)
-    if catch:
-        return None
-    raise ValueError(
-        'No active view found - try middle-mouse clicking the viewport')
 
 
 @cache_result

@@ -155,8 +155,8 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
     # Clean existing
     if cmds.window('BlastWindow', exists=True):
         cmds.deleteUI('BlastWindow')
-    if cmds.window('BlastEditor', exists=True):
-        cmds.modelEditor('BlastEditor')
+    if cmds.modelEditor('BlastEditor', exists=True):
+        cmds.deleteUI('BlastEditor')
 
     # Read settings from active viewport to mimic
     _editor_tmpl = ui.get_active_model_editor()
@@ -363,6 +363,8 @@ def _to_res(res, is_video):
         _width, _height = dcc.get_res()
         _aspect = _width / _height
         _res = [1920, round(1920 / _aspect)]
+    elif isinstance(res, tuple) and len(res) == 2:
+        _res = res
     else:
         raise ValueError(res)
 

@@ -4,14 +4,9 @@ import logging
 
 from maya import cmds
 
-from pini.utils import to_camel, cache_result
-
-from . import mui_misc
-
-# pylint: disable=unused-argument
+from pini.utils import to_camel, cache_result, single
 
 _LOGGER = logging.getLogger(__name__)
-
 
 _MODEL_EDITOR_ATTRS = [
     'bluePencil',
@@ -61,25 +56,42 @@ _MODEL_EDITOR_ATTRS = [
 ]
 
 
-@cache_result
-def to_model_editor_attrs():
-    """Obtain list of model editor attributes.
-
-    Some maya 2023 instances seem to report
+def find_model_editors():
+    """Find model editors in the current scene.
 
     Returns:
-        (str list): model editor attributes
+        (str list): model editors
     """
-    _attrs = []
-    _ed = mui_misc.get_active_model_editor()
-    for _attr in _MODEL_EDITOR_ATTRS:
-        try:
-            cmds.modelEditor(_ed, query=True, **{_attr: True})
-        except TypeError:
-            _LOGGER.warning('Missing model editor attr: %s', _attr)
+    _editors = []
+    for _panel in cmds.lsUI(panels=True):
+        if not cmds.modelPanel(_panel, query=True, exists=True):
             continue
-        _attrs.append(_attr)
-    return _attrs
+        _editor = cmds.modelPanel(_panel, query=True, modelEditor=True)
+        _editors.append(_editor)
+    return _editors
+
+
+def get_active_model_editor(catch=True):
+    """Get model editor for the active viewport.
+
+    Args:
+        catch (bool): no error if no active editor found
+
+    Returns:
+        (str): active model editor
+    """
+    _editors = find_model_editors()
+    if len(_editors) == 1:
+        return single(_editors)
+    _editors = [_editor for _editor in _editors
+                if cmds.modelEditor(_editor, query=True, activeView=True)]
+    _LOGGER.debug(' - EDITORS %s', _editors)
+    if len(_editors) == 1:
+        return single(_editors)
+    if catch:
+        return None
+    raise ValueError(
+        'No active view found - try middle-mouse clicking the viewport')
 
 
 def set_vp(
@@ -89,7 +101,7 @@ def set_vp(
         joints=None,
         locators=None,
         shadows=None,
-):
+):  # pylint: disable=unused-argument
     """Apply viewport settings.
 
     Args:
@@ -108,7 +120,7 @@ def set_vp(
         if _key != _o_key:
             _kwargs[_key] = _kwargs.pop(_o_key)
 
-    _me = mui_misc.get_active_model_editor()
+    _me = get_active_model_editor()
     _LOGGER.info('SET VIEWPORT %s', _me)
 
     for _key in list(_kwargs.keys()):
@@ -125,3 +137,24 @@ def set_vp(
             "selected", "active", "all", "default", "none"]
 
     cmds.modelEditor(_me, edit=True, **_kwargs)
+
+
+@cache_result
+def to_model_editor_attrs():
+    """Obtain list of model editor attributes.
+
+    Some maya 2023 instances seem to report
+
+    Returns:
+        (str list): model editor attributes
+    """
+    _attrs = []
+    _ed = get_active_model_editor()
+    for _attr in _MODEL_EDITOR_ATTRS:
+        try:
+            cmds.modelEditor(_ed, query=True, **{_attr: True})
+        except TypeError:
+            _LOGGER.warning('Missing model editor attr: %s', _attr)
+            continue
+        _attrs.append(_attr)
+    return _attrs

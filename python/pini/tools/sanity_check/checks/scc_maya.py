@@ -11,7 +11,7 @@ from pini import qt, dcc, pipe
 from pini.utils import (
     single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir)
 
-from maya_pini import ref, open_maya as pom, m_pipe
+from maya_pini import ref, open_maya as pom, m_pipe, ui
 from maya_pini.utils import DEFAULT_NODES, to_clean
 
 from .. import core, utils
@@ -557,6 +557,22 @@ def _find_default_ocio():
     return single(_ocios, catch=True)
 
 
+class CheckViewport(core.SCMayaCheck):
+    """Check viewport is set up correctly."""
+
+    enabled = False
+
+    def run(self):
+        """Run this check."""
+        for _ed in ui.find_model_editors():
+            self.check_pref(
+                func=cmds.modelEditor, flag='cmEnabled', val=False, elem=_ed,
+                fail=f'Color management is enabled in viewport "{_ed}"')
+        self.check_pref(
+            func=cmds.colorManagementPrefs, flag='outputTransformEnabled',
+            val=False, outputTarget='playblast')
+
+
 class CheckColorManagement(core.SCMayaCheck):
     """Check color management options are applied."""
 
@@ -585,3 +601,37 @@ class CheckColorManagement(core.SCMayaCheck):
             func=cmds.colorManagementPrefs, flag='configFilePath', val=_ocio)
         self.check_pref(
             func=cmds.colorManagementPrefs, flag='viewName', val='Raw')
+
+        self._check_file_node_colspaces()
+
+    def _check_file_node_colspaces(self):
+        """Check file node colspaces are not broken.
+
+        If a colorspace config file update has been applied, the new prefs
+        may not contain the colorspace which was being used by the file
+        nodes (eg. file nodes set to sRGB but this is no longer available).
+        This shows up as a red warning on the file nodes. It is fixed by
+        applying the default colorspace.
+        """
+        self.write_log('check file node color spaces')
+
+        # Find default space
+        _spaces = cmds.colorManagementPrefs(query=True, inputSpaceNames=True)
+        for _space in ['sRGB', 'Role - matte_paint']:
+            if _space in _spaces:
+                _default_space = _space
+                break
+        else:
+            self.write_log(' - failed to find valid default space')
+            return
+        self.write_log(' - default space %s', _default_space)
+
+        for _node in cmds.ls(type='file'):
+            _space = cmds.getAttr(f'{_node}.colorSpace')
+            if _space in _spaces:
+                continue
+            _fail = (
+                f'File node "{_node}" is so to broken colorspace "{_space}" '
+                f'(default is "{_default_space}")')
+            self.check_attr(
+                f'{_node}.colorSpace', _default_space, fail=_fail)

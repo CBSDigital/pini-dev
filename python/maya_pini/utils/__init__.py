@@ -13,7 +13,7 @@ from .mu_io import (
     save_redshift_proxy, load_redshift_proxy)
 from .mu_render import (
     render, render_frame, to_render_extn, set_render_extn,
-    to_render_res, set_render_res)
+    to_render_res, set_render_res, cur_renderer)
 from .mu_blast import blast, blast_frame
 
 from .mu_misc import (
