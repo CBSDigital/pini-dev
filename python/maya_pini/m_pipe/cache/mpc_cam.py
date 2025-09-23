@@ -214,6 +214,8 @@ def _add_plate_res_attrs(src_cam, trg_cam):
 
     _seq = to_seq(_img.shp.plug['imageName'].get_val())
     _LOGGER.info(' - SEQ %s', _seq)
+    if not _seq:
+        return
     _res = _seq.to_res()
     _LOGGER.info(' - RES %s', _res)
     _width, _height = _res.to_tuple()

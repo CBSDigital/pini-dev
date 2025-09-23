@@ -266,7 +266,7 @@ def to_seq(obj, catch=True, safe=False):
         _LOGGER.debug(' - STR %s', _seq)
         if '%04d' in _seq:
             return uc_seq.Seq(_seq, safe=safe)
-        _seq = file_to_seq(_obj, catch=True)
+        _seq = file_to_seq(_obj, catch=True, safe=safe)
         if _seq:
             return _seq
     if catch:

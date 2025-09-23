@@ -7,7 +7,7 @@ from .pom_vector import CVector, X_AXIS, Y_AXIS, Z_AXIS, ORIGIN
 
 from .pom_bounding_box import CBoundingBox, to_bbox
 
-from .pom_anim_curve import CAnimCurve
+from .pom_anim_curve import CAnimCurve, find_anim
 from .pom_camera import (
     CCamera, active_cam, find_cams, set_render_cam, find_render_cam, find_cam)
 from .pom_matrix import CMatrix, IDENTITY

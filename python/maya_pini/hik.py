@@ -23,6 +23,59 @@ STANCE = 'Stance'
 class PHIKNode(pom.CNode):
     """Represent an HIKCharacter node."""
 
+    def bake_to_skel(self, range_=None, step=None, loop=False):
+        """Bake animation to skeleton.
+
+        Args:
+            range_ (tuple): override range (otherwise read from anim)
+            step (float): override step size (otherwise read from anim)
+            loop (bool): apply looping
+        """
+        _LOGGER.info('BAKE TO SKEL %s', self)
+        _skel = pom.find_skeleton(self.namespace)
+        _LOGGER.info(' - SKEL %s', _skel)
+
+        # Read range + step size from source anim
+        _rng = range_
+        _step = step
+        if not _rng or not step:
+            _src_skel = pom.find_skeleton(self.get_source().namespace)
+            _LOGGER.info(' - SRC SKEL %s', _src_skel)
+            _src_root = _src_skel.root
+            _LOGGER.info(' - SRC ROOT %s', _src_root)
+            _src_ktvs = _src_root.rx.get_ktvs()
+            assert _src_ktvs
+            _src_keys = [_time for _time, _ in _src_ktvs]
+            _LOGGER.info(' - SRC KEYS %s', _src_keys)
+            if not _step:
+                _steps = sorted({
+                    round(_src_keys[_idx + 1] - _src_keys[_idx], 4)
+                    for _idx in range(len(_src_keys) - 1)})
+                _LOGGER.info(' - STEPS %s', _steps)
+                _step = single(_steps, catch=True)
+                if not _step:
+                    raise NotImplementedError
+            if not _rng:
+                _rng = _src_keys[0], _src_keys[-1]
+        _LOGGER.info(' - RANGE / STEP %s %s', _rng, _step)
+
+        # Bake anim
+        _plugs = [_skel.root.translate]
+        _plugs += [_jnt.rotate for _jnt in _skel.joints]
+        _LOGGER.info(' - PLUGS %s', _plugs)
+        mel.eval(f'hikBakeCharacterPre "{self}"')
+        cmds.bakeResults(
+            _plugs, simulation=True, time=_rng, sampleBy=_step,
+            oversamplingRate=1, disableImplicitControl=True,
+            preserveOutsideKeys=True, sparseAnimCurveBake=False,
+            removeBakedAttributeFromLayer=False,
+            removeBakedAnimFromLayer=False, bakeOnOverrideLayer=False,
+            minimizeRotation=True, controlPoints=False, shape=True)
+        mel.eval(f'hikBakeCharacterPost "{self}"')
+
+        if loop:
+            raise NotImplementedError
+
     def get_source(self):
         """Obtain source for this HIK node.
 

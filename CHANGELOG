@@ -1,3 +1,15 @@
+## [8.17.0] - Tue 2025-09-23 11:55
+### Summary
+ - Pini Helper:
+    - maya cache bugfix error on image plane with 8-padding frame number (kakuna),
+### Updated
+ - pini.utils.to_seq pass safe flag to file_to_seq,
+ - maya_pini.open_maya.find_anim made public,
+ - maya_pini.open_maya.find_anim added namespace filter,
+ - maya_pini.open_maya.CPlug.get_ktvs bugfix outdated called to CAnimCurve.get_ktvs,
+ - maya_pini.hik.PHIKNode.bake_to_skel added,
+
+
 ## [8.16.1] - Mon 2025-09-22 11:33
 ### Summary
  - Sanity Check:

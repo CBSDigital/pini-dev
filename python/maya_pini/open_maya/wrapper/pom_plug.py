@@ -265,7 +265,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         _anim = self.to_anim()
         if not _anim:
             return []
-        return _anim.get_ktvs()
+        return _anim.to_ktvs()
 
     def get_max(self):
         """Get maximum value for this plug (if any).

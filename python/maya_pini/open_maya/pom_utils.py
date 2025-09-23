@@ -20,6 +20,9 @@ def add_anim_offs(tfm, anim, reset=False):
         tfm (CTransform): node to apply offset controls on
         anim (CAnimCurve list): animation to offset
         reset (bool): reset any existing offset settings
+
+    Returns:
+        (tuple): anim offs, anim mult
     """
     from maya_pini import open_maya as pom
 

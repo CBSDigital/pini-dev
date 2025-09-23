@@ -214,11 +214,19 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             includeUpperBound=True, relative=True)
 
 
-def find_anim():
+def find_anim(namespace=None):
     """Find anim curves in this scene.
+
+    Args:
+        namespace (str): apply namespace filter
 
     Returns:
         (CAnimCurve): anim curves
     """
     from maya_pini import open_maya as pom
-    return pom.CMDS.ls(type='animCurve')
+    _anims = []
+    for _anim in pom.CMDS.ls(type='animCurve'):
+        if namespace and _anim.namespace != namespace:
+            continue
+        _anims.append(_anim)
+    return _anims
