@@ -26,6 +26,7 @@ _NAME_ICON_MAP = {
     'hand': 'Waving Hand: Medium Skin Tone',
     'lamppost': 'Light Bulb',
     'lightrig': 'Light Bulb',
+    'lumber': 'Wood',
     'kitchencounter': 'Fork and Knife with Plate',
     'moon': 'Last Quarter Moon Face',
     'musicalnotes': 'Musical Note',
@@ -331,7 +332,7 @@ class CCPEntityBase(CPEntity):
         elif self == testing.TEST_SHOT:
             _icon = icons.find('Petri Dish')
         elif self.name.lower() in _NAME_ICON_MAP:
-            _icon = _NAME_ICON_MAP[self.name.lower()]
+            _icon = icons.find(_NAME_ICON_MAP[self.name.lower()])
         else:
             _rand = str_to_seed(self.name)
             _icon = _rand.choice(icons.COOL)

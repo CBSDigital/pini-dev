@@ -33,7 +33,6 @@ class PHSceneTab:
 
     def __init__(self):
         """Constructor."""
-
         self._staged_imports = []
         self._staged_deletes = set()
         self._staged_updates = {}
@@ -41,6 +40,8 @@ class PHSceneTab:
 
         self.ui.SOutputs.doubleClicked.connect(
             self._doubleClick__SOutputs)
+        self.ui.SSceneRefs.doubleClicked.connect(
+            self._doubleClick__SSceneRefs)
 
     def init_ui(self, switch_tabs=True):
         """Inititate this tab's interface - triggered by selecting this tab.
@@ -610,11 +611,13 @@ class PHSceneTab:
         _show_rigs = self.ui.SSceneRefsShowRigs.isChecked()
         _show_shaders = self.ui.SSceneRefsShowLookdevs.isChecked()
         _show_abcs = self.ui.SSceneRefsShowAbcs.isChecked()
+        _show_texs = self.ui.SSceneRefsShowTexs.isChecked()
         _type_filter = any([
             _show_models,
             _show_rigs,
             _show_shaders,
             _show_abcs,
+            _show_texs
         ])
         _LOGGER.debug(
             ' - TYPE FILTER %d show_models=%d', _type_filter, _show_models)
@@ -637,6 +640,8 @@ class PHSceneTab:
                 elif _show_shaders and _ref.output.metadata.get('shd_yml'):
                     pass
                 elif _show_abcs and _ref.extn == 'abc':
+                    pass
+                elif _show_texs and _ref.output.type_ == 'texture_seq':
                     pass
                 else:
                     _LOGGER.debug(
@@ -764,20 +769,26 @@ class PHSceneTab:
     def _callback__SSceneRefsShowLookdevs(self):
         self.ui.SSceneRefs.redraw()
 
+    def _callback__SSceneRefsShowTexs(self):
+        self.ui.SSceneRefs.redraw()
+
     def _callback__SSceneRefsShowAbcs(self):
         self.ui.SSceneRefs.redraw()
 
     def _callback__SSceneRefsTypeFilterReset(self):
         for _elem in [
+                self.ui.SSceneRefsShowModels,
                 self.ui.SSceneRefsShowRigs,
                 self.ui.SSceneRefsShowLookdevs,
                 self.ui.SSceneRefsShowAbcs,
+                self.ui.SSceneRefsShowTexs,
         ]:
             _elem.setChecked(False)
         self.ui.SSceneRefs.redraw()
 
     def _callback__SSceneRefsFilter(self):
         self.ui.SSceneRefs.redraw()
+        self.ui.SSceneRefsFilter.setFocus()
 
     def _callback__SSceneRefsFilterClear(self):
         self.ui.SSceneRefsFilter.setText('')
@@ -1257,6 +1268,13 @@ class PHSceneTab:
         _LOGGER.info('DOUBLE CLICK %s', _out)
         if _out:
             self._callback__SAdd(outs=[_out])
+
+    def _doubleClick__SSceneRefs(self):  # pylint: disable=invalid-name
+        """Triggered by double-click SSceneRefs element."""
+        _ref = self.ui.SSceneRefs.selected_data()
+        _LOGGER.info('DOUBLE CLICK %s', _ref)
+        if _ref:
+            _ref.select_in_scene()
 
 
 def _apply_lookdev(ref, lookdev):

@@ -1,6 +1,8 @@
 """Tools for managing human IK."""
 
+import collections
 import logging
+import pprint
 
 from pini import pipe
 from pini.dcc import pipe_ref
@@ -23,16 +25,27 @@ STANCE = 'Stance'
 class PHIKNode(pom.CNode):
     """Represent an HIKCharacter node."""
 
-    def bake_to_skel(self, range_=None, step=None, loop=False):
+    @property
+    def properties(self):
+        """Obtain properties node.
+
+        Returns:
+            (CNode): HIK properties
+        """
+        return single(self.find_connections(
+            type_='HIKProperty2State', plugs=False, connections=False))
+
+    def bake_to_skel(self, range_=None, step=None, loop=False, skel=None):
         """Bake animation to skeleton.
 
         Args:
             range_ (tuple): override range (otherwise read from anim)
             step (float): override step size (otherwise read from anim)
             loop (bool): apply looping
+            skel (CSkeleton): skeleton to bake to
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
-        _skel = pom.find_skeleton(self.namespace)
+        _skel = skel or pom.find_skeleton(self.namespace)
         _LOGGER.info(' - SKEL %s', _skel)
 
         # Read range + step size from source anim
@@ -48,18 +61,12 @@ class PHIKNode(pom.CNode):
             _src_keys = [_time for _time, _ in _src_ktvs]
             _LOGGER.info(' - SRC KEYS %s', _src_keys)
             if not _step:
-                _steps = sorted({
-                    round(_src_keys[_idx + 1] - _src_keys[_idx], 4)
-                    for _idx in range(len(_src_keys) - 1)})
-                _LOGGER.info(' - STEPS %s', _steps)
-                _step = single(_steps, catch=True)
-                if not _step:
-                    raise NotImplementedError
+                _step = _read_step_size(_src_keys)
             if not _rng:
                 _rng = _src_keys[0], _src_keys[-1]
         _LOGGER.info(' - RANGE / STEP %s %s', _rng, _step)
 
-        # Bake anim
+        # Bake anim (copied from HIK bake to skeleton)
         _plugs = [_skel.root.translate]
         _plugs += [_jnt.rotate for _jnt in _skel.joints]
         _LOGGER.info(' - PLUGS %s', _plugs)
@@ -72,9 +79,27 @@ class PHIKNode(pom.CNode):
             removeBakedAnimFromLayer=False, bakeOnOverrideLayer=False,
             minimizeRotation=True, controlPoints=False, shape=True)
         mel.eval(f'hikBakeCharacterPost "{self}"')
+        cmds.DeleteStaticChannels()
 
+        # Apply looping
         if loop:
-            raise NotImplementedError
+            _LOGGER.debug(' - APPLY LOOP %s', loop)
+            if loop == 'Path':
+                _offs_trgs = [_skel.root.tz]
+            elif loop in (True, 'Loopable'):
+                _offs_trgs = []
+            else:
+                raise ValueError(loop)
+            for _crv in pom.find_anim(
+                    namespace=self.namespace, referenced=False):
+                _LOGGER.debug(' - CURVE %s', _crv)
+                if not _crv.output.find_connections():
+                    _LOGGER.debug('   - DELETE UNCONNECTED')
+                    _crv.delete()
+                    continue
+                _offs = _crv.target in _offs_trgs
+                _LOGGER.debug('   - OFFS %s', _offs)
+                _crv.loop(offset=_offs)
 
     def get_source(self):
         """Obtain source for this HIK node.
@@ -83,9 +108,9 @@ class PHIKNode(pom.CNode):
             (None|str|PHIKNode): source (HIK, control rig or None)
         """
         _LOGGER.debug('GET SOURCE %s', self)
-        refresh_ui()
-        CHAR_LIST.set_val(self)
-        refresh_ui()
+
+        self.set_current()
+
         _src = SRC_LIST.get_val().strip()
         _LOGGER.info(' - SOURCE %s = %s', self, _src)
         if _src == CONTROL_RIG:
@@ -136,15 +161,28 @@ class PHIKNode(pom.CNode):
         _LOGGER.debug(' - SELECT %s', _select)
         SRC_LIST.set_val(f' {_select}', catch=False)
         process_deferred_events()
+        cmds.refresh()
         _LOGGER.debug(' - SELECTED "%s"', SRC_LIST.get_val())
         assert SRC_LIST.get_val() == f' {_select}'
 
-    def set_current(self):
-        """Set this HIK as current selection in the ui."""
-        _LOGGER.debug(' - SET CURRENT %s', self)
+    def set_current(self, force=False):
+        """Set this HIK as current selection in the ui.
+
+        Args:
+            force (bool): run selection scripts even if no change needed
+        """
+        _LOGGER.debug(' - SET CURRENT "%s"', self)
+
         process_deferred_events()
 
+        _sel = CHAR_LIST.get_val()
+        _LOGGER.debug('   - SELECTED "%s" sel=%d', _sel, _sel == self)
+        if _sel == self:
+            _LOGGER.debug('   - ALREADY SET TO %s', self)
+            return
+
         # Run HIK mel
+        _LOGGER.debug('   - SELECTING %s', self)
         mel.eval(f'hikEnableCharacter("{self}", false)')
         mel.eval(f'hikSetCurrentCharacter {self}')
         mel.eval('hikUpdateSourceList()')
@@ -440,6 +478,41 @@ def get_source(hik):
     """
     _hik = find_hik(hik)
     return _hik.get_source()
+
+
+def _read_step_size(keys):
+    """Read step size from the given list of key frames.
+
+    Args:
+        keys (float list): frames of keys
+
+    Returns:
+        (float): step size
+    """
+
+    # Read steps between all keys
+    _steps = collections.defaultdict(int)
+    _keys = sorted(set(keys))
+    for _idx in range(len(_keys) - 1):
+        _step = round(_keys[_idx + 1] - _keys[_idx], 4)
+        _steps[_step] += 1
+    _steps = dict(_steps)
+    _LOGGER.info(' - STEPS %s', _steps)
+
+    _step = single(_steps.keys(), catch=True)
+    if _step:
+        return _step
+
+    # Use most common step if not clear
+    for _step, _count in list(_steps.items()):
+        if _count <= 3:
+            del _steps[_step]
+    _step = single(_steps.keys(), catch=True)
+    if _step:
+        return _step
+
+    pprint.pprint(_steps)
+    raise NotImplementedError('Failed to determine step size')
 
 
 def refresh_ui(show=False):

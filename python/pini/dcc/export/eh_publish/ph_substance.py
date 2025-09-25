@@ -36,10 +36,14 @@ class CSubstanceTexturePublish(ph_basic.CBasicPublish):
             name='Preview Outputs', callback=self._raise_outputs_dialog,
             width=70)
 
+        _tex_sets = []
+        if dcc.cur_file():
+            _tex_sets += textureset.all_texture_sets()
+
         # Add texture sets
         _emoji = qt.CPixmap(icons.find('Diamond Suit'))
         _sets = []
-        for _set in textureset.all_texture_sets():
+        for _set in _tex_sets:
             _icon = qt.CPixmap(30, 30)
             _icon.fill('Transparent')
             _icon.draw_overlay(

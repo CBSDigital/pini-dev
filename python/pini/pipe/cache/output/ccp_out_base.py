@@ -195,15 +195,14 @@ class CCPOutputBase(elem.CPOutputBase):
         _LOGGER.debug('GET METADATA %s', self)
         return data or super().get_metadata()
 
-    def set_metadata(self, data, mode='replace', force=True):
+    def set_metadata(self, data, force=True, **kwargs):
         """Set metadata for this output.
 
         Args:
             data (dict): metadata to apply
-            mode (str): update mode (replace/add)
             force (bool): replace existing metadata without confirmation
         """
-        super().set_metadata(data, mode=mode, force=force)
+        super().set_metadata(data, force=force, **kwargs)
         self.get_metadata(force=True)
 
     def find_rep(self, task=None, catch=True, **kwargs):

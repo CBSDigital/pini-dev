@@ -544,7 +544,7 @@ class CPOutputBase:
         assert isinstance(latest, bool)
         self._latest = latest
 
-    def set_metadata(self, data, mode='replace', force=True):
+    def set_metadata(self, data, mode='replace', bkp=False, force=True):
         """Set metadata for this output.
 
         Args:
@@ -552,8 +552,11 @@ class CPOutputBase:
             mode (str): how to set the metadata
                 replace - overwrite existing metadata
                 add - update existing metadata with this metadata
+            bkp (bool): backup metadata file on save
             force (bool): replace existing metadata without confirmation
         """
+        if bkp:
+            self.metadata_file.bkp()
         if mode == 'replace':
             _data = data
         elif mode == 'add':

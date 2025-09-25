@@ -44,6 +44,7 @@ PLATE_TYPE_ICON = icons.find('Plate')
 RENDER_TYPE_ICON = icons.find('Film Frames')
 RIG_TYPE_ICON = icons.find('Bone')
 RS_TYPE_ICON = icons.find('Police Car Light')
+TEXTURE_TYPE_ICON = icons.find('Paintbrush')
 
 EXTN_ICONS = {
     'abc': ABC_ICON,
@@ -58,6 +59,9 @@ EXTN_ICONS = {
 _EXTN_BG_MAP = {
     'abc': ABC_BG_ICON,
     'fbx': FBX_BG_ICON,
+}
+_CONTENT_TYPE_BG_MAP = {
+    'Texture': icons.find('Yellow Square')
 }
 _TYPE_BG_MAP = {
     'plate': icons.find('Brown Circle'),
@@ -122,26 +126,31 @@ def _cache_to_icon(output):
     Returns:
         (str|QPixmap): icon
     """
+    _LOGGER.debug(' - CACHE TO ICON %s', output)
+    _LOGGER.debug('   - SRC REF %s', output.src_ref)
 
     # Find overlay path (eg. icon from from a source entity)
     _over_path = None
     if output.src_ref:
         _asset = pipe.CPOutputFile(output.src_ref)
         _over_path = output_to_icon(_asset)
+    elif output.profile == 'asset':
+        _ety = pipe.CACHE.obt_entity(output)
+        _over_path = _ety.to_icon()
     elif output.content_type == 'CameraAbc' or output.task == 'cam':
         _over_path = CAM_ICON
     elif output.type_ == 'CPCacheableSet':
         _over_path = CSET_ICON
     else:
         _over_path = DEFAULT_ICON
-    _LOGGER.debug(' - OVER PATH %s', _over_path)
+    _LOGGER.debug('   - OVER PATH %s', _over_path)
 
     # Determine base icon
     if _over_path:
         _base_icon = (
             _EXTN_BG_MAP.get(output.extn) or
             DEFAULT_BASE_ICON)
-        _LOGGER.debug(' - BASE ICON extn=%s %s', output.extn, _base_icon)
+        _LOGGER.debug('   - BASE ICON extn=%s %s', output.extn, _base_icon)
         _icon = _add_icon_overlay(_base_icon, overlay=_over_path, mode='C')
     else:
         _icon = None
@@ -149,7 +158,7 @@ def _cache_to_icon(output):
             _icon = CAM_ICON
         if not _icon:
             _icon = DEFAULT_ICON
-        _LOGGER.debug(' - ICON task=%s %s', output.pini_task, _icon)
+        _LOGGER.debug('   - ICON task=%s %s', output.pini_task, _icon)
 
     return _icon
 
@@ -227,7 +236,7 @@ def _output_to_entity_icon(output):
     return _ety.to_icon()
 
 
-def _add_icon_overlay(icon, overlay, mode='BL'):
+def _add_icon_overlay(icon, overlay, mode='BL', scale=0.5):
     """Add overlay to the given icon.
 
     Args:
@@ -236,6 +245,7 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
         mode (str): overlay mode
             BL (default) - add to bottom left
             C - add to centre (for square/circle backdrop)
+        scale (float): overlay scale
 
     Returns:
         (CPixmap): icon with overlay
@@ -250,8 +260,7 @@ def _add_icon_overlay(icon, overlay, mode='BL'):
     _icon = icon
     if not isinstance(_icon, QtGui.QPixmap):
         _icon = qt.obt_pixmap(_icon)
-    _over_scale = 0.6
-    _over_size = _icon.size() * _over_scale
+    _over_size = _icon.size() * scale
     if mode == 'BL':
         _margin = 0
         _pos = qt.to_p(_margin, _icon.height() - _margin)
@@ -299,26 +308,24 @@ def obt_recent_work(force=False):
 
 
 @cache_result
-def output_to_icon(output, overlay=None, force=False):  # pylint: disable=too-many-branches
+def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
     """Obtain an icon for the given output.
 
     Args:
         output (CPOutput): output to find icon for
-        overlay (str): name of overlay emoji to apply to bottom left
         force (bool): force rebuild icon
 
     Returns:
         (CPixmap): icon
     """
-    _LOGGER.debug('OUTPUT TO ICON %s over=%s force=%d', output, overlay, force)
+    _LOGGER.debug('OUTPUT TO ICON %s force=%d', output, force)
     _LOGGER.debug(' - BASIC TYPE %s', output.basic_type)
 
-    # Get base icon
+    # Get base icon + bg
+    _bg = None
     if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
         _icon = _NO_CACHE_OUTPUT_ICON
-
     else:
-
         _bg = None
         if output.content_type == 'CurvesMb':
             _LOGGER.debug(' - APPLYING CURVES MB ICON')
@@ -339,6 +346,9 @@ def output_to_icon(output, overlay=None, force=False):  # pylint: disable=too-ma
                     'ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
             _LOGGER.debug(' - APPLYING LOOKDEV ICON')
             _icon = _lookdev_to_icon(output)
+        elif output.content_type in _CONTENT_TYPE_BG_MAP:
+            _bg = _CONTENT_TYPE_BG_MAP[output.content_type]
+            _icon = _output_to_entity_icon(output)
         elif output.type_ in _TYPE_BG_MAP:
             _bg = _TYPE_BG_MAP[output.type_]
             _icon = _output_to_entity_icon(output)
@@ -346,15 +356,16 @@ def output_to_icon(output, overlay=None, force=False):  # pylint: disable=too-ma
             _LOGGER.debug(' - APPLYING ENTITY ICON')
             _icon = _output_to_entity_icon(output)
 
-        if overlay:
-            _icon = _add_icon_overlay(icon=_icon, overlay=overlay)
-        if _bg:
-            _icon = _add_icon_overlay(icon=_bg, overlay=_icon, mode='C')
+    # Apply background
+    if _bg:
+        _LOGGER.debug(' - APPLYING BG %s', _bg)
+        _icon = _add_icon_overlay(
+            icon=_bg, overlay=_icon, mode='C')
 
-    _LOGGER.debug(' - ICON %s', _icon)
+    # Make sure base is pixmap
     if _icon and not isinstance(_icon, QtGui.QPixmap):
         _icon = qt.obt_pixmap(to_str(_icon))
-        assert isinstance(_icon, QtGui.QPixmap)
+    assert isinstance(_icon, QtGui.QPixmap)
 
     return _icon
 
@@ -416,12 +427,14 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         return _NO_CACHE_TYPE_ICON
     _LOGGER.debug(
         ' - BASIC/CONTENT TYPES %s %s', output.basic_type, output.content_type)
+
     if output.basic_type == 'render':
         return RENDER_TYPE_ICON
     if output.basic_type == 'plate':
         return PLATE_TYPE_ICON
     if output.basic_type == 'blast':
         return BLAST_TYPE_ICON
+
     if output.content_type == 'VrmeshMa':
         return ARCHIVE_TYPE_ICON
     if output.content_type == 'RedshiftProxy':
@@ -432,6 +445,8 @@ def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
         return MAYA_FILE_ICON
     if output.content_type == 'Image':
         return IMG_FILE_ICON
+    if output.content_type == 'Texture':
+        return TEXTURE_TYPE_ICON
 
     if (
             output.extn not in ('ma', 'mb') and

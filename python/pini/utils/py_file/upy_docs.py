@@ -63,7 +63,12 @@ class PyDefDocs:
             arg (PyArgDoc): arg docs to add
         """
         _LOGGER.debug('ADD ARG %s', arg)
-        assert self.args_str
+        if not self.args_str:
+            # import pprint
+            # pprint.pprint(self.body)
+            # asdasd
+            self.args_str = ''
+            raise NotImplementedError
         _arg_docs = arg.docstring.replace('\n', '\n    ')
         _new_arg_s = self.args_str + f'\n    {_arg_docs}'
         assert self.body.count(self.args_str) == 1
@@ -172,7 +177,7 @@ class PyDefDocs:
             _result = add_indent(self.to_str('Clean'), indent=_indent)
             _result = '\n'.join(_line.rstrip() for _line in _result.split('\n'))
         elif mode == 'Clean':
-            assert self.def_
+            # assert self.def_
             _tail = '"""' if '\n' not in self.body else '\n"""'
             _result = f'"""{self.body}{_tail}'
         else:

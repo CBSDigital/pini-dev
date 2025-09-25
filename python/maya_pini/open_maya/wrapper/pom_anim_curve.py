@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 from maya.api import OpenMayaAnim as oma
 
-from pini.utils import single
+from pini.utils import single, passes_filter
 from maya_pini.utils import to_clean
 
 from .. import base
@@ -214,11 +214,13 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             includeUpperBound=True, relative=True)
 
 
-def find_anim(namespace=None):
+def find_anim(namespace=None, filter_=None, referenced=None):
     """Find anim curves in this scene.
 
     Args:
         namespace (str): apply namespace filter
+        filter_ (str): apply name filter
+        referenced (bool): apply referened filter
 
     Returns:
         (CAnimCurve): anim curves
@@ -226,7 +228,11 @@ def find_anim(namespace=None):
     from maya_pini import open_maya as pom
     _anims = []
     for _anim in pom.CMDS.ls(type='animCurve'):
+        if not passes_filter(str(_anim), filter_):
+            continue
         if namespace and _anim.namespace != namespace:
+            continue
+        if referenced is not None and _anim.is_referenced() != referenced:
             continue
         _anims.append(_anim)
     return _anims

@@ -327,6 +327,8 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """Loop this skeleton's animation."""
         for _plug in self.plugs:
             _offset = _plug.attr in ['tx', 'tz']
+            if not _plug.anim:
+                continue
             _plug.anim.loop(offset=_offset)
 
     def to_joint(self, name, catch=True):

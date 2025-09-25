@@ -392,6 +392,8 @@ def _build_apply_fn(field):
             cmds.checkBox(field, edit=True, value=_val)
         elif cmds.intField(field, query=True, exists=True):
             cmds.intField(field, edit=True, value=val)
+        elif cmds.floatField(field, query=True, exists=True):
+            cmds.floatField(field, edit=True, value=val)
         elif cmds.optionMenu(field, query=True, exists=True):
             ui.OptionMenu(field).set_val(val)
         elif cmds.frameLayout(field, query=True, exists=True):

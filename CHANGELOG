@@ -1,3 +1,34 @@
+## [8.18.0] - Thu 2025-09-25 13:43
+### Summary
+ - Pini Helper:
+    - scene refs hide referenced file nodes (cstewart),
+    - scene refs better label for texture nodes (cstewart),
+    - scene refs added textures filter (cstewart),
+### Updated
+ - pini.dcc.MayaDCC.take_snapshot apply nice settings to blast,
+ - pini.dcc.MayaDCC.find_pipe_refs hide referenced file nodes,
+ - pini.dcc.SubstanceDCC bugfix error on draw texture publish ui with no current scene,
+ - pini.pipe.CPOutputBase.set_metadata bugfix missing bkp arg,
+ - pini.pipe.CACHE.CCPEntity.to_icon bugfix not finding mapped icons,
+ - pini.pipe.CACHE.CCPOutputBase.set_metadata use dereferenced kwargs,
+ - pini.tools.pyui.PUMaya bugfix missing float field handling,
+ - pini.tools.release.PRRepo.release use $TMP subdir for tmp yml,
+ - pini.tools.helper added texture icon + bg icon,
+ - pini.tools.helper cache icon uses asset icon,
+ - pini.tools.helper.output_to_icon removed overlay flag,
+ - pini.tools.helper.PHUSceneRefItem draw overlay in draw_pixmap method to allow better positioning,
+ - pini.tools.helper.PHUSceneRefItem better label for texture items,
+ - pini.tools.helper scene tab double click scene ref item to select in scene,
+ - pini.tools.helper scene tab added textures filter,
+ - pini.tools.helper scene tab bugfix reset bugfix ignoring models filter,
+ - pini.tools.helper scene tab filter scene refs bugfix losing focus,
+ - maya_pini.open_maya.find_anim added filter_/referenced args,
+ - maya_pini.open_maya.CSkeleton.loop bugfix error on plug missing anim,
+ - maya_pini.hik.PHIKNode.properties added property,
+ - maya_pini.hik.PHIKNode.bake_to_skel implemented looping,
+ - maya_pini.hik.PHIKNode.set_current block update if already selected,
+
+
 ## [8.17.0] - Tue 2025-09-23 11:55
 ### Summary
  - Pini Helper:

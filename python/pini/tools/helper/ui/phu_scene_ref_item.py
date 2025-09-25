@@ -5,7 +5,7 @@
 from pini import qt, icons
 from pini.pipe import cache
 from pini.qt import QtGui
-from pini.utils import basic_repr, File
+from pini.utils import basic_repr
 
 from ..ph_utils import (
     output_to_icon, UPDATE_ICON, output_to_type_icon, obt_pixmap)
@@ -88,9 +88,10 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         self.bg_col = None
         if status or _overlay:
             self.bg_col = qt.CColor(self.text_col, alpha=0.2)
+        self.overlay = None
         if _overlay:
-            _overlay = File(_overlay)
-        self.icon = output_to_icon(self.output, overlay=_overlay)
+            self.overlay = qt.obt_pixmap(_overlay)
+        self.icon = output_to_icon(self.output)
 
         super().__init__(list_view, col='Transparent', data=self.ref)
 
@@ -186,8 +187,15 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         # Draw icon
         if self.icon:
             _over = self.icon.resize(self.font_size * 2.5)
-            pix.draw_overlay(
+            _rect = pix.draw_overlay(
                 _over, pos=(self.font_size * 1, pix.height() / 2), anchor='L')
+            if self.overlay:
+                _size = _rect.width()
+                _fr = 0.2
+                _pos = _rect.bottomLeft() + qt.to_p(_fr * _size, -_fr * _size)
+                pix.draw_overlay(
+                    self.overlay, pos=_pos,
+                    size=_size * 0.7, anchor='C')
 
         # Draw namespace
         _font.setBold(True)
@@ -200,7 +208,9 @@ class PHSceneRefItem(qt.CListViewPixmapItem):
         _font.setBold(False)
         _label = _out.entity.name
         if _out.tag:
-            _label += '/' + _out.tag
+            _label += f'/{_out.tag}'
+        if _out.type_ == 'texture_seq':
+            _label += f' {_out.output_type}'
         pix.draw_text(
             _label,
             pos=(_left_m, self.font_size * 2.4), col=self.text_col,

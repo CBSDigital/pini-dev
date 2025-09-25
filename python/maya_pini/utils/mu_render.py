@@ -290,7 +290,8 @@ def render(
     _LOGGER.info('RENDER %s', seq)
 
     _frames = dcc.t_frames() if frames is None else frames
-    _LOGGER.info(' - FRAMES %d - %d', min(_frames), max(_frames))
+    if _frames:
+        _LOGGER.info(' - FRAMES %d - %d', min(_frames), max(_frames))
 
     # Determine render mode
     _mode = mode

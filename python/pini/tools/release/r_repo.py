@@ -6,8 +6,8 @@ import re
 import time
 
 from pini.utils import (
-    Dir, cache_property, TMP_PATH, lprint, search_files_for_text, restore_cwd,
-    system, to_time_f, abs_path, cache_result, dprint)
+    Dir, cache_property, lprint, search_files_for_text, restore_cwd,
+    system, to_time_f, abs_path, cache_result, dprint, TMP)
 
 from . import test
 from .r_version import PRVersion, DEV_VER
@@ -309,8 +309,8 @@ class PRRepo(Dir):
         # Save release data to tmp yml
         _data = {'notes': notes, 'version': _next, 'mtime': _mtime,
                  'repo': self}
-        _tmp_yml = Dir(TMP_PATH).to_file(
-            f'{self.name}_{_next.to_str()}.yml')
+        _tmp_yml = TMP.to_file(
+            f'.pini/release/data/{self.name}_{_next.to_str()}.yml')
         _tmp_yml.write_yml(_data, force=True)
 
         self._update_changelog(

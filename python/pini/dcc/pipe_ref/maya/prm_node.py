@@ -413,12 +413,13 @@ def create_rs_vol(output, namespace):
     return CMayaRsVolume(_vol)
 
 
-def _find_type_nodes(class_, selected=False):
+def _find_type_nodes(class_, selected=False, referenced=None):
     """Read nodes of the given class in the current scene.
 
     Args:
         class_ (class): type of node to search for
         selected (bool): apply selected nodes filter
+        referenced (bool): apply referenced state filter
 
     Returns:
         (CMayaNodeRef list): matching node ref objects
@@ -430,7 +431,7 @@ def _find_type_nodes(class_, selected=False):
 
     _refs = []
     assert class_.TYPE
-    for _node in pom.find_nodes(type_=class_.TYPE):
+    for _node in pom.find_nodes(type_=class_.TYPE, referenced=referenced):
         _LOGGER.debug(' - ADDING NODE %s', _node)
         try:
             _ref = class_(_node)
@@ -563,7 +564,8 @@ def find_file_nodes(selected=False):
     Returns:
         (CMayaFileRef list): file refs
     """
-    return _find_type_nodes(class_=CMayaFileRef, selected=selected)
+    return _find_type_nodes(
+        class_=CMayaFileRef, selected=selected, referenced=False)
 
 
 def find_rs_dome_lights(selected=False):

@@ -21,7 +21,7 @@
    <item row="1" column="0" colspan="2">
     <widget class="CTabWidget" name="MainPane">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="WorkTab">
       <attribute name="title">
@@ -1771,7 +1771,7 @@ Range: 1-10</string>
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="0,0,0,0,1,0">
+              <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="0,0,0,0,0,1,0">
                <property name="spacing">
                 <number>2</number>
                </property>
@@ -1862,6 +1862,41 @@ Range: 1-10</string>
                  <property name="icon">
                   <iconset>
                    <normaloff>../../../../../pini-icons/icons/android_12l/icon.2897.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.2897.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                 <property name="flat">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="SSceneRefsShowTexs">
+                 <property name="maximumSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Toggle display textures</string>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>../../../../../pini-icons/icons/android_12l/icon.3054.png</normaloff>../../../../../pini-icons/icons/android_12l/icon.3054.png</iconset>
                  </property>
                  <property name="iconSize">
                   <size>
