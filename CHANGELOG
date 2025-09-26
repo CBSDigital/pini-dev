@@ -1,3 +1,13 @@
+## [8.19.0] - Fri 2025-09-26 10:25
+### Summary
+ - Maya Codebase:
+    - added handling for referencing obj files,
+### Updated
+ - pini.qt.CUiMainWindow.__repr__ added,
+ - pini.qt.PNGGraph.selected_item added,
+ - maya_pini.ref.create_ref added obj handling,
+
+
 ## [8.18.0] - Thu 2025-09-25 13:43
 ### Summary
  - Pini Helper:

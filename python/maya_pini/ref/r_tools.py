@@ -71,7 +71,8 @@ def create_ref(file_, namespace, parent=None, force=False):
     _type = {'ma': 'mayaAscii',
              'mb': 'mayaBinary',
              'fbx': 'FBX',
-             'abc': 'Alembic'}.get(_file.extn)
+             'obj': 'OBJ',
+             'abc': 'Alembic'}[_file.extn.lower()]
     cmds.file(_file.path, reference=True, namespace=_namespace,
               options="v=0;p=17", ignoreVersion=True, type=_type)
     _post_refs = set(find_refs())

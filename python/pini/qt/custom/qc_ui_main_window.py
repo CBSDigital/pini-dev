@@ -16,6 +16,7 @@ class CUiMainWindow(QtWidgets.QMainWindow, qc_ui_base.CUiBaseDummy):
     """Wrapper for QMainWindow class."""
 
     keyPressEvent = qc_ui_base.CUiBase.keyPressEvent
+    __repr__ = qc_ui_base.CUiBaseDummy.__repr__
 
     def __init__(self, ui_file, parent=None, **kwargs):
         """Constructor.

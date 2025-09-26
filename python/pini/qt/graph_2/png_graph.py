@@ -2,6 +2,8 @@
 
 import logging
 
+from pini.utils import single
+
 from ..q_mgr import QtWidgets, QtGui, Qt
 from .. import q_utils, wrapper
 
@@ -99,6 +101,14 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         _LOGGER.debug('   - POS S %s -> %s', _start_pos_s, _end_pos_s)
         _LOGGER.debug('   - D POS S %s', _d_pos_s)
         self.translate(_d_pos_s.x(), _d_pos_s.y())
+
+    def selected_item(self):
+        """Obtain selected item from the graph.
+
+        Returns:
+            (QGraphicsRectItem|None): item (if any)
+        """
+        return single(self.scene.selectedItems(), catch=True)
 
     def keyPressEvent(self, event):
         """Triggered by key press.
