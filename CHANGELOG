@@ -1,3 +1,14 @@
+## [8.19.1] - Fri 2025-09-26 12:16
+### Summary
+ - Pini Tools:
+    - maya blast bugfix animated focal length not applied in blast (kakuna),
+    - bugfix OpenMaya error on load lookdev rig (eehemann),
+### Updated
+ - maya_pini.utils.blast build tmp cam use input_connections not upstream_nodes on duplicate to maintain focal anim,
+ - maya_pini.m_pipe.read_cache_set removed deprecated transforms mode,
+ - maya_pini.m_pipe.read_cache_set catch OpenMaya error on isReferenced,
+
+
 ## [8.19.0] - Fri 2025-09-26 10:25
 ### Summary
  - Maya Codebase:

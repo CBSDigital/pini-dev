@@ -175,16 +175,24 @@ def read_cache_set(  # pylint: disable=too-many-branches
     _results = []
     for _node in _read_cache_set_nodes(set_=set_, mode=mode):
 
+        _LOGGER.debug(' - CHECK NODE %s', _node)
+
         if filter_ and not passes_filter(str(_node), filter_):
             continue
 
+        # Check node casts properly
         try:
             _node = pom.cast_node(_node)
         except ValueError:
-            _LOGGER.error('FAILED TO CAST NODE %s', _node)
+            _LOGGER.error('   - FAILED TO CAST NODE %s', _node)
+            continue
+        try:
+            _node.is_referenced()  # this can error even if node casts
+        except RuntimeError:
+            _LOGGER.error('   - ERRORED ON READ NODE %s', _node)
             continue
         _LOGGER.debug(
-            ' - NODE %s %s refd=%d shp=%s', _node, type(_node).__name__,
+            '   - NODE %s %s refd=%d shp=%s', _node, type(_node).__name__,
             _node.is_referenced(), _node.shp)
 
         if not include_referenced and _node.is_referenced():
@@ -198,16 +206,13 @@ def read_cache_set(  # pylint: disable=too-many-branches
         elif mode == 'lights':
             if not to_light_shp(_node):
                 continue
-        elif mode in ('tfm', 'transforms'):
-            if mode == 'transforms':
-                from pini.tools import release
-                release.apply_deprecation('04/03/25', 'Use tfm')
+        elif mode == 'tfm':
             if not isinstance(_node, pom.CBaseTransform):
                 continue
         else:
             raise NotImplementedError(mode)
 
-        _LOGGER.debug('   - ACCEPTED %s', _node)
+        _LOGGER.debug('     - ACCEPTED %s', _node)
         _results.append(_node)
 
     _LOGGER.debug(' - RESULTS %d %s', len(_results), _results)

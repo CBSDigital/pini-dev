@@ -8,8 +8,7 @@ import time
 from maya import cmds
 from maya.app.general import createImageFormats
 
-from pini.utils import (
-    Seq, str_to_ints, File, TMP, single, safe_zip, Video, wrap_fn)
+from pini.utils import Seq, str_to_ints, File, TMP, single, Video, wrap_fn
 
 from .mu_dec import reset_ns
 from .mu_namespace import del_namespace, set_namespace
@@ -88,7 +87,7 @@ def _build_tmp_blast_cam(cam):
 
     # Duplicate camera
     _src = pom.CCamera(cam)
-    _cam = _src.duplicate(upstream_nodes=True)
+    _cam = _src.duplicate(input_connections=True)
     _LOGGER.debug('   - TMP CAM %s', _cam)
 
     # Remove unwanted nodes in tmp ns
@@ -106,26 +105,26 @@ def _build_tmp_blast_cam(cam):
         _LOGGER.debug('     - REMOVE %s (%s)', _node, _type)
         cmds.delete(_node)
 
-    # Unlock attrs then constrain
+    # Unlock tfm attrs then constrain
     for _plug in [_cam.plug[_attr] for _attr in 'trs'] + _cam.tfm_plugs:
         _LOGGER.debug('   - UNLOCK %s', _plug)
         _plug.set_locked(False)
     _src.point_constraint(_cam, force=True)
     _src.orient_constraint(_cam, force=True)
 
-    # Fix any image place colspaces - it seems these are not necessarily
-    # made to match on duplicate
-    for _src_plane, _cam_plane in safe_zip(
-            _src.shp.find_incoming(
-                type_='imagePlane', plugs=False, connections=False),
-            _cam.shp.find_incoming(
-                type_='imagePlane', plugs=False, connections=False),
-    ):
-        _LOGGER.debug(
-            ' - CHECK IMG PLANE COLSPACE %s %s', _src_plane, _cam_plane)
-        _space = _src_plane.shp.plug['colorSpace'].get_val()
-        _LOGGER.debug('   - APPLY COLSPACE %s', _space)
-        _cam_plane.shp.plug['colorSpace'].set_val(_space)
+    # # Fix any image place colspaces - it seems these are not necessarily
+    # # made to match on duplicate
+    # for _src_plane, _cam_plane in safe_zip(
+    #         _src.shp.find_incoming(
+    #             type_='imagePlane', plugs=False, connections=False),
+    #         _cam.shp.find_incoming(
+    #             type_='imagePlane', plugs=False, connections=False),
+    # ):
+    #     _LOGGER.debug(
+    #         ' - CHECK IMG PLANE COLSPACE %s %s', _src_plane, _cam_plane)
+    #     _space = _src_plane.shp.plug['colorSpace'].get_val()
+    #     _LOGGER.debug('   - APPLY COLSPACE %s', _space)
+    #     _cam_plane.shp.plug['colorSpace'].set_val(_space)
 
     return _cam
 
