@@ -8,6 +8,9 @@ from .u_exe import find_exe
 from .u_filter import apply_filter, passes_filter
 from .u_func import wrap_fn, chain_fns, null_fn
 from .u_heart import check_heart, HEART
+from .u_session import (
+    PINI_SESSION_ID, DCC_SESSION_ID, to_session_dur, PINI_SESSION_START,
+    DCC_SESSION_START)
 from .u_system import system
 from .u_time import (
     nice_age, strftime, to_time_f, to_time_t, WEEK_SECS, DAY_SECS, YEAR_SECS)

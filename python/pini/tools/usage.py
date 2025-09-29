@@ -17,7 +17,7 @@ import pini
 from pini import dcc
 from pini.utils import (
     File, Dir, cache_result, strftime, assert_eq, is_pascal, get_user,
-    read_func_kwargs, Seq, to_camel, Path)
+    read_func_kwargs, Seq, to_camel, Path, to_session_dur)
 
 _SESSION_START = time.time()
 _LOGGER = logging.getLogger(__name__)
@@ -146,7 +146,7 @@ def _build_data(func, args=None):
     # Basic data
     _data['func'] = func
     _data['time'] = int(time.time())
-    _data['session'] = get_session_dur()
+    _data['session_dur'] = to_session_dur()
     _data['scene'] = dcc.cur_file()
     _data['machine'] = platform.node()
     _data['dcc'] = dcc.NAME
@@ -258,15 +258,6 @@ def get_mod_vers():
     for _mod in sorted(_TRACKED_MODS):
         _vers.append((_mod, _TRACKED_MODS[_mod]))
     return _vers
-
-
-def get_session_dur():
-    """Get current session duration.
-
-    Returns:
-        (int): session time in seconds
-    """
-    return int(time.time() - _SESSION_START)
 
 
 @cache_result

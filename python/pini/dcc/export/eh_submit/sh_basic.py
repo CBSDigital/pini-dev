@@ -155,6 +155,17 @@ class CBasicSubmitter(export.CExportHandler):
         shotgrid.create_ver(render, comment=notes, lut=lut, force=force)
         return []
 
+    def submit(self, render, **kwargs):
+        """Submit the given render.
+
+        Args:
+            render (CPOutput): output to submit
+
+        Returns:
+            (list): empty list (no new outputs generated)
+        """
+        return self.export(render, **kwargs)
+
 
 def _submit_out_sort(output):
     """Sort function for submittable outputs.

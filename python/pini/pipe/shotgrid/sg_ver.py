@@ -381,7 +381,10 @@ def _render_to_video(render, video, burnins=False, lut=None, force=False):
     _LOGGER.info('   - LUT %s', lut)
 
     _work = render.find_work()
-    _fps = _work.metadata.get('fps') or _work.entity.settings.get('fps')
+    if _work:
+        _fps = _work.metadata.get('fps')
+    else:
+        _fps = render.entity.settings.get('fps')
 
     _start = time.time()
     render.to_video(video, fps=_fps, burnins=burnins, lut=lut, force=force)

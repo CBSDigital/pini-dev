@@ -1,3 +1,18 @@
+## [8.20.0] - Mon 2025-09-29 10:46
+### Summary
+ - Pini Helper:
+    - submit asset render bugfix error on render missing metadata (eehemann),
+### Updated
+ - pini.utils added PINI_SESSION_ID/DCC_SESSION_ID/to_session_dur/PINI_SESSION_START/DCC_SESSION_START,
+ - pini.utils.build_cache_fmt added session_id arg,
+ - pini.dcc.export.CBasicSubmitter.submit added,
+ - pini.pipe.shotgrid.create_ver bugfix error on output missing metadata,
+ - pini.qt.build_tmp_icon use session id to avoid maya startup bug,
+ - pini.tools.error added pini/dcc session time,
+ - pini.tools.usage use utils.to_session_dur,
+ - pini.tools.usage.get_session_dur removed,
+
+
 ## [8.19.1] - Fri 2025-09-26 12:16
 ### Summary
  - Pini Tools:

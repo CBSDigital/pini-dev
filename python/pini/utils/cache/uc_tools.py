@@ -3,6 +3,8 @@
 import logging
 import sys
 
+from ..u_session import PINI_SESSION_ID
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -47,7 +49,7 @@ def cache_property(func):
 
 def build_cache_fmt(
         path, tool, mode='tmp', namespace='pini', py_ver=False, dcc_=False,
-        platform=False, check_path_limit=True, extn='yml'):
+        platform=False, check_path_limit=True, session_id=False, extn='yml'):
     """Build cache format string.
 
     This is used by the method to file cacher to build a path for
@@ -70,6 +72,7 @@ def build_cache_fmt(
         dcc_ (bool): include dcc in cache path
         platform (bool): include platform in cache path
         check_path_limit (bool): check windows path limit
+        session_id (bool): include session id in path
         extn (str): cache extension
             yml - slower but readable
             pkl - around 100x faster
@@ -89,6 +92,8 @@ def build_cache_fmt(
         _root = HOME.to_subdir('.pini/cache')
     else:
         raise ValueError(mode)
+    if session_id:
+        _root = _root.to_subdir(PINI_SESSION_ID)
 
     _path = to_str(path)
     _path = _path.replace('{', '_')

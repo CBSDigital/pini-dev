@@ -7,7 +7,7 @@ import traceback
 
 from pini import dcc, icons
 from pini.tools import usage
-from pini.utils import nice_age, email, basic_repr
+from pini.utils import nice_age, email, basic_repr, to_session_dur
 
 from . import e_trace_line
 
@@ -71,7 +71,8 @@ class PEError:
             f'<b>DCC</b> {dcc.NAME}{_dcc_ver}',
             f'<b>SCENE</b> {dcc.cur_file()}',
             f'<b>MACHINE</b> {platform.node()}',
-            f'<b>SESSION</b> {nice_age(usage.get_session_dur())}',
+            f'<b>PINI SESSION</b> {nice_age(to_session_dur("pini"))}',
+            f'<b>DCC SESSION</b> {nice_age(to_session_dur("dcc"))}',
             '',
         ]
         for _mod, _ver in usage.get_mod_vers():
@@ -93,8 +94,8 @@ class PEError:
             email.SUPPORT_EMAIL, subject=_subject, body=_body, html=True,
             cc_=email.FROM_EMAIL)
         qt.notify(
-            f'Sent error email to {email.SUPPORT_EMAIL}',
-            icon=icons.find('Lemon'), title='Email Sent')
+            f'Sent error email to:\n\n{email.SUPPORT_EMAIL.lower()}',
+            icon=icons.find('Lemon'), title='Email sent')
 
     def __repr__(self):
         return basic_repr(self, str(self.message).strip())

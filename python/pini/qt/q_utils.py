@@ -104,7 +104,8 @@ def build_tmp_icon(
     # Save file
     if mode == 'Map File':
         _tmp_fmt = build_cache_fmt(
-            file_, tool='TmpIcons', extn='png', mode='home')
+            file_, tool='TmpIcons', extn='png', mode='tmp',
+            session_id=True)
         _LOGGER.debug(' - TMP FMT %s', _tmp_fmt)
         _tmp_path = _tmp_fmt.format(func='icon')
     elif mode == 'Simple File':
