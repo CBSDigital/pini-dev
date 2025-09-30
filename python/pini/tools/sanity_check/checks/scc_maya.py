@@ -12,7 +12,7 @@ from pini.utils import (
     single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir)
 
 from maya_pini import ref, open_maya as pom, m_pipe, ui
-from maya_pini.utils import DEFAULT_NODES, to_clean
+from maya_pini.utils import DEFAULT_NODES, to_clean, cur_renderer
 
 from .. import core, utils
 
@@ -581,12 +581,14 @@ class CheckColorManagement(core.SCMayaCheck):
     def run(self):
         """Run this check."""
 
+        self.job = pipe.CACHE.cur_job
+        self.entity = pipe.CACHE.cur_entity
+
         # Obtain current job ocio file
-        _job = pipe.CACHE.cur_job
-        self.write_log('JOB %s', _job)
-        if not _job:
+        self.write_log('job %s', self.job)
+        if not self.job:
             return
-        _ocio = _job.settings.get('ocio') or _find_default_ocio()
+        _ocio = self.job.settings.get('ocio') or _find_default_ocio()
         self.write_log('ocio %s', _ocio)
         if not _ocio:
             self.write_log('ocio not found in job settings')
@@ -603,6 +605,13 @@ class CheckColorManagement(core.SCMayaCheck):
             func=cmds.colorManagementPrefs, flag='viewName', val='Raw')
 
         self._check_file_node_colspaces()
+
+        _ren = cur_renderer()
+        self.write_log('renderer %s', _ren)
+        if _ren == 'redshift':
+            self._check_rs_settings()
+        else:
+            self.write_log('renderer %s not handled', _ren)
 
     def _check_file_node_colspaces(self):
         """Check file node colspaces are not broken.
@@ -635,3 +644,18 @@ class CheckColorManagement(core.SCMayaCheck):
                 f'(default is "{_default_space}")')
             self.check_attr(
                 f'{_node}.colorSpace', _default_space, fail=_fail)
+
+    def _check_rs_settings(self):
+        """Check redshift colour settings."""
+        _lut = self.entity.settings.get('lut')
+        self.write_log('lut %s', _lut)
+        if not _lut:
+            return
+        self.check_attr(
+            'defaultRedshiftPostEffects.lutEnable', True)
+        self.check_attr(
+            'defaultRedshiftPostEffects.lutFilename', _lut)
+        self.check_attr(
+            'defaultRedshiftPostEffects.lutIsLogInput', True)
+        self.check_attr(
+            'defaultRedshiftPostEffects.lutApplyBeforeColorManagement', True)

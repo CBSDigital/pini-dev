@@ -82,7 +82,7 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         """
         super().update(out)
         self.node.parm('buildHierarchy').pressButton()
-        self.update_res()
+        self.update_camera_res()
 
     def update_camera_res(self):
         """Update camera resolution.

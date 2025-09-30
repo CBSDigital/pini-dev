@@ -151,6 +151,7 @@ def _build_data(func, args=None):
     _data['machine'] = platform.node()
     _data['dcc'] = dcc.NAME
     _data['dcc_version'] = dcc.to_version(str)
+    _data['py_version'] = f'{sys.version_info.major}.{sys.version_info.minor}'
     _data['platform'] = sys.platform
     if args:
         _data['args'] = args
