@@ -8,7 +8,6 @@ import substance_painter
 from pini import qt, pipe
 from pini.utils import File, Dir, abs_path, single
 
-
 _LOGGER = logging.getLogger(__name__)
 
 

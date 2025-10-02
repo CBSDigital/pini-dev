@@ -1,3 +1,11 @@
+## [8.21.1] - Thu 2025-10-02 09:29
+### Summary
+ - Pini Helper:
+    - deadline submit allow bugfix error on priority 100 (eehemann),
+### Updated
+ - pini.farm.CDJob allow priority 1-100,
+
+
 ## [8.21.0] - Tue 2025-09-30 09:00
 ### Summary
  - Pini Helper:

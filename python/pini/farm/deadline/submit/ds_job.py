@@ -156,7 +156,7 @@ class CDJob:
         """
         assert self.plugin
         assert self.group
-        assert 0 < self.priority < 100
+        assert 0 <= self.priority <= 100
 
         # Add dependencies
         _dep_ids = []
