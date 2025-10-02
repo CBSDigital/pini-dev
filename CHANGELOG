@@ -1,3 +1,13 @@
+## [8.22.0] - Thu 2025-10-02 13:38
+### Summary
+ - Error Catcher:
+    - allow multiple support emails (nhoyt/tvoll/nkim),
+### Updated
+ - pini.utils.email updated SUPPORT_EMAIL -> SUPPORT_EMAILS,
+ - pini.utils.email.send_email bugfix error on cc as str,
+ - pini.tools.error updated emailer to use support emails,
+
+
 ## [8.21.1] - Thu 2025-10-02 09:29
 ### Summary
  - Pini Helper:

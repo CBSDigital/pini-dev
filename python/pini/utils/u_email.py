@@ -16,8 +16,11 @@ from email.utils import formatdate
 _LOGGER = logging.getLogger(__name__)
 
 FROM_EMAIL = os.environ.get('PINI_FROM_EMAIL')
-SUPPORT_EMAIL = os.environ.get('PINI_SUPPORT_EMAIL')
 _EMAIL_SERVER = os.environ.get('PINI_EMAIL_SERVER')
+
+_SUPPORT_EMAILS_S = os.environ.get('PINI_SUPPORT_EMAILS', '')
+SUPPORT_EMAILS = tuple(
+    _item.lower() for _item in _SUPPORT_EMAILS_S.split(','))
 
 
 def send_email(to_, subject, body, from_=None, cc_=None, html=False,
@@ -34,7 +37,8 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
         server (str): force SMTP server
         attach (File list): files to attach
     """
-    from pini.utils import File
+    _LOGGER.debug('SEND EMAIL')
+    from pini.utils import File, to_list
 
     _server = server or _EMAIL_SERVER
     _from = from_ or FROM_EMAIL
@@ -43,14 +47,16 @@ def send_email(to_, subject, body, from_=None, cc_=None, html=False,
     assert _server
     assert isinstance(attach, collections.abc.Iterable)
 
-    _to = [to_] if isinstance(to_, str) else to_
-    _cc = [cc_] if isinstance(to_, str) else cc_
+    _to = to_list(to_)
+    _cc = to_list(cc_)
+    assert isinstance(_cc, list)
 
     _email = MIMEMultipart('alternative')
     _email['Subject'] = subject
     _email['From'] = _from
     _email['To'] = (", ").join(_to)
     _email["Date"] = formatdate(localtime=True)
+    _LOGGER.debug(' - CC %s', _cc)
     if cc_:
         _email['Cc'] = (", ").join(_cc)
 

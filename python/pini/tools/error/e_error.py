@@ -91,10 +91,11 @@ class PEError:
         _subject = _icon + f' [ERROR] {self.message}'
 
         email.send_email(
-            email.SUPPORT_EMAIL, subject=_subject, body=_body, html=True,
+            email.SUPPORT_EMAILS, subject=_subject, body=_body, html=True,
             cc_=email.FROM_EMAIL)
+        _emails_s = '\n'.join(email.SUPPORT_EMAILS)
         qt.notify(
-            f'Sent error email to:\n\n{email.SUPPORT_EMAIL.lower()}',
+            f'Sent error email to:\n\n{_emails_s}',
             icon=icons.find('Lemon'), title='Email sent')
 
     def __repr__(self):
