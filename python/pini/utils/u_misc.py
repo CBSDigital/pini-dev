@@ -631,6 +631,8 @@ def to_list(obj):
     Returns:
         (list): object as list
     """
+    if obj is None:
+        return []
     if isinstance(obj, (list, set, tuple)):
         return obj
     if isinstance(obj, str):

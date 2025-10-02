@@ -1,3 +1,11 @@
+## [8.22.1] - Thu 2025-10-02 13:54
+### Summary
+ - Emailer:
+    - bugfix error on empty cc,
+### Updated
+ - pini.utils.to_list added None handling,
+
+
 ## [8.22.0] - Thu 2025-10-02 13:38
 ### Summary
  - Error Catcher:

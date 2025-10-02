@@ -55,7 +55,7 @@ class _ErrorCatcherUi(qt.CUiDialog):
         self.ui.Lines.redraw()
 
         self.ui.SendEmail.setEnabled(
-            bool(email.FROM_EMAIL and email.SUPPORT_EMAIL))
+            bool(email.FROM_EMAIL and email.SUPPORT_EMAILS))
 
     def _redraw__Label(self):
         if self.error.type_name:
