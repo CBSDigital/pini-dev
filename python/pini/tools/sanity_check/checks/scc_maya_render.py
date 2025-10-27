@@ -150,26 +150,41 @@ class CheckAOVs(SCMayaCheck):
     def run(self):
         """Run this check."""
         _ren = cur_renderer()
-        if _ren not in ['redshift']:
-            self.write_log('Not implemented for renderer %s', _ren)
-            return
-        _aovs = _find_aovs()
-        self._check_for_job_default_aovs(_aovs)
+        self._aovs = _find_aovs()
         if _ren == 'arnold':
-            self._check_for_broken_cryto_aovs(_aovs)
+            self._check_aovs_arnold()
+        if _ren == 'redshift':
+            self._check_aovs_rs()
+        elif _ren == 'vray':
+            self._check_aovs_vray()
+        else:
+            self.write_log('Not implemented for renderer %s', _ren)
 
-    def _check_for_job_default_aovs(self, aovs):
-        """Check scene AOVs match job defaults (if available).
+    def _check_aovs_arnold(self):
+        """Apply AOVs check for arnold."""
+        self._check_for_broken_cryto_aovs()
 
-        Args:
-            aovs (CNode list): AOVs to check
-        """
+    def _check_aovs_rs(self):
+        """Apply AOVs check for redshift."""
+        self._check_for_job_default_aovs_rs()
+
+    def _check_aovs_vray(self):
+        """Apply AOVs check for vray."""
+        if cmds.objExists("vrayRE_Z_depth"):
+            _fail = (
+                'The Z-Depth render element has filtering (anti-aliasing) '
+                'enabled. This should be disabled for correct depth output.')
+            self.check_attr(
+                'vrayRE_Z_depth.vray_filtering_zdepth', 0, fail=_fail)
+
+    def _check_for_job_default_aovs_rs(self):
+        """Check scene AOVs match job defaults (if available)."""
         self.write_log('Check settings for AOVs')
 
         _req_aovs = self.settings.get('aovs', [])
         self.write_log('Required AOVs %s', _req_aovs)
 
-        _cur_aovs = [_aov.plug['aovType'].get_val() for _aov in aovs]
+        _cur_aovs = [_aov.plug['aovType'].get_val() for _aov in self._aovs]
         self.write_log('Cur AOVs %s', _cur_aovs)
 
         for _aov in _req_aovs:
@@ -179,16 +194,12 @@ class CheckAOVs(SCMayaCheck):
             _fix = wrap_fn(_create_aov, _aov)
             self.add_fail(_msg, fix=_fix)
 
-    def _check_for_broken_cryto_aovs(self, aovs):
-        """Check for broken cryto AOVs.
-
-        Args:
-            aovs (CNode list): AOVs to check
-        """
+    def _check_for_broken_cryto_aovs(self):
+        """Check for broken cryto AOVs."""
         self.write_log('Check for broken cryto AOVs')
 
         # Find crypto aovs to check
-        _aovs = [_aov for _aov in aovs
+        _aovs = [_aov for _aov in self._aovs
                  if _aov.plug['aovType'].get_val().startswith('crypto_')]
         self.write_log(' - AOVs %s', _aovs)
         if not _aovs:
@@ -234,6 +245,8 @@ def _find_aovs():
         _type = 'aiAOV'
     elif _ren == 'redshift':
         _type = 'RedshiftAOV'
+    elif _ren == 'vray':
+        _type = 'VRayRenderElement'
     else:
         raise NotImplementedError(_ren)
     return [
@@ -276,10 +289,10 @@ def _create_aov(type_, name=None):
 
 
 class CheckCustomAovConnections(SCMayaCheck):
-    """Check custom aov assignments.
+    """Check custom AOV assignments.
 
-    Checks the names of the custom aov connections to each shading group
-    matches the name of the aov in the lookdev scene.
+    Checks the names of the custom AOV connections to each shading group
+    matches the name of the AOV in the lookdev scene.
     """
 
     label = 'Check custom AOV connections'
@@ -306,22 +319,22 @@ class CheckCustomAovConnections(SCMayaCheck):
                 self._check_custom_aov(src=_src, aov=_aov)
 
     def _check_custom_aov(self, src, aov):
-        """Check the given custom aov setting from the lookdev scene.
+        """Check the given custom AOV setting from the lookdev scene.
 
         Args:
-            src (str): plug being applied to custom aov list
-            aov (str): name of aov which it was applied to
+            src (str): plug being applied to custom AOV list
+            aov (str): name of AOV which it was applied to
         """
         _LOGGER.debug('CHECK CUSTOM AOV %s %s', src, aov)
-        self.write_log('   - aov %s %s', src, aov)
+        self.write_log('   - AOV %s %s', src, aov)
 
-        # Read current custom aov connection
+        # Read current custom AOV connection
         _cur_trg = single(
             src.find_outgoing(type_='shadingEngine'), catch=True)
         if not _cur_trg:
             return
 
-        # Read name of current aov
+        # Read name of current AOV
         _LOGGER.debug(' - CUR TRG %s %s', _cur_trg, type(_cur_trg))
         _tokens = re.split(r'[\[\]]', str(_cur_trg))
         _LOGGER.debug(' - TOKENS %s', _tokens)
@@ -348,7 +361,7 @@ class CheckCustomAovConnections(SCMayaCheck):
         if not _idx:
             _msg = (
                 f'Custom AOV {aov} is wrongly connected to {_cur_aov} in '
-                f'{_sg} - no {aov} aov was found to connect to')
+                f'{_sg} - no {aov} AOV was found to connect to')
             self.add_fail(_msg, node=_sg)
             return
 
@@ -363,7 +376,7 @@ class CheckCustomAovConnections(SCMayaCheck):
 
 
 def _fix_bad_aov_conn(disconnect, connect):
-    """Fix bad a bad aov connection.
+    """Fix bad a bad AOV connection.
 
     Args:
         disconnect (tuple): connection to break
