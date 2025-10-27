@@ -186,10 +186,11 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
             _job = pipe.CACHE.find_job(_proj.name)
             _LOGGER.debug('   - JOB %s', _job)
             _asset = _job.find_asset(
-                asset=_asset_d['code'],
-                asset_type=_asset_d['sg_asset_type'])
+                asset=_asset_d['code'], asset_type=_asset_d['sg_asset_type'],
+                catch=True)
             _LOGGER.debug('   - ASSET %s', _asset)
-            yield _asset
+            if _asset:
+                yield _asset
 
     def _obt_output_cacheable(self, output, catch, force):
         """Obtain cacheable version of the given output.

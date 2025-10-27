@@ -1,3 +1,11 @@
+## [8.24.1] - Mon 2025-10-27 13:07
+### Summary
+ - Pini Helper,
+    - bugfix error on launch due to missing linked asset (cstewart),
+### Updated
+ - pini.pipe.CCPEntitySG.find_linked asset catch error on missing asset,
+
+
 ## [8.24.0] - Mon 2025-10-27 12:54
 ### Summary
  - Pini Install:
