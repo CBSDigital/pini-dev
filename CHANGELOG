@@ -1,3 +1,15 @@
+## [8.24.0] - Mon 2025-10-27 12:54
+### Summary
+ - Pini Install:
+    - added set work callback to apply $NN_USEREMAIL + $NN_CONTEXT in houdini [PT-427] (tvoll),
+ - Sanity Check:
+    - CheckVRayZDepthNoFiltering removed,
+### Updated
+ - pini_cbs.c_pipe.set_work_callback added for all dccs,
+ - pini_cbs.install apply set work callback,
+ - pini_cbs.sanity_check.CheckVRayZDepthNoFiltering removed,
+
+
 ## [8.23.0] - Mon 2025-10-27 12:52
 ### Summary
  - Sanity Check:
