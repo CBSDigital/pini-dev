@@ -141,7 +141,6 @@ class CMayaAbcCache(CMayaCache):
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
         self.ui.add_separator()
-        self.ui.add_combo_box('Format', ['Ogawa', 'HDF5'])
         self.ui.add_check_box('UvWrite', label='Write UVs')
         self.ui.add_check_box('WorldSpace')
         self.ui.add_check_box('RenderableOnly')

@@ -1,21 +1,21 @@
+## [8.25.0] - Tue 2025-10-28 10:43
+### Summary
+ - Pini Helper,
+    - bugfix error on group reference asset with existing group in scene hierarchy (eehemann),
+    - bugfix error on cache using HDF5 format (eehemann),
+### Updated
+ - pini.utils.copied_path added exists flag,
+ - pini.dcc.pipe_ref.apply_grouping bugfix error group node already exists in scene in hierarchy,
+ - pini.dcc.export.CMayaAbcCache removed deprecated format option,
+ - pini.tools.helper bugfix shot label ctx not finding shot missing from disk,
+
+
 ## [8.24.1] - Mon 2025-10-27 13:07
 ### Summary
  - Pini Helper,
     - bugfix error on launch due to missing linked asset (cstewart),
 ### Updated
  - pini.pipe.CCPEntitySG.find_linked asset catch error on missing asset,
-
-
-## [8.24.0] - Mon 2025-10-27 12:54
-### Summary
- - Pini Install:
-    - added set work callback to apply $NN_USEREMAIL + $NN_CONTEXT in houdini [PT-427] (tvoll),
- - Sanity Check:
-    - CheckVRayZDepthNoFiltering removed,
-### Updated
- - pini_cbs.c_pipe.set_work_callback added for all dccs,
- - pini_cbs.install apply set work callback,
- - pini_cbs.sanity_check.CheckVRayZDepthNoFiltering removed,
 
 
 ## [8.23.0] - Mon 2025-10-27 12:52

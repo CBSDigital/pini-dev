@@ -144,11 +144,14 @@ def error_on_file_system_disabled(path=None):
         raise DebuggingError(_msg)
 
 
-def copied_path():
+def copied_path(exists=True):
     """Find any path copied in the paste buffer.
 
     This applies path mapping, and aims to remove any superfluous prefix
     that is found if you copy a path in microsoft teams.
+
+    Args:
+        exists (bool): test whether path exists
 
     Returns:
         (str): copied path
@@ -165,17 +168,21 @@ def copied_path():
         return _text
 
     # Try mapping path
-    _text = pipe.map_path(_text, mode='any')
-    if os.path.exists(_text):
-        return _text
+    _path = pipe.map_path(_text, mode='any')
+    if os.path.exists(_path):
+        return _path
 
     # Try splitting by jobs root
     _LOGGER.debug(' - JOBS ROOT %s', pipe.ROOT.path)
-    if pipe.ROOT.path in _text:
-        _, _rel_path = _text.rsplit(pipe.ROOT.path, 1)
+    if pipe.ROOT.path in _path:
+        _, _rel_path = _path.rsplit(pipe.ROOT.path, 1)
         _path = abs_path(f'{pipe.ROOT.path}/{_rel_path}')
-        if os.path.exists(_path):
-            return _path
+
+    if not exists:
+        return _path
+
+    if os.path.exists(_path):
+        return _path
 
     return None
 
