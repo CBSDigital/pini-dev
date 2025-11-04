@@ -4,7 +4,7 @@ import logging
 
 from pini import pipe
 
-from maya_pini import m_pipe, open_maya as pom
+from maya_pini import open_maya as pom
 
 from . import bh_base
 
@@ -110,6 +110,7 @@ class CMayaPlayblast(bh_base.CBlastHandler):
             update_cache (bool): update pipe cache
             force (bool): force blast with no confirmation dialogs
         """
+        from maya_pini import m_pipe
         _out = m_pipe.blast(
             format_=format_, view=view, range_=range_, burnins=burnins,
             res=res, camera=camera, save=False, settings=settings,

@@ -470,6 +470,11 @@ def _test_lighting_workflow(progress, force, show_ctx):
     pprint.pprint(_shot.find_outputs(extn='abc', tag='test'))
     _abc = _shot.find_output(
         extn='abc', tag='test', output_name='test01', ver_n='latest')
+    assert _abc.metadata['src_ref']
+    _out = pipe.CACHE.obt_output(_abc.metadata['src_ref'])
+    assert _out
+    assert _out.find_lookdev_shaders()
+    assert _abc.find_lookdev_shaders()
     _helper.ui.SOutputs.select_data(_abc)
     _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()

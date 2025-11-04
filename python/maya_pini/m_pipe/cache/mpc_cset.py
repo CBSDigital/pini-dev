@@ -17,27 +17,30 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
     This is a set with _CSET suffix - eg. beachBall_CSET
     """
 
-    def __init__(self, cache_set):
+    def __init__(self, cache_set, extn):
         """Constructor.
 
         Args:
             cache_set (str): custom cache set node
+            extn (str): cache output extension
         """
         assert cache_set.endswith('_CSET')
-        self.node = cache_set
 
         if cmds.referenceQuery(cache_set, isNodeReferenced=True):
             raise ValueError(
                 f'Referenced CSETs not supported {cache_set}')
         self.cache_set = cache_set
-        self.output_name = self.cache_set.replace('_CSET', '')
-        self.label = self.output_name + ' (CSET)'
-        self.output_type = 'geo'
+
+        _output_name = self.cache_set.replace('_CSET', '')
+        super().__init__(
+            output_name=_output_name, label=f'{_output_name} (CSET)',
+            output_type='geo', node=self.cache_set, extn=extn,
+            src_ref=None)
 
         if not self.to_geo():
             raise ValueError('No export geo')
         try:
-            self.to_output()
+            self.output
         except ValueError as _exc:
             raise ValueError(
                 'Failed to map to abc ' + self.output_name) from _exc
@@ -65,7 +68,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         """
         return _read_cset_geo(self.cache_set)
 
-    def to_icon(self):
+    def _to_icon(self):
         """Get icon for this cache set.
 
         Returns:
@@ -95,8 +98,11 @@ def _read_cset_geo(cset):
     return _items
 
 
-def find_csets():
+def find_csets(extn='abc'):
     """Find cache sets in the current scene.
+
+    Args:
+        extn (str): cache output extension
 
     Returns:
         (CPCacheableSet list): cacheable sets
@@ -106,7 +112,7 @@ def find_csets():
         if not _set.endswith('_CSET'):
             continue
         try:
-            _cset = CPCacheableSet(_set)
+            _cset = CPCacheableSet(_set, extn=extn)
         except ValueError:
             continue
         _csets.append(_cset)

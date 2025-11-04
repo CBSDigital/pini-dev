@@ -8,7 +8,7 @@ from pini import pipe, icons, qt, dcc, farm
 from pini.tools import sanity_check, error
 from pini.utils import single, plural, safe_zip, passes_filter, last
 
-from maya_pini import ref, open_maya as pom
+from maya_pini import open_maya as pom
 from maya_pini.utils import (
     hide_img_planes, restore_frame, blast_frame, save_fbx, restore_sel)
 
@@ -17,46 +17,43 @@ from . import mpc_ref, mpc_cam, mpc_cset
 _LOGGER = logging.getLogger(__name__)
 
 
-def _check_for_output_clash(cacheables, extn):
+def _check_for_output_clash(cacheables):
     """Check for multiple outputs writing to the same path.
 
     Args:
         cacheables (CPCacheable list): items being cached
-        extn (str): cache output format (abc/fbx)
     """
     _LOGGER.debug('CHECK FOR OUTPUT CLASH')
     _outs = []
     for _cbl in cacheables:
         _LOGGER.debug(' - TESTING %s', _cbl)
-        _out = _cbl.to_output(extn=extn)
-        _LOGGER.debug('   - OUTPUT %s', _out.path)
-        if _out in _outs:
+        _LOGGER.debug('   - OUTPUT %s', _cbl.output.path)
+        if _cbl.output in _outs:
             raise RuntimeError(
                 f'Multiple {_cbl.output_name} cacheables writing to same '
-                f'path: {_out.path}')
-        _outs.append(_out)
+                f'path: {_cbl.output.path}')
+        _outs.append(_cbl.output)
 
 
-def _check_for_overwrite(cacheables, extn, force):
+def _check_for_overwrite(cacheables, force):
     """Check for overwrite existing outputs.
 
     Args:
         cacheables (CPCacheable list): items being cached
-        extn (str): cache output format (abc/fbx)
         force (bool): replace existing without confirmation
     """
 
     _to_replace = []
     for _cbl in cacheables:
-        _out = _cbl.to_output(extn=extn)
-        if _out.exists():
-            _to_replace.append(_out)
+        if _cbl.output.exists():
+            _to_replace.append(_cbl.output)
 
     # Warn on overwrite
     if _to_replace:
+        _file = _to_replace[0]
         if not force:
             _msg = 'Replace {:d} existing {}{}?\n\n{}'.format(
-                len(_to_replace), extn, plural(_to_replace),
+                len(_to_replace), _file[0], plural(_to_replace),
                 '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
                 _n_over = len(_to_replace) - 10
@@ -68,20 +65,18 @@ def _check_for_overwrite(cacheables, extn, force):
         _out.delete(force=True)
 
 
-def _setup_cache(cacheables, extn='abc', force=False):
+def _setup_cache(cacheables, force=False):
     """Prepare for cache + setup job args and abc objects.
 
     Args:
         cacheables (CPCacheable list): items being cached
-        extn (str): cache output format (abc/fbx)
         force (bool): replace existing without confirmation
 
     Returns:
         (tuple): job args, outputs
     """
-
-    _check_for_output_clash(cacheables, extn=extn)
-    _check_for_overwrite(cacheables, extn=extn, force=force)
+    _check_for_output_clash(cacheables)
+    _check_for_overwrite(cacheables, force=force)
 
     _outs = []
     for _cbl in cacheables:
@@ -89,9 +84,8 @@ def _setup_cache(cacheables, extn='abc', force=False):
         _LOGGER.debug('CACHEABLE %s', _cbl)
 
         # Check dir exists
-        _out = _cbl.to_output(extn=extn)
-        _out.test_dir()
-        _outs.append(_out)
+        _cbl.output.test_dir()
+        _outs.append(_cbl.output)
 
     return _outs
 
@@ -166,7 +160,7 @@ def cache(
         return None
 
     # Setup cache
-    _outs = _setup_cache(cacheables=_cbls, force=force, extn=extn)
+    _outs = _setup_cache(cacheables=_cbls, force=force)
     if save and not dcc.batch_mode():
         _work.save(reason='cache', force=True, update_outputs=False)
     if snapshot:
@@ -292,11 +286,9 @@ def _exec_local_fbx_cache(cacheables, flags):  # pylint: disable=unused-argument
             auto_pos=False, col='LightPink'):
         _LOGGER.info(' - FBX CACHE %s', _cbl)
         cmds.select(_cbl.to_geo(extn='fbx'), hierarchy=True)
-        _out = _cbl.to_output(extn='fbx')
         save_fbx(
-            _out, animation=True, constraints=True, step=flags['step'],
+            _cbl.output, animation=True, constraints=True, step=flags['step'],
             range_=flags['range_'], version=flags['format_'])
-    # ffff
 
 
 @restore_frame
@@ -348,10 +340,38 @@ def find_cacheable(
     raise ValueError(_match_s)
 
 
-def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
+def _read_cacheables(extn):
+    """Read cacheables in the current scene.
+
+    Args:
+        extn (str): extension for cacheable
+
+    Returns:
+        (CCacheable list): cacheables
+    """
+
+    # Find all cacheables in scene
+    _all = []
+    for _ref in pom.find_refs():
+        try:
+            _cbl = mpc_ref.CPCacheableRef(_ref, extn=extn)
+        except ValueError:
+            continue
+        _all.append(_cbl)
+    _all += mpc_cam.find_cams(extn=extn)
+    _all += mpc_cset.find_csets(extn=extn)
+    _all.sort()
+    _LOGGER.debug(' - FOUND %d CACHEABLES %s', len(_all), _all)
+
+    return _all
+
+
+def find_cacheables(
+        extn='abc', filter_=None, task=None, type_=None, output_name=None):
     """Find cacheables in the current scene.
 
     Args:
+        extn (str): type of cacheable
         filter_ (str): filter cacheables by label
         task (str): return only cacheables from the given task
         type_ (str): filter by cacheable type (ref/cam/cset)
@@ -362,22 +382,17 @@ def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
     """
     _LOGGER.debug('FIND CACHEABLES')
 
-    # Find all cacheables in scene
-    _all = []
-    if type_ in ('ref', None):
-        _all += ref.find_refs(class_=mpc_ref.CPCacheableRef)
-    if type_ in ('cam', None):
-        _all += mpc_cam.find_cams()
-    if type_ in ('cset', None):
-        _all += mpc_cset.find_csets()
     if type_ not in (None, 'cset', 'cam', 'ref'):
         raise ValueError(type_)
-    _all.sort()
 
     # Apply filters
     _cbls = []
-    for _cbl in _all:
+    for _cbl in _read_cacheables(extn=extn):
 
+        _LOGGER.debug(' - CHECK CACHEABLE %s', _cbl)
+
+        if type_:
+            raise NotImplementedError
         if not passes_filter(_cbl.label, filter_):
             continue
         if task and _cbl.task != task:
@@ -388,8 +403,12 @@ def find_cacheables(filter_=None, task=None, type_=None, output_name=None):
         # Check maps to asset correctly
         if pipe.cur_work():
             try:
-                assert _cbl.to_output()
+                _out = _cbl.output
             except ValueError:
+                _LOGGER.debug('   - FAILED TO BUILD OUTPUT')
+                continue
+            if not _out:
+                _LOGGER.debug('   - MISSING OUTPUT')
                 continue
 
         _cbls.append(_cbl)

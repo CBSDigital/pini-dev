@@ -80,7 +80,7 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
             _out = self
             _asset = self.entity
         if not _asset:
-            _asset_path = pipe.map_path(self.metadata.get('asset'))
+            _asset_path = pipe.map_path(self.metadata.get('src_ref'))
             if _asset_path:
                 _out = pipe.to_output(_asset_path)
                 _out = pipe.CACHE.obt(_out)

@@ -110,7 +110,8 @@ def _create_asset(asset, force=False):
             ('code', 'is', ASSET_TEMPLATE),
             ('entity_type', 'is', 'Asset')])
     _LOGGER.info(' - ASSET TEMPLATE %s', _tmpl)
-    assert _tmpl
+    if not _tmpl:
+        raise RuntimeError(f'Failed to find asset template "{ASSET_TEMPLATE}"')
 
     _data = {
         "project": shotgrid.SGC.find_proj(asset.job).to_entry(),

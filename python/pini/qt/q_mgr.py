@@ -16,6 +16,21 @@ _SUCCESS = False
 LIB = None
 LIB_VERSION = None
 
+# Try to import qt mods from PySide6
+if (not _FORCE or _FORCE == 'PySide6') and not _SUCCESS:
+    try:
+        from PySide6 import QtUiTools, QtWidgets, QtCore, QtGui
+        from PySide6.QtCore import Qt
+        import PySide6
+        import shiboken6 as shiboken
+        _LOGGER.debug('LOADED Qt')
+    except ImportError as _exc:
+        _LOGGER.debug('FAILED TO LOAD PySide6 %s', _exc)
+    else:
+        _SUCCESS = True
+        LIB = 'PySide6'
+        LIB_VERSION = PySide6.__version__
+
 # Try to import qt mods from PySide2
 if (not _FORCE or _FORCE == 'PySide2') and not _SUCCESS:
     try:
@@ -44,21 +59,6 @@ if (not _FORCE or _FORCE == 'PySide') and not _SUCCESS:
     else:
         _SUCCESS = True
         LIB = 'PySide'
-
-# Try to import qt mods from PySide6
-if (not _FORCE or _FORCE == 'PySide6') and not _SUCCESS:
-    try:
-        from PySide6 import QtUiTools, QtWidgets, QtCore, QtGui
-        from PySide6.QtCore import Qt
-        import PySide6
-        import shiboken6 as shiboken
-        _LOGGER.debug('LOADED Qt')
-    except ImportError as _exc:
-        _LOGGER.debug('FAILED TO LOAD PySide6 %s', _exc)
-    else:
-        _SUCCESS = True
-        LIB = 'PySide6'
-        LIB_VERSION = PySide6.__version__
 
 # Try to import qt mods from PyQt5
 if (not _FORCE or _FORCE == 'PyQt5') and not _SUCCESS:

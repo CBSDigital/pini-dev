@@ -1,96 +1,23 @@
 """Tools for managing cache export handlers in maya."""
 
 import logging
-import pprint
 
-from maya import cmds
 
-from pini import qt, farm, icons
-from pini.utils import wrap_fn, safe_zip, to_str
+from pini import icons
 
-from maya_pini import m_pipe
-
-from .. import eh_base
+from . import ch_base
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMayaCache(eh_base.CExportHandler):
+class CMayaCache(ch_base.CCacheHandler):
     """Manages abc caching in maya."""
 
     TYPE = 'Cache'
 
     block_update_metadata = False
+    add_substeps = True
     add_use_farm = False
-
-    def _add_custom_ui_elems(self):
-        """Add custom elements for this cache handler."""
-
-    def build_ui(self):
-        """Build cache interface."""
-        _LOGGER.debug('BUILD UI')
-        self._build_ui_header(add_range=True)
-
-        self.ui.add_list_widget(name='Cacheables')
-        self.ui.add_spin_box('Substeps', 1, min_=1, max_=20)
-        if farm.IS_AVAILABLE and self.add_use_farm:
-            self.ui.add_check_box('UseFarm', False)
-        self._add_custom_ui_elems()
-        self._build_ui_footer()
-
-    def set_settings(self, *args, **kwargs):
-        """Setup settings dict."""
-        super().set_settings(*args, **kwargs)
-
-        # Handled in m_pipe to allow embed asset path
-        if self.block_update_metadata:
-            if not self.settings['update_metadata']:
-                raise NotImplementedError
-            self.settings['update_metadata'] = False
-
-    def _redraw__Cacheables(self):
-        _LOGGER.debug('REDRAW Cacheables')
-        _items = []
-        for _cbl in m_pipe.find_cacheables():
-            _icon = qt.CPixmap(30, 30)
-            _icon.fill('Transparent')
-            _icon.draw_overlay(
-                _cbl.to_icon(), _icon.center(), size=20, anchor='C')
-            _item = qt.CListWidgetItem(_cbl.label, icon=_icon, data=_cbl)
-            _items.append(_item)
-        self.ui.Cacheables.set_items(_items, select=_items, emit=False)
-        self.ui.Cacheables.load_setting()
-
-    def _callback__Cacheables(self):
-        self.ui.Execute.setEnabled(bool(self.ui.Cacheables.selected_datas()))
-
-    def _context__Cacheables(self, menu):
-        _cbl = self.ui.Cacheables.selected_data()
-        _out = None
-        if _cbl.output:
-            _out = _cbl.output
-        if _out:
-            menu.add_action(
-                'Print metadata', wrap_fn(pprint.pprint, _out.metadata))
-        menu.add_action(
-            'Select', wrap_fn(cmds.select, _cbl.node))
-
-    def _update_metadata(self, content_type=None):
-        """Update outputs metadata.
-
-        Args:
-            content_type (str): apply content type
-        """
-        super()._update_metadata()
-
-        # Apply src ref to metadata
-        _cbls = self.settings['cacheables']
-        for _cbl, _out in safe_zip(_cbls, self.outputs):
-            _LOGGER.info(' - CBL %s -> %s', _cbl, _out)
-            assert _cbl.namespace == _out.output_name
-            _out.add_metadata(src_ref=to_str(_cbl.path))
-            if content_type:
-                _out.add_metadata(content_type=content_type)
 
 
 class CMayaAbcCache(CMayaCache):
@@ -103,6 +30,15 @@ class CMayaAbcCache(CMayaCache):
 
     block_update_metadata = True
     add_use_farm = True
+
+    def find_cacheables(self):
+        """Find cacheables in the current scene.
+
+        Returns:
+            (CCacheable list): cacheables
+        """
+        from maya_pini import m_pipe
+        return m_pipe.find_cacheables(extn='abc')
 
     def export(  # pylint: disable=unused-argument
             self, cacheables=None, notes=None, version_up=None, snapshot=True,
@@ -130,12 +66,13 @@ class CMayaAbcCache(CMayaCache):
             checks_data (dict): apply sanity checks data
             force (bool): replace existing without confirmation
         """
+        from maya_pini import m_pipe
         return m_pipe.cache(
             cacheables, version_up=False, update_cache=False,
             use_farm=use_farm, update_metadata=True,
             range_=range_, format_=format_, uv_write=uv_write,
             world_space=world_space, renderable_only=renderable_only,
-            step=1 / substeps, force=force, extn='abc', save=False,
+            step=1 / substeps, force=True, extn='abc', save=False,
             checks_data=checks_data or self.metadata['sanity_check'])
 
     def _add_custom_ui_elems(self):
@@ -181,12 +118,22 @@ class CMayaFbxCache(CMayaCache):
             checks_data (dict): apply sanity checks data
             force (bool): replace existing without confirmation
         """
+        from maya_pini import m_pipe
         return m_pipe.cache(
             cacheables, version_up=False, extn='fbx',
             use_farm=use_farm, update_metadata=True,
             checks_data=checks_data or self.metadata['sanity_check'],
             range_=range_, format_=format_, step=1 / substeps, save=False,
             update_cache=False, force=force)
+
+    def find_cacheables(self):
+        """Find cacheables in the current scene.
+
+        Returns:
+            (CCacheable list): cacheables
+        """
+        from maya_pini import m_pipe
+        return m_pipe.find_cacheables(extn='fbx')
 
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
@@ -224,6 +171,7 @@ class CMayaCrvsCache(CMayaCache):
             format_ (str): abc format (eg. Ogawa/HDF5)
             force (bool): replace existing without confirmation
         """
+        from maya_pini import m_pipe
         return m_pipe.export_anim_curves(
             cacheables, range_=range_, force=force)
 

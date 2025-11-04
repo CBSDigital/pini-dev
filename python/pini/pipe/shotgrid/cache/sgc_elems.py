@@ -111,7 +111,7 @@ class SGCTask(sgc_elem.SGCElem):
     ENTITY_TYPE = 'Task'
     FIELDS = (
         'step', 'sg_short_name', 'entity', 'sg_status_list',
-        'updated_at', 'project')
+        'updated_at', 'project', 'content')
 
     def __init__(self, data):
         """Constructor.
@@ -199,6 +199,9 @@ class SGCVersion(sgc_elem.SGCElem):
         super().__init__(data)
         self.path = abs_path(data['sg_path_to_movie'])
         self.name = data['code']
+
+        self.task = self.data['sg_task']['name']
+        self.task_id = self.data['sg_task']['id']
 
     def __repr__(self):
         return basic_repr(self, self.path)

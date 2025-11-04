@@ -8,7 +8,7 @@ from maya import cmds
 from pini import icons, dcc
 from pini.utils import single, to_seq
 
-from maya_pini import ref, open_maya as pom
+from maya_pini import open_maya as pom
 from maya_pini.utils import (
     DEFAULT_NODES, set_namespace, del_namespace, to_parent, set_col,
     to_clean, to_namespace)
@@ -26,28 +26,32 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         'focalLength', 'focusDistance', 'filmTranslateH', 'filmTranslateV']
     attrs = cam_attrs + ['plateResX', 'plateResY']
 
-    def __init__(self, cam):
+    def __init__(self, cam, extn='abc'):
         """Constructor.
 
         Args:
             cam (str): camera transform
+            extn (str): cache output extension
         """
         self.cam = cam
-        self.node = cam
+
+        _src_ref = _output_name = None
         if cmds.referenceQuery(self.cam, isNodeReferenced=True):
             _ns = to_namespace(self.cam)
-            self.ref = ref.find_ref(_ns)
-            if not self.ref:  # Could be nested in which case ignore
+            _src_ref = pom.find_ref(_ns)
+            if not _src_ref:  # Could be nested in which case ignore
                 raise ValueError(f'Failed to find reference {self.cam}')
-            self.output_name = self.ref.namespace
+            _output_name = _ns
         else:
-            self.output_name = to_clean(self.cam)
-        self.label = self.output_name
-        self.output_type = 'cam'
+            _output_name = to_clean(self.cam)
 
-        self._tmp_ns = f':tmp_{self.output_name}'
+        self._tmp_ns = f':tmp_{_output_name}'
         self._tmp_cam = f'{self._tmp_ns}:CAM'
         self._img_plane_data = {}
+
+        super().__init__(
+            src_ref=_src_ref, node=cam, output_name=_output_name,
+            output_type='cam', extn=extn)
 
     def build_metadata(self):
         """Obtain metadata dict for this cacheable.
@@ -117,7 +121,6 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         """Export image planes from this camera."""
         _LOGGER.info('EXPORT IMAGE PLANES %s', self.cam)
 
-        _abc = self.to_output()
         _cam = pom.CCamera(self.cam)
         assert isinstance(_cam, pom.CCamera)
 
@@ -132,8 +135,8 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
                     ('tfm', _img_plane),
                     ('shp', _img_plane.shp),
             ]:
-                _file = _abc.to_dir().to_file(
-                    f'.pini/imgPlanes/{_abc.base}_{_name}_{_tag}.mpa')
+                _file = self.output.to_dir().to_file(
+                    f'.pini/imgPlanes/{self.output.base}_{_name}_{_tag}.mpa')
                 _node.save_preset(_file, force=True)
                 assert _file.exists()
                 _data[_tag] = _file.path
@@ -183,7 +186,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
             return self.cam
         raise NotImplementedError
 
-    def to_icon(self):
+    def _to_icon(self):
         """Get icon for this camera.
 
         Returns:
@@ -226,8 +229,11 @@ def _add_plate_res_attrs(src_cam, trg_cam):
     _LOGGER.info(' - ADDED RES Y %s %s', _res_y, _height)
 
 
-def find_cams():
+def find_cams(extn='abc'):
     """Find cacheable cameras in the current scene.
+
+    Args:
+        extn (str): cache output extension
 
     Returns:
         (CPCacheableCam list): cacheable cameras
@@ -253,7 +259,7 @@ def find_cams():
             continue
 
         try:
-            _cacheable = CPCacheableCam(_cam)
+            _cacheable = CPCacheableCam(_cam, extn=extn)
         except ValueError as _exc:
             _LOGGER.debug(' - REJECTED %s %s', _cam, _exc)
             continue

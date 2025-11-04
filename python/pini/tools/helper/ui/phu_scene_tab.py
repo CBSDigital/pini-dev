@@ -1168,6 +1168,7 @@ class PHSceneTab:
 
         # Add lookdev attach
         _lookdev_mode = self.ui.SLookdev.currentText()
+        _LOGGER.debug(' - LOOKDEV MODE %s (type=%s)', _lookdev_mode, _out.type_)
         if (
                 dcc.NAME == 'maya' and
                 _out.type_ == 'cache' and
@@ -1179,14 +1180,15 @@ class PHSceneTab:
             _abc_mode = self.ui.SAbcMode.currentText()
             if _abc_mode == 'Auto':
                 _abc_mode = 'Reference'
+                _LOGGER.debug(' - APPLY MODE Reference')
 
             # Add lookdev if available
             _lookdev = _out.find_lookdev_shaders()
+            _LOGGER.debug(' - LOOKDEV %s', _lookdev)
             if _lookdev and _abc_mode == 'Reference':
                 _lookdev_ns = _ns + '_shd'
                 _lookdev_ref = _StagedRef(
-                    output=_lookdev, namespace=_lookdev_ns,
-                    attach_to=_ref)
+                    output=_lookdev, namespace=_lookdev_ns, attach_to=_ref)
                 _LOGGER.debug(' - ADDING LOOKDEV %s', _lookdev)
                 self._staged_imports.append(_lookdev_ref)
 

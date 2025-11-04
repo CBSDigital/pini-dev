@@ -344,7 +344,6 @@ class CExportHandler:
         _progress = self.settings['progress']
         _save = self.settings['save']
 
-        # Check current work
         self._set_work()
 
         # Setup metadata + progress - show progress after init metadata as
@@ -354,6 +353,8 @@ class CExportHandler:
         self.progress = qt.progress_dialog(
             self.title, stack_key=self.NAME, show=_progress, col=self.COL,
             lock_vis=True)
+
+        self._check_for_overwrite()
 
         # Apply save options
         if _save:
@@ -396,6 +397,9 @@ class CExportHandler:
             "This allows the tools to tell what job/task you are working "
             "in, to know where to save the files to.",
             title='Error', parent=self._ui_parent)
+
+    def _check_for_overwrite(self):
+        """Check for existing files that will be overwritten."""
 
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,

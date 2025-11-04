@@ -484,19 +484,19 @@ class CheckCacheables(core.SCMayaCheck):
         """
         utils.check_cacheable_set(set_=cset.node, check=self)
 
-    def _check_ref_for_dup_nodes(self, ref_):
+    def _check_ref_for_dup_nodes(self, cacheable):
         """Check a referenced cache set for duplicate node.
 
         This can occur if a reference is accidentally duplicated, causing
         all the cache_SET geo to be duplicated and breaking AbcExport.
 
         Args:
-            ref_ (CPCacheableRef): cache ref to check
+            cacheable (CPCacheableRef): cache ref to check
         """
 
         # Find name clashes
-        _cache_set = ref_.to_node('cache_SET')
-        _nodes = ref_.to_nodes(mode='all')
+        _cache_set = cacheable.ref.to_node('cache_SET')
+        _nodes = cacheable.to_nodes(mode='all')
         self.write_log(' - found %d nodes', len(_nodes))
         _map = collections.defaultdict(list)
         for _node in _nodes:

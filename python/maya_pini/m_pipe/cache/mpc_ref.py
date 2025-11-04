@@ -5,7 +5,6 @@ import logging
 from maya import cmds
 
 from pini import pipe
-from maya_pini import ref, open_maya as pom
 from maya_pini.utils import to_namespace
 
 from . import mpc_cacheable
@@ -13,33 +12,36 @@ from . import mpc_cacheable
 _LOGGER = logging.getLogger(__name__)
 
 
-class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
+class CPCacheableRef(mpc_cacheable.CPCacheable):
     """A reference that can be cached (eg. rig/model publish)."""
 
-    __lt__ = mpc_cacheable.CPCacheable.__lt__
-
-    def __init__(self, ref_node):
+    def __init__(self, ref_, extn='abc'):
         """Constructor.
 
         Args:
-            ref_node (str): reference node
+            ref_ (CReference): reference node
+            extn (str): cache output extension
         """
-        super().__init__(ref_node)
-        self.node = pom.CReference(ref_node)
-        _out = pipe.CPOutputFile(self.path)
-        self.output = pipe.CACHE.obt(_out)
-        if not self.output:
-            raise ValueError(_out.path)
-        if self.output.type_ != 'publish':
-            raise ValueError(self.output)
+        self.ref = ref_
+
+        # self.node = pom.CReference(ref_node)
+        _src_ref = pipe.CPOutputFile(self.ref.path)
+        if not _src_ref:
+            raise ValueError(_src_ref)
+        if _src_ref.type_ != 'publish':
+            raise ValueError(_src_ref)
         if not self.to_geo():
             raise ValueError('No export geo')
-        self.output_name = self.namespace.split(':')[-1]
+        _output_name = self.ref.namespace.split(':')[-1]
 
-        if self.output_name != self.namespace:
-            self.label = f'{self.output_name} ({to_namespace(self.namespace)})'
+        if _output_name != self.ref.namespace:
+            _label = f'{_output_name} ({to_namespace(self.ref.namespace)})'
         else:
-            self.label = self.output_name
+            _label = _output_name
+
+        super().__init__(
+            node=self.ref, src_ref=_src_ref, extn=extn,
+            output_name=_output_name, label=_label)
 
     def rename(self, name):
         """Rename this cacheable.
@@ -64,26 +66,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
         """
         from maya_pini import m_pipe
         return m_pipe.read_cache_set(
-            set_=self.to_node('cache_SET'), mode=mode)
-
-    def to_output(self, extn='abc'):
-        """Get an output based on this reference.
-
-        Args:
-            extn (str): output extension
-
-        Returns:
-            (CPOutput): output abc
-        """
-        _LOGGER.debug('TO ABC')
-        _work = pipe.cur_work()
-        _pub = pipe.CPOutputFile(self.path)
-        _tmpl = _work.find_template('cache', has_key={'output_name': True})
-        _LOGGER.debug(' - TMPL %s', _tmpl)
-        _abc = _work.to_output(
-            _tmpl, extn=extn, output_type=_pub.output_type or 'geo',
-            output_name=self.output_name, task=_work.task)
-        return _abc
+            set_=self.ref.to_node('cache_SET'), mode=mode)
 
     def to_geo(self, extn='abc'):  # pylint: disable=unused-argument
         """Get list of geo to cache from this reference.
@@ -95,7 +78,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
             (str list): geo nodes
         """
         if extn == 'abc':
-            _cache_set = self.to_node('cache_SET')
+            _cache_set = self.ref.to_node('cache_SET', fmt='str')
             if not cmds.objExists(_cache_set):
                 return []
             return cmds.sets(_cache_set, query=True)
@@ -103,7 +86,7 @@ class CPCacheableRef(ref.FileRef, mpc_cacheable.CPCacheable):
             return self.node.top_node
         raise NotImplementedError
 
-    def to_icon(self):
+    def _to_icon(self):
         """Get this cacheable's icon.
 
         Returns:

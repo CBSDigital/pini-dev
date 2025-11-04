@@ -1,3 +1,22 @@
+## [8.26.0] - Tue 2025-11-04 09:37
+### Summary
+ - Pini Export,
+    - added framework for custom cache tools,
+### Updated
+ - pini.dcc.export.CExportHandler._check_for_overwrite added,
+ - pini.dcc.export CCacheHandler/CCacheable added,
+ - pini.dcc.export.CMayaCache.find_cacheables added,
+ - pini.pipe.cache.CCPOutputFile.find_lookdev_shaders use src_ref from metadata,
+ - pini.pipe.shotgrid.SGCTask.FIELDS added content for long task name,
+ - pini.pipe.shotgrid.SGCVersion added task/task_id attrs,
+ - pini.pipe.shotgrid.create_asset better error on missing template,
+ - pini.qt applied PySide6 > PySide2 > PySide,
+ - maya_pini.m_pipe.cache.CPCacheable as subclass of export.CCacheable,
+ - maya_pini.m_pipe.cache.CPCacheable _to_output/_to_icon made private,
+ - maya_pini.m_pipe.cache.CPCacheable removed legacy asset/type_ metadata,
+ - maya_pini.m_pipe.cache.find_cacheables added extn arg,
+
+
 ## [8.25.0] - Tue 2025-10-28 10:43
 ### Summary
  - Pini Helper,
