@@ -266,6 +266,7 @@ class CExportHandler:
             snapshot (bool): take thumbnail snapshot on export
             force (bool): replace existing outputs without confirmation
         """
+        _LOGGER.debug('EXEC %s args=%s kwargs=%s', self, args, kwargs)
         self.set_settings(*args, **kwargs)
         self.init_export()
 
@@ -346,15 +347,15 @@ class CExportHandler:
 
         self._set_work()
 
-        # Setup metadata + progress - show progress after init metadata as
-        # init metadata may launch sanity check which requires user input
         _notes = self._obt_notes()
         self.metadata = self.build_metadata()
+        self._check_for_overwrite()
+
+        # Show progress after any ops which might raise a dialog as this
+        # can make the window behaviour get weird
         self.progress = qt.progress_dialog(
             self.title, stack_key=self.NAME, show=_progress, col=self.COL,
             lock_vis=True)
-
-        self._check_for_overwrite()
 
         # Apply save options
         if _save:

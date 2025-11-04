@@ -1,3 +1,16 @@
+## [8.26.1] - Tue 2025-11-04 12:10
+### Summary
+ - Pini Helper,
+    - cache tool fix progress bar clashing with overwrite warning,
+### Updated
+ - pini.dcc.export.CExportHandler.init_export check for overwrite before init progress bar to avoid windows clashing,
+ - pini.dcc.export.CCacheHandler fix cacheables attr not set up on exec from ui,
+ - pini.dcc.export.CCacheHandler._check_for_overwrite added handling for multiple file types,
+ - pini.dcc.export.CCacheHandler._check_for_overwrite allow cacheables override,
+ - pini.dcc.export.CMayaFbxCache.export error on non-fbx cacheable,
+ - maya_pini.m_pipe.find_cacheable bugfix missing extn arg,
+
+
 ## [8.26.0] - Tue 2025-11-04 09:37
 ### Summary
  - Pini Export,

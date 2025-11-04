@@ -53,7 +53,7 @@ def _check_for_overwrite(cacheables, force):
         _file = _to_replace[0]
         if not force:
             _msg = 'Replace {:d} existing {}{}?\n\n{}'.format(
-                len(_to_replace), _file[0], plural(_to_replace),
+                len(_to_replace), _file, plural(_to_replace),
                 '\n\n'.join([_out.path for _out in _to_replace[:10]]))
             if len(_to_replace) > 10:
                 _n_over = len(_to_replace) - 10
@@ -304,7 +304,8 @@ def _take_snapshot(frame, image):
 
 
 def find_cacheable(
-        match=None, filter_=None, type_=None, output_name=None, catch=False):
+        match=None, filter_=None, type_=None, output_name=None, extn=None,
+        catch=False):
     """Find a cacheable in the current scene.
 
     Args:
@@ -312,13 +313,14 @@ def find_cacheable(
         filter_ (str): label filter
         type_ (str): filter by cacheable type (ref/cam/cset)
         output_name (str): match by output name
+        extn (str): extension for cacheable
         catch (bool): no error if no single cacheable matched
 
     Returns:
         (CPCacheable): matching cacheable
     """
     _cbls = find_cacheables(
-        filter_=filter_, output_name=output_name, type_=type_)
+        filter_=filter_, output_name=output_name, type_=type_, extn=extn)
     _cbl = single(_cbls, catch=True)
     if _cbl:
         return _cbl

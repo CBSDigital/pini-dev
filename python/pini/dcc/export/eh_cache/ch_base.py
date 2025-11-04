@@ -20,6 +20,8 @@ class CCacheHandler(eh_base.CExportHandler):
     add_substeps = False
     add_use_farm = False
 
+    cacheables = None
+
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
 
@@ -39,6 +41,10 @@ class CCacheHandler(eh_base.CExportHandler):
     def set_settings(self, *args, **kwargs):
         """Setup settings dict."""
         super().set_settings(*args, **kwargs)
+
+        # Fix cacheables as kwarg if exec from ui
+        if not self.cacheables:
+            self.cacheables = self.settings['cacheables']
 
         # Handled in m_pipe to allow embed asset path
         if self.block_update_metadata:
@@ -103,26 +109,32 @@ class CCacheHandler(eh_base.CExportHandler):
         """
         raise NotImplementedError
 
-    def _check_for_overwrite(self):
-        """Check for existing files that will be overwritten."""
-        _LOGGER.info('CHECK FOR OVERWRITE')
+    def _check_for_overwrite(self, cacheables=None):
+        """Check for existing files that will be overwritten.
 
-        _cbls = self.settings['cacheables']
+        Args:
+            cacheables (CCacheable list): override list of cacheables
+                to check (allows for combined cache tools)
+        """
+        _cbls = cacheables or self.settings['cacheables']
         _force = self.settings['force']
+        _LOGGER.info('CHECK FOR OVERWRITE force=%d', _force)
 
         _existing = []
-        for _cbl in self.settings['cacheables']:
+        for _cbl in _cbls:
             _LOGGER.info(' - CBL %s', _cbl)
             _LOGGER.info('   - OUTPUT %s', _cbl.output)
             if _cbl.output.exists():
                 _existing.append(_cbl.output)
 
         if not _force and _existing:
+            _extns = {_out.extn for _out in _existing}
+            _label = single(_extns, catch=True) or 'file'
             _out = _existing[0]
             if isinstance(_out, Seq):
-                _desc = f'{_out.extn} sequence'
+                _desc = f'{_label} sequence'
             else:
-                _desc = _out.extn
+                _desc = _label
             _desc += plural(_existing)
             _lines = [f'Overwrite {len(_existing)} existing {_desc}?']
             _lines += [f'\n{_out}' for _out in _existing]

@@ -119,6 +119,10 @@ class CMayaFbxCache(CMayaCache):
             force (bool): replace existing without confirmation
         """
         from maya_pini import m_pipe
+        for _cbl in cacheables:
+            if _cbl.extn != 'fbx':
+                raise RuntimeError(
+                    f"Bad fbx cacheable extn {_cbl.extn}: {_cbl.label}")
         return m_pipe.cache(
             cacheables, version_up=False, extn='fbx',
             use_farm=use_farm, update_metadata=True,
