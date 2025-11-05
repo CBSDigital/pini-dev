@@ -349,18 +349,18 @@ class FixDuplicateRenderSetups(core.SCMayaCheck):
 
 
 class FixLockedShadingGroup(core.SCMayaCheck):
-    """Checks for locking initialShadingGroup."""
+    """Checks for locking default shading groups."""
 
     def run(self):
         """Run this check."""
-        _locked = single(cmds.lockNode(
-            'initialShadingGroup', query=True, lockUnpublished=True))
-        if _locked:
-            self.add_fail(
-                'Node "initialShadingGroup" is locked which can cause issues '
-                'with the scene', fix=wrap_fn(
-                    cmds.lockNode, 'initialShadingGroup',
-                    lockUnpublished=False))
+        for _node in ['initialShadingGroup', 'initialParticleSE']:
+            _locked = single(cmds.lockNode(
+                _node, query=True, lockUnpublished=True))
+            if _locked:
+                _fix = wrap_fn(cmds.lockNode, _node, lockUnpublished=False)
+                self.add_fail(
+                    f'Node "{_node}" is locked which can cause issues '
+                    'with the scene', fix=_fix)
 
 
 class CheckReferences(core.SCMayaCheck):

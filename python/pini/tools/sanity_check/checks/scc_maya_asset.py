@@ -567,7 +567,7 @@ class CheckForCameras(core.SCMayaCheck):
             self.write_log('Check cam %s %s', _cam, _long)
             if _long.startswith('|JUNK'):
                 continue
-            if _cam in DEFAULT_NODES:
+            if str(_cam).strip('|') in DEFAULT_NODES:
                 continue
             self.add_fail(f'Camera {_cam}', node=_cam)
 
