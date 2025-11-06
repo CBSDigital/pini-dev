@@ -355,7 +355,7 @@ class CExportHandler:
         # can make the window behaviour get weird
         self.progress = qt.progress_dialog(
             self.title, stack_key=self.NAME, show=_progress, col=self.COL,
-            lock_vis=True)
+            lock_vis=True, modal=True)
 
         # Apply save options
         if _save:

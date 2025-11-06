@@ -69,6 +69,13 @@ class CPWorkSG(cp_work_base.CPWorkBase):
         from pini.pipe import shotgrid
         from pini.tools import error
 
+        # Check entity is valid
+        if not self.entity.sg_entity:
+            raise RuntimeError(
+                f'{self.entity.profile.capitalize()} missing from '
+                f'shotgrid {self.entity}')
+
+        # Exec save
         _bkp = super().save(**kwargs)
 
         # Update task on shotgrid

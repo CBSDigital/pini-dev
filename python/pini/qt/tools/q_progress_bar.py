@@ -66,7 +66,8 @@ class _ProgressDialog(QtWidgets.QDialog):
     def __init__(
             self, items, title='Processing {:d} item{}', col=None, show=True,
             pos=None, parent=None, stack_key='DefaultProgress', lock_vis=False,
-            show_delay=None, plural_=None, raise_stop=True, auto_pos=True):
+            show_delay=None, plural_=None, raise_stop=True, auto_pos=True,
+            modal=False):
         """Constructor.
 
         Args:
@@ -84,6 +85,7 @@ class _ProgressDialog(QtWidgets.QDialog):
             raise_stop (bool): raise StopIteration on complete
             auto_pos (bool): automatically position beneath
                 existing progress dialogs
+            modal (bool): dialog locks parent interface running
         """
         from pini import dcc, qt
         _flush_unused_bars(stack_key=stack_key)
@@ -118,6 +120,8 @@ class _ProgressDialog(QtWidgets.QDialog):
         _title = title.format(
             len(self.items), plural(self.items, plural_=plural_))
         self.setWindowTitle(_title)
+        if modal:
+            self.setModal(True)
         self.resize(408, 54)
         if auto_pos:
             self._apply_pos()

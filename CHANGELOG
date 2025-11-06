@@ -1,3 +1,14 @@
+## [8.27.0] - Thu 2025-11-06 10:38
+### Summary
+ - Pini Helper:
+    - better error on version up in invalid shot (nwray),
+    - lock interface on export to avoid sg error on browse pini during export (eehemann/bshepperd),
+### Updated
+ - pini.dcc.export.CExportHandler progress dialog is modal,
+ - pini.pipe.CPWorkSG.save check entity exists in sg,
+ - pini.qt.progress_bar added modal flag,
+
+
 ## [8.26.2] - Tue 2025-11-04 16:04
 ### Summary
  - Sanity Check,
