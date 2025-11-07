@@ -507,6 +507,7 @@ class CheckCacheables(core.SCMayaCheck):
         for _clean, _o_nodes in _map.items():
             if len(_o_nodes) <= 1:
                 continue
+            self.write_log('   - add clash %s %s', _clean, _o_nodes)
             _clashes.append(_o_nodes)
         self.write_log(' - found %d clashes', len(_clashes))
         self.write_log(' - found %d unreferenced', len(_unrefd_nodes))
@@ -523,6 +524,7 @@ class CheckCacheables(core.SCMayaCheck):
                 self.add_fail(
                     f'Cachable "{_cache_set}" has name clashes',
                     node=_cache_set)
+
         elif _clashes:
             for _nodes in _clashes:
                 _refd = [_node for _node in _nodes if _node.is_referenced()]
@@ -538,8 +540,9 @@ class CheckCacheables(core.SCMayaCheck):
                         node=_cache_set,
                         fix=wrap_fn(utils.safe_delete, _unrefd_nodes))
                 else:
+                    _nodes_s = ', '.join([str(_node) for _node in _nodes])
                     self.add_fail(
-                        f'Set "{_cache_set}" has name clash: {_nodes}')
+                        f'Set "{_cache_set}" has name clash: {_nodes_s}')
 
 
 @cache_result

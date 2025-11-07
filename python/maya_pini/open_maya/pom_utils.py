@@ -80,7 +80,10 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
         _class = pom.CMesh
         _shp = _node
         _node = to_parent(_shp)
-    elif _type in ('transform', 'hikIKEffector', 'locator'):
+    elif _type in (
+            'transform', 'hikIKEffector', 'locator', 'parentConstraint',
+            'pointConstraint', 'aimConstraint', 'orientConstraint',
+            'scaleConstraint'):
         _class = _cast_tfm(_node)
     elif _type.startswith('animCurve'):
         _class = pom.CAnimCurve
