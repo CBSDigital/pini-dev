@@ -48,3 +48,5 @@ if not hasattr(sys, 'QT_DIALOG_STACK'):
     sys.QT_DIALOG_STACK = {}
 if not hasattr(sys, 'QT_PROGRESS_BAR_STACK'):
     sys.QT_PROGRESS_BAR_STACK = []
+
+MODAL_PROGRESS_BAR = None

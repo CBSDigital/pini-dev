@@ -122,16 +122,33 @@ class _ProgressDialog(QtWidgets.QDialog):
         self.setWindowTitle(_title)
         if modal:
             self.setModal(True)
+            qt.MODAL_PROGRESS_BAR = self
         self.resize(408, 54)
         if auto_pos:
             self._apply_pos()
 
+        self._setup_ui(col=col, show=show, show_delay=show_delay, title=title)
+
+        sys.QT_PROGRESS_BAR_STACK.append(self)
+
+    def _setup_ui(self, col, show, show_delay, title):
+        """Build ui elements.
+
+        Args:
+            col (QColor): progress bar colour
+            show (bool): show progress bar
+            show_delay (float): delay in showing dialog (in secs)
+            title (str): progress dialog title
+        """
+        from pini import qt
+
+        # Setup colour
         _col = col
         if not _col:
             _random = str_to_seed(title)
             _col = _random.choice(qt.BOLD_COLS)
 
-        # Build ui
+        # Build ui elements
         self.grid_lyt = QtWidgets.QGridLayout(self)
         self.progress_bar = qt.CProgressBar(self)
         _size_policy = QtWidgets.QSizePolicy(
@@ -145,12 +162,11 @@ class _ProgressDialog(QtWidgets.QDialog):
         self.grid_lyt.addWidget(self.progress_bar, 0, 0, 1, 1)
         self.progress_bar.set_col(_col)
 
+        # Apply vis opts
         self._hidden = True
         if show and not show_delay:
             self._hidden = False
             self.show()
-
-        sys.QT_PROGRESS_BAR_STACK.append(self)
 
     def _apply_pos(self):
         """Apply position."""
@@ -182,6 +198,9 @@ class _ProgressDialog(QtWidgets.QDialog):
         """Finalise this dialog."""
         if self in sys.QT_PROGRESS_BAR_STACK:
             sys.QT_PROGRESS_BAR_STACK.remove(self)
+        if self.isModal():
+            from pini import qt
+            qt.MODAL_PROGRESS_BAR = None
 
     def is_finished(self):
         """Test whether this dialog is finished.

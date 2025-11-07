@@ -4,7 +4,7 @@ import logging
 
 
 from pini import icons
-from maya_pini import m_pipe
+from maya_pini import m_pipe, open_maya as pom
 from maya_pini.utils import to_long
 
 from . import phm_basic
@@ -34,6 +34,8 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         self.ui.add_check_box(
             val=True, name='FreezeTfms', label="Freeze transforms")
         self.ui.add_check_box(
+            val=True, name='ResetPivot', label="Reset pivots to origin")
+        self.ui.add_check_box(
             val=True, name='DelHistory', label='Delete history')
         self.ui.add_combo_box(
             val='No change', name='Lock',
@@ -44,8 +46,9 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             self, notes=None, version_up=True, snapshot=True, bkp=True,
             progress=True, abc=True, fbx=True, references='Remove',
             remove_alayers=True, remove_dlayers=True, remove_junk=True,
-            remove_sets=True, freeze_tfms=True, del_history=True,
-            lock='All locked except top node', force=False):
+            remove_sets=True, freeze_tfms=True, reset_pivot=True,
+            del_history=True, lock='All locked except top node',
+            force=False):
         """Execute this publish.
 
         Args:
@@ -62,6 +65,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
             remove_junk (bool): remove JUNK group
             remove_sets (bool): remove unused sets
             freeze_tfms (bool): freeze transforms on geo
+            reset_pivot (bool): reset pivots to origin
             del_history (bool): delete history on geo
             lock (str): apply locking to transforms - opts:
                 - All locked except top node
@@ -77,7 +81,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         _basic_kwargs = locals()
         for _name in (
                 'del_history', 'freeze_tfms', 'self', 'lock',
-                '__class__'):
+                '__class__', 'reset_pivot'):
             _basic_kwargs.pop(_name)
         return super().export(**_basic_kwargs)
 
@@ -85,6 +89,7 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
         """Apply clean scene options to prepare for publish."""
         _del_hist = self.settings['del_history']
         _freeze_tfms = self.settings['freeze_tfms']
+        _reset_pivot = self.settings['reset_pivot']
         _lock_s = self.settings['lock']
 
         super()._clean_scene()
@@ -103,6 +108,8 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
                 _tfm.delete_history()
             if _freeze_tfms:
                 _tfm.freeze_tfms(force=True)
+            if _reset_pivot:
+                _tfm.set_pivot(pom.ORIGIN)
 
         # Apply locking
         for _tfm in _tfms:

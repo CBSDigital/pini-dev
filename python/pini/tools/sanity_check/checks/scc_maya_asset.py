@@ -432,15 +432,20 @@ class CheckModelGeo(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-
         _geos = m_pipe.read_cache_set()
         self.write_log('Found %d geos: %s', len(_geos), _geos)
         for _geo in _geos:
+
+            # Check for incoming connections to transform attrs
             for _plug in _geo.tfm_plugs:
                 if _plug.find_incoming():
                     self.add_fail(
                         f'Plug has incoming connections: "{_plug}"',
                         fix=_plug.break_conns)
+
+            # Check redshift displacement disabled
+            if _geo.shp.has_attr('rsEnableDisplacement'):
+                self.check_attr(_geo.shp.plug['rsEnableDisplacement'], False)
 
 
 class CheckForVertexColorSets(core.SCMayaCheck):

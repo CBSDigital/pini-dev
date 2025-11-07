@@ -399,6 +399,12 @@ _PEOPLE = [
     'Couple with Heart']
 PEOPLE_NAMES = _PEOPLE
 
+_CIRCLES = [
+    'Red Circle', 'Orange Circle', 'Yellow Circle', 'Green Circle',
+    'Blue Circle', 'Purple Circle', 'Brown Circle', 'Black Circle',
+    'White Circle']
+CIRCLE_NAMES = _CIRCLES
+
 _SKINS = _HANDS + _PEOPLE
 SKIN_NAMES = _SKINS
 
@@ -432,6 +438,7 @@ URL = EMOJI.find('Globe Showing Europe-Africa')
 
 FRUIT = EMOJI.find_grp('fruit')
 COOL = EMOJI.find_grp('cool')
+CIRCLES = EMOJI.find_grp('circles')
 
 MOONS = [EMOJI.find(_name) for _name in (
     'New Moon',

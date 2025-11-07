@@ -403,15 +403,14 @@ def find_cacheables(
             continue
 
         # Check maps to asset correctly
-        if pipe.cur_work():
-            try:
-                _out = _cbl.output
-            except ValueError:
-                _LOGGER.debug('   - FAILED TO BUILD OUTPUT')
-                continue
-            if not _out:
-                _LOGGER.debug('   - MISSING OUTPUT')
-                continue
+        try:
+            _out = _cbl.output
+        except ValueError:
+            _LOGGER.debug('   - FAILED TO BUILD OUTPUT')
+            continue
+        if not _out:
+            _LOGGER.debug('   - MISSING OUTPUT')
+            continue
 
         _cbls.append(_cbl)
 

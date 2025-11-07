@@ -44,9 +44,11 @@ def get_catcher(parent=None, qt_safe=False, supress_error=False):
                 return func(*args, **kwargs)
 
             # Run the function and catch any errors
+            _LOGGER.debug(' - EXEC FUNC %s', func)
             try:
                 _result = func(*args, **kwargs)
             except Exception as _exc:  # pylint: disable=broad-exception-caught
+                _LOGGER.debug(' - FUNC ERRORED %s', _exc)
                 return _handle_exception(
                     _exc, parent=parent, qt_safe=qt_safe,
                     supress_error=supress_error)
@@ -77,6 +79,7 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
     _LOGGER.debug('HANDLE EXCEPTION %s', exc)
     _error = e_error.PEError()
     _show_traceback = False
+    _check_for_modal_progress()
 
     if isinstance(exc, qt.DialogCancelled):
         _LOGGER.info(' - DIALOG CANCELLED')
@@ -123,6 +126,19 @@ def _handle_exception(exc, parent, qt_safe, supress_error):
         raise exc
     _LOGGER.debug(' - APPLY sys.exit')
     sys.exit()
+
+
+def _check_for_modal_progress():
+    """Check for modal progress dialog.
+
+    If there is a progress dialog locking the interface then this should
+    be closed in the case of an error, otherwise the error dialog will
+    be blocked.
+    """
+    from pini import qt
+    _LOGGER.debug(' - CHECK MODAL PROGRESS %s', qt.MODAL_PROGRESS_BAR)
+    if qt.MODAL_PROGRESS_BAR:
+        qt.MODAL_PROGRESS_BAR.close()
 
 
 def catch(func, supress_error=False):
