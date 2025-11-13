@@ -143,3 +143,18 @@ def find_exe(name, catch=True, force=False):
     if catch:
         return None
     raise OSError('Failed to find exe ' + name)
+
+
+@cache_result
+def find_exes(name):
+    """Find exes matching the given name.
+
+    Args:
+        name (str): name of exe (eg. python)
+
+    Returns:
+        (File list): matching exe files
+    """
+    _exes = []
+    _exes += _find_programs_exes()
+    return [_exe for _exe in _exes if _exe.base == name]

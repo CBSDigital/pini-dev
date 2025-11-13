@@ -1,7 +1,21 @@
+## [8.29.0] - Thu 2025-11-13 15:51
+### Summary
+ - Pini Helper:
+    - submit asset render bugfix error on single frame render (sspicher),
+### Updated
+ - pini.utils PINI_TMP/find_exes added,
+ - pini.dcc.export.CCacheHandler.add_range added,
+ - pini.pipe.shotgrid.create_ver removed buggy single frame handling code,
+ - pini.farm.CDFarmJob added strftime/ctime,
+ - pini.farm.CDFarmJob.__repr__ on missing details print uid,
+ - pini.tools.sanity_check.CheckFrameRange disabled for fx task,
+ - pini.testing.print_sys_paths added filter_ arg,
+
+
 ## [8.28.1] - Fri 2025-11-07 14:57
 ### Summary
  - Sanity Check:
-    - check cache set bugfix not checking contraint transforms (mkim),
+    - check cache set bugfix not checking constraint transforms (mkim),
 ### Updated
  - pini.tools.sanity_check.CheckCacheables better error on clash,
  - maya_pini.open_maya.cast_node cast constraints as transform,

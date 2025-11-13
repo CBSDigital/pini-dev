@@ -17,6 +17,8 @@ class CCacheHandler(eh_base.CExportHandler):
     TYPE = 'Cache'
 
     block_update_metadata = False
+
+    add_range = True
     add_substeps = False
     add_use_farm = False
 
@@ -28,7 +30,7 @@ class CCacheHandler(eh_base.CExportHandler):
     def build_ui(self):
         """Build cache interface."""
         _LOGGER.debug('BUILD UI')
-        self._build_ui_header(add_range=True)
+        self._build_ui_header(add_range=self.add_range)
 
         self.ui.add_list_widget(name='Cacheables')
         if self.add_substeps:

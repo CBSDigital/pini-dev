@@ -37,7 +37,7 @@ from .path import (
     Path, Dir, File, abs_path, norm_path, HOME_PATH, TMP_PATH, find,
     search_files_for_text, DATA_PATH, is_abs, restore_cwd, copied_path,
     MetadataFile, HOME, TMP, error_on_file_system_disabled, DESKTOP,
-    search_dir_files_for_text, ReadDataError, MOUNTS)
+    search_dir_files_for_text, ReadDataError, MOUNTS, PINI_TMP)
 
 from .cache import (
     cache_property, cache_result, get_file_cacher, cache_method_to_file,

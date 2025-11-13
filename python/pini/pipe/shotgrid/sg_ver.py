@@ -38,6 +38,7 @@ def create_ver(
     _pub_files = set(pub_files)
     _render, _video, _frames = _read_render_video_frames(
         render=render, frames=frames, pub_files=_pub_files, lut=lut)
+    _LOGGER.debug(' - VIDEO %s', _video)
     _progress.set_pc(10)
     _comment = comment
     _ety = _render.entity.sg_entity
@@ -303,12 +304,14 @@ def _obt_ver_elem(
     _data = _build_ver_data(
         render, frames=frames, comment=comment, pub_files=pub_files,
         video=video)
-    _LOGGER.debug('DATA %s', pprint.pformat(_data))
+    _LOGGER.debug(' - DATA %s', pprint.pformat(_data))
     progress.set_pc(30)
 
     # Create or update shotgrid
+    _LOGGER.debug(' - VERSION %s', version)
     if not version:
-        sg_handler.create('Version', _data)
+        _result = sg_handler.create('Version', _data)
+        _LOGGER.debug(' - RESULT %s', _result)
         _action = 'CREATED'
     else:
         _data.pop('created_by')
@@ -339,27 +342,29 @@ def _read_render_video_frames(render, frames, pub_files, lut):
     Returns:
         (tuple): render, video, frames
     """
+    _LOGGER.debug(' - READ RENDER VIDEO FRAMES')
     _video = None
     _frames = frames
     _render = pipe.CACHE.obt(render)
+    _LOGGER.debug('   - RENDER %s', _render)
 
     if isinstance(_render, Video):
         return _render, _render, _frames
 
     if isinstance(_render, Seq):
+
         assert not _frames
-
-        # Single still image
-        if len(_render.frames) == 1:
-            return _render, None, _render
-
         _frames = _render
 
         # Render video
         _video = _frames.to_output('mov', extn='mov')
+        _LOGGER.debug('   - VIDEO %s', _video)
         if not _video.exists():
+            _LOGGER.debug('   - RENDERING VIDEO')
             _render_to_video(render=_render, video=_video, lut=lut)
             pub_files.add(_frames)
+        assert _video
+        assert _video.exists()
 
         return _render, _video, _frames
 

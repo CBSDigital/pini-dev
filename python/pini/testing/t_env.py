@@ -165,17 +165,20 @@ def insert_sys_path(path):
     _add_sys_path(path, action='insert')
 
 
-def print_sys_paths(sort=False):
+def print_sys_paths(sort=False, filter_=None):
     """Print sys paths.
 
     Args:
         sort (bool): sort items
+        filter_ (str): filter paths
     """
     _paths = [abs_path(_path) for _path in sys.path]
     if sort:
         _paths.sort()
     for _idx, _path in enumerate(_paths):
         if _paths.count(_path) > 1 and _paths.index(_path) != _idx:
+            continue
+        if filter_ and not passes_filter(_path, filter_):
             continue
         print(f'{os.path.exists(_path):d} {_path}')
 

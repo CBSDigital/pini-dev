@@ -135,6 +135,7 @@ class CheckFrameRange(SCCheck):
     """Check frame range matches shotgrid range."""
 
     profile_filter = 'shot'
+    task_filter = '-fx'
 
     def run(self):
         """Run this check."""
