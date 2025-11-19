@@ -251,7 +251,15 @@ class HouDCC(BaseDCC):
         Args:
             work (CPWork): work file to apply
         """
-        hou.putenv('JOB', work.job.path)
+        for _var, _val in [
+                ('JOB', work.job.path),
+                ('STEP', work.step),
+                ('TASK', work.task),
+                ('TAG', work.tag),
+                ('VER', work.ver),
+        ]:
+            hou.putenv(_var, _val)
+            hou.hscript(f"set -g {_var} = {_val}")
 
     def set_fps(self, fps):
         """Set frame rate.

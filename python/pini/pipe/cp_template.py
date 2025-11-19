@@ -9,7 +9,7 @@ import time
 import lucidity
 
 from pini import dcc
-from pini.utils import File, norm_path, Dir, is_abs, single
+from pini.utils import File, norm_path, Dir, is_abs, single, to_str
 
 from .cp_utils import (
     is_valid_token, are_valid_tokens, validate_tokens,
@@ -24,7 +24,7 @@ class CPTemplate(lucidity.Template):
     task = None
 
     def __init__(
-            self, name, pattern, anchor=lucidity.Template.ANCHOR_END,
+            self, pattern, name=None, anchor=lucidity.Template.ANCHOR_END,
             separate_dir=False, path_type=None, job=None, alt=None,
             source=None):
         """Constructor.
@@ -38,8 +38,8 @@ class CPTemplate(lucidity.Template):
             shot_render
 
         Args:
-            name (str): template name
             pattern (str): template pattern
+            name (str): template name
             anchor (Enum): anchor type (default is Template.ANCHOR_END)
             separate_dir (bool): check dir first and then filename - this
                 allows more complex paths to be parsed successfully
@@ -72,7 +72,8 @@ class CPTemplate(lucidity.Template):
         self.source = source or self
 
         # Read dcc override
-        _tokens = self.name.split('_')
+        _name = self.name or ''
+        _tokens = _name.split('_')
         _dcc = set(dcc.DCCS)
         self._dcc = None
         if _tokens[0] in _dcc:
@@ -185,9 +186,9 @@ class CPTemplate(lucidity.Template):
         _separate_dir = (
             self._separate_dir if separate_dir is None else separate_dir)
         _tmpl = CPTemplate(
-            name or self.name, pattern or self.pattern, anchor=self.anchor,
-            separate_dir=_separate_dir, path_type=self.path_type,
-            job=self.job, source=self.source)
+            name=name or self.name, pattern=pattern or self.pattern,
+            anchor=self.anchor, separate_dir=_separate_dir,
+            path_type=self.path_type, job=self.job, source=self.source)
         _tmpl.embedded_data.update(self.embedded_data)
         return _tmpl
 
@@ -226,6 +227,10 @@ class CPTemplate(lucidity.Template):
             _LOGGER.info('FORMAT FAIL args=%s kwargs%s', args, kwargs)
             raise ValueError('Format fail')
 
+        # Convert Path objects to str
+        for _key, _val in _data.items():
+            _data[_key] = to_str(_val)
+
         _req_keys = set(self.keys())
         _data_keys = set(_data.keys())
         _missing_keys = _req_keys - _data_keys
@@ -260,7 +265,7 @@ class CPTemplate(lucidity.Template):
         if not _dir.exists():
             _LOGGER.debug(' - DIR DOES NOT EXIST')
             return []
-        _dir_tmpl = CPTemplate('dir', _pattern)
+        _dir_tmpl = CPTemplate(name='dir', pattern=_pattern)
         _LOGGER.debug(' - DIR TMPL %s', _dir_tmpl)
 
         # Find possible vals
@@ -506,7 +511,9 @@ class CPTemplate(lucidity.Template):
     def __repr__(self):
         _suffix = f', alt={self.alt:d}' if self.alt else ''
         _type = type(self).__name__
-        return f'{_type}("{self.name}", "{self.pattern}"{_suffix})'
+        if self.name:
+            return f'{_type}("{self.pattern}"{_suffix}, name="{self.name}")'
+        return f'{_type}("{self.pattern}"{_suffix})'
 
 
 def build_job_templates(job, catch=True):
@@ -571,7 +578,7 @@ def build_job_templates(job, catch=True):
             _name, _alt = _extract_alt_from_name(_name)
             _path_type = _to_path_type(name=_name, pattern=_pattern)
             _tmpl = CPTemplate(
-                _name, pattern=_pattern, anchor=_anchor, job=job,
+                name=_name, pattern=_pattern, anchor=_anchor, job=job,
                 separate_dir=_separate_dir, path_type=_path_type, alt=_alt)
             _tmpls[_name].append(_tmpl)
 
@@ -644,8 +651,8 @@ def _build_sequence_tmpl(tmpls, job):
         _root, _ = _shot_tmpl.pattern.split('{sequence}')
         _seq_pattern = _root + '{sequence}'
         tmpls['sequence_path'] = [CPTemplate(
-            'sequence_path', _seq_pattern, job=job, path_type='d',
-            anchor=lucidity.Template.ANCHOR_END)]
+            name='sequence_path', pattern=_seq_pattern, job=job,
+            path_type='d', anchor=lucidity.Template.ANCHOR_END)]
 
 
 def _build_ass_gz_tmpls(tmpls, job):

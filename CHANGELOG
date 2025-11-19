@@ -1,3 +1,22 @@
+## [8.30.0] - Wed 2025-11-19 10:09
+### Summary
+ - Sanity Check:
+    - check skin clusters blocked from running on render rig (eehemann),
+ - Pini Helper:
+    - scene tab bugfix error on right-click texture assets with bad metadata,
+### Updated
+ - pini.utils.seq_to_video bugfix not returning Video,
+ - pini.dcc.HouDCC.set_env apply JOB/STEP/TASK/TAG/VER to hou env,
+ - pini.pipe.CPTemplate name is no longer arg + swapped pos with pattern,
+ - pini.pipe.CPTemplate added handling for no name,
+ - pini.pipe.CPTemplate.format allow vals as Path objs,
+ - pini.pipe.CPSettingsLevel.settings icon does not pass from parent,
+ - pini.pipe.cache.CCPEntitySG._read_linked_outputs ignore linked textures,
+ - pini.tools.sanity_check.FindUnneccessarySkinClusters added publish action filter,
+ - pini.tools.helper scene tab bugfix error on range as (None, None),
+ - maya_pini.open_maya.CReference.ctrls error on missing ctrls set,
+
+
 ## [8.29.0] - Thu 2025-11-13 15:51
 ### Summary
  - Pini Helper:

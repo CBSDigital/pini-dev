@@ -137,7 +137,7 @@ class TestPipe(unittest.TestCase):
         assert testing.TEST_JOB
 
         _pattern = '{blah}/{blue}/{blee}'
-        _tmpl = pipe.CPTemplate('test', _pattern)
+        _tmpl = pipe.CPTemplate(name='test', pattern=_pattern)
         _tmpl = _tmpl.apply_data(blue='BLUE')
         assert 'blue' in _tmpl.embedded_data
         _tmpl = _tmpl.apply_data(blee='BLEE')

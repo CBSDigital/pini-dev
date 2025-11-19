@@ -525,7 +525,7 @@ class PHSceneTab:
                 _text += f'Exported: {_t_str}\n'
 
             # Add range
-            if not _out.range_:
+            if not _out.range_ or _out.range_ == (None, None):
                 _fmt = None
             elif len(_out.range_) == 1:
                 _fmt = 'Range: {:.00f}\n'

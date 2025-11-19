@@ -248,8 +248,9 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         (Video): video file
     """
     from pini import dcc
+    from pini.utils import Video
 
-    _video = File(abs_path(to_str(video)))
+    _video = Video(abs_path(to_str(video)))
     _ffmpeg = find_ffmpeg_exe()
     _fps = fps or dcc.get_fps()
     if range_:

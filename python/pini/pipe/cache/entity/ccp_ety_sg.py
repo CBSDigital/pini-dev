@@ -120,9 +120,10 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
         """
         _outs = []
         for _asset in self._find_linked_assets():
-            _asset_pubs = _asset.find_publishes()
-            _outs += _asset_pubs
-            _LOGGER.info('   - ADDED %d PUBS %s', len(_asset_pubs), _asset)
+            for _out in _asset.find_publishes():
+                if _out.content_type in ('Texture', ):
+                    continue
+                _outs.append(_out)
         return _outs
 
     @pipe_cache_to_file

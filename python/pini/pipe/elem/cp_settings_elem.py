@@ -90,6 +90,8 @@ class CPSettingsLevel(Dir):
             _parent_settings = self._settings_parent.settings
         else:
             _parent_settings = _obt_default_settings()
+        for _key in ('icon', ):  # Some keys don't pass down
+            _parent_settings[_key] = None
         _settings = merge_dicts(_settings, _parent_settings)
         _LOGGER.debug(' - ADDED PARENT %s', _parent_settings)
 

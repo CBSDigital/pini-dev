@@ -623,6 +623,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
     """
 
     task_filter = 'rig'
+    action_filter = 'publish'
     depends_on = (CheckCacheSet, )
 
     def run(self):

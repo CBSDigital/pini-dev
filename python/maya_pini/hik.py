@@ -35,6 +35,82 @@ class PHIKNode(pom.CNode):
         return single(self.find_connections(
             type_='HIKProperty2State', plugs=False, connections=False))
 
+    def bake_to_ctrl_rig(self):
+        """Bake animation to control rig."""
+        raise NotImplementedError
+
+        # _ctrls = {
+        #     'Lemon01:Auto_Ctrl_ChestEndEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_ChestEndEffector.translate',
+        #     'Lemon01:Auto_Ctrl_ChestOriginEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_ChestOriginEffector.translate',
+        #     'Lemon01:Auto_Ctrl_Head.rotate',
+        #     'Lemon01:Auto_Ctrl_HeadEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_HeadEffector.translate',
+        #     'Lemon01:Auto_Ctrl_Hips.rotate',
+        #     'Lemon01:Auto_Ctrl_Hips.translate',
+        #     'Lemon01:Auto_Ctrl_HipsEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_HipsEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftAnkleEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftAnkleEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftArm.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftElbowEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftElbowEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftFoot.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftFootEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftFootEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftForeArm.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftHand.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftHipEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftHipEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftKneeEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftKneeEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftLeg.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftShoulder.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftShoulderEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftShoulderEffector.translate',
+        #     'Lemon01:Auto_Ctrl_LeftToeBase.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftUpLeg.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftWristEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_LeftWristEffector.translate',
+        #     'Lemon01:Auto_Ctrl_Neck.rotate',
+        #     'Lemon01:Auto_Ctrl_RightAnkleEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightAnkleEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightArm.rotate',
+        #     'Lemon01:Auto_Ctrl_RightElbowEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightElbowEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightFoot.rotate',
+        #     'Lemon01:Auto_Ctrl_RightFootEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightFootEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightForeArm.rotate',
+        #     'Lemon01:Auto_Ctrl_RightHand.rotate',
+        #     'Lemon01:Auto_Ctrl_RightHipEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightHipEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightKneeEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightKneeEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightLeg.rotate',
+        #     'Lemon01:Auto_Ctrl_RightShoulder.rotate',
+        #     'Lemon01:Auto_Ctrl_RightShoulderEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightShoulderEffector.translate',
+        #     'Lemon01:Auto_Ctrl_RightToeBase.rotate',
+        #     'Lemon01:Auto_Ctrl_RightUpLeg.rotate',
+        #     'Lemon01:Auto_Ctrl_RightWristEffector.rotate',
+        #     'Lemon01:Auto_Ctrl_RightWristEffector.translate',
+        #     'Lemon01:Auto_Ctrl_Spine.rotate',
+        #     'Lemon01:Auto_Ctrl_Spine1.rotate',
+        #     'Lemon01:Auto_Ctrl_Spine2.rotate',
+        #     'Lemon01:Auto_Ctrl_Spine3.rotate',
+        #  }
+
+        # cmds.bakeResults(
+        #     simulation=True, -t "0:34.4" -sampleBy 1 -oversamplingRate 1
+        #     disableImplicitControl true -preserveOutsideKeys true
+        #     sparseAnimCurveBake false
+        #     removeBakedAttributeFromLayer false -
+        #     removeBakedAnimFromLayer false -
+        #     bakeOnOverrideLayer false -minimizeRotation true -
+        #     controlPoints false -shape true
+
     def bake_to_skel(self, range_=None, step=None, loop=False, skel=None):
         """Bake animation to skeleton.
 

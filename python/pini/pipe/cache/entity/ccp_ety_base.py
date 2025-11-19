@@ -323,9 +323,11 @@ class CCPEntityBase(CPEntity):
             (str): path to icon
         """
         from pini import testing
+        _LOGGER.debug('TO ICON %s', self)
 
         # Add icon
         if self.settings['icon']:
+            _LOGGER.debug(' - USE SETTINGS %s', self.settings['icon'])
             _icon = icons.find(self.settings['icon'])
         elif self == testing.TEST_ASSET:
             _icon = icons.find('Test Tube')
@@ -335,6 +337,7 @@ class CCPEntityBase(CPEntity):
             _icon = icons.find(_NAME_ICON_MAP[self.name.lower()])
         else:
             _rand = str_to_seed(self.name)
+            _LOGGER.debug(' - USE RAND %s', _rand)
             _icon = _rand.choice(icons.COOL)
 
         return _icon

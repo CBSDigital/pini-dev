@@ -88,9 +88,10 @@ class CReference(om.MFnReference, ref.FileRef):
         """
         from maya_pini import open_maya as pom
         _set = self.to_ctrls_set()
-        return [
-            pom.cast_node(_node)
-            for _node in cmds.sets(_set, query=True)]
+        if not _set:
+            raise RuntimeError(f"Missing ctrls set - {self.namespace}")
+        _ctrls = cmds.sets(_set, query=True) or []
+        return [pom.cast_node(_node) for _node in _ctrls]
 
     @property
     def namespace(self):

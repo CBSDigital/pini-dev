@@ -114,7 +114,7 @@ def extract_template_dir_data(path, template, job=None, safe=True):
     _path = abs_path(path)
     _path = '/'.join(_path.split('/')[:_tmpl_path.count('/') + 1])
 
-    _tmpl = pipe.CPTemplate('tmp', _tmpl_path)
+    _tmpl = pipe.CPTemplate(name='tmp', pattern=_tmpl_path)
     _LOGGER.debug(' - PATH (B) %s', _path)
     _LOGGER.debug(' - TMP TMPL %s', _tmpl)
     try:
