@@ -116,11 +116,13 @@ class CRenderHandler(eh_base.CExportHandler):
 
     def _context__Passes(self, menu):
         _lyr = self.ui.Passes.selected_data()
+        _lyrs = self.ui.Passes.selected_datas()
         if _lyr:
-            _out = _lyr.to_output()
-            menu.add_action("Select", wrap_fn(dcc.select_node, _lyr.rop))
-            if _out:
-                menu.add_action("Copy path", wrap_fn(copy_text, _out.path))
+            menu.add_action("Select", wrap_fn(dcc.select_node, _lyr.node))
+            menu.add_action("Copy path", wrap_fn(copy_text, _lyr.to_output().path))
+        elif _lyrs:
+            _nodes = [_lyr.node for _lyr in _lyrs]
+            menu.add_action("Select nodes", wrap_fn(dcc.select_node, _nodes))
 
     def exec_from_ui(self, ui_kwargs=None, **kwargs):
         """Execuate this export using settings from ui.

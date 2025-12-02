@@ -8,7 +8,7 @@ import hou
 
 from pini import qt, pipe, farm
 from pini.farm import deadline
-from pini.utils import File, find_exe, system, single
+from pini.utils import File, find_exe, system, single, chain_fns
 
 from . import rh_base, rh_pass
 
@@ -45,12 +45,8 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
         _passes = []
         for _dl in _type.instances():
             _LOGGER.debug(' - CHECKING %s', _dl)
-            _rop = single(_dl.inputs(), catch=True)
-            _LOGGER.debug('   - ROP %s', _rop)
-            if not _rop:
-                continue
             try:
-                _pass = _CHouDeadlinePass(render=_rop, deadline_=_dl)
+                _pass = _CHouDeadlinePass(deadline_=_dl)
             except ValueError as _exc:
                 _LOGGER.info('   - REJECTED %s', _exc)
                 continue
@@ -79,8 +75,7 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
         # Prepare submission
         _outs = []
         for _pass in passes:
-            _outs += _setup_deadline_rop(
-                _pass.deadline, comment=notes, priority=priority)
+            _outs += _pass.update_nodes()
         self.progress.set_pc(20)
 
         if submit:
@@ -109,6 +104,14 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
 
         return _outs
 
+    def _context__Passes(self, menu):
+        super()._context__Passes(menu)
+
+        _passes = self.ui.Passes.selected_datas()
+        menu.add_separator()
+        _func = chain_fns(*[_pass.update_render_node for _pass in _passes])
+        menu.add_action('Update paths', _func)
+
 
 class _CHouDeadlinePass(rh_pass.CRenderPass):
     """Represents a render pass in houdini.
@@ -117,25 +120,26 @@ class _CHouDeadlinePass(rh_pass.CRenderPass):
     attached.
     """
 
-    def __init__(self, render, deadline_):
+    def __init__(self, deadline_):
         """Constructor.
 
         Args:
-            render (RopNode): mantra/redshift node
             deadline_ (RopNode): deadline node
         """
-        self.render = render
         self.deadline = deadline_
-        _rop_t = render.type().name()
-        if _rop_t == 'ifd':
+        self.render = single(self.deadline.inputs())
+        self.type_ = self.render.type().name()
+
+        if self.type_ == 'ifd':
             _parm = 'vm_picture'
-        elif _rop_t == 'Redshift_ROP':
+        elif self.type_ == 'Redshift_ROP':
             _parm = 'RS_outputFileNamePrefix'
         else:
-            raise ValueError(_rop_t)
-        _path = render.parm(_parm).eval()
+            raise ValueError(self.type_)
+
+        _path = self.render.parm(_parm).eval()
         _extn = File(_path).extn or 'exr'
-        super().__init__(node=render, name=render.name(), extn=_extn)
+        super().__init__(node=self.render, name=self.render.name(), extn=_extn)
 
     @property
     def renderable(self):
@@ -153,6 +157,50 @@ class _CHouDeadlinePass(rh_pass.CRenderPass):
             renderable (bool): state to apply
         """
         self.deadline.bypass(not renderable)
+
+    def update_nodes(self, comment, priority=50):
+        """Setup deadline ROP.
+
+        Args:
+            comment (str): comment to apply
+            priority (int): priority to apply
+
+        Returns:
+            (CPOutput list): ROP outputs
+        """
+        _LOGGER.info(' - SETUP DEADLINE ROP %s', self.deadline)
+
+        _work = pipe.cur_work()
+        _priority = priority or self.deadline.parm('dl_priority').eval()
+        _outs = []
+
+        _outs += self.update_render_node()
+
+        # Update deadline node
+        self.deadline.parm('dl_comment').set(comment)
+        for _parm_s in ['dl_priority', 'dl_redshift_priority']:
+            _parm = self.deadline.parm(_parm_s)
+            if _parm:
+                _parm.set(priority)
+            else:
+                _LOGGER.warning('   - MISSING PARM %s', _parm_s)
+
+        return _outs
+
+    def update_render_node(self):
+        """Update render node paths.
+
+        Returns:
+            (CPOutput list): outputs
+        """
+        _outs = []
+        if self.type_ == 'Redshift_ROP':
+            _outs += _setup_rs_rop(self.render)
+        elif self.type_ == 'ifd':
+            _outs += _setup_mantra_rop(self.render)
+        else:
+            raise ValueError(self.type_)
+        return _outs
 
 
 def _find_new_jobs(func):
@@ -280,43 +328,6 @@ def _setup_mantra_rop(rop):
 
     rop.parm('ver').set(-1)
     rop.parm('ver').deleteAllKeyframes()
-
-    return _outs
-
-
-def _setup_deadline_rop(rop, comment, priority=50):
-    """Setup deadline ROP.
-
-    Args:
-        rop (RopNode): deadline node to update
-        comment (str): comment to apply
-        priority (int): priority to apply
-
-    Returns:
-        (CPOutput list): ROP outputs
-    """
-    _LOGGER.info(' - SETUP DEADLINE ROP %s', rop)
-    _work = pipe.cur_work()
-    _priority = rop.parm('dl_priority').eval()
-
-    _outs = []
-    for _input in rop.inputs():
-        _type = _input.type().name()
-        if _type == 'Redshift_ROP':
-            _outs += _setup_rs_rop(_input)
-        elif _type == 'ifd':
-            _outs += _setup_mantra_rop(_input)
-        else:
-            raise NotImplementedError(
-                f'Unhandled type {_type}: {_input.path()}')
-
-    rop.parm('dl_comment').set(comment)
-    for _parm_s in ['dl_priority', 'dl_redshift_priority']:
-        _parm = rop.parm(_parm_s)
-        if _parm:
-            _parm.set(priority)
-        else:
-            _LOGGER.warning('   - MISSING PARM %s', _parm_s)
 
     return _outs
 

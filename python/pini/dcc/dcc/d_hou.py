@@ -244,7 +244,11 @@ class HouDCC(BaseDCC):
         Args:
             node (Node): node to select
         """
-        node.setSelected(True)
+        if isinstance(node, (list, tuple)):
+            for _node in node:
+                _node.setSelected(True)
+        else:
+            node.setSelected(True)
 
     def set_env(self, work):
         """Set environment to the given work file in this dcc.

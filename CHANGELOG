@@ -1,3 +1,13 @@
+## [8.31.4] - Tue 2025-12-02 14:44
+### Summary
+ - Pini Helper:
+    - houdini mantra/redshift render added right-click update nodes opt,
+### Updated
+ - pini.dcc.HouDCC.select_node allow for multiple nodes,
+ - pini.dcc.export.CRenderHandler Passes ctx added select nodes,
+ - pini.dcc.export.CHouDeadlineRender Passes ctx added update nodes,
+
+
 ## [8.31.3] - Tue 2025-12-02 12:15
 ### Summary
  - Pini Helper:
