@@ -1,3 +1,11 @@
+## [8.31.1] - Tue 2025-12-02 08:24
+### Summary
+ - Pini Helper:
+    - bugfix error on asset submit mov with still jpeg dependency (sspicher),
+### Updated
+ - pini.pipe.shotgrid.SGC.SGCRoot.find_pub_type added handling for still jpg/jpeg,
+
+
 ## [8.31.0] - Tue 2025-12-02 07:50
 ### Summary
  - Pini Helper:

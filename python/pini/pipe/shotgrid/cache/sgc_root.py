@@ -202,13 +202,15 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
 
         # Try using mapping
         _map = {
-            'spp': 'Substance Painter Project File',
+            'exr': 'Exr File',
+            'gz': 'Ass Proxy',
             'hip': 'Houdini Scene',
+            'jpeg': 'Image',
+            'jpg': 'Image',
             'mp4': 'Movie',
             'mov': 'Movie',
             'rs': 'Redshift Proxy',
-            'exr': 'Exr File',
-            'gz': 'Ass Proxy',
+            'spp': 'Substance Painter Project File',
             'vdb': 'VDB File',
         }
         _map_matches = [
