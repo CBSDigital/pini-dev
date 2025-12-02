@@ -5,7 +5,7 @@ import time
 
 from pini.utils import (
     build_cache_fmt, system, basic_repr, cache_method_to_file, find_exe,
-    File, strftime)
+    File, strftime, to_time_f)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,8 +40,9 @@ class CDFarmJob:
         Returns:
             (float): creation time
         """
-        _ctime_s = self.to_details()['Start Date']
-        return time.strptime(_ctime_s, '%Y/%m/%d %H:%M:%S')
+        _time_s = self.to_details()['Submit Date']
+        _time_t = time.strptime(_time_s, '%Y/%m/%d %H:%M:%S')
+        return to_time_f(_time_t)
 
     @property
     def name(self):
@@ -63,13 +64,16 @@ class CDFarmJob:
         """
         return strftime(fmt, self.mtime)
 
-    def to_details(self):
+    def to_details(self, force=False):
         """Obtain details for this job.
+
+        Args:
+            force (bool): force reread from deadline
 
         Returns:
             (dict): job details
         """
-        _lines = self._read_details_str().split('\n')
+        _lines = self._read_details_str(force=force).split('\n')
         _data = {}
         for _line in _lines:
             _line = _line.strip()
@@ -90,8 +94,11 @@ class CDFarmJob:
         return _file.exists()
 
     @cache_method_to_file
-    def _read_details_str(self):
+    def _read_details_str(self, force=False):
         """Read details for this job.
+
+        Args:
+            force (bool): force reread from deadline
 
         Returns:
             (str): detail string
@@ -101,6 +108,15 @@ class CDFarmJob:
         _LOGGER.info(' - READ JOB METADATA %s', self.uid)
         _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
         return system(_cmds, verbose=1)
+
+    def __eq__(self, other):
+        return self.uid == other.uid
+
+    def __hash__(self):
+        return hash(self.uid)
+
+    def __lt__(self, other):
+        return self.uid < other.uid
 
     def __repr__(self):
         if self._check_for_details():

@@ -13,7 +13,7 @@ from .eh_ui import to_settings_key
 from .eh_blast import blast
 from .eh_cache import abc_cache, fbx_cache, CCacheHandler, CCacheable
 from .eh_publish import CBasicPublish, publish, model_publish, lookdev_publish
-from .eh_render import CRenderHandler, local_render, farm_render
+from .eh_render import CRenderHandler, local_render, farm_render, CRenderPass
 
 if pipe.SHOTGRID_AVAILABLE:
     from .eh_submit import submit, CBasicSubmitter
@@ -30,6 +30,7 @@ if dcc.NAME == 'maya':
 
 elif dcc.NAME == 'hou':
     from .eh_blast import CHouFlipbook
+    from .eh_render import CHouDeadlineRender
 
 elif dcc.NAME == 'substance':
     from .eh_publish import CSubstanceTexturePublish

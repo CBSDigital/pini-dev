@@ -45,8 +45,12 @@ RELOAD_ORDER = [
     'pini.dcc.export.eh_publish',
     'pini.dcc.export.eh_blast',
     'pini.dcc.export.eh_cache',
+    'pini.dcc.export.eh_render.rh_pass',
+    'pini.dcc.export.eh_render.rh_base',
+    'pini.dcc.export.eh_render.rh_maya.rhm_layer',
+    'pini.dcc.export.eh_render.rh_maya',
+    'pini.dcc.export.eh_render.rh_tools',
     'pini.dcc.export.eh_render',
-    'pini.dcc.export',
     'pini.dcc',
 
     'pini.pipe.cp_utils',
@@ -463,6 +467,12 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
         reload_libs(mods=_mods, verbose=0)
         _dur = time.time() - _start
     else:
+        import pprint
+        pprint.pprint(_fails)
+        _LOGGER.error(' - FAILS %s', _fails)
+        # import testing
+        # testing.print_sys_paths()
+        pprint.pprint(sys.path)
         raise RuntimeError(_root)
 
     if verbose > 1:

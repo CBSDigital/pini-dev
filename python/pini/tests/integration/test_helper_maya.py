@@ -22,6 +22,22 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestHelper(unittest.TestCase):
 
+    def test_export_handler_notes(self):
+
+        dcc.new_scene(force=True)
+
+        _helper = helper.obt_helper(reset_cache=False)
+
+        _helper.ui.MainPane.select_tab('Work')
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Publish')
+        _helper.ui.EPublishHandler.select('Maya Basic Publish')
+
+        _pub = _helper.ui.EPublishHandler.selected_data()
+        _LOGGER.info(' - PUB %s', _pub)
+        assert _pub.ui.Notes.settings_key == 'PiniQt.CMayaBasicPublish.Notes'
+        assert not _pub.ui.Notes.text()
+
     def test_farm_render_handler(self):
 
         if cmds.objExists('blah'):
@@ -41,11 +57,11 @@ class TestHelper(unittest.TestCase):
         _helper.ui.EExportPane.select_tab('Render')
         _helper.ui.ERenderHandler.select_data(_farm_rh)
 
-        _farm_rh._build_layers_elems()
-        _farm_rh.ui.Layers.select(_blah_lyr, replace=True)
+        # _farm_rh._build_layers_elems()
+        _farm_rh.ui.Passes.select('blah', replace=True)
         assert not _default_lyr.is_renderable()
         assert _blah_lyr.is_renderable()
-        _farm_rh.ui.Layers.select(_default_lyr, replace=True)
+        _farm_rh.ui.Passes.select('masterLayer', replace=True)
         assert _default_lyr.is_renderable()
         assert not _blah_lyr.is_renderable()
 
@@ -265,13 +281,13 @@ class TestHelper(unittest.TestCase):
 
         # Check setting maintained
         _helper.delete()
-        print('')
+        print()
         _LOGGER.info('LAUNCH HELPER')
         _helper = helper.launch(reset_cache=False)
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         assert dcc.get_scene_data('PiniQt.Publish.References') == 'Import into root namespace'
         assert _m_pub.ui.References.currentText() == 'Import into root namespace'
-        print('')
+        print()
         _LOGGER.info('SELECT EXPORT TAB')
         _helper.ui.MainPane.select_tab('Export')
         _LOGGER.info('SELECTED EXPORT TAB')
@@ -292,7 +308,7 @@ class TestHelper(unittest.TestCase):
         _LOGGER.info('HELPER CLOSED (DELETED')
         process_deferred_events()
         assert not helper.is_active()
-        print('')
+        print()
         _helper = helper.launch(reset_cache=False)
         process_deferred_events()
         _LOGGER.info('HELPER LAUNCHED')
@@ -306,6 +322,18 @@ class TestHelper(unittest.TestCase):
         assert _helper.ui.EExportPane.current_tab_text() == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
         assert export.get_pub_refs_mode() is _remove
+
+        # Test build blast ui
+        _key = 'PiniQt.CMayaPlayblast.OutputName'
+        assert not dcc.get_scene_data(_key)
+        _helper.ui.MainPane.select_tab('Export')
+        _helper.ui.EExportPane.select_tab('Blast')
+        _blast = _helper.ui.EBlastHandler.selected_data()
+        _out_name = _blast.ui.OutputName
+        _LOGGER.info(' - SAVE POLICY %s', _out_name.save_policy)
+        _LOGGER.info(' - SETTINGS KEY %s', _out_name.settings_key)
+        assert _out_name.settings_key == _key
+        assert _out_name.currentText() == 'blast'
 
 
 def _test_anim_workflow(progress, force, show_ctx):

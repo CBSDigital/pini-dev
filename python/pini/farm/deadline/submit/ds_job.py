@@ -154,6 +154,9 @@ class CDJob:
         Returns:
             (dict): submission info data
         """
+        _LOGGER.debug(' - BUILD INFO DATA %s', self)
+        from pini import farm
+
         assert self.plugin
         assert self.group
         assert 0 <= self.priority <= 100
@@ -161,8 +164,11 @@ class CDJob:
         # Add dependencies
         _dep_ids = []
         for _dep in self.dependencies:
+            _LOGGER.debug('   - ADD DEP %s', _dep)
             if isinstance(_dep, CDJob):
                 _id = _dep.jid
+            elif isinstance(_dep, farm.CDFarmJob):
+                _id = _dep.uid
             elif isinstance(_dep, str):
                 _id = _dep
             else:

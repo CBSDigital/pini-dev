@@ -15,7 +15,7 @@ IS_AVAILABLE = False
 if NAME == "Deadline":
     from .deadline import (
         FARM, CDPyJob, setup_deadline_submit, flush_old_submissions, CDJob,
-        write_deadline_data)
+        write_deadline_data, CDFarmJob)
     if dcc.NAME == 'maya':
         from .deadline import CDMayaPyJob
     IS_AVAILABLE = True

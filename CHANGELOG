@@ -1,3 +1,28 @@
+## [8.31.0] - Tue 2025-12-02 07:50
+### Summary
+ - Pini Helper:
+    - houdini added deadline render submitter for mantra/redshift (nhoyt),
+### Updated
+ - pini.dcc.HouDCC.find_export_handlers added CHouDeadlineRender,
+ - pini.dcc.export.CRenderHandler added add_range/add_passes/add_cams attrs,
+ - pini.dcc.export.CRenderHandler added find_cams/find_passes methods,
+ - pini.dcc.export CRenderPass/CHouDeadlineRender added,
+ - pini.pipe.CPWork._check_image bugfix error on rs/ifd seq,
+ - pini.pipe OUTPUT_FILE_TYPES/OUTPUT_VIDEO_TYPES/OUTPUT_SEQ_TYPES list -> tuple,
+ - pini.pipe.OUTPUT_SEQ_CACHE_EXTNS added,
+ - pini.pipe.CACHE.CCPOutput.content_type added ifd handling,
+ - pini.pipe.shotgrid.create_pub_file bugfix make thumb error on rs/ifd seq,
+ - pini.farm.setup_deadline_submit insert paths not append,
+ - pini.farm.CDJob allow CDFarmJob as dependency,
+ - pini.farm.CDFarmJob.ctime bugfix error on read detail,
+ - pini.farm.CDFarmJob added hash/__lt__/__eq__,
+ - pini.farm.CDFarmJob to_details added force flag,
+ - pini.farm.submit_update_job made public,
+ - pini.farm.submit_maya_render added layers arg,
+ - pini.farm.deadline.ICON added,
+ - pini.farm.CDFarmJob made public,
+
+
 ## [8.30.0] - Wed 2025-11-19 10:09
 ### Summary
  - Sanity Check:

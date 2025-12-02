@@ -207,12 +207,15 @@ class HouDCC(BaseDCC):
 
     def _build_export_handlers(self):
         """Initiate export handlers list."""
+        from pini import farm
         from .. import export
         _LOGGER.debug('INIT EXPORT HANDLERS')
         _handlers = super()._build_export_handlers()
         _handlers += [
             export.CHouFlipbook(),
         ]
+        if farm.IS_AVAILABLE and farm.NAME == 'Deadline':
+            _handlers += [export.CHouDeadlineRender()]
         return _handlers
 
     def _read_pipe_refs(self, selected=False):

@@ -7,7 +7,7 @@ import platform
 from pini import pipe
 from pini.pipe import cache
 from pini.utils import (
-    Seq, Video, TMP, Image, single, File, to_str, abs_path, check_heart)
+    Seq, Video, TMP, single, File, to_str, abs_path, check_heart)
 
 from . import sg_handler
 
@@ -142,12 +142,15 @@ def _apply_thumb(path, thumb, id_):
     # Obtain thumb
     _thumb = thumb
     if not _thumb:
-        if isinstance(path, Seq) and path.extn not in ('obj', 'vdb'):
-            _thumb = Image(path.to_frame_file())
-            if _thumb.extn not in ('png', 'jpg'):
-                _thumb.convert(_TMP_THUMB, force=True)
-                _thumb = _TMP_THUMB
+        _build_thumb = False
+        if (
+                isinstance(path, Seq) and
+                path.extn not in pipe.OUTPUT_SEQ_CACHE_EXTNS and
+                path.extn not in ('iff', )):
+            _build_thumb = True
         elif isinstance(path, Video):
+            _build_thumb = True
+        if _build_thumb:
             path.build_thumbnail(_TMP_THUMB, width=None, force=True)
             _thumb = _TMP_THUMB
 

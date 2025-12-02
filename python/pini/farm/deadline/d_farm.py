@@ -221,7 +221,7 @@ class CDFarm(base.CFarm):
         _progress.set_pc(50)
 
         # Submit update cache job
-        _update_job = self._submit_update_job(
+        _update_job = self.submit_update_job(
             work=_work, dependencies=_cache_jobs, comment=comment,
             batch_name=_batch, stime=_stime)
         _progress.set_pc(100)
@@ -232,7 +232,8 @@ class CDFarm(base.CFarm):
     def submit_maya_render(
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, chunk_size=1, version_up=False, checks_data=None,
-            submit_=True, metadata=None, result='jobs', force=False, **kwargs):
+            submit_=True, metadata=None, layers=None,
+            result='jobs', force=False, **kwargs):
         """Submit maya render job to the farm.
 
         Args:
@@ -246,6 +247,7 @@ class CDFarm(base.CFarm):
             checks_data (dict): override sanity checks data
             submit_ (bool): submit render to deadline (disable for debugging)
             metadata (dict): override render metadata
+            layers (CRenderLayer list): override list of layers to render
             result (str): what to return
                 jobs - list of submitted jobs
                 msg - submit message
@@ -261,7 +263,7 @@ class CDFarm(base.CFarm):
         _stime = time.time()
         _work = pipe.CACHE.obt_cur_work()
         _batch = _work.base
-        _lyrs = pom.find_render_layers(renderable=True)
+        _lyrs = layers or pom.find_render_layers(renderable=True)
         if not _lyrs:
             raise RuntimeError('No renderable layers')
 
@@ -296,7 +298,7 @@ class CDFarm(base.CFarm):
         _progress.set_pc(50)
 
         # Submit update cache job
-        _update_job = self._submit_update_job(
+        _update_job = self.submit_update_job(
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
             priority=priority, submit_=submit_,
@@ -377,7 +379,7 @@ class CDFarm(base.CFarm):
             edit_py=edit_py, batch_name=batch_name, **kwargs)
         return _sub.submit(submit_=submit_)
 
-    def _submit_update_job(
+    def submit_update_job(
             self, work, dependencies, comment, batch_name, stime,
             priority=50, metadata=None, outputs=None, submit_=True):
         """Submit job which updates work file output cache.

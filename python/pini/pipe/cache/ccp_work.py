@@ -110,18 +110,21 @@ class CCPWork(CPWork):
             (CPOutputGhost list): outputs
         """
         _LOGGER.debug('READ OUTPUTS force=%d %s', force, self)
-        # _LOGGER.debug(' - CACHE FMT %s', self.cache_fmt)
+
         if force:
             self._update_outputs_cache()
         _outs = super()._read_outputs()
         _LOGGER.debug(' - FOUND %d OUTPUTS %s', len(_outs), self)
+
+        # Apply match metadata filter
         if match_metadata:
             _outs = [
                 _out for _out in _outs
                 if _out.metadata.get('src') == self.path]
             _LOGGER.debug(' - APPLY METADATA MATCH -> %d OUTPUTS', len(_outs))
+
         _out_gs = [_out.to_ghost() for _out in _outs]
-        # asdasd
+
         return _out_gs
 
     def _update_outputs_cache(self):

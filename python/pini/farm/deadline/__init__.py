@@ -3,6 +3,7 @@
 from pini import dcc
 
 from .d_farm import CDFarm
+from .d_farm_job import CDFarmJob
 from .submit import (
     CDPyJob, CDCmdlineJob, CDJob, setup_deadline_submit, flush_old_submissions,
     write_deadline_data)
@@ -13,6 +14,7 @@ if dcc.NAME == 'maya':
 FARM = CDFarm()
 DEADLINE = FARM
 NAME = FARM.NAME
+ICON = FARM.ICON
 
 for _name in ['submit_job']:
     _func = getattr(DEADLINE, _name)

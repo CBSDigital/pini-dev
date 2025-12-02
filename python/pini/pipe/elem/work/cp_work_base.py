@@ -406,6 +406,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         Args:
             outputs (CPOutput list): outputs from this work file
         """
+        from pini import pipe
+
         _LOGGER.debug(' - CHECK IMAGE')
         if self.image.exists():
             _LOGGER.debug(' - IMAGE EXISTS')
@@ -424,7 +426,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         # Check seqs
         _seqs = sorted([
             _out for _out in outputs
-            if isinstance(_out, Seq) and _out.extn != 'iff'],
+            if isinstance(_out, Seq) and
+            _out.extn not in ('iff', ) and
+            _out.extn not in pipe.OUTPUT_SEQ_CACHE_EXTNS],
             key=cp_utils.output_clip_sort)
         if _seqs:
             _seqs[0].build_thumbnail(self.image)

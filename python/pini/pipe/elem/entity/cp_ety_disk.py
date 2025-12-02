@@ -63,8 +63,10 @@ class CPEntityDisk(cp_ety_base.CPEntityBase):
         _LOGGER.debug('FIND ROOT OUTPUT TMPLS %s', self)
 
         # Find templates
-        _types = ['seq_dir'] + (pipe.OUTPUT_FILE_TYPES +
-                                pipe.OUTPUT_VIDEO_TYPES)
+        _types = (
+            ['seq_dir'] +
+            list(pipe.OUTPUT_FILE_TYPES) +
+            list(pipe.OUTPUT_VIDEO_TYPES))
         _LOGGER.debug(' - TMPL TYPES %s', _types)
         _all_tmpls = sorted(sum([
             self.find_templates(_type) for _type in _types], []))
