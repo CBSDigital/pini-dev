@@ -23,7 +23,7 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
     LABEL = '\n'.join([
         'Renders the current scene to deadline.',
         '',
-        'Renderable passes are identifed as Mantra/Redshift ROPs',
+        'Renderable passes are identifed as Mantra/Redshift ROPs '
         'with a single deadline node attached.'])
 
     add_cameras = False
@@ -50,7 +50,7 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
             if not _rop:
                 continue
             try:
-                _pass = _CHouDeadlinePass(rop=_rop, deadline=_dl)
+                _pass = _CHouDeadlinePass(render=_rop, deadline_=_dl)
             except ValueError as _exc:
                 _LOGGER.info('   - REJECTED %s', _exc)
                 continue

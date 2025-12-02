@@ -1,3 +1,11 @@
+## [8.31.3] - Tue 2025-12-02 12:15
+### Summary
+ - Pini Helper:
+    - houdini mantra/redshift error bugfix error on populate passes list,
+### Updated
+ - pini.dcc.export.CHouDeadlineRender bugfix error on populate Passes,
+
+
 ## [8.31.2] - Tue 2025-12-02 09:14
 ### Summary
  - Pini Install:
