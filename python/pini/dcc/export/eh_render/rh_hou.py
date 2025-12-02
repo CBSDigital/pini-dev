@@ -7,14 +7,15 @@ import logging
 import hou
 
 from pini import qt, pipe, farm
-from pini.dcc import export
 from pini.farm import deadline
 from pini.utils import File, find_exe, system, single
+
+from . import rh_base, rh_pass
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CHouDeadlineRender(export.CRenderHandler):
+class CHouDeadlineRender(rh_base .CRenderHandler):
     """Render handler for managing deadline submission in houdini."""
 
     NAME = 'Hou Deadline Render'
@@ -109,7 +110,7 @@ class CHouDeadlineRender(export.CRenderHandler):
         return _outs
 
 
-class _CHouDeadlinePass(export.CRenderPass):
+class _CHouDeadlinePass(rh_pass.CRenderPass):
     """Represents a render pass in houdini.
 
     This is defined as a mantra/redshift ROP with a single deadline node
