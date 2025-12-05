@@ -1,3 +1,16 @@
+## [8.32.0] - Fri 2025-12-05 08:02
+### Summary
+ - Pini Helper:
+    - maya farm render register redshift cryptomatte files in shotgrid (cstewart),
+### Updated
+ - pini.dcc.MayaDCC get_scene_data/set_scene_data added tuple handling,
+ - pini.qt.CBaseWidget.read_setting bugfix some widgets not finding parent dialog,
+ - pini.qt.CBaseWidget.to_dialog added,
+ - pini.qt.PNGNodeGraph get_tfm_t/set_tfm_t added,
+ - pini.farm.submit_maya_render_job added redshift cryptomatte handling,
+ - maya_pini.open_maya find_aov/find_aovs added,
+
+
 ## [8.31.4] - Tue 2025-12-02 14:44
 ### Summary
  - Pini Helper:

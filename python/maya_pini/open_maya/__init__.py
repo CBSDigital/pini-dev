@@ -32,6 +32,7 @@ from .pom_skeleton import (
 from .pom_render_layer import (
     find_render_layers, CRenderLayer, cur_render_layer, find_render_layer,
     create_render_layer)
+from .pom_aov import find_aovs, find_aov
 
 from .cpnt_mesh import PCpntMesh, to_uv, PUV, to_vtx, PUVBBox
 

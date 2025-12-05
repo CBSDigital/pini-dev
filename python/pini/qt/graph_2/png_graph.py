@@ -110,6 +110,32 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         """
         return single(self.scene.selectedItems(), catch=True)
 
+    def get_tfm_t(self):
+        """Get value of this graph's transformation.
+
+        Returns:
+            (float tuple): transform matrix values
+        """
+        _tfm = self.transform()
+
+        _vals = []
+        for _x in range(1, 4):
+            for _y in range(1, 4):
+                _name = f'm{_x}{_y}'
+                _func = getattr(_tfm, _name)
+                _val = _func()
+                _vals.append(_val)
+        return tuple(_vals)
+
+    def set_tfm_t(self, tfm):
+        """Set viewport transform from tuple.
+
+        Args:
+            tfm (tuple): transform tuple
+        """
+        _tfm = QtGui.QTransform(*tfm)
+        self.setTransform(_tfm)
+
     def keyPressEvent(self, event):
         """Triggered by key press.
 

@@ -94,7 +94,7 @@ class CBaseWidget:
         elif self.save_policy == q_utils.SavePolicy.NO_SAVE:
             pass
         else:
-            _settings = getattr(self.parent(), 'settings', None)
+            _settings = getattr(self.to_dialog(), 'settings', None)
             if _settings:
                 _key = f'widgets/{self.objectName()}'
                 _val = _settings.value(_key)
@@ -138,6 +138,22 @@ class CBaseWidget:
             val (any): value to apply
         """
         raise NotImplementedError(self)
+
+    def to_dialog(self):
+        """Obtain parent dialog for this control.
+
+        Returns:
+            (CUiBase): dialog
+        """
+        from pini import qt
+        _parent = self.parent()
+        for _idx in range(10):
+            if isinstance(_parent, qt.CUiBase):
+                break
+            if not _parent:
+                break
+            _parent = _parent.parent()
+        return _parent
 
     def __repr__(self):
         return basic_repr(self, self.objectName())

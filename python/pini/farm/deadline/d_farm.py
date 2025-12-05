@@ -256,8 +256,9 @@ class CDFarm(base.CFarm):
         Returns:
             (CDJob list): jobs
         """
-        from maya_pini import open_maya as pom
         from pini.dcc import export
+        from maya_pini import open_maya as pom
+        from maya_pini.utils import cur_renderer
 
         _cam = camera or pom.find_render_cam()
         _stime = time.time()
@@ -281,15 +282,25 @@ class CDFarm(base.CFarm):
         _render_jobs = []
         _outs = []
         for _lyr in _lyrs:
+
+            # Build output job
             _job = submit.CDMayaRenderJob(
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=frames, camera=_cam, comment=comment,
                 machine_limit=machine_limit, chunk_size=chunk_size,
                 scene=_render_scene, **kwargs)
             _render_jobs.append(_job)
-            _LOGGER.info(' - SCENE %s', _job.scene)
+            _LOGGER.debug(' - SCENE %s', _job.scene)
             assert _job.scene == _render_scene
             _outs.append(_job.output)
+
+            # Add redshift cryptomatte output
+            if cur_renderer() == 'redshift' and pom.find_aov('Cryptomatte'):
+                _crypto_path = _job.output.path.replace(
+                    '.%04d.', '.Cryptomatte.%04d.')
+                _crypto_out = pipe.to_output(_crypto_path, catch=True)
+                if _crypto_out:
+                    _outs.append(_crypto_out)
 
         assert not _render_jobs[0].jid
         if submit_:
@@ -301,8 +312,7 @@ class CDFarm(base.CFarm):
         _update_job = self.submit_update_job(
             work=_work, dependencies=_render_jobs, comment=comment,
             batch_name=_batch, stime=_stime, metadata=_metadata,
-            priority=priority, submit_=submit_,
-            outputs=_outs)
+            priority=priority, submit_=submit_, outputs=_outs)
         _progress.set_pc(100)
         _progress.close()
 

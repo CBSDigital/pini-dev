@@ -150,7 +150,7 @@ class CheckAOVs(SCMayaCheck):
     def run(self):
         """Run this check."""
         _ren = cur_renderer()
-        self._aovs = _find_aovs()
+        self._aovs = pom.find_aovs()
         if _ren == 'arnold':
             self._check_aovs_arnold()
         if _ren == 'redshift':
@@ -232,26 +232,6 @@ class CheckAOVs(SCMayaCheck):
                 _msg = f'AOV "{_aov_name}" not connected to shader "{_shd}"'
                 _fix = wrap_fn(_shd_col.connect, _shd_plug)
                 self.add_fail(_msg, fix=_fix, node=_aov)
-
-
-def _find_aovs():
-    """Find aovs in the current scene.
-
-    Returns:
-        (CNode list): aovs
-    """
-    _ren = cur_renderer()
-    if _ren == 'arnold':
-        _type = 'aiAOV'
-    elif _ren == 'redshift':
-        _type = 'RedshiftAOV'
-    elif _ren == 'vray':
-        _type = 'VRayRenderElement'
-    else:
-        raise NotImplementedError(_ren)
-    return [
-        _aov for _aov in pom.CMDS.ls(type=_type)
-        if not _aov.is_referenced()]
 
 
 def _create_aov(type_, name=None):

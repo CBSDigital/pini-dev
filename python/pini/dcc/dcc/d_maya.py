@@ -296,7 +296,7 @@ class MayaDCC(BaseDCC):
             _data = float(_data)
         elif _type == 'int':
             _data = int(_data)
-        elif _type == 'list':
+        elif _type in ('list', 'tuple'):
             _data = ast.literal_eval(_data)
         elif _type in ['str', 'unicode']:
             pass
@@ -434,7 +434,7 @@ class MayaDCC(BaseDCC):
         _LOGGER.debug('SET SCENE DATA key=%s val=%s', key, val)
         _type = type(val).__name__
         _val = val
-        if isinstance(val, list):
+        if isinstance(val, (list, tuple)):
             _val = str(_val)
         if _val is None:
             _val = ''

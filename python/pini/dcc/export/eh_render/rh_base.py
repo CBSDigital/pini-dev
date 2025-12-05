@@ -118,8 +118,10 @@ class CRenderHandler(eh_base.CExportHandler):
         _lyr = self.ui.Passes.selected_data()
         _lyrs = self.ui.Passes.selected_datas()
         if _lyr:
-            menu.add_action("Select", wrap_fn(dcc.select_node, _lyr.node))
-            menu.add_action("Copy path", wrap_fn(copy_text, _lyr.to_output().path))
+            menu.add_action(
+                "Select", wrap_fn(dcc.select_node, _lyr.node))
+            menu.add_action(
+                "Copy path", wrap_fn(copy_text, _lyr.to_output().path))
         elif _lyrs:
             _nodes = [_lyr.node for _lyr in _lyrs]
             menu.add_action("Select nodes", wrap_fn(dcc.select_node, _nodes))
