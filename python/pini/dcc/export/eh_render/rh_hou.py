@@ -15,7 +15,7 @@ from . import rh_base, rh_pass
 _LOGGER = logging.getLogger(__name__)
 
 
-class CHouDeadlineRender(rh_base .CRenderHandler):
+class CHouDeadlineRender(rh_base.CRenderHandler):
     """Render handler for managing deadline submission in houdini."""
 
     NAME = 'Hou Deadline Render'
@@ -45,12 +45,13 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
         _passes = []
         for _dl in _type.instances():
             _LOGGER.debug(' - CHECKING %s', _dl)
-            try:
-                _pass = _CHouDeadlinePass(deadline_=_dl)
-            except ValueError as _exc:
-                _LOGGER.info('   - REJECTED %s', _exc)
-                continue
-            _passes.append(_pass)
+            for _render in _dl.inputs():
+                try:
+                    _pass = _CHouRenderPass(_render)
+                except ValueError as _exc:
+                    _LOGGER.info('   - REJECTED %s', _exc)
+                    continue
+                _passes.append(_pass)
         return _passes
 
     def export(
@@ -75,7 +76,7 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
         # Prepare submission
         _outs = []
         for _pass in passes:
-            _outs += _pass.update_nodes()
+            _outs += _pass.update_nodes(comment=notes)
         self.progress.set_pc(20)
 
         if submit:
@@ -87,7 +88,7 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
 
             # Execute submission
             _submit = _find_new_jobs(_submit_deadline_rops)
-            _deadlines = [_pass.deadline for _pass in passes]
+            _deadlines = sorted({_pass.deadline for _pass in passes})
             _LOGGER.info(' - DEADLINES %s', _deadlines)
             _jobs = _submit(_deadlines)
             if len(_jobs) == 1:
@@ -113,21 +114,23 @@ class CHouDeadlineRender(rh_base .CRenderHandler):
         menu.add_action('Update paths', _func)
 
 
-class _CHouDeadlinePass(rh_pass.CRenderPass):
+class _CHouRenderPass(rh_pass.CRenderPass):
     """Represents a render pass in houdini.
 
     This is defined as a mantra/redshift ROP with a single deadline node
     attached.
     """
 
-    def __init__(self, deadline_):
+    def __init__(self, render):
         """Constructor.
 
         Args:
-            deadline_ (RopNode): deadline node
+            render (RopNode): mantra/redshift node
         """
-        self.deadline = deadline_
-        self.render = single(self.deadline.inputs())
+        self.render = render
+        self.deadline = single(self.render.outputs())
+        if not self.deadline:
+            raise ValueError('No deadline node')
         self.type_ = self.render.type().name()
 
         if self.type_ == 'ifd':
@@ -148,7 +151,7 @@ class _CHouDeadlinePass(rh_pass.CRenderPass):
         Returns:
             (bool): renderable
         """
-        return not self.deadline.isBypassed()
+        return not self.render.isBypassed()
 
     def set_renderable(self, renderable):
         """Set renderable state of this ROP.
@@ -156,7 +159,7 @@ class _CHouDeadlinePass(rh_pass.CRenderPass):
         Args:
             renderable (bool): state to apply
         """
-        self.deadline.bypass(not renderable)
+        self.render.bypass(not renderable)
 
     def update_nodes(self, comment, priority=50):
         """Setup deadline ROP.

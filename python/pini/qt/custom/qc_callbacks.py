@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def connect_callbacks(
         dialog, ui=None, settings_container=None, error_catcher=None,
-        disconnect=False):
+        disconnect=False, catch_missing=False):
     """Connect all callbacks for the given dialog.
 
     Args:
@@ -30,12 +30,13 @@ def connect_callbacks(
         settings_container (any): parent object for settings
         error_catcher (fn): error catcher decorator
         disconnect (bool): disconnect signal before connecting callback
+        catch_missing (bool): supress error on missing callback/widget
     """
     _LOGGER.debug('CONNECT CALLBACKS %s', dialog)
     _ui = ui or dialog.ui
     _settings_container = settings_container or dialog
     _connect_simple_callbacks(
-        dialog, ui=_ui, disconnect=disconnect,
+        dialog, ui=_ui, disconnect=disconnect, catch_missing=catch_missing,
         error_catcher=error_catcher)
     _connect_save_on_change(
         ui=_ui, settings_container=_settings_container)
@@ -208,7 +209,8 @@ def _connect_save_on_change(ui, settings_container):
 
 
 def _connect_signal_callback(
-        dialog, ui, callback, error_catcher, disconnect=False):
+        dialog, ui, callback, error_catcher, disconnect=False,
+        catch_missing=False):
     """Connect a callback to its widget.
 
     Args:
@@ -217,6 +219,7 @@ def _connect_signal_callback(
         callback (fn): callback to connect
         error_catcher (fn): error catcher decorator
         disconnect (bool): replace existing connections on connect
+        catch_missing (bool): supress error on missing callback/widget
     """
     from pini import qt
 
@@ -224,7 +227,17 @@ def _connect_signal_callback(
     _callback = callback
     _widget_name = _callback.__name__[len('_callback__'):]
     _widget = getattr(ui, _widget_name, None)
+
+    # Handle missing widget
     if not _widget:
+
+        if catch_missing:
+            return
+
+        # Trigger error as this can happen in qt thread
+        from pini.tools import error
+        error.TRIGGERED = True
+
         raise RuntimeError(
             f'Missing callback widget {_widget_name}: {_callback}')
 
@@ -260,7 +273,7 @@ def _connect_signal_callback(
 
 
 def _connect_simple_callbacks(
-        dialog, ui, error_catcher, disconnect=False):
+        dialog, ui, error_catcher, disconnect=False, catch_missing=False):
     """Connect callbacks based on method name.
 
     Any method with name matching a ui element will be connected,
@@ -274,6 +287,7 @@ def _connect_simple_callbacks(
         ui (CUiContainer): override ui container (if not dialog.ui)
         error_catcher (fn): error catcher decorator
         disconnect (bool): replace existing connections on connect
+        catch_missing (bool): supress error on missing callback/widget
     """
     _LOGGER.debug(' - CONNECT SIMPLE CALLBACKS')
     _callbacks = [
@@ -285,7 +299,7 @@ def _connect_simple_callbacks(
     for _callback in _callbacks:
         _connect_signal_callback(
             dialog, callback=_callback, ui=ui, disconnect=disconnect,
-            error_catcher=error_catcher)
+            error_catcher=error_catcher, catch_missing=catch_missing)
 
 
 def _disable_on_execute(func, dialog, name):

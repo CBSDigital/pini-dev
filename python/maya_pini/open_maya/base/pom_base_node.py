@@ -524,9 +524,16 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         set_col(self.node, col)
 
-    def set_key(self):
-        """Set keyframe on this node (ie. key all channels)."""
-        cmds.setKeyframe(self)
+    def set_key(self, frame=None):
+        """Set keyframe on this node (ie. key all channels).
+
+        Args:
+            frame (float): frame to keyframe on
+        """
+        _kwargs = {}
+        if frame is not None:
+            _kwargs['time'] = frame
+        cmds.setKeyframe(self, **_kwargs)
 
     def set_outliner_col(self, col):
         """Set outliner colour of this node.

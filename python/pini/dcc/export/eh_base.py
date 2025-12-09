@@ -229,7 +229,7 @@ class CExportHandler:
         self.build_ui()
         self.ui.load_settings()
         qt.connect_callbacks(
-            self, settings_container=self.ui,
+            self, settings_container=self.ui, catch_missing=True,
             error_catcher=error.get_catcher(qt_safe=True, supress_error=True))
 
     def to_frames(self):

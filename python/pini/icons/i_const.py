@@ -28,6 +28,27 @@ _OPENMOJI = i_set.EmojiSet(_OPENMOJI_PATH)
 
 EMOJI = ANDROID
 
+BUILD = EMOJI.find('Hammer')
+BROWSER = EMOJI.find('Open File Folder')
+COPY = EMOJI.find('Spiral Notepad')
+CLEAN = EMOJI.find('Sponge')
+CLEAR = EMOJI.find('Cross Mark Button')
+DELETE = EMOJI.find('No Entry')
+DUPLICATE = EMOJI.find('Busts in Silhouette')
+EDIT = EMOJI.find('Pencil')
+FILTER = EMOJI.find('Oil Drum')
+FIND = EMOJI.find('Magnifying Glass Tilted Right')
+LOAD = EMOJI.find('Outbox Tray')
+LOCKED = EMOJI.find('Locked')
+PRINT = EMOJI.find('Downwards Button')
+REFRESH = EMOJI.find('Counterclockwise Arrows Button')
+RESET = EMOJI.find('Broom')
+SAVE = EMOJI.find('Floppy Disk')
+SELECT = EMOJI.find('Down-Left Arrow')
+TEST = EMOJI.find('Alembic')
+UNLOCKED = EMOJI.find('Unlocked')
+URL = EMOJI.find('Globe Showing Europe-Africa')
+
 _FRUIT = (
     'Grapes', 'Melon', 'Watermelon', 'Tangerine', 'Lemon', 'Banana',
     'Pineapple', 'Mango', 'Red Apple', 'Green Apple', 'Pear',
@@ -414,27 +435,6 @@ SKIN_TONES = (
     'Medium Skin Tone',
     'Medium-Dark Skin Tone',
     'Dark Skin Tone')
-
-BUILD = EMOJI.find('Hammer')
-BROWSER = EMOJI.find('Open File Folder')
-COPY = EMOJI.find('Spiral Notepad')
-CLEAN = EMOJI.find('Sponge')
-CLEAR = EMOJI.find('Cross Mark Button')
-DELETE = EMOJI.find('No Entry')
-DUPLICATE = EMOJI.find('Busts in Silhouette')
-EDIT = EMOJI.find('Pencil')
-FILTER = EMOJI.find('Oil Drum')
-FIND = EMOJI.find('Magnifying Glass Tilted Right')
-LOAD = EMOJI.find('Outbox Tray')
-LOCKED = EMOJI.find('Locked')
-PRINT = EMOJI.find('Downwards Button')
-REFRESH = EMOJI.find('Counterclockwise Arrows Button')
-RESET = EMOJI.find('Broom')
-SAVE = EMOJI.find('Floppy Disk')
-SELECT = EMOJI.find('Down-Left Arrow')
-TEST = EMOJI.find('Alembic')
-UNLOCKED = EMOJI.find('Unlocked')
-URL = EMOJI.find('Globe Showing Europe-Africa')
 
 FRUIT = EMOJI.find_grp('fruit')
 COOL = EMOJI.find_grp('cool')

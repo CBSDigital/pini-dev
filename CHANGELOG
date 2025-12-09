@@ -1,3 +1,18 @@
+## [8.33.0] - Tue 2025-12-09 10:46
+### Summary
+ - Pini Helper:
+    - houdini deadline render display all rops with deadline outputs (acheprakov),
+### Updated
+ - pini.dcc.export.CExportHandler.update_ui allow missing callback widgets,
+ - pini.dcc.export.CHouDeadlineRender display any render rop with deadline output,
+ - pini.dcc.export.CHouDeadlineRender bugfix error on render,
+ - pini.qt.connect_callbacks added catch_missing flag,
+ - pini.qt.connect_callbacks apply error.TRIGGERED on fail,
+ - pini.qt.PNGNodeGraph add_shortcut/select_item/get_view_rect added,
+ - pini.qt.PNGNodeGraph.keyPressEvent use key to string to match key,
+ - maya_pini.open_maya.CBaseNode.set_key added frame arg,
+
+
 ## [8.32.0] - Fri 2025-12-05 08:02
 ### Summary
  - Pini Helper:

@@ -2,7 +2,7 @@
 
 import logging
 
-from pini.utils import single
+from pini.utils import single, wrap_fn
 
 from ..q_mgr import QtWidgets, QtGui, Qt
 from .. import q_utils, wrapper
@@ -41,6 +41,19 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
             scene=self.scene, name='Base',
             col=wrapper.CColor('Grey', alpha=0.1),
             rect=self.base_r)
+
+        self._shortcuts = {}
+        self.add_shortcut('a', wrap_fn(self.fit_view, mode='all'))
+        self.add_shortcut('f', self.fit_view)
+
+    def add_shortcut(self, key, func):
+        """Add graph shortcut.
+
+        Args:
+            key (str): shortcut key
+            func (fn): shotcut function
+        """
+        self._shortcuts[key] = func
 
     def fit_view(self, mode='sel', over=1.05):
         """Fit scene view to nodes.
@@ -102,6 +115,15 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
         _LOGGER.debug('   - D POS S %s', _d_pos_s)
         self.translate(_d_pos_s.x(), _d_pos_s.y())
 
+    def select_item(self, item):
+        """Select an item.
+
+        Args:
+            item (PNGNode): item to select
+        """
+        self.scene.clearSelection()
+        item.setSelected(True)
+
     def selected_item(self):
         """Obtain selected item from the graph.
 
@@ -127,6 +149,15 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
                 _vals.append(_val)
         return tuple(_vals)
 
+    def get_view_rect(self):
+        """Get view rect.
+
+        Returns:
+            (QRectF): view rect
+        """
+        _rect_v = self.rect()
+        return self.mapToScene(_rect_v).boundingRect()
+
     def set_tfm_t(self, tfm):
         """Set viewport transform from tuple.
 
@@ -151,12 +182,9 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
             _LOGGER.debug(' - KEY PRESS BLOCKED')
 
         if not _blocks:
-            if event.text() == 'a':
-                self.fit_view(mode='all')
-                return
-            if event.text() == 'f':
-                self.fit_view()
-                return
+            _key_s = QtGui.QKeySequence(event.key()).toString()
+            if _key_s in self._shortcuts:
+                self._shortcuts[_key_s]()
 
         super().keyPressEvent(event)
 
