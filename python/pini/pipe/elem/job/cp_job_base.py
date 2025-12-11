@@ -422,19 +422,11 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         if len(_assets) == 1:
             return single(_assets)
 
-        # Match by name
-        _name_assets = [_asset for _asset in _assets if _asset.name == match]
-        _LOGGER.debug(' - NAME ASSETS %s', len(_name_assets))
-        if len(_name_assets) == 1:
-            return single(_name_assets)
-
-        # Match by label
-        for _asset in _assets:
-            _label = f'{_asset.asset_type}.{_asset.name}'
-            _LOGGER.log(9, ' - TESTING %s', _label)
-            if _label == match:
-                return _asset
-        _LOGGER.debug(' - CHECKED LABEL MATCH')
+        _matches = [
+            _asset for _asset in _assets
+            if match in (_asset.name, _asset.path, _asset.label, _asset)]
+        if len(_matches) == 1:
+            return single(_matches)
 
         # Filter match by label
         _label_filter_matches = apply_filter(

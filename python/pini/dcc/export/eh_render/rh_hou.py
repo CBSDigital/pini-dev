@@ -220,11 +220,28 @@ def _find_new_jobs(func):
 
         _pre_jobs = farm.find_jobs(force=True)
         func(*args, **kwargs)
-        # time.sleep(5)
         _post_jobs = farm.find_jobs(force=True)
         return sorted(set(_post_jobs) - set(_pre_jobs))
 
     return _find_new_jobs_func
+
+
+def _apply_pipe_expr(parm, template, extn):
+    """Apply pipeline expression to output parm.
+
+    Args:
+        parm (Parm): parm to update
+        template (str): template name
+        extn (str): output file extension
+    """
+    _py = '\n'.join([
+        "from pini import pipe",
+        "_work = pipe.cur_work()",
+        "_output_name = hou.pwd().name()",
+        "_out = _work.to_output(",
+        f"    '{template}', extn='{extn}', output_name=_output_name)",
+        "return _out.path.replace('.%04d.', '.$F4.')"])
+    parm.setExpression(_py, language=hou.exprLanguage.Python)
 
 
 def _setup_rs_rop(rop):
@@ -250,8 +267,7 @@ def _setup_rs_rop(rop):
             'RS_archive_file',
     ]:
         _parm = rop.parm(_parm_s)
-        _parm.deleteAllKeyframes()
-        _parm.set(_rs_seq.path.replace('.%04d.', '.$F4.'))
+        _apply_pipe_expr(_parm, template='cache_seq', extn='rs')
     _outs.append(_rs_seq)
 
     # Set up render
@@ -261,8 +277,7 @@ def _setup_rs_rop(rop):
             'RS_outputFileNamePrefix',
     ]:
         _parm = rop.parm(_parm_s)
-        _parm.deleteAllKeyframes()
-        _parm.set(_exr.path.replace('.%04d.', '.$F4.'))
+        _apply_pipe_expr(_parm, template='render', extn='exr')
     _outs.append(_exr)
 
     # Disable/mark unused parms
@@ -302,8 +317,7 @@ def _setup_mantra_rop(rop):
             'ifdpath',
     ]:
         _parm = rop.parm(_parm_s)
-        _parm.deleteAllKeyframes()
-        _parm.set(_ifd_seq.path.replace('.%04d.', '.$F4.'))
+        _apply_pipe_expr(_parm, template='cache_seq', extn='ifd')
     _outs.append(_ifd_seq)
 
     # Set up render
@@ -316,8 +330,7 @@ def _setup_mantra_rop(rop):
             'vm_picture',
     ]:
         _parm = rop.parm(_parm_s)
-        _parm.deleteAllKeyframes()
-        _parm.set(_exr.path.replace('.%04d.', '.$F4.'))
+        _apply_pipe_expr(_parm, template='render', extn='exr')
     _outs.append(_exr)
 
     # Disable/mark unused parms

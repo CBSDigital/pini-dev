@@ -151,13 +151,18 @@ class CUiBase:
 
         # Link to this instance based on type
         if isinstance(self._ui, QtWidgets.QMainWindow):
-            assert isinstance(self, QtWidgets.QMainWindow)
-            self.setCentralWidget(self._ui.centralWidget())
+            _ui_widget = self._ui.centralWidget()
         elif isinstance(self._ui, QtWidgets.QWidget):
-            assert isinstance(self, QtWidgets.QWidget)
-            self._ui.setParent(self)
+            _ui_widget = self._ui
         else:
-            raise ValueError(self._ui)
+            raise NotImplementedError(self._ui)
+        _LOGGER.debug(' - UI WIDGET %s', _ui_widget)
+        if isinstance(self, QtWidgets.QMainWindow):
+            self.setCentralWidget(_ui_widget)
+        elif isinstance(self, QtWidgets.QWidget):
+            _ui_widget.setParent(self)
+        else:
+            raise NotImplementedError(self._ui)
         self.adjustSize()
 
         # Connect/store layout
@@ -167,6 +172,7 @@ class CUiBase:
             if not self._ui_layout.objectName():
                 _name = to_pascal(File(ui_file).base)
                 self._ui_layout.setObjectName(_name)
+            _LOGGER.debug('   - APPLYING LAYOUT %s', self._ui_layout)
             self.setLayout(self._ui_layout)
 
         self.setWindowTitle(self._ui.windowTitle())
@@ -278,7 +284,7 @@ class CUiBase:
                 continue
 
             _tooltip = _widget.toolTip()
-            _LOGGER.debug(' - CHECKING %s %s', _widget.objectName(), _tooltip)
+            _LOGGER.log(9, ' - CHECKING %s %s', _widget.objectName(), _tooltip)
 
             # Check for duplicate tooltips
             if _tooltip:
@@ -291,7 +297,7 @@ class CUiBase:
 
             # Check image buttons have tooltip
             if isinstance(_widget, QtWidgets.QPushButton):
-                _LOGGER.debug(' - TEXT %s', _widget.text())
+                _LOGGER.log(9, ' - TEXT %s', _widget.text())
                 if not _widget.text() and not _tooltip:
                     _widget = _widget.objectName()
                     raise RuntimeError(
@@ -789,7 +795,7 @@ def _fix_icon_paths(ui_file, force=False):
         (str): path to tmp ui file
     """
     from pini import pipe
-    _LOGGER.debug('FIX ICON PATHS %s', ui_file)
+    _LOGGER.debug(' - FIX ICON PATHS %s', ui_file)
 
     _ui_file = File(ui_file)
     _path_cpnt = abs_path(ui_file).replace(':', '')
@@ -803,7 +809,7 @@ def _fix_icon_paths(ui_file, force=False):
         _fixed_outdated = _fixed_mtime < _ui_mtime
     else:
         _fixed_outdated = None
-    _LOGGER.debug('FIX ICONS PATHS fixed_exists=%s fixed_outdated=%s',
+    _LOGGER.debug('   - FIX ICONS PATHS fixed_exists=%s fixed_outdated=%s',
                   _fixed_exists, _fixed_outdated)
 
     if force or not _fixed_exists or _fixed_outdated:

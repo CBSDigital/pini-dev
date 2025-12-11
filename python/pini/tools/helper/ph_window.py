@@ -10,7 +10,7 @@ from . import ui
 _LOGGER = logging.getLogger(__name__)
 
 
-class PiniHelper(qt.CUiDialog, ui.PHUiBase):
+class PiniHelper(qt.CUiMainWindow, ui.PHUiBase):
     """Basic standalone Pini Helper dialog."""
 
     init_ui = ui.PHUiBase.init_ui

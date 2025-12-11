@@ -126,6 +126,7 @@ def read_override_sets(crop_namespace=True):
     Returns:
         (dict): set/geos
     """
+    _LOGGER.debug('READ OVERRIDE SETS')
 
     # Build list of sets to check
     _sets = set()
@@ -135,12 +136,17 @@ def read_override_sets(crop_namespace=True):
         for _item in pom.CMDS.sets(_over_set, query=True):
             if _item.object_type() == 'objectSet':
                 _sets.add(_item)
+    _set_types = []
     if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
-        for _type in [
-                'RedshiftMeshParameters',
-                'RedshiftMatteParameters',
-                'RedshiftVisibility']:
-            _sets |= set(pom.find_nodes(type_=_type))
+        _set_types += [
+            'RedshiftMeshParameters',
+            'RedshiftMatteParameters',
+            'RedshiftVisibility']
+    if cmds.pluginInfo('vrayformaya', query=True, loaded=True):
+        _set_types += ['VRayDisplacement']
+    _LOGGER.debug(' - SET TYPES %s', _set_types)
+    for _set_type in _set_types:
+        _sets |= set(pom.find_nodes(type_=_set_type))
 
     # Read contents of sets
     _data = {}

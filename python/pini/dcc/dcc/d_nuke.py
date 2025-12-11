@@ -284,7 +284,7 @@ class NukeDCC(BaseDCC):
         _knob = nuke.Root().knob(_key)
         if not _knob:
             return None
-        _LOGGER.info('KNOB %s', _knob)
+        _LOGGER.debug('KNOB %s', _knob)
         return _knob.value()
 
     def _read_pipe_refs(self, selected=False, filter_=None):
@@ -434,7 +434,7 @@ class NukeDCC(BaseDCC):
 
         _knob = _root.knob(_key)
         if _knob:
-            _LOGGER.info('EXISTING KNOB %s', _knob)
+            _LOGGER.debug('EXISTING KNOB %s', _knob)
             assert isinstance(_knob, _class)
             _knob.setValue(val)
         else:

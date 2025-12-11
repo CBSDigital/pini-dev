@@ -45,18 +45,24 @@ class CArray3:
         _str = f'<{_vals[0]:.01f}, {_vals[1]:.02f}, {_vals[2]:.01f}>'
         return _str
 
-    def to_loc(self, name='point', scale=None, col=None):
+    def to_loc(
+            self, name='point', scale=None, col=None, build=True, group=None):
         """Build a locator at this point in space.
 
         Args:
             name (str): location name
             scale (float): locator scale
             col (str): locator colour
+            build (bool): execute build locator (to allow easy disable via var)
+            group (str): add loc to group
 
         Returns:
             (CTransform): locator
         """
         from maya_pini import open_maya as pom
+
+        if not build:
+            return None
 
         # Build loc
         _name = to_unique(name)
@@ -64,6 +70,8 @@ class CArray3:
         if _loc.shp != str(_loc) + "Shape":
             cmds.rename(_loc.shp, to_clean(str(_loc) + "Shape"))
         self.apply_to(_loc)
+        if group:
+            _loc.add_to_grp(group)
 
         # Apply col
         if col:

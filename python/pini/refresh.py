@@ -167,7 +167,7 @@ RELOAD_ORDER = [
     'pini.tools.helper.ui.phu_scene_tab',
     'pini.tools.helper.ui.phu_base',
     'pini.tools.helper.ui',
-    'pini.tools.helper.ph_dialog',
+    'pini.tools.helper.ph_window',
     'pini.tools.helper.ph_nuke',
 
     'pini.tools',

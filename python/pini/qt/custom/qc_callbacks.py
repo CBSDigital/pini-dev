@@ -40,7 +40,9 @@ def connect_callbacks(
         error_catcher=error_catcher)
     _connect_save_on_change(
         ui=_ui, settings_container=_settings_container)
-    _connect_redraws(dialog, ui=_ui, error_catcher=error_catcher)
+    _connect_redraws(
+        dialog, ui=_ui, error_catcher=error_catcher,
+        catch_missing=catch_missing)
     _connect_pixmap_draws(dialog, ui=_ui)
     _connect_contexts(
         dialog, ui=_ui, error_catcher=error_catcher, disconnect=disconnect)
@@ -152,7 +154,7 @@ def _connect_pixmap_draws(dialog, ui):
         _widget.draw_pixmap_func = _draw_fn
 
 
-def _connect_redraws(dialog, ui, error_catcher):
+def _connect_redraws(dialog, ui, error_catcher, catch_missing=False):
     """Connect redraw callbacks based on method name.
 
     eg. _redraw__PushButton is connected to ui.PushButton.
@@ -161,6 +163,7 @@ def _connect_redraws(dialog, ui, error_catcher):
         dialog (CUIDialog): dialog to connect
         ui (CUiContainer): override ui container (if not dialog.ui)
         error_catcher (fn): error catcher decorator
+        catch_missing (bool): supress error on missing callback/widget
     """
     _LOGGER.debug('   - CONNECT REDRAWS %s', dialog)
     _redraws = [
@@ -177,6 +180,8 @@ def _connect_redraws(dialog, ui, error_catcher):
         _widget_name = _redraw.__name__[len('_redraw__'):]
         _widget = getattr(ui, _widget_name, None)
         if not _widget:
+            if catch_missing:
+                continue
             raise RuntimeError(
                 f'Redraw method {_redraw.__name__} is missing '
                 f'widget ({_widget_name})')

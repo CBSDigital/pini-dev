@@ -6,12 +6,12 @@ import sys
 import nuke
 import nukescripts
 
-from .. import ph_dialog
+from .. import ph_window
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class NukePiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
+class NukePiniHelper(ph_window.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
     """PiniHelper for nuke."""
 
     def __init__(self, parent=None):

@@ -6,12 +6,12 @@ from pini.utils import wrap_fn
 
 from hou_pini import h_pipe
 
-from .. import ph_dialog, ph_utils
+from .. import ph_window, ph_utils
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class HouPiniHelper(ph_dialog.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
+class HouPiniHelper(ph_window.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
     """PiniHelper dialog for houdini."""
 
     def _context__SOutputs(self, menu):

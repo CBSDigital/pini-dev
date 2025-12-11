@@ -8,7 +8,7 @@ import logging
 from pini import dcc
 from pini.tools import error, usage
 
-from . import ph_dialog
+from . import ph_window
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def launch(
     from pini.tools import helper
 
     # Determine class
-    _class = ph_dialog.PiniHelper
+    _class = ph_window.PiniHelper
     if use_basic:
         pass
     elif dcc.NAME == 'maya':

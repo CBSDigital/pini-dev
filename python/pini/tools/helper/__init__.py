@@ -10,7 +10,7 @@ from .ph_utils import (
 from .ui import (
     TITLE, UI_FILE, ICON, EMOJI, PHUiBase, BKPS_ICON,
     OUTS_ICON)
-from .ph_dialog import PiniHelper
+from .ph_window import PiniHelper
 from .ph_launch import launch
 
 if dcc.NAME == 'maya':

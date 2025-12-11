@@ -4,10 +4,10 @@
 
 import logging
 
-from .. import ph_dialog
+from .. import ph_window
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SubstancePiniHelper(ph_dialog.PiniHelper):
+class SubstancePiniHelper(ph_window.PiniHelper):
     """Pini helper dialog for substance."""

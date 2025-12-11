@@ -265,6 +265,8 @@ class HouDCC(BaseDCC):
                 ('TAG', work.tag),
                 ('VER', work.ver),
         ]:
+            if not _val:
+                continue
             hou.putenv(_var, _val)
             hou.hscript(f"set -g {_var} = {_val}")
 
