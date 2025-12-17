@@ -45,7 +45,8 @@ def connect_callbacks(
         catch_missing=catch_missing)
     _connect_pixmap_draws(dialog, ui=_ui)
     _connect_contexts(
-        dialog, ui=_ui, error_catcher=error_catcher, disconnect=disconnect)
+        dialog, ui=_ui, error_catcher=error_catcher, disconnect=disconnect,
+        catch_missing=catch_missing)
     _LOGGER.debug(' - CONNECT CALLBACKS COMPLETE %s', dialog)
 
 
@@ -82,7 +83,8 @@ def _build_context_fn(callback, dialog, name):
     return _context_fn
 
 
-def _connect_contexts(dialog, ui, error_catcher, disconnect):
+def _connect_contexts(
+        dialog, ui, error_catcher, disconnect, catch_missing=False):
     """Connect context callbacks based on method name.
 
     This builds a menu when the element is right-clicked, and then
@@ -96,6 +98,7 @@ def _connect_contexts(dialog, ui, error_catcher, disconnect):
         ui (CUiContainer): override ui container (if not dialog.ui)
         error_catcher (fn): error catcher decorator
         disconnect (bool): replace existing connections on connect
+        catch_missing (bool): supress error on missing callback/widget
     """
     _LOGGER.debug(' - CONNECTING CONTEXTS %s', dialog)
     _contexts = [getattr(dialog, _name)
@@ -112,6 +115,8 @@ def _connect_contexts(dialog, ui, error_catcher, disconnect):
         _widget_name = _context.__name__[len('_context__'):]
         _widget = getattr(ui, _widget_name, None)
         if not _widget:
+            if catch_missing:
+                continue
             raise RuntimeError(
                 f'Missing context widget {_widget_name}: {_context}')
         if not hasattr(_widget, 'customContextMenuRequested'):

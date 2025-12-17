@@ -271,7 +271,7 @@ class CPixmap(QtGui.QPixmap):
         return _poly.boundingRect()
 
     def draw_rect(
-            self, pos=(0, 0), size=None, col='White', outline='Black',
+            self, *args, pos=None, size=None, col='White', outline='Black',
             anchor='TL', rect=None, operation=None):
         """Draw rectangle on this pixmap.
 
@@ -288,22 +288,49 @@ class CPixmap(QtGui.QPixmap):
             (QRect): draw region
         """
         from pini import qt
+        _LOGGER.debug('DRAW RECT')
 
-        _pos = qt.to_p(pos)
+        # Handle args
+        _pos = pos
+        _size = size
+        _rect = rect
+        if args:
+            _LOGGER.debug(' - APPLYING ARGS %s', args)
+            assert _rect is None
+            assert _pos is None
+            if len(args) == 1:
+                _arg = single(args)
+                if isinstance(_arg, (QtCore.QRect, QtCore.QRectF)):
+                    assert _size is None
+                    _rect = _arg
+                else:
+                    _pos = _arg
+            elif len(args) == 2:
+                assert _size is None
+                _pos, _size = qt.to_p(args[0]), qt.to_size(args[1])
+            elif not args:
+                pass
+            else:
+                raise NotImplementedError(args)
+
+        # Determine rect
+        if _pos is None:
+            _pos = qt.to_p(0, 0)
+        if _rect is None:
+            assert _size is not None
+            assert _pos is not None
+            _rect = qt.to_rect(pos=_pos, size=_size, anchor=anchor)
+
+        # Set col attrs
         _col = qt.to_col(col)
         _brush = QtGui.QBrush(_col)
-        if rect:
-            _rect = rect
-        else:
-            _rect = qt.to_rect(pos=_pos, size=size, anchor=anchor)
-
-        # Set outline
         if outline:
             _pen = QtGui.QPen(outline)
         else:
             _pen = QtGui.QPen()
             _pen.setStyle(Qt.NoPen)
 
+        # Apply paint operation
         _pnt = qt.CPainter()
         _pnt.begin(self)
         _pnt.setPen(_pen)
@@ -390,9 +417,9 @@ class CPixmap(QtGui.QPixmap):
 
         return _rect
 
-    def draw_text(
-            self, text, pos=(0, 0), anchor='TL', col='Black', font=None,  # pylint: disable=unused-argument
-            size=None, line_h=None, rotate=0.0, rect=None):  # pylint: disable=unused-argument
+    def draw_text(  # pylint: disable=unused-argument
+            self, text, pos=(0, 0), anchor='TL', col='Black', font=None,
+            size=None, line_h=None, rotate=0.0, rect=None, align=None):
         """Add text to pixmap.
 
         Args:
@@ -405,6 +432,7 @@ class CPixmap(QtGui.QPixmap):
             line_h (int): override line height (draws each line separately)
             rotate (float): apply angle rotation (in degrees clockwise)
             rect (QRect): draw text wrapped in region (overrides pos arg)
+            align (AlignmentFlag): override alignment
         """
         _kwargs = locals()
         del _kwargs['self']

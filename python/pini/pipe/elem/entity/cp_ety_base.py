@@ -414,6 +414,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         _LOGGER.debug('FIND OUTPUTS')
         _all_outs = self._read_outputs()
         _LOGGER.debug(' - FOUND %d OUTPUTS', len(_all_outs))
+        _env_status_filter = os.environ.get('PINI_OUTPUT_STATUS_FILTER')
 
         # Apply latest filter
         _ver_n = ver_n
@@ -432,20 +433,32 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         # Apply other filters
         _outs = []
         for _out in _all_outs:
+
             _LOGGER.debug(' - TESTING %s', _out)
             if not cp_utils.passes_filters(_out, filter_attr='path', **kwargs):
                 continue
+
+            # Apply tag filter
             if (
                     tag is not EMPTY and
                     self._template_type_uses_token(
                         type_=_out.type_, token='tag') and
                     _out.tag != tag):
                 continue
+
+            # Apply env status filter
+            if (
+                    _env_status_filter and
+                    not passes_filter(_out.status, _env_status_filter)):
+                continue
+
             if _ver_n is not EMPTY and _out.ver_n != _ver_n:
                 continue
             if class_ and not isinstance(_out, class_):
                 continue
+
             _outs.append(_out)
+
         return sorted(_outs)
 
     def _read_outputs(self):

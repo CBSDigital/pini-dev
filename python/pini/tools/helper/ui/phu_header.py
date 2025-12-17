@@ -7,6 +7,7 @@ These are the job, entity type and entity elements above the main pane.
 
 import logging
 import os
+import re
 
 from pini import pipe, icons, qt, dcc
 from pini.tools import usage
@@ -467,7 +468,7 @@ class PHHeader:
             work (CPWork): work file to jump to
         """
         _action = wrap_fn(self.jump_to, work)
-        _tokens = [work.job.name] + work.base.split('_')[:-1]
+        _tokens = [work.job.name] + re.split('[._]', work.base)[:-2]
         _label = '/'.join(_tokens)
         menu.add_action(
             _label, _action, icon=icons.find('Magnet'))

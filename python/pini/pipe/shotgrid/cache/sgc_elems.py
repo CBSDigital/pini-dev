@@ -62,7 +62,9 @@ class SGCUser(sgc_elem.SGCElem):
     """Represents a human user on shotgrid."""
 
     ENTITY_TYPE = 'HumanUser'
-    FIELDS = ('name', 'email', 'login', 'sg_status_list', 'updated_at')
+    FIELDS = (
+        'name', 'email', 'login', 'sg_status_list', 'updated_at',
+        'groups')
 
     def __init__(self, data):
         """Constructor.
@@ -75,6 +77,16 @@ class SGCUser(sgc_elem.SGCElem):
         self.name = data['name']
         self.email = data['email']
         self.status = data['sg_status_list']
+        self.groups = [_item['name'] for _item in data['groups']]
+
+    @property
+    def cmp_key(self):
+        """Get comparison key.
+
+        Returns:
+            (tuple): cmp key
+        """
+        return self.name.lower(), self.id_, self.ENTITY_TYPE
 
     def __repr__(self):
         return basic_repr(self, self.login)

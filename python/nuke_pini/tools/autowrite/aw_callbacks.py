@@ -26,11 +26,11 @@ def flush_callbacks():
 
 def install_callbacks():
     """Remove all callbacks."""
-    _LOGGER.info('INSTALL CALLBACKS')
+    _LOGGER.debug('INSTALL CALLBACKS')
     add_script_save_callback(_safe_update_all)
     add_script_load_callback(_safe_update_all)
     add_knob_changed_callback(_safe_knob_changed_callback, node_class='Write')
-    _LOGGER.info(' - INSTALL CALLBACKS COMPLETE')
+    _LOGGER.debug(' - INSTALL CALLBACKS COMPLETE')
 
 
 def _safe_update_all():

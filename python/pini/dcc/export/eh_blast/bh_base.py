@@ -95,11 +95,11 @@ class CBlastHandler(eh_base.CExportHandler):
 
     def exec_from_ui(self, **kwargs):
         """Execute blast using settings from ui."""
-        _LOGGER.info('EXEC FROM UI')
+        _LOGGER.debug('EXEC FROM UI')
         _kwargs = self.ui.to_kwargs()
         _kwargs.update(kwargs)
-        _LOGGER.info(' - KWARGS (A) %s', _kwargs)
+        _LOGGER.debug(' - KWARGS (A) %s', _kwargs)
         if 'disable_save' in _kwargs:
             _kwargs['save'] = not _kwargs.pop('disable_save')
-            _LOGGER.info(' - KWARGS (B) %s', _kwargs)
+            _LOGGER.debug(' - KWARGS (B) %s', _kwargs)
         return super().exec_from_ui(ui_kwargs=_kwargs)

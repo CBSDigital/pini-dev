@@ -65,6 +65,7 @@ class PyDef(upy_elem.PyElem):
         _LOGGER.debug('FIND ARGS %s', self)
         _args = args or self._ast.args
         assert isinstance(_args, ast.arguments)
+        _LOGGER.debug(' - AST DEFAULTS %s', _args.defaults)
 
         _n_args = len(_args.args) - len(_args.defaults)
         _ast_args = _args.args[:_n_args]
@@ -73,14 +74,17 @@ class PyDef(upy_elem.PyElem):
         _py_args = []
 
         # Add args
+        _LOGGER.debug(' - AST ARGS %d %s', len(_ast_args), _ast_args)
         for _ast_arg in _ast_args:
             _arg = PyArg(
                 _ast_arg_to_name(_ast_arg), parent=self, has_default=False)
             _py_args.append(_arg)
 
         # Add kwargs
+        _LOGGER.debug(' - AST KWARGS %d %s', len(_ast_kwargs), _ast_kwargs)
         for _ast_arg, _ast_default in safe_zip(
-                _ast_kwargs, _args.defaults):
+                _ast_kwargs + _args.kwonlyargs,
+                _args.defaults + _args.kw_defaults):
             _name = _ast_arg_to_name(_ast_arg)
             _LOGGER.debug(
                 ' - ADDING KWARG %s %s', _name, _ast_arg)

@@ -2,6 +2,7 @@
 
 import logging
 import operator
+import os
 import platform
 
 from pini import pipe
@@ -63,26 +64,9 @@ def create_pub_file_from_output(
             ' - ALREADY REGISTERED IN SHOTGRID %d %s',
             _sg_pub.id_, output.path)
 
-    _LOGGER.debug(
-        ' - CREATE PUBLISHED FILE %s update_cache=%d', output.path,
-        update_cache)
-    _notes = output.metadata.get('notes')
-
-    _sg_type = _to_pub_type(output)
-    _sg_user = shotgrid.SGC.find_user()
-    _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
-
-    # Build data
-    _data = _build_pub_data(
-        output, ver_n=output.ver_n, job=output.job, entity=output.entity,
-        task=_sg_task, user=_sg_user, type_=_sg_type, status=status,
-        notes=_notes, upstream_files=upstream_files)
-    _data['sg_slotname'] = output.output_name
-    _scene_entry = _obt_scene_entry(
-        output, user=_sg_user, task=_sg_task, notes=_notes)
-    if _scene_entry:
-        _data['sg_scene_file'] = _scene_entry
-        _LOGGER.debug(' - SCENE ENTRY %s', _scene_entry)
+    _data = _build_pub_data_from_output(
+        output, sg_ety=_sg_ety, sg_proj=_sg_proj, status=status,
+        upstream_files=upstream_files)
 
     # Apply to shotgrid
     if not _sg_pub:
@@ -213,10 +197,10 @@ def _build_pub_data(
     _type = type_ or shotgrid.SGC.find_pub_type(path.extn)
     _LOGGER.debug(' - TYPE %s', _type)
     _path_cache = pipe.ROOT.rel_path(path)
-    _name = name or path.filename
     _user = user or shotgrid.SGC.find_user()
     _ety = _obt_entity(path=path, entity=entity)
     _job = _obt_job(path=path, job=job, entity=_ety)
+    _name = name or path.filename
 
     # Build data dict
     _data = {
@@ -246,11 +230,63 @@ def _build_pub_data(
                 _f_data = _file.sg_pub_file.to_entry()
             else:
                 raise NotImplementedError(
-                    f'No implemented "{type(_file).__name__}": {_file}')
+                    f'Not implemented "{type(_file).__name__}": {_file}')
             _LOGGER.debug('   - DATA %s', _f_data)
             assert isinstance(_data, dict)
             _up_data.append(_f_data)
         _data['upstream_published_files'] = _up_data
+
+    return _data
+
+
+def _build_pub_data_from_output(
+        output, status='cmpt', sg_proj=None, sg_ety=None, upstream_files=None):
+    """Build publish data dict from an output.
+
+    Args:
+        output (CPOutput): output to build data for
+        status (str): apply status
+        sg_proj (SGCProj): project
+        sg_ety (SGCEntity): entity
+        upstream_files (dict list): list of upstream published file entries
+
+    Returns:
+        (dict): publish data
+    """
+    from pini.pipe import shotgrid
+
+    _LOGGER.debug(
+        ' - BUILD PUB DATA FROM OUTPUT %s ', output.path)
+    _notes = output.metadata.get('notes')
+
+    _sg_proj = sg_proj or shotgrid.SGC.find_proj(output.job)
+    _sg_ety = sg_ety or _sg_proj.find_entity(output.entity)
+    _sg_type = _to_pub_type(output)
+    _sg_user = shotgrid.SGC.find_user()
+    _sg_task = _sg_ety.find_task(step=output.step, task=output.task, catch=True)
+
+    # Apply name
+    _name_fmt = os.environ.get('PINI_SG_NAME_FMT', 'filename')
+    if _name_fmt == 'filename':
+        _name = output.filename
+    elif _name_fmt == 'output_name':
+        _name = output.output_name
+    else:
+        raise NotImplementedError(_name_fmt)
+
+    # Build data
+    _data = _build_pub_data(
+        output, ver_n=output.ver_n, job=output.job, entity=output.entity,
+        task=_sg_task, user=_sg_user, type_=_sg_type, status=status,
+        notes=_notes, upstream_files=upstream_files, name=_name)
+    _data['sg_slotname'] = output.output_name
+
+    # Add scene file
+    _scene_entry = _obt_scene_entry(
+        output, user=_sg_user, task=_sg_task, notes=_notes)
+    if _scene_entry:
+        _data['sg_scene_file'] = _scene_entry
+        _LOGGER.debug(' - SCENE ENTRY %s', _scene_entry)
 
     return _data
 

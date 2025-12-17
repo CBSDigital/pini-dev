@@ -70,3 +70,7 @@ class Res:
         if self.name:
             _label += f'({self.name})'
         return u_misc.basic_repr(self, _label)
+
+    def __truediv__(self, val):
+        return Res(
+            round(self.width / val), round(self.height / val), name=self.name)

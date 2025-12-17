@@ -58,7 +58,7 @@ class CPainter(QtGui.QPainter):
 
     def draw_text(
             self, text, pos=(0, 0), anchor='TL', col='white', font=None,
-            size=None, line_h=None, rotate=0.0, rect=None):
+            size=None, line_h=None, rotate=0.0, rect=None, align=None):
         """Draw text using this paint device.
 
         Args:
@@ -72,6 +72,7 @@ class CPainter(QtGui.QPainter):
             rotate (float): apply rotation (in degrees)
             rect (QRect): apply wrapped text in rectangle
                 (overrides pos arg)
+            align (AlignmentFlag): override alignment flag
         """
         _kwargs = locals()
         from pini import qt
@@ -97,6 +98,8 @@ class CPainter(QtGui.QPainter):
             _align = Qt.AlignLeft | Qt.TextWordWrap
         else:
             _align, _rect = self._draw_text_get_rect(pos=_pos, anchor=anchor)
+        if align:
+            _align = align
 
         # Setup font
         _font = qt.to_font(font)
@@ -162,7 +165,7 @@ class CPainter(QtGui.QPainter):
 
     def _draw_text_lines(  # pylint: disable=unused-argument
             self, text, line_h, pos=(0, 0), anchor='TL', col='White',
-            font=None, size=None, rotate=0.0):
+            font=None, size=None, rotate=0.0, align=None):
         """Draw text line by line.
 
         This allows control over line separation
@@ -176,13 +179,14 @@ class CPainter(QtGui.QPainter):
             font (QFont): text font
             size (int): text point size
             rotate (float): text rotation
+            align (AlignmentFlag): override alignment flag
         """
         _kwargs = locals()
         del _kwargs['self']
         del _kwargs['line_h']
         from pini import qt
 
-        if rotate:
+        if rotate or align:
             raise NotImplementedError
 
         _lines = text.split('\n')

@@ -1,3 +1,26 @@
+## [8.35.0] - Wed 2025-12-17 13:55
+### Summary
+ - Sanity Check:
+    - maya check shape nodes ignore instanced shapes (bsheperd),
+    - bugfix hang on overwhelming number of fails,
+### Updated
+ - pini.utils.PyDef.find_args added handling for derefed args with kwargs,
+ - pini.utils.Res.__truediv__ added,
+ - pini.pipe.CPEntity.find_outputs allow status filter via $PINI_OUTPUT_STATUS_FILTER,
+ - pini.pipe.shotgrid.SGCUser.groups added,
+ - pini.pipe.shotgrid.SGCUser sort by name,
+ - pipe.pipe.shotgrid.create_pub_file_from_output allow name format override via $PINI_SG_NAME_FMT,
+ - pini.qt.to_size implemented Res arg,
+ - pini.qt.CRectF.to_anchor added,
+ - pini.qt.CPixmap.draw_text added align flag,
+ - pini.qt.CPixmap.draw_rect allow arg as rect,
+ - pini.qt.connect_callbacks bugfix error on disable catch_missing for ctx opts,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp ignore instanced shapes,
+ - pini.tools.sanity_check.SanityCheckUi error if fail count > 500,
+ - pini.tools.helper ctx JumpToCurrent fixed bad label on dot separated version,
+ - maya_pini.tex.to_ftn added ver_mode arg,
+
+
 ## [8.34.0] - Thu 2025-12-11 14:55
 ### Summary
  - Pini Helper:

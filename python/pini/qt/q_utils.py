@@ -7,7 +7,7 @@ import os
 import sys
 
 from pini.utils import (
-    cache_result, single, passes_filter, check_heart,
+    cache_result, single, passes_filter, check_heart, Res,
     basic_repr, File, build_cache_fmt, check_logging_level, HOME)
 
 from .q_mgr import QtWidgets, QtCore, QtGui, LIB
@@ -702,6 +702,8 @@ def to_size(*args, **kwargs):  # pylint: disable=too-many-branches
             _result = QtCore.QSize(_size, _size)
         elif isinstance(_size, float):
             _result = QtCore.QSizeF(_size, _size)
+        elif isinstance(_size, Res):
+            _result = QtCore.QSizeF(_size.width, _size.height)
         else:
             raise ValueError(args)
     elif len(args) == 2:

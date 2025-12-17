@@ -325,20 +325,30 @@ def find_shds(default=None, namespace=EMPTY):
     return sorted(_shds)
 
 
-def to_ftn(base, ver_n=None, extn='jpg'):
+def to_ftn(base, ver_n=None, ver_mode='suffix', extn='jpg'):
     """Build a file texture name for the current workspace.
 
     Args:
         base (str): base for filename
         ver_n (int): version number to include
+        ver_mode (str): how to apply version
         extn (str): file extension
 
     Returns:
         (File): file texture name
     """
     _base = base.replace(':', '_')
-    _ver = f'_v{ver_n:03d}' if ver_n else ''
-    return to_ftn_root().to_file(f'{_base}{_ver}.{extn}')
+    if ver_n is None:
+        _fmt = f'{_base}.{extn}'
+    else:
+        _ver = f'v{ver_n:03d}'
+        if ver_mode == 'suffix':
+            _fmt = f'{_base}_{_ver}.{extn}'
+        elif ver_mode == 'dir':
+            _fmt = f'{_ver}/{_base}.{extn}'
+        else:
+            raise ValueError(ver_mode)
+    return to_ftn_root().to_file(_fmt)
 
 
 def to_ftn_root():

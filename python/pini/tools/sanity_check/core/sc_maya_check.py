@@ -94,6 +94,7 @@ class SCMayaCheck(sc_check.SCCheck):
         Args:
             node (str): node to check
         """
+        _LOGGER.debug('CHECK SHP %s', node)
         _shps = to_shps(str(node))
         if not _shps:
             return
@@ -114,14 +115,29 @@ class SCMayaCheck(sc_check.SCCheck):
         _cur_shp = to_clean(_shp)
         _correct_shp = to_clean(node) + 'Shape'
         if _cur_shp != _correct_shp:
-            if pom.CNode(_shp).is_referenced():
+
+            _shp_n = pom.CNode(_shp)
+            _LOGGER.debug(' - SHP NODE %s', _shp_n)
+
+            # Ignore instanced shapes
+            if _shp_n.is_instanced():
+                self.write_log(' - ignoring instanced shape %s', _cur_shp)
+                return
+
+            # Add fail
+            if _shp_n.is_referenced():
                 _fix = None
             else:
                 _fix = wrap_fn(_fix_bad_shape, _shp, _correct_shp)
             _msg = (
                 f'Node "{node}" has badly named shape node "{_shp}" (should '
                 f'be "{_correct_shp}")')
+            _LOGGER.debug(' - ADDING FAIL %s', _msg)
             self.add_fail(_msg, fix=_fix, node=node)
+
+    def __repr__(self):
+        _type = type(self).__name__.strip('_')
+        return f'<SCMayaCheck:{_type}>'
 
 
 def _fix_bad_shape(cur_shp, new_shp):

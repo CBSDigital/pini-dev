@@ -677,12 +677,25 @@ class TestRelease(unittest.TestCase):
                      '"""Class method test"""',
                      ''])),
 
+                ('Deferenced args test',
+                 '\n'.join([
+                     'def deferenced_args_test(*args, a=1):',
+                     '    pass']),
+                 '    ' + '\n    '.join([
+                     '"""Deferenced args test',
+                     '',
+                     'Args:',
+                     '    a (int): ',
+                     '"""',
+                     ''])),
+
         ]:
             _docs = '\n'.join(
                 _line if _line.strip() else ''
                 for _line in _docs.split('\n'))
 
             _tmp = TMP.to_file('docs_test.py')
+            _LOGGER.info('SAVED TMP FILE %s', _tmp)
             _tmp.write(_code, force=True)
 
             _py = PyFile(_tmp)

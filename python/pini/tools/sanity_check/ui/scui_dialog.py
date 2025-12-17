@@ -4,7 +4,7 @@ import logging
 
 from pini import qt, dcc, icons, pipe
 from pini.tools import error
-from pini.utils import File, plural, single
+from pini.utils import File, plural, single, check_heart
 
 from . import scui_fail, scui_check
 
@@ -255,17 +255,28 @@ class SanityCheckUi(qt.CUiDialog):
         self.ui.Log.setText(self.check.log if self.check else '')
 
     def _redraw__Fails(self):
+        _LOGGER.debug('REDRAW Fails')
 
-        _items = []
-        _fixes = 0
+        # Check fails
         _fails = self.check.fails if self.check else []
+        _LOGGER.debug(' - FOUND %d FAILS', len(_fails))
+        if len(_fails) > 500:
+            raise RuntimeError(f'Too many fails {len(_fails):d}')
+
+        # Build fails
+        _fixes = 0
+        _items = []
         for _fail in _fails:
+            _LOGGER.debug('   - ADDING FAIL %s', _fail)
+            check_heart()
             _item = scui_fail.SCUiFailItem(
                 list_view=self.ui.Fails, fail=_fail,
                 run_check=self._callback__RunCheck)
             _items.append(_item)
             if _fail.fix:
                 _fixes += 1
+
+        # Update ui
         self.ui.Fails.set_items(_items)
         self.ui.FixAll.setEnabled(bool(_fixes))
         self.ui.FailInfo.setText(
