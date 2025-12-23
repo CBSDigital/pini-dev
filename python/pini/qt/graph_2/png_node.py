@@ -109,8 +109,11 @@ class PNGNode(QtWidgets.QGraphicsRectItem, QtCore.QObject):
             (any): value
         """
         _val = value
+        _name = change.name
+        if not isinstance(_name, str):
+            _name = _name.decode()  # For PySide2
         _LOGGER.debug(
-            'ITEM CHANGE %s %s %s', self, change.name.decode(), _val)
+            'ITEM CHANGE %s %s %s', self, _name, _val)
 
         # Apply axis locks
         if change == QtWidgets.QGraphicsItem.ItemPositionChange:

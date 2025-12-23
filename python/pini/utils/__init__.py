@@ -13,7 +13,8 @@ from .u_session import (
     DCC_SESSION_START)
 from .u_system import system
 from .u_time import (
-    nice_age, strftime, to_time_f, to_time_t, WEEK_SECS, DAY_SECS, YEAR_SECS)
+    nice_age, strftime, to_time_f, to_time_t, WEEK_SECS, DAY_SECS, YEAR_SECS,
+    HOUR_SECS)
 from .u_url import read_url
 
 from .u_text import (

@@ -10,11 +10,12 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
-def process_deferred_events(max_iterations=1000):
+def process_deferred_events(max_iterations=1000, catch=False):
     """Wait until all events in evalDeferred list have been processed.
 
     Args:
         max_iterations (int): number of iterations before fail
+        catch (bool): no error on overflow
     """
     _start = time.time()
     _n_events = 0
@@ -32,8 +33,13 @@ def process_deferred_events(max_iterations=1000):
             break
         _LOGGER.debug(' - EVENTS %d %d %s', _idx, len(_events), _events)
         maya.utils.processIdleEvents()
+
     else:
-        raise RuntimeError(f'Failed to process evalDeferred stack {_events}')
+        _msg = f'Failed to process evalDeferred stack {_events}'
+        if catch:
+            _LOGGER.error(_msg)
+            return
+        raise RuntimeError(_msg)
 
     _LOGGER.info(
         ' - WAITED FOR evalDeferred STACK TO PROCESS (%.01fs - %d events '

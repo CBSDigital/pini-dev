@@ -6,6 +6,7 @@ import logging
 from maya import cmds, mel
 
 from pini import qt
+from pini.qt import QtGui
 from pini.utils import (
     basic_repr, single, abs_path, File, cache_result, passes_filter)
 from maya_pini.utils import (
@@ -135,7 +136,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             **_kwargs)
         for _child in _children:
             _c_name = name + _child
-            _LOGGER.info(' - ADDING CHILD %s %s', _child, _c_name)
+            _LOGGER.debug(' - ADDING CHILD %s %s', _child, _c_name)
             cmds.addAttr(
                 self, shortName=_c_name, longName=_c_name, parent=name,
                 attributeType='float')
@@ -166,22 +167,28 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (CPlug): new attribute
         """
         _plug = self.plug[name]
+        _LOGGER.debug(' - UPDATE EXISTING ATTR %s', _plug)
 
         if action == 'connect':
             value.plug['message'].connect(_plug, force=True)
 
         elif action == 'set':
 
-            _val = _plug.get_val()
+            _cur_val = _plug.get_val()
+            _LOGGER.debug('   - CUR VAL %s', _cur_val)
+            if isinstance(value, qt.CColor):
+                _cur_val = qt.CColor(QtGui.QColor.fromRgbF(*single(_cur_val)))
 
             # Check type
-            _cur_type = type(_val)
+            _cur_type = type(_cur_val)
             if _cur_type != type(value):  # pylint: disable=unidiomatic-typecheck
-                raise NotImplementedError(
-                    f'Type mismatch {_cur_type}/{type(value)}')
+                raise RuntimeError(
+                    f'Attribute type mismatch {_plug} - '
+                    f'(current type <{_cur_type.__name__}> - required type '
+                    f'<{type(value).__name__}>)')
 
             # Update val
-            if force and value != _val:
+            if force and value != _cur_val:
                 _plug.set_val(value)
 
         else:

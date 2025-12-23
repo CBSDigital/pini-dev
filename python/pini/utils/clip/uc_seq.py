@@ -176,7 +176,17 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         _f_idx = int(_f_str)
         return self.frame_expr % _f_idx == _f_str
 
-    def copy_to(self, target, frames=None, check_match=True, progress=True):
+    def check_for_bad_frames(self):
+        """Check frames for bad files."""
+        from pini import qt
+        for _file in qt.progress_bar(
+                self.to_frame_files(), 'Checking {:d} frame{}'):
+            if not _file.size():
+                raise AssertionError(f'Empty file {_file}')
+
+    def copy_to(
+            self, target, frames=None, check_match=True, progress=True,
+            force=False, verbose=1):  # pylint: disable=unused-argument
         """Copy this file sequence to another location.
 
         Args:
@@ -184,6 +194,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             frames (int list): override frames to copy
             check_match (bool): check existing frame match before replacing
             progress (bool): show progress
+            force (bool): replace existing without confirmation
+            verbose (int): show process data
         """
         from pini import qt
 
@@ -206,9 +218,10 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                     return
 
             # Replace existing
-            qt.ok_cancel(
-                f'Replace existing frames {min(_frames):d}-{max(_frames):d}?'
-                f'\n\n{target.path}')
+            if not force:
+                qt.ok_cancel(
+                    f'Replace existing frames {min(_frames):d}'
+                    f'-{max(_frames):d}?\n\n{target.path}')
             target.delete(frames=_frames, force=True)
 
         # Apply copy

@@ -1,7 +1,34 @@
+## [8.36.0] - Tue 2025-12-23 10:25
+### Summary
+ - Pini Helper:
+    - shotgrid register pub files added versionless name mode (tvoll/nhoyt),
+### Updated
+ - pini.utils.Seq.copy_to added catch for symmetry,
+ - pini.utils.MetadataFile.metadata_yml removed deprecated property,
+ - pini.utils.MetadataFile.add_metadata added prompt_mode flag,
+ - pini.utils.seq_to_video added check_for_bad_frames_flag,
+ - pini.utils.seq_to_video added out/err result mode,
+ - pini.utils.Seq.check_for_bad_frames added,
+ - pini.utils.HOUR_SECS added,
+ - pini.pipe.shotgrid.create_pub_file code always filename,
+ - pini.pipe.shotgrid.create_pub_file_from_output added versionless output mode,
+ - pini.qt.PNGNode added PySide6 handling,
+ - pini.tools.pyui maya catch error on apply float to int field,
+ - pini.tools.sanity_check.SCCheck.write_log fix error on no args,
+ - pini.tools.helper JumpToCurrent ctx fix missing tag from some recent works,
+ - maya_pini.utils.process_deferred_events added catch,
+ - maya_pini.utils.del_namespace added del_nodes flag,
+ - maya_pini.utils.render catch for empty file,
+ - maya_pini.ref.AttrRef.path added handling for img seqs,
+ - maya_pini.open_maya.CNode.add_attr bugfix error on create existing col attr,
+ - maya_pini.open_maya.find_cams allow override orthographic default using $PINI_ENABLE_ORTHO_CAMS,
+ - maya_pini.tex Shader.set_col/create_surface_shader allow col as CPlug,
+
+
 ## [8.35.0] - Wed 2025-12-17 13:55
 ### Summary
  - Sanity Check:
-    - maya check shape nodes ignore instanced shapes (bsheperd),
+    - maya check shape nodes ignore instanced shapes (bshepperd),
     - bugfix hang on overwhelming number of fails,
 ### Updated
  - pini.utils.PyDef.find_args added handling for derefed args with kwargs,

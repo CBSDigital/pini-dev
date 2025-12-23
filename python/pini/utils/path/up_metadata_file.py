@@ -82,27 +82,20 @@ class MetadataFile(up_file.File):
         """
         return up_file.File(self.cache_fmt.format(func='metadata'))
 
-    @property
-    def metadata_yml(self):
-        """Obtain path to metadata yml file.
-
-        Returns:
-            (File): metadata yml
-        """
-        from pini.tools import release
-        release.apply_deprecation('25/04/25', 'Use MetadataFile.metadata_file')
-        assert self.cache_file_extn == 'yml'
-        return up_file.File(self.cache_fmt.format(func='metadata'))
-
-    def add_metadata(self, parent=None, bkp=False, force=False, **kwargs):
+    def add_metadata(
+            self, parent=None, bkp=False, prompt_mode='OkCancel', force=False,
+            **kwargs):
         """Add to this file's metadata.
 
-        USAGE: file.add_metadata(key=value)
+        USAGE: file.add_metadata(key=value)zzz
             use a single kwarg to apply the given metadata value
 
         Args:
             parent (QDialog): parent dialog for prompt
             bkp (bool): backup metadata file on update
+            prompt_mode (str): which confirm prompt to apply
+                OkCancel - ok/cancel (default)
+                YesNoCanel - yes/no/cancel allows continue without error
             force (bool): overwrite existing metadata without confirmation
         """
         _LOGGER.debug("ADD METADATA %s", kwargs)
@@ -117,12 +110,22 @@ class MetadataFile(up_file.File):
         if _cur_val == _val:
             _LOGGER.debug(' - VAL ALREADY SET')
             return
+
+        # Raise confirm prompt
         if not force and _key in _data:
             from pini import qt
-            qt.ok_cancel(
-                f'Update "{_key}" metadata value from '
-                f'"{_cur_val}" to  "{_val}"?\n\n'
-                f'{self.path}', parent=parent)
+            _msg = (
+                f'Update "{_key}" metadata value from "{_cur_val}" to '
+                f'"{_val}"?\n\n{self.path}')
+            _kwargs = {'msg': _msg, 'parent': parent}
+            if prompt_mode == 'OkCancel':
+                qt.ok_cancel(**_kwargs)
+            elif prompt_mode == 'YesNoCancel':
+                if not qt.yes_no_cancel(**_kwargs):
+                    return
+            else:
+                raise ValueError(prompt_mode)
+
         _data[_key] = _val
         self.set_metadata(_data, bkp=bkp, force=True)
 

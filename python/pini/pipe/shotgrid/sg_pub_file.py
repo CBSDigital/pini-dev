@@ -4,6 +4,7 @@ import logging
 import operator
 import os
 import platform
+import re
 
 from pini import pipe
 from pini.pipe import cache
@@ -204,7 +205,7 @@ def _build_pub_data(
 
     # Build data dict
     _data = {
-        'code': _name,
+        'code': path.filename,
         'created_by': _user.to_entry(),
         'description': notes,
         'name': _name,
@@ -271,6 +272,8 @@ def _build_pub_data_from_output(
         _name = output.filename
     elif _name_fmt == 'output_name':
         _name = output.output_name
+    elif _name_fmt == 'versionless':
+        _name = _build_versionless_name(output)
     else:
         raise NotImplementedError(_name_fmt)
 
@@ -289,6 +292,54 @@ def _build_pub_data_from_output(
         _LOGGER.debug(' - SCENE ENTRY %s', _scene_entry)
 
     return _data
+
+
+def _build_versionless_name(output):
+    """Remove version tag from output filename.
+
+    Args:
+        output (CPOutput): output to read
+
+    Returns:
+        (str): versionless name
+    """
+
+    # Build filename template
+    _, _file_pattern = output.template.source.pattern.rsplit('/', 1)
+    _LOGGER.debug(' - PATTERN %s', _file_pattern)
+    _tmpl = pipe.CPTemplate(_file_pattern)
+    _LOGGER.debug(' - TMPL %s %s', _tmpl, _tmpl.keys())
+    if 'ver' not in _tmpl.keys():
+        return output.filename
+
+    # Determine version key
+    _tokens = re.split('[{}]', _tmpl.pattern)
+    _key_bodies = [
+        _item for _idx, _item in enumerate(_tokens) if _idx % 2]
+    _LOGGER.debug(' - KEY BODIES %s', _key_bodies)
+    _ver_body = single(
+        _body for _body in _key_bodies if _body.startswith('ver:'))
+    _LOGGER.debug(' - VER BODY %s', _ver_body)
+
+    # Extract key from template
+    for _ver_key in [
+            f'.v{{{_ver_body}}}',
+            f'_v{{{_ver_body}}}',
+            f'v{{{_ver_body}}}',
+            f'.{{{_ver_body}}}',
+            f'_{{{_ver_body}}}',
+            f'{{{_ver_body}}}',
+    ]:
+        if _ver_key in _tmpl.pattern:
+            _tmpl = pipe.CPTemplate(_tmpl.pattern.replace(_ver_key, ''))
+            _LOGGER.debug(' - UPDATED TMPL %s', _tmpl)
+            break
+    else:
+        raise RuntimeError(output)
+    _name = _tmpl.format(**output.data)
+    _LOGGER.debug(' - NAME %s', _name)
+
+    return _name
 
 
 def _find_sg_pub(output, sg_ety):

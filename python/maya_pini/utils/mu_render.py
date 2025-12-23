@@ -42,7 +42,7 @@ def _revert_render_window(func):
         if not _win and cmds.window(
                 'renderViewWindow', query=True, exists=True):
             cmds.deleteUI('renderViewWindow')
-            mu_eval.process_deferred_events()
+            mu_eval.process_deferred_events(catch=True)
         return _result
 
     return _revert_render_window_func
@@ -199,6 +199,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         _tmp_file.move_to(file_)
 
     assert file_.exists()
+    assert file_.size()
 
 
 def _exec_cmdline_render(

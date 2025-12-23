@@ -7,7 +7,8 @@ import time
 
 _LOGGER = logging.getLogger(__name__)
 
-DAY_SECS = 60 * 60 * 24
+HOUR_SECS = 60 * 60
+DAY_SECS = HOUR_SECS * 24
 WEEK_SECS = DAY_SECS * 7
 YEAR_SECS = DAY_SECS * 365.25
 
@@ -79,10 +80,16 @@ def nice_age(age, depth=2, pad=None, weeks=True, seconds=True):
 def strftime(fmt=None, time_=None):
     """Return a formatted string for the given time format + time.
 
-    NOTE: this has an added %D feature which provides the day with
-    it's ordinal applied
+    NOTE:
+
+    This has an added %D feature which provides the day with
+    its ordinal applied:
 
         eg. strftime('%a %D %b') -> 'Tue 10th Jan'
+
+    And %P which provides the am/pm in lower case:
+
+        eg.  strftime('%H:%M%P') -> '09:31am'
 
     Args:
         fmt (str): time format (eg. %H:%M:%S) or preset:

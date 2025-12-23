@@ -256,9 +256,6 @@ def revert_scene(func):
         if _file:
             cmds.file(rename=_file)
 
-        # _sel = [_node for _node in _sel if cmds.objExists(_node)]
-        # if _sel:
-        #     cmds.select(_sel)
         return _result
 
     return _revert_scene_fn

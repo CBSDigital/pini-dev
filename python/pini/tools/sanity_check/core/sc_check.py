@@ -319,7 +319,9 @@ class SCCheck:
         Args:
             text (str): text to log
         """
-        _text = text % args
+        _text = text
+        if args:
+            _text = text % args
         _t_stamp = strftime('[%H:%M:%S]')
         self.log += f'{_t_stamp} {_text}\n'
 

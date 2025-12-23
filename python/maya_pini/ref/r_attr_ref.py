@@ -96,6 +96,13 @@ class AttrRef(r_path_ref.PathRef):
         _path = File(_path)
         _LOGGER.debug('     - UPDATED PATH %s', _path)
 
+        # Check for file seqs
+        if (
+                self._node_type == 'file' and
+                cmds.getAttr(f'{self.node}.useFrameExtension')):
+            _path = file_to_seq(_path)
+
+        # Check for udim files
         _LOGGER.debug('     - UDIM TILES %d', self.has_udim_tiles)
         if self.has_udim_tiles:
             try:

@@ -220,7 +220,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         seq, video, fps=None, audio=None, audio_offset=0.0,
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
         tune=None, speed=None, burnins=False, res=None, range_=None,
-        lut=None, result='file', verbose=0):
+        lut=None, check_for_bad_frames=True, result='file', verbose=0):
     """Build video file using ffmpeg.
 
     Args:
@@ -241,6 +241,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         res (tuple): override resolution
         range_ (tuple): override frame range
         lut (str): apply lut
+        check_for_bad_frames (bool): check seq for bad frames
         result (str): value to return (file/cmds)
         verbose (int): print process data
 
@@ -249,6 +250,10 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
     """
     from pini import dcc
     from pini.utils import Video
+
+    if check_for_bad_frames:
+        seq.check_for_bad_frames()
+    assert not seq.is_missing_frames()
 
     _video = Video(abs_path(to_str(video)))
     _ffmpeg = find_ffmpeg_exe()
@@ -306,7 +311,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
     _LOGGER.debug(
         ' - FFMPEG %s',
         ' '.join(to_str(_arg) for _arg in _args))
-    _, _err = system(_args, result='out/err', verbose=verbose)
+    _out, _err = system(_args, result='out/err', verbose=verbose)
     if not _video.exists() or not _video.size():
         _handle_conversion_fail(seq=seq, err=_err, video=_video, args=_args)
 
@@ -314,6 +319,8 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         _result = _video
     elif result == 'cmds':
         _result = _args
+    elif result == 'out/err':
+        _result = _out, _err
     else:
         raise ValueError(result)
 

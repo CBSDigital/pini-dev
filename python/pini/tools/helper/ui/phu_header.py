@@ -468,7 +468,7 @@ class PHHeader:
             work (CPWork): work file to jump to
         """
         _action = wrap_fn(self.jump_to, work)
-        _tokens = [work.job.name] + re.split('[._]', work.base)[:-2]
+        _tokens = [work.job.name] + re.split('[._]', work.base)[:-1]
         _label = '/'.join(_tokens)
         menu.add_action(
             _label, _action, icon=icons.find('Magnet'))

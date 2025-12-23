@@ -382,7 +382,7 @@ class PUBaseUi:
                 if _set_fn:
                     try:
                         _set_fn(_arg_val)
-                    except RuntimeError:
+                    except (RuntimeError, TypeError):
                         _LOGGER.warning(
                             'FAILED TO LOAD SETTING %s %s', _arg_name, _arg_val)
 

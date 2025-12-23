@@ -95,18 +95,21 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         """Open a browser in this file's parent directory."""
         self.to_dir().browser()
 
-    def copy_to(self, trg, force=False, diff=False, verbose=1):
+    def copy_to(self, trg, force=False, diff=False, catch=False, verbose=1):
         """Copy this file.
 
         Args:
             trg (str): target location
             force (bool): overwrite existing without warning dialog
             diff (bool): show diffs
+            catch (bool): no error if fail to copy
             verbose (int): print process data (required)
         """
         up_utils.error_on_file_system_disabled()
         _LOGGER.debug('COPY TO %s', self)
         _LOGGER.debug(' - TARGET %s', trg)
+
+        # Check for existing
         _trg = File(trg)
         if _trg.exists():
             _LOGGER.debug(' - TARGET EXISTS')
@@ -128,8 +131,15 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 if not _result:
                     return
 
+        # Apply copy
         _trg.test_dir()
-        shutil.copyfile(self.path, _trg.path)
+        try:
+            shutil.copyfile(self.path, _trg.path)
+        except PermissionError as _exc:
+            if catch:
+                _LOGGER.error(_exc)
+                return
+            raise _exc
 
     def delete(
             self, wording='delete', execute=True, icon=None, force=False,

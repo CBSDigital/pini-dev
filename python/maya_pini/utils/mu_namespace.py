@@ -30,11 +30,13 @@ def apply_namespace(token, namespace=''):
 
 @mu_dec.restore_sel
 @mu_dec.restore_ns
-def del_namespace(namespace, force=False):
+def del_namespace(namespace, del_nodes=True, force=False):
     """Delete a namespace.
 
     Args:
         namespace (str): namespace to delete
+        del_nodes (bool): delete nodes before remove namespace - can
+            avoid linked nodes outside namespace being deleted
         force (bool): remove nodes without confirmation
     """
     _LOGGER.debug('DEL NAMESPACE %s', namespace)
@@ -60,11 +62,14 @@ def del_namespace(namespace, force=False):
         _ref.delete(force=_force)
     if cmds.namespace(exists=namespace):
         _LOGGER.debug(' - DELETE NS %s', namespace)
+        if del_nodes:
+            cmds.delete(cmds.ls(f'{namespace}:*'))
+            _LOGGER.debug(' - DELETE NODES %s', namespace)
         cmds.namespace(removeNamespace=namespace, deleteNamespaceContent=True)
     if cmds.namespace(exists=namespace):
         raise RuntimeError('Failed to delete namespace ' + namespace)
 
-    _LOGGER.debug(' - DELETE NS COMPELTE %s', namespace)
+    _LOGGER.debug(' - DELETE NS COMPLETE %s', namespace)
 
 
 def set_namespace(namespace, clean=False):

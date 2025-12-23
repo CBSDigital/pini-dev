@@ -94,6 +94,8 @@ class _Shader(pom.CNode):
             self.col.set_val(_col)
         elif isinstance(col, File):
             self.set_ftn(col, colspace=colspace)
+        elif isinstance(col, pom.CPlug):
+            col.connect(self.col)
         else:
             raise ValueError(col)
 
@@ -281,7 +283,10 @@ def create_surface_shader(name='surfaceShader', col=None):
     _node = cmds.shadingNode('surfaceShader', asShader=True, name=name)
     _shd = _SurfaceShader(_node)
     if col:
-        _shd.set_col(col)
+        if isinstance(col, pom.CPlug):
+            col.connect(_shd.col)
+        else:
+            _shd.set_col(col)
     return _shd
 
 

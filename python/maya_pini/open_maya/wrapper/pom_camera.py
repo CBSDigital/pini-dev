@@ -1,6 +1,7 @@
 """Tools for adding functionilty to OpenMaya.MFnCamera object."""
 
 import logging
+import os
 
 from maya import cmds
 from maya.api import OpenMaya as om
@@ -100,8 +101,8 @@ def find_cam(default=False, orthographic=False, filter_=None, catch=False):
     return single(_cams, catch=catch)
 
 
-def find_cams(
-        default=None, referenced=None, renderable=None, orthographic=False,
+def find_cams(  # pylint: disable=too-many-branches
+        default=None, referenced=None, renderable=None, orthographic=None,
         namespace=EMPTY, filter_=None):
     """Find cameras in the current scene.
 
@@ -117,6 +118,13 @@ def find_cams(
         (CCamera list): cameras
     """
     from maya_pini import open_maya as pom
+
+    _ortho = orthographic
+    if os.environ.get('PINI_ENABLE_ORTHO_CAMS'):
+        _ortho = None
+    else:
+        _ortho = False
+
     _cams = []
     for _cam in pom.find_nodes(type_='camera'):
 
@@ -139,11 +147,12 @@ def find_cams(
             continue
         if referenced is not None and _cam.is_referenced() != referenced:
             continue
-        if orthographic is not None and _cam.is_orthographic() != orthographic:
+        if _ortho is not None and _cam.is_orthographic() != _ortho:
             continue
         if renderable is not None and _cam.renderable.get_val() != renderable:
             continue
         _cams.append(_cam)
+
     return _cams
 
 
