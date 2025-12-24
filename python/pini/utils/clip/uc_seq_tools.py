@@ -172,7 +172,7 @@ def file_to_seq(file_, safe=True, frame_expr=None, catch=False):
     if safe and len(_f_str) != 4:
         if catch:
             return None
-        raise ValueError(_f_str)
+        raise ValueError(f'Bad frame string {_f_str} in path {file_}')
     _f_expr = frame_expr or f'%0{len(_f_str):d}d'
 
     # Build into seq object

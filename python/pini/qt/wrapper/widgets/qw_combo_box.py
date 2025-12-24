@@ -68,6 +68,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
             _data = self.itemData(_idx)
             _LOGGER.debug(' - TESTING DATA %s', _data)
             if _data == data:
+                _LOGGER.debug(' - SELECTED ITEM %d', _idx)
                 self.setCurrentIndex(_idx)
                 return
         if not catch:

@@ -1,3 +1,11 @@
+## [8.36.1] - Wed 2025-12-24 09:34
+### Summary
+ - Pini Helper:
+    - bugfix error on save refs to metadata with unpadded texture seq (mkim),
+### Updated
+ - maya_pini.ref.AttrRef.path added handling for unpadded textures,
+
+
 ## [8.36.0] - Tue 2025-12-23 10:25
 ### Summary
  - Pini Helper:

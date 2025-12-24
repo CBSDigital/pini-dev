@@ -96,12 +96,6 @@ class AttrRef(r_path_ref.PathRef):
         _path = File(_path)
         _LOGGER.debug('     - UPDATED PATH %s', _path)
 
-        # Check for file seqs
-        if (
-                self._node_type == 'file' and
-                cmds.getAttr(f'{self.node}.useFrameExtension')):
-            _path = file_to_seq(_path)
-
         # Check for udim files
         _LOGGER.debug('     - UDIM TILES %d', self.has_udim_tiles)
         if self.has_udim_tiles:
@@ -110,6 +104,12 @@ class AttrRef(r_path_ref.PathRef):
                 _LOGGER.debug('     - TO SEQ %s', _path)
             except ValueError:
                 _LOGGER.debug('     - FAILED TO READ UDIM %s', _path)
+
+        # Check for file seqs
+        elif (
+                self._node_type == 'file' and
+                cmds.getAttr(f'{self.node}.useFrameExtension')):
+            _path = file_to_seq(_path, safe=False)
 
         return _path
 
