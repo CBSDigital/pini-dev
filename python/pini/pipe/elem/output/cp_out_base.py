@@ -368,6 +368,7 @@ class CPOutputBase:
 
         The kwargs are added to the existing metadata dict.
         """
+        _LOGGER.debug('ADD METADATA %s', kwargs)
         self.set_metadata(kwargs, mode='add')
 
     def get_metadata(self):
@@ -556,6 +557,7 @@ class CPOutputBase:
             bkp (bool): backup metadata file on save
             force (bool): replace existing metadata without confirmation
         """
+        _LOGGER.debug('SET METADATA mode=%s', mode)
         if bkp:
             self.metadata_file.bkp()
         if mode == 'replace':
@@ -565,6 +567,7 @@ class CPOutputBase:
             _data.update(data)
         else:
             raise ValueError(mode)
+        _LOGGER.debug(' - APPLIED METADATA', _data)
         self.metadata_yml.write_yml(_data, force=True)
 
     def strftime(self, fmt=None):
@@ -600,7 +603,7 @@ class CPOutputBase:
         _LOGGER.debug('TO OUTPUT tmpl=%s kwargs=%s', template, kwargs)
 
         # Obtain template
-        _tmpl = template or self.template
+        _tmpl = template or self.template.source
         if isinstance(_tmpl, str):
             _has_key = {'tag': bool('tag' in kwargs or self.tag)}
             if 'output_name' in kwargs:

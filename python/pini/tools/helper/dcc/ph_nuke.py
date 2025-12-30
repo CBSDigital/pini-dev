@@ -72,8 +72,9 @@ def launch():
     _remove_existing_helper_panel()
 
     # Launch PiniHelper as nuke panel
+    nuke.NukePiniHelper = NukePiniHelper
     sys.PINI_HELPER_PANEL = nukescripts.panels.registerWidgetAsPanel(
-        "helper.NukePiniHelper", helper.TITLE, 'PiniHelper', create=True)
+        "nuke.NukePiniHelper", helper.TITLE, 'PiniHelper', create=True)
     _pane = nuke.getPaneFor('Properties.1')
     sys.PINI_HELPER_PANEL.addToPane(_pane)
 

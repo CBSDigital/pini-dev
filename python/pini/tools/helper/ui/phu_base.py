@@ -347,7 +347,7 @@ class PHUiBase(
                 self.ui.SSceneRefs.redraw)
             menu.add_action(
                 'Add to scene', _func, icon=icons.find('Plus'),
-                enabled=dcc.can_reference_output(output))
+                enabled=dcc.can_reference_output(_out_c))
 
         # Add find options
         self._add_output_find_opts(

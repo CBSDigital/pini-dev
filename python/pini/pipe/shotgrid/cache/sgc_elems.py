@@ -155,7 +155,7 @@ class SGCPubFile(SGCPath):
     ENTITY_TYPE = 'PublishedFile'
     FIELDS = (
         'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by',
-        'entity', 'project', 'task')
+        'entity', 'project', 'task', 'published_file_type')
 
     def __init__(self, data):
         """Constructor.

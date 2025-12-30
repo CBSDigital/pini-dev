@@ -8,7 +8,7 @@ import os
 import nuke
 
 from pini.utils import (
-    abs_path, File, Seq, check_heart, passes_filter, to_str)
+    abs_path, File, Seq, check_heart, passes_filter, to_str, find_callback)
 from nuke_pini.utils import clear_selection
 
 from .d_base import BaseDCC
@@ -147,7 +147,14 @@ class NukeDCC(BaseDCC):
             _scene_view.setAllItems(_scene_view.getAllItems(), True)
 
         _LOGGER.info(' - NAME %s', path)
-        return self.find_pipe_ref(_node.name())
+        _ref = self.find_pipe_ref(_node.name())
+
+        # Run callback
+        _cb = find_callback('CreateRef')
+        if _cb:
+            _cb(_ref)
+
+        return _ref
 
     def cur_file(self):
         """Get path to current script.

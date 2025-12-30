@@ -6,12 +6,31 @@ import unittest
 
 from pini import pipe, testing, dcc
 from pini.pipe import cache, cp_template
-from pini.utils import File, single, flush_caches, assert_eq, Seq
+from pini.utils import (
+    File, single, flush_caches, assert_eq, Seq, MetadataFile, PINI_TMP)
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class TestPipe(unittest.TestCase):
+
+    def test_add_metadata(self):
+
+        # Test MetadataFile object
+        _md_file = PINI_TMP.to_file('test.file', class_=MetadataFile)
+        _md_file.add_metadata(test=1)
+        _md_file.add_metadata(test2=1)
+        assert len(_md_file.metadata) == 2
+
+        # Test CPOutputVideo
+        _abc = testing.find_test_abc()
+        _tmp = _abc.to_output(
+            'blast_mov', dcc_=dcc.NAME, user=pipe.cur_user(), extn='mp4')
+        for _file in [_tmp, _tmp.metadata_yml]:
+            _file.delete(force=True)
+        _tmp.add_metadata(test=1)
+        _tmp.add_metadata(test2=1)
+        assert len(_tmp.metadata) == 2
 
     def test_cast_work_dcc(self):
 

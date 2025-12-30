@@ -308,7 +308,7 @@ def render(
     # Execute render
     if _mode in ['api', 'mel']:
         for _frame in qt.progress_bar(
-                _frames, 'Rendering {:d} frame{}'):
+                _frames, 'Rendering {:d} frame{}', stack_key='MayaRender'):
             check_heart()
             cmds.currentTime(_frame)
             render_frame(

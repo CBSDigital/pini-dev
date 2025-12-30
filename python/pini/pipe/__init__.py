@@ -6,7 +6,7 @@ import os
 
 from pini.utils import HOME_PATH, Dir
 
-VERSION = 10
+VERSION = 11
 
 MASTER = os.environ.get('PINI_PIPE_MASTER', 'disk')
 NAME = os.environ.get('PINI_PIPE_NAME', 'pini')

@@ -400,7 +400,7 @@ class CAutowrite:
                 if not _knob:
                     continue
                 _knob.setVisible(_tgl)
-                _LOGGER.info('SET VISIBLE %s %d', _name, _tgl)
+                _LOGGER.debug('SET VISIBLE %s %d', _name, _tgl)
         _col = {'render': RENDER_COL,
                 'plate': PLATE_COL}[_tmpl]
         set_node_col(self.node, _col)

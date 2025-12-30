@@ -8,6 +8,7 @@ from .u_text import is_pascal
 _LOGGER = logging.getLogger(__name__)
 
 _APPROVED_TYPES = (
+    'CreateRef',
     'HelperWorkIcon',
     'Publish',
     'ReadSettings',

@@ -1,3 +1,20 @@
+## [8.37.0] - Tue 2025-12-30 10:30
+### Summary
+ - Pini Helper:
+    - added hook for create ref callback,
+    - store output published file type in shotgrid cache,
+### Updated
+ - pini.utils.install_callback added CreateRef to approved types,
+ - pini.dcc.NukeDCC.create_ref apply CreateRef callback,
+ - pini.pipe.VERSION updated 10 -> 11 to force rebuild caches for sg file type,
+ - pini.pipe.CPOutput.to_output use src tmpl as base to allow overrides,
+ - pini.pipe.CPOutputVideo.add_metadata bugfix replacing existing metadata,
+ - pini.pipe.shotgrid.SGCPubFile added published_file_type to fields,
+ - pini.tools.helper output ctx bugfix add to scene not working in nuke,
+ - maya_pini.utils.render added stack_key to avoid inadvertent cancel,
+ - nume_pini.tools.autowrite less verbose,
+
+
 ## [8.36.1] - Wed 2025-12-24 09:34
 ### Summary
  - Pini Helper:

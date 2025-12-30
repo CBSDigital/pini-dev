@@ -13,6 +13,8 @@ class CPOutputFile(File, cp_out_base.CPOutputBase):
     """Represents an output file on disk."""
 
     __lt__ = cp_out_base.CPOutputBase.__lt__
+
+    add_metadata = cp_out_base.CPOutputBase.add_metadata
     get_metadata = cp_out_base.CPOutputBase.get_metadata
     set_metadata = cp_out_base.CPOutputBase.set_metadata
     metadata_yml = cp_out_base.CPOutputBase.metadata_yml
