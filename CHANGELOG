@@ -1,3 +1,16 @@
+## [8.38.0] - Wed 2025-12-31 12:37
+### Summary
+ - Pini Helper:
+    - bugfix error on view mov on machine with mounted drives + no pini viewers,
+### Updated
+ - pini.utils.Seq.view apply drive mapping to os.startfile,
+ - pini.qt.CRectF.to_tuple added,
+ - pini.qt.PNGNodeGraph.get_view_rect returns CRectF,
+ - pini.qt.raise_dialog bugfix bad result in PySide6/maya,
+ - pini.qt.raise_dialog added safe flag,
+ - maya_pini.utils updated to allow import before initialize,
+
+
 ## [8.37.0] - Tue 2025-12-30 10:30
 ### Summary
  - Pini Helper:

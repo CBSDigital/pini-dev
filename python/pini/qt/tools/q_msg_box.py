@@ -103,6 +103,8 @@ class _CMessageBox(QtWidgets.QMessageBox):
         Returns:
             (str): label of button that was clicked
         """
+        from pini import dcc
+
         _LOGGER.debug('GET RESULT %s force=%s', self, self._force_result)
         _LOGGER.debug(
             ' - VER py-%d.%d %s-%s', sys.version_info.major,
@@ -110,7 +112,7 @@ class _CMessageBox(QtWidgets.QMessageBox):
         _exec_result = self.exec_()
         _LOGGER.debug(
             ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
-        if LIB == 'PySide6':
+        if LIB == 'PySide6' and dcc.NAME != 'maya':
             _exec_result -= 2
             _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
             _LOGGER.debug(
@@ -176,7 +178,7 @@ def notify(
 
 def raise_dialog(
         msg="No message set", title="Dialog", buttons=("Ok", "Cancel"),
-        icon=None, icon_size=None, parent=None, verbose=1):
+        icon=None, icon_size=None, parent=None, safe=True, verbose=1):
     """Raise simple message box dialog.
 
     Args:
@@ -186,6 +188,7 @@ def raise_dialog(
         icon (str): path to icon
         icon_size (tuple): icon size
         parent (QDialog): parent dialog
+        safe (bool): no check for batch mode
         verbose (int): print process data
 
     Returns:
@@ -195,7 +198,7 @@ def raise_dialog(
     from pini import dcc, qt, testing
 
     # Avoid farm qt seg fault
-    if dcc.batch_mode():
+    if safe and dcc.batch_mode():
         lprint('MESSAGE:\n' + msg)
         raise RuntimeError("Cannot raise dialog in batch mode - " + title)
     qt.get_application()

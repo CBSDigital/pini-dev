@@ -6,7 +6,6 @@ import os
 import time
 
 from maya import cmds
-from maya.app.general import createImageFormats
 
 from pini.utils import Seq, str_to_ints, File, TMP, single, Video, wrap_fn
 
@@ -230,6 +229,7 @@ def _exec_blast(
         use_tmp_viewport (bool): use tmp viewport
     """
     from maya_pini import ui
+    from maya.app.general import createImageFormats  # not available in batch
 
     _LOGGER.debug('BLAST')
     assert isinstance(seq, Seq)

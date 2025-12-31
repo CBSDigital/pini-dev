@@ -8,6 +8,8 @@ A clip is a video or an image sequence.
 import logging
 import os
 
+from ..path import abs_path
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -74,4 +76,4 @@ class Clip:
         if _viewer:
             _viewer.view(self, start_frame=start_frame)
         else:
-            os.startfile(self.path)
+            os.startfile(abs_path(self.path, mode='drive'))

@@ -38,6 +38,15 @@ class CRectF(QtCore.QRectF):
             return qt.to_p(self.center())
         raise NotImplementedError(anchor)
 
+    def to_tuple(self):
+        """Convert this rect to a tuple.
+
+        Returns:
+            (float tuple): values
+        """
+        _tl = self.topLeft()
+        return _tl.x(), _tl.y(), self.width(), self.height()
+
     def __str__(self):
         _vals = self.left(), self.top(), self.width(), self.height()
         _vals_s = ', '.join(f'{_val:.02f}' for _val in _vals)

@@ -156,7 +156,7 @@ class PNGNodeGraph(QtWidgets.QGraphicsView):
             (QRectF): view rect
         """
         _rect_v = self.rect()
-        return self.mapToScene(_rect_v).boundingRect()
+        return wrapper.CRectF(self.mapToScene(_rect_v).boundingRect())
 
     def set_tfm_t(self, tfm):
         """Set viewport transform from tuple.
