@@ -2,6 +2,7 @@
 
 import functools
 import logging
+import sys
 
 from maya import cmds, mel
 
@@ -462,9 +463,15 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (CPlug list): matching plugs
         """
+
+        # Query attrs
+        _kwargs = {}
+        if keyable is not None:
+            _kwargs['keyable'] = keyable
+        _attrs = cmds.listAttr(self, userDefined=user_defined, **_kwargs) or []
+
+        # Build into plugs
         _plugs = []
-        _attrs = cmds.listAttr(
-            self, keyable=keyable, userDefined=user_defined) or []
         for _attr in sorted(_attrs):
             try:
                 _plug = self.plug[_attr]
@@ -472,6 +479,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
                 _LOGGER.info(' - FAILED TO BUILD PLUG %s.%s', self, _attr)
                 continue
             _plugs.append(_plug)
+
         return _plugs
 
     def object_type(self):
@@ -531,15 +539,19 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         set_col(self.node, col)
 
-    def set_key(self, frame=None):
+    def set_key(self, frame=None, tangents=None):
         """Set keyframe on this node (ie. key all channels).
 
         Args:
             frame (float): frame to keyframe on
+            tangents (str): apply tangent type (eg. linear/spline)
         """
         _kwargs = {}
         if frame is not None:
             _kwargs['time'] = frame
+        if tangents:
+            _kwargs['inTangentType'] = tangents
+            _kwargs['outTangentType'] = tangents
         cmds.setKeyframe(self, **_kwargs)
 
     def set_outliner_col(self, col):
@@ -551,6 +563,15 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         self.plug['useOutlinerColor'].set_val(True)
         self.plug['outlinerColor'].set_col(col)
 
+    def set_tangents(self, type_):
+        """Set tangents for all this node's animation.
+
+        Args:
+            type_ (str): tangent type to apply (eg. spline)
+        """
+        for _anim in self.to_anim():
+            _anim.set_tangents(type_)
+
     def to_anim(self):
         """Find anim curves attached to this node.
 
@@ -561,6 +582,20 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _nodes = self.find_incoming(
             type_='animCurve', connections=False, plugs=False)
         return [pom.CAnimCurve(_node) for _node in _nodes]
+
+    def to_anim_range(self):
+        """Obtain range for this node's animation.
+
+        Returns:
+            (tuple): start/end
+        """
+        _start, _end = sys.maxsize, -sys.maxsize
+        for _crv in self.to_anim():
+            _c_start, _c_end = _crv.t_range()
+            _start = min(_start, _c_start)
+            _end = max(_end, _c_end)
+        assert _start <= _end
+        return _start, _end
 
     def to_attr(self, attr):
         """Get the path on an attribute on this node.

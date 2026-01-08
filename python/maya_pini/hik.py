@@ -4,12 +4,12 @@ import collections
 import logging
 import pprint
 
-from pini import pipe
+from pini import pipe, qt
 from pini.dcc import pipe_ref
 from pini.utils import single, passes_filter
 
 from maya_pini import ui, open_maya as pom
-from maya_pini.utils import process_deferred_events
+from maya_pini.utils import process_deferred_events, restore_ns, set_namespace
 
 from maya import cmds, mel
 
@@ -111,7 +111,9 @@ class PHIKNode(pom.CNode):
         #     bakeOnOverrideLayer false -minimizeRotation true -
         #     controlPoints false -shape true
 
-    def bake_to_skel(self, range_=None, step=None, loop=False, skel=None):
+    def bake_to_skel(
+            self, range_=None, step=None, loop=False, skel=None,
+            euler_filter=True, force=False):
         """Bake animation to skeleton.
 
         Args:
@@ -119,6 +121,8 @@ class PHIKNode(pom.CNode):
             step (float): override step size (otherwise read from anim)
             loop (bool): apply looping
             skel (CSkeleton): skeleton to bake to
+            euler_filter (bool): apply euler filter
+            force (bool): supress any bake warnings
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
         _skel = skel or pom.find_skeleton(self.namespace)
@@ -137,7 +141,7 @@ class PHIKNode(pom.CNode):
             _src_keys = [_time for _time, _ in _src_ktvs]
             _LOGGER.info(' - SRC KEYS %s', _src_keys)
             if not _step:
-                _step = _read_step_size(_src_keys)
+                _step = _read_step_size(_src_keys, force=force)
             if not _rng:
                 _rng = _src_keys[0], _src_keys[-1]
         _LOGGER.info(' - RANGE / STEP %s %s', _rng, _step)
@@ -156,6 +160,8 @@ class PHIKNode(pom.CNode):
             minimizeRotation=True, controlPoints=False, shape=True)
         mel.eval(f'hikBakeCharacterPost "{self}"')
         cmds.DeleteStaticChannels()
+        if euler_filter:
+            cmds.filterCurve(_plugs)
 
         # Apply looping
         if loop:
@@ -166,7 +172,7 @@ class PHIKNode(pom.CNode):
                 _offs_trgs = []
             else:
                 raise ValueError(loop)
-            for _crv in pom.find_anim(
+            for _crv in pom.find_anims(
                     namespace=self.namespace, referenced=False):
                 _LOGGER.debug(' - CURVE %s', _crv)
                 if not _crv.output.find_connections():
@@ -412,6 +418,78 @@ def _find_map_src(trg, mapping):
     return _result
 
 
+def _skel_to_mapping(skel):
+    """Obtain joint mapping for the given skeleton.
+
+    Args:
+        skel (CSkeleton): skeleton to map
+
+    Returns:
+        (dict): skeleton HIK joint mapping
+    """
+
+    # Build name map
+    if skel.name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat'):
+        _jnt_map = [
+            ('Hips', 'Hips'),
+            ('Spine', 'Spine'),
+            ('Spine1', 'Spine1'),
+            ('Spine2', 'Spine2'),
+            ('Neck', 'Neck'),
+            ('Head', 'Head'),
+        ]
+        for _side in ['Left', 'Right']:
+            for _src, _dest in [
+                    ('UpLeg', 'UpLeg'),
+                    ('Leg', 'Leg'),
+                    ('Foot', 'Foot'),
+                    ('ToeBase', 'ToeBase'),
+                    ('Shoulder', 'Shoulder'),
+                    ('Arm', 'Arm'),
+                    ('ForeArm', 'ForeArm'),
+                    ('Hand', 'Hand'),
+            ]:
+                _jnt_map.append((_side + _src, _side + _dest))
+
+    elif skel.name == 'CMU':
+        _jnt_map = [
+            ('root', 'Hips'),
+            ('upperback', 'Spine'),
+            ('thorax', 'Spine1'),
+            ('lowerneck', 'Neck'),
+            ('upperneck', 'Neck1'),
+            ('head', 'Head')]
+        for _side_skel, _side_hik in [
+                ('l', 'Left'),
+                ('r', 'Right')]:
+            for _src, _dest in [
+                    ('femur', 'UpLeg'),
+                    ('tibia', 'Leg'),
+                    ('foot', 'Foot'),
+                    ('toes', 'ToeBase'),
+                    ('humerus', 'Arm'),
+                    ('radius', 'ForeArm'),
+                    ('hand', 'Hand')]:
+                _jnt_map.append((_side_skel + _src, _side_hik + _dest))
+
+    else:
+        raise ValueError(skel.name)
+
+    # Setup mapping
+    _mapping = []
+    # _top_node = None
+    _grp = skel.root.to_parent()
+    if _grp:
+        _mapping.append((_grp, 'Reference'))
+        # _top_node = _grp
+    for _src, _trg in _jnt_map:
+        _mapping.append((skel.to_joint(_src, catch=False), _trg))
+    # _top_node = _top_node or skel.root
+
+    return _mapping
+
+
+@restore_ns
 def build_hik(mapping, name='Auto', straighten_arms=False):
     """Build an HIK character for the given skeleton.
 
@@ -428,12 +506,17 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
         (HIKCharacter): new character
     """
     _LOGGER.info('BUILD HIK CHARACTER %s', name)
-    _root = _find_map_src('Hips', mapping)
+
+    _mapping = mapping
+    if isinstance(_mapping, pom.CSkeleton):
+        _mapping = _skel_to_mapping(_mapping)
+    assert isinstance(_mapping, list)
+    _root = _find_map_src('Hips', _mapping)
     _skel = pom.CSkeleton(_root)
 
     # Create character defintion
+    set_namespace(':')
     assert not pom.find_nodes(type_='HIKCharacterNode', namespace=None)
-    # mel.eval('hikCreateDefinition')
     cmds.HIKCharacterControlsTool()
     try:
         mel.eval('hikCreateDefinition()')
@@ -442,17 +525,17 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
     assert pom.find_nodes(type_='HIKCharacterNode', namespace=None)
     _hikc = single(pom.find_nodes(type_='HIKCharacterNode', namespace=None))
 
-    for _jnt, _hik in mapping:
+    for _jnt, _hik in _mapping:
         _LOGGER.debug(' - BIND HIK %s -> %s', _jnt, _hik)
         _assign_hik_jnt(src=_jnt, trg=_hik, char=_hikc)
 
     # Straighten arms (for locking)
     if straighten_arms:
         for _jnt in [
-                _find_map_src('LeftArm', mapping),
-                _find_map_src('LeftForeArm', mapping),
-                _find_map_src('RightArm', mapping),
-                _find_map_src('RightForeArm', mapping),
+                _find_map_src('LeftArm', _mapping),
+                _find_map_src('LeftForeArm', _mapping),
+                _find_map_src('RightArm', _mapping),
+                _find_map_src('RightForeArm', _mapping),
         ]:
             _jnt = pom.CJoint(_jnt)
             _lx = _jnt.to_m().to_lx().normalized()
@@ -498,7 +581,8 @@ def find_hik(match=None, catch=False, **kwargs):
 
         # Try exact string match
         _str_hiks = [
-            _hik for _hik in _hiks if match in (str(_hik), _hik.namespace)]
+            _hik for _hik in _hiks if match in (
+                str(_hik), _hik.namespace, f':{_hik.namespace}')]
         _LOGGER.debug(' - FOUND %d STR HIKS %s', len(_str_hiks), _str_hiks)
         if len(_str_hiks) == 1:
             return single(_str_hiks)
@@ -556,11 +640,12 @@ def get_source(hik):
     return _hik.get_source()
 
 
-def _read_step_size(keys):
+def _read_step_size(keys, force):
     """Read step size from the given list of key frames.
 
     Args:
         keys (float list): frames of keys
+        force (bool): supress any warnings
 
     Returns:
         (float): step size
@@ -588,7 +673,12 @@ def _read_step_size(keys):
         return _step
 
     pprint.pprint(_steps)
-    raise NotImplementedError('Failed to determine step size')
+    _size = sorted((_count, _size) for _size, _count in _steps.items())[-1][1]
+    if not force:
+        qt.ok_cancel(
+            'Failed to accurately determine anim step size.\n\n'
+            f'Using most common step size {_size:.04f} frames.')
+    return _size
 
 
 def refresh_ui(show=False):

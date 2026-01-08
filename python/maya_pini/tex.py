@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini import qt
+from pini import qt, pipe
 from pini.utils import single, File, Dir, abs_path, EMPTY, Image
 
 from maya_pini import open_maya as pom
@@ -330,13 +330,13 @@ def find_shds(default=None, namespace=EMPTY):
     return sorted(_shds)
 
 
-def to_ftn(base, ver_n=None, ver_mode='suffix', extn='jpg'):
+def to_ftn(base, ver_n=True, ver_mode='suffix', extn='jpg'):
     """Build a file texture name for the current workspace.
 
     Args:
         base (str): base for filename
         ver_n (int): version number to include
-        ver_mode (str): how to apply version
+        ver_mode (str): how to apply version (suffix/dir)
         extn (str): file extension
 
     Returns:
@@ -346,6 +346,12 @@ def to_ftn(base, ver_n=None, ver_mode='suffix', extn='jpg'):
     if ver_n is None:
         _fmt = f'{_base}.{extn}'
     else:
+        if ver_n is True:
+            _ver_n = pipe.cur_work().ver_n
+        elif isinstance(ver_n, int):
+            _ver_n = ver_n
+        else:
+            raise ValueError(ver_n)
         _ver = f'v{ver_n:03d}'
         if ver_mode == 'suffix':
             _fmt = f'{_base}_{_ver}.{extn}'

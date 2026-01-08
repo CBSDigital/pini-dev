@@ -113,10 +113,13 @@ def _batch_check_for_basic_dup_names(set_, check, threshold=20):
         threshold (int): ignore this check if the result count is
             less than this value
     """
+    _LOGGER.debug('BATCH CATCH FOR BASIC DUP NAMES')
     check.write_log('Applying batch basic duplicate name check %s', check)
     _bad_tfms = [_tfm for _tfm in check.tfms if '|' in str(_tfm)]
+    _LOGGER.debug(' - BAD TFMS %d %s', len(_bad_tfms), _bad_tfms)
     if len(_bad_tfms) < threshold:
         return
+    _LOGGER.debug(' - APPLYING FAIL')
     check.add_fail(
         f'Fix {len(_bad_tfms):d} duplicate names in "{set_}" flagged '
         'by basic check',
@@ -137,6 +140,7 @@ def _batch_check_for_cleaned_dup_names(set_, check, threshold=20):
         threshold (int): ignore this check if the result count is
             less than this value
     """
+    _LOGGER.debug('BATCH CHECK FOR CLEANED DUP NAMES')
     check.write_log('Applying batch cleaned duplicate name fix %s', set_)
 
     _names = collections.defaultdict(list)
@@ -144,6 +148,8 @@ def _batch_check_for_cleaned_dup_names(set_, check, threshold=20):
         _name = to_clean(_tfm)
         _names[_name].append(_tfm)
     _names = dict(_names)
+    _LOGGER.debug(' - NAMES %d %s', len(_names), _names)
+
     _to_fix = [
         (_name, _tfms) for _name, _tfms in _names.items() if len(_tfms) > 1]
     if len(_to_fix) < threshold:
@@ -320,29 +326,6 @@ def _fix_shared_parent(parent, nodes, set_, grp):
     for _node in nodes:
         cmds.sets(_node, remove=set_)
         pom.CTransform(_node).add_to_grp(grp)
-
-
-def find_cache_set():
-    """Find cache set in the current scene.
-
-    If reference mode is set to "import references into root namespace" then a
-    referenced cache set is valid.
-
-    Returns:
-        (CNode|None): cache set (if any)
-    """
-    release.apply_deprecation('05/05/25', 'Use maya_pipe.m_pipe.find_cache_set')
-
-    if cmds.objExists('cache_SET'):
-        return pom.CNode('cache_SET')
-    _refs_mode = export.get_pub_refs_mode()
-    if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT:
-        _sets = pom.find_nodes(
-            type_='objectSet', default=False, clean_name='cache_SET')
-        _set = single(_sets, catch=True)
-        if _set:
-            return _set
-    return None
 
 
 def find_top_level_nodes():

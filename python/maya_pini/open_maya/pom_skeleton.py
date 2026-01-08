@@ -200,11 +200,12 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             _ref = self.to_ref()
             _blend = _ref.top_node.add_attr(
                 'blend', 0.0, min_val=0, max_val=len(srcs) - 1)
+        _tfm = _blend.node
 
         # Build blend weight attrs
         _blend_ws = []
         for _idx in range(len(srcs)):
-            _blend_w = _ref.top_node.add_attr(
+            _blend_w = _tfm.add_attr(
                 f'blend_w{_idx}', 0.0, min_val=0, max_val=1)
             for _driver_val, _val in [
                     (_idx - 1, 0),
@@ -485,6 +486,13 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
         passes_filter(_skel.namespace, match)]
     if len(_ns_filter_matches) == 1:
         return single(_ns_filter_matches)
+
+    # Try root namespace match
+    _root_ns_matches = [
+        _skel for _skel in _skels
+        if _skel.namespace.split(':')[0] == match]
+    if len(_root_ns_matches) == 1:
+        return single(_root_ns_matches)
 
     raise ValueError(f'Failed to find skeleton {match or namespace}')
 

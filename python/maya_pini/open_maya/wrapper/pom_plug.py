@@ -341,6 +341,20 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         return _result
 
+    def find_anims(self):
+        """Find anim curves attached to this node or any of its children.
+
+        Returns:
+            (CAnimCurve list): anim curves
+        """
+        _anims = []
+        _anim = self.to_anim()
+        if _anim:
+            _anims.append(_anim)
+        for _child in self.list_children():
+            _anims += _child.find_anims()
+        return _anims
+
     @functools.wraps(pom_utils.find_connections)
     def find_connections(
             self, source=True, destination=True,
@@ -693,6 +707,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             cmds.setAttr(self, val, type='string')
             return
         if isinstance(val, (pom.CArray3, qt.CColor)):
+            _LOGGER.debug(' - APPLY ARRAY %s %s', self, val.to_tuple())
             cmds.setAttr(self, *val.to_tuple())
             return
         if isinstance(val, (tuple, list)) and len(val) == 3:

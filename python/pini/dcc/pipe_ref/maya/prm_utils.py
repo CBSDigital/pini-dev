@@ -2,6 +2,8 @@
 
 import logging
 
+from maya import cmds
+
 from pini import pipe
 from pini.utils import EMPTY
 
@@ -34,8 +36,14 @@ def apply_grouping(top_node, output, group=EMPTY):
             _grp = 'CACHE'
         else:
             _grp = None
-    if isinstance(_grp, str) and not _grp.startswith('|'):
+
+    # Catch grp already exists in hierarchy
+    if (
+            isinstance(_grp, str) and
+            len(cmds.ls(_grp)) > 1 and
+            not _grp.startswith('|')):
         _grp = f'|{_grp}'
+
     _LOGGER.debug(' - GROUP %s -> %s', group, _grp)
 
     if _grp:

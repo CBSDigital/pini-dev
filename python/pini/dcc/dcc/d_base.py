@@ -22,6 +22,7 @@ class BaseDCC:
     NAME = None
     REF_EXTNS = ()
     VALID_EXTNS = ()
+    IS_3D = False
 
     _export_handlers = None
 

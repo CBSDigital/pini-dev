@@ -5,7 +5,9 @@ import logging
 from maya import cmds
 from maya.api import OpenMayaAnim as oma
 
+from pini.tools import release
 from pini.utils import single, passes_filter
+
 from maya_pini.utils import to_clean
 
 from .. import base
@@ -214,7 +216,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             includeUpperBound=True, relative=True)
 
 
-def find_anim(namespace=None, filter_=None, referenced=None):
+def find_anims(namespace=None, filter_=None, referenced=None):
     """Find anim curves in this scene.
 
     Args:
@@ -236,3 +238,28 @@ def find_anim(namespace=None, filter_=None, referenced=None):
             continue
         _anims.append(_anim)
     return _anims
+
+
+def find_anim(*args, **kwargs):
+    """Find anim curves in this scene (deprecated).
+
+    Args:
+        namespace (str): apply namespace filter
+        filter_ (str): apply name filter
+        referenced (bool): apply referened filter
+
+    Returns:
+        (CAnimCurve): anim curves
+    """
+    release.apply_deprecation('06/01/26', 'Use find_anims')
+    return find_anims(*args, **kwargs)
+
+
+def loop_anims(anims):
+    """Loop animations.
+
+    Args:
+        anims (CAnimCurve list): anim curves to loop
+    """
+    for _anim in anims:
+        _anim.loop()

@@ -136,3 +136,8 @@ class TestQt(unittest.TestCase):
         _size = qt.to_size(0.35, class_=qt.CSizeF)
         assert _size.width() == 0.35
         assert _size.height() == 0.35
+
+    def test_to_rect(self):
+
+        assert qt.to_rect(1, 2, 3, 4).height() == 4
+        assert qt.to_rect([1, 2, 3, 4]).height() == 4

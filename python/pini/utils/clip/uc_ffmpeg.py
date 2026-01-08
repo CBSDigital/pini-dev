@@ -345,7 +345,7 @@ def _handle_conversion_fail(seq, video, err, args):
         _args_s += f'{_arg} '
     _LOGGER.info(' - ARGS %s', _args_s)
 
-    if not video.size():
+    if video.exists() and not video.size():
         video.delete(force=True)
 
     # Compression fail

@@ -9,7 +9,7 @@ from maya import cmds
 
 from pini import qt, dcc, pipe
 from pini.utils import (
-    single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir)
+    single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir, chain_fns)
 
 from maya_pini import ref, open_maya as pom, m_pipe, ui
 from maya_pini.utils import DEFAULT_NODES, to_clean, cur_renderer
@@ -456,6 +456,8 @@ class CheckCacheables(core.SCMayaCheck):
     command.
     """
 
+    action_filter = '-render'
+
     def run(self):
         """Run this check."""
         super().run()
@@ -583,7 +585,6 @@ class CheckColorManagement(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-
         self.job = pipe.CACHE.cur_job
         self.entity = pipe.CACHE.cur_entity
 
@@ -662,3 +663,27 @@ class CheckColorManagement(core.SCMayaCheck):
             'defaultRedshiftPostEffects.lutIsLogInput', True)
         self.check_attr(
             'defaultRedshiftPostEffects.lutApplyBeforeColorManagement', True)
+
+
+class CheckSecurityPrefs(core.SCMayaCheck):
+    """Check security is disabled."""
+
+    def run(self):
+        """Run this check."""
+        _fixes = []
+        for _var, _val in [
+                ('SafeModeOption', 0),
+                ('TrustCenterPathOption', 0),
+                ('SafeModeGlobalPy', 1),
+                ('SafeModeBuiltInCheck', 0),
+                ('SafeModeImportOption', 0)]:
+            _cur_val = cmds.optionVar(query=_var)
+            self.write_log(' - checking var %s %d', _var, _cur_val)
+            if _cur_val != _val:
+                _fixes.append(wrap_fn(cmds.optionVar, intValue=(_var, _val)))
+        if _fixes:
+            self.add_fail(
+                'Security is enabled in preferences - maya security is overly '
+                'aggresive and pini handles it more effectively. You will '
+                'have to confirm the updates when you apply this fix.',
+                fix=chain_fns(_fixes))

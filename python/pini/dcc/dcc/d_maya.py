@@ -18,7 +18,6 @@ from .d_base import BaseDCC
 
 _LOGGER = logging.getLogger(__name__)
 _FPS_MAP = {
-    "29.97df": 30,
     "film": 24.0,
     "pal": 25.0,
     "palf": 50.0,

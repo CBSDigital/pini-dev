@@ -189,8 +189,11 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
             return []
         return [_item.data(Qt.UserRole) for _item in _sel]
 
-    def selected_item(self):
+    def selected_item(self, catch=True):
         """Obtain currently selected item.
+
+        Args:
+            catch (bool): no error if not exactly one selected item
 
         Returns:
             (QListWidgetItem): selected item
@@ -198,7 +201,7 @@ class CListWidget(QtWidgets.QListWidget, CBaseWidget):
         _sel = self.selectedItems()
         if not _sel:
             return None
-        return single(_sel)
+        return single(_sel, catch=catch)
 
     def selected_items(self):
         """Get list of selected items.

@@ -603,7 +603,9 @@ def to_pixmap(arg):
     return qt.CPixmap(arg)
 
 
-def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: disable=too-many-branches
+def to_rect(  # pylint: disable=too-many-branches,too-many-statements,unused-argument
+        *args, pos=(0, 0), size=(640, 640), anchor='TL', class_=None,
+        catch=False):
     """Build a QRect object based on the args provided.
 
     Args:
@@ -611,18 +613,36 @@ def to_rect(pos=(0, 0), size=(640, 640), anchor='TL', class_=None):  # pylint: d
         size (QSize): size
         anchor (str): anchor position
         class_ (class): override rect class
+        catch (bool): no error if fail to build rect
 
     Returns:
         (QRect|QRectF): region
     """
+    _LOGGER.debug('TO RECT')
     from pini import qt
 
-    _LOGGER.debug('TO RECT %s %s', pos, size)
-    _size = to_size(size)
+    # Handle args
+    _args = args
+    _LOGGER.debug(' - ARGS (A) %s', _args)
+    if len(_args) == 1 and isinstance(_args, (tuple, list)):
+        _args = single(_args)
+        _LOGGER.debug(' - ARGS (B) %s', _args)
+    if not _args:
+        _pos = pos
+        _size = size
+    elif len(_args) == 2:
+        _pos, _size = _args
+    elif len(_args) == 4:
+        _pos, _size = _args[:2], _args[2:]
+    else:
+        raise NotImplementedError(f'Arg count {len(args)}: {args}')
+
+    _LOGGER.debug('TO RECT %s %s', _pos, _size)
+    _size = to_size(_size)
     _use_int = not isinstance(_size, QtCore.QSizeF)
     _LOGGER.debug(' - SIZE %s', _size)
     _class = qt.CPointF if not _use_int else None
-    _pos = to_p(pos, class_=_class)
+    _pos = to_p(_pos, class_=_class)
     _LOGGER.debug(' - POS %s', _pos)
 
     # Determine root position (top left) of result

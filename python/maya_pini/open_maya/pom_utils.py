@@ -5,6 +5,7 @@ import logging
 from maya import cmds
 from maya.api import OpenMaya as om
 
+from pini.tools import release
 from pini.utils import single, EMPTY, passes_filter
 from maya_pini.utils import (
     to_parent, to_shp, restore_sel, DEFAULT_NODES, to_unique)
@@ -13,18 +14,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @restore_sel
-def add_anim_offs(tfm, anim, reset=False):
+def add_anim_offs(tfm, anims=None, anim=None, reset=False):
     """Build animation offset controls.
 
     Args:
         tfm (CTransform): node to apply offset controls on
-        anim (CAnimCurve list): animation to offset
+        anims (CAnimCurve list): animation to offset
+        anim (CAnimCurve list): animation to offset (deprecated)
         reset (bool): reset any existing offset settings
 
     Returns:
         (tuple): anim offs, anim mult
     """
     from maya_pini import open_maya as pom
+
+    _anims = anims
+    if anim:
+        _anims = anim
+        release.apply_deprecation('06/01/26', 'Use anims arg')
+    _LOGGER.info('ADD ANIM OFFS %s (%d CRVS)', tfm, len(_anims))
 
     # Create attrs
     _mult = tfm.add_attr('animMult', 1.0, force=reset)
@@ -35,7 +43,7 @@ def add_anim_offs(tfm, anim, reset=False):
     _offs_t = pom.minus_plug('time1.outTime', _offs)
     _offs_t.multiply(_mult, output=_anim_t, force=True)
     _LOGGER.info(' - MULT/OFFS %s %s', _mult, _offs)
-    for _crv in anim:
+    for _crv in _anims:
         _crv.input.break_conns()
         _anim_t.connect(_crv.input, force=True)
 

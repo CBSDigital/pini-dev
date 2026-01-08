@@ -18,7 +18,7 @@ from .wrapper import (
     CReference, find_ref, find_refs, create_ref, active_cam, obtain_ref,
     selected_plugs, to_plug, find_cams, set_render_cam, find_render_cam,
     find_cam, selected_plug, IDENTITY, selected_ref, TIME, OBJECT_SPACE,
-    find_anim)
+    find_anim, find_anims, loop_anims)
 
 from .pom_cmds import CMDS
 from .pom_utils import (

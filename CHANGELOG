@@ -1,3 +1,33 @@
+## [8.39.0] - Thu 2026-01-08 12:55
+### Summary
+ - Sanity Check:
+    - maya added check for security enabled,
+### Updated
+ - pini.utils.Seq.to_video bugfix error on conversion fail,
+ - pini.utils.chain_fns allow single list arg,
+ - pini.dcc.IS_3D added,
+ - pini.dcc.MayaDCC.set_fps removed 30 -> 29.97df mapping,
+ - pini.dcc.MayaDCC.create_ref bugfix recreating grp is moved,
+ - pini.qt.to_rect allow arg as rect tuple,
+ - pini.qt.CListWidget.selected_item added catch,
+ - pini.tools.sanity_check.find_cache_set removed deprecated fn,
+ - pini.tools.sanity_check.CheckCacheables disable on render,
+ - pini.tools.sanity_check.CheckSecurityPrefs added,
+ - maya_pini.open_maya.add_anim_offs deprecated arg anim -> anims,
+ - maya_pini.open_maya.CNode.list_attr remove keyable kwarg is val is None,
+ - maya_pini.open_maya.CNode.set_key added tangents arg,
+ - maya_pini.open_maya.CNode set_tangents/to_anim_range added,
+ - maya_pini.open_maya.loop_anims added,
+ - maya_pini.open_maya deprecated find_anim -> find_anims,
+ - maya_pini.open_maya.CPlug.find_anims added,
+ - maya_pini.open_maya.CSkeleton.build_blend bugfix error on override blend attr,
+ - maya_pini.open_maya.find_skel match by ns root,
+ - maya_pini.hik.PHIKNode.bake_to_skel added euler_filter + force flags,
+ - maya_pini.hik.build_hik allow arg as CSkeleton,
+ - maya_pini.hik.find_hik match ns with leading :,
+ - maya_pini.tex.to_ftn add ver_n by default + allow ver_n as True for match work,
+
+
 ## [8.38.0] - Wed 2025-12-31 12:37
 ### Summary
  - Pini Helper:

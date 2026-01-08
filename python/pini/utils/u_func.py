@@ -10,17 +10,20 @@ def chain_fns(*args):
     Returns:
         (fn): chained function
     """
+    _args = args
+    if len(_args) == 1 and isinstance(_args[0], (list, tuple)):
+        _args = _args[0]
 
     # Catch args not funcs
-    _fn_types = (types.FunctionType, types.MethodType,
-                 types.BuiltinMethodType)
-    for _arg in args:
+    _fn_types = (
+        types.FunctionType, types.MethodType, types.BuiltinMethodType)
+    for _arg in _args:
         if not isinstance(_arg, _fn_types):
             raise TypeError(f'Arg is not function - {_arg}')
 
     def _chained_fn(*xargs):
         del xargs
-        for _fn in args:
+        for _fn in _args:
             _fn()
 
     return _chained_fn

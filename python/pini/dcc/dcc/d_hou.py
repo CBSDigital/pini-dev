@@ -29,6 +29,7 @@ class HouDCC(BaseDCC):
         DEFAULT_EXTN = 'hip'
     VALID_EXTNS = (DEFAULT_EXTN, )
     REF_EXTNS = ('abc', )
+    IS_3D = True
 
     def add_menu_divider(self, parent, name, verbose=0):  # pylint: disable=unused-argument
         """Print xml to declare a separtor item in MainMenuCommon.xml file.
