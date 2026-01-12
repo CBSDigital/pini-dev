@@ -1,5 +1,13 @@
 """Tools for managing the base class for render farms."""
 
+import logging
+import pprint
+
+from pini import pipe
+from pini.utils import last, plural
+
+_LOGGER = logging.getLogger(__name__)
+
 
 class CFarm:
     """Base class for all render farms."""
@@ -104,3 +112,48 @@ class CFarm:
             error_limit (int): job error limit
         """
         raise NotImplementedError
+
+    def update_cache(self, work, outputs, metadata):
+        """Update outputs cache.
+
+        Args:
+            work (str): path to work file
+            outputs (str list): outputs to register
+            metadata (dict): metadata to apply to outputs
+        """
+        _LOGGER.info('UPDATE CACHE')
+        _work = pipe.to_work(work)
+        _outs = [pipe.to_output(_out) for _out in outputs]
+
+        # Update metadata
+        _LOGGER.info(" - UPDATE METADATA")
+        _missing_outs = []
+        for _last, _out in last(_outs):
+
+            # Flag missing outputs (ignore missing cryptomatte)
+            if not _out.exists():
+                if '.Cryptomatte.' not in _out.path:
+                    _missing_outs.append(_out)
+                continue
+
+            _out.set_metadata(metadata)
+            if pipe.MASTER == 'shotgrid':
+                from pini.pipe import shotgrid
+                shotgrid.create_pub_file_from_output(
+                    _out, force=True, update_cache=_last)
+
+        # Update work outputs cache
+        _LOGGER.info(" - UPDATE WORK OUTPUTS CACHE")
+        _work_c = pipe.CACHE.obt(_work)
+        _work_c.find_outputs(force=True)
+
+        # Error on missing outputs
+        if _missing_outs:
+            _missing_s = ', '.join(_out.path for _out in _missing_outs)
+            _LOGGER.error('MISSING OUTPUTS')
+            pprint.pprint(_outs)
+            raise RuntimeError(
+                f'{len(_missing_outs)} output{plural(_missing_outs)} '
+                f'missing: {_missing_s}')
+
+        _LOGGER.info(" - UPDATE CACHE COMPLETE")

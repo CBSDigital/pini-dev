@@ -98,7 +98,8 @@ class PyDef(upy_elem.PyElem):
             elif isinstance(_ast_default, ast.Tuple):
                 _default = tuple(_item.s for _item in _ast_default.dims)
             elif isinstance(_ast_default, (
-                    ast.Name, ast.Call, ast.UnaryOp, _AstNoneType)):
+                    ast.Name, ast.Call, ast.UnaryOp, ast.BinOp,
+                    _AstNoneType)):
                 _default = None
             elif isinstance(_ast_default, ast.Attribute):
                 _default = _ast_attr_to_val(_ast_default, catch=True)

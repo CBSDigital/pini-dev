@@ -1,3 +1,21 @@
+## [8.40.0] - Mon 2026-01-12 08:28
+### Summary
+ - Pini Helper:
+    - maya farm render update cache job completes shotgrid registration for existing renders before flagging missing ones (cstewart),
+    - maya farm render update cache ignore missing redshift cryptomatte passes (cstewart),
+### Updated
+ - pini.utils.Dir delete/flush added catch,
+ - pini.utils.PyDef added handling for expr arg default,
+ - pini.utils.Seq.to_video added safe flag,
+ - pini.farm.update_cache added,
+ - pini.farm update cache job allows missing cryptomatte,
+ - pini.farm update cache job completes registration before flagging missing outputs,
+ - pini.tools.pyui.install added callback flag,
+ - pini.tools.pyui.PUBaseUi.find_elems added,
+ - pini.tools.pyui.PUBaseUi store field update callbacks,
+ - maya_pini.ui.create_option_menu added callback/name args,
+
+
 ## [8.39.0] - Thu 2026-01-08 12:55
 ### Summary
  - Sanity Check:

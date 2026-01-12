@@ -436,52 +436,14 @@ def _build_update_job_py(outputs, metadata, work):
         (str): python to update outputs
     """
     _lines = [
-        'from pini import pipe',
-        'from pini.utils import last',
-        '']
-
-    if outputs:
-
-        # Build output objects
-        _lines += [
-            '# Build output objects',
-            '_outs = [']
-        for _out in outputs:
-            _lines += [f'    pipe.to_output("{_out.path}"),']
-        _lines += [']', '']
-
-        # Apply metadata
-        if metadata:
-            _lines += [
-                '# Update metadata',
-                '_LOGGER.info("UPDATE METADATA")',
-                f'_metadata = {metadata}',
-                'for _out in _outs:',
-                '    if not _out.exists():',
-                '        raise RuntimeError(f"Missing output {_out.path}")',
-                '    _out.set_metadata(_metadata)',
-                '']
-
-        # Register shotgrid
-        if pipe.MASTER == 'shotgrid':
-            _lines += [
-                '# Register outputs in shotgrid',
-                '_LOGGER.info("REGISTER OUTPUTS")',
-                'from pini.pipe import shotgrid',
-                'for _last, _out in last(_outs):',
-                '    assert _out.exists()',
-                '    shotgrid.create_pub_file_from_output(',
-                '        _out, force=True, update_cache=_last)',
-                '']
-
-    # Update workfile output cache
-    _lines += [
-        '# Update work outputs cache',
-        '_LOGGER.info("UPDATE CACHE")',
-        f'_work_c = pipe.CACHE.obt_work("{work.path}")',
-        '_work_c.find_outputs(force=True)',
+        'from pini import farm',
         '',
-        '_LOGGER.info("UPDATE CACHE COMPLETE")',
-        '']
-
+        f'_work = "{work.path}"',
+        '_outs = [']
+    for _out in outputs:
+        _lines += [f'    "{_out.path}",']
+    _lines += [
+        ']',
+        f'_metadata = {metadata}',
+        'farm.update_cache(work=_work, outputs=_outs, metadata=_metadata)']
     return '\n'.join(_lines)

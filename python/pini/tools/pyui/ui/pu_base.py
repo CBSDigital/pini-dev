@@ -2,6 +2,7 @@
 
 # pylint: disable=too-many-instance-attributes,too-many-public-methods
 
+import collections
 import importlib
 import inspect
 import logging
@@ -76,6 +77,8 @@ class PUBaseUi:
         self.section_col = qt.to_col(self.base_col).blacken(0.5)
 
         self.callbacks = {'defs': {}, 'sections': {}}
+        self.elems = collections.defaultdict(
+            wrap_fn(collections.defaultdict, list))
 
         self.build_ui(load_settings=load_settings)
 
@@ -204,15 +207,20 @@ class PUBaseUi:
         _LOGGER.log(9, 'ADD DEF %s', def_)
         self.init_def(def_)
 
-        _callbacks = {'set': {}, 'get': {}, 'field': {}}
+        _callbacks = {'set': {}, 'get': {}, 'field': {}, 'update': {}}
         self.callbacks['defs'][def_.name] = _callbacks
         for _arg in def_.find_args():
             _get_fn, _set_fn, _field = self.add_arg(_arg)
             _callbacks['set'][_arg.name] = _set_fn
             _callbacks['get'][_arg.name] = _get_fn
             _callbacks['field'][_arg.name] = _field
+            if _arg.callback:
+                _callbacks['update'][_arg.name] = _arg.callback
 
         self.finalize_def(def_)
+
+        for _cb in def_.callbacks.values():
+            _cb()
 
     def init_def(self, def_):
         """Initiate new function.
@@ -294,6 +302,18 @@ class PUBaseUi:
     def finalize_ui(self):
         """Finalize building interface."""
         raise NotImplementedError
+
+    def find_elems(self, def_, arg):
+        """Find ui elements.
+
+        Args:
+            def_ (str): def name
+            arg (str): arg name
+
+        Returns:
+            (list): matching elements
+        """
+        return self.elems[def_][arg]
 
     def rebuild(self, load_settings=True):
         """Rebuild this interface.
@@ -377,6 +397,7 @@ class PUBaseUi:
             if not _def_callbacks:
                 continue
             _set_callbacks = _def_callbacks['set']
+            _update_callbacks = _def_callbacks['update']
             for _arg_name, _arg_val in _arg_data.items():
                 _set_fn = _set_callbacks.get(_arg_name)
                 if _set_fn:
@@ -385,6 +406,9 @@ class PUBaseUi:
                     except (RuntimeError, TypeError):
                         _LOGGER.warning(
                             'FAILED TO LOAD SETTING %s %s', _arg_name, _arg_val)
+                _update_fn = _update_callbacks.get(_arg_name)
+                if _update_fn:
+                    _update_fn()
 
         # Load sections (collapse)
         for _sect_name, _sect_val in _data.get('sections', {}).items():

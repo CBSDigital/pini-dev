@@ -7,17 +7,25 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
-def create_option_menu(options, select=None):
+def create_option_menu(options, name=None, select=None, callback=None):
     """Create option menu element.
 
     Args:
         options (str list): options to add
+        name (str): name for element
         select (str): item to select
+        callback (fn): callback to be executed on selection changed
 
     Returns:
         (str): field uid
     """
-    _field = cmds.optionMenu()
+
+    _args = [name] if name else []
+    _kwargs = {}
+    if callback:
+        _kwargs['changeCommand'] = callback
+
+    _field = cmds.optionMenu(*_args, **_kwargs)
     _LOGGER.debug('CREATE OPTION MENU %s', _field)
     _menu = OptionMenu(_field)
     _menu.set_opts(options)

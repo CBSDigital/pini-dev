@@ -97,23 +97,33 @@ class Dir(up_path.Path):
         _target.delete(force=force)
         shutil.copytree(self.path, _target.path)
 
-    def delete(self, wording='Delete', force=False, verbose=True):
+    def delete(self, wording='Delete', catch=False, verbose=True, force=False):
         """Delete this directory and its contents.
 
         Args:
             wording (str): override wording of warning dialog
-            force (bool): delete contents without warning dialog
+            catch (bool): no error on fail to delete
             verbose (bool): print process data
+            force (bool): delete contents without warning dialog
         """
         if not self.exists():
             return
+
         if not force:
             from pini import qt, icons
             _icon = icons.find('Sponge')
             qt.ok_cancel(
                 msg=f'{wording} directory and contents?\n\n{self.path}',
                 icon=_icon, title=wording, verbose=verbose)
-        shutil.rmtree(self.path)
+
+        # Exec delete
+        try:
+            shutil.rmtree(self.path)
+        except OSError as _exc:
+            if catch:
+                _LOGGER.error('FAILED TO DELETE %s', self)
+                return
+            raise _exc
 
     @functools.wraps(up_find.find, assigned=('__doc__', ))
     def find(self, class_=False, **kwargs):
@@ -143,12 +153,13 @@ class Dir(up_path.Path):
         return find_seqs(
             self, depth=depth, include_files=include_files, extn=extn)
 
-    def flush(self, force=False):
+    def flush(self, catch=False, force=False):
         """Flush the contents of this dir.
 
         Should leave an empty dir which exists.
 
         Args:
+            catch (bool): no error on fail to delete
             force (bool): remove contents without confirmation
         """
         from pini import qt, icons
@@ -157,7 +168,7 @@ class Dir(up_path.Path):
             qt.ok_cancel(
                 'Flush contents of directory?\n\n' + self.path,
                 icon=_icon, title='Flush')
-        self.delete(force=True)
+        self.delete(catch=catch, force=True)
         if not self.exists():
             self.mkdir()
 

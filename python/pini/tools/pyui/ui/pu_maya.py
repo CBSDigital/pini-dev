@@ -9,7 +9,8 @@ from maya import cmds
 
 from pini import icons, qt, refresh, testing
 from pini.tools import pyui
-from pini.utils import wrap_fn, copy_text, chain_fns, EMPTY
+from pini.utils import (
+    wrap_fn, copy_text, chain_fns, EMPTY, to_pascal, is_pascal)
 
 from maya_pini import ui
 
@@ -106,6 +107,7 @@ class PUMayaUi(pu_base.PUBaseUi):
 
         # Build row layout
         _row = self._add_arg_lyt(arg, height=self.arg_h)
+        self.elems[arg.py_def.name][arg.name].append(_row)
 
         # Add label
         cmds.text(arg.label, align='left', statusBarMessage=arg.docs)
@@ -157,6 +159,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         Returns:
             (str): row layout field
         """
+        _name = _arg_to_elem_name(arg, 'Lyt')
         _label_w = arg.label_w or self.label_w
         _col_width = [(1, _label_w), (2, 1000)]
         _n_cols = 2
@@ -169,7 +172,7 @@ class PUMayaUi(pu_base.PUBaseUi):
                 _col_width.append((_n_cols, height))
 
         return cmds.rowLayout(
-            numberOfColumns=_n_cols, columnWidth=_col_width,
+            _name, numberOfColumns=_n_cols, columnWidth=_col_width,
             width=100, adjustableColumn=2)
 
     def _add_arg_field(self, arg):
@@ -181,6 +184,8 @@ class PUMayaUi(pu_base.PUBaseUi):
         Returns:
             (tuple): read func, set func, field name
         """
+        _LOGGER.debug('   - ADD ARG FIELD %s', arg)
+        _name = _arg_to_elem_name(arg)
         _set_fn = None
         _default = arg.default
         if _default is None or _default is EMPTY:
@@ -198,27 +203,31 @@ class PUMayaUi(pu_base.PUBaseUi):
                 _select = _default
             else:
                 raise ValueError(arg.choices)
-            _LOGGER.debug(' - CHOICES %s %s', _select, _choices)
-            _opt_menu = ui.create_option_menu(options=_choices, select=_select)
+            _LOGGER.debug('     - CHOICES %s %s', _select, _choices)
+            _opt_menu = ui.create_option_menu(
+                options=_choices, select=_select, callback=arg.callback,
+                name=_name)
             _field = _opt_menu.field
             _read_fn = _opt_menu.get_val
         elif isinstance(_default, float):
-            _field = cmds.floatField(value=_default)
+            _field = cmds.floatField(_name, value=_default)
             _read_fn = wrap_fn(cmds.floatField, _field, query=True, value=True)
         elif isinstance(_default, bool):
-            _LOGGER.debug('   - CREATE CHECKBOX')
-            _field = cmds.checkBox(label='', value=_default)
+            _LOGGER.debug('     - CREATE CHECKBOX')
+            _field = cmds.checkBox(_name, label='', value=_default)
             _read_fn = wrap_fn(cmds.checkBox, _field, query=True, value=True)
         elif isinstance(_default, int):
-            _field = cmds.intField(value=_default)
+            _field = cmds.intField(_name, value=_default)
             _read_fn = wrap_fn(cmds.intField, _field, query=True, value=True)
         elif isinstance(_default, str) or _default is None:
-            _LOGGER.debug('   - CREATE TEXTFIELD')
-            _field = cmds.textField(text=_default)
+            _LOGGER.debug('     - CREATE TEXTFIELD')
+            _field = cmds.textField(_name, text=_default)
             _read_fn = wrap_fn(cmds.textField, _field, query=True, text=True)
         else:
             raise ValueError(_default)
+        _LOGGER.debug('     - FIELD %s', _field)
         _set_fn = _build_apply_fn(field=_field)
+        self.elems[arg.py_def.name][arg.name].append(_field)
 
         return _read_fn, _set_fn, _field
 
@@ -373,6 +382,52 @@ class PUMayaUi(pu_base.PUBaseUi):
         cmds.window(self.uid, edit=True, topLeftCorner=pos)
 
 
+def _apply_selection(field, type_):
+    """Apply get current selection.
+
+    Args:
+        field (str): field to apply to
+        type_ (str): apply node type filter
+    """
+    _LOGGER.info('APPLY SELECTION %s', type_)
+    _kwargs = {}
+    if type_:
+        _kwargs['type'] = type_
+    _sel = ' '.join(cmds.ls(selection=True, **_kwargs))
+    _LOGGER.info(' - SEL %s', _sel)
+    cmds.textField(field, edit=True, text=_sel)
+
+
+def _apply_update_opt_menu(mgr, field):
+    """Apply option menu update.
+
+    Args:
+        mgr (PUChoiceMgr): choice manager
+        field (str): field to update
+    """
+    _LOGGER.info('APPLY OPT MENU UPDATE %s %s', mgr.choices, mgr.default)
+    _menu = ui.OptionMenu(field)
+    _menu.set_opts(mgr.choices)
+    _menu.set_val(mgr.default)
+
+
+def _arg_to_elem_name(arg, suffix=None):
+    """Build an element name for the given arg.
+
+    Args:
+        arg (PUArg): arg being built
+        suffix (str): add suffix to name (eg. Lyt)
+
+    Returns:
+        (str): name for element
+    """
+    _tokens = [arg.py_def.py_file.base, arg.py_def.name, arg.name]
+    if suffix:
+        assert is_pascal(suffix)
+        _tokens += [suffix]
+    return '_'.join(to_pascal(_token) for _token in _tokens)
+
+
 def _build_apply_fn(field):
     """Build function which applies data to the given field.
 
@@ -402,32 +457,3 @@ def _build_apply_fn(field):
             _LOGGER.warning('FAILED TO APPLY VALUE %s %s', val, field)
 
     return _apply_val
-
-
-def _apply_selection(field, type_):
-    """Apply get current selection.
-
-    Args:
-        field (str): field to apply to
-        type_ (str): apply node type filter
-    """
-    _LOGGER.info('APPLY SELECTION %s', type_)
-    _kwargs = {}
-    if type_:
-        _kwargs['type'] = type_
-    _sel = ' '.join(cmds.ls(selection=True, **_kwargs))
-    _LOGGER.info(' - SEL %s', _sel)
-    cmds.textField(field, edit=True, text=_sel)
-
-
-def _apply_update_opt_menu(mgr, field):
-    """Apply option menu update.
-
-    Args:
-        mgr (PUChoiceMgr): choice manager
-        field (str): field to update
-    """
-    _LOGGER.info('APPLY OPT MENU UPDATE %s %s', mgr.choices, mgr.default)
-    _menu = ui.OptionMenu(field)
-    _menu.set_opts(mgr.choices)
-    _menu.set_val(mgr.default)

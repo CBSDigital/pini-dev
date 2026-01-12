@@ -4,6 +4,8 @@ import logging
 
 from maya import cmds
 
+from pini.utils import basic_repr
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -75,3 +77,6 @@ class OptionMenuGrp:
         self.func(self.field, edit=True, deleteAllItems=True)
         for _choice in options:
             cmds.menuItem(label=_choice, parent=self.field)
+
+    def __repr__(self):
+        return basic_repr(self, self.field)

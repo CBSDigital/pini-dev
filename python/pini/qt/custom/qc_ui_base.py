@@ -569,7 +569,7 @@ class CUiBase:
             try:
                 _action()
             except RuntimeError as _exc:
-                _LOGGER.info(' - ACTION %s ERRORED - %s', _label, _name)
+                _LOGGER.debug(' - ACTION %s ERRORED - %s', _label, _name)
 
         _LOGGER.debug(' - DELETE %s COMPLETE', self.name)
 

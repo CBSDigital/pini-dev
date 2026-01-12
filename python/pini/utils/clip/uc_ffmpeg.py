@@ -220,7 +220,8 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         seq, video, fps=None, audio=None, audio_offset=0.0,
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
         tune=None, speed=None, burnins=False, res=None, range_=None,
-        lut=None, check_for_bad_frames=True, result='file', verbose=0):
+        lut=None, check_for_bad_frames=True, result='file', safe=True,
+        verbose=0):
     """Build video file using ffmpeg.
 
     Args:
@@ -243,6 +244,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         lut (str): apply lut
         check_for_bad_frames (bool): check seq for bad frames
         result (str): value to return (file/cmds)
+        safe (bool): disable integrity checks
         verbose (int): print process data
 
     Returns:
@@ -251,9 +253,10 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
     from pini import dcc
     from pini.utils import Video
 
-    if check_for_bad_frames:
-        seq.check_for_bad_frames()
-    assert not seq.is_missing_frames()
+    if safe:
+        if check_for_bad_frames:
+            seq.check_for_bad_frames()
+        assert not seq.is_missing_frames()
 
     _video = Video(abs_path(to_str(video)))
     _ffmpeg = find_ffmpeg_exe()
