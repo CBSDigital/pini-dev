@@ -387,17 +387,19 @@ class Dir(up_path.Path):
         _path = self.to_file(rel_path).path
         return clip.Seq(_path, safe=safe)
 
-    def to_subdir(self, rel_path):
+    def to_subdir(self, rel_path, class_=None):
         """Get subdirectory of this dir.
 
         Args:
             rel_path (str): relative path to subdir from this dir
+            class_ (class): override subdir type
 
         Returns:
             (Dir): child subdir
         """
         _rel_path = up_path.Path(rel_path)
-        return Dir(self.path + '/' + _rel_path.path)
+        _class = class_ or Dir
+        return _class(self.path + '/' + _rel_path.path)
 
 
 def _get_desktop_path():

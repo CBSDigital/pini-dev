@@ -53,6 +53,15 @@ class TestSanityCheck(unittest.TestCase):
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', action='BasicPublish', catch=True)
 
+        # Check skin clusters check only applied under BasicPublish / rig
+        assert sanity_check.find_check(
+            filter_='skinclusters', action='BasicPublish', catch=True)
+        assert sanity_check.find_check(
+            filter_='skinclusters', action='BasicPublish', task='rig')
+        assert not sanity_check.find_check(
+            filter_='skinclusters', action='ModelPublish', task='model',
+            catch=True)
+
     def test_basic_checks_import(self):
 
         assert scc_maya.CheckCacheables

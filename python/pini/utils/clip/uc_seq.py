@@ -211,7 +211,9 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 for _frame in qt.progress_bar(
                         _frames, 'Checking {:d} frame{}', show=progress,
                         stack_key='CheckFrames'):
-                    if not File(self[_frame]).matches(target[_frame]):
+                    if (
+                            _frame not in target.frames or
+                            not File(self[_frame]).matches(target[_frame])):
                         break
                 else:
                     _LOGGER.info(' - ALL FRAMES MATCH')

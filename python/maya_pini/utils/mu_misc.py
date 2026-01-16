@@ -449,7 +449,7 @@ def to_shps(node, type_=None):
     return list(_result)
 
 
-def to_unique(base, suffix='', ignore=()):
+def to_unique(base, suffix='', ignore=(), start_idxs=None):
     """Find a unique node name.
 
         eg. persp -> persp1
@@ -459,6 +459,9 @@ def to_unique(base, suffix='', ignore=()):
         suffix (str): required suffix (eg. _GEO)
         ignore (tuple): treat these names as if they are existing nodes
             in the scene
+        start_idxs (dict): cache to store start indices in - if this func
+            is going to be called multiple times then it can be passed an
+            empty dict which will be updated
 
     Returns:
         (str): unique name
@@ -469,6 +472,9 @@ def to_unique(base, suffix='', ignore=()):
     _ns = cmds.namespaceInfo(currentNamespace=True)
 
     _idx = 0
+    if start_idxs is not None and _base in start_idxs:
+        _idx = start_idxs[base]
+
     while True:
         check_heart()
         _idx_str = str(_idx) if _idx else ''
@@ -476,5 +482,7 @@ def to_unique(base, suffix='', ignore=()):
         _idx += 1
         if _suggestion in ignore:
             continue
-        if not cmds.objExists(_ns + ':' + _suggestion):
+        if not cmds.objExists(f'{_ns}:{_suggestion}'):
+            if start_idxs is not None:
+                start_idxs[_base] = _idx
             return _suggestion

@@ -621,14 +621,21 @@ def to_rect(  # pylint: disable=too-many-branches,too-many-statements,unused-arg
     _LOGGER.debug('TO RECT')
     from pini import qt
 
-    # Handle args
     _args = args
     _LOGGER.debug(' - ARGS (A) %s', _args)
-    if len(_args) == 1 and isinstance(_args, (tuple, list)):
+
+    # Allow single arg as 4-tuple
+    if len(_args) == 1 and isinstance(_args[0], (tuple, list)):
         _args = single(_args)
         _LOGGER.debug(' - ARGS (B) %s', _args)
+    assert isinstance(_args, (tuple, list))
+
+    # Allow args to override kwargs
     if not _args:
         _pos = pos
+        _size = size
+    elif len(_args) == 1:
+        _pos = single(_args)
         _size = size
     elif len(_args) == 2:
         _pos, _size = _args

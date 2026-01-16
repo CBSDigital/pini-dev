@@ -86,6 +86,20 @@ def basic_repr(obj, label, show_nice_id=None, separator=':'):
     return _str
 
 
+def clamp(val, min_, max_):
+    """Clamp a value to within a range.
+
+    Args:
+        val (float): value to clamp
+        min_ (float): minimum value
+        max_ (float): maximum value
+
+    Returns:
+        (float): clamped value
+    """
+    return min(max(val, min_), max_)
+
+
 def dprint(*args, **kwargs):
     """Print the given data with a clock prefix."""
     if not kwargs.get('verbose', True):

@@ -87,12 +87,14 @@ def find_checks(  # pylint: disable=too-many-branches
 
         _LOGGER.debug(' - CHECKING %s', _check)
 
-        _settings = _sc_settings.get(_check.name, {})
-
         # Check enabled
+        if not _check.enabled:
+            _LOGGER.debug('   - CHECK DISBLED IN CODE')
+            continue
+        _settings = _sc_settings.get(_check.name, {})
         _enabled = _settings.get('enabled', _check.enabled)
         if not _enabled:
-            _LOGGER.debug('   - CHECK NOT ENABLED')
+            _LOGGER.debug('   - CHECK DISBLED IN SETTINGS')
             continue
 
         # Apply dcc filter

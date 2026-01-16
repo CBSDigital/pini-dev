@@ -12,7 +12,7 @@ from pini.tools import job_manager
 from pini.utils import basic_repr, is_pascal
 
 from .i_tool import PITool, PIDivider
-from . import i_tools, i_tool
+from . import i_tool_defs, i_tool
 
 ICON = icons.find('White Circle')
 
@@ -89,7 +89,7 @@ class PIInstaller(object):
             _items += [_manager]
 
         # Add SanityCheck
-        _items += [i_tools.SANITY_CHECK]
+        _items += [i_tool_defs.SANITY_CHECK]
 
         # Add dcc/site items
         _dcc_items = self._gather_dcc_items()
@@ -113,13 +113,13 @@ class PIInstaller(object):
         """
         if not self.allows_context:
             items += [
-                i_tools.PINI_HELPER_TOOL,
-                i_tools.VERSION_UP_TOOL,
-                i_tools.LOAD_RECENT_TOOL,
+                i_tool_defs.PINI_HELPER_TOOL,
+                i_tool_defs.VERSION_UP_TOOL,
+                i_tool_defs.LOAD_RECENT_TOOL,
                 PIDivider('DividerA'),
             ]
         else:
-            items += [i_tools.PINI_HELPER_TOOL]
+            items += [i_tool_defs.PINI_HELPER_TOOL]
 
     def _gather_dcc_items(self):
         """Add dcc-specfic items (to be implemented in sub-class)."""
@@ -145,14 +145,14 @@ class PIInstaller(object):
         _LOGGER.debug('GATHER RELOAD TOOLS')
         _div = PIDivider('ReloadDivider')
         if self.style == 'menu':
-            _items += [_div, i_tools.RELOAD_TOOL]
+            _items += [_div, i_tool_defs.RELOAD_TOOL]
         elif self.style == 'shelf':
-            _to_add = [i_tools.RELOAD_TOOL]
+            _to_add = [i_tool_defs.RELOAD_TOOL]
             if self.dividers:
                 _to_add += [_div]
             _items = _to_add + _items
 
-        return i_tools.RELOAD_TOOL, _items
+        return i_tool_defs.RELOAD_TOOL, _items
 
     def _build_item(self, item, parent=None):
         """Build the given tool/divider.

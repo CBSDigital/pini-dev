@@ -115,8 +115,9 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (CMesh): updated mesh object
         """
+        _LOGGER.debug('RENAME %s -> %s', self, name)
         _new = super().rename(name)
-        _new.shp.rename(name + 'Shape')
+        _new.shp.rename(f'{name}Shape')
         return CMesh(_new)
 
     def p_to_uv(self, point):

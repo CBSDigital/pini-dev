@@ -1,15 +1,19 @@
 """Tools for managing the sanity check dialog class."""
 
 import logging
+import time
 
 from pini import qt, dcc, icons, pipe
 from pini.tools import error
-from pini.utils import File, plural, single, check_heart
+from pini.utils import File, plural, single, check_heart, wrap_fn, copy_text
 
 from . import scui_fail, scui_check
+from .. import core
 
 _LOGGER = logging.getLogger(__name__)
 _DIR = File(__file__).to_dir()
+_LAST_REFRESH = 0
+
 ICON = icons.find("Health Worker: Medium-Dark Skin Tone")
 UI_FILE = _DIR.to_file('sanity_check.ui')
 
@@ -111,7 +115,7 @@ class SanityCheckUi(qt.CUiDialog):
             _check.reset()
         self.ui.Checks.redraw()
 
-    def _update_ui(self, check=None):
+    def _update_ui(self, check=None, lazy=False):
         """Update the ui.
 
         This method is passed to checks to allow them to provide progress
@@ -119,9 +123,18 @@ class SanityCheckUi(qt.CUiDialog):
 
         Args:
             check (SCCheck): force check to update
+            lazy (bool): only update ui no more than once per second
         """
         _LOGGER.log(9, 'UPDATE UI')
-        dcc.refresh()
+        global _LAST_REFRESH
+        check_heart()
+
+        # Update ui once per second
+        if lazy:
+            _t_since_refresh = time.time() - _LAST_REFRESH
+            _LOGGER.log(9, ' - T SINCE REFRESH %.01fs', _t_since_refresh)
+            if _t_since_refresh < 1:
+                return
 
         if check:
             _check_ui = single([
@@ -136,6 +149,7 @@ class SanityCheckUi(qt.CUiDialog):
 
         self.ui.Log.redraw()
         dcc.refresh()
+        _LAST_REFRESH = time.time()
 
     def _build_results(self):
         """Build results dict.
@@ -256,12 +270,20 @@ class SanityCheckUi(qt.CUiDialog):
 
     def _redraw__Fails(self):
         _LOGGER.debug('REDRAW Fails')
-
-        # Check fails
         _fails = self.check.fails if self.check else []
         _LOGGER.debug(' - FOUND %d FAILS', len(_fails))
+
+        # Check for too many to display
         if len(_fails) > 500:
-            raise RuntimeError(f'Too many fails {len(_fails):d}')
+            _n_fixes = len([_fail for _fail in _fails if _fail.fix])
+            _msg = f'Too many fails to display ({len(_fails):d}) in ui.'
+            if _n_fixes:
+                _fix = wrap_fn(self._batch_apply_fixes, fails=_fails)
+                _msg += f' Running fix will apply {_n_fixes:d} fixes.'
+            else:
+                _fix = None
+            _combined_fail = core.SCFail(_msg, fix=_fix)
+            _fails = [_combined_fail]
 
         # Build fails
         _fixes = 0
@@ -410,3 +432,24 @@ class SanityCheckUi(qt.CUiDialog):
         if _check:
             menu.add_action(
                 'Edit check code', _check.edit, icon=icons.EDIT)
+
+    def _context__Fails(self, menu):
+        _fail = self.ui.Fails.selected_data()
+        if _fail:
+            menu.add_action(
+                'Copy fail text', wrap_fn(copy_text, _fail.msg),
+                icon=icons.COPY)
+
+    def _batch_apply_fixes(self, fails):
+        """Batch apply fixes.
+
+        Args:
+            fails (SCFail list): fails to apply fixes from
+        """
+        _LOGGER.info('BATCH APPLY FIXES')
+        for _fail in qt.progress_bar(
+                fails, 'Applying {:d} fixes', parent=self):
+            if not _fail.fix:
+                continue
+            _LOGGER.info(' - APPLY FIX %s', _fail.fix)
+            _fail.fix()

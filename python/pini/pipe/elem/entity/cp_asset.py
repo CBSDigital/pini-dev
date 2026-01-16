@@ -8,7 +8,7 @@ import platform
 import lucidity
 
 from pini import icons, dcc
-from pini.utils import abs_path, assert_eq
+from pini.utils import abs_path
 
 from . import cp_ety
 
@@ -41,8 +41,12 @@ class CPAsset(cp_ety.CPEntity):
             self.job = job
         else:
             _job = pipe.CPJob(_path)
-            self.job = pipe.ROOT.obt_job(_job.name)
-            assert_eq(self.job, _job)
+            self.job = pipe.ROOT.obt_job(name=_job.name)
+            if self.job != _job:
+                _LOGGER.error(' - PATH %s', _path)
+                _LOGGER.error(' - JOB %s', _job)
+                _LOGGER.error(' - CACHED JOB %s', self.job)
+                raise RuntimeError
             if not _path.startswith(_job.path):
                 if (
                         platform.system() == 'Windows' and

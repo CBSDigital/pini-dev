@@ -5,10 +5,10 @@ import logging
 
 from maya import cmds
 
-from pini.utils import single, wrap_fn
+from pini.utils import wrap_fn
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import to_shps, to_clean
+from maya_pini.utils import to_shps
 
 from . import sc_check
 
@@ -64,6 +64,7 @@ class SCMayaCheck(sc_check.SCCheck):
             fail (str): override fail message
             elem (str): element arg (if required)
         """
+        _LOGGER.debug('CHECK PREF %s', func)
         _args = []
         if elem:
             _args = [elem]
@@ -76,6 +77,10 @@ class SCMayaCheck(sc_check.SCCheck):
         self.write_log(
             f'check "{func.__name__}|{flag}" set to "{val}" '
             f'(current val "{_cur_val}"')
+        _LOGGER.debug(' - CUR VAL "%s" (%s)', _cur_val, type(_cur_val).__name__)
+        _LOGGER.debug(' - REQ VAL "%s" (%s)', val, type(val).__name__)
+        _LOGGER.debug(' - MISMATCH %d', _cur_val != val)
+        assert type(_cur_val) is type(val)
 
         if _cur_val != val:
             _fail = fail or (
@@ -84,6 +89,7 @@ class SCMayaCheck(sc_check.SCCheck):
             _kwargs[flag] = val
             _fix = wrap_fn(func, *_args, edit=True, **_kwargs)
             self.add_fail(_fail, fix=_fix)
+            _LOGGER.debug(' - ADDED FAIL %s', _fail)
 
     def check_shp(self, node):
         """Check node shapes.
@@ -92,46 +98,55 @@ class SCMayaCheck(sc_check.SCCheck):
         transform.
 
         Args:
-            node (str): node to check
+            node (CTransform): node to check
         """
         _LOGGER.debug('CHECK SHP %s', node)
-        _shps = to_shps(str(node))
-        if not _shps:
-            return
+        assert isinstance(node, (pom.CTransform, pom.CMesh))
 
-        # Handle multiple shapes
-        if len(_shps) > 1:
-            _shps_s = '/'.join(_shps)
-            _msg = f'Node "{node}" has multiple shapes ({_shps_s})'
-            self.add_fail(_msg, node=node)
-            return
+        # Apply multiple shape checks - NOT: this is on CMesh init so check
+        # is not required for mesh nodes
+        if not isinstance(node, pom.CMesh):
 
-        _shp = single(_shps)
-        if _shp in self._checked_shps:
+            # Ignore group nodes
+            _shps = to_shps(str(node))
+            if not _shps:
+                return
+
+            # Handle multiple shapes
+            if len(_shps) > 1:
+                _shps_s = '/'.join(_shps)
+                _msg = f'Node "{node}" has multiple shapes ({_shps_s})'
+                self.add_fail(_msg, node=node)
+                return
+
+            raise NotImplementedError
+
+        # Avoid checking shapes multiple times
+        assert node.shp
+        if node.shp in self._checked_shps:
             return
-        self._checked_shps.add(_shp)
+        self._checked_shps.add(node.shp)
 
         # Check shape name
-        _cur_shp = to_clean(_shp)
-        _correct_shp = to_clean(node) + 'Shape'
+        _cur_shp = node.shp.to_clean()
+        _correct_shp = f'{node.to_clean()}Shape'
         if _cur_shp != _correct_shp:
 
-            _shp_n = pom.CNode(_shp)
-            _LOGGER.debug(' - SHP NODE %s', _shp_n)
+            _LOGGER.debug(' - SHP NODE %s', node.shp)
 
             # Ignore instanced shapes
-            if _shp_n.is_instanced():
+            if node.shp.is_instanced():
                 self.write_log(' - ignoring instanced shape %s', _cur_shp)
                 return
 
             # Add fail
-            if _shp_n.is_referenced():
+            if node.shp.is_referenced():
                 _fix = None
             else:
-                _fix = wrap_fn(_fix_bad_shape, _shp, _correct_shp)
+                _fix = wrap_fn(_fix_bad_shape, node.shp, _correct_shp)
             _msg = (
-                f'Node "{node}" has badly named shape node "{_shp}" (should '
-                f'be "{_correct_shp}")')
+                f'Node "{node}" has badly named shape node "{node.shp}" '
+                f'(should be "{_correct_shp}")')
             _LOGGER.debug(' - ADDING FAIL %s', _msg)
             self.add_fail(_msg, fix=_fix, node=node)
 

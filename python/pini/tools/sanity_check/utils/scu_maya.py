@@ -27,14 +27,15 @@ def check_cacheable_set(set_, check):
         check (SCCheck): check to apply fails to
     """
     check.tfms = m_pipe.read_cache_set(set_=set_, mode='tfm')
-    for _func in [
-            _batch_check_for_basic_dup_names,
-            _batch_check_for_cleaned_dup_names,
-            _check_for_overlapping_nodes,
-            _check_for_duplicate_names,
-            _check_geo_shapes,
-            _check_for_mutiple_top_nodes,
-    ]:
+    _funcs = [
+        _batch_check_for_basic_dup_names,
+        _batch_check_for_cleaned_dup_names,
+        _check_for_overlapping_nodes,
+        _check_for_duplicate_names,
+        _check_geo_shapes,
+        _check_for_mutiple_top_nodes,
+    ]
+    for _func in check.update_progress(_funcs):
         _func(set_=set_, check=check)
         if check.fails:
             return
@@ -197,7 +198,7 @@ def _check_geo_shapes(set_, check):
     check.write_log('Checking shapes %s', set_)
     _geos = m_pipe.read_cache_set(set_=set_, mode='geo')
     for _geo in _geos:
-        check.write_log(' - geo %s', _geo)
+        check.write_log(' - geo %s %s', _geo, type(_geo))
         check.check_shp(_geo)
 
 
@@ -337,7 +338,8 @@ def find_top_level_nodes():
     return pom.find_nodes(top_node=True, default=False, filter_='-JUNK')
 
 
-def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
+def fix_node_suffix(
+        node, suffix, type_, alts=(), ignore=(), base=None, start_idxs=None):
     """Provide fix for node suffix fail.
 
     Args:
@@ -347,6 +349,7 @@ def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
         alts (tuple): possible altertives values to strip (eg. _Geo, _geo)
         ignore (tuple): suggestions to ignore
         base (str): apply name base/prefix
+        start_idxs (dict): start index cache for to_unique func
 
     Returns:
         (str, fn, str): fail message, fix, name suggestion
@@ -378,7 +381,8 @@ def fix_node_suffix(node, suffix, type_, alts=(), ignore=(), base=None):
     _LOGGER.debug(' - BASE %s', _base)
 
     # Build suggestion
-    _suggestion = to_unique(base=_base, suffix=suffix, ignore=ignore)
+    _suggestion = to_unique(
+        base=_base, suffix=suffix, ignore=ignore, start_idxs=start_idxs)
     _LOGGER.debug(' - SUGGESTION %s', _suggestion)
     _msg = (
         f'{type_.capitalize()} "{node}" does not have "{suffix}" suffix '
@@ -477,13 +481,14 @@ def is_display_points(node):
     return _node.shp.object_type() == 'displayPoints'
 
 
-def read_cache_set_geo(filter_=None, apply_pub_refs_mode=False):
+def read_cache_set_geo(set_=None, filter_=None, apply_pub_refs_mode=False):
     """Read cache_SET contents.
 
     Based on publish references mode, this can contain different values,
     namely whether to include referenced nodes.
 
     Args:
+        set_ (str): override set name
         filter_ (str): apply filter to list
         apply_pub_refs_mode (bool): apply publish references mode filtering
             (ie. if publish references is set to remove then ignore
@@ -492,7 +497,7 @@ def read_cache_set_geo(filter_=None, apply_pub_refs_mode=False):
     Returns:
         (CBaseTransform list): cache set nodes
     """
-    _set = m_pipe.find_cache_set()
+    _set = set_ or m_pipe.find_cache_set()
     _include_referenced = True
     if apply_pub_refs_mode:
         _refs_mode = export.get_pub_refs_mode()

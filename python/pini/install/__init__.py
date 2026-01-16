@@ -7,8 +7,9 @@ from pini import dcc
 
 from .i_utils import setup
 from .i_installer import PIInstaller, PITool, PIDivider
-from .i_tools import (
+from .i_tool_defs import (
     RELOAD_TOOL, PINI_HELPER_TOOL, LOAD_RECENT_TOOL, VERSION_UP_TOOL)
+from .i_tools import read_env
 
 INSTALLER = None
 

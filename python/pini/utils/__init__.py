@@ -25,7 +25,7 @@ from .u_misc import (
     val_map, safe_zip, get_user, last, ints_to_str, basic_repr, nice_id,
     to_list, fr_enumerate, fr_range, EMPTY, SimpleNamespace, nice_size,
     merge_dicts, null_dec, to_str, read_func_kwargs, check_logging_level,
-    first)
+    first, clamp)
 
 from .u_mel_file import MelFile
 from .u_ma_file import MaFile

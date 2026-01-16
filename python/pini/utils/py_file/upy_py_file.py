@@ -31,6 +31,15 @@ class PyFile(File, PyElem):
             raise ValueError(f'Bad extn: {self.path}')
 
     @property
+    def name(self):
+        """Obtain name of this element.
+
+        Returns:
+            (str): element name
+        """
+        return File(self.path).filename
+
+    @property
     def py_file(self):
         """Obtain associated python file (ie. this file).
 

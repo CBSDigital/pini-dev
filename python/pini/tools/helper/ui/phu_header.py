@@ -109,7 +109,7 @@ class PHHeader:
         # Determine default selection
         _sel = None
         if self.target:
-            _trg_ety = pipe.to_entity(self.target)
+            _trg_ety = pipe.to_entity(self.target, catch=True)
             if (  # No need to jump to asset outputs
                     isinstance(self.target, pipe.CPOutputBase) and
                     self.target.profile == 'asset'):
@@ -205,7 +205,7 @@ class PHHeader:
         # Apply target profile
         _trg_ety = None
         if self.target:
-            _trg_ety = pipe.to_entity(self.target)
+            _trg_ety = pipe.to_entity(self.target, catch=True)
             if (  # No need to jump to asset outputs
                     isinstance(self.target, pipe.CPOutputBase) and
                     self.target.profile == 'asset'):

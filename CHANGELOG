@@ -1,3 +1,35 @@
+## [8.41.0] - Fri 2026-01-16 07:22
+### Summary
+ - Pini Helper:
+    - bugfix error on load scene with invalid asset path in textures (skay),
+ - Sanity Check:
+    - combine fails into single fix for checks with more than 500 fails,
+    - limit ui update to once per second,
+    - check model naming optimised for large scenes,
+    - check for ngons optimised for large scenes,
+    - fix unnecessary skin clusters only run on rig publish,
+### Updated
+ - pini.utils.clamp added,
+ - pini.utils.Dir.to_subdir added class_ arg,
+ - pini.utils.PyFile.name added to fix error on __repr__,
+ - pini.utils.Seq.copy_to bugfix error on existing with different range,
+ - pini.pipe.CPAsset bugfix error init with missing job,
+ - pini.pipe.CPRoot.find_job added name arg,
+ - pini.pipe.CPRoot.obt_job replaced arg match -> name,
+ - pini.qt.to_rect bugfix error on init with single QPoint arg,
+ - pini.install.read_env added,
+ - pini.tools.sanity_check.SCCheck added dur to log on complete,
+ - pini.tools.sanity_check.SCCheck.write_log added lazy arg to avoid over-logging,
+ - pini.tools.sanity_check.find_check bugfix SCCheck.enabled not being applied,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp avoid unnecessary shape checks,
+ - pini.tools.sanity_check.fix_node_suffix added cache,
+ - pini.tools.sanity_check CheckGeoNaming/CheckForNgons optimised for large scene,
+ - pini.tools.sanity_check.FindUnneccessarySkinClusters only run on rig publish,
+ - maya_pini.utils.to_unique added start_idx cache,
+ - maya_pini.open_maya.CReference.find_skeleton bugfix not favouring skel in root ns,
+ - hou_pini.h_pipe.import_abc allow override apply scale fix via $PINI_HOU_APPLY_SCALE_FIX,
+
+
 ## [8.40.0] - Mon 2026-01-12 08:28
 ### Summary
  - Pini Helper:

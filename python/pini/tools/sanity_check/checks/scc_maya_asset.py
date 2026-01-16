@@ -8,7 +8,7 @@ from maya import cmds, mel
 from pini import pipe, dcc
 from pini.dcc import export
 from pini.tools import error
-from pini.utils import single, wrap_fn, plural
+from pini.utils import single, wrap_fn, plural, check_heart
 
 from maya_pini import ref, open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
@@ -490,47 +490,31 @@ class CheckGeoNaming(core.SCMayaCheck):
     # Should happen late as renames geo
     sort = 90
 
-    def run(self):
-        """Run this check."""
-        _geos = utils.read_cache_set_geo()
+    def run(self, set_=None, limit=None):
+        """Run this check.
+
+        Args:
+            set_ (str): override cache set name
+            limit (int): limit the number of geos (for debugging)
+        """
+        _geos = utils.read_cache_set_geo(set_=set_)
+        if limit:
+            _geos = _geos[:limit]
         self.write_log('geos %s', _geos)
         self._ignore_names = []
-        for _geo in _geos:
+        self._start_idxs = {}
+        for _geo in self.update_progress(_geos):
             self._check_geo(_geo)
 
     def _check_geo(self, geo):
         """Apply check to the given geo.
 
         Args:
-            geo (str): transform of mesh to check
+            geo (CMesh): mesh to check
         """
-        self.write_log(' - checking geo %s ref=%d', geo, geo.is_referenced())
-
-        # Check shapes
-        _geo_ss = cmds.listRelatives(
-            geo, shapes=True, noIntermediate=True, path=True) or []
-        if len(_geo_ss) > 1:
-            _msg = f'Geo "{geo}" has muliple shapes: {_geo_ss}'
-            self.add_fail(_msg, node=geo)
-            return
-        _geo_s = single(_geo_ss, catch=True)
-        if not _geo_s:
-            _grp = geo
-            _type = cmds.objectType(_grp)
-            if _type.endswith('Constraint'):
-                return
-            if (
-                    not _grp.endswith('_GRP') and
-                    to_clean(_grp) not in ['GEO', 'RIG', 'MDL', 'LYT']):
-                _msg, _fix, _suggestion = utils.fix_node_suffix(
-                    node=_grp, suffix='_GRP',
-                    alts=['_Grp', '_gr'], type_='group',
-                    ignore=self._ignore_names)
-                self._ignore_names.append(_suggestion)
-                self.add_fail(_msg, node=geo, fix=_fix)
-            return
-        _geo_s = single(_geo_ss)
-        self.write_log('   - shape %s', _geo_s)
+        assert isinstance(geo, pom.CMesh)
+        self.write_log(
+            ' - checking geo %s ref=%d', geo, geo.is_referenced(), lazy=True)
 
         # Check for namespace
         _refs_mode = export.get_pub_refs_mode()
@@ -538,7 +522,7 @@ class CheckGeoNaming(core.SCMayaCheck):
         if geo.namespace and _refs_mode not in (
                 export.PubRefsMode.IMPORT_TO_ROOT,
                 export.PubRefsMode.IMPORT_USING_UNDERSCORES):
-            _clean_name = to_clean(geo)
+            _clean_name = geo.to_clean()
             if geo.is_referenced():
                 _fix = None
             else:
@@ -550,11 +534,12 @@ class CheckGeoNaming(core.SCMayaCheck):
         # Check geo name
         _name = to_clean(geo)
         _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
-        if not (_name.endswith('_' + _geo_suffix) or _name == _geo_suffix):
+        if not (_name.endswith(f'_{_geo_suffix}') or _name == _geo_suffix):
             _msg, _fix, _suggestion = utils.fix_node_suffix(
                 node=geo, suffix='_' + _geo_suffix,
                 alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
-                ignore=self._ignore_names)
+                ignore=self._ignore_names, start_idxs=self._start_idxs)
+            # _LOGGER.info(' - START IDXS %s', self._start_idxs)
             self._ignore_names.append(_suggestion)
             self.add_fail(_msg, node=geo, fix=_fix)
             return
@@ -586,16 +571,40 @@ class CheckForNgons(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
+        self._check_count = 0
         for _geo in self.update_progress(m_pipe.read_cache_set()):
-            cmds.select(_geo)
-            mel.eval(
-                'polyCleanupArgList 4 { '
-                '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
-                '    "1e-05","0","1e-05","0","-1","0","0" }')
-            if cmds.ls(selection=True):
-                _msg = f'Mesh "{_geo}" contains ngons'
-                self.add_fail(
-                    _msg, node=_geo, fix=wrap_fn(self.fix_ngons, _geo))
+            self._check_geo(_geo)
+
+    def _check_geo(self, geo):
+        """Check the given geo for ngons.
+
+        Args:
+            geo (CMesh): mesh to check
+        """
+        assert isinstance(geo, pom.CMesh)
+        self._check_count += 1
+
+        # Check for mesh marked in scene data as check passed
+        _uid = geo.n_vtxs, geo.n_edges, geo.n_faces
+        _key = f'SanityCheck.CheckForNgons.{geo}.Passed'
+        _data = dcc.get_scene_data(_key)
+        if _data == _uid:
+            if self._check_count < 100:
+                self.write_log('geo marked as passed check %s', geo)
+            return
+
+        # Apply ngons check (slow)
+        cmds.select(geo)
+        mel.eval(
+            'polyCleanupArgList 4 { '
+            '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
+            '    "1e-05","0","1e-05","0","-1","0","0" }')
+        if cmds.ls(selection=True):
+            _msg = f'Mesh "{geo}" contains ngons'
+            self.add_fail(
+                _msg, node=geo, fix=wrap_fn(self.fix_ngons, geo))
+        else:
+            dcc.set_scene_data(_key, _uid)
 
     def fix_ngons(self, geo):
         """Fix ngons in the given mesh.
@@ -623,7 +632,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
     """
 
     task_filter = 'rig'
-    action_filter = 'publish'
+    action_filter = 'BasicPublish'
     depends_on = (CheckCacheSet, )
 
     def run(self):
@@ -636,6 +645,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
         for _geo in self.update_progress(_geos):
 
             self.write_log('Checking %s', _geo)
+            check_heart()
 
             # Ignore nodes with blendShape
             _hist = cmds.listHistory(

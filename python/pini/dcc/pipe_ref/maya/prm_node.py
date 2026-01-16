@@ -161,7 +161,9 @@ class CMayaFileRef(_CMayaNodeRef):
             file_ (CNode): file node
         """
         _LOGGER.debug('INIT CMayaFileRef %s', file_)
-        self.ref = ref.AttrRef(str(file_.plug['fileTextureName']))
+        _file = file_.plug['fileTextureName']
+        _LOGGER.debug(' - FILE %s', _file)
+        self.ref = ref.AttrRef(str(_file))
         _LOGGER.debug(' - PATH %s', self.ref.path)
         super().__init__(
             node=file_, path=self.ref.path, namespace=str(file_),

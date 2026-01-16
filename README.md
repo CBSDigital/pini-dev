@@ -31,3 +31,9 @@ Nuke install:
 Hou install:
 
  - Add $PINI/startup/hou to $HOUDINI_PATH (eg. $PINI/startup/hou;&)
+
+
+
+Environment Variables:
+
+ - PINI_HOU_APPLY_SCALE_FIX - set to 0 to disable 0.01 abc scaling in houdini

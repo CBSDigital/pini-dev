@@ -224,14 +224,20 @@ class CReference(om.MFnReference, ref.FileRef):
             (CSkeleton|None): skeleton (if any)
         """
         from maya_pini import open_maya as pom
-        _jnts = sorted(self.find_nodes(type_='joint', full_path=True))
-        if not _jnts:
-            if catch:
-                return None
-            raise ValueError(self)
-        assert str(_jnts[0]).count('|') != str(_jnts[1]).count('|')
-        _root = str(_jnts[0]).rsplit('|', 1)[-1]
-        return pom.CSkeleton(_root)
+
+        _skels = [
+            _skel for _skel in pom.find_skeletons()
+            if _skel.namespace.startswith(self.namespace)]
+        _LOGGER.debug(' - FOUND %d SKELS %s', len(_skels), _skels)
+
+        _ns_matches = [
+            _skel for _skel in _skels if _skel.namespace == self.namespace]
+        if len(_ns_matches) == 1:
+            return single(_ns_matches)
+
+        if catch:
+            return None
+        raise ValueError(_skels)
 
     def find_top_nodes(self):
         """Find top nodes of this reference.

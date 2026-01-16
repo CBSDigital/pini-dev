@@ -25,7 +25,7 @@ def build_metadata(
         range_ (tuple): override range start/end
         notes (str): export notes
         task (str): task to pass to sanity check
-        src (str): path to source file
+        src (str): path to source work file
         bkp (str): path to bkp file for this export (ie. timestamped copy
             of scene file)
         content_type (str): apply content type data (eg. ShadersMa/VrmeshMa)

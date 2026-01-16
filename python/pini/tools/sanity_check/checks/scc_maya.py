@@ -9,7 +9,8 @@ from maya import cmds
 
 from pini import qt, dcc, pipe
 from pini.utils import (
-    single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir, chain_fns)
+    single, wrap_fn, nice_size, cache_result, Path, abs_path, Dir, chain_fns,
+    to_str)
 
 from maya_pini import ref, open_maya as pom, m_pipe, ui
 from maya_pini.utils import DEFAULT_NODES, to_clean, cur_renderer
@@ -581,7 +582,7 @@ class CheckViewport(core.SCMayaCheck):
 class CheckColorManagement(core.SCMayaCheck):
     """Check color management options are applied."""
 
-    enabled = False
+    enabled = False  # Disabled by default, can be enabled in settings
 
     def run(self):
         """Run this check."""
@@ -592,7 +593,7 @@ class CheckColorManagement(core.SCMayaCheck):
         self.write_log('job %s', self.job)
         if not self.job:
             return
-        _ocio = self.job.settings.get('ocio') or _find_default_ocio()
+        _ocio = to_str(self.job.settings.get('ocio') or _find_default_ocio())
         self.write_log('ocio %s', _ocio)
         if not _ocio:
             self.write_log('ocio not found in job settings')

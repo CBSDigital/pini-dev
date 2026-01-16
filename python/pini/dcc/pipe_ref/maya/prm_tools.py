@@ -50,13 +50,20 @@ def find_pipe_refs(filter_=None, selected=False, extn=None):
     Returns:
         (CMayaPipeRef list): pipelined references
     """
+    _LOGGER.debug('FIND PIPE REFS')
+
     _refs = []
     _refs += prm_ref.find_reference_pipe_refs(selected=selected)
+    _LOGGER.debug(' - ADDED REFERENCES %d', len(_refs))
 
     _refs += prm_node.find_ai_standins(selected=selected)
+    _LOGGER.debug(' - ADDED AI STANDINS %d', len(_refs))
     _refs += prm_node.find_ai_vols(selected=selected)
+    _LOGGER.debug(' - ADDED AI VOLS %d', len(_refs))
     _refs += prm_node.find_file_nodes(selected=selected)
+    _LOGGER.debug(' - ADDED FILE NODES %d', len(_refs))
     _refs += prm_node.find_img_planes(selected=selected)
+    _LOGGER.debug(' - ADDED IMG PLANES %d', len(_refs))
     _refs += prm_node.find_rs_dome_lights(selected=selected)
     _refs += prm_node.find_rs_pxys(selected=selected)
     _refs += prm_node.find_rs_volumes(selected=selected)

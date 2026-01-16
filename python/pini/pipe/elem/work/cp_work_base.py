@@ -95,7 +95,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
                 raise ValueError('Lucidity rejected ' + self.path) from _exc
         else:
             try:
-                self.data, self.template = lucidity.parse(self.path, _tmpls)
+                _data, self.template = lucidity.parse(self.path, _tmpls)
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - EXC %s', _exc)
                 raise ValueError('Lucidity rejected ' + self.path) from _exc

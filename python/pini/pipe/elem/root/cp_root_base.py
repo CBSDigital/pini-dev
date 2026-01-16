@@ -14,11 +14,12 @@ class CPRootBase(Dir):
 
     _JOBS_CACHE = {}
 
-    def find_job(self, match=None, catch=False, **kwargs):
+    def find_job(self, match=None, name=None, catch=False, **kwargs):
         """Find a matching job in the cache.
 
         Args:
-            match (str): match by name/path
+            match (str): match by name/path/filter
+            name (str): match by exact name
             catch (bool): no error if no job found
 
         Returns:
@@ -30,6 +31,10 @@ class CPRootBase(Dir):
 
         if len(_jobs) == 1:
             return single(_jobs)
+
+        _name_matches = [_job for _job in _jobs if _job.name == name]
+        if len(_name_matches):
+            return single(_name_matches)
 
         # Try name/path match
         _match_jobs = [_job for _job in _jobs if match in (_job.name, _job)]
@@ -109,21 +114,21 @@ class CPRootBase(Dir):
         """
         raise NotImplementedError
 
-    def obt_job(self, match):
+    def obt_job(self, name):
         """Factory to obtain job object.
 
         Once the first instance of a job is created, this object is
         always returned.
 
         Args:
-            match (str): name of job to obtain object for
+            name (str): name of job to obtain object for
 
         Returns:
             (CPJob): job object
         """
-        _LOGGER.debug('OBT JOB %s', match)
-        _job = self._JOBS_CACHE.get(match)
+        _LOGGER.debug('OBT JOB %s', name)
+        _job = self._JOBS_CACHE.get(name)
         if not _job:
-            _job = self.find_job(match)
-            self._JOBS_CACHE[match] = _job
+            _job = self.find_job(name=name)
+            self._JOBS_CACHE[name] = _job
         return _job

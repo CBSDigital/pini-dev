@@ -38,6 +38,8 @@ class SCCheck:
 
     def __init__(self):
         """Constructor."""
+        self._log_writes = 0
+        self._log_flagged_lazy = False
         self.disable_key = f'Pini.SanityCheck.{type(self).__name__}.Disable'
         self.reset()
 
@@ -181,6 +183,7 @@ class SCCheck:
                 progress feedback
         """
         _LOGGER.debug('EXECUTE %s update_ui=%s', self, update_ui)
+        _start = time.time()
 
         # Init vars
         self.reset()
@@ -207,7 +210,9 @@ class SCCheck:
             self.status = 'failed' if self.fails else 'passed'
 
         # Mark completed
-        self.write_log('Completed check - status=%s', self.status)
+        _dur = time.time() - _start
+        self.write_log(
+            'Completed check - status=%s dur=%s', self.status, nice_age(_dur))
         self.set_progress(100.0)
 
     def update_progress(self, data):
@@ -304,12 +309,13 @@ class SCCheck:
         Args:
             progress (float): progress percentage (in range 0 to 100)
         """
+        check_heart()
         self.progress = progress
         assert 0.0 <= progress <= 100.0
         if self._update_ui:
-            self._update_ui()
+            self._update_ui(lazy=True)
 
-    def write_log(self, text, *args):
+    def write_log(self, text, *args, lazy=False):
         """Write log information for this check.
 
         This information is used to provide information about the check
@@ -318,7 +324,21 @@ class SCCheck:
 
         Args:
             text (str): text to log
+            lazy (bool): stop writing this log if log has already been
+                written to 100 times
         """
+
+        # Handle lazy logging - limited to avoid slowdown
+        self._log_writes += 1
+        if lazy and self._log_writes > 100:
+            if not self._log_flagged_lazy:
+                self.write_log(
+                    'logging entered lazy mode - not logging low-priority '
+                    'information')
+            self._log_flagged_lazy = True
+            return
+
+        # Write the log
         _text = text
         if args:
             _text = text % args
@@ -384,6 +404,8 @@ class _ProgressUpdater:
         return len(self.items)
 
     def __next__(self):
+
+        check_heart()
 
         # Apply progress
         if len(self.items) <= 1:
