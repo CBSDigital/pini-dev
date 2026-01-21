@@ -109,6 +109,15 @@ class TestHelper(unittest.TestCase):
         _helper.jump_to(_out)
         assert _helper.entity == _ety
 
+    def test_output_to_icon(self):
+
+        # Test icon for output missing from cache
+        _work_dir = testing.TEST_SHOT.find_work_dir('lighting')
+        _ren = _work_dir.to_output('render', output_name='Missing', user=pipe.cur_user())
+        assert not _ren.exists()
+        assert not pipe.CACHE.obt_output(_ren, catch=True)
+        assert helper.output_to_icon(_ren)
+
     def test_output_referencing(self):
 
         _ety = pipe.CACHE.obt(testing.TEST_SHOT)

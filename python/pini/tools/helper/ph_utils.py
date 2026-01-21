@@ -319,7 +319,6 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
         (CPixmap): icon
     """
     _LOGGER.debug('OUTPUT TO ICON %s force=%d', output, force)
-    _LOGGER.debug(' - BASIC TYPE %s', output.basic_type)
 
     # Get base icon + bg
     _bg = None

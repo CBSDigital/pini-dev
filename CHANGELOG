@@ -1,3 +1,13 @@
+## [8.41.1] - Wed 2026-01-21 12:48
+### Summary
+ - Pini Helper:
+    - bugfix error on delete off-pipeline asset (nwray),
+### Updated
+ - pini.utils.to_list added handling for range obj,
+ - pini.pipe.CPJob set_col/set_icon added placeholders,
+ - pini.tools.helper.output_to_icon bugfix error on non-cache output,
+
+
 ## [8.41.0] - Fri 2026-01-16 07:22
 ### Summary
  - Pini Helper:

@@ -651,7 +651,7 @@ def to_list(obj):
         return obj
     if isinstance(obj, str):
         return [obj]
-    if isinstance(obj, (types.GeneratorType, typing.ValuesView)):
+    if isinstance(obj, (types.GeneratorType, typing.ValuesView, range)):
         return list(obj)
     raise NotImplementedError(obj)
 

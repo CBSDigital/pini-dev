@@ -346,6 +346,22 @@ class CCPJobBase(CPJob):
             _outs += _ety.find_outputs(**kwargs)
         return _outs
 
+    def set_col(self, col):
+        """Set colour for this job.
+
+        Args:
+            col (str): colour name
+        """
+        raise NotImplementedError
+
+    def set_icon(self, icon):
+        """Set icon for this job.
+
+        Args:
+            icon (str): path to icon
+        """
+        raise NotImplementedError
+
     def to_asset(self, asset_type, asset, class_=None, catch=True):
         """Build an asset object for an asset within this job.
 
