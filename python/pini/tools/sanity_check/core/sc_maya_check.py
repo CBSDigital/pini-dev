@@ -101,7 +101,9 @@ class SCMayaCheck(sc_check.SCCheck):
             node (CTransform): node to check
         """
         _LOGGER.debug('CHECK SHP %s', node)
-        assert isinstance(node, (pom.CTransform, pom.CMesh))
+        if not isinstance(node, (
+                pom.CTransform, pom.CMesh, pom.CCamera)):
+            raise TypeError(node)
 
         # Apply multiple shape checks - NOT: this is on CMesh init so check
         # is not required for mesh nodes

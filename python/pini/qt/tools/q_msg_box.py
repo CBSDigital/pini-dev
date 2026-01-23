@@ -6,7 +6,7 @@ import sys
 from pini import icons
 from pini.utils import lprint, assert_eq
 
-from ..q_mgr import QtWidgets, QtCore, LIB, LIB_VERSION
+from ..q_mgr import QtWidgets, QtCore, LIB, LIB_VERSION, Qt
 from .. import q_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -131,6 +131,14 @@ class _CMessageBox(QtWidgets.QMessageBox):
         Args:
             event (QKeyEvent): triggered event
         """
+        _LOGGER.debug('KEY PRESS EVENT %s', event)
+        _LOGGER.debug(' - KEY %s %s', event.key(), type(event.key()))
+        _LOGGER.debug(' - TEXT %s %s', event.text(), type(event.text()))
+
+        if event.key() == Qt.Key_Escape:
+            self.close()
+            return
+
         _key = chr(event.key()) if event.key() < 256 else None
         _alt = event.modifiers() == QtCore.Qt.AltModifier
         if _key and _alt and _key in self.shortcuts:

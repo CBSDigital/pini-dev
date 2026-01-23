@@ -249,6 +249,15 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
 
         return _blend
 
+    def build_hik(self):
+        """Build HIK on this skeleton.
+
+        Returns:
+            (PHIKNode): HIK system
+        """
+        from maya_pini import hik
+        return hik.build_hik(self)
+
     def duplicate(self):
         """Duplicate this skeleton.
 
@@ -466,9 +475,11 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
     Returns:
         (CSkeleton): matching skeleton
     """
+    _LOGGER.debug('FIND SKELETON')
     _skels = find_skeletons(namespace=namespace, referenced=referenced)
+    _LOGGER.debug(' - MATCHED %d SKELS %s', len(_skels), _skels)
 
-    if len(_skels) == 1:
+    if not match and len(_skels) == 1:
         return single(_skels)
 
     _ns_matches = [_skel for _skel in _skels if _skel.namespace == match]
@@ -490,7 +501,8 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
     # Try root namespace match
     _root_ns_matches = [
         _skel for _skel in _skels
-        if _skel.namespace.split(':')[0] == match]
+        if _skel.namespace == match or
+        (_skel.namespace and _skel.namespace.split(':')[0] == match)]
     if len(_root_ns_matches) == 1:
         return single(_root_ns_matches)
 

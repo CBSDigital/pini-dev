@@ -112,7 +112,8 @@ class TestHelper(unittest.TestCase):
     def test_output_to_icon(self):
 
         # Test icon for output missing from cache
-        _work_dir = testing.TEST_SHOT.find_work_dir('lighting')
+        _work_dir = testing.TEST_SHOT.find_work_dir(
+            'lighting', dcc_=dcc.NAME)
         _ren = _work_dir.to_output('render', output_name='Missing', user=pipe.cur_user())
         assert not _ren.exists()
         assert not pipe.CACHE.obt_output(_ren, catch=True)

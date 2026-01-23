@@ -101,17 +101,22 @@ class PyFile(File, PyElem):
 
         return _tokens.replace('/', '.')
 
-    def to_module(self, reload_=False, catch=False):
+    def to_module(self, reload_=False, delete=False, catch=False):
         """Obtain the module for this py file.
 
         Args:
             reload_ (bool): reload module
+            delete (bool): delete module from sys.modules prior to loading
             catch (bool): no error if module fails to import
 
         Returns:
             (mod): module
         """
         _mod_name = self.to_module_name()
+
+        if delete and _mod_name in sys.modules:
+            _LOGGER.info(' - DELETE %s %s', _mod_name, sys.modules[_mod_name])
+            del sys.modules[_mod_name]
 
         # Import module
         try:

@@ -1,3 +1,16 @@
+## [8.41.2] - Fri 2026-01-23 08:16
+### Summary
+ - Sanity Check:
+    - check cacheables bugfix error on check cam (mkim),
+    - check cacheables disabled outside cache export,
+### Updated
+ - pini.utils.PyFile.to_module added delete arg,
+ - pini.qt.raise_dialog bugfix escape not cancelling,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp bugfix error on cam,
+ - pini.tools.sanity_check.CheckCacheables only run on cache,
+ - maya_pini.open_maya.CSkeleton.build_hik added,
+
+
 ## [8.41.1] - Wed 2026-01-21 12:48
 ### Summary
  - Pini Helper:

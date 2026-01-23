@@ -457,7 +457,8 @@ class CheckCacheables(core.SCMayaCheck):
     command.
     """
 
-    action_filter = '-render'
+    action_filter = 'cache'
+    task_filter = '-lookdev -render'
 
     def run(self):
         """Run this check."""
