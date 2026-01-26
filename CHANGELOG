@@ -1,3 +1,29 @@
+## [8.42.0] - Mon 2026-01-26 10:44
+### Summary
+ - Sanity Check:
+    - bugfix error on check camera shape name (kakuna),
+### Updated
+ - pini.pipe.shotgrid.SGC.find_pub_type added mb file handling,
+ - pini.tools.pyui.PUBaseUi added find_elem/read_elem/set_elem,
+ - pini.tools.pyui.PUMayaUi added wrap_fn to option menu callback to lose args,
+ - pini.tools.pyui.find_ui match by file + mod name,
+ - pini.tools.sanity_check.SCMayaCheck.check_shp bugfix error on node as str,
+ - pini.tools.helper JobLabel ctx added open in shotgrid,
+ - maya_pini.open_maya.CNode.add_attr allow val as plug for message attr,
+ - maya_pini.open_maya.CNode find_plugs/list_attr added type_ filter,
+ - maya_pini.open_maya.CNode.to_anim_range return None on no anim found,
+ - maya_pini.open_maya.CReference.to_anim_range added,
+ - maya_pini.open_maya.CSkeleton.bind_to return constraints,
+ - maya_pini.open_maya.CSkeleton.build_hik pass kwargs to hik.build_hik,
+ - maya_pini.open_maya.CSkeleton.to_name added with catch,
+ - maya_pini.open_maya.find_skeleton added catch,
+ - maya_pini.ui.OptionMenu.exists added,
+ - maya_pini.hik.PHIKNode.to_skel added,
+ - maya_pini.hik.build_hik connect jnts directly rather than use mel,
+ - maya_pini.hik.build_hik if no mapping found map by name match,
+ - maya_pini.hik.find_hiks added namespace filter,
+
+
 ## [8.41.2] - Fri 2026-01-23 08:16
 ### Summary
  - Sanity Check:

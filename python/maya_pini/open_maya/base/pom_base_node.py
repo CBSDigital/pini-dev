@@ -146,8 +146,10 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _plug = self.plug[name]
         if _action == 'set':
             _plug.set_val(value)
-        elif _action == 'connect':
+        elif _action == 'connect message':
             value.plug['message'].connect(_plug)
+        elif _action == 'connect':
+            value.connect(_plug)
         else:
             raise ValueError(_action)
         if locked:
@@ -208,8 +210,9 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (tuple): kwargs dict, apply value action
         """
-        _kwargs = {}
+        from maya_pini import open_maya as pom
 
+        _kwargs = {}
         _action = 'set'
         _children = []
         if isinstance(value, float):
@@ -220,9 +223,12 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _kwargs['attributeType'] = 'long'
         elif isinstance(value, str):
             _kwargs['dataType'] = 'string'
-        elif isinstance(value, CBaseNode):
+        elif isinstance(value, pom.CPlug):
             _kwargs['attributeType'] = 'message'
             _action = 'connect'
+        elif isinstance(value, CBaseNode):
+            _kwargs['attributeType'] = 'message'
+            _action = 'connect message'
         elif isinstance(value, qt.CColor):
             _kwargs['attributeType'] = 'float3'
             _kwargs['usedAsColor'] = True
@@ -404,7 +410,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             source=False, type_=type_, connections=connections, plugs=plugs)
 
     def find_plugs(
-            self, user_defined=False, keyable=None, head=None, filter_=None):
+            self, user_defined=False, keyable=None, head=None, filter_=None,
+            type_=None):
         """Find plugs on this node.
 
         Args:
@@ -412,12 +419,14 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             keyable (bool): return only keyable plugs
             head (str): filter by start of attribute name (eg. vray/ai)
             filter_ (str): apply attibute name filter
+            type_ (str): filter by attribute type
 
         Returns:
             (CPlug list): matching plugs
         """
         _plugs = []
-        for _plug in self.list_attr(user_defined=user_defined, keyable=keyable):
+        for _plug in self.list_attr(
+                user_defined=user_defined, keyable=keyable, type_=type_):
             if head and not _plug.attr.startswith(head):
                 continue
             if filter_ and not passes_filter(str(_plug.attr), filter_):
@@ -453,12 +462,13 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         return self.isFromReferencedFile  # pylint: disable=no-member
 
-    def list_attr(self, keyable=False, user_defined=False):
+    def list_attr(self, keyable=False, user_defined=False, type_=None):
         """Apply listAttr command to this node.
 
         Args:
             keyable (bool): return only keyable attributes
             user_defined (bool): return only user defined attributes
+            type_ (str): apply attribute type filter
 
         Returns:
             (CPlug list): matching plugs
@@ -468,6 +478,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _kwargs = {}
         if keyable is not None:
             _kwargs['keyable'] = keyable
+        if type_:
+            _kwargs['attributeType'] = type_
         _attrs = cmds.listAttr(self, userDefined=user_defined, **_kwargs) or []
 
         # Build into plugs
@@ -594,6 +606,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _c_start, _c_end = _crv.t_range()
             _start = min(_start, _c_start)
             _end = max(_end, _c_end)
+        if _start > _end:
+            return None
         assert _start <= _end
         return _start, _end
 

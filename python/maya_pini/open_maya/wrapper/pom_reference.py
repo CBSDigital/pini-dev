@@ -1,5 +1,7 @@
 """Tools for managing the MFnReference object wrapper."""
 
+# pylint: disable=too-many-public-methods
+
 import logging
 import time
 
@@ -279,6 +281,24 @@ class CReference(om.MFnReference, ref.FileRef):
     def select(self):
         """Select this reference."""
         self.top_node.select()
+
+    def to_anim_range(self):
+        """Read anim range for this node.
+
+        Returns:
+            (tuple|None): start/end (if any)
+        """
+        _ref_rng = None
+        for _ctrl in self.ctrls:
+            _rng = _ctrl.to_anim_range()
+            if not _rng:
+                continue
+            _LOGGER.info(' - CTRL %s %s', _ctrl, _rng)
+            if not _ref_rng:
+                _ref_rng = _rng
+            else:
+                _ref_rng = min(_rng[0], _ref_rng[0]), max(_rng[1], _ref_rng[1])
+        return _ref_rng
 
     def to_ctrls_set(self):
         """Find ctrls set for this rig.

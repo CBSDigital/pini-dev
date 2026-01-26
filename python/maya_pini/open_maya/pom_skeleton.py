@@ -165,15 +165,19 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 _to_connect.append((_src_jnt, _trg_jnt, _cons_fn, _attr))
 
         # Build connections
+        _cnts = []
         for _src_jnt, _trg_jnt, _cons_fn, _attr in _to_connect:
             if mode == 'constrain':
-                _cons_fn(_src_jnt, _trg_jnt, maintainOffset=True)
+                _cnt = _cons_fn(_src_jnt, _trg_jnt, maintainOffset=True)
+                _cnts.append(_cnt)
             elif mode == 'connect':
                 for _axis in 'xyz':
                     _chan = _attr + _axis
                     _src_jnt.plug[_chan].connect(_trg_jnt.plug[_chan])
             else:
                 raise ValueError(mode)
+
+        return _cnts
 
     def build_blend(
             self, srcs, blend=None, allow_missing=False,
@@ -249,14 +253,14 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
 
         return _blend
 
-    def build_hik(self):
+    def build_hik(self, **kwargs):
         """Build HIK on this skeleton.
 
         Returns:
             (PHIKNode): HIK system
         """
         from maya_pini import hik
-        return hik.build_hik(self)
+        return hik.build_hik(self, **kwargs)
 
     def duplicate(self):
         """Duplicate this skeleton.
@@ -446,6 +450,22 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """Show this skelton via its root joint."""
         self.root.unhide()
 
+    def to_name(self, catch=True):
+        """Obtain name assigned to this skeleton.
+
+        Args:
+            catch (bool): no error if no name assigned
+
+        Returns:
+            (str): skeleton name
+        """
+        try:
+            return self._read_name()
+        except RuntimeError as _exc:
+            if catch:
+                return None
+            raise _exc
+
     def zero(self, break_conns=False):
         """Zero out this skeleton.
 
@@ -464,13 +484,14 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         return basic_repr(self, str(self.root), separator='|')
 
 
-def find_skeleton(match=None, namespace=EMPTY, referenced=None):
+def find_skeleton(match=None, namespace=EMPTY, referenced=None, catch=False):
     """Find a skeleton in the current scene.
 
     Args:
         match (str): match by filter or namespace
         namespace (str): filter by namespace
         referenced (bool): filter by referenced status
+        catch (bool): no error if exactly one skeleton not found
 
     Returns:
         (CSkeleton): matching skeleton
@@ -506,6 +527,8 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None):
     if len(_root_ns_matches) == 1:
         return single(_root_ns_matches)
 
+    if catch:
+        return None
     raise ValueError(f'Failed to find skeleton {match or namespace}')
 
 

@@ -207,6 +207,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             'hip': 'Houdini Scene',
             'jpeg': 'Image',
             'jpg': 'Image',
+            'mb': 'Maya Scene',
             'mp4': 'Movie',
             'mov': 'Movie',
             'rs': 'Redshift Proxy',

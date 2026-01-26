@@ -205,7 +205,8 @@ class PUMayaUi(pu_base.PUBaseUi):
                 raise ValueError(arg.choices)
             _LOGGER.debug('     - CHOICES %s %s', _select, _choices)
             _opt_menu = ui.create_option_menu(
-                options=_choices, select=_select, callback=arg.callback,
+                options=_choices, select=_select,
+                callback=wrap_fn(arg.callback) if arg.callback else None,
                 name=_name)
             _field = _opt_menu.field
             _read_fn = _opt_menu.get_val

@@ -6,7 +6,7 @@ import pprint
 
 from pini import pipe, qt
 from pini.dcc import pipe_ref
-from pini.utils import single, passes_filter
+from pini.utils import single, passes_filter, EMPTY
 
 from maya_pini import ui, open_maya as pom
 from maya_pini.utils import process_deferred_events, restore_ns, set_namespace
@@ -125,7 +125,7 @@ class PHIKNode(pom.CNode):
             force (bool): supress any bake warnings
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
-        _skel = skel or pom.find_skeleton(self.namespace)
+        _skel = skel or self.to_skel()
         _LOGGER.info(' - SKEL %s', _skel)
 
         # Read range + step size from source anim
@@ -283,125 +283,149 @@ class PHIKNode(pom.CNode):
 
         assert CHAR_LIST.get_val() == self
 
+    def to_skel(self):
+        """Obtain this HIK system's skeleton.
 
-def _assign_hik_jnt(src, trg, char):
+        Returns:
+            (CSkeleton): skeleton
+        """
+        _root = self.plug['Hips'].find_incoming(plugs=False)
+        return pom.CSkeleton(_root)
+
+
+def _assign_hik_jnt(src, trg, char, mode='connect'):
     """Assign a joint to the an HIK character joint.
 
     Args:
         src (CJoint): joint to assign
         trg (str): name of HIK joint to connect to
-        char (HIKCharacter): HIK character to update
+        char (PHIKNode): HIK character to update
+        mode (str): how to assign the joint
+            legacy - use mel script
+            connect - connect the joint.Character attribute to the
+                corresponding joint attribute on the node
     """
-    _LOGGER.info('BIND HIK JNT %s -> %s (%s)', src, trg, char)
-    _map = [
-        'Reference',
-        'Hips',
+    _LOGGER.debug('BIND HIK JNT %s -> %s (%s)', src, trg, char)
+    if mode == 'legacy':
+        _map = [
+            'Reference',
+            'Hips',
 
-        'LeftUpLeg',
-        'LeftLeg',
-        'LeftFoot',
-        'RightUpLeg',
-        'RightLeg',
-        'RightFoot',
+            'LeftUpLeg',
+            'LeftLeg',
+            'LeftFoot',
+            'RightUpLeg',
+            'RightLeg',
+            'RightFoot',
 
-        'Spine',
+            'Spine',
 
-        'LeftArm',
-        'LeftForeArm',
-        'LeftHand',
-        'RightArm',
-        'RightForeArm',
-        'RightHand',
+            'LeftArm',
+            'LeftForeArm',
+            'LeftHand',
+            'RightArm',
+            'RightForeArm',
+            'RightHand',
 
-        'Head',
-        'LeftToeBase',
-        'RightToeBase',
-        'LeftShoulder',
-        'RightShoulder',
-        'Neck',
-        '<LeftExtraWrist>',
-        '<RightExtraWrist>',
+            'Head',
+            'LeftToeBase',
+            'RightToeBase',
+            'LeftShoulder',
+            'RightShoulder',
+            'Neck',
+            '<LeftExtraWrist>',
+            '<RightExtraWrist>',
 
-        'Spine1',  # 23
-        'Spine2',  # 24
-        'Spine3',  # 26
-        'Spine4',  # 27
-        'Spine5',  # 28
-        'Spine6',  # 29
-        'Spine7',  # 30
-        'Spine8',  # 31
-        'Spine9',  # 32
+            'Spine1',  # 23
+            'Spine2',  # 24
+            'Spine3',  # 26
+            'Spine4',  # 27
+            'Spine5',  # 28
+            'Spine6',  # 29
+            'Spine7',  # 30
+            'Spine8',  # 31
+            'Spine9',  # 32
 
-        'Neck1',  # 33
-        'Neck2',  # 34
-        'Neck3',  # 35
-        'Neck4',  # 36
-        'Neck5',  # 37
-        'Neck6',  # 38
-        'Neck7',  # 39
-        'Neck8',  # 40
-        'Neck9',  # 41
-    ]
-    _idx = _map.index(trg)
-    # _LOGGER.info(' - MAP %s -> %s (%d)', src, trg, _idx)
-    if not cmds.objExists(src):
-        raise RuntimeError(f'Missing joint {src}')
-    _mel = f'setCharacterObject("{src}", "{char}", {_idx:d}, 0)'
-    mel.eval(_mel)
+            'Neck1',  # 33
+            'Neck2',  # 34
+            'Neck3',  # 35
+            'Neck4',  # 36
+            'Neck5',  # 37
+            'Neck6',  # 38
+            'Neck7',  # 39
+            'Neck8',  # 40
+            'Neck9',  # 41
+        ]
+        _idx = _map.index(trg)
+        # _LOGGER.info(' - MAP %s -> %s (%d)', src, trg, _idx)
+        if not cmds.objExists(src):
+            raise RuntimeError(f'Missing joint {src}')
+        _mel = f'setCharacterObject("{src}", "{char}", {_idx:d}, 0)'
+        mel.eval(_mel)
 
-    # mel.eval('setCharacterObject("thumb_01_l", "Character1",50,0);')
-    # mel.eval('setCharacterObject("thumb_02_l", "Character1",51,0);')
-    # mel.eval('setCharacterObject("thumb_03_l", "Character1",52,0);')
-    # mel.eval('setCharacterObject("thumb_04_l_Jx", "Character1",53,0);')
-    # mel.eval('setCharacterObject("index_01_l", "Character1",54,0);')
-    # mel.eval('setCharacterObject("index_02_l", "Character1",55,0);')
-    # mel.eval('setCharacterObject("index_03_l", "Character1",56,0);')
-    # mel.eval('setCharacterObject("index_04_l_Jx", "Character1",57,0);')
-    # mel.eval('setCharacterObject("middle_01_l", "Character1",58,0);')
-    # mel.eval('setCharacterObject("middle_02_l", "Character1",59,0);')
-    # mel.eval('setCharacterObject("middle_03_l", "Character1",60,0);')
-    # mel.eval('setCharacterObject("middle_04_l_Jx", "Character1",61,0);')
-    # mel.eval('setCharacterObject("ring_01_l", "Character1",62,0);')
-    # mel.eval('setCharacterObject("ring_02_l", "Character1",63,0);')
-    # mel.eval('setCharacterObject("ring_03_l", "Character1",64,0);')
-    # mel.eval('setCharacterObject("ring_04_l_Jx", "Character1",65,0);')
-    # mel.eval('setCharacterObject("pinky_01_l", "Character1",66,0);')
-    # mel.eval('setCharacterObject("pinky_02_l", "Character1",67,0);')
-    # mel.eval('setCharacterObject("pinky_03_l", "Character1",68,0);')
-    # mel.eval('setCharacterObject("pinky_04_l_Jx", "Character1",69,0);')
-    # #70-73 is left hand 6th finger
-    # mel.eval('setCharacterObject("thumb_01_r", "Character1",74,0);')
-    # mel.eval('setCharacterObject("thumb_02_r", "Character1",75,0);')
-    # mel.eval('setCharacterObject("thumb_03_r", "Character1",76,0);')
-    # mel.eval('setCharacterObject("thumb_04_r_Jx", "Character1",77,0);')
-    # mel.eval('setCharacterObject("index_01_r", "Character1",78,0);')
-    # mel.eval('setCharacterObject("index_02_r", "Character1",79,0);')
-    # mel.eval('setCharacterObject("index_03_r", "Character1",80,0);')
-    # mel.eval('setCharacterObject("index_04_r_Jx", "Character1",81,0);')
-    # mel.eval('setCharacterObject("middle_01_r", "Character1",82,0);')
-    # mel.eval('setCharacterObject("middle_02_r", "Character1",83,0);')
-    # mel.eval('setCharacterObject("middle_03_r", "Character1",84,0);')
-    # mel.eval('setCharacterObject("middle_04_r_Jx", "Character1",85,0);')
-    # mel.eval('setCharacterObject("ring_01_r", "Character1",86,0);')
-    # mel.eval('setCharacterObject("ring_02_r", "Character1",87,0);')
-    # mel.eval('setCharacterObject("ring_03_r", "Character1",88,0);')
-    # mel.eval('setCharacterObject("ring_04_r_Jx", "Character1",89,0);')
-    # mel.eval('setCharacterObject("pinky_01_r", "Character1",90,0);')
-    # mel.eval('setCharacterObject("pinky_02_r", "Character1",91,0);')
-    # mel.eval('setCharacterObject("pinky_03_r", "Character1",92,0);')
-    # mel.eval('setCharacterObject("pinky_04_r_Jx", "Character1",93,0);')
-    # #94-97 is 6th right hand finger
-    # #98-101 is 6th left foot toe
-    # #102-121 are left foot toes
-    # #122-125 is 6th right foot toe
-    # #126-145 are right foot toes
-    # #146 is left hand thumb 0
+        # mel.eval('setCharacterObject("thumb_01_l", "Character1",50,0);')
+        # mel.eval('setCharacterObject("thumb_02_l", "Character1",51,0);')
+        # mel.eval('setCharacterObject("thumb_03_l", "Character1",52,0);')
+        # mel.eval('setCharacterObject("thumb_04_l_Jx", "Character1",53,0);')
+        # mel.eval('setCharacterObject("index_01_l", "Character1",54,0);')
+        # mel.eval('setCharacterObject("index_02_l", "Character1",55,0);')
+        # mel.eval('setCharacterObject("index_03_l", "Character1",56,0);')
+        # mel.eval('setCharacterObject("index_04_l_Jx", "Character1",57,0);')
+        # mel.eval('setCharacterObject("middle_01_l", "Character1",58,0);')
+        # mel.eval('setCharacterObject("middle_02_l", "Character1",59,0);')
+        # mel.eval('setCharacterObject("middle_03_l", "Character1",60,0);')
+        # mel.eval('setCharacterObject("middle_04_l_Jx", "Character1",61,0);')
+        # mel.eval('setCharacterObject("ring_01_l", "Character1",62,0);')
+        # mel.eval('setCharacterObject("ring_02_l", "Character1",63,0);')
+        # mel.eval('setCharacterObject("ring_03_l", "Character1",64,0);')
+        # mel.eval('setCharacterObject("ring_04_l_Jx", "Character1",65,0);')
+        # mel.eval('setCharacterObject("pinky_01_l", "Character1",66,0);')
+        # mel.eval('setCharacterObject("pinky_02_l", "Character1",67,0);')
+        # mel.eval('setCharacterObject("pinky_03_l", "Character1",68,0);')
+        # mel.eval('setCharacterObject("pinky_04_l_Jx", "Character1",69,0);')
+        # #70-73 is left hand 6th finger
+        # mel.eval('setCharacterObject("thumb_01_r", "Character1",74,0);')
+        # mel.eval('setCharacterObject("thumb_02_r", "Character1",75,0);')
+        # mel.eval('setCharacterObject("thumb_03_r", "Character1",76,0);')
+        # mel.eval('setCharacterObject("thumb_04_r_Jx", "Character1",77,0);')
+        # mel.eval('setCharacterObject("index_01_r", "Character1",78,0);')
+        # mel.eval('setCharacterObject("index_02_r", "Character1",79,0);')
+        # mel.eval('setCharacterObject("index_03_r", "Character1",80,0);')
+        # mel.eval('setCharacterObject("index_04_r_Jx", "Character1",81,0);')
+        # mel.eval('setCharacterObject("middle_01_r", "Character1",82,0);')
+        # mel.eval('setCharacterObject("middle_02_r", "Character1",83,0);')
+        # mel.eval('setCharacterObject("middle_03_r", "Character1",84,0);')
+        # mel.eval('setCharacterObject("middle_04_r_Jx", "Character1",85,0);')
+        # mel.eval('setCharacterObject("ring_01_r", "Character1",86,0);')
+        # mel.eval('setCharacterObject("ring_02_r", "Character1",87,0);')
+        # mel.eval('setCharacterObject("ring_03_r", "Character1",88,0);')
+        # mel.eval('setCharacterObject("ring_04_r_Jx", "Character1",89,0);')
+        # mel.eval('setCharacterObject("pinky_01_r", "Character1",90,0);')
+        # mel.eval('setCharacterObject("pinky_02_r", "Character1",91,0);')
+        # mel.eval('setCharacterObject("pinky_03_r", "Character1",92,0);')
+        # mel.eval('setCharacterObject("pinky_04_r_Jx", "Character1",93,0);')
+        # #94-97 is 6th right hand finger
+        # #98-101 is 6th left foot toe
+        # #102-121 are left foot toes
+        # #122-125 is 6th right foot toe
+        # #126-145 are right foot toes
+        # #146 is left hand thumb 0
 
-    # mel.eval('hikUpdateDefinitionUI;')
-    # mel.eval('LockSkeletonDefinition();')
+        # mel.eval('hikUpdateDefinitionUI;')
+        # mel.eval('LockSkeletonDefinition();')
 
-    # mel.eval('hikCreateControlRig;')
-    # cmds.parent('Character1_Ctrl_Reference', 'Character1_Root_CNT')
+        # mel.eval('hikCreateControlRig;')
+        # cmds.parent('Character1_Ctrl_Reference', 'Character1_Root_CNT')
+
+    elif mode == 'connect':
+        if not src.has_attr('Character'):
+            _trg_plug = char.plug[trg]
+            assert src.object_type() == 'transform'
+            src.add_attr('Character', _trg_plug)
+        else:
+            src.plug['Character'].connect(char.plug[trg], force=True)
+    else:
+        raise NotImplementedError(mode)
 
 
 def _find_map_src(trg, mapping):
@@ -418,7 +442,7 @@ def _find_map_src(trg, mapping):
     return _result
 
 
-def _skel_to_mapping(skel):
+def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     """Obtain joint mapping for the given skeleton.
 
     Args:
@@ -429,27 +453,29 @@ def _skel_to_mapping(skel):
     """
 
     # Build name map
-    if skel.name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat'):
-        _jnt_map = [
-            ('Hips', 'Hips'),
-            ('Spine', 'Spine'),
-            ('Spine1', 'Spine1'),
-            ('Spine2', 'Spine2'),
-            ('Neck', 'Neck'),
-            ('Head', 'Head'),
-        ]
+    _name = skel.to_name(catch=True)
+
+    # Use default 1:1 name map
+    if _name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat', None):
+        _jnts = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Spine3', 'Neck', 'Head']
         for _side in ['Left', 'Right']:
-            for _src, _dest in [
-                    ('UpLeg', 'UpLeg'),
-                    ('Leg', 'Leg'),
-                    ('Foot', 'Foot'),
-                    ('ToeBase', 'ToeBase'),
-                    ('Shoulder', 'Shoulder'),
-                    ('Arm', 'Arm'),
-                    ('ForeArm', 'ForeArm'),
-                    ('Hand', 'Hand'),
-            ]:
-                _jnt_map.append((_side + _src, _side + _dest))
+            for _name in [
+                    'UpLeg', 'Leg', 'Foot', 'ToeBase', 'Shoulder', 'Arm',
+                    'ForeArm', 'Hand']:
+                _jnt = f'{_side}{_name}'
+                _jnts.append(_jnt)
+            for _finger in ['Index', 'Middle', 'Pinky', 'Ring', 'Thumb']:
+                for _idx in range(1, 5):
+                    _jnt = f'{_side}Hand{_finger}{_idx}'
+                    _jnts.append(_jnt)
+        # pprint.pprint(_jnts)
+        assert len(_jnts) == len(set(_jnts))
+        _jnt_map = []
+        _names = {_jnt.to_clean() for _jnt in skel.joints}
+        for _jnt in _jnts:
+            if _jnt not in _names:
+                continue
+            _jnt_map.append((_jnt, _jnt))
 
     elif skel.name == 'CMU':
         _jnt_map = [
@@ -477,14 +503,11 @@ def _skel_to_mapping(skel):
 
     # Setup mapping
     _mapping = []
-    # _top_node = None
     _grp = skel.root.to_parent()
     if _grp:
         _mapping.append((_grp, 'Reference'))
-        # _top_node = _grp
     for _src, _trg in _jnt_map:
         _mapping.append((skel.to_joint(_src, catch=False), _trg))
-    # _top_node = _top_node or skel.root
 
     return _mapping
 
@@ -515,9 +538,9 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
     _skel = pom.CSkeleton(_root)
 
     # Create character defintion
-    set_namespace(':')
     assert not pom.find_nodes(type_='HIKCharacterNode', namespace=None)
     cmds.HIKCharacterControlsTool()
+    set_namespace(':')
     try:
         mel.eval('hikCreateDefinition()')
     except SystemError:
@@ -598,12 +621,13 @@ def find_hik(match=None, catch=False, **kwargs):
     raise ValueError(match, kwargs)
 
 
-def find_hiks(referenced=None, task=None):
+def find_hiks(referenced=None, task=None, namespace=EMPTY):
     """Find HIK nodes in this scene.
 
     Args:
         referenced (bool): filter by referenced status
         task (str): filter by task
+        namespace (str): apply namespace filter
 
     Returns:
         (PHIKNode list): HIKs
@@ -611,19 +635,33 @@ def find_hiks(referenced=None, task=None):
     refresh_ui()
     _hiks = []
     for _item in CHAR_LIST.get_vals():
+
         if _item == 'None':
             continue
+
         _hik = PHIKNode(_item)
         if referenced is not None and _hik.is_referenced() != referenced:
             continue
 
+        # Apply task filter
         _out = None
         _ref = pom.find_ref(namespace=_hik.namespace)
         if _ref:
             _out = pipe.to_output(_ref.path, catch=True)
         if task and (not _out or not _out.task == task):
             continue
+
+        # Apply namespace filter
+        if namespace is EMPTY:
+            pass
+        elif namespace is None:
+            if _hik.namespace:
+                continue
+        elif namespace != _hik.namespace:
+            continue
+
         _hiks.append(_hik)
+
     return _hiks
 
 

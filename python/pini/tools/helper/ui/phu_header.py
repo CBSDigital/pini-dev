@@ -356,6 +356,10 @@ class PHHeader:
                     wrap_fn(self.job.find_outputs, force=2),
                     self._callback__Refresh),
                 icon=icons.REFRESH)
+            menu.add_action(
+                'Open in shotgrid',
+                self.job.sg_proj.browser,
+                icon=icons.URL)
         else:
             raise ValueError(pipe.MASTER)
 

@@ -303,6 +303,18 @@ class PUBaseUi:
         """Finalize building interface."""
         raise NotImplementedError
 
+    def find_elem(self, def_, arg):
+        """Find an element of this interface.
+
+        Args:
+            def_ (str): def name
+            arg (str): arg name
+
+        Returns:
+            (str): element name
+        """
+        return self.find_elems(def_=def_, arg=arg)[-1]
+
     def find_elems(self, def_, arg):
         """Find ui elements.
 
@@ -314,6 +326,34 @@ class PUBaseUi:
             (list): matching elements
         """
         return self.elems[def_][arg]
+
+    def read_elem(self, def_, arg):
+        """Read an element's value.
+
+        Args:
+            def_ (str): def name
+            arg (str): arg name
+
+        Returns:
+            (any): arg value
+        """
+        _callbacks = CALLBACKS_CACHE.get(self.name, {})
+        _def_callbacks = _callbacks['defs'][def_]
+        _get_arg_callbacks = _def_callbacks['get']
+        return _get_arg_callbacks[arg]()
+
+    def set_elem(self, def_, arg, val):
+        """Set an element's value.
+
+        Args:
+            def_ (str): def name
+            arg (str): arg name
+            val (any): value to apply
+        """
+        _callbacks = CALLBACKS_CACHE.get(self.name, {})
+        _def_callbacks = _callbacks['defs'][def_]
+        _set_arg_callbacks = _def_callbacks['set']
+        _set_arg_callbacks[arg](val)
 
     def rebuild(self, load_settings=True):
         """Rebuild this interface.

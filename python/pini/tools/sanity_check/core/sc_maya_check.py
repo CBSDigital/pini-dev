@@ -101,56 +101,59 @@ class SCMayaCheck(sc_check.SCCheck):
             node (CTransform): node to check
         """
         _LOGGER.debug('CHECK SHP %s', node)
-        if not isinstance(node, (
+        _node = node
+        if isinstance(_node, str):
+            _node = pom.cast_node(_node)
+        if not isinstance(_node, (
                 pom.CTransform, pom.CMesh, pom.CCamera)):
-            raise TypeError(node)
+            raise TypeError(_node)
 
         # Apply multiple shape checks - NOT: this is on CMesh init so check
         # is not required for mesh nodes
-        if not isinstance(node, pom.CMesh):
+        if not isinstance(_node, (pom.CMesh, pom.CCamera)):
 
             # Ignore group nodes
-            _shps = to_shps(str(node))
+            _shps = to_shps(str(_node))
             if not _shps:
                 return
 
             # Handle multiple shapes
             if len(_shps) > 1:
                 _shps_s = '/'.join(_shps)
-                _msg = f'Node "{node}" has multiple shapes ({_shps_s})'
-                self.add_fail(_msg, node=node)
+                _msg = f'Node "{_node}" has multiple shapes ({_shps_s})'
+                self.add_fail(_msg, node=_node)
                 return
 
             raise NotImplementedError
 
         # Avoid checking shapes multiple times
-        assert node.shp
-        if node.shp in self._checked_shps:
+        assert _node.shp
+        if _node.shp in self._checked_shps:
             return
-        self._checked_shps.add(node.shp)
+        self._checked_shps.add(_node.shp)
 
         # Check shape name
-        _cur_shp = node.shp.to_clean()
-        _correct_shp = f'{node.to_clean()}Shape'
+        _cur_shp = _node.shp.to_clean()
+        _correct_shp = f'{_node.to_clean()}Shape'
         if _cur_shp != _correct_shp:
 
             _LOGGER.debug(' - SHP NODE %s', node.shp)
 
             # Ignore instanced shapes
-            if node.shp.is_instanced():
+            if _node.shp.is_instanced():
                 self.write_log(' - ignoring instanced shape %s', _cur_shp)
                 return
 
             # Add fail
-            if node.shp.is_referenced():
+            if _node.shp.is_referenced():
                 _fix = None
             else:
-                _fix = wrap_fn(_fix_bad_shape, node.shp, _correct_shp)
+                _fix = wrap_fn(_fix_bad_shape, _node.shp, _correct_shp)
             _msg = (
-                f'Node "{node}" has badly named shape node "{node.shp}" '
+                f'Node "{_node}" has badly named shape node "{_node.shp}" '
                 f'(should be "{_correct_shp}")')
             _LOGGER.debug(' - ADDING FAIL %s', _msg)
-            self.add_fail(_msg, fix=_fix, node=node)
+            self.add_fail(_msg, fix=_fix, node=_node)
 
     def __repr__(self):
         _type = type(self).__name__.strip('_')

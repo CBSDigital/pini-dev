@@ -45,6 +45,14 @@ class OptionMenu:
         """
         self.field = field
 
+    def exists(self):
+        """Check whether this option menu exists.
+
+        Returns:
+            (bool): exists
+        """
+        return cmds.optionMenu(self.field, query=True, exists=True)
+
     def get_val(self):
         """Read text of currently item.
 
