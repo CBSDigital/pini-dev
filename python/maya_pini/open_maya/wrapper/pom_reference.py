@@ -88,12 +88,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CNode list): controls
         """
-        from maya_pini import open_maya as pom
-        _set = self.to_ctrls_set()
-        if not _set:
-            raise RuntimeError(f"Missing ctrls set - {self.namespace}")
-        _ctrls = cmds.sets(_set, query=True) or []
-        return [pom.cast_node(_node) for _node in _ctrls]
+        return self.to_ctrls()
 
     @property
     def namespace(self):
@@ -299,6 +294,24 @@ class CReference(om.MFnReference, ref.FileRef):
             else:
                 _ref_rng = min(_rng[0], _ref_rng[0]), max(_rng[1], _ref_rng[1])
         return _ref_rng
+
+    def to_ctrls(self, catch=False):
+        """Obtain controls for this reference.
+
+        Args:
+            catch (bool): no error if no controls found
+
+        Returns:
+            (CTransform list): contrls
+        """
+        from maya_pini import open_maya as pom
+        _set = self.to_ctrls_set()
+        if not _set:
+            if catch:
+                return []
+            raise RuntimeError(f"Missing ctrls set - {self.namespace}")
+        _ctrls = cmds.sets(_set, query=True) or []
+        return [pom.cast_node(_node) for _node in _ctrls]
 
     def to_ctrls_set(self):
         """Find ctrls set for this rig.

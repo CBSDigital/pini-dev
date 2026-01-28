@@ -12,7 +12,7 @@ class CCacheable:
 
     def __init__(
             self, output_name, extn, node, src_ref,
-            output_type=None, label=None, icon=None,
+            output_type=None, label=None, icon=None, ref=None,
             template=None):
         """Constructor.
 
@@ -24,6 +24,7 @@ class CCacheable:
             output_type (str): output type for export
             label (str): override cacheable label
             icon (str): path to icon for this object
+            ref (CReference): reference associated with this object
             template (CPTemplate): override template for output
         """
         self.output_name = output_name
@@ -34,6 +35,7 @@ class CCacheable:
         self.template = template
         self.node = node
         self.src_ref = src_ref
+        self.ref = ref
 
     @property
     def icon(self):

@@ -22,12 +22,14 @@ class CBasicSubmitter(export.CExportHandler):
 
     LABEL = 'Submit renders to shotgrid.'
 
+    render = None
+
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""
-        self.ui.add_list_widget('Render', redraw=False, multi=False)
+        self.ui.add_separator()
+        self.ui.add_combo_box('Task', ['Placeholder'], ui_only=True)
 
-        self.ui.add_combo_box(
-            'Task', ['Apple', 'Orange', 'Banana'], ui_only=True)
+        self.ui.add_list_widget('Render', redraw=False, multi=False)
         self.ui.add_check_box(
             'HideSubmitted', val=True, ui_only=True)
         self.ui.add_check_box(
@@ -36,12 +38,8 @@ class CBasicSubmitter(export.CExportHandler):
         self._redraw__Task()
         self._redraw__Render()
 
-    def build_ui(self, add_notes=True):
-        """Build interface.
-
-        Args:
-            add_notes (bool): add notes element
-        """
+    def build_ui(self):
+        """Build interface."""
         _ety = helper.DIALOG.entity
         self._all_outputs = sorted([
             _out for _out in _ety.outputs
@@ -49,15 +47,14 @@ class CBasicSubmitter(export.CExportHandler):
             key=_submit_out_sort)
 
         super().build_ui(
-            add_version_up=False, add_snapshot=False, exec_label='Submit',
-            add_notes=add_notes)
+            add_version_up=False, add_snapshot=False, exec_label='Submit')
 
     def _redraw__Task(self):
         _tasks = sorted({_out.task_label for _out in self._all_outputs})
         _select = None
         if helper.DIALOG.work_dir:
             _select = helper.DIALOG.work_dir.task_label
-        self.ui.Task.set_items(['all'] + _tasks, select=_select)
+        self.ui.Task.set_items(_tasks, select=_select)
 
     def _redraw__Render(self):
 
@@ -72,7 +69,7 @@ class CBasicSubmitter(export.CExportHandler):
         for _out in self._all_outputs:
 
             # Apply filters
-            if _task not in ('all', _out.task_label):
+            if _task not in _out.task_label:
                 continue
             if _latest and not _out.is_latest():
                 continue
@@ -114,14 +111,17 @@ class CBasicSubmitter(export.CExportHandler):
                 wrap_fn(pprint.pprint, _ren.metadata, width=200),
                 icon=icons.PRINT)
 
-    def exec(self, render, **kwargs):
+    def exec(self, render=None, **kwargs):
         """Execute this exporter.
 
         Args:
             render (CPOutput): render to submit
         """
-        self.render = render
-        super().exec(render, **kwargs)
+        _kwargs = kwargs
+        if render:
+            self.render = render
+            _kwargs['render'] = render
+        super().exec(**_kwargs)
 
     def set_settings(self, *args, **kwargs):
         """Apply exec settings."""
@@ -130,9 +130,10 @@ class CBasicSubmitter(export.CExportHandler):
 
         # Read work from render
         _work = None
-        _work_path = self.render.metadata.get('src')
-        if _work_path:
-            _work = pipe.CACHE.obt_work(_work_path)
+        if self.render:
+            _work_path = self.render.metadata.get('src')
+            if _work_path:
+                _work = pipe.CACHE.obt_work(_work_path)
         _LOGGER.debug(' - APPLY WORK %s', _work)
 
         self.settings.update(dict(

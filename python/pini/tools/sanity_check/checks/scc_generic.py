@@ -17,12 +17,12 @@ class CheckRefsLatest(SCPipeCheck):
 
     def run(self):
         """Run this check."""
-        _refs = self._find_refs()
+        _refs = dcc.find_pipe_refs()
         if not _refs or not self.check_cache_up_to_date():
             return
         for _ref in self.update_progress(_refs):
             self.write_log('Checking ref %s', _ref)
-            if _ref.is_latest():
+            if not _ref.output or _ref.is_latest():
                 continue
             _latest = _ref.output.find_latest()
             _out_s = f'v{_latest.ver_n:03d}' if _latest.ver_n else 'versionless'
@@ -31,14 +31,6 @@ class CheckRefsLatest(SCPipeCheck):
                 f'not using latest output ({_out_s})')
             _fix = wrap_fn(self.update_ref, ref_=_ref, path=_latest)
             self.add_fail(_msg, fix=_fix, node=_ref.node)
-
-    def _find_refs(self):
-        """Find references to check.
-
-        Returns:
-            (CPipeRef list): pipelined references
-        """
-        return dcc.find_pipe_refs()
 
     def update_ref(self, ref_, path):
         """Update the given reference.

@@ -22,7 +22,7 @@ class CRenderHandler(eh_base.CExportHandler):
     ACTION = 'Render'
     TYPE = 'Render'
 
-    add_range = True
+    add_range = 'Frames'
     add_passes = True
     add_cameras = True
 
@@ -38,9 +38,7 @@ class CRenderHandler(eh_base.CExportHandler):
 
     def build_ui(self):
         """Build basic render interface into the given layout."""
-        super().build_ui(
-            add_range=self.add_range and 'Frames',
-            add_snapshot=False)
+        super().build_ui(add_snapshot=False)
 
     def set_settings(self, *args, **kwargs):
         """Setup settings dict."""

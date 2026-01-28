@@ -394,6 +394,8 @@ class CCPRoot(elem.CPRoot):
             return _cbl
 
         _LOGGER.debug(' - FAILED TO CONVERT MATCH %s', _match)
+        if catch:
+            return None
         raise NotImplementedError(match)
 
     def _obt_work_dir_cacheable(self, work_dir, force=False, catch=False):
@@ -451,6 +453,8 @@ class CCPRoot(elem.CPRoot):
                       if _work == _match]
             return single(_works, catch=catch, items_label='works')
 
+        if catch:
+            return None
         raise NotImplementedError(match)
 
     @ccp_utils.pipe_cache_result

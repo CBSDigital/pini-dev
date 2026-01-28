@@ -174,7 +174,7 @@ def _curves_to_icon(curves):
     """
     _base_icon = CURVES_MB_BG_ICON
     _asset_icon = None
-    _asset = curves.metadata.get('src_ref')
+    _asset = pipe.CACHE.obt_output(curves.src_ref)
     if _asset:
         _asset_out = pipe.CACHE.obt_output(_asset)
         _asset_icon = _output_to_entity_icon(_asset_out)

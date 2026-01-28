@@ -2,10 +2,9 @@
 
 import logging
 
+from pini import icons, pipe
 
-from pini import icons
-
-from . import ch_base
+from . import ch_base, ch_cacheable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -146,7 +145,7 @@ class CMayaFbxCache(CMayaCache):
             'Format', ['FBX201300', 'FBX201600'], val='FBX201600')
 
 
-class CMayaCrvsCache(CMayaCache):
+class CMayaCurvesCache(CMayaCache):
     """Manages fbx caching in maya."""
 
     NAME = 'Maya Curves Cache'
@@ -155,10 +154,28 @@ class CMayaCrvsCache(CMayaCache):
     ICON = icons.find('Performing Arts')
     COL = 'Red'
 
+    def find_cacheables(self):
+        """Find cacheables in the current scene."""
+        from pini.tools import helper
+        from maya_pini import open_maya as pom
+
+        _cbls = []
+        for _ref in pom.find_refs():
+            if not _ref.to_ctrls(catch=True):
+                continue
+            _out = pipe.CACHE.obt_output(_ref.path)
+            _icon = helper.output_to_icon(_out)
+            _cbl = ch_cacheable.CCacheable(
+                output_name=_ref.namespace, extn='mb', node=_ref.top_node,
+                ref=_ref, src_ref=_ref.path, output_type='CurvesMb', icon=_icon)
+            _cbls.append(_cbl)
+
+        return _cbls
+
     def export(  # pylint: disable=unused-argument
             self, cacheables, notes=None, version_up=None, snapshot=True,
-            save=True, bkp=True, progress=False, use_farm=False, range_=None,
-            substeps=1, format_='FBX201600', force=False):
+            save=True, bkp=True, progress=False, range_=None,
+            substeps=1, force=False):
         """Execute cache operation.
 
         Args:
@@ -169,15 +186,14 @@ class CMayaCrvsCache(CMayaCache):
             save (bool): save work file on export
             bkp (bool): save bkp file
             progress (bool): show cache progress
-            use_farm (bool): cache using farm
             range_ (tuple): override cache range
             substeps (int): substeps per frame
-            format_ (str): abc format (eg. Ogawa/HDF5)
             force (bool): replace existing without confirmation
         """
         from maya_pini import m_pipe
         return m_pipe.export_anim_curves(
-            cacheables, range_=range_, force=force)
+            [_cbl.ref for _cbl in cacheables],
+            frames=self.to_frames(), force=force)
 
     def _update_metadata(self, content_type='CurvesMb'):
         """Update metadata.

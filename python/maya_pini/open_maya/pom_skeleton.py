@@ -564,7 +564,7 @@ def _read_skeletons():
     from maya_pini import open_maya as pom
 
     _skels = []
-    for _jnt in pom.CMDS.ls(type='joint'):
+    for _jnt in pom.CMDS.ls(exactType='joint'):
         _parent = _jnt.to_parent()
         if _parent and _parent.object_type() == 'joint':
             continue

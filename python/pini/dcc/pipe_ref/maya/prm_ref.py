@@ -521,7 +521,10 @@ class CMayaShadersRef(CMayaRef):
         """
         _attrs = self.shd_data['top_node_attrs']
         _LOGGER.info('APPLY TOP NODE ATTRS %s', _attrs)
-        _dummy = self.to_node('DummyTopNode')
+        _dummy = self.to_node('DummyTopNode', catch=True)
+        if not _dummy:
+            _LOGGER.info(' - NO DUMMY TOP NODE FOUND %s', self)
+            return
         _LOGGER.info(' - DUMMY %s', _dummy)
         for _attr in _attrs:
             _dummy_plug = _dummy.plug[_attr]

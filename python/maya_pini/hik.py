@@ -420,7 +420,8 @@ def _assign_hik_jnt(src, trg, char, mode='connect'):
     elif mode == 'connect':
         if not src.has_attr('Character'):
             _trg_plug = char.plug[trg]
-            assert src.object_type() == 'transform'
+            if src.object_type() not in ('transform', 'joint'):
+                raise RuntimeError(src, src.object_type())
             src.add_attr('Character', _trg_plug)
         else:
             src.plug['Character'].connect(char.plug[trg], force=True)

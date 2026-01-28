@@ -159,7 +159,7 @@ class SCCheck:
             raise ValueError(fail)
 
         self.write_log(
-            'Adding fail %s node=%s', _fail.msg,
+            ' - Adding fail %s node=%s', _fail.msg,
             dcc.to_node_name(node) if node else '-')
         self.fails.append(_fail)
 

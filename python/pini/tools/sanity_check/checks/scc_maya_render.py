@@ -392,6 +392,8 @@ class CheckRenderGlobals(SCMayaCheck):
                 f'Current renderer "{_ren}" is not supported in this pipeline')
             return False
 
+        _mblur = pipe.cur_entity().profile == 'shot'
+
         # Apply checks by renderer
         _attrs_to_check = []
         if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
@@ -409,20 +411,25 @@ class CheckRenderGlobals(SCMayaCheck):
             _attrs_to_check += [
                 ('redshiftOptions.exrForceMultilayer', True),
                 ('redshiftOptions.exrMultipart', True),
-                ('redshiftOptions.motionBlurEnable', True),
-                ('redshiftOptions.motionBlurFrameDuration', 1),
-                ('redshiftOptions.motionBlurShutterStart', 0.25),
-                ('redshiftOptions.motionBlurShutterEnd', 0.75),
+                ('redshiftOptions.motionBlurEnable', _mblur),
                 ('rsAov_Depth.setEnvironmentRaysToBlack', True),
             ]
+            if _mblur:
+                _attrs_to_check += [
+                    ('redshiftOptions.motionBlurFrameDuration', 1),
+                    ('redshiftOptions.motionBlurShutterStart', 0.25),
+                ]
 
         elif _ren == 'vray':
             _attrs_to_check += [
                 ('vraySettings.cam_mbOn', True),
-                ('vraySettings.cam_mbCameraMotionBlur', True),
-                ('vraySettings.cam_mbDuration', 0.5),
-                ('vraySettings.cam_mbIntervalCenter', 0.5),
             ]
+            if _mblur:
+                _attrs_to_check += [
+                    ('vraySettings.cam_mbCameraMotionBlur', True),
+                    ('vraySettings.cam_mbDuration', 0.5),
+                    ('vraySettings.cam_mbIntervalCenter', 0.5),
+                ]
 
         # Check render format
         _fmt = to_render_extn()

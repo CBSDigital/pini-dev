@@ -37,8 +37,6 @@ _OUTPUT_ICONS = {
 class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-attributes
     """Represents a work file in PiniHelper."""
 
-    _font = None
-
     def __init__(self, list_view, helper, work):
         """Constructor.
 

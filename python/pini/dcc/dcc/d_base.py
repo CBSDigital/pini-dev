@@ -194,9 +194,11 @@ class BaseDCC:
                 continue
             if head and not _ref.namespace.startswith(head):
                 continue
-            if task and task not in (
-                    _ref.output.task, pipe.map_task(_ref.output.task)):
-                continue
+            if task:
+                if not _ref.output or task not in (
+                        _ref.output.task,
+                        pipe.map_task(_ref.output.task)):
+                    continue
             _refs.append(_ref)
         return sorted(_refs)
 

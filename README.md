@@ -35,5 +35,6 @@ Hou install:
 
 
 Environment Variables:
-
+ 
+ - PINI_DEFAULT_FONT_SIZE - apply default text size for qt interfaces
  - PINI_HOU_APPLY_SCALE_FIX - set to 0 to disable 0.01 abc scaling in houdini

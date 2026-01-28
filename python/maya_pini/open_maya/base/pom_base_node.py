@@ -172,7 +172,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _plug = self.plug[name]
         _LOGGER.debug(' - UPDATE EXISTING ATTR %s', _plug)
 
-        if action == 'connect':
+        if action == 'connect message':
             value.plug['message'].connect(_plug, force=True)
 
         elif action == 'set':

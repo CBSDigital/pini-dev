@@ -43,7 +43,9 @@ class Res:
         return self.width, self.height
 
     def __eq__(self, other):
-        return self.cmp_key == other.cmp_key
+        if isinstance(other, Res):
+            return self.cmp_key == other.cmp_key
+        return self.to_tuple() == other
 
     def __getitem__(self, name):
         if name == 0:

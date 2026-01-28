@@ -34,6 +34,10 @@ class CExportHandler:
     description = None
     profile_filter = None
 
+    add_substeps = False
+    add_notes = True
+    add_range = False
+
     work = None
     metadata = None
     outputs = ()
@@ -84,12 +88,8 @@ class CExportHandler:
         """
         return self.ui.parent if self.ui else None
 
-    def _build_ui_header(self, add_range=False):
-        """Build ui header elements.
-
-        Args:
-            add_range (bool): add range elements
-        """
+    def _build_ui_header(self):
+        """Build ui header elements."""
         self.ui.add_separator()
 
         self.ui.Label = QtWidgets.QLabel(self.LABEL, self.ui.parent)
@@ -97,9 +97,9 @@ class CExportHandler:
         self.ui.Label.setObjectName('Label')
         self.ui.layout.addWidget(self.ui.Label)
 
-        if add_range:
+        if self.add_range:
             self.ui.add_separator()
-            self.ui.assemble_range_elems(mode=add_range)
+            self.ui.assemble_range_elems(mode=self.add_range)
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements.
@@ -109,7 +109,7 @@ class CExportHandler:
 
     def _build_ui_footer(
             self, stretch=True, add_snapshot=True, add_version_up=True,
-            add_notes=True, version_up=True, exec_label=None):
+            version_up=True, exec_label=None):
         """Build ui footer elements.
 
         Args:
@@ -118,13 +118,12 @@ class CExportHandler:
                 fill the whole layout)
             add_snapshot (bool): add snapshot checkbox
             add_version_up (bool): add version up option
-            add_notes (bool): add notes element
             version_up (bool): default version up setting
             exec_label (str): override label for exec button
         """
         self.ui.assemble_footer_elems(
             add_version_up=add_version_up, version_up=version_up,
-            add_snapshot=add_snapshot, add_notes=add_notes)
+            add_snapshot=add_snapshot)
 
         self.ui.add_separator()
         self.ui.add_exec_btn(exec_label or self.title)
@@ -132,25 +131,22 @@ class CExportHandler:
             self.ui.layout.addStretch()
 
     def build_ui(
-            self, add_range=False, add_snapshot=True, add_notes=True,
-            add_version_up=True, version_up=True, exec_label=None):
+            self, add_snapshot=True, add_version_up=True, version_up=True,
+            exec_label=None):
         """Build any specific ui elements for this handler.
 
         Args:
-            add_range (bool): add range elements
             add_snapshot (bool): add snapshot checkbox
-            add_notes (bool): add notes element
             add_version_up (bool): add version up option
             version_up (bool): default version up setting
             exec_label (str): override label for exec button
         """
         _LOGGER.debug('BUILD UI')
-        self._build_ui_header(add_range=add_range)
+        self._build_ui_header()
         self._add_custom_ui_elems()
         self._build_ui_footer(
             stretch=True, version_up=version_up, add_snapshot=add_snapshot,
-            add_version_up=add_version_up, exec_label=exec_label,
-            add_notes=add_notes)
+            add_version_up=add_version_up, exec_label=exec_label)
 
     def build_metadata(self):
         """Obtain metadata to apply to a generated export.
@@ -158,6 +154,7 @@ class CExportHandler:
         Returns:
             (dict): metadata
         """
+        _LOGGER.debug('BUILD METADATA %s', self)
         _checks_data = self.settings['checks_data']
         _force = self.settings['force']
         _run_checks = self.settings['run_checks']
@@ -165,10 +162,11 @@ class CExportHandler:
         _LOGGER.debug(' - RUN CHECKS %d %s', _run_checks, _checks_data)
 
         _notes = self._obt_notes()
+        _LOGGER.debug(' - NOTES %s', _notes)
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=self.work, handler=type(self).__name__,
             run_checks=_run_checks, force=_force, task=self.work.pini_task,
-            notes=_notes, require_notes=True, checks_data=_checks_data)
+            notes=_notes, require_notes=False, checks_data=_checks_data)
 
         return _data
 
@@ -484,8 +482,13 @@ class CExportHandler:
         Returns:
             (str): notes
         """
+        _LOGGER.debug('OBT NOTES %s', self)
         _notes = self.settings['notes']
         _force = self.settings['force']
+        if not self.add_notes:
+            _LOGGER.debug(' - ADD NOTES DISABLED')
+            _force = True
+        _LOGGER.debug(' - FORCE %d', _force)
 
         # Obtain notes
         if not _notes and self.work:  # Obtain from work

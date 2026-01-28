@@ -457,14 +457,14 @@ class CheckCacheables(core.SCMayaCheck):
     command.
     """
 
-    action_filter = 'cache'
+    action_filter = 'cache -CurvesCache'
     task_filter = '-lookdev -render'
 
     def run(self):
         """Run this check."""
         super().run()
         for _cbl in self.update_progress(m_pipe.find_cacheables()):
-            self.write_log('check cacheable %s', _cbl)
+            self.write_log('Check cacheable %s', _cbl)
             if isinstance(_cbl, m_pipe.CPCacheableCam):
                 self._check_cam(_cbl)
             elif isinstance(_cbl, m_pipe.CPCacheableSet):

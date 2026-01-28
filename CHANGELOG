@@ -1,3 +1,26 @@
+## [8.43.0] - Wed 2026-01-28 14:49
+### Summary
+ - Sanity Check:
+    - check render globals block check motion blur outside shots (eehemann),
+### Updated
+ - pini.utils.Res.__eq__ added handling for non-res other,
+ - pini.dcc.find_pipe_refs bugfix error on off-pipeline refs,
+ - pini.dcc.CMayaShadersRef bugfix error on no top node,
+ - pini.dcc.export renamed CMayaCrvsCache -> CMayaCurvesCache WIP,
+ - pini.dcc.export.CBaseExportHandler add_notes/add_substeps/add_range as attr not arg,
+ - pini.dcc.export.CBaseExportHandler.ui.to_frames includes substeps,
+ - pini.dcc.export.CCacheable added ref arg,
+ - pini.dcc.export.CBasicSubmitter added handling for no render,
+ - pini.pipe.CACHE obt_work_dir/obt_work bugfix catch,
+ - pini.tools.sanity_check.check_cacheable_set bugfix fails blocking progression through other geos,
+ - pini.tools.sanity_check.CheckCacheables block on CurvesCache,
+ - pini.tools.sanity_check.CheckRenderGlobals no mblur outside shots,
+ - maya_pini.m_pipe.CPCacheableRef renamed arg ref_ -> ref,
+ - maya_pini.open_maya.CNode.add_attr bugfix error on reconnect message,
+ - maya_pini.open_maya.CReference.to_ctrls added with catch,
+ - maya_pini.open_maya.find_skeletons ignore HIK joint skels,
+
+
 ## [8.42.0] - Mon 2026-01-26 10:44
 ### Summary
  - Sanity Check:

@@ -7,8 +7,7 @@ from maya import cmds
 
 from pini import qt
 from pini.dcc import export
-from pini.tools import release
-from pini.utils import single, wrap_fn, check_heart, to_list
+from pini.utils import single, wrap_fn, to_list
 
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import (
@@ -36,51 +35,10 @@ def check_cacheable_set(set_, check):
         _check_for_mutiple_top_nodes,
     ]
     for _func in check.update_progress(_funcs):
+        _n_fails = len(check.fails)
         _func(set_=set_, check=check)
-        if check.fails:
+        if len(check.fails) != _n_fails:
             return
-
-
-def _fix_dup_name(geo, idxs=None, reject=None):
-    """Fix node with duplicate name.
-
-    Args:
-        geo (str): node to fix
-        idxs (dict): index of current suffix indices for each node name
-        reject (set): names to reject
-
-    Returns:
-        (str): updated name
-    """
-    release.apply_deprecation('30/07/25', 'Use maya_pini.utils.fix_dup_name')
-    _LOGGER.debug(' - GEO %s', geo)
-
-    _idxs = idxs or {}
-    _reject = reject or set()
-    _root = to_clean(geo, strip_digits=True)
-    _idx = _idxs.get(_root, 1)
-    _LOGGER.debug('   - ROOT %s %d', _root, _idx)
-
-    while True:
-        check_heart()
-        if _root.endswith('_'):
-            _new_name = f'{_root}{_idx}'
-        else:
-            _new_name = f'{_root}_{_idx}'
-        _idx += 1
-        if _new_name in _reject:
-            _LOGGER.debug('     - REJECTED IN USE %s', _new_name)
-            continue
-        if cmds.objExists(_new_name):
-            _LOGGER.debug('     - REJECTED EXISTING %s', _new_name)
-            continue
-        break
-
-    _LOGGER.debug('   - RENAME %s (FROM %s)', _new_name, geo)
-    cmds.rename(geo, _new_name)
-    _idxs[_root] = _idx + 1
-
-    return _new_name
 
 
 def _fix_basic_dup_names(tfms):
@@ -115,7 +73,7 @@ def _batch_check_for_basic_dup_names(set_, check, threshold=20):
             less than this value
     """
     _LOGGER.debug('BATCH CATCH FOR BASIC DUP NAMES')
-    check.write_log('Applying batch basic duplicate name check %s', check)
+    check.write_log(' - Applying batch basic duplicate name check %s', check)
     _bad_tfms = [_tfm for _tfm in check.tfms if '|' in str(_tfm)]
     _LOGGER.debug(' - BAD TFMS %d %s', len(_bad_tfms), _bad_tfms)
     if len(_bad_tfms) < threshold:
@@ -142,7 +100,7 @@ def _batch_check_for_cleaned_dup_names(set_, check, threshold=20):
             less than this value
     """
     _LOGGER.debug('BATCH CHECK FOR CLEANED DUP NAMES')
-    check.write_log('Applying batch cleaned duplicate name fix %s', set_)
+    check.write_log(' - Applying batch cleaned duplicate name fix %s', set_)
 
     _names = collections.defaultdict(list)
     for _tfm in check.tfms:
@@ -195,10 +153,10 @@ def _check_geo_shapes(set_, check):
         set_ (str): name of cache_SET or CSET
         check (SCCheck): check to apply fails to
     """
-    check.write_log('Checking shapes %s', set_)
     _geos = m_pipe.read_cache_set(set_=set_, mode='geo')
+    check.write_log(' - Checking shapes %s %s', set_, _geos)
     for _geo in _geos:
-        check.write_log(' - geo %s %s', _geo, type(_geo))
+        check.write_log(' - Geo %s %s', _geo, type(_geo))
         check.check_shp(_geo)
 
 

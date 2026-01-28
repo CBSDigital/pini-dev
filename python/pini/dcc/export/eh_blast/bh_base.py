@@ -20,6 +20,7 @@ class CBlastHandler(eh_base.CExportHandler):
     ICON = icons.find('Collision')
 
     _manual_range_elems = None
+    add_range = True
 
     def __init__(self, label_w=60):
         """Constructor.
@@ -35,7 +36,7 @@ class CBlastHandler(eh_base.CExportHandler):
 
     def build_ui(self):
         """Build ui elements."""
-        super().build_ui(add_range=True, version_up=False)
+        super().build_ui(version_up=False)
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""

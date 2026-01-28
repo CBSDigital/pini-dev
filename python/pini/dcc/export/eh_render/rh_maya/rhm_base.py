@@ -13,10 +13,6 @@ _LOGGER = logging.getLogger(__name__)
 class CMayaRenderHandler(rh_base.CRenderHandler):
     """Base class for any maya render handler."""
 
-    # def build_ui(self):
-    #     """Build basic render interface into the given layout."""
-    #     super().build_ui(add_range='Frames', add_snapshot=False)
-
     def find_cams(self):
         """Find cameras in the current scene.
 

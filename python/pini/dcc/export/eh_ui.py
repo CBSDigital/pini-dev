@@ -15,7 +15,8 @@ import logging
 
 from pini import qt, pipe, dcc, icons
 from pini.qt import QtWidgets, QtGui, Qt
-from pini.utils import to_nice, to_snake, str_to_ints, ints_to_str
+from pini.utils import (
+    to_nice, to_snake, str_to_ints, ints_to_str, check_heart)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -553,8 +554,7 @@ class CExportHandlerUI(qt.CUiContainer):
         self.notes_elem = self.Notes
 
     def assemble_footer_elems(
-            self, add_snapshot=True, add_version_up=True, add_notes=True,
-            version_up=True):
+            self, add_snapshot=True, add_version_up=True, version_up=True):
         """Add footer ui elements.
 
         These appear at the bottom of the export interface.
@@ -562,10 +562,9 @@ class CExportHandlerUI(qt.CUiContainer):
         Args:
             add_snapshot (bool): add snapshot option
             add_version_up (bool): add version up option
-            add_notes (bool): add notes element
             version_up (bool): default version up setting
         """
-        if add_snapshot or add_version_up or add_notes:
+        if add_snapshot or add_version_up or self.handler.add_notes:
             self.add_separator()
 
         if add_snapshot:
@@ -575,7 +574,7 @@ class CExportHandlerUI(qt.CUiContainer):
         if add_version_up:
             self.VersionUp = self.add_check_box(
                 'VersionUp', label='Version up', val=version_up)
-        if add_notes:
+        if self.handler.add_notes:
             self.add_notes_elem()
 
     def assemble_range_elems(self, mode='Continuous'):
@@ -645,7 +644,14 @@ class CExportHandlerUI(qt.CUiContainer):
         """
         _mode = self.Range.currentText()
         _LOGGER.debug('TO FRAMES %s', _mode)
-        if self.range_mode == 'Continuous':
+
+        # Apply step size
+        if self.handler.add_substeps and 'Substeps' in self._elems:
+            try:
+                _step = 1 / self.Substeps.get_val()
+            except RuntimeError:
+                _step = 1
+        elif self.range_mode == 'Continuous':
             _step = 1
         elif self.range_mode == 'Frames':
             _step = self.RangeStepSize.get_val()
@@ -657,11 +663,11 @@ class CExportHandlerUI(qt.CUiContainer):
         if _mode == 'Manual':
             _start = self.RangeManualStart.get_val()
             _end = self.RangeManualEnd.get_val()
-            _frames = list(range(_start, _end + 1, 1))
+            _frames = _to_frames(start=_start, end=_end, step=_step)
         elif _mode == 'Current frame':
             _frames = [dcc.t_frame(int)]
         elif _mode == 'From timeline':
-            _frames = list(range(_start, _end + 1, _step))
+            _frames = _to_frames(start=_start, end=_end, step=_step)
         elif _mode == 'From render globals':
             _frames = dcc.t_frames(mode='RenderGlobals')
         elif _mode == 'Custom':
@@ -739,7 +745,10 @@ class CExportHandlerUI(qt.CUiContainer):
         _LOGGER.debug('REFRESH RANGE %s', self)
 
         _frames = self.to_frames()
-        _frame_s = ints_to_str(_frames)
+        try:
+            _frame_s = ints_to_str(_frames)
+        except ValueError:
+            _frame_s = f'{min(_frames):.00f}-{max(_frames):.00f}'
         self.RangeFramesLabel.setText(f'frames: {_frame_s}')
 
     _callback__RangeCustom = _callback__RangeRefresh
@@ -760,3 +769,26 @@ def to_settings_key(handler, name):
     """
     _handler = type(handler).__name__
     return f'PiniQt.{_handler}.{name}'
+
+
+def _to_frames(start, end, step):
+    """Build list of frames.
+
+    Args:
+        start (float|int): start frame
+        end (float|int): end frame
+        step (float|int): step size
+
+    Returns:
+        (list): frames
+    """
+    if isinstance(step, int):
+        _frames = list(range(start, end + 1, step))
+    else:
+        _frames = []
+        _frame = start
+        while _frame <= end:
+            check_heart()
+            _frames.append(_frame)
+            _frame += step
+    return _frames

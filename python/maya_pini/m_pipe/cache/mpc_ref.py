@@ -15,33 +15,31 @@ _LOGGER = logging.getLogger(__name__)
 class CPCacheableRef(mpc_cacheable.CPCacheable):
     """A reference that can be cached (eg. rig/model publish)."""
 
-    def __init__(self, ref_, extn='abc'):
+    def __init__(self, ref, extn='abc'):
         """Constructor.
 
         Args:
-            ref_ (CReference): reference node
+            ref (CReference): reference node
             extn (str): cache output extension
         """
-        self.ref = ref_
-
-        # self.node = pom.CReference(ref_node)
-        _src_ref = pipe.CPOutputFile(self.ref.path)
+        _src_ref = pipe.CPOutputFile(ref.path)
         if not _src_ref:
             raise ValueError(_src_ref)
         if _src_ref.type_ != 'publish':
             raise ValueError(_src_ref)
+        self.ref = ref
         if not self.to_geo():
             raise ValueError('No export geo')
-        _output_name = self.ref.namespace.split(':')[-1]
+        _output_name = ref.namespace.split(':')[-1]
 
-        if _output_name != self.ref.namespace:
-            _label = f'{_output_name} ({to_namespace(self.ref.namespace)})'
+        if _output_name != ref.namespace:
+            _label = f'{_output_name} ({to_namespace(ref.namespace)})'
         else:
             _label = _output_name
 
         super().__init__(
             node=self.ref, src_ref=_src_ref, extn=extn,
-            output_name=_output_name, label=_label)
+            output_name=_output_name, label=_label, ref=ref)
 
     def rename(self, name):
         """Rename this cacheable.

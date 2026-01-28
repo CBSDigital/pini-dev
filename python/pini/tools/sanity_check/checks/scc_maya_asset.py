@@ -200,7 +200,8 @@ class CheckCacheSet(core.SCMayaCheck):
             self.add_fail(_msg, fix=_fix)
             return
 
-        self._check_for_referenced_tfm(tfms=_tfms)
+        if self._check_for_referenced_tfm(tfms=_tfms):
+            return
 
         utils.check_cacheable_set(set_=_set, check=self)
 
@@ -214,7 +215,7 @@ class CheckCacheSet(core.SCMayaCheck):
         # Check for referenced transforms
         _refd_tfms = [_tfm for _tfm in tfms if _tfm.is_referenced()]
         if not _refd_tfms:
-            return
+            return False
         self.write_log('Referenced tfms %s', _refd_tfms)
         _refs = sorted({_tfm.to_reference() for _tfm in _refd_tfms})
         self.write_log('Refs %s', _refs)
@@ -232,14 +233,18 @@ class CheckCacheSet(core.SCMayaCheck):
                 f'set to "{_refs_mode.value}" (should be '
                 f'"{_imp_root.value}")',
                 fix=_fix)
+            return True
 
-        elif len(_refs) != 1 and _refs_mode != _imp_underscores:
+        if len(_refs) != 1 and _refs_mode != _imp_underscores:
             _fix = wrap_fn(export.set_pub_refs_mode, _imp_underscores)
             self.add_fail(
                 f'Referenced geo from multiple references in cache set '
                 f'but references mode is "{_refs_mode.value}" (should be '
                 f'"{_imp_root.value}")',
                 fix=_fix)
+            return True
+
+        return False
 
 
 class CheckCtrlsSet(core.SCMayaCheck):
