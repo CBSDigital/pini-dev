@@ -6,7 +6,7 @@ import functools
 import logging
 import time
 
-from pini import icons
+from pini import icons, qt
 from pini.utils import single, cache_method_to_file, str_to_seed
 
 from ..ccp_utils import pipe_cache_result
@@ -352,15 +352,18 @@ class CCPJobBase(CPJob):
         Args:
             col (str): colour name
         """
-        raise NotImplementedError
+        assert qt.to_col(col)
+        assert isinstance(col, str)
+        self.set_setting(col=col)
 
-    def set_icon(self, icon):
+    def set_icon(self, name):
         """Set icon for this job.
 
         Args:
-            icon (str): path to icon
+            name (str): icon emoji name (eg. Pancakes)
         """
-        raise NotImplementedError
+        assert icons.find_icon(name)
+        self.set_setting(icon=name)
 
     def to_asset(self, asset_type, asset, class_=None, catch=True):
         """Build an asset object for an asset within this job.
@@ -414,10 +417,9 @@ class CCPJobBase(CPJob):
         Returns:
             (QColor): job colour
         """
-        from pini import qt
         _rand = str_to_seed(self.name)
         if self.settings['col']:
-            _col = self.settings['col']
+            _col = qt.to_col(self.settings['col'])
         else:
             _col = _rand.choice(qt.BOLD_COLS)
             _col = qt.CColor(_col)

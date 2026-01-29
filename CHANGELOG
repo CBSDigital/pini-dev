@@ -1,3 +1,23 @@
+## [8.43.2] - Thu 2026-01-29 14:12
+### Summary
+ - Pini Helper:
+    - new scene maintains current renderer (eehemann),
+    - new scene apply multi-channel exr (eehemann),
+    - submit handlers added name filter (eehemann),
+    - output right-click remove omit option in shotgrid pipeline (nhoyt),
+    - output right-click remove delete option in shotgrid pipeline,
+### Updated
+ - pini.dcc.MayaDCC.new_scene maintain cur renderer,
+ - pini.dcc.MayaDCC.new_scene maintain apply multi channel exr,
+ - pini.dcc.export.CExportHandlerUI.add_line_edit added callback/label_w args,
+ - pini.dcc.export.CExportHandlerUI.add_list_widget added callback/label_w args,
+ - pini.dcc.export.CBasicSubmit added renders filter,
+ - pini.pipe.CACHE.CCPJob set_col/set_icon implemented,
+ - pini.tools.helper.PiniHelper.add_output_opts made public,
+ - pini.tools.helper output ctx removed delete opt in sg pipe,
+ - pini.tools.helper output ctx added omit opt in sg pipe,
+
+
 ## [8.43.1] - Thu 2026-01-29 09:14
 ### Summary
  - Pini Helper:

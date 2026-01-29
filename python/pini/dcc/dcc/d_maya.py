@@ -6,7 +6,7 @@ import ast
 import inspect
 import logging
 
-from maya import cmds
+from maya import cmds, mel
 
 from pini.utils import single, wrap_fn, EMPTY, Path, abs_path
 
@@ -166,12 +166,30 @@ class MayaDCC(BaseDCC):
 
     def _force_new_scene(self):
         """Force new scene."""
+        from maya_pini.utils import (
+            set_render_extn, cur_renderer, process_deferred_events)
+        _LOGGER.debug('FORCE NEW SCENE')
+
+        # Read current renderer
+        _ren = cur_renderer()
+        _LOGGER.debug(' - CUR RENDERER %s', _ren)
+
         cmds.file(new=True, force=True)
 
         # Delete unwanted node (from redshift callbacks?)
         _unknown = cmds.ls(type='unknown')
         if _unknown:
             cmds.delete(_unknown)
+
+        # Maintain renderer
+        if _ren:
+            _LOGGER.debug(' - SET RENDERER %s', _ren)
+            mel.eval(f'setCurrentRenderer "{_ren}"')
+            process_deferred_events()
+        _ren = cur_renderer()
+        set_render_extn('exr')
+        if _ren == 'redshift':
+            cmds.setAttr("redshiftOptions.exrMultipart", True)
 
         cmds.file(modified=False)
 

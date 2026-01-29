@@ -289,8 +289,8 @@ class PHUiBase(
         self.ui.Refresh.click()
         self.jump_to(dcc.cur_file())
 
-    def _add_output_opts(
-            self, menu, output, find_work=True, header=True, delete=True,
+    def add_output_opts(
+            self, menu, output, find_work=True, header=True, delete=None,
             add=True, ignore_ui=False, ref=None, delete_callback=None):
         """Add menu options for the given output.
 
@@ -311,6 +311,10 @@ class PHUiBase(
         _out_c = pipe.CACHE.obt_output(_out, catch=True)
         _LOGGER.debug('   - OUT C %s', _out_c)
 
+        _del = delete
+        if _del is None:
+            _del = pipe.MASTER != 'shotgrid'
+
         # Add header
         if header:
             _type = output.type_.capitalize()
@@ -320,7 +324,7 @@ class PHUiBase(
 
         # Add actions based on file type
         self._add_output_path_opts(
-            menu=menu, output=_out, output_c=_out_c, delete=delete,
+            menu=menu, output=_out, output_c=_out_c, delete=_del,
             delete_callback=delete_callback)
 
         # Add shotgrid opts
@@ -335,6 +339,11 @@ class PHUiBase(
                 _open_url = wrap_fn(webbrowser.open, _pub.to_url())
                 menu.add_action(
                     'Open in shotgrid', icon=icons.URL, func=_open_url)
+                _work = pipe.CACHE.obt_work(_out_c.metadata['src'], catch=True)
+                _omit = chain_fns(
+                    _pub.omit, self._callback__Refresh, _work.update_outputs)
+                menu.add_action(
+                    'Omit in shotgrid', icon=icons.DELETE, func=_omit)
 
         if not _out_c:
             return

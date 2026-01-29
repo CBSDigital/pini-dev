@@ -16,7 +16,7 @@ import logging
 from pini import qt, pipe, dcc, icons
 from pini.qt import QtWidgets, QtGui, Qt
 from pini.utils import (
-    to_nice, to_snake, str_to_ints, ints_to_str, check_heart)
+    to_nice, to_snake, str_to_ints, ints_to_str, check_heart, wrap_fn)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -395,34 +395,36 @@ class CExportHandlerUI(qt.CUiContainer):
         return _label
 
     def add_line_edit(
-            self, name, val=None, label=None, tooltip=None,
-            save_policy=None, add_elems=(), ui_only=False):
-        """Add QLineEdit element to this handler's interface.
+            self, name, val=None, label=None, tooltip=None, callback=None,
+            save_policy=None, add_elems=(), ui_only=False, label_w=None):
+        """Add QLineEdit layout to this handler's interface.
 
         Args:
             name (str): element name
             val (str): text for element
             label (str): element label
             tooltip (str): apply tooltip
+            callback (fn): callback to link to widget
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
             add_elems (list): widgets to add to this layout
             ui_only (bool): element is ui only (ie. do not pass to exec func)
+            label_w (int): element label width
 
         Returns:
             (QListEdit): line edit element
         """
         _line_edit = self.build_line_edit(
             name=name, val=val, tooltip=tooltip, save_policy=save_policy,
-            ui_only=ui_only)
+            ui_only=ui_only, callback=callback)
         self._setup_elem_lyt(
             elem=_line_edit, label=label, tooltip=tooltip, stretch=False,
-            add_elems=add_elems)
+            add_elems=add_elems, label_w=label_w)
         return _line_edit
 
     def add_list_widget(
             self, name, items=None, label=None, icon_size=30, redraw=True,
-            multi=True, select=None, add_elems=()):
+            multi=True, select=None, add_elems=(), add_filter=False):
         """Add CListWidget element to this interface.
 
         Args:
@@ -435,6 +437,7 @@ class CExportHandlerUI(qt.CUiContainer):
             multi (bool): allow multi selection
             select (list|any): apply selection
             add_elems (tuple): add elements to label layout
+            add_filter (bool): add list filter options
         """
         self.add_separator()
 
@@ -474,6 +477,38 @@ class CExportHandlerUI(qt.CUiContainer):
             _list.select(select)
         self.layout.addWidget(_list)
         self.layout.setStretch(self.layout.count() - 1, 1)
+
+        # Add filter
+        if add_filter:
+            _name = f'{name}Filter'
+            _clear = self.build_icon_btn(
+                name=f'{_name}Clear', icon=icons.CLEAR, callback=wrap_fn(
+                    self._apply_elem_action, _name, action='clear'))
+            self.add_line_edit(
+                _name, label='Filter', ui_only=True, label_w=50,
+                add_elems=[_clear], callback=_redraw_fn,
+                save_policy=qt.SavePolicy.NO_SAVE)
+
+        self.add_separator()
+
+    def _apply_elem_action(self, name, action):
+        """Apply an action to a UI element.
+
+        This can be used apply a callback to an element that has not
+        been built yet.
+
+        Args:
+            name (str): name of element (eg. RenderFilter)
+            action (str): action to take (eg. clear)
+        """
+        _elem = self._elems[name]
+        if action == 'clear':
+            if isinstance(_elem, QtWidgets.QLineEdit):
+                _elem.setText('')
+            else:
+                raise NotImplementedError(_elem)
+        else:
+            raise NotImplementedError(action)
 
     def add_exec_btn(self, label):
         """Build execute button.

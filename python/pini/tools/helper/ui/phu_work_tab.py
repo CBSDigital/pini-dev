@@ -715,9 +715,10 @@ class PHWorkTab:
         else:
             _out_menu = parent
 
-        self._add_output_opts(
+        self.add_output_opts(
             menu=_out_menu, output=out, find_work=False, ignore_ui=True,
-            delete_callback=self._callback__WWorkRefresh)
+            delete_callback=self._callback__WWorkRefresh,
+            delete=pipe.MASTER != 'shotgrid')
 
     def _context__WWorkRefresh(self, menu):
         menu.add_action(

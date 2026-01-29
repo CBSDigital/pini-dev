@@ -1,13 +1,12 @@
 """Tools for managing the basic shotgrid submit tool."""
 
 import logging
-import pprint
 
 from pini import icons, qt, pipe
 from pini.dcc import export
 from pini.pipe import shotgrid
 from pini.tools import helper
-from pini.utils import wrap_fn
+from pini.utils import passes_filter
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +28,8 @@ class CBasicSubmitter(export.CExportHandler):
         self.ui.add_separator()
         self.ui.add_combo_box('Task', ['Placeholder'], ui_only=True)
 
-        self.ui.add_list_widget('Render', redraw=False, multi=False)
+        self.ui.add_list_widget(
+            'Render', redraw=False, multi=False, add_filter=True)
         self.ui.add_check_box(
             'HideSubmitted', val=True, ui_only=True)
         self.ui.add_check_box(
@@ -63,6 +63,8 @@ class CBasicSubmitter(export.CExportHandler):
         _hide_submitted = self.ui.HideSubmitted.isChecked()
         _latest = self.ui.Latest.isChecked()
         _task = self.ui.Task.currentText()
+        _filter = self.ui.RenderFilter.text()
+        _LOGGER.debug(' - FILTER %s', _filter)
 
         # Build items list
         _items = []
@@ -72,6 +74,8 @@ class CBasicSubmitter(export.CExportHandler):
             if _task not in _out.task_label:
                 continue
             if _latest and not _out.is_latest():
+                continue
+            if _filter and not passes_filter(_out.filename, _filter):
                 continue
 
             _LOGGER.debug(' - CHECKING OUT %s', _out)
@@ -104,12 +108,8 @@ class CBasicSubmitter(export.CExportHandler):
     def _context__Render(self, menu):
         _ren = self.ui.Render.selected_data()
         if _ren:
-            menu.add_clip_actions(_ren)
-            menu.add_separator()
-            menu.add_action(
-                'Print metadata',
-                wrap_fn(pprint.pprint, _ren.metadata, width=200),
-                icon=icons.PRINT)
+            helper.DIALOG.add_output_opts(
+                menu=menu, output=_ren)
 
     def exec(self, render=None, **kwargs):
         """Execute this exporter.

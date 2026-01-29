@@ -994,7 +994,7 @@ class PHSceneTab:
             self._ctx_scene_ref_add_update_rep_opts(menu, refs=[ref])
         menu.add_separator()
 
-        self._add_output_opts(
+        self.add_output_opts(
             menu=menu, output=_out, header=False, delete=False,
             add=False, ref=ref)
 
