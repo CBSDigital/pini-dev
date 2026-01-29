@@ -8,7 +8,7 @@ from ..cache import cache_result
 from ..path import Dir, File, TMP_PATH, abs_path
 
 from ..u_exe import find_exe
-from ..u_misc import to_str
+from ..u_misc import to_str, ints_to_str
 from ..u_system import system
 from ..u_time import strftime, nice_age
 
@@ -221,7 +221,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
         tune=None, speed=None, burnins=False, res=None, range_=None,
         lut=None, check_for_bad_frames=True, result='file', safe=True,
-        verbose=0):
+        flags=(), verbose=0):
     """Build video file using ffmpeg.
 
     Args:
@@ -245,6 +245,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         check_for_bad_frames (bool): check seq for bad frames
         result (str): value to return (file/cmds)
         safe (bool): disable integrity checks
+        flags (tuple): add flags to ffmpeg command
         verbose (int): print process data
 
     Returns:
@@ -253,10 +254,15 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
     from pini import dcc
     from pini.utils import Video
 
+    seq.to_frames(force=True)
     if safe:
+        if not seq.exists():
+            raise RuntimeError(f'No files found {seq.path}')
         if check_for_bad_frames:
             seq.check_for_bad_frames()
-        assert not seq.is_missing_frames()
+        if seq.is_missing_frames():
+            raise RuntimeError(
+                f'Incomplete range {ints_to_str(seq.frames)} {seq.path}')
 
     _video = Video(abs_path(to_str(video)))
     _ffmpeg = find_ffmpeg_exe()
@@ -307,6 +313,8 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         _args += ['-vf', f"nlmeans='{denoise:.01f}:7:5:3:3'"]
     if res:
         _args += ['-vf', f'scale={res[0]:d}:{res[1]:d}']
+    if flags:
+        _args += list(flags)
     _args += [_video]
 
     # Execute ffmpeg

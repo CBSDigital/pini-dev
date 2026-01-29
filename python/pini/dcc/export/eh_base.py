@@ -158,14 +158,15 @@ class CExportHandler:
         _checks_data = self.settings['checks_data']
         _force = self.settings['force']
         _run_checks = self.settings['run_checks']
-        _LOGGER.debug('BUILD METADATA force=%d')
+        _LOGGER.debug(' - FORCE %d', _force)
         _LOGGER.debug(' - RUN CHECKS %d %s', _run_checks, _checks_data)
 
         _notes = self._obt_notes()
         _LOGGER.debug(' - NOTES %s', _notes)
         _data = eh_utils.build_metadata(
             action=self.ACTION, work=self.work, handler=type(self).__name__,
-            run_checks=_run_checks, force=_force, task=self.work.pini_task,
+            run_checks=_run_checks, force=_force,
+            task=self.work.pini_task if self.work else None,
             notes=_notes, require_notes=False, checks_data=_checks_data)
 
         return _data
@@ -345,8 +346,9 @@ class CExportHandler:
 
         self._set_work()
 
-        _notes = self._obt_notes()
+        # _notes = self._obt_notes()
         self.metadata = self.build_metadata()
+        _notes = self.metadata.get('notes')
         self._check_for_overwrite()
 
         # Show progress after any ops which might raise a dialog as this
@@ -494,18 +496,22 @@ class CExportHandler:
         if not _notes and self.work:  # Obtain from work
             _notes = self.work.notes
         if not _force and not _notes:  # Request from user
+            _LOGGER.debug(' - REQUEST NOTES FROM USER')
             _notes = qt.input_dialog(
                 'Please enter notes for this export:', title='Notes')
+            _LOGGER.debug(' - USER NOTES %s', _notes)
             if self.ui and self.ui.notes_elem:
                 _LOGGER.debug(
                     ' - APPLY NOTES %s %s', _notes, self.ui.notes_elem)
                 self.ui.notes_elem.setText(_notes)
 
         # Apply notes to work
+        _LOGGER.debug(' - APPLY NOTES TO WORK %s', self.work)
         if _notes and self.work and not self.work.notes:
             assert isinstance(self.work, cache.CCPWork)
             self.work.set_notes(_notes)
 
+        _LOGGER.debug(' - OBTAINED NOTES %s', _notes)
         return _notes
 
     def _register_in_shotgrid(self, upstream_files=None):

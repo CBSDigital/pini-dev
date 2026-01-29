@@ -1,3 +1,13 @@
+## [8.43.1] - Thu 2026-01-29 09:14
+### Summary
+ - Pini Helper:
+    - better error on submit with no frames / incomplete range (eehemann),
+### Updated
+ - pini.utils.seq_to_video better error on missing files / incomplete range,
+ - pini.utils.seq_to_video added flags arg,
+ - pini.dcc.export.CBaseExportHandler.build_metadata bugfix error on no work,
+
+
 ## [8.43.0] - Wed 2026-01-28 14:49
 ### Summary
  - Sanity Check:
