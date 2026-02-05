@@ -87,7 +87,7 @@ def create_pub_file_from_output(
         _LOGGER.debug(' - UPDATING CACHE')
         _ety_c = pipe.CACHE.obt(output.entity)
         _ety_c.find_outputs(force=True)
-        _out_c = pipe.CACHE.obt(output)
+        _out_c = pipe.CACHE.obt_output(output)
         assert _out_c
         _LOGGER.debug(' - UPDATED CACHE')
         _sg_pub = _out_c.sg_pub_file.data

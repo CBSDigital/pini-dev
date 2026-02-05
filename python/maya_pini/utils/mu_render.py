@@ -386,11 +386,12 @@ def _apply_rs_fmt_idx(idx):
             'redshift') from _exc
 
 
-def set_render_extn(extn: str):
+def set_render_extn(extn: str, catch=False):
     """Set render format for the current renderer.
 
     Args:
         extn (str): format to apply
+        catch (bool): no error if fail to apply extension
     """
     from maya_pini import open_maya as pom
     from maya_pini.utils import process_deferred_events
@@ -403,9 +404,10 @@ def set_render_extn(extn: str):
         pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(_extn)
     elif _ren == 'mayaSoftware':
         _map = _obt_image_fmts_map()
-        _idx = single(_map[_extn])
-        cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
-        _LOGGER.info(' - SET defaultRenderGlobals.imageFormat %s', _idx)
+        if extn in _map:
+            _idx = single(_map[_extn])
+            cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
+            _LOGGER.info(' - SET defaultRenderGlobals.imageFormat %s', _idx)
     elif _ren == 'redshift':
         _map = _obt_image_fmts_map()
         _idx = single(_map[_extn])
@@ -418,8 +420,11 @@ def set_render_extn(extn: str):
     # Check success
     _cur_extn = to_render_extn()
     if _cur_extn != _extn:
-        raise RuntimeError(
-            f'Failed to apply extn "{_extn}" (currently "{_cur_extn}")')
+        _msg = f'Failed to apply extn "{_extn}" (currently "{_cur_extn}")'
+        if catch:
+            _LOGGER.error(_msg)
+            return
+        raise RuntimeError(_msg)
 
 
 def set_render_res(res: tuple):

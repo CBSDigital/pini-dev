@@ -187,7 +187,7 @@ class MayaDCC(BaseDCC):
             mel.eval(f'setCurrentRenderer "{_ren}"')
             process_deferred_events()
         _ren = cur_renderer()
-        set_render_extn('exr')
+        set_render_extn('exr', catch=True)
         if _ren == 'redshift':
             cmds.setAttr("redshiftOptions.exrMultipart", True)
 

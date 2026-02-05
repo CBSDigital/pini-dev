@@ -144,6 +144,8 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         else:
             raise NotImplementedError(status)
         shotgrid.update(self.ENTITY_TYPE, self.id_, _data)
+        self.data['sg_status_list'] = status
+        self.status = status
 
     def to_entry(self):
         """Build shotgrid uid dict for this data entry.

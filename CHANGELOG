@@ -1,3 +1,21 @@
+## [8.44.0] - Thu 2026-02-05 14:39
+### Summary
+ - Pini Helper:
+    - bugfix error browse job with deleted outputs,
+### Updated
+ - pini.utils.to_pascal added . to rx splitters,
+ - pini.dcc.MayaDCC._force_new_scene added catch to set render extn,
+ - pini.pipe.CPOutputBase.sg_pub_file added as default attr,
+ - pini.pipe.CACHE.CCPOutputBase.updated_at use sg_pub_file data if available,
+ - pini.pipe.shotgrid.SGC.SGCElem.set_status update attr/data,
+ - pini.tools.helper.PiniHelper.obt_output_opts made public,
+ - pini.tools.helper.PiniHelper omit output ctx bugfix not updating helper,
+ - maya_pini.utils.CONSTRAINT_TYPES added,
+ - maya_pini.utils.set_render_extn added catch,
+ - maya_pini.open_maya.CBaseTransform.find_children added types filter + bugfix recursive,
+ - maya_pini.open_maya.CSkeleton.duplicate added delete_constraints arg,
+
+
 ## [8.43.2] - Thu 2026-01-29 14:12
 ### Summary
  - Pini Helper:

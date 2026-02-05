@@ -348,6 +348,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _kwargs = {}
         if name:
             _kwargs['name'] = name
+        _LOGGER.debug(' - KWARGS %s', _kwargs)
         _class = class_ or type(self)
         _results = cmds.duplicate(
             self, renameChildren=True, upstreamNodes=upstream_nodes,

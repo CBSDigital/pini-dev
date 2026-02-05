@@ -31,6 +31,14 @@ for _cam in ['persp', 'top', 'side', 'front', 'back', 'left']:
     DEFAULT_NODES += [_cam, _cam + 'Shape']
 DEFAULT_NODES = tuple(sorted(DEFAULT_NODES))
 
+CONSTRAINT_TYPES = [
+    'pointConstraint',
+    'orientConstraint',
+    'parentConstraint',
+    'aimConstraint',
+    'scaleConstraint',
+]
+
 
 @restore_ns
 def add_to_dlayer(obj, layer):

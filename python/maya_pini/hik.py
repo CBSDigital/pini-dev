@@ -457,7 +457,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     _name = skel.to_name(catch=True)
 
     # Use default 1:1 name map
-    if _name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat', None):
+    if _name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat', None, 'RokokoRaw1'):
         _jnts = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Spine3', 'Neck', 'Head']
         for _side in ['Left', 'Right']:
             for _name in [
@@ -498,6 +498,58 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
                     ('radius', 'ForeArm'),
                     ('hand', 'Hand')]:
                 _jnt_map.append((_side_skel + _src, _side_hik + _dest))
+
+    elif skel.name == 'RokokoRaw2':
+        _jnt_map = [
+            ('Root', 'Reference'),
+            ('Hips', 'Hips'),
+            ('Spine1', 'Spine'),
+            ('Spine2', 'Spine1'),
+            ('Spine3', 'Spine2'),
+            ('Spine4', 'Spine3'),
+            ('Neck', 'Head'),
+            ('RightArm', 'RightArm'),
+            ('LeftArm', 'LeftArm'),
+            ('RightForeArm', 'RightForeArm'),
+            ('LeftForeArm', 'LeftForeArm'),
+            ('RightHand', 'RightHand'),
+            ('LeftHand', 'LeftHand'),
+            ('RightFinger1Metacarpal', 'RightHandThumb1'),
+            ('LeftFinger1Metacarpal', 'LeftHandThumb1'),
+            ('LeftFinger1Proximal', 'LeftHandThumb2'),
+            ('RightFinger1Proximal', 'RightHandThumb2'),
+            ('RightFinger1Distal', 'RightHandThumb3'),
+            ('LeftFinger1Distal', 'LeftHandThumb3'),
+            ('LeftFinger2Metacarpal', 'LeftHandIndex1'),
+            ('RightFinger2Metacarpal', 'RightHandIndex1'),
+            ('RightFinger2Proximal', 'RightHandIndex2'),
+            ('LeftFinger2Proximal', 'LeftHandIndex2'),
+            ('LeftFinger2Medial', 'LeftHandIndex3'),
+            ('RightFinger2Medial', 'RightHandIndex3'),
+            ('LeftFinger3Metacarpal', 'LeftHandMiddle1'),
+            ('RightFinger3Metacarpal', 'RightHandMiddle1'),
+            ('RightFinger3Proximal', 'RightHandMiddle2'),
+            ('LeftFinger3Proximal', 'LeftHandMiddle2'),
+            ('LeftFinger3Medial', 'LeftHandMiddle3'),
+            ('RightFinger3Medial', 'RightHandMiddle3'),
+            ('RightFinger4Metacarpal', 'RightHandRing1'),
+            ('LeftFinger4Metacarpal', 'LeftHandRing1'),
+            ('RightFinger4Proximal', 'LeftHandRing2'),
+            ('LeftFinger4Proximal', 'RightHandRing2'),
+            ('LeftFinger4Distal', 'RightHandRing3'),
+            ('RightFinger4Distal', 'LeftHandRing3'),
+            ('LeftFinger5Metacarpal', 'LeftHandPinky1'),
+            ('RightFinger5Metacarpal', 'RightHandPinky1'),
+            ('RightFinger5Proximal', 'RightHandPinky2'),
+            ('LeftFinger5Proximal', 'LeftHandPinky2'),
+            ('LeftFinger5Medial', 'LeftHandPinky3'),
+            ('RightFinger5Medial', 'RightHandPinky3'),
+            ('RightThigh', 'RightUpLeg'),
+            ('LeftThigh', 'LeftUpLeg'),
+            ('RightShin', 'RightLeg'),
+            ('LeftShin', 'LeftLeg'),
+            ('RightFoot', 'RightFoot'),
+            ('LeftFoot', 'LeftFoot')]
 
     else:
         raise ValueError(skel.name)

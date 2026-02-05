@@ -6,7 +6,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import single, passes_filter
+from pini.utils import single, passes_filter, to_list
 
 from . import pom_base_node
 
@@ -170,7 +170,8 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return self.plug['visibility']
 
     def find_children(
-            self, type_=None, recursive=False, class_=None, filter_=None):
+            self, type_=None, recursive=False, class_=None, filter_=None,
+            types=None):
         """Find children of this node.
 
         Args:
@@ -179,24 +180,22 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
             class_ (class): cast results to this node type, ignoring
                 any which fail to cast
             filter_ (str): filter by child name
+            types (str list): filter by list of types
 
         Returns:
             (CNode list): children
         """
         _LOGGER.debug('FIND CHILDREN %s', self)
 
-        _kwargs = {}
+        _types = to_list(types)
         if type_:
-            _kwargs['type'] = type_
+            _types.append(type_)
+        _LOGGER.debug(' - TYPES %s', _types)
 
         _children = []
-        for _child in self.cmds.listRelatives(
-                children=True, path=True, **_kwargs):
+        for _child in self.cmds.listRelatives(children=True, path=True):
 
             _LOGGER.debug(' - CHILD %s', _child)
-
-            if filter_ and not passes_filter(str(_child), filter_):
-                continue
 
             # Test if this result should be added
             _result = _child
@@ -206,12 +205,20 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
                 except ValueError:
                     _result = None
             if _result:
-                _children.append(_result)
+                if filter_ and not passes_filter(str(_child), filter_):
+                    pass
+                elif _types and _result.object_type() not in _types:
+                    pass
+                else:
+                    _children.append(_result)
+            _LOGGER.debug(
+                '   - RESULT %s type=%s tfm=%d', _result, type(_result),
+                isinstance(_child, CBaseTransform))
 
             # Apply recursion
             if recursive and isinstance(_child, CBaseTransform):
                 _children += _child.find_children(
-                    type_=type_, recursive=True, class_=class_)
+                    types=_types, recursive=True, class_=class_)
 
         return _children
 

@@ -64,6 +64,8 @@ class CPOutputBase:
     data = None
     template = None
 
+    sg_pub_file = None
+
     def __init__(
             self, job=None, entity=None, work_dir=None, templates=None,
             template=None, types=None, latest=None):

@@ -4,7 +4,7 @@ import logging
 import re
 
 _LOGGER = logging.getLogger(__name__)
-_SPLIT_RX = r'[ \-_\[\]\n:\(\),]'
+_SPLIT_RX = r'[ \-_\[\]\n:\(\),.]'
 _IGNORE_CHRS = "'"
 
 

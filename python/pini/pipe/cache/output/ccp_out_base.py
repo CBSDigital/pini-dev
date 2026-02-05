@@ -3,7 +3,7 @@
 import logging
 
 from pini import pipe
-from pini.utils import single, Seq, is_pascal, File, EMPTY
+from pini.utils import single, Seq, is_pascal, File, EMPTY, to_time_t
 
 from . import ccp_out_ghost
 from ..ccp_utils import pipe_cache_on_obj
@@ -171,6 +171,8 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (float): update time (in seconds since epoch)
         """
+        if self.sg_pub_file:
+            return to_time_t(self.sg_pub_file.updated_at)
         return self.metadata.get('mtime')
 
     @property

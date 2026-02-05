@@ -340,10 +340,9 @@ class PHUiBase(
                 menu.add_action(
                     'Open in shotgrid', icon=icons.URL, func=_open_url)
                 _work = pipe.CACHE.obt_work(_out_c.metadata['src'], catch=True)
-                _omit = chain_fns(
-                    _pub.omit, self._callback__Refresh, _work.update_outputs)
                 menu.add_action(
-                    'Omit in shotgrid', icon=icons.DELETE, func=_omit)
+                    'Omit in shotgrid', icon=icons.DELETE,
+                    func=wrap_fn(self._exec_sg_omit, pub=_pub, work=_work))
 
         if not _out_c:
             return
@@ -380,6 +379,20 @@ class PHUiBase(
         if _apply_lookdev_opts(output, ref):
             self._add_output_lookdev_opts(
                 menu, lookdev=output, ref=ref, ignore_ui=ignore_ui)
+
+    def _exec_sg_omit(self, pub, work):
+        """Execute sshotgrid omit with cache + helper update.
+
+        Args:
+            pub (CCPOutput): output to omit
+            work (CCPWork): work file
+        """
+        pub.omit()
+        if isinstance(pub.entity, pipe.CPAsset):
+            pub.entity.find_publishes(force=True)
+            pub.job.find_publishes(force=True)
+        self._callback__Refresh()
+        work.update_outputs()
 
     def _add_output_path_opts(
             self, menu, output, output_c, delete, delete_callback):

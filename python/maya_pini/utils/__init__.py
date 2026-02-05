@@ -20,4 +20,4 @@ from .mu_misc import (
     cur_file, DEFAULT_NODES, to_clean, set_enum, to_long, cycle_check,
     create_attr, to_unique, to_shp, to_shps, to_parent, set_col,
     add_to_grp, add_to_set, add_to_dlayer, bake_results, to_node,
-    to_audio, set_workspace, is_attr, fix_dup_name)
+    to_audio, set_workspace, is_attr, fix_dup_name, CONSTRAINT_TYPES)

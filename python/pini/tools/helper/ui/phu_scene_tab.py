@@ -906,7 +906,7 @@ class PHSceneTab:
         _outs = self.ui.SOutputs.selected_datas()
         if _out:
 
-            self._add_output_opts(menu=menu, output=_out)
+            self.add_output_opts(menu=menu, output=_out)
             menu.add_separator()
 
             # Add replace options

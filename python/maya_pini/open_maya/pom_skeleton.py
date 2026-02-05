@@ -15,7 +15,8 @@ from pini.utils import (
     single, cache_property, basic_repr, passes_filter, File, cache_result,
     EMPTY)
 
-from maya_pini.utils import to_clean, bake_results, to_namespace, to_node
+from maya_pini.utils import (
+    to_clean, bake_results, to_namespace, to_node, CONSTRAINT_TYPES)
 
 _LOGGER = logging.getLogger(__name__)
 _NAME_MAPPINGS_YML = os.environ.get('MAYA_PINI_SKELETON_NAMES')
@@ -239,7 +240,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 _LOGGER.debug(
                     ' - BUILD CONSTRAINT %s %s -> %s (%d)', _cons_fn,
                     _src_jnts, _b_jnt, _cons_fn is pom.CMDS.orientConstraint)
-                _cons = _cons_fn(*_args)
+                _cons = _cons_fn(*_args, maintainOffset=False)
                 _type = _cons.object_type()
                 _LOGGER.debug(' - TYPE %s', _type)
                 if _type == 'orientConstraint':
@@ -262,14 +263,34 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         from maya_pini import hik
         return hik.build_hik(self, **kwargs)
 
-    def duplicate(self):
+    def duplicate(self, delete_constraints=False):
         """Duplicate this skeleton.
+
+        Args:
+            delete_constraints (bool): delete any leftover constraints
+                in the skeleton
 
         Returns:
             (CSkeleton): duplicate skeleton
         """
+        _LOGGER.debug('DUPLICATE %s root=%s', self, self.root)
         _dup = self.root.duplicate()
+        _LOGGER.debug(' - DUP NODE %s', _dup)
+        if delete_constraints:
+            _ctns = _dup.find_children(types=CONSTRAINT_TYPES, recursive=True)
+            if _ctns:
+                cmds.delete(_ctns)
         return CSkeleton(_dup)
+
+    def find_hik(self):
+        """Find HIK system associated with this skeleton.
+
+        Returns:
+            (PHIKNode): HIK system
+        """
+        # from maya_pini import hik
+        # return self.root.find
+        raise NotImplementedError
 
     def find_joint(self, name, side=None, catch=True):
         """Find a joint in this skeleton.
@@ -345,26 +366,27 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 continue
             _plug.anim.loop(offset=_offset)
 
-    def to_joint(self, name, catch=True):
+    def to_joint(self, name, catch=True, log=9):
         """Find a joint in this skeleton.
 
         Args:
             name (str): match by name
             catch (bool): no error if no joint found
+            log (int): apply log level
 
         Returns:
             (CJoint): joint
         """
         from maya_pini import open_maya as pom
-        _LOGGER.debug('TO JOINT %s', name)
+        _LOGGER.log(log, 'TO JOINT %s', name)
 
         # Try simple name match
         _name = to_clean(name)
         _node = to_node(_name, namespace=self.namespace)
-        _LOGGER.debug(' - NODE %s', _node)
+        _LOGGER.log(log, ' - NODE %s', _node)
         if cmds.objExists(_node):
             return pom.CJoint(_node)
-        _LOGGER.debug(' - NODE DOES NOT EXIST')
+        _LOGGER.log(log, ' - NODE DOES NOT EXIST')
 
         if not catch:
             raise ValueError(name)
@@ -472,6 +494,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         Args:
             break_conns (bool): break connections
         """
+        _LOGGER.debug('ZERO %s', self)
         for _jnt in self.joints:
             for _plug in [_jnt.rx, _jnt.ry, _jnt.rz]:
                 if _plug.is_locked():
