@@ -362,8 +362,8 @@ class CCPJobBase(CPJob):
         Args:
             name (str): icon emoji name (eg. Pancakes)
         """
-        assert icons.find_icon(name)
-        self.set_setting(icon=name)
+        _emoji = icons.find_emoji(name)
+        self.set_setting(icon=_emoji.name)
 
     def to_asset(self, asset_type, asset, class_=None, catch=True):
         """Build an asset object for an asset within this job.

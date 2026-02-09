@@ -6,4 +6,4 @@ from .prm_node import (
     create_rs_pxy, CMayaImgPlaneRef, find_ai_vols, create_rs_vol,
     CMayaFileRef)
 from .prm_ref import CMayaRef, CMayaShadersRef
-from .prm_tools import find_pipe_refs, create_cam_ref
+from .prm_tools import find_pipe_refs, create_cam_ref, create_ref

@@ -57,7 +57,7 @@ class CListViewPixmapItem(qw_list_view_widget_item.CListViewWidgetItem):
         Returns:
             (QFont): font
         """
-        _size = int(os.environ.get('PINI_DEFAULT_FONT_SIZE', 7)) + 1
+        _size = int(os.environ.get('PINI_DEFAULT_FONT_SIZE', 9)) - 1
         if not self._font or not self._font.pointSize() == _size:
             self._font = QtGui.QFont()
             self._font.setPointSize(_size)

@@ -107,7 +107,7 @@ def _batch_check_for_cleaned_dup_names(set_, check, threshold=20):
         _name = to_clean(_tfm)
         _names[_name].append(_tfm)
     _names = dict(_names)
-    _LOGGER.debug(' - NAMES %d %s', len(_names), _names)
+    # _LOGGER.debug(' - NAMES %d %s', len(_names), _names)
 
     _to_fix = [
         (_name, _tfms) for _name, _tfms in _names.items() if len(_tfms) > 1]
@@ -138,12 +138,28 @@ def _fix_cleaned_dup_names(to_fix, reject):
             to_fix, 'Applying {:d} by name fixes', parent=sanity_check.DIALOG):
         _LOGGER.debug('FIX TFMS %s %s', _name, _tfms)
         try:
-            _tfms.sort(key=to_long, reverse=True)
-        except ValueError:
+            _tfms.sort(key=_dup_tfm_sort, reverse=True)
+        except (RuntimeError, ValueError):
             _LOGGER.info(' - FAILED TO SORT %s', _tfms)
             continue
+        _LOGGER.debug(' - SORTED %s', _tfms)
+        _LOGGER.debug(' - KEYS %s', [_dup_tfm_sort(_tfm) for _tfm in _tfms])
         for _tfm in _tfms[1:]:
             fix_dup_name(_tfm, idxs=_idxs, reject=reject)
+
+
+def _dup_tfm_sort(tfm):
+    """Sort for duplicate transforms.
+
+    Sort referenced first, then by long path.
+
+    Args:
+        tfm (CTransform): transform to sort
+
+    Returns:
+        (tuple): sort key
+    """
+    return tfm.is_referenced(), to_long(tfm)
 
 
 def _check_geo_shapes(set_, check):

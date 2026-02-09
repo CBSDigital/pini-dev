@@ -161,7 +161,7 @@ def setup_logging(file_=False, edit=False, flush='all', name=None):
         flush (bool): remove existing handlers
         name (str): override log file label (default is dcc name)
     """
-    _LOGGER.info('SETUP LOGGING')
+    _LOGGER.debug('SETUP LOGGING')
 
     _logger = logging.getLogger()
     _logger.setLevel(logging.INFO)

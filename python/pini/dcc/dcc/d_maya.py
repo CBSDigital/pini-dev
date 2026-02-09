@@ -8,7 +8,7 @@ import logging
 
 from maya import cmds, mel
 
-from pini.utils import single, wrap_fn, EMPTY, Path, abs_path
+from pini.utils import single, wrap_fn, EMPTY
 
 from maya_pini import ui, ref
 from maya_pini.utils import (
@@ -94,41 +94,9 @@ class MayaDCC(BaseDCC):
         Returns:
             (CMayaPipeRef): reference
         """
-        from maya_pini import open_maya as pom
         from .. import pipe_ref
-
-        _LOGGER.debug('CREATE REF %s', namespace)
-
-        _path = path
-        if isinstance(_path, str):
-            _path = Path(abs_path(_path))
-        _LOGGER.debug(' - PATH %s', path)
-
-        # Bring in reference
-        if _path.extn == 'vdb':
-            _ref = pipe_ref.create_ai_vol(
-                _path, namespace=namespace, group=group)
-        elif _path.extn in ('ass', 'usd', 'gz'):
-            _ref = pipe_ref.create_ai_standin(
-                path=_path, namespace=namespace, group=group)
-        elif _path.extn in ('rs', ):
-            _ref = pipe_ref.create_rs_pxy(
-                _path, namespace=namespace, group=group)
-        else:
-            _pom_ref = pom.create_ref(
-                _path, namespace=namespace, parent=parent, force=force)
-            _ns = _pom_ref.namespace
-            _ref = self.find_pipe_ref(_ns, catch=True)
-            if not _ref:
-                raise RuntimeError(f'Failed to find ref {_ns}')
-            if _ref.top_node:
-                pipe_ref.apply_grouping(
-                    top_node=_ref.top_node, output=_ref.output, group=group)
-            pipe_ref.lock_cams(_pom_ref)
-
-        _LOGGER.debug(' - REF %s', _ref)
-
-        return _ref
+        return pipe_ref.create_ref(
+            path, namespace=namespace, group=group, parent=parent, force=force)
 
     def cur_file(self):
         """Get path to current scene.

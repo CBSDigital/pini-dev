@@ -395,9 +395,9 @@ def set_render_extn(extn: str, catch=False):
     """
     from maya_pini import open_maya as pom
     from maya_pini.utils import process_deferred_events
-    _extn = extn
 
     # Apply extn
+    _extn = extn
     _ren = cur_renderer()
     if _ren == 'arnold':
         process_deferred_events()
@@ -409,7 +409,12 @@ def set_render_extn(extn: str, catch=False):
             cmds.setAttr('defaultRenderGlobals.imageFormat', _idx)
             _LOGGER.info(' - SET defaultRenderGlobals.imageFormat %s', _idx)
     elif _ren == 'redshift':
-        _map = _obt_image_fmts_map()
+        try:
+            _map = _obt_image_fmts_map()
+        except RuntimeError as _exc:
+            if catch:
+                return
+            raise _exc
         _idx = single(_map[_extn])
         _apply_rs_fmt_idx(_idx)
     elif _ren == 'vray':

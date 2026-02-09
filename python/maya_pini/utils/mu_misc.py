@@ -187,12 +187,12 @@ def fix_dup_name(geo, idxs=None, reject=None):
     """
     _LOGGER.debug(' - GEO %s', geo)
 
+    # Determine new name
     _idxs = idxs or {}
     _reject = reject or set()
     _root = to_clean(geo, strip_digits=True)
     _idx = _idxs.get(_root, 1)
     _LOGGER.debug('   - ROOT %s %d', _root, _idx)
-
     while True:
         check_heart()
         if _root.endswith('_'):
@@ -208,8 +208,18 @@ def fix_dup_name(geo, idxs=None, reject=None):
             continue
         break
 
+    # Execute rename
     _LOGGER.debug('   - RENAME %s (FROM %s)', _new_name, geo)
-    cmds.rename(geo, _new_name)
+    try:
+        cmds.rename(geo, _new_name)
+    except RuntimeError as _exc:
+        _msg = str(_exc).strip()
+        _LOGGER.debug('   - EXC MSG "%s"', _msg)
+        if _msg == 'Cannot rename a read only node.':
+            raise RuntimeError(
+                f'Failed to rename read-only node {geo} to '
+                f'{_new_name}') from _exc
+        raise _exc
     _idxs[_root] = _idx + 1
 
     return _new_name

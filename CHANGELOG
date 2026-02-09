@@ -1,3 +1,18 @@
+## [8.45.0] - Mon 2026-02-09 15:10
+### Summary
+ - Pini Helper:
+    - bugfix error on save with uninitialized render globals (nwray),
+    - fix large fonts in houdini,
+### Updated
+ - pini.dcc.MayaDCC.create_ref moved code to pipe_ref submodule,
+ - pini.dcc.pipe_ref.create_ref added,
+ - pini.pipe.CCPJob.set_icon check emoji name,
+ - pini.qt.CListViewPixmapItem.font bugfix hou size via $PINI_DEFAULT_FONT_SIZE,
+ - pini.tools.sanity_check.CheckCacheSet bugfix error on fix dup names with one item referenced,
+ - maya_pini.utils.fix_dup_name better error on read only node,
+ - maya_pini.utils.set_render_extn apply catch to rs fmts map error,
+
+
 ## [8.44.0] - Thu 2026-02-05 14:39
 ### Summary
  - Pini Helper:
