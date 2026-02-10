@@ -137,7 +137,7 @@ class SCMayaCheck(sc_check.SCCheck):
         _correct_shp = f'{_node.to_clean()}Shape'
         if _cur_shp != _correct_shp:
 
-            _LOGGER.debug(' - SHP NODE %s', node.shp)
+            _LOGGER.debug(' - SHP NODE %s', _node.shp)
 
             # Ignore instanced shapes
             if _node.shp.is_instanced():
