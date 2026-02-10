@@ -247,8 +247,7 @@ class PIInstaller(object):
         Returns:
             (list): new tools
         """
-        _LOGGER.info('RUN %s', self)
-
+        _LOGGER.info('RUN %s helper=%d', self, launch_helper or 0)
         _items = self._install_ui_elements(parent=parent)
 
         return _items

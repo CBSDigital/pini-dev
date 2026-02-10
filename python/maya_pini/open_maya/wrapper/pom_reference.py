@@ -166,6 +166,14 @@ class CReference(om.MFnReference, ref.FileRef):
                      simulation=simulation, add_offs=add_offs)
         _LOGGER.debug(' - BAKED RESULTS IN %.01fs', time.time() - _start)
 
+    def find_anims(self):
+        """Find anim curves within this reference.
+
+        Returns:
+            (CAnimCurve list): anim curves
+        """
+        return self.find_nodes(type_='animCurve')
+
     def find_node(self, type_=None, name=None, catch=False):
         """Find a node in this reference.
 

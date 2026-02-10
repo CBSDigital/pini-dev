@@ -75,6 +75,20 @@ class CMayaRef(prm_base.CMayaPipeRef):
         """
         return self.ref.top_node
 
+    def attach_anim(self, anim, force=False):
+        """Attach anim curves mb file to this reference.
+
+        Args:
+            anim (CCPOutputFile): anim curves mb file
+            force (bool): replace any existing reference without confirmation
+
+        Returns:
+            (CPipeRef): anim curves mb ref
+        """
+        _ref = m_pipe.attach_anim_curves(self.ref, anim=anim, force=force)
+        # return _ref
+        raise NotImplementedError
+
     @restore_sel
     def attach_shaders(
             self, lookdev_=None, mode='Reference', tag=EMPTY, force=False):

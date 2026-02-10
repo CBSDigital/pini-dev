@@ -110,10 +110,21 @@ def create_curves_mb_ref(  # pylint: disable=unused-argument
     Returns:
         (CMayaPipeRef): reference
     """
+    _LOGGER.info('CREATE CURVES MB REF')
 
     import pprint
     pprint.pprint(output.metadata)
-    raise NotImplementedError
+
+    # Obtain rig ref
+    _rig_path = output.metadata['src_ref']
+    _rig_out = pipe.CACHE.obt_output(_rig_path).find_latest()
+    _LOGGER.info(' -  RIG OUT %s', _rig_out)
+    _rig_ref = create_ref(
+        _rig_out, namespace=namespace, group=group, parent=parent, force=force)
+    _LOGGER.info(' - RIG REF %s', _rig_ref)
+
+    _rig_ref.attach_shaders(force=force)
+    _rig_ref.attach_anim(output, force=force)
 
 
 def find_pipe_refs(filter_=None, selected=False, extn=None):

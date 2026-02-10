@@ -181,3 +181,26 @@ def _build_exp_crv_for_driven(plug, frames=None):
         len(_ktvs), _dur)
 
     return _exp_crv
+
+
+def attach_anim_curves(rig, anim, force=False):
+    """Attach anim curves mb file to the given rig.
+
+    Args:
+        rig (CReference): rig reference
+        anim (CPOutputFile): anim curves mb file
+        force (bool): replace any existing references without confirmation
+
+    Returns:
+        (CReference): curves mb reference
+    """
+    _anim_ns = f'{rig.namespace}_crvs'
+    _anim_ref = pom.create_ref(anim, namespace=_anim_ns, force=force)
+
+    for _crv in _anim_ref.find_anims():
+        _LOGGER.info(' - CRV %s', _crv)
+        _trg_ctrl = rig.to_node(_crv.plug['SrcNode'].get_val())
+        _trg_attr = _trg_ctrl.plug[_crv.plug['SrcAttr'].get_val()]
+        _crv.connect(_trg_attr)
+
+    return _anim_ref

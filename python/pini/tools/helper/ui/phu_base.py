@@ -339,7 +339,8 @@ class PHUiBase(
                 _open_url = wrap_fn(webbrowser.open, _pub.to_url())
                 menu.add_action(
                     'Open in shotgrid', icon=icons.URL, func=_open_url)
-                _work = pipe.CACHE.obt_work(_out_c.metadata['src'], catch=True)
+                _src = _out_c.metadata.get('src')
+                _work = pipe.CACHE.obt_work(_src, catch=True)
                 menu.add_action(
                     'Omit in shotgrid', icon=icons.DELETE,
                     func=wrap_fn(self._exec_sg_omit, pub=_pub, work=_work))

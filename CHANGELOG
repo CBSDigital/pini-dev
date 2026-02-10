@@ -1,3 +1,17 @@
+## [8.46.0] - Tue 2026-02-10 15:06
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click scene reference with missing metadata (bshepperd),
+### Updated
+ - pini.dcc.pipe_ref.CMayaPipeRef.attach_anim added WIP,
+ - pini.dcc.pipe_ref.create_curves_mb_ref added,
+ - pini.tools.helper bugfix output ctx missing src metadata,
+ - maya_pini.m_pipe.attach_anim_curves added,
+ - maya_pini.open_maya.cast_node added catch,
+ - maya_pini.open_maya.get_selection bugfix error on face sel,
+ - maya_pini.open_maya.CReference.find_anims added,
+
+
 ## [8.45.1] - Mon 2026-02-09 16:17
 ### Summary
  - Sanity Check:

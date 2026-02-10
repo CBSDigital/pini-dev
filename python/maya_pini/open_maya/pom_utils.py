@@ -50,7 +50,8 @@ def add_anim_offs(tfm, anims=None, anim=None, reset=False):
     return _offs, _mult
 
 
-def cast_node(node, type_=None, class_=None, maintain_shapes=False):
+def cast_node(
+        node, type_=None, class_=None, maintain_shapes=False, catch=False):
     """Cast a node to an appropriate pom type.
 
     Args:
@@ -59,6 +60,7 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
         class_ (class): force result class
         maintain_shapes (bool): don't update a shape node to its parent
             node type (eg. return camera as CNode not CCamera)
+        catch (bool): no error if node fails to cast
 
     Returns:
         (CNode|CTransform|CCamera): node object
@@ -98,8 +100,15 @@ def cast_node(node, type_=None, class_=None, maintain_shapes=False):
     else:
         _class = pom.CNode
 
+    # Build node object
     _LOGGER.debug(' - CLASS %s', _class)
-    _result = _class(_node, **_kwargs)
+    try:
+        _result = _class(_node, **_kwargs)
+    except ValueError as _exc:
+        if catch:
+            _LOGGER.error(' - FAILED TO CAST NODE %s %s', node, _exc)
+            return None
+        raise _exc
     _LOGGER.debug(' - RESULT %s type=%s', _result, type(_result))
 
     return _result
@@ -368,7 +377,9 @@ def get_selected(class_=None, multi=False):
     assert isinstance(multi, bool)
     _sel = cmds.ls(selection=True)
     if multi:
-        return [cast_node(_item, class_=class_) for _item in _sel]
+        return list(filter(bool, [
+            cast_node(_item, class_=class_, catch=True)
+            for _item in _sel]))
     _node = single(_sel, error=f'{len(_sel):d} items selected')
     return cast_node(_node, class_=class_)
 
