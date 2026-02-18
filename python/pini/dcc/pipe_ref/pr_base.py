@@ -14,6 +14,7 @@ class CPipeRef:
     """Represents a pipeline output referenced into a dcc."""
 
     node = None
+    ref = None
 
     path = None
     extn = None

@@ -1,3 +1,11 @@
+## [8.47.1] - Wed 2026-02-18 12:43
+### Summary
+ - Pini Helper:
+    - bugfix error on import abc in houdini (chatfield),
+### Updated
+ - pini.dcc.pipe_ref.CPipeRef.ref added attr,
+
+
 ## [8.47.0] - Wed 2026-02-18 09:29
 ### Summary
  - Pini Helper:
