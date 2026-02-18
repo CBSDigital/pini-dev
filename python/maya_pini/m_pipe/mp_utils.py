@@ -15,6 +15,8 @@ from maya_pini.utils import to_long
 
 _LOGGER = logging.getLogger(__name__)
 
+JUNK_GRPS = os.environ.get('PINI_PUB_JUNK_GRPS', 'JUNK').split('|')
+
 
 def find_cache_set(catch=True):
     """Find cache set from the current scene.

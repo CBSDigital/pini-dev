@@ -5,6 +5,7 @@ import logging
 import json
 import os
 import pickle
+import platform
 import shutil
 import time
 
@@ -133,6 +134,10 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         # Apply copy
         _trg.test_dir()
+        if platform.system() == 'Windows' and len(_trg.path) > 260:
+            raise RuntimeError(
+                f'Path is longer ({len(_trg.path)}) than windows path '
+                'limit (260) {_trg.path}')
         try:
             shutil.copyfile(self.path, _trg.path)
         except PermissionError as _exc:

@@ -12,10 +12,11 @@ from pini.tools import helper
 from pini.utils import single, assert_eq, ints_to_str
 
 from pini.dcc.export.eh_publish.ph_maya import phm_basic
+from pini.tools.helper import ph_utils
+from pini.tools.helper.ui import phu_scene_tab
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import process_deferred_events
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +65,93 @@ class TestHelper(unittest.TestCase):
         _farm_rh.ui.Passes.select('masterLayer', replace=True)
         assert _default_lyr.is_renderable()
         assert not _blah_lyr.is_renderable()
+
+    def test_linked_imports(self):
+
+        _asset = pipe.CACHE.obt(testing.TEST_ASSET)
+        _shot = pipe.CACHE.obt(testing.TEST_SHOT)
+        _rigging = _asset.find_work_dir('rig', dcc_=dcc.NAME)
+        _lighting = _shot.find_work_dir('lighting', dcc_=dcc.NAME)
+
+        _mdl = _asset.find_output(
+            task='model', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma')
+        _rig = _asset.find_output(
+            task='rig', ver_n='latest', tag=pipe.DEFAULT_TAG, extn='ma')
+        _lookdev = testing.find_test_lookdev()
+        _crvs = _shot.find_output(
+            content_type='CurvesMb', ver_n='latest')
+        _abc = testing.find_test_abc()
+
+        assert len(helper.output_to_imports(_mdl, _rigging)) == 1
+        assert len(helper.output_to_imports(_rig, _rigging)) == 1
+        _lookdev_imps = helper.output_to_imports(_lookdev, _lighting)
+        assert len(_lookdev_imps) == 2
+
+        assert len(helper.output_to_imports(_mdl, _lighting)) == 2
+        assert len(helper.output_to_imports(_rig, _lighting)) == 2
+        assert len(helper.output_to_imports(_abc, _lighting)) == 2
+
+        _LOGGER.info(' - CRVS %s', _crvs)
+        assert _crvs.output_name == 'test01'
+        if dcc.get_next_namespace('test01', mode='cache') != 'test01':
+            dcc.new_scene(force=True)
+        assert dcc.get_next_namespace('test01', mode='cache') == 'test01'
+        _crv_imps = helper.output_to_imports(_crvs, _lighting)
+        assert len(_crv_imps) == 3
+        _base_out, _base_ns, _base_attach = _crv_imps[0]
+        _LOGGER.info('   - BASE OUT %s', _base_out)
+        assert not _base_attach
+        assert _base_ns == 'test01'
+        assert _base_out.pini_task == 'rig'
+
+        assert _lookdev.tag == pipe.DEFAULT_TAG
+        _base = ph_utils._lookdev_to_base(_lookdev)
+        assert _base
+        assert _base.tag == pipe.DEFAULT_TAG
+
+        _hlp = helper.obt_helper()
+        _hlp.ui.SReset.clicked.emit()
+        _refs = _hlp.ui.SSceneRefs.all_data()
+        _n_refs = len(_refs)
+        _LOGGER.info(' - N REFS %d', _n_refs)
+
+        # Test add rig
+        _LOGGER.info(' - RIG %s', _rig)
+        _hlp.jump_to(_rig)
+        assert not _hlp._staged_imports
+        _hlp.ui.SAdd.clicked.emit()
+        assert len(_hlp.ui.SSceneRefs.all_data()) == _n_refs + 1
+        _hlp.ui.SReset.clicked.emit()
+
+        # Test add lookdev
+        _hlp.jump_to(_lookdev)
+        assert not _hlp._staged_imports
+        _hlp.ui.SAdd.clicked.emit()
+        assert len(_hlp.ui.SSceneRefs.all_data()) == _n_refs + 2
+        _hlp.ui.SReset.clicked.emit()
+
+        # Test add lookdev as separate op
+        _LOGGER.info(' - RIG %s', _rig)
+        _hlp.jump_to(_rig)
+        assert not _hlp._staged_imports
+        _hlp.ui.SAdd.clicked.emit()
+        _rig_imp = _hlp._staged_imports[0]
+        assert isinstance(_rig_imp, phu_scene_tab._StagedRef)
+        assert len(_hlp.ui.SSceneRefs.all_data()) == _n_refs + 1
+        assert _rig_imp.namespace == 'test01'
+        print()
+        _hlp.stage_import(_lookdev, attach_to=_rig_imp.namespace)
+        _lookdev_imp = _hlp._staged_imports[1]
+        assert _lookdev_imp.namespace == 'test01_shd'
+        assert _lookdev_imp.attach_to == 'test01'
+        _hlp.ui.SReset.clicked.emit()
+
+        # Test abc with lookdev
+        _hlp.jump_to(_abc)
+        assert not _hlp._staged_imports
+        _hlp.ui.SAdd.clicked.emit()
+        assert len(_hlp.ui.SSceneRefs.all_data()) == _n_refs + 2
+        _hlp.ui.SReset.clicked.emit()
 
     def test_model_reps(self, show_ctx=False):
 
@@ -504,9 +592,10 @@ def _test_lighting_workflow(progress, force, show_ctx):
     assert _out.find_lookdev_shaders()
     assert _abc.find_lookdev_shaders()
     _helper.ui.SOutputs.select_data(_abc)
-    _helper.ui.SLookdev.select_text('Reference')
+    # _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()
     assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
+    # _lookdev_imp
     _helper.apply_updates(force=True)
 
     # Test lookdev publish ctx

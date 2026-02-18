@@ -37,10 +37,7 @@ def create_ref(path, namespace, group=EMPTY, parent=None, force=False):
     _LOGGER.debug(' - OUT %s %s', _out, _out.content_type if _out else '')
 
     # Bring in reference
-    if _out and _out.content_type == 'CurvesMb':
-        _ref = create_curves_mb_ref(
-            path, namespace=namespace, group=group, parent=parent, force=force)
-    elif _path.extn == 'vdb':
+    if _path.extn == 'vdb':
         _ref = prm_node.create_ai_vol(
             _path, namespace=namespace, group=group)
     elif _path.extn in ('ass', 'usd', 'gz'):
@@ -111,9 +108,6 @@ def create_curves_mb_ref(  # pylint: disable=unused-argument
         (CMayaPipeRef): reference
     """
     _LOGGER.info('CREATE CURVES MB REF')
-
-    import pprint
-    pprint.pprint(output.metadata)
 
     # Obtain rig ref
     _rig_path = output.metadata['src_ref']

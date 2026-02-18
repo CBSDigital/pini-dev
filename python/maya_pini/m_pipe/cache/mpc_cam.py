@@ -156,7 +156,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         """Build tmp CAM node."""
         del_namespace(self._tmp_ns, force=True)
 
-    def rename(self, name):
+    def _set_name(self, name):
         """Rename this camera.
 
         Args:

@@ -61,8 +61,9 @@ class CheckAssetHierarchy(core.SCMayaCheck):
             return
 
         # Fix badly named top node
+        _junk_filter = ' '.join(f'-{_grp}' for _grp in m_pipe.JUNK_GRPS)
         _top_node = pom.find_node(
-            top_node=True, default=False, filter_='-JUNK', catch=True)
+            top_node=True, default=False, filter_=_junk_filter, catch=True)
         if _top_node and _top_node != _req_top_node:
             _fix = wrap_fn(cmds.rename, _top_node, _req_top_node)
             _msg = (
@@ -79,7 +80,7 @@ class CheckAssetHierarchy(core.SCMayaCheck):
         # Fix top nodes not in group
         _extra_top_nodes = [
             _node for _node in pom.find_nodes(top_node=True, default=False)
-            if _node not in (_top_node, 'JUNK')]
+            if _node not in [_top_node] + m_pipe.JUNK_GRPS]
         self.write_log(' - extra top nodes %s', _top_nodes)
         if _extra_top_nodes:
             for _node in _extra_top_nodes:

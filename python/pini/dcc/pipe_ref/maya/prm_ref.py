@@ -85,9 +85,9 @@ class CMayaRef(prm_base.CMayaPipeRef):
         Returns:
             (CPipeRef): anim curves mb ref
         """
+        _LOGGER.info('ATTACH ANIM %s -> %s', anim, self)
         _ref = m_pipe.attach_anim_curves(self.ref, anim=anim, force=force)
-        # return _ref
-        raise NotImplementedError
+        return dcc.find_pipe_ref(_ref)
 
     @restore_sel
     def attach_shaders(

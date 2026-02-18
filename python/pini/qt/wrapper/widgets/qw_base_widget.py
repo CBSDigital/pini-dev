@@ -16,6 +16,7 @@ class CBaseWidget:
     save_policy = q_utils.SavePolicy.DEFAULT
 
     _settings_key = None
+    _data = None
 
     @property
     def settings_key(self):
@@ -63,6 +64,14 @@ class CBaseWidget:
         """Read value of this widget."""
         raise NotImplementedError(self)
 
+    def get_data(self):
+        """Obtain data embedded in this widget.
+
+        Returns:
+            (any): embedded data
+        """
+        return self._data
+
     def has_scene_setting(self):
         """Test whether this widget has a scene setting currently applied.
 
@@ -101,6 +110,26 @@ class CBaseWidget:
             _LOGGER.debug(' - READ SETTINGS %s', _val)
         return _val
 
+    def set_col(self, col):
+        """Set text colour.
+
+        Args:
+            col (str): colour to apply
+        """
+        _pal = self.palette()
+        _pal.setColor(self.foregroundRole(), col)
+        self.setPalette(_pal)
+
+        # self.setStyleSheet(f"color : {col}")
+
+    def set_data(self, data):
+        """Embed data in this widget.
+
+        Args:
+            data (any): data to embed
+        """
+        self._data = data
+
     def set_save_policy(self, policy):
         """Apply save policy to this widget.
 
@@ -118,18 +147,6 @@ class CBaseWidget:
         """
         assert key.startswith('PiniQt.')
         self._settings_key = key
-
-    def set_col(self, col):
-        """Set text colour.
-
-        Args:
-            col (str): colour to apply
-        """
-        _pal = self.palette()
-        _pal.setColor(self.foregroundRole(), col)
-        self.setPalette(_pal)
-
-        # self.setStyleSheet(f"color : {col}")
 
     def set_val(self, val):
         """Apply value to this widget.

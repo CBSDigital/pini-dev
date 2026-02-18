@@ -139,11 +139,12 @@ class BaseDCC:
         raise RuntimeError(error)
 
     def find_pipe_ref(
-            self, namespace=None, selected=False, extn=None, filter_=None,
-            task=None, catch=False):
+            self, match=None, namespace=None, selected=False, extn=None,
+            filter_=None, task=None, catch=False):
         """Find a reference in the current scene.
 
         Args:
+            match (str): match by namespace / ref node
             namespace (str): reference namespace to match
             selected (bool): return only selected refs
             extn (str): filter by extension
@@ -157,15 +158,24 @@ class BaseDCC:
         _refs = self.find_pipe_refs(
             extn=extn, namespace=namespace, selected=selected, filter_=filter_,
             task=task)
+
+        # Build error kwargs
         _zero_error = _multi_error = _error = None
         if selected:
             _zero_error = 'No references selected'
             _multi_error = 'Multiple references selected'
         else:
             _error = f'Failed to match reference {namespace}'
-        return single(
-            _refs, catch=catch, error=_error, multi_error=_multi_error,
+        _kwargs = dict(
+            catch=catch, error=_error, multi_error=_multi_error,
             zero_error=_zero_error)
+
+        if match:
+            _matches = [
+                _ref for _ref in _refs
+                if match in (_ref.namespace, _ref.ref)]
+            return single(_matches, **_kwargs)
+        return single(_refs, **_kwargs)
 
     def find_pipe_refs(
             self, filter_=None, selected=False, extn=None,

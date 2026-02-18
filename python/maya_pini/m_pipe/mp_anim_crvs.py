@@ -6,7 +6,7 @@ import time
 from maya import cmds
 
 from pini import pipe, dcc, qt
-from pini.dcc import export
+from pini.dcc import export, pipe_ref
 from pini.utils import single
 
 from maya_pini import open_maya as pom
@@ -195,10 +195,17 @@ def attach_anim_curves(rig, anim, force=False):
         (CReference): curves mb reference
     """
     _anim_ns = f'{rig.namespace}_crvs'
-    _anim_ref = pom.create_ref(anim, namespace=_anim_ns, force=force)
+
+    if isinstance(anim, pipe.CPOutputFile):
+        _anim_ref = pom.create_ref(anim, namespace=_anim_ns, force=force)
+    elif isinstance(anim, pipe_ref.CMayaRef):
+        _anim_ref = anim.ref
+        assert _anim_ref.namespace == _anim_ns
+    else:
+        raise NotImplementedError(anim)
 
     for _crv in _anim_ref.find_anims():
-        _LOGGER.info(' - CRV %s', _crv)
+        _LOGGER.debug(' - CRV %s', _crv)
         _trg_ctrl = rig.to_node(_crv.plug['SrcNode'].get_val())
         _trg_attr = _trg_ctrl.plug[_crv.plug['SrcAttr'].get_val()]
         _crv.connect(_trg_attr)

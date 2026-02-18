@@ -48,14 +48,6 @@ class CPCacheable(export.CCacheable):
     def post_cache(self):
         """Code to be executed after caching."""
 
-    def rename(self, name):
-        """Rename this cacheable.
-
-        Args:
-            name (str): new name to apply
-        """
-        raise NotImplementedError
-
     def select_in_scene(self):
         """Select this reference in the current scene.
 

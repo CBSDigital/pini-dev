@@ -1,3 +1,34 @@
+## [8.47.0] - Wed 2026-02-18 09:29
+### Summary
+ - Pini Helper:
+    - maya publish added retry on shotgrid register fail (blee),
+    - add lookdev/curves to scene adds base asset,
+    - maya added curves cache exporter,
+    - maya publish added handling for multiple junk grps,
+    - maya cache added rename/select right-click opts,
+### Updated
+ - pini.utils.copy_to better error on target exceeds windows path limit,
+ - pini.dcc.find_pipe_ref added match arg to match by ref,
+ - pini.dcc.MayaDCC added curves cache export,
+ - pini.dcc.pipe_ref.CMayaRef.attach_anim implemented,
+ - pini.dcc.pipe_ref.create_ref maya added CurveMb handling,
+ - pini.dcc.export.CExportHandlerUI.build_icon_btn added tooltip arg,
+ - pini.dcc.export.CExportHandlerUI.add_check_box added data/add_elems args,
+ - pini.dcc.export.CExportHandler._to_ui_kwargs added,
+ - pini.dcc.export.CMayaBasicPublish allow multiple junks grps,
+ - pini.dcc.export.CCacheHandler ctx Cacheables link to src output not trg,
+ - pini.dcc.export.CCacheHandler ctx Cacheables added rename/select opts,
+ - pini.pipe.shotgrid.SGCEntity.find_pub_files catch/retry sg error,
+ - pini.qt.CBaseWidget added get_data/set_data,
+ - pini.tools.sanity_check.CheckAssetHierarchy added handling for multiple junk grps,
+ - pini.tools.helper add lookdev/anim adds base asset,
+ - pini.tools.helper removed import lookdev mode,
+ - pini.tools.helper.output_to_imports added,
+ - pini.tools.helper.stage_import added work_dir arg,
+ - maya_pini.m_pipe.JUNK_GRPS added,
+ - maya_pini.m_pipe.attach_anim_curves added CMayaRef/CPOutputFile handling,
+
+
 ## [8.46.0] - Tue 2026-02-10 15:06
 ### Summary
  - Pini Helper:

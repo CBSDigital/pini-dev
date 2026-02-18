@@ -322,13 +322,23 @@ class CExportHandler:
         _func = usage.get_tracker(name=_name)(_func)
         _func = error.get_catcher(qt_safe=True)(_func)
 
-        _kwargs = ui_kwargs or self.ui.to_kwargs()
+        _kwargs = ui_kwargs or self._to_ui_kwargs()
         _kwargs.update(kwargs)
         _LOGGER.debug(' - EXEC KWARGS %s', _kwargs)
 
         _result = _func(**_kwargs)
         _LOGGER.debug(' - EXEC RESULT %s', _result)
         return _result
+
+    def _to_ui_kwargs(self):
+        """Build execute kwargs from ui.
+
+        This can be overridden to preform extra processing on ui elements.
+
+        Returns:
+            (dict): ui kwargs
+        """
+        return self.ui.to_kwargs()
 
     def init_export(self):
         """Initiate export.

@@ -369,6 +369,102 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
     return _icon
 
 
+def output_to_imports(  # pylint: disable=too-many-branches
+        output, work_dir, namespace=None, ignore=(), attach_to=None, base=None):
+    """Build a list of imports for the given output.
+
+    Args:
+        output (CCPOutput): output to be imported
+        work_dir (CCPWorkDir): current context
+        namespace (str): force import namespace
+        ignore (list): namespaces to ignore
+        attach_to (str): namespace of reference to attach this one to
+        base (str): base for namespace
+
+    Returns:
+        (tuple list): list of imports - output / namespace / attach namespace
+    """
+    _LOGGER.debug('OUTPUT TO IMPORTS %s', output)
+
+    # Determine base namespace
+    _LOGGER.debug(' - ATTACH TO %s', attach_to)
+    if attach_to:
+        assert isinstance(attach_to, str)
+        _base_ns = attach_to
+    else:
+        _base_ns = namespace or output_to_namespace(
+            output, attach_to=attach_to, ignore=ignore, base=base)
+    _LOGGER.debug(' - BASE NS %s', _base_ns)
+
+    # Determing base + curves + lookdev outputs
+    _base = _crvs = _lookdev = None
+    if output.content_type == 'CurvesMb':
+        _base = pipe.CACHE.obt_output(output.metadata['src_ref']).find_latest()
+        _LOGGER.debug(' - CRVS BASE %s', _base)
+        _crvs = output
+    elif output.content_type == 'ShadersMa':
+        _lookdev = output
+        _base = _lookdev_to_base(output)
+    else:
+        _base = output
+
+    # Auto apply lookdev if not already assigned
+    if not _lookdev and dcc.NAME == 'maya':
+        _auto_apply_lookdev = False
+        _LOGGER.info(' - TEST FOR AUTO APPLY LOOKDEV %s', output.content_type)
+        if (
+                _base.pini_task in ('model', 'rig') and
+                work_dir.pini_task in ('lighting', ) and
+                work_dir.profile == 'shot'):
+            _auto_apply_lookdev = True
+        elif output.content_type == 'PipeAbc':
+            _auto_apply_lookdev = True
+        _LOGGER.info(' - AUTO APPLY LOOKDEV %d', _auto_apply_lookdev)
+        if _auto_apply_lookdev:
+            _lookdev = output.find_lookdev_shaders()
+
+    # Build imports list
+    _imps = []
+    if not attach_to:
+        _imps = [(_base, _base_ns, None)]
+    else:
+        pass
+    if _lookdev:
+        _imps += [(_lookdev, f'{_base_ns}_shd', _base_ns)]
+    if _crvs:
+        _imps += [(_crvs, f'{_base_ns}_crvs', _base_ns)]
+    _LOGGER.debug(' - IMPORTS %d %s', len(_imps), _imps)
+
+    return _imps
+
+
+def _lookdev_to_base(lookdev):
+    """Determine base asset from the given lookdev.
+
+    Args:
+        lookdev (CCPOutputFile): lookdev to read
+
+    Returns:
+        (CCPOutputFile): base model/rig
+    """
+    _LOGGER.debug('   - LOOKDEV TO BASE %s', lookdev)
+    _ety = lookdev.entity
+    _LOGGER.debug('     - ETY %s', _ety)
+    _tags = [lookdev.tag]
+    if pipe.DEFAULT_TAG != lookdev.tag:
+        _tags.append(pipe.DEFAULT_TAG)
+    _LOGGER.debug('     - TAGS %s', _tags)
+    for _task in ['model', 'rig']:
+        for _tag in _tags:
+            _base = _ety.find_output(
+                task=_task, tag=_tag, ver_n='latest', extn='ma', catch=True)
+            _LOGGER.debug('     - TESTING %s %s -> %s', _task, _tag, _base)
+            if _base:
+                _LOGGER.debug('     - ACCEPTED %s', _base)
+                return _base
+    return None
+
+
 def output_to_namespace(output, attach_to=None, ignore=(), base=None):
     """Get namespace for the given output.
 
@@ -412,20 +508,22 @@ def output_to_namespace(output, attach_to=None, ignore=(), base=None):
     return _ns
 
 
-def output_to_type_icon(output):  # pylint: disable=too-many-return-statements
+def output_to_type_icon(output, log=9):  # pylint: disable=too-many-return-statements
     """Obtain type icon for the given output.
 
     Args:
         output (CPOutput): output to get icon for
+        log (int): apply logging level
 
     Returns:
         (str): path to icon
     """
-    _LOGGER.debug('OUTPUT TO TYPE ICON %s', output)
+    _LOGGER.log(log, 'OUTPUT TO TYPE ICON %s', output)
     if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
         return _NO_CACHE_TYPE_ICON
-    _LOGGER.debug(
-        ' - BASIC/CONTENT TYPES %s %s', output.basic_type, output.content_type)
+    _LOGGER.log(
+        log, ' - BASIC/CONTENT TYPES %s %s', output.basic_type,
+        output.content_type)
 
     if output.basic_type == 'render':
         return RENDER_TYPE_ICON

@@ -117,7 +117,7 @@ def load_scene(
         qt.notify(
             f'Maya errored loading this file:\n\n{_file.path}\n\n{_tail}\n\n'
             f'See the script editor for more details.',
-            title='Load Error', icon=icons.find('Hot Pepper'), verbose=0)
+            title='Load error', icon=icons.find('Hot Pepper'), verbose=0)
 
     if _revert:
         _revert()

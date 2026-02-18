@@ -7,7 +7,7 @@ import os
 from maya import cmds
 
 from pini import dcc, icons
-from pini.utils import single
+from pini.utils import single, plural, wrap_fn
 
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import (
@@ -18,6 +18,7 @@ from .. import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
 _PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
+_JUNK_GRPS_S = '/'.join(_grp for _grp in m_pipe.JUNK_GRPS)
 
 
 class PubRefsMode(enum.Enum):
@@ -65,7 +66,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         '',
         ' - The top node should be GEO/RIG/MDL',
         ' - All the geometry should be added to a set named cache_SET',
-        ' - Use JUNK group for nodes that should not get published',
+        f' - Use {_JUNK_GRPS_S} group{plural(m_pipe.JUNK_GRPS)} for nodes '
+        'that should not get published',
         ' - For referenced geo, use the import references option',
         '',
         'You can use the sanity check tool to check your scene.',
@@ -75,8 +77,20 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         """Add custom ui elements."""
         self.ui.add_separator()
 
-        self.ui.add_check_box(
-            val=True, name='RemoveJunk', label='Remove JUNK group')
+        # Add junk group options
+        self._junk_elems = []
+        for _grp in m_pipe.JUNK_GRPS:
+            _grp_s = _grp.lower().capitalize()
+            _btn = self.ui.build_icon_btn(
+                f'Build{_grp_s}Grp', icon=icons.BUILD,
+                tooltip=f'Build {_grp} group',
+                callback=wrap_fn(_build_junk_grp, _grp))
+            _elem = self.ui.add_check_box(
+                val=True, name=f'Remove{_grp_s}Grp', data=_grp,
+                label=f'Remove {_grp} group', ui_only=True, add_elems=[_btn])
+            self._junk_elems.append(_elem)
+        self.ui.add_separator()
+
         self.ui.add_check_box(
             val=True, name='RemoveSets', label='Remove unused sets')
         self.ui.add_check_box(
@@ -103,6 +117,21 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         self.ui.add_label(
             name='ReferencesLabel', text='<reference mode description>')
         self._callback__References()
+
+    def _to_ui_kwargs(self):
+        """Build execute kwargs from ui elements.
+
+        Returns:
+            (dict): ui kwargs
+        """
+        _kwargs = super()._to_ui_kwargs()
+
+        _junk_grps = [
+            _elem.get_data() for _elem in self._junk_elems
+            if _elem.isChecked()]
+        _kwargs['remove_junk'] = _junk_grps
+
+        return _kwargs
 
     def _callback__References(self):
         _LOGGER.debug('CALLBACK References')
@@ -203,8 +232,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         return self.outputs
 
     def _clean_scene(self):
-        """Apply clean scene options to prepare for publish.
-        """
+        """Apply clean scene options to prepare for publish."""
         _LOGGER.debug('CLEAN SCENE')
         _remove_junk = self.settings['remove_junk']
         _remove_sets = self.settings['remove_sets']
@@ -214,10 +242,18 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _apply_refs_mode_opt(refs_mode=self.settings['references'])
 
         # Remove JUNK
-        _LOGGER.debug(' - APPLY REMOVE JUNK %d', _remove_junk)
-        if _remove_junk and cmds.objExists('JUNK'):
-            _remove_junk_refs()
-            cmds.delete('JUNK')
+        _LOGGER.debug(' - APPLY REMOVE JUNK %s', _remove_junk)
+        if _remove_junk:
+            if _remove_junk is True:
+                _junk_grps = ['JUNK']
+            elif isinstance(_remove_junk, list):
+                _junk_grps = _remove_junk
+            else:
+                raise ValueError(_remove_junk)
+            for _grp in _junk_grps:
+                if cmds.objExists(_grp):
+                    _remove_junk_refs(grp=_grp)
+                    cmds.delete(_grp)
 
         # Remove unused sets
         if _remove_sets:
@@ -271,6 +307,19 @@ def _apply_refs_mode_opt(refs_mode):
         _import_refs(refs_mode=_refs_mode, refs=_refs)
     else:
         raise ValueError(_refs_mode)
+
+
+def _build_junk_grp(name='JUNK'):
+    """Build a junk group of the given name.
+
+    Args:
+        name (str): name of junk group
+    """
+    _LOGGER.info('BUILD %s', name)
+    _loc = pom.create_loc()
+    _grp = _loc.add_to_grp(name)
+    _loc.delete()
+    _grp.solidify(col='LightCoral')
 
 
 def _import_refs(refs_mode, refs):
@@ -453,13 +502,17 @@ def _is_deform_set(set_):
     return bool(_dfm_types & _types)
 
 
-def _remove_junk_refs():
-    """Remove references in JUNK group."""
+def _remove_junk_refs(grp='JUNK'):
+    """Remove references in junk group.
+
+    Args:
+        grp (str): name of junk group
+    """
     for _ref in pom.find_refs():
         _grp = single(
             {_node.to_parent() for _node in _ref.top_nodes},
             catch=True)
-        if _grp == 'JUNK':
+        if _grp == grp:
             _ref.delete(force=True)
 
 

@@ -291,7 +291,7 @@ class MayaDCC(BaseDCC):
 
     def _build_export_handlers(self):
         """Initiate export handlers."""
-        from pini import farm, testing
+        from pini import farm
         from pini.dcc import export
 
         _handlers = super()._build_export_handlers()
@@ -303,11 +303,10 @@ class MayaDCC(BaseDCC):
             export.CMayaPlayblast(),
             export.CMayaAbcCache(),
             export.CMayaFbxCache(),
+            export.CMayaCurvesCache(),
         ]
         if farm.IS_AVAILABLE:
             _handlers.append(export.CMayaFarmRender())
-        if testing.dev_mode():
-            _handlers.append(export.CMayaCurvesCache())
         return _handlers
 
     def _read_pipe_refs(self, selected=False):

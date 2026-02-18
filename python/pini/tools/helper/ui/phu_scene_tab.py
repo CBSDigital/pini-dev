@@ -14,7 +14,8 @@ from pini.utils import (
     apply_filter, single, split_base_index, to_nice)
 
 from . import phu_output_item, phu_scene_ref_item
-from ..ph_utils import UPDATE_ICON, CURRENT_ICON, output_to_namespace
+from .. import ph_utils
+from ..ph_utils import UPDATE_ICON, CURRENT_ICON
 
 _LOGGER = logging.getLogger(__name__)
 _LATEST_ICON = icons.find('Light Bulb')
@@ -77,7 +78,6 @@ class PHSceneTab:
 
         self._select_default_output_tab(switch_tabs=switch_tabs)
 
-        self.settings.apply_to_widget(self.ui.SLookdev)
         self._callback__SOutputsPane()
         self.ui.SSceneRefs.redraw()
 
@@ -476,8 +476,6 @@ class PHSceneTab:
 
         for _tgl, _elems in [
                 (_abcs, [
-                    self.ui.SLookdev, self.ui.SLookdevSpacer,
-                    self.ui.SLookdevLabel,
                     self.ui.SAbcMode, self.ui.SAbcModeSpacer,
                     self.ui.SAbcModeLabel]),
                 (_vdbs, [
@@ -696,9 +694,6 @@ class PHSceneTab:
     def _callback__SOutputsFilterClear(self):
         self.ui.SOutputsFilter.setText('')
 
-    def _callback__SLookdev(self):
-        self.settings.save_widget(self.ui.SLookdev)
-
     def _callback__SView(self):
         _viewer = self.ui.SViewer.selected_data()
         _out = self.ui.SOutputs.selected_data()
@@ -856,6 +851,7 @@ class PHSceneTab:
             qt.ok_cancel(_msg, parent=self, icon=icons.find('Gear'))
         for _update in qt.progress_bar(
                 _updates, 'Applying {:d} update{}', parent=self):
+            _LOGGER.debug(' - APPLY UPDATE %s', _update)
             _update()
 
         self.ui.SOutputs.redraw()
@@ -889,13 +885,10 @@ class PHSceneTab:
                 _import_fn = wrap_fn(
                     self._create_vdb_ref, namespace=_ref.namespace,
                     output=_ref.output)
-            elif _ref.attach_to:
-                _import_fn = wrap_fn(
-                    _apply_lookdev, ref=_ref.attach_to, lookdev=_ref.output)
             else:
                 _import_fn = wrap_fn(
-                    dcc.create_ref, namespace=_ref.namespace, path=_ref.output)
-
+                    _apply_create_ref, namespace=_ref.namespace,
+                    output=_ref.output, attach_to=_ref.attach_to)
             _updates.append(_import_fn)
 
         return _updates
@@ -1135,62 +1128,51 @@ class PHSceneTab:
 
     def stage_import(
             self, output, attach_to=None, redraw=True, base=None,
-            namespace=None, reset=False):
+            namespace=None, reset=False, work_dir=None):
         """Stage a reference to be imported.
 
         Args:
             output (CPOutput): output to be referenced
-            attach_to (CPipeRef): attach the given output to this
-                existing scene reference (ie. attach a lookdev
-                to an existing abc in the scene)
+            attach_to (str): attach the given output to this existing
+                scene reference (eg. attach a lookdev to an existing
+                abc in the scene)
             redraw (bool): update scene refs list
             base (str): override namespace base
             namespace (str): force namespace of import
             reset (bool): reset imports before adding import
+            work_dir (CCPWOrkDir): force context of this import
         """
         _LOGGER.debug('STAGE IMPORT %s', repr(output))
 
         if reset:
             self._callback__SReset()
+        assert isinstance(attach_to, str) or attach_to is None
 
+        # Determine import namespace
         _out = pipe.CACHE.obt(output)
         _LOGGER.debug(' - OUT %s', repr(_out))
+        _work_dir = work_dir or self.work_dir
+
+        # Build list of staged refs
+        _refs = []
         _ignore = [_ref.namespace for _ref in self._staged_imports]
-        _ns = namespace or output_to_namespace(
-            _out, attach_to=attach_to, ignore=_ignore, base=base)
-        _ref = _StagedRef(output=_out, namespace=_ns, attach_to=attach_to)
-        if attach_to:
+        _imps = ph_utils.output_to_imports(
+            _out, namespace=namespace, ignore=_ignore, base=base,
+            work_dir=_work_dir, attach_to=attach_to)
+        for _out, _ns, _attach in _imps:
+            _LOGGER.debug(' - IMPORT %s %s %s', _out, _ns, _attach)
+            _attach_to = attach_to
+            if not _attach_to and _attach and _refs:
+                _attach_to = _refs[0].namespace
+            _LOGGER.debug('   - ATTACH TO %s', _attach_to)
+            _ref = _StagedRef(
+                output=_out, namespace=_ns, attach_to=_attach_to)
             _existing = dcc.find_pipe_ref(_ns, catch=True)
             if _existing:
                 self._stage_delete(_existing, redraw=False)
-        _LOGGER.debug(' - ADDING STAGED REF %s %s', _ref, _out)
-        self._staged_imports.append(_ref)
-
-        # Add lookdev attach
-        _lookdev_mode = self.ui.SLookdev.currentText()
-        _LOGGER.debug(' - LOOKDEV MODE %s (type=%s)', _lookdev_mode, _out.type_)
-        if (
-                dcc.NAME == 'maya' and
-                _out.type_ == 'cache' and
-                _lookdev_mode == 'Reference'):
-
-            _LOGGER.debug(' - CHECKING FOR LOOKDEV')
-
-            # Apply abc mode filter
-            _abc_mode = self.ui.SAbcMode.currentText()
-            if _abc_mode == 'Auto':
-                _abc_mode = 'Reference'
-                _LOGGER.debug(' - APPLY MODE Reference')
-
-            # Add lookdev if available
-            _lookdev = _out.find_lookdev_shaders()
-            _LOGGER.debug(' - LOOKDEV %s', _lookdev)
-            if _lookdev and _abc_mode == 'Reference':
-                _lookdev_ns = _ns + '_shd'
-                _lookdev_ref = _StagedRef(
-                    output=_lookdev, namespace=_lookdev_ns, attach_to=_ref)
-                _LOGGER.debug(' - ADDING LOOKDEV %s', _lookdev)
-                self._staged_imports.append(_lookdev_ref)
+            _LOGGER.debug('   - ADDING STAGED REF %s %s', _ref, _out)
+            self._staged_imports.append(_ref)
+            _refs.append(_ref)
 
         if redraw:
             self.ui.SSceneRefs.redraw()
@@ -1279,20 +1261,31 @@ class PHSceneTab:
             _ref.select_in_scene()
 
 
-def _apply_lookdev(ref, lookdev):
-    """Apply lookdev to the given reference.
-
-    NOTE: the parent reference (to apply lookdev to) could be a staged
-    reference, but we can assume that if it is then it's already been
-    imported.
+def _apply_create_ref(output, namespace, attach_to):
+    """Apply create reference.
 
     Args:
-        ref (CPipeRef|StagedRef): reference to apply
-        lookdev (CPOutput): lookdev to apply
+        output (CCPOutput): output being referenced
+        namespace (str): namespace for output
+        attach_to (str): namespace of reference to attach this one to
     """
-    _LOGGER.info('APPLY LOOKDEV %s %s', ref, lookdev)
-    _ref = dcc.find_pipe_ref(ref.namespace)
-    _ref.attach_shaders(lookdev)
+    _LOGGER.info('APPLY CREATE REF %s %s', namespace, output)
+    _ref = dcc.create_ref(namespace=namespace, path=output)
+    _LOGGER.info(' - REF %s', _ref)
+    assert _ref
+
+    _LOGGER.info(' - ATTACH TO %s', attach_to)
+    if attach_to:
+        assert isinstance(attach_to, str)
+        _LOGGER.info(' - APPLY ATTACH %s -> %s', _ref, attach_to)
+        _trg = dcc.find_pipe_ref(namespace=attach_to)
+        _LOGGER.info(' - TRG %s', _trg)
+        if output.content_type == 'CurvesMb':
+            _trg.attach_anim(_ref)
+        elif output.content_type == 'ShadersMa':
+            _trg.attach_shaders(_ref)
+        else:
+            raise NotImplementedError(output.content_type)
 
 
 def _sort_asset_type(type_):
@@ -1395,6 +1388,7 @@ class _StagedRef(pipe_ref.CPipeRef):  # pylint: disable=abstract-method
         """
         super().__init__(output, namespace=namespace)
         self.attach_to = attach_to
+        assert isinstance(attach_to, str) or attach_to is None
 
     def rename(self, namespace):
         """Rename this reference.

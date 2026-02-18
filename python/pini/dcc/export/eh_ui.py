@@ -16,7 +16,7 @@ import logging
 from pini import qt, pipe, dcc, icons
 from pini.qt import QtWidgets, QtGui, Qt
 from pini.utils import (
-    to_nice, to_snake, str_to_ints, ints_to_str, check_heart, wrap_fn)
+    to_nice, to_snake, str_to_ints, ints_to_str, check_heart, wrap_fn, EMPTY)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ class CExportHandlerUI(qt.CUiContainer):
     def _setup_elem(
             self, elem, name, val=None, enabled=None, width=None,
             tooltip=None, save_policy=None, callback=None,
-            settings_key=None, ui_only=False):
+            settings_key=None, ui_only=False, data=EMPTY):
         """Setup element in the export handler's ui.
 
         This will:
@@ -88,6 +88,7 @@ class CExportHandlerUI(qt.CUiContainer):
             callback (fn): callback to link to widget
             settings_key (str): override settings key for element
             ui_only (bool): element is ui only (ie. do not pass to exec func)
+            data (any): embed data in this object
         """
         _LOGGER.debug('   - SETUP ELEM %s', name)
         assert isinstance(elem, qt.CBaseWidget)
@@ -104,6 +105,8 @@ class CExportHandlerUI(qt.CUiContainer):
             elem.setFixedWidth(width)
         if tooltip:
             elem.setToolTip(tooltip)
+        if data is not EMPTY:
+            elem.set_data(data)
 
         # Setup settings
         _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
@@ -126,7 +129,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def _setup_elem_lyt(
             self, elem, label=None, label_w=None, tooltip=None,
-            stretch=True, add_elems=(), enabled=None):
+            stretch=True, add_elems=(), enabled=None, add_label=True):
         """Add a layout containing the given element.
 
         Args:
@@ -138,6 +141,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 horizontal space
             add_elems (list): widgets to add to this layout
             enabled (bool): apply enabled state
+            add_label (bool): add label element
         """
         _name = elem.objectName()
         _LOGGER.debug('     - SETUP ELEM LYT %s %s', _name, elem)
@@ -145,12 +149,14 @@ class CExportHandlerUI(qt.CUiContainer):
         _h_lyt = self._add_hbox_layout(f'{_name}Lyt')
 
         # Build label
-        _label = label or to_nice(_name).capitalize()
-        _label_e = self.build_label(
-            f'{_name}Label', text=_label, tooltip=tooltip,
-            width=label_w or self.label_w, enabled=enabled)
-        _LOGGER.debug('     - LABEL %s %s', _label_e.objectName(), _label_e)
-        _h_lyt.addWidget(_label_e)
+        if add_label:
+            _label = label or to_nice(_name).capitalize()
+            _label_e = self.build_label(
+                f'{_name}Label', text=_label, tooltip=tooltip,
+                width=label_w or self.label_w, enabled=enabled)
+            _LOGGER.debug('     - LABEL %s %s', _label_e.objectName(), _label_e)
+            _h_lyt.addWidget(_label_e)
+
         _h_lyt.addWidget(elem)
 
         if stretch:
@@ -160,13 +166,14 @@ class CExportHandlerUI(qt.CUiContainer):
 
         return _h_lyt
 
-    def build_icon_btn(self, name, icon, callback):
+    def build_icon_btn(self, name, icon, callback, tooltip=None):
         """Add icon button element.
 
         Args:
             name (str): element name
             icon (str): path to element icon
             callback (fn): element callback
+            tooltip (str): tooltip for button
 
         Returns:
             (QPushButton): icon button
@@ -182,6 +189,9 @@ class CExportHandlerUI(qt.CUiContainer):
         _btn.clicked.connect(callback)
         setattr(self, name, _btn)
         _LOGGER.debug('   - BUILD ICON BTN COMPLETE %s', name)
+
+        if tooltip:
+            _btn.setToolTip(tooltip)
 
         return _btn
 
@@ -288,7 +298,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_check_box(
             self, name, val=True, label=None, tooltip=None, enabled=True,
-            save_policy=None, ui_only=False):
+            save_policy=None, ui_only=False, data=None, add_elems=()):
         """Add QCheckBox element in this handler's interface.
 
         Args:
@@ -300,18 +310,30 @@ class CExportHandlerUI(qt.CUiContainer):
             save_policy (SavePolicy): save policy to apply
                 (default is save on change)
             ui_only (bool): element is ui only (ie. do not pass to exec func)
+            data (any): embed data in this element
+            add_elems (tuple): add elements to this element's layout
 
         Returns:
             (QCheckBox): checkbox element
         """
         _LOGGER.debug(' - ADD CHECKBOX %s', name)
+
         _label = label or to_nice(name).capitalize()
         _checkbox_e = qt.CCheckBox(_label, self.parent)
         _checkbox_e.setChecked(val)
-        self.layout.addWidget(_checkbox_e)
+
+        if not add_elems:
+            self.layout.addWidget(_checkbox_e)
+        else:
+            _policy = _checkbox_e.sizePolicy()
+            _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)
+            _checkbox_e.setSizePolicy(_policy)
+            self._setup_elem_lyt(
+                _checkbox_e, tooltip=tooltip, add_elems=add_elems,
+                add_label=False)
 
         self._setup_elem(
-            elem=_checkbox_e, save_policy=save_policy, name=name,
+            elem=_checkbox_e, save_policy=save_policy, name=name, data=data,
             ui_only=ui_only, tooltip=tooltip, enabled=enabled)
 
         return _checkbox_e

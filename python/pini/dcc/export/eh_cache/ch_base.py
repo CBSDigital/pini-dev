@@ -3,8 +3,8 @@
 import logging
 import pprint
 
-from pini import qt, farm, dcc
-from pini.utils import wrap_fn, to_str, single, plural, Seq
+from pini import qt, farm, dcc, icons, pipe
+from pini.utils import wrap_fn, to_str, single, plural, Seq, chain_fns
 
 from .. import eh_base
 
@@ -94,14 +94,21 @@ class CCacheHandler(eh_base.CExportHandler):
 
     def _context__Cacheables(self, menu):
         _cbl = self.ui.Cacheables.selected_data()
-        _out = None
-        if _cbl.output:
-            _out = _cbl.output
-        if _out:
+
+        # Find src ref
+        _src = None
+        if _cbl and _cbl.src_ref:
+            _src = pipe.CACHE.obt_output(_cbl.src_ref)
+        if _src:
             menu.add_action(
-                'Print metadata', wrap_fn(pprint.pprint, _out.metadata))
+                'Print metadata', wrap_fn(pprint.pprint, _src.metadata),
+                icon=icons.PRINT)
         menu.add_action(
-            'Select', wrap_fn(dcc.select_node, _cbl.node))
+            'Select', wrap_fn(dcc.select_node, _cbl.top_node or _cbl.node),
+            icon=icons.SELECT)
+        menu.add_action(
+            'Rename', chain_fns(_cbl.rename, self._redraw__Cacheables),
+            icon=icons.EDIT)
 
     def export(self, cacheables, **kwargs):
         """Execute this cache.

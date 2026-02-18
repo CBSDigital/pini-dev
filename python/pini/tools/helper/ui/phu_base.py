@@ -472,7 +472,7 @@ class PHUiBase(
                 'Find lookdev', wrap_fn(self.jump_to, _lookdev),
                 icon=icons.FIND, enabled=bool(_lookdev))
             _attach = chain_fns(
-                wrap_fn(self.stage_import, _lookdev, attach_to=ref),
+                wrap_fn(self.stage_import, _lookdev, attach_to=ref.namespace),
                 self.ui.SSceneRefs.redraw)
             menu.add_action(
                 'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
@@ -519,6 +519,7 @@ class PHUiBase(
                 (eg. apply lookdev to selected scene ref)
             ref (CPipeRef): scene ref associated with this output
         """
+        _LOGGER.debug(' - ADD OUTPUT LOOKDEV OPTS')
 
         # Check for shd yml file
         if not lookdev.content_type == 'ShadersMa':
@@ -536,13 +537,11 @@ class PHUiBase(
 
         # Add reapply to target option
         _trg = ref.find_target() if ref else None
+        _LOGGER.debug('   - ATTACH TRG %s -> %s', ref, _trg)
         if _trg:
             _text = f'Reapply to "{_trg.namespace}"'
-        else:
-            _text = 'Reapply to target'
-        _func = wrap_fn(ref.attach_to, _trg) if ref else None
-        menu.add_action(
-            _text, _func, enabled=bool(_trg), icon=LOOKDEV_BG_ICON)
+            _func = wrap_fn(ref.attach_to, _trg) if ref else None
+            menu.add_action(_text, _func, icon=LOOKDEV_BG_ICON)
 
         # Find apply options to add
         _vp_refs = dcc.find_pipe_refs(selected=True)

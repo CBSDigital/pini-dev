@@ -2,6 +2,7 @@
 
 import operator
 import logging
+import time
 
 from pini.utils import (
     basic_repr, strftime, Dir, to_time_f, single, to_str)
@@ -235,10 +236,11 @@ class _SGCEntity(sgc_elem.SGCElem):
         return _vers
 
     @sg_cache_result
-    def _read_pub_files(self, force=False):
+    def _read_pub_files(self, attempts=5, force=False):
         """Read pub files in this entity.
 
         Args:
+            attempts (int): number of attempts to make before erroring
             force (bool): force reread from shotgrid
 
         Returns:
@@ -246,23 +248,33 @@ class _SGCEntity(sgc_elem.SGCElem):
         """
         _LOGGER.debug('READ PUB FILES %s', self)
 
-        _last_t = self._read_elems_updated_t(sgc_elems.SGCPubFile)
-        if not _last_t:
-            return []
-        _LOGGER.debug(' - LAST T %s', strftime('nice', _last_t))
+        # Attempt to obtain shotgrid pub files data
+        for _idx in range(attempts):
 
-        _last_t_c, _pub_files_c = self._build_pub_files_cache(force=force)
-        if _last_t_c != _last_t:
-            _last_t_c, _pub_files_c = self._build_pub_files_cache(
-                force=True)
-            _LOGGER.debug(
-                ' - T CMP last="%s" cache="%s"',
-                strftime('nice', _last_t),
-                strftime('nice', _last_t_c))
+            _last_t = self._read_elems_updated_t(sgc_elems.SGCPubFile)
+            if not _last_t:
+                return []
+            _LOGGER.debug(' - LAST T %s', strftime('nice', _last_t))
+
+            _last_t_c, _pub_files_c = self._build_pub_files_cache(force=force)
             if _last_t_c != _last_t:
-                raise RuntimeError(
-                    f'Shotgrid returned bad pub files data {self}')
-        return _pub_files_c
+                _last_t_c, _pub_files_c = self._build_pub_files_cache(
+                    force=True)
+                _LOGGER.debug(
+                    ' - T CMP last="%s" cache="%s"',
+                    strftime('nice', _last_t),
+                    strftime('nice', _last_t_c))
+                if _last_t_c != _last_t:
+                    _LOGGER.error(
+                        f'SHOTGRID RETURNED BAD PUB FILES DATA {self} - '
+                        f'ATTEMPT {_idx:d}/{attempts}')
+                    time.sleep(1)
+                    continue
+
+            return _pub_files_c
+
+        raise RuntimeError(
+            f'Shotgrid returned bad pub files data {self}')
 
     @sg_cache_to_file
     def _build_pub_files_cache(self, force=False):

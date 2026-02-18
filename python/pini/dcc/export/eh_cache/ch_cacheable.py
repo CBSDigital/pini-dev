@@ -2,7 +2,7 @@
 
 import logging
 
-from pini import pipe
+from pini import pipe, qt
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class CCacheable:
     def __init__(
             self, output_name, extn, node, src_ref,
             output_type=None, label=None, icon=None, ref=None,
-            template=None):
+            template=None, top_node=None):
         """Constructor.
 
         Args:
@@ -26,16 +26,21 @@ class CCacheable:
             icon (str): path to icon for this object
             ref (CReference): reference associated with this object
             template (CPTemplate): override template for output
+            top_node (str): top node for this cache set
         """
         self.output_name = output_name
         self.output_type = output_type
         self.label = label or output_name
         self.extn = extn
+
         self._icon = icon
+
         self.template = template
-        self.node = node
         self.src_ref = src_ref
         self.ref = ref
+
+        self.node = node
+        self.top_node = top_node
 
     @property
     def icon(self):
@@ -54,6 +59,21 @@ class CCacheable:
             (CPOutput): path to cache file (eg. abc)
         """
         return self._to_output()
+
+    def rename(self):
+        """Rename this cacheable."""
+        _name = qt.input_dialog(
+            f'Enter new name for cacheable "{self.label}":',
+            title='Rename cacheable')
+        self._set_name(_name)
+
+    def _set_name(self, name):
+        """Set name of this cacheable.
+
+        Args:
+            name (str): name to apply
+        """
+        raise NotImplementedError
 
     def _to_icon(self):
         """Obtain icon for this cacheable.

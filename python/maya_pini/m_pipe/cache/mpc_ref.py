@@ -38,16 +38,16 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
             _label = _output_name
 
         super().__init__(
-            node=self.ref, src_ref=_src_ref, extn=extn,
+            node=self.ref, src_ref=_src_ref, extn=extn, top_node=ref.top_node,
             output_name=_output_name, label=_label, ref=ref)
 
-    def rename(self, name):
+    def _set_name(self, name):
         """Rename this cacheable.
 
         Args:
             name (str): new name to apply
         """
-        raise NotImplementedError
+        self.ref.set_namespace(name)
 
     def select_in_scene(self):
         """Select this reference in scene (top node)."""
@@ -91,4 +91,4 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
             (str): path to icon
         """
         from pini.tools import helper
-        return helper.output_to_icon(self.output)
+        return helper.output_to_icon(self.src_ref)

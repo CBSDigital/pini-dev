@@ -45,7 +45,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
             raise ValueError(
                 'Failed to map to abc ' + self.output_name) from _exc
 
-    def rename(self, name):
+    def _set_name(self, name):
         """Rename this cacheable.
 
         Args:
