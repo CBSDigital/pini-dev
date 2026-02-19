@@ -144,12 +144,12 @@ class MayaDCC(BaseDCC):
 
         cmds.file(new=True, force=True)
 
-        # Delete unwanted node (from redshift callbacks?)
+        # Delete unwanted nodes (from redshift callbacks?)
         _unknown = cmds.ls(type='unknown')
         if _unknown:
             cmds.delete(_unknown)
 
-        # Maintain renderer
+        # Maintain renderer + set exr fmt
         if _ren:
             _LOGGER.debug(' - SET RENDERER %s', _ren)
             mel.eval(f'setCurrentRenderer "{_ren}"')
@@ -360,11 +360,21 @@ class MayaDCC(BaseDCC):
             work (CPWork): work file to apply
         """
         _LOGGER.debug('SET ENV %s', self)
+
+        # Apply arnold snapshots
         if cmds.pluginInfo('mtoa', query=True, loaded=True):
             _dir = work.work_dir.to_subdir('workspace/snapshots')
             _dir.mkdir()
             cmds.arnoldRenderView(opt=("Snapshots Folder", _dir.path))
             _LOGGER.debug(' - SET ARNOLD SNAPSHOTS %s', _dir.path)
+
+        # Apply ocio
+        _ocio = work.entity.settings.get('ocio')
+        if _ocio:
+            _LOGGER.debug(' - APPLY OCIO %s', _ocio)
+            cmds.colorManagementPrefs(edit=True, cmEnabled=True)
+            cmds.colorManagementPrefs(edit=True, cmConfigFileEnabled=True)
+            cmds.colorManagementPrefs(edit=True, configFilePath=_ocio)
 
     def set_fps(self, fps):
         """Set frame rate.
