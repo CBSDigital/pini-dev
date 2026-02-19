@@ -590,9 +590,13 @@ class CheckColorManagement(core.SCMayaCheck):
         self.job = pipe.CACHE.cur_job
         self.entity = pipe.CACHE.cur_entity
 
-        # Obtain current job ocio file
+        # Check current ocio settings
         self.write_log('job %s', self.job)
         if not self.job:
+            return
+        _apply_ocio = self.job.settings.get('apply_ocio')
+        if not _apply_ocio:
+            self.write_log('ocio disabled')
             return
         _ocio = to_str(self.job.settings.get('ocio') or _find_default_ocio())
         self.write_log('ocio %s', _ocio)

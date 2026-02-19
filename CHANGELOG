@@ -1,3 +1,13 @@
+## [8.48.1] - Thu 2026-02-19 09:58
+### Summary
+ - Pini Helper:
+    - maya new scene apply ocio from settings check job.settings.apply_ocio (cstewart/rcalderon),
+### Updated
+ - pini.dcc.MayaDCC.set_env check job.settings.apply_ocio for apply ocio,
+ - pini.pipe.CPSettingsLevel added apply_ocio=False to default settings,
+ - pini.tools.sanity_check.CheckColorManagement check job.settings.apply_ocio for apply ocio,
+
+
 ## [8.48.0] - Thu 2026-02-19 08:47
 ### Summary
  - Pini Helper:

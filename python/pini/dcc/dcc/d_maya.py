@@ -369,9 +369,10 @@ class MayaDCC(BaseDCC):
             _LOGGER.debug(' - SET ARNOLD SNAPSHOTS %s', _dir.path)
 
         # Apply ocio
+        _apply_ocio = work.entity.settings.get('apply_ocio')
         _ocio = work.entity.settings.get('ocio')
-        if _ocio:
-            _LOGGER.debug(' - APPLY OCIO %s', _ocio)
+        _LOGGER.debug(' - APPLY OCIO en=%d %s', _apply_ocio, _ocio)
+        if _apply_ocio and _ocio:
             cmds.colorManagementPrefs(edit=True, cmEnabled=True)
             cmds.colorManagementPrefs(edit=True, cmConfigFileEnabled=True)
             cmds.colorManagementPrefs(edit=True, configFilePath=_ocio)

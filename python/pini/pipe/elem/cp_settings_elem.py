@@ -15,6 +15,7 @@ _DEFAULT_SETTINGS = {
     'col': None,
     'fps': None,
     'icon': None,
+    'apply_ocio': False,
     'maya': {
         'pub_refs_mode': 'Import'},
     'res': None,
