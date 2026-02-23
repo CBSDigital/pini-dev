@@ -8,7 +8,7 @@ import time
 
 from pini import qt, icons
 from pini.qt import QtGui
-from pini.utils import strftime, cache_result, get_user
+from pini.utils import strftime, cache_result, get_user, YEAR_SECS
 
 from .. import ph_utils
 
@@ -121,7 +121,13 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             _owner = self.work.owner()
             _size_str = self.work.nice_size()
 
-        _date_s = strftime('%a %b %d %H:%M%P', self._mtime)
+        # Build date str
+        _age = time.time() - self._mtime
+        if _age > YEAR_SECS:
+            _date_s = strftime('%a %b %d %Y', self._mtime)
+        else:
+            _date_s = strftime('%a %b %d %H:%M%P', self._mtime)
+
         _text = '\n'.join([
             f'v{self.work.ver} - {_date_s}',
             f' - Owner: {_owner}'])

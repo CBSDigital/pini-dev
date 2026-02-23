@@ -235,6 +235,8 @@ def _apply_pipe_expr(parm, template, extn):
         extn (str): output file extension
     """
     _py = '\n'.join([
+        "import pini_startup",
+        "pini_startup.init()",
         "from pini import pipe",
         "_work = pipe.cur_work()",
         "_output_name = hou.pwd().name()",

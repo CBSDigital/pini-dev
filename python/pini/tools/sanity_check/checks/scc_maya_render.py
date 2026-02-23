@@ -170,6 +170,32 @@ class CheckAOVs(SCMayaCheck):
 
     def _check_aovs_vray(self):
         """Apply AOVs check for vray."""
+
+        _req_aovs = self.settings.get('aovs', [])
+        self.write_log('Required AOVs %s', _req_aovs)
+
+        # Check aovs
+        for _aov in _req_aovs:
+            _vr_name = {
+                'Bump Normals': 'BumpNormals',
+                'Depth': 'Z-depth',
+                'Diffuse Lighting': 'Diffuse',
+                'Emission': 'Self Illumination',
+                'Global Illumination': 'GI',
+                'Reflections': 'Reflection',
+                'Refractions': 'Refraction',
+                'Shadows': 'Shadow',
+                'Specular Lighting': 'Specular',
+                'World Position': 'Sampler Info',
+            }.get(_aov, _aov)
+            _node = f'vrayRE_{_vr_name.replace("-", "_").replace(" ", "_")}'
+            self.write_log('check %s -> %s (%s)', _aov, _vr_name, _node)
+            if not cmds.objExists(_node):
+                self.add_fail(
+                    f'Missing vray {_aov} AOV',
+                    fix=wrap_fn(_create_aov, type_=_vr_name, name=_node))
+
+        # Check no anti-aliasing on depth
         if cmds.objExists("vrayRE_Z_depth"):
             _fail = (
                 'The Z-Depth render element has filtering (anti-aliasing) '
@@ -264,6 +290,23 @@ def _create_aov(type_, name=None):
     elif _ren == 'redshift':
         cmds.rsCreateAov(type=type_)
         mel.eval('redshiftUpdateActiveAovList')
+    elif _ren == 'vray':
+        _vr_chan = {
+            'GI': 'giChannel',
+            'Reflection': 'reflectChannel',
+            'Refraction': 'refractChannel',
+            'Sampler Info': 'samplerInfo',
+            'Self Illumination': 'selfIllumChannel',
+            'Z-depth': 'zdepthChannel',
+        }.get(type_, f'{to_camel(type_)}Channel')
+        _mel = f'vrayAddRenderElement {_vr_chan}'
+        mel.eval(_mel)
+        _node = pom.CNode(name)
+        if type_ == 'Sampler Info':
+            _node.plug['vray_name_samplerinfo'].set_val('Point')
+        elif type_ == 'Z-depth':
+            _node.plug['vray_depthFromCamera_zdepth'].set_val(True)
+            _node.plug['vray_filtering_zdepth'].set_val(False)
     else:
         raise NotImplementedError(_ren)
 
@@ -428,7 +471,7 @@ class CheckRenderGlobals(SCMayaCheck):
                 _attrs_to_check += [
                     ('vraySettings.cam_mbCameraMotionBlur', True),
                     ('vraySettings.cam_mbDuration', 0.5),
-                    ('vraySettings.cam_mbIntervalCenter', 0.5),
+                    ('vraySettings.cam_mbIntervalCenter', 0),
                 ]
 
         # Check render format

@@ -1,3 +1,17 @@
+## [8.49.0] - Mon 2026-02-23 10:35
+### Summary
+ - Sanity Check:
+    - check aovs implemented for vray (eehemann),
+    - check render globals apply vray mblur center as 0 (rcalderon),
+ - Pini Helper:
+    - work list show year not time for old entries,
+### Updated
+ - pini.dcc.export.CHouDeadlineRender added pini setup to path exprs,
+ - pini.tools.sanity_check.CheckAOVs added vray checks,
+ - pini.tools.sanity_check.CheckRenderGlobals apply mblur interval center as 0,
+ - pini.tools.helper work list show year not time for old items,
+
+
 ## [8.48.1] - Thu 2026-02-19 09:58
 ### Summary
  - Pini Helper:
