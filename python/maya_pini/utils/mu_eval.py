@@ -35,7 +35,10 @@ def process_deferred_events(max_iterations=1000, catch=False):
         maya.utils.processIdleEvents()
 
     else:
-        _msg = f'Failed to process evalDeferred stack {_events}'
+        _dur = time.time() - _start
+        _msg = (
+            f'Failed to process evalDeferred stack {_events} after'
+            f'{_dur:.01f}s')
         if catch:
             _LOGGER.error(_msg)
             return

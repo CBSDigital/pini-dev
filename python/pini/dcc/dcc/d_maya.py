@@ -153,7 +153,7 @@ class MayaDCC(BaseDCC):
         if _ren:
             _LOGGER.debug(' - SET RENDERER %s', _ren)
             mel.eval(f'setCurrentRenderer "{_ren}"')
-            process_deferred_events()
+            process_deferred_events(catch=True)
         _ren = cur_renderer()
         set_render_extn('exr', catch=True)
         if _ren == 'redshift':

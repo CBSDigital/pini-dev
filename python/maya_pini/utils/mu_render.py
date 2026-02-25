@@ -200,6 +200,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
 
     assert file_.exists()
     assert file_.size()
+    assert file_.size() > 7053
 
 
 def _exec_cmdline_render(

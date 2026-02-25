@@ -1,3 +1,16 @@
+## [8.50.0] - Wed 2026-02-25 09:29
+### Summary
+ - Pini Helper:
+    - maya new scene catch error on revert renderer,
+### Updated
+ - pini.utils.Seq.check_for_bad_frames added min size,
+ - pini.dcc.MayaDCC._force_new_scene catch set renderer deferred error,
+ - pini.dcc.export.CHouDeadlineRender use h_pipe to build path exprs,
+ - maya_pini.utils.process_deferred_events show dur on fail,
+ - maya_pini.utils.render flag small files as bad frames,
+ - hou_pini.to_output_path_expr added,
+
+
 ## [8.49.0] - Mon 2026-02-23 10:35
 ### Summary
  - Sanity Check:
