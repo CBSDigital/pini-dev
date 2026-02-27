@@ -414,6 +414,7 @@ def output_to_imports(  # pylint: disable=too-many-branches
         _LOGGER.info(' - TEST FOR AUTO APPLY LOOKDEV %s', output.content_type)
         if (
                 _base.pini_task in ('model', 'rig') and
+                work_dir and
                 work_dir.pini_task in ('lighting', ) and
                 work_dir.profile == 'shot'):
             _auto_apply_lookdev = True

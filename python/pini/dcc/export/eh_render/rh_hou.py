@@ -10,8 +10,6 @@ from pini import qt, pipe, farm
 from pini.farm import deadline
 from pini.utils import File, find_exe, system, single, chain_fns
 
-from hou_pini import h_pipe
-
 from . import rh_base, rh_pass
 
 _LOGGER = logging.getLogger(__name__)
@@ -236,7 +234,12 @@ def _apply_pipe_expr(parm, template, extn):
         template (str): template name
         extn (str): output file extension
     """
-    _py = h_pipe.to_output_path_expr(template=template, extn=extn)
+    # _py = h_pipe.to_output_path_expr(template=template, extn=extn)
+    _py = '\n'.join([
+        'from hou_pini import h_pipe',
+        f'_path = h_pipe.to_output_path('
+        f'    template="{template}", extn="{extn}")',
+        r'return _path'])
     parm.setExpression(_py, language=hou.exprLanguage.Python)
 
 

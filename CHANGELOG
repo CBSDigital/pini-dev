@@ -1,3 +1,13 @@
+## [8.51.0] - Fri 2026-02-27 08:42
+### Summary
+ - Pini Helper:
+    - bugfix error on import asset into empty scene (eehemann),
+### Updated
+ - pini.dcc.export.CHouDeadlineRender use h_pipe.to_output_path in expr,
+ - pini.tools.helper bugfix error on apply import to empty scene,
+ - hou_pini.h_pipe.to_output_path added,
+
+
 ## [8.50.0] - Wed 2026-02-25 09:29
 ### Summary
  - Pini Helper:
