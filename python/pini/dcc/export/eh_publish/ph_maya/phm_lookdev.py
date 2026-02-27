@@ -122,7 +122,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _LOGGER.info(' - SHD YML %s', self.shd_yml)
         self.outputs = []
 
-        # Check scene
+        # Check + read scene
         self.progress.set_pc(15)
         _clean_junk()
         _assignments = lookdev.read_shader_assignments(referenced=False)
@@ -130,9 +130,12 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             if lookdev.read_shader_assignments(referenced=True):
                 raise RuntimeError('Referenced shaders are not supported')
             raise RuntimeError('No valid shading assignments found')
-        for _shd in _assignments:
+        _geo = []
+        for _shd, _data in _assignments.items():
             if to_namespace(_shd):
                 raise RuntimeError('Shader has namespace ' + _shd)
+            _geo += _data['geos']
+        _LOGGER.info(' - GEO %s', _geo)
         self.textures = _read_textures()
         self.progress.set_pc(20)
 
@@ -143,7 +146,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
         # Export vrmesh ma
         _LOGGER.debug(' - GENERATE VRM MA %s', self.outputs)
-        self._handle_export_vrm_ma()
+        self._handle_export_vrm_ma(geo=_geo)
         self.progress.set_pc(40)
 
         # Export redshift proxy
@@ -174,15 +177,20 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             return
         self.outputs.append(_ass_out)
 
-    def _handle_export_vrm_ma(self):
-        """Handle export vray mesh ma file."""
+    def _handle_export_vrm_ma(self, geo):
+        """Handle export vray mesh ma file.
+
+        Args:
+            geo (str list): geos to export
+        """
         _LOGGER.debug('HANDLE EXPORT VRM MA')
         _force = self.settings['force']
         _export_vrm_ma = self.settings['vrm_ma']
         _anim = self.settings['pxy_anim']
         if not _export_vrm_ma:
             return
-        _vrm = lookdev.export_vrmesh_ma(force=_force, animation=_anim)
+        _vrm = lookdev.export_vrmesh_ma(
+            geo=geo, force=_force, animation=_anim)
         _LOGGER.debug(' - VRM %s', _vrm)
         if not _vrm:
             return

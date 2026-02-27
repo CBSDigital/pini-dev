@@ -107,8 +107,8 @@ def export_vrmesh_ma(animation=False, geo=None, force=False):
     _LOGGER.info(' - VRM %s', _vrm)
     _vrm_ma = pipe.cur_work().to_output(
         'publish', output_type='vrmesh', extn='ma')
-    assert 'output_type' in _vrm_ma.template.source.keys()
     _LOGGER.info(' - MA %s', _vrm_ma)
+    assert 'output_type' in _vrm_ma.template.source.keys()
     for _file in [_vrm, _vrm_ma]:
         _file.delete(wording='replace', force=force)
 
@@ -178,7 +178,7 @@ def _build_vrmesh_proxy(file_, geo, node='PXY', animation=False, force=False):
         makeBackup=True, createProxyNode=True, newProxyNode=True,
         ignoreHiddenObjects=True, oneVoxelPerMesh=True, exportHierarchy=True,
         exportType=1, facesPerVoxel=20000, fname=_file.filename,
-        node=_node, pointSize=0, previewFaces=10000,
+        node=_node, pointSize=0, previewFaces=10000, velocityOn=animation,
         previewType='combined', velocityIntervalEnd=0.05,
         velocityIntervalStart=0, **_kwargs)
     _LOGGER.info(' - BUILT PROXY NODE %s', _node)
