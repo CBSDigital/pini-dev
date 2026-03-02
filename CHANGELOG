@@ -1,3 +1,13 @@
+## [8.52.1] - Mon 2026-03-02 08:14
+### Summary
+ - Pini Helper:
+    - maya lookdev publish export vrmesh apply motion blur interval -0.25 - 0.25 (eehemann),
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish rs proxy export use geo from shd assignments,
+ - pini.qt.ok_cancel added safe flag,
+ - maya_pini.m_pipe.export_vrmesh_ma apply mblur interval -0.25 - 0.25,
+
+
 ## [8.52.0] - Fri 2026-02-27 11:30
 ### Summary
  - Pini Helper:

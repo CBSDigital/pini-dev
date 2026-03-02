@@ -148,7 +148,7 @@ class _CMessageBox(QtWidgets.QMessageBox):
 
 
 def ok_cancel(
-        msg, title='Confirm', icon=None, parent=None,
+        msg, title='Confirm', icon=None, parent=None, safe=True,
         verbose=1):
     """Message box with ok and cancel buttons.
 
@@ -160,11 +160,12 @@ def ok_cancel(
         title (str): interface title
         icon (str): path to icon
         parent (QDialog): parent dialog
+        safe (bool): no check for batch mode
         verbose (int): print process data
     """
     raise_dialog(
         msg=msg, title=title, verbose=verbose, parent=parent,
-        icon=icon or icons.find('Tiger'))
+        icon=icon or icons.find('Tiger'), safe=safe)
 
 
 def notify(
