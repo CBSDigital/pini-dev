@@ -151,7 +151,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
         # Export redshift proxy
         _LOGGER.debug(' - GENERATE RS PROXY %s', self.outputs)
-        self._handle_export_rs_pxy(geo=_geo)
+        self._handle_export_rs_pxy()
         self.progress.set_pc(50)
 
         # Export shaders ma

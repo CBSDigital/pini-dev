@@ -1,3 +1,11 @@
+## [8.52.2] - Tue 2026-03-03 15:49
+### Summary
+ - Pini Helper:
+    - maya lookdev publish bugfix error on build redshift proxy (bshepperd),
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish bugfix error on rs pxy export,
+
+
 ## [8.52.1] - Mon 2026-03-02 08:14
 ### Summary
  - Pini Helper:
