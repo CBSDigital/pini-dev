@@ -235,17 +235,28 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """
         _LOGGER.debug(
             'GET DEFAULT %s attr=%s node=%s', self, self.attr, self.node)
+
+        # Read defaults list
         _defs = self.attribute_query(listDefault=True)
+        _LOGGER.debug(' - DEFAULTS %s', _defs)
         if not _defs:
             return None
-        _LOGGER.debug(' - DEFAULTS %s', _defs)
-        _def = single(_defs)
+
+        # Map type if needed
         _type = self.get_type()
-        _map = {'bool': bool,
-                'byte': int}
-        if _type in _map:
-            _def = _map[_type](_def)
         _LOGGER.debug(' - TYPE %s', _type)
+        if _type == 'float3':  # Match format of getAttr result
+            assert isinstance(_defs, list)
+            assert len(_defs) == 3
+            assert isinstance(_defs[0], float)
+            _def = [tuple(_defs)]
+        else:
+            _def = single(_defs, error=f'Failed to read default {self}')
+            _map = {'bool': bool,
+                    'byte': int}
+            if _type in _map:
+                _def = _map[_type](_def)
+
         return _def
 
     def get_enum(self):

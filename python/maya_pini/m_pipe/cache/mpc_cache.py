@@ -304,7 +304,7 @@ def _take_snapshot(frame, image):
 
 
 def find_cacheable(
-        match=None, filter_=None, type_=None, output_name=None, extn=None,
+        match=None, filter_=None, type_=None, output_name=None, extn='abc',
         catch=False):
     """Find a cacheable in the current scene.
 
@@ -321,6 +321,7 @@ def find_cacheable(
     """
     _cbls = find_cacheables(
         filter_=filter_, output_name=output_name, type_=type_, extn=extn)
+    _LOGGER.debug(' - CBLS %s', _cbls)
     _cbl = single(_cbls, catch=True)
     if _cbl:
         return _cbl
@@ -331,11 +332,14 @@ def find_cacheable(
         _match_s = match.namespace
     else:
         raise NotImplementedError(match)
+    _LOGGER.debug(' - MATCH %s', _match_s)
 
-    _name_match = single(
-        [_cbl for _cbl in _cbls if _cbl.output_name == _match_s], catch=True)
-    if _name_match:
-        return _name_match
+    _matches = [
+        _cbl for _cbl in _cbls
+        if _match_s in (_cbl.output_name, _cbl.label)]
+    _LOGGER.debug(' - MATCHES %s', _matches)
+    if len(_matches) == 1:
+        return single(_matches)
 
     if catch:
         return None

@@ -1,4 +1,4 @@
-"""Tools for managing substance interaction via the pini.dcc module."""
+"""Tools for managing substance painter interaction."""
 
 # pylint: disable=abstract-method
 

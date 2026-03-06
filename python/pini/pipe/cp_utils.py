@@ -26,6 +26,7 @@ EXTN_TO_DCC = {
     'mb': 'maya',
     'spp': 'substance',
     'tgd': 'terragen',
+    'sbs': 'sdesign',
 }
 
 
