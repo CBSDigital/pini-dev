@@ -329,7 +329,7 @@ class Dir(up_path.Path):
                 _msg += f'\n - {len(_to_sync):d} files to sync'
             if _to_delete:
                 _msg += f'\n - {len(_to_delete):d} files to remove'
-            qt.ok_cancel(_msg, title='Execute Sync')
+            qt.ok_cancel(_msg, title='Execute sync')
 
         # Execute sync
         for _src, _trg in qt.progress_bar(_to_sync, 'Syncing {:d} file{}'):

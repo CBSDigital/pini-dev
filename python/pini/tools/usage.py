@@ -99,7 +99,9 @@ def _build_args_data(args, func, fn_args, fn_kwargs):
         if isinstance(_val, (Path, Seq)):
             _val = _val.path
             _kwargs[_key] = _val
-        if not isinstance(_val, (bool, int, float, str)):
+        if (
+                not isinstance(_val, (bool, int, float, str)) and
+                _val is not None):
             raise TypeError(_val)
     _LOGGER.debug(' - KWARGS %s', _kwargs)
 

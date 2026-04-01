@@ -30,6 +30,7 @@ class AttrRef(r_path_ref.PathRef):
         """
         self.attr = attr
         self._node_type = node_type
+        self.filter_str = self.attr
 
         _node, _attr = self.attr.split('.', 1)
         _base, _idx = split_base_index(_node)
@@ -84,7 +85,7 @@ class AttrRef(r_path_ref.PathRef):
         Returns:
             (File|Seq|None): path
         """
-        _path = cmds.getAttr(self.attr)
+        _path = self.path_raw
         _LOGGER.debug('   - READ PATH %s %s', self, _path)
         if not _path:
             return None
@@ -111,6 +112,19 @@ class AttrRef(r_path_ref.PathRef):
                 cmds.getAttr(f'{self.node}.useFrameExtension')):
             _path = file_to_seq(_path, safe=False)
 
+        return _path
+
+    @property
+    def path_raw(self):
+        """Obtain path to this reference.
+
+        Returns:
+            (File|Seq|None): path
+        """
+        _path = cmds.getAttr(self.attr)
+        _LOGGER.debug('   - READ PATH %s %s', self, _path)
+        if not _path:
+            return None
         return _path
 
     def exists(self):

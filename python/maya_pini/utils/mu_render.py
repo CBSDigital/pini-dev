@@ -144,6 +144,7 @@ def render_frame(
     if pre_frame_mel:
         _LOGGER.info(' - EXECUTING PRE FRAME MEL %s', pre_frame_mel)
         mel.eval(pre_frame_mel)
+    mu_eval.process_deferred_events()
     _exec_frame_render(
         file_=_file, mode=mode, layer=layer, res=[_res_x, _res_y], cam=_cam)
     if post_frame:
@@ -395,13 +396,12 @@ def set_render_extn(extn: str, catch=False):
         catch (bool): no error if fail to apply extension
     """
     from maya_pini import open_maya as pom
-    from maya_pini.utils import process_deferred_events
 
     # Apply extn
     _extn = extn
     _ren = cur_renderer()
     if _ren == 'arnold':
-        process_deferred_events()
+        mu_eval.process_deferred_events()
         pom.CPlug('defaultArnoldDriver.aiTranslator').set_val(_extn)
     elif _ren == 'mayaSoftware':
         _map = _obt_image_fmts_map()

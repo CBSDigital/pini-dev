@@ -20,7 +20,7 @@ from .. import core, utils
 _LOGGER = logging.getLogger(__name__)
 
 
-class CheckUnmappedPaths(core.SCMayaCheck):
+class CheckPaths(core.SCMayaCheck):
     """Check for unmapped reference paths.
 
     These are maps which have been set up on another OS, which can
@@ -36,38 +36,81 @@ class CheckUnmappedPaths(core.SCMayaCheck):
 
             self.write_log('Checking ref %s', _ref)
 
-            _cur_path = Path(_ref.path)
-            self.write_log(' - cur path %s', _cur_path.path)
-            _map_path = Path(pipe.map_path(_ref.path))
-            self.write_log(' - map path %s', _map_path.path)
+            # Read ref data
+            if isinstance(_ref, ref.FileRef):
+                _node = _ref.find_top_node(catch=True) or _ref.ref_node
+                _is_file = True
+                _name = _ref.namespace
+            elif isinstance(_ref, ref.AttrRef):
+                _node = _ref.node
+                _is_file = False
+                _name = _node
+            else:
+                raise ValueError
 
-            if _cur_path != _map_path:
+            for _check in [
+                    self._check_path_normalised,
+                    self._check_for_unmapped_path]:
+                if _check(_ref, node=_node, is_file=_is_file, name=_name):
+                    break
 
-                # Find node
-                if isinstance(_ref, ref.FileRef):
-                    _node = _ref.find_top_node(catch=True) or _ref.ref_node
-                    _is_file = True
-                    _name = _ref.namespace
-                elif isinstance(_ref, ref.AttrRef):
-                    _node = _ref.node
-                    _is_file = False
-                    _name = _node
-                else:
-                    raise ValueError
+    def _check_path_normalised(self, ref_, node, is_file, name):  # pylint: disable=unused-argument
+        """Check for unnormalised paths.
 
-                # Check map path exists
-                if _is_file and not _map_path.exists():
-                    _msg = (
-                        f'Reference {_name} has a path which can be updated '
-                        f'for {platform.system()} but the new path is missing: '
-                        f'{_cur_path.path}')
-                    self.add_fail(_msg, node=_node)
-                else:
-                    _msg = (
-                        f'Reference {_name} has a path which can be updated '
-                        f'for {platform.system()}: {_cur_path.path}')
-                    _fix = wrap_fn(_ref.update, _map_path.path)
-                    self.add_fail(_msg, fix=_fix, node=_node)
+        Args:
+            ref_ (PathRef): ref to check
+            node (str): associated node
+            is_file (bool): whether ref is a file
+            name (str): label for this ref
+        """
+        _cur_path = Path(ref_.path_raw)
+        if not _cur_path.is_abs():
+            return False
+
+        _abs_path = Path(abs_path(_cur_path.path))
+        if _cur_path == _abs_path:
+            return False
+
+        _msg = (
+            f'Reference "{name}" has a path which is not normalised: '
+            f'{ref_.path_raw} (normalised path is {_abs_path.path})')
+        _fix = wrap_fn(ref_.update, _abs_path.path)
+        self.add_fail(_msg, node=node, fix=_fix)
+
+        return True
+
+    def _check_for_unmapped_path(self, ref_, node, is_file, name):
+        """Check for unmapped paths.
+
+        Args:
+            ref_ (PathRef): ref to check
+            node (str): associated node
+            is_file (bool): whether ref is a file
+            name (str): label for this ref
+        """
+        _cur_path = Path(ref_.path)
+        self.write_log(' - cur path %s', _cur_path.path)
+        _map_path = Path(pipe.map_path(ref_.path))
+        self.write_log(' - map path %s', _map_path.path)
+
+        if _cur_path == _map_path:
+            return False
+
+        # Check map path exists
+        if is_file and not _map_path.exists():
+            _msg = (
+                f'Reference "{name}" has a path which can be updated '
+                f'for {platform.system()} but the new path is missing: '
+                f'{_cur_path.path}')
+            self.add_fail(_msg, node=node)
+        else:
+            _msg = (
+                f'Reference "{name}" has a path which can be updated '
+                f'for {platform.system()}: {_cur_path.path}')
+            _fix = wrap_fn(ref_.update, _map_path.path)
+            self.add_fail(_msg, fix=_fix, node=node)
+
+        return True
 
 
 class CleanBadSceneNodes(core.SCMayaCheck):

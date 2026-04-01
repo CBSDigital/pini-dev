@@ -29,6 +29,7 @@ class FileRef(r_path_ref.PathRef):
         _LOGGER.debug('INIT FileRef %s', ref_node)
         self.ref_node = ref_node
         self.node = ref_node
+        self.filter_str = self.namespace
 
         _name = self.namespace or self.prefix
         self.cmp_key = split_base_index(_name)
@@ -103,7 +104,16 @@ class FileRef(r_path_ref.PathRef):
         Returns:
             (str): reference path
         """
-        return File(self.path_uid.split('{', 1)[0])
+        return File(self.path_raw)
+
+    @property
+    def path_raw(self):
+        """Get path to this reference.
+
+        Returns:
+            (str): reference path
+        """
+        return self.path_uid.split('{', 1)[0]
 
     @property
     def path_uid(self):

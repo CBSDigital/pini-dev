@@ -1,3 +1,22 @@
+## [8.54.0] - Wed 2026-04-01 13:00
+### Summary
+ - Pini Helper:
+    - submit render disable submit button if no render selected (csoza),
+ - Sanity Check:
+    - check paths check for drive letter normalization (blee/rcaldron),
+### Updated
+ - pini.dcc.MayaDCC.create_ref bugfix error on apply grouping if space / leading digit in asset type name,
+ - pini.dcc.export.CBasicSubmitter disable submit on no render selected,
+ - pini.qt.raise_dialog bugfix batch mode error on no dcc,
+ - pini.tools.sanity_check renamed CheckUnmappedPaths -> CheckPaths check for normalization,
+ - pini.tools.usage.track bugfix error on default arg as None,
+ - maya_pini.utils render/set_render_extn process events to avoid arnold error,
+ - maya_pini.ref.find_path_ref added,
+ - maya_pini.ref.find_path_refs added filter_ arg,
+ - maya_pini.ref.PathRef filter_str/path_raw added,
+ - maya_pini.open_maya.CReference.find_skeleton added namespace override arg,
+
+
 ## [8.53.0] - Fri 2026-03-06 08:02
 ### Summary
  - Pini Helper:

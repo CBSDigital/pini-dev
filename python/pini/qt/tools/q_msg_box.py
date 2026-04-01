@@ -207,7 +207,7 @@ def raise_dialog(
     from pini import dcc, qt, testing
 
     # Avoid farm qt seg fault
-    if safe and dcc.batch_mode():
+    if safe and dcc.NAME and dcc.batch_mode():
         lprint('MESSAGE:\n' + msg)
         raise RuntimeError("Cannot raise dialog in batch mode - " + title)
     qt.get_application()

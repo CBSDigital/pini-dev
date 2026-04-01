@@ -219,26 +219,41 @@ class CReference(om.MFnReference, ref.FileRef):
             _nodes.add(_node)
         return sorted(_nodes)
 
-    def find_skeleton(self, catch=True):
+    def find_skeleton(self, namespace=None, catch=True):
         """Find this node's skeleton.
 
         Args:
+            namespace (str): override search namespace
             catch (bool): no error if no skeleton found
 
         Returns:
             (CSkeleton|None): skeleton (if any)
         """
+        _LOGGER.debug('FIND SKEL %s', self)
         from maya_pini import open_maya as pom
 
+        _ns = namespace or self.namespace
         _skels = [
             _skel for _skel in pom.find_skeletons()
-            if _skel.namespace.startswith(self.namespace)]
+            if _skel.namespace.startswith(_ns)]
         _LOGGER.debug(' - FOUND %d SKELS %s', len(_skels), _skels)
 
+        # Try exact namespace match
         _ns_matches = [
-            _skel for _skel in _skels if _skel.namespace == self.namespace]
+            _skel for _skel in _skels if _skel.namespace == _ns]
+        _LOGGER.debug(' - NS MATCHES %d %s', len(_ns_matches), _ns_matches)
         if len(_ns_matches) == 1:
             return single(_ns_matches)
+
+        # Try root namespace match
+        _root_ns_matches = [
+            _skel for _skel in _skels
+            if _skel.namespace and
+            _skel.namespace.split(':')[0] == _ns]
+        _LOGGER.debug(
+            ' - ROOT NS MATCHES %d %s', len(_root_ns_matches), _root_ns_matches)
+        if len(_root_ns_matches) == 1:
+            return single(_root_ns_matches)
 
         if catch:
             return None

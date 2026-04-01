@@ -56,6 +56,11 @@ class CBasicSubmitter(export.CExportHandler):
             _select = helper.DIALOG.work_dir.task_label
         self.ui.Task.set_items(_tasks, select=_select)
 
+    def _redraw__Execute(self):
+        _items = self.ui.Render.selected_items()
+        _LOGGER.debug('REDRAW Execute %s', _items)
+        self.ui.Execute.setEnabled(bool(_items))
+
     def _redraw__Render(self):
 
         _LOGGER.debug('REDRAW Render')
@@ -104,6 +109,10 @@ class CBasicSubmitter(export.CExportHandler):
 
     def _callback__Latest(self):
         self.ui.Render.redraw()
+
+    def _callback__RenderFilter(self):
+        _LOGGER.debug('CALLBACK RenderFilter')
+        self.ui.Execute.redraw()
 
     def _context__Render(self, menu):
         _ren = self.ui.Render.selected_data()

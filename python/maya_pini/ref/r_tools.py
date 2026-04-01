@@ -5,10 +5,11 @@ it will cause a cyclical dependency error.
 """
 
 import logging
+import operator
 
 from maya import cmds
 
-from pini.utils import File, single, passes_filter
+from pini.utils import File, single, passes_filter, apply_filter
 from maya_pini.utils import restore_ns, del_namespace
 
 from .r_attr_ref import find_attr_refs
@@ -88,13 +89,36 @@ def create_ref(file_, namespace, parent=None, force=False):
     return FileRef(_ref.ref_node)
 
 
-def find_path_refs(referenced=None):
+def find_path_ref(match):
+    """Find a path reference.
+
+    Args:
+        match (str): match by ref name
+
+    Returns:
+        (PathRef): matching path ref
+    """
+    _LOGGER.debug('FIND PATH REF %s', match)
+    _refs = find_path_refs()
+
+    _filter_matches = [
+        _ref for _ref in _refs if match in (_ref.filter_str, )]
+    _LOGGER.debug(
+        ' - FILTER MATCHES %d %s', len(_filter_matches), _filter_matches)
+    if len(_filter_matches) == 1:
+        return single(_filter_matches)
+
+    raise NotImplementedError
+
+
+def find_path_refs(referenced=None, filter_=None):
     """Find all path references in the current scene.
 
     This includes all file references and attribute references.
 
     Args:
         referenced (bool): filtered by referenced status
+        filter_ (str): apply name filter
 
     Returns:
         (PathRef list): path references
@@ -102,6 +126,8 @@ def find_path_refs(referenced=None):
     _refs = []
     _refs += find_refs(referenced=referenced, unloaded=True)
     _refs += find_attr_refs(referenced=referenced)
+    if filter_:
+        _refs = apply_filter(_refs, filter_, key=operator.attrgetter('filter_str'))
     return sorted(_refs)
 
 
@@ -169,26 +195,27 @@ def find_refs(
     return _refs
 
 
-def _read_refs(class_=None):
+def _read_refs(class_=None, log=9):
     """Read all references in the current scene.
 
     Args:
         class_ (class): override ref class
+        log (int): apply log level
 
     Returns:
         (FileRef list): all references
     """
-    _LOGGER.debug('READ REFS')
+    _LOGGER.log(log, 'READ REFS')
     _refs = []
     for _ref_node in cmds.ls(type='reference'):
 
-        _LOGGER.debug('TEST REF %s', _ref_node)
+        _LOGGER.log(log, 'TEST REF %s', _ref_node)
 
         # Check ref node
         try:
             _ref = FileRef(_ref_node)
         except (ValueError, RuntimeError) as _exc:
-            _LOGGER.debug(' - REJECTED %s', _exc)
+            _LOGGER.log(log, ' - REJECTED %s', _exc)
             continue
 
         # Apply type cast
