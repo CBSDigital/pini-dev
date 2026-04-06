@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def create_ver(
         render, frames=None, comment=None, thumb=None, filmstrip=None,
-        pub_files=(), lut=None, force=False):
+        pub_files=(), pub_inputs=(), lut=None, force=False):
     """Register the given render in shotgrid.
 
     Args:
@@ -23,7 +23,10 @@ def create_ver(
         comment (str): submission comment
         thumb (File): override thumbnail
         filmstrip (File): override filmstrip
-        pub_files (CPOutput list): published files to link
+        pub_files (CPOutput list): published files to link (files included
+            int this publish)
+        pub_inputs (CPOutput list): published inputs to link (upstream
+            files this publish depends on)
         lut (str): path to lut to apply on video compile
         force (bool): force re-register if already exists
 
@@ -35,9 +38,8 @@ def create_ver(
         'Submitting version', col='Orchid', stack_key='SubmitVersion')
     _LOGGER.info('CREATE VERSION')
 
-    _pub_files = set(pub_files)
     _render, _video, _frames = _read_render_video_frames(
-        render=render, frames=frames, pub_files=_pub_files, lut=lut)
+        render=render, frames=frames, lut=lut)
     _LOGGER.debug(' - VIDEO %s', _video)
     _progress.set_pc(10)
     _comment = comment
@@ -51,21 +53,24 @@ def create_ver(
         return _sg_ver
     _progress.set_pc(15)
 
-    # Read work
+    # Read work + pub files / inputs
+    _pub_files = set(pub_files) | set(filter(bool, (_render, _video, _frames)))
+    _pub_inputs = set(pub_inputs)
     _work = _render.find_work()
     if _work:
         _pub_files.add(_work)
         for _path in sorted(_work.metadata.get('refs', {}).values()):
             _out = pipe.CACHE.obt_output(_path, catch=True)
             if _out:
-                _pub_files.add(_out)
+                _pub_inputs.add(_out)
         _comment = _comment or _work.notes
     _progress.set_pc(20)
 
     # Create version
     _sg_ver = _obt_ver_elem(
         version=_sg_ver, frames=_frames, pub_files=sorted(_pub_files),
-        render=_render, comment=_comment, progress=_progress, video=_video)
+        render=_render, comment=_comment, progress=_progress, video=_video,
+        pub_inputs=sorted(_pub_inputs))
     _progress.set_pc(50)
 
     # Upload video
@@ -202,7 +207,7 @@ def _apply_thumb(thumb, version, render, video):
         sg_handler.upload_thumbnail('Version', version.id_, _thumb.path)
 
 
-def _build_ver_data(render, frames, comment, pub_files, video):
+def _build_ver_data(render, frames, comment, pub_files, pub_inputs, video):
     """Build version data dict.
 
     Args:
@@ -210,6 +215,7 @@ def _build_ver_data(render, frames, comment, pub_files, video):
         frames (CPOutputSeq): source frames
         comment (str): submission comment
         pub_files (CPOutput list): published files to link
+        pub_inputs (CPOutput list): published inputs to link
         video (CPOutputVideo): video to submit
 
     Returns:
@@ -263,27 +269,32 @@ def _build_ver_data(render, frames, comment, pub_files, video):
     if _desc:
         _data['description'] = _desc
 
-    # Add published files
-    if pub_files:
-        _pub_files = sorted(set(pub_files) | {render})
-        _LOGGER.info(' - PUB FILES %s', _pub_files)
-        _data['published_files'] = []
-        for _pub_file in _pub_files:
-            if isinstance(_pub_file, dict):
-                _pub_file_data = _pub_file
-            elif isinstance(_pub_file, pipe.CPOutputFile):
-                _out = pipe.CACHE.obt(_pub_file)
-                _pub_file_data = _out.sg_pub_file.to_entry()
+    # Add published files/inputs
+    for _field, _files in [
+            ('published_files', pub_files),
+            ('sg_published_inputs', pub_inputs),
+    ]:
+        _LOGGER.info(' - ADD FILES %s %s', _field, _files)
+        if not _files:
+            continue
+        _data[_field] = []
+        for _file in _files:
+            if isinstance(_file, dict):
+                _file_data = _file
+            elif isinstance(_file, pipe.CPOutputFile):
+                _out = pipe.CACHE.obt(_file)
+                _file_data = _out.sg_pub_file.to_entry()
             else:
-                _pub_file_data = sg_pub_file.create_pub_file_from_path(
-                    _pub_file.path)
-            _data['published_files'].append(_pub_file_data)
+                _file_data = sg_pub_file.create_pub_file_from_path(
+                    _file.path)
+            _data[_field].append(_file_data)
 
     return _data
 
 
 def _obt_ver_elem(
-        version, render, frames, comment, pub_files, video, progress):
+        version, render, frames, comment, video, pub_files, pub_inputs,
+        progress):
     """Obtain version element.
 
     Args:
@@ -291,8 +302,9 @@ def _obt_ver_elem(
         render (CCPOutputBase): render
         frames (CCPOutputSeq): source frames
         comment (str): comment
-        pub_files (list): publish files to link
         video (CPOutputVideo): video to submit
+        pub_files (list): publish files to link
+        pub_inputs (CPOutput list): published inputs to link
         progress (ProgressDialog): progress dialog
 
     Returns:
@@ -303,7 +315,7 @@ def _obt_ver_elem(
     # Build submit data
     _data = _build_ver_data(
         render, frames=frames, comment=comment, pub_files=pub_files,
-        video=video)
+        video=video, pub_inputs=pub_inputs)
     _LOGGER.debug(' - DATA %s', pprint.pformat(_data))
     progress.set_pc(30)
 
@@ -327,7 +339,7 @@ def _obt_ver_elem(
     return _sg_ver
 
 
-def _read_render_video_frames(render, frames, pub_files, lut):
+def _read_render_video_frames(render, frames, lut):
     """Read render, video and frames from submit args.
 
     If an image sequence with more than one frame is submitted, it is converted
@@ -336,7 +348,6 @@ def _read_render_video_frames(render, frames, pub_files, lut):
     Args:
         render (CPOutputSeq|CPOutputVideo): render arg
         frames (CPOutputSeq): render frames
-        pub_files (set): pub files list
         lut (str): path to lut to apply on video compile
 
     Returns:
@@ -362,7 +373,6 @@ def _read_render_video_frames(render, frames, pub_files, lut):
         if not _video.exists():
             _LOGGER.debug('   - RENDERING VIDEO')
             _render_to_video(render=_render, video=_video, lut=lut)
-            pub_files.add(_frames)
         assert _video
         assert _video.exists()
 

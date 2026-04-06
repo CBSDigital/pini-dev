@@ -49,6 +49,8 @@ class CBasicSubmitter(export.CExportHandler):
         super().build_ui(
             add_version_up=False, add_snapshot=False, exec_label='Submit')
 
+        self._callback__Render()
+
     def _redraw__Task(self):
         _tasks = sorted({_out.task_label for _out in self._all_outputs})
         _select = None
@@ -99,7 +101,7 @@ class CBasicSubmitter(export.CExportHandler):
                 _out.filename, icon=_icon, data=_out, icon_scale=0.8, col=_col)
             _items.append(_item)
 
-        self.ui.Render.set_items(_items)
+        self.ui.Render.set_items(_items, emit=True)
 
     def _callback__Task(self):
         self.ui.Render.redraw()
@@ -109,6 +111,14 @@ class CBasicSubmitter(export.CExportHandler):
 
     def _callback__Latest(self):
         self.ui.Render.redraw()
+
+    def _callback__Render(self):
+        _render = self.ui.Render.selected_data()
+        _LOGGER.debug('CALLBACK Render %s', _render)
+        _notes = ''
+        if _render:
+            _notes = _render.metadata['notes']
+        self.ui.Notes.setText(_notes)
 
     def _callback__RenderFilter(self):
         _LOGGER.debug('CALLBACK RenderFilter')

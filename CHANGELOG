@@ -1,3 +1,13 @@
+## [8.56.0] - Mon 2026-04-06 14:11
+### Summary
+ - Pini Helper:
+    - submit asset to shotgrid apply upstream files as publish inputs rather than published files (mkim),
+### Updated
+ - export.CBasicSubmitter apply render notes as submit notes,
+ - pini.pipe.shotgrid.create_ver added pub_inputs arg,
+ - pini.pipe.shotgrid.create_ver apply refs as pub inputs not pub files,
+
+
 ## [8.55.0] - Mon 2026-04-06 13:13
 ### Summary
  - Pini Helper:
