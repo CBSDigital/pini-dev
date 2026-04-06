@@ -726,7 +726,7 @@ class CExportHandlerUI(qt.CUiContainer):
         elif _mode == 'From timeline':
             _frames = _to_frames(start=_start, end=_end, step=_step)
         elif _mode == 'From render globals':
-            _frames = dcc.t_frames(mode='RenderGlobals')
+            _frames = _mode
         elif _mode == 'Custom':
             _frame_s = self.RangeCustom.text()
             _frames = str_to_ints(_frame_s)
@@ -802,6 +802,8 @@ class CExportHandlerUI(qt.CUiContainer):
         _LOGGER.debug('REFRESH RANGE %s', self)
 
         _frames = self.to_frames()
+        if _frames == 'From render globals':
+            _frames = dcc.t_frames(mode='RenderGlobals')
         try:
             _frame_s = ints_to_str(_frames)
         except ValueError:

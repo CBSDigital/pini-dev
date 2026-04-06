@@ -123,17 +123,3 @@ class CRenderHandler(eh_base.CExportHandler):
         elif _lyrs:
             _nodes = [_lyr.node for _lyr in _lyrs]
             menu.add_action("Select nodes", wrap_fn(dcc.select_node, _nodes))
-
-    def exec_from_ui(self, ui_kwargs=None, **kwargs):
-        """Execuate this export using settings from ui.
-
-        Args:
-            ui_kwargs (dict): override interface kwargs
-        """
-        _ui_kwargs = ui_kwargs or self.ui.to_kwargs()
-        if 'range_' in _ui_kwargs:
-            _rng = _ui_kwargs.pop('range_')
-            _start, _end = _rng
-            _frames = list(range(_start, _end + 1))
-            _ui_kwargs['frames'] = _frames
-        return super().exec_from_ui(ui_kwargs=_ui_kwargs, **kwargs)

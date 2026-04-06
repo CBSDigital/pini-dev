@@ -235,8 +235,12 @@ class SCCheck:
         Returns:
             (dict): settings
         """
-        _ety_settings = pipe.cur_entity().settings or {}
-        return _ety_settings.get('sanity_check').get(self.name, {})
+        _ety = pipe.cur_entity()
+        if _ety:
+            _settings = _ety.settings or {}
+        else:
+            _settings = pipe.to_default_settings()
+        return _settings.get('sanity_check').get(self.name, {})
 
     def reset(self):
         """Reset this check."""

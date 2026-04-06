@@ -158,6 +158,7 @@ class PHHeader:
             _etys = self.job.find_shots(sequence=_seq) if _seq else []
         else:
             raise ValueError(_profile)
+        _etys.sort()
         _labels = [_ety.name for _ety in _etys]
         _LOGGER.debug(' - ENTITIES %s', _etys)
 

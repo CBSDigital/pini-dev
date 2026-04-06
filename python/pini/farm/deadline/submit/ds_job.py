@@ -35,7 +35,7 @@ class CDJob:
             self, name, work=None, stime=None, priority=50, machine_limit=0,
             comment=None, error_limit=0, frames=None, batch_name=None,
             dependencies=(), group=None, chunk_size=1, limit_groups=None,
-            scene=None, output=None, env=None):
+            scene=None, output=None, env=None, initial_status='Active'):
         """Constructor.
 
         Args:
@@ -56,6 +56,7 @@ class CDJob:
             scene (File): render scene (if not work file)
             output (CPOutput): output for this job
             env (dict): add environment variables
+            initial_status (str): apply job initial status
         """
         from pini import farm
 
@@ -66,6 +67,7 @@ class CDJob:
         self.name = name
         self.work = work
         self.error_limit = error_limit
+        self.initial_status = initial_status
 
         self.batch_name = batch_name
         if work:
@@ -89,12 +91,13 @@ class CDJob:
         self.group = _group
         if limit_groups:
             _LOGGER.debug(' - LIMIT GROUPS %s', limit_groups)
-            if not isinstance(limit_groups, (list, tuple)):
+            if not isinstance(limit_groups, (list, tuple, set)):
                 raise RuntimeError(limit_groups)
             for _group in limit_groups:
                 if _group not in farm.find_limit_groups():
                     raise RuntimeError(f'Bad limit group "{_group}"')
-        self.limit_groups = limit_groups or ()
+        self.limit_groups = set(limit_groups or [])
+        assert isinstance(self.limit_groups, set)
 
         assert self.stype
         assert self.name
@@ -180,24 +183,24 @@ class CDJob:
 
         _frames_s = ints_to_str(self.frames)
         _data = {
-            'Plugin': self.plugin,
-            'Name': self.name,
             'Comment': self.comment,
-            'Department': '',
-            'Pool': 'none',
-            'SecondaryPool': '',
-            'Group': self.group,
-            'Priority': str(self.priority),
-            'TaskTimeoutMinutes': '0',
-            'EnableAutoTimeout': 'False',
             'ConcurrentTasks': '1',
+            'Department': '',
+            'Group': self.group,
+            'EnableAutoTimeout': 'False',
             'LimitConcurrentTasksToNumberOfCpus': 'True',
             'MachineLimit': str(self.machine_limit),
+            'Name': self.name,
+            'OnJobComplete': 'Nothing',
+            'Plugin': self.plugin,
+            'Pool': 'none',
+            'Priority': str(self.priority),
+            'SecondaryPool': '',
+            'TaskTimeoutMinutes': '0',
             'Whitelist': '',
             'LimitGroups': ','.join(self.limit_groups),
             'JobDependencies': _dep_str,
-            'OnJobComplete': 'Nothing',
-            'InitialStatus': 'Active',
+            'InitialStatus': self.initial_status,
             'Frames': _frames_s,
             'ChunkSize': str(self.chunk_size),
 
@@ -358,9 +361,7 @@ class CDPyJob(CDJob):
         _settings = self.job.settings.get('deadline', {}).get('python', {})
         if self.group in (None, 'none') and 'group' in _settings:
             self.group = _settings['group']
-        self.limit_groups = sorted(
-            set(self.limit_groups) |
-            set(_settings.get('limit_groups', [])))
+        self.limit_groups |= set(_settings.get('limit_groups', []))
         self.py_ver = _settings.get(
             'version',
             sys.version_info.major + sys.version_info.minor / 10)

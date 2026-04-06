@@ -29,7 +29,7 @@ _DEFAULT_SETTINGS = {
 
 
 @cache_result
-def _obt_default_settings(force=False):
+def to_default_settings(force=False):
     """Obtain default settings.
 
     If $PINI_PIPE_DEFAULT_SETTINGS is set, then this file is read as
@@ -90,7 +90,7 @@ class CPSettingsLevel(Dir):
         if self._settings_parent:
             _parent_settings = self._settings_parent.settings
         else:
-            _parent_settings = _obt_default_settings()
+            _parent_settings = to_default_settings()
         for _key in ('icon', ):  # Some keys don't pass down
             _parent_settings[_key] = None
         _settings = merge_dicts(_settings, _parent_settings)

@@ -1,9 +1,38 @@
+## [8.55.0] - Mon 2026-04-06 13:13
+### Summary
+ - Pini Helper:
+    - maya deadline render range from render globals reads layer overrides (blee),
+    - maya deadline render added submit suspended option (blee),
+    - maya cache bugfix error on cache on farm (nwray),
+    - bugfix assets not sorted alphabetically (mkim),
+    - houdini-21 bugfix bad results on dialog boxes,
+### Updated
+ - pini.dcc.export.CExportHandlerUI.to_frames allow range as From Render Globals,
+ - pini.dcc.export.CExportHandlerUI._update_pipe_cache added reset_cache arg,
+ - pini.dcc.export.CMayaAbcCache working cache on farm,
+ - pini.dcc.export.CMayaFarmRender added submit suspended opt,
+ - pini.pipe.to_default_settings made public,
+ - pini.qt.raise_dialog bugfix hou-21 result offsetting,
+ - pini.farm.deadline.wrap_py print_traceback working,
+ - pini.farm.deadline.CDJob added initial_status flag,
+ - pini.farm.deadline.CDJob.limit_groups updated list -> set,
+ - pini.farm.deadline.CDMayaJob frames handled in base class,
+ - pini.farm.deadline.CDMayaPyJob apply maya limit grp by default,
+ - pini.farm.deadline.submit_maya_cache working,
+ - pini.farm.deadline CDFarm broke out CDMayaFarm,
+ - pini.dcc.HouDCC._build_tool added catch to ignore missing icons,
+ - pini.tools.sanity_check.SCCheck.to_settings added handling for no cur ety,
+ - pini.tools.sanity_check.CheckRenderLayers.prefixes determined on init + made public,
+ - pini.tools.helper apply ety sorting,
+ - maya_pini.m_pipe.find_cacheable added match by node,
+
+
 ## [8.54.0] - Wed 2026-04-01 13:00
 ### Summary
  - Pini Helper:
     - submit render disable submit button if no render selected (csoza),
  - Sanity Check:
-    - check paths check for drive letter normalization (blee/rcaldron),
+    - check paths check for drive letter normalization (blee/rcalderon),
 ### Updated
  - pini.dcc.MayaDCC.create_ref bugfix error on apply grouping if space / leading digit in asset type name,
  - pini.dcc.export.CBasicSubmitter disable submit on no render selected,

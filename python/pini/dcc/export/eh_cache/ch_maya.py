@@ -68,7 +68,7 @@ class CMayaAbcCache(CMayaCache):
         from maya_pini import m_pipe
         return m_pipe.cache(
             cacheables, version_up=False, update_cache=False,
-            use_farm=use_farm, update_metadata=True,
+            use_farm=use_farm, update_metadata=True, snapshot=False,
             range_=range_, format_=format_, uv_write=uv_write,
             world_space=world_space, renderable_only=renderable_only,
             step=1 / substeps, force=True, extn='abc', save=False,
@@ -80,6 +80,13 @@ class CMayaAbcCache(CMayaCache):
         self.ui.add_check_box('UvWrite', label='Write UVs')
         self.ui.add_check_box('WorldSpace')
         self.ui.add_check_box('RenderableOnly')
+
+    def _update_pipe_cache(self):
+        """Update pipe cache."""
+        _use_farm = self.settings.get('use_farm')
+        if _use_farm:
+            return
+        super()._update_pipe_cache(reset_cache=not self.block_update_metadata)
 
 
 class CMayaFbxCache(CMayaCache):
@@ -124,7 +131,7 @@ class CMayaFbxCache(CMayaCache):
                     f"Bad fbx cacheable extn {_cbl.extn}: {_cbl.label}")
         return m_pipe.cache(
             cacheables, version_up=False, extn='fbx',
-            use_farm=use_farm, update_metadata=True,
+            use_farm=use_farm, update_metadata=True, snapshot=False,
             checks_data=checks_data or self.metadata['sanity_check'],
             range_=range_, format_=format_, step=1 / substeps, save=False,
             update_cache=False, force=force)

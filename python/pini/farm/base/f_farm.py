@@ -136,7 +136,8 @@ class CFarm:
                     _missing_outs.append(_out)
                 continue
 
-            _out.set_metadata(metadata)
+            if metadata is not None:
+                _out.set_metadata(metadata)
             if pipe.MASTER == 'shotgrid':
                 from pini.pipe import shotgrid
                 shotgrid.create_pub_file_from_output(

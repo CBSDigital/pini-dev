@@ -538,14 +538,17 @@ class CheckRenderLayers(SCMayaCheck):
 
     task_filter = 'lighting model lookdev'
 
-    def run(self):
-        """Run this check."""
-
-        # Obtain list of prefixes
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super().__init__(*args, **kwargs)
         _prefixes = {'bty', 'mte', 'sdw', 'ref', 'utl'}
         _prefixes |= set(self.settings.get('add_prefixes', []))
         _prefixes = sorted(_prefixes)
-        self.write_log(' - prefixes %s', _prefixes)
+        self.prefixes = _prefixes
+
+    def run(self):
+        """Run this check."""
+        self.write_log(' - prefixes %s', self.prefixes)
 
         for _lyr in pom.find_render_layers():
             self.write_log('Checking %s pass=%s', _lyr, _lyr.pass_name)
@@ -559,12 +562,12 @@ class CheckRenderLayers(SCMayaCheck):
                 _prefix, _suffix = _lyr.pass_name, None
 
             # Check prefix
-            if _prefix not in _prefixes:
-                _prefixes = str(_prefixes).strip('[]')
+            if _prefix not in self.prefixes:
+                _prefixes_s = str(self.prefixes).strip('[]')
                 _msg = (
                     f'Render layer "{_lyr.pass_name}" has prefix "{_prefix}" '
                     f'which is not in the list of approved prefixes: '
-                    f'{_prefixes}')
+                    f'{_prefixes_s}')
                 _fail = SCFail(_msg)
                 _fail.add_action('Open layers', renderSetup.createUI)
                 self.add_fail(_fail)

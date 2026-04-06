@@ -2,6 +2,8 @@
 
 # pylint: disable=no-name-in-module
 
+from .cp_settings_elem import to_default_settings
+
 from .root import (
     CPRoot, ROOT, find_jobs, find_job, obt_job)
 

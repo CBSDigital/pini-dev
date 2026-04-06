@@ -52,8 +52,9 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
         self.ui.add_spin_box(name='ChunkSize', val=1, min_=1)
         self.ui.add_spin_box(name='MachineLimit', val=15)
 
-        # self.ui.add_separator()
+        self.ui.add_separator()
         self.ui.add_check_box(name='StrictErrorChecking', val=True)
+        self.ui.add_check_box(name='SubmitSuspended', val=False)
         self.ui.add_check_box(
             name='HideImgPlanes', val=False,
             label='Hide image planes',
@@ -91,7 +92,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             self, passes, notes=None, version_up=True, camera=None, frames=None,
             render_=True, limit_grps=None, hide_img_planes=False, priority=50,
             machine_limit=15, chunk_size=1, strict_error_checking=True,
-            force=False):
+            submit_suspended=False, force=False):
         """Execute render.
 
         Args:
@@ -107,6 +108,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             machine_limit (int): job machine limit (eg. 20 machines)
             chunk_size (int): job chunk size (frames to execute in one task)
             strict_error_checking (bool): apply deadline strict error checking
+            submit_suspended (bool): submit job as suspended
             force (bool): replace existing without confirmation
         """
         _lyrs = pom.find_render_layers(renderable=True)
@@ -121,13 +123,14 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
         pom.set_render_cam(_cam)
 
         _reverts = _prepare_scene_for_render(hide_img_planes=hide_img_planes)
-
+        _initial_status = 'Active' if not submit_suspended else 'Suspended'
         self.submit_msg, _outs = farm.submit_maya_render(
             submit_=render_, force=True, result='msg/outs', layers=_lyrs,
             metadata=self.metadata, frames=frames, camera=_cam,
             chunk_size=chunk_size, comment=notes, priority=priority,
             machine_limit=machine_limit, limit_groups=_limit_grps,
-            strict_error_checking=strict_error_checking)
+            strict_error_checking=strict_error_checking,
+            initial_status=_initial_status)
 
         for _revert in _reverts:
             _revert()

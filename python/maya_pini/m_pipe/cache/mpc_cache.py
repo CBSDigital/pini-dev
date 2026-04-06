@@ -336,7 +336,7 @@ def find_cacheable(
 
     _matches = [
         _cbl for _cbl in _cbls
-        if _match_s in (_cbl.output_name, _cbl.label)]
+        if _match_s in (_cbl.output_name, _cbl.label, _cbl.node)]
     _LOGGER.debug(' - MATCHES %s', _matches)
     if len(_matches) == 1:
         return single(_matches)

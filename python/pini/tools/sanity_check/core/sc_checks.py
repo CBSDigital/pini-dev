@@ -28,9 +28,12 @@ def find_check(name=None, catch=False, **kwargs):
     Returns:
         (SCCheck): matching check
     """
+    _LOGGER.debug('FIND CHECK %s', name)
     _checks = find_checks(**kwargs)
+    _LOGGER.debug(' - MATCHED %d CHECKs %s', len(_checks), _checks)
     if name:
         _checks = [_check for _check in _checks if _check.name == name]
+        _LOGGER.debug(' - NAME MATCHED %d CHECKs %s', len(_checks), _checks)
     return single(_checks, catch=catch)
 
 
@@ -104,12 +107,9 @@ def find_checks(  # pylint: disable=too-many-branches
 
         # Apply profile filter
         _profile = _work.profile if _work else None
-        if _check.profile_filter and not _profile:
-            _LOGGER.debug('   - PROFILE FILTER REJECTED %s')
-            continue
-        if (
-                _profile and
-                not passes_filter(_profile, _check.profile_filter)):
+        if not _profile:
+            pass
+        elif not passes_filter(_profile, _check.profile_filter):
             _LOGGER.debug(
                 '   - REJECTED PROFILE profile=%s filter=%s',
                 _profile, _check.profile_filter)
@@ -126,6 +126,8 @@ def find_checks(  # pylint: disable=too-many-branches
                 pass
             elif _task is None:
                 if _check.task_filter:
+                    _LOGGER.debug(
+                        '   - REJECTED TASK FILTER %s', _check.task_filter)
                     continue
             elif isinstance(_task, str):
                 if not passes_filter(_task, _check.task_filter):

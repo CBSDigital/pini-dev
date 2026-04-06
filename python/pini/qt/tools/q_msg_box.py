@@ -97,8 +97,13 @@ class _CMessageBox(QtWidgets.QMessageBox):
             _pixmap = qt.CPixmap(_pixmap).resize(icon_size)
         self.setIconPixmap(_pixmap)
 
-    def get_result(self):
+    def get_result(self, apply_offsetting=True):
         """Get message box result.
+
+        Args:
+            apply_offsetting (bool): apply result offsetting - in some
+                PySide6 envs (eg. cmdline) the QMessageBox results seem
+                to be offset; this compensates for that
 
         Returns:
             (str): label of button that was clicked
@@ -112,11 +117,19 @@ class _CMessageBox(QtWidgets.QMessageBox):
         _exec_result = self.exec_()
         _LOGGER.debug(
             ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
-        if LIB == 'PySide6' and dcc.NAME != 'maya':
+
+        # Apply result offsetting
+        _py = sys.version_info.major, sys.version_info.minor
+        _LOGGER.debug(' - CHECK FOR OFFSET %s %s %s', LIB, dcc.NAME, _py)
+        if (
+                apply_offsetting and
+                LIB == 'PySide6' and
+                dcc.NAME in (None, )):
             _exec_result -= 2
             _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
             _LOGGER.debug(
                 ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
+
         if self._force_result:
             _result = self._force_result
         else:

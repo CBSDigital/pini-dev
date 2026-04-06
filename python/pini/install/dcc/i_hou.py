@@ -68,12 +68,13 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         """
         raise NotImplementedError
 
-    def _build_tool(self, tool, parent=None):  # pylint: disable=unused-argument
+    def _build_tool(self, tool, parent=None, catch=True):  # pylint: disable=unused-argument
         """Build a shelf item for the given tool.
 
         Args:
             tool (PITool): tool to add
             parent (any): not applicable for this installer
+            catch (bool): no error if tool icon is missing
 
         Returns:
             (Tool): houdini tool object
@@ -90,15 +91,23 @@ class PIHouShelfInstaller(_PIHouBaseInstaller):
         _LOGGER.debug('    - ADD TOOL %s icon=%s', _uid, tool.icon)
 
         assert '\b' not in tool.command
-        if not isinstance(tool.icon, (str, File)):
-            raise TypeError(tool.icon, type(tool.icon))
-        assert os.path.exists(to_str(tool.icon))
 
+        # Setup icon
+        _icon = tool.icon
+        if not isinstance(_icon, (str, File)):
+            raise TypeError(_icon, type(_icon))
+        if not os.path.exists(to_str(_icon)):
+            if not catch:
+                raise OSError(f'Missing icon {_icon}')
+            _icon = icons.find('White Circle')
+        _icon = to_str(_fix_icon_gamma(_icon))
+
+        # Build button
         _tool = hou.shelves.newTool(
             file_path=self.shelf_file, name=_uid,
             label=tool.label,
             script=tool.command,
-            icon=to_str(_fix_icon_gamma(tool.icon)))
+            icon=_icon)
         _LOGGER.debug('    - NEW TOOL %s', _tool)
 
         return _tool

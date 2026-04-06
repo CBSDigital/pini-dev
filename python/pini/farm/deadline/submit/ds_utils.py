@@ -205,7 +205,7 @@ def setup_deadline_submit(group=None, paths=None, update_root=None, verbose=0):
             print('DEADLINE INIT PY:\n' + _py)
 
 
-def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):
+def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=True):
     """Wrap mayapy code to be executed on deadline.
 
     Args:
@@ -263,8 +263,8 @@ def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):
         '    # Setup loggging',
         '    from pini import testing',
         '    testing.setup_logging()',
-        f'    _LOGGER.info("RUNNING {name} {py_file.path}")',
-        '    _LOGGER.info(" - FILE %s", _FILE)',
+        f'    _LOGGER.info("RUNNING {name}")',
+        f'    _LOGGER.info(" - FILE {py_file}")',
         '',
         '    # Create QApplication to allow qt operations',
         '    from pini import qt',
@@ -294,17 +294,21 @@ def wrap_py(py, name, py_file, work=None, maya=False, print_traceback=False):
         '    _init_pipeline()',
         '',
         '    # Execute task',
-        '    from pini.tools import error',
+        '    _LOGGER = logging.getLogger("task")',  # Breaks in cmdline exec
         '    try:',
         '        _exec_task()',
         '    except Exception as _exc:',
         '        _LOGGER.info(" - ERRORED %s", _exc)']
     if print_traceback:
         _lines += [
+            '        from pini.tools import error',
             '        _err = error.PEError()',
             '        _LOGGER.info("TRACEBACK:\\n%s", _err.to_text())']
     if maya:
-        _lines += ['        cmds.quit(exitCode=1, force=True)']
+        _lines += [
+            '        cmds.quit(exitCode=1, force=True)',
+            '        _LOGGER.info("FAILED")',
+            '        raise RuntimeError']
     else:
         _lines += ['        raise _exc']
     _lines += [

@@ -9,9 +9,12 @@ from .submit import (
     write_deadline_data)
 
 if dcc.NAME == 'maya':
+    from .d_maya_farm import CDMayaFarm
     from .submit import CDMayaPyJob
+    FARM = CDMayaFarm()
+else:
+    FARM = CDFarm()
 
-FARM = CDFarm()
 DEADLINE = FARM
 NAME = FARM.NAME
 ICON = FARM.ICON

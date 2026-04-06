@@ -24,7 +24,7 @@ class _CDMayaJob(ds_job.CDJob):
     """Base class for all deadline maya jobs."""
 
     def __init__(
-            self, output, name=None, camera=None, ignore_error_211=False,
+            self, output=None, name=None, camera=None, ignore_error_211=False,
             strict_error_checking=False, **kwargs):
         """Constructor.
 
@@ -41,6 +41,14 @@ class _CDMayaJob(ds_job.CDJob):
 
         _name = name or output.output_name
         super().__init__(name=_name, output=output, **kwargs)
+        self._check_maya_in_limit_groups()
+
+    def _check_maya_in_limit_groups(self):
+        """Check current maya version is in limit groups set."""
+        if dcc.NAME != 'maya':
+            raise NotImplementedError(dcc.NAME)
+        _maya_ver = dcc.to_version()[0]
+        self.limit_groups.add(f'maya-{_maya_ver:d}')
 
     def _build_info_data(self, output_filename=None):
         """Build info data for this job.
@@ -74,7 +82,6 @@ class _CDMayaJob(ds_job.CDJob):
             'ExtraInfoKeyValue6': 'DraftColorSpaceOut=Draft sRGB',
             'ExtraInfoKeyValue7': 'DraftResolution=1',
             'ExtraInfoKeyValue8': f'SubmitQuickDraft={self.draft}',
-            'Frames': str(self.frames).strip('[]').replace(' ', ''),
             'Group': self.group,
             'MinRenderTimeMinutes': '0',
             'Name': self.name,
@@ -248,43 +255,31 @@ class CDMayaRenderJob(_CDMayaJob):
         return _data
 
 
-class CDMayaPyJob(ds_job.CDPyJob):
+class CDMayaPyJob(ds_job.CDPyJob, _CDMayaJob):
     """Represents a mayapy submission on deadline."""
 
     stype = 'MayaPy'
     plugin = 'MayaBatch'
 
-    def __init__(
-            self, name, py, stime=None, priority=50, machine_limit=0,
-            comment=None, error_limit=1, work=None, batch_name=None,
-            tmp_py=None, edit_py=False):
+    def __init__(self, name, py, work=None, **kwargs):
         """Constructor.
 
         Args:
             name (str): job name
             py (str): python to execute
-            stime (float): job submission time
-            priority (int): job priority (0-100)
-            machine_limit (int): job machine limit
-            comment (str): job comment
-            error_limit (int): job error limit
             work (File): maya work file to load
-            batch_name (str): batch/group name
-            tmp_py (File): override path to tmp py file
-            edit_py (bool): edit py file on save to disk
         """
         _work = work or _EMPTY_SCENE
         assert isinstance(_work, File)
-        ast.parse(py)
-        _py = ds_utils.wrap_py(
-            py=py, name=name, work=_work, py_file=tmp_py, maya=True)
-        super().__init__(
-            name=name, py=_py, stime=stime, priority=priority, tmp_py=tmp_py,
-            machine_limit=machine_limit, batch_name=batch_name,
-            comment=comment, error_limit=error_limit, wrap_py=False,
-            edit_py=edit_py)
+        ast.parse(py)  # Check valid python
+
+        super().__init__(name=name, py=None, wrap_py=False, **kwargs)
+        self.py = ds_utils.wrap_py(
+            py=py, name=name, work=_work, py_file=self.py_file, maya=True)
+        assert isinstance(self.limit_groups, set)
         self.work = _work
         assert self.work
+        self._check_maya_in_limit_groups()
 
     def _build_job_data(self):
         """Build job data for this submission.

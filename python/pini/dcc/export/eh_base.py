@@ -454,9 +454,11 @@ class CExportHandler:
         _snapshot = self.settings['snapshot']
         _version_up = self.settings['version_up']
 
-        _LOGGER.info(' - OUTS %d %s', len(self.outputs), self.outputs)
-        _LOGGER.info(
+        _LOGGER.debug(' - OUTS %d %s', len(self.outputs), self.outputs)
+        _LOGGER.debug(
             ' - METADATA update=%d %s', _update_metadata, self.metadata)
+        _LOGGER.debug(' - UPDATE CACHE %d', _update_cache)
+        _LOGGER.debug(' - SNAPSHOT %d', _snapshot)
 
         self.progress.set_pc(90)
         if _update_metadata:
@@ -548,12 +550,17 @@ class CExportHandler:
                 _out, thumb=_thumb, force=True, update_cache=_last,
                 upstream_files=upstream_files)
 
-    def _update_pipe_cache(self):
-        """Update pipeline cache."""
+    def _update_pipe_cache(self, reset_cache=True):
+        """Update pipeline cache.
+
+        Args:
+            reset_cache (bool): apply cache reset
+        """
         _LOGGER.info('UPDATE PIPE CACHE')
 
         _LOGGER.info(' - UPDATE WORK OUTPUTS')
-        pipe.CACHE.reset()
+        if reset_cache:
+            pipe.CACHE.reset()
         self.work = pipe.CACHE.obt(self.work)
         self.work.update_outputs()
 

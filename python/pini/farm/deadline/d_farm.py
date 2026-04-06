@@ -5,8 +5,7 @@ import logging
 import time
 
 from pini import pipe, qt
-from pini.utils import (
-    system, single, to_str, safe_zip, cache_result, find_exe, plural)
+from pini.utils import system, single, to_str, safe_zip, cache_result, find_exe
 
 from .. import base
 from . import submit, d_farm_job
@@ -202,13 +201,13 @@ class CDFarm(base.CFarm):
         for _cbl in _cbls:
             _lines = [
                 'from maya_pini import m_pipe',
-                f'_cbl = m_pipe.{type(_cbl).__name__}("{_cbl.node}")',
+                f'_cbl = m_pipe.find_cacheable("{_cbl.node}")',
                 f'_checks_data = {_checks_data}',
                 f'_flags = {flags or {}}',
                 f'_extn = "{extn}"',
-                'm_pipe.cache('
-                '    [_cbl], checks_data=_checks_data, extn=_extn, force=True,'
-                '    **_flags)',
+                'm_pipe.cache(',
+                '    [_cbl], checks_data=_checks_data, extn=_extn, force=True,',
+                '    snapshot=False, **_flags)',
             ]
             _py = '\n'.join(_lines)
             _name = f'{_batch} - {_cbl.output_name} [cache]'
@@ -221,120 +220,14 @@ class CDFarm(base.CFarm):
         _progress.set_pc(50)
 
         # Submit update cache job
+        _outs = [_cbl.output for _cbl in _cbls]
         _update_job = self.submit_update_job(
             work=_work, dependencies=_cache_jobs, comment=comment,
-            batch_name=_batch, stime=_stime)
+            batch_name=_batch, stime=_stime, outputs=_outs)
         _progress.set_pc(100)
         _progress.close()
 
         return _cache_jobs + [_update_job]
-
-    def submit_maya_render(
-            self, camera=None, comment='', priority=50, machine_limit=0,
-            frames=None, chunk_size=1, version_up=False, checks_data=None,
-            submit_=True, metadata=None, layers=None,
-            result='jobs', force=False, **kwargs):
-        """Submit maya render job to the farm.
-
-        Args:
-            camera (CCamera): render cam
-            comment (str): job comment
-            priority (int): job priority (0 [low] - 100 [high])
-            machine_limit (int): job machine limit
-            frames (int list): frames to render
-            chunk_size (int): apply job chunk size
-            version_up (bool): version up on render
-            checks_data (dict): override sanity checks data
-            submit_ (bool): submit render to deadline (disable for debugging)
-            metadata (dict): override render metadata
-            layers (CRenderLayer list): override list of layers to render
-            result (str): what to return
-                jobs - list of submitted jobs
-                msg - submit message
-            force (bool): submit without confirmation dialogs
-
-        Returns:
-            (CDJob list): jobs
-        """
-        from pini.dcc import export
-        from maya_pini import open_maya as pom
-        from maya_pini.utils import cur_renderer
-
-        _cam = camera or pom.find_render_cam()
-        _stime = time.time()
-        _work = pipe.CACHE.obt_cur_work()
-        _batch = _work.base
-        _lyrs = layers or pom.find_render_layers(renderable=True)
-        if not _lyrs:
-            raise RuntimeError('No renderable layers')
-
-        _render_scene = _work.save(
-            force=True, reason='deadline render', result='bkp')
-        _metadata = metadata or export.build_metadata(
-            'render', sanity_check_=True, checks_data=checks_data,
-            task=_work.task, force=force, require_notes=True)
-        _metadata['bkp'] = _render_scene.path
-        _progress = qt.progress_dialog(
-            title='Submitting Render', stack_key='SubmitRender',
-            col='OrangeRed')
-
-        # Submit render jobs
-        _render_jobs = []
-        _outs = []
-        for _lyr in _lyrs:
-
-            # Build output job
-            _job = submit.CDMayaRenderJob(
-                stime=_stime, layer=_lyr.pass_name, priority=priority,
-                work=_work, frames=frames, camera=_cam, comment=comment,
-                machine_limit=machine_limit, chunk_size=chunk_size,
-                scene=_render_scene, **kwargs)
-            _render_jobs.append(_job)
-            _LOGGER.debug(' - SCENE %s', _job.scene)
-            assert _job.scene == _render_scene
-            _outs.append(_job.output)
-
-            # Add redshift cryptomatte output
-            if cur_renderer() == 'redshift' and pom.find_aov('Cryptomatte'):
-                _crypto_path = _job.output.path.replace(
-                    '.%04d.', '.Cryptomatte.%04d.')
-                _crypto_out = pipe.to_output(_crypto_path, catch=True)
-                if _crypto_out:
-                    _outs.append(_crypto_out)
-
-        assert not _render_jobs[0].jid
-        if submit_:
-            self.submit_jobs(_render_jobs, name='render')
-            assert _render_jobs[0].jid
-        _progress.set_pc(50)
-
-        # Submit update cache job
-        _update_job = self.submit_update_job(
-            work=_work, dependencies=_render_jobs, comment=comment,
-            batch_name=_batch, stime=_stime, metadata=_metadata,
-            priority=priority, submit_=submit_, outputs=_outs)
-        _progress.set_pc(100)
-        _progress.close()
-
-        if version_up:
-            pipe.version_up()
-
-        # Notify on submission
-        _submit_msg = (
-            f'Submitted {len(_lyrs):d} layer{plural(_lyrs)} to deadline.'
-            f'\n\nBatch name:\n{_batch}')
-        if not force:
-            qt.notify(_submit_msg, title='Render submitted', icon=submit.ICON)
-
-        if result == 'jobs':
-            _result = _render_jobs + [_update_job]
-        elif result == 'msg':
-            _result = _submit_msg
-        elif result == 'msg/outs':
-            _result = _submit_msg, _outs
-        else:
-            raise ValueError(result)
-        return _result
 
     def submit_maya_py(
             self, name, py, comment='', priority=50, machine_limit=0,

@@ -127,7 +127,8 @@ def find_path_refs(referenced=None, filter_=None):
     _refs += find_refs(referenced=referenced, unloaded=True)
     _refs += find_attr_refs(referenced=referenced)
     if filter_:
-        _refs = apply_filter(_refs, filter_, key=operator.attrgetter('filter_str'))
+        _refs = apply_filter(
+            _refs, filter_, key=operator.attrgetter('filter_str'))
     return sorted(_refs)
 
 
