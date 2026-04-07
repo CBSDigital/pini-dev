@@ -1146,7 +1146,8 @@ class PHSceneTab:
 
         if reset:
             self._callback__SReset()
-        assert isinstance(attach_to, str) or attach_to is None
+        if not (isinstance(attach_to, str) or attach_to is None):
+            raise RuntimeError(attach_to)
 
         # Determine import namespace
         _out = pipe.CACHE.obt(output)

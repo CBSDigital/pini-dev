@@ -538,7 +538,10 @@ class CExportHandler:
         _LOGGER.info(' - OUTPUTS %d %s', len(self.outputs), self.outputs)
         from pini.pipe import shotgrid
         _work_thumb = self.work.image if self.work.image.exists() else None
-        for _last, _out in last(self.outputs):
+        for _last, _out in qt.progress_bar(
+                last(self.outputs),
+                'Register {:d} output{} in shotgrid',
+                stack_key='ShotgridRegister'):
 
             _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
 

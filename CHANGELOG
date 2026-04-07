@@ -1,3 +1,15 @@
+## [8.58.0] - Tue 2026-04-07 12:38
+### Summary
+ - Pini Helper:
+    - maya bugfix error on attach lookdev to viewport/helper selection (cstewart),
+### Updated
+ - pini.dcc.export.CExportHandler._register_in_shotgrid added progress,
+ - pini.tools.pyui.PUArg added label arg,
+ - pini.tools.helper.output_to_namespace allow work_dir as None,
+ - pini.tools.helper.stage_import better error on bad attach_to arg type,
+ - pini.tools.helper._add_output_lookdev_opts bugfix bad attach_to arg,
+
+
 ## [8.57.0] - Tue 2026-04-07 08:59
 ### Summary
  - Pini Helper:

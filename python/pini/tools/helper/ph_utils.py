@@ -370,7 +370,7 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
 
 
 def output_to_imports(  # pylint: disable=too-many-branches
-        output, work_dir, namespace=None, ignore=(), attach_to=None, base=None):
+        output, work_dir=None, namespace=None, ignore=(), attach_to=None, base=None):
     """Build a list of imports for the given output.
 
     Args:
@@ -385,6 +385,7 @@ def output_to_imports(  # pylint: disable=too-many-branches
         (tuple list): list of imports - output / namespace / attach namespace
     """
     _LOGGER.debug('OUTPUT TO IMPORTS %s', output)
+    _work_dir = work_dir or pipe.CACHE.cur_work_dir
 
     # Determine base namespace
     _LOGGER.debug(' - ATTACH TO %s', attach_to)
@@ -414,9 +415,9 @@ def output_to_imports(  # pylint: disable=too-many-branches
         _LOGGER.info(' - TEST FOR AUTO APPLY LOOKDEV %s', output.content_type)
         if (
                 _base.pini_task in ('model', 'rig') and
-                work_dir and
-                work_dir.pini_task in ('lighting', ) and
-                work_dir.profile == 'shot'):
+                _work_dir and
+                _work_dir.pini_task in ('lighting', ) and
+                _work_dir.profile == 'shot'):
             _auto_apply_lookdev = True
         elif output.content_type == 'PipeAbc':
             _auto_apply_lookdev = True

@@ -14,8 +14,8 @@ class PUArg(object):
 
     def __init__(
             self, name, py_arg, py_def, pyui_file, clear=False,
-            browser=False, choices=None, selection=False, label_w=None,
-            docs=None, callback=None):
+            browser=False, choices=None, selection=False, label=None,
+            label_w=None, docs=None, callback=None):
         """Constructor.
 
         Args:
@@ -32,13 +32,14 @@ class PUArg(object):
             selection (bool|str): apply get selected node button
                 bool - any selected node
                 str - apply node type filter
+            label (str): override arg label
             label_w (int): override label width (in pixels)
             docs (str): arg documentation
             callback (func): callback to be executed if this field is edited
         """
         self.name = name
         self.default = py_arg.default
-        self.label = to_nice(self.name).capitalize()
+        self.label = label or to_nice(self.name).capitalize()
 
         self.py_arg = py_arg
         self.py_def = py_def

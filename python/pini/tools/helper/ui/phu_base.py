@@ -407,7 +407,7 @@ class PHUiBase(
             delete (bool): include delete option
             delete_callback (fn): callback to execute on output deletion
         """
-        _LOGGER.debug(' - ADD OUTPUT PATH OPTS %s', output)
+        _LOGGER.debug('   - ADD OUTPUT PATH OPTS %s', output)
         _delete_callback = delete_callback or self.ui.SOutputs.redraw
 
         _path = output_c or output
@@ -442,6 +442,7 @@ class PHUiBase(
             ref (CPipeRef): scene ref associated with this output
             output (CPOutput): output to add options for
         """
+        _LOGGER.debug(' - ADD OUTPUT FIND OPTS')
         menu.add_separator()
 
         # Add find work
@@ -456,13 +457,12 @@ class PHUiBase(
         # Add find asset
         if (
                 not _asset and
-                output.basic_type in ('publish', 'publish_seq') and
-                output.profile == 'asset'):
+                output.basic_type in ('publish', 'publish_seq')):
             _asset = output
             _asset = pipe.map_path(_asset)
-            _LOGGER.info(' - ASSET %s', _asset)
+            _LOGGER.debug('   - ASSET %s', _asset)
         menu.add_action(
-            'Find asset', wrap_fn(self.jump_to, _asset),
+            'Find output', wrap_fn(self.jump_to, _asset),
             icon=icons.FIND, enabled=bool(_asset))
 
         # Add lookdev opts
@@ -478,6 +478,90 @@ class PHUiBase(
             menu.add_action(
                 'Apply lookdev', _attach, icon=LOOKDEV_BG_ICON,
                 enabled=bool(_lookdev and ref))
+
+    def _add_output_lookdev_opts(
+            self, menu, lookdev, ignore_ui=False, ref=False):
+        """Add output lookdev attach options for abcs.
+
+        Args:
+            menu (QMenu): menu to add options to
+            lookdev (CPOutput): lookdev to attach
+            ignore_ui (bool): don't add options relating to ui selection
+                (eg. apply lookdev to selected scene ref)
+            ref (CPipeRef): scene ref associated with this output
+        """
+        if not lookdev.content_type == 'ShadersMa':
+            return
+        _LOGGER.debug(' - ADD OUTPUT LOOKDEV OPTS ignore_ui=%d', ignore_ui)
+        _LOGGER.debug('   - REF %s', ref)
+
+        menu.add_separator()
+        menu.add_action(
+            'Edit shaders yaml', wrap_fn(_shd_yml_edit, lookdev),
+            icon=icons.EDIT)
+        menu.add_action(
+            'Print shaders data', wrap_fn(_shd_yml_print, lookdev),
+            icon=icons.PRINT)
+        menu.add_separator()
+
+        # Add reapply to target option
+        _trg = ref.find_target() if ref else None
+        _LOGGER.debug('   - ATTACH TRG %s -> %s', ref, _trg)
+        if _trg:
+            _text = f'Reapply to "{_trg.namespace}"'
+            _func = wrap_fn(ref.attach_to, _trg) if ref else None
+            menu.add_action(_text, _func, icon=LOOKDEV_BG_ICON)
+
+        # Find apply options to add
+        _vp_refs = dcc.find_pipe_refs(selected=True)
+        _ui_refs = self.ui.SSceneRefs.selected_datas()
+        _LOGGER.debug(
+            '   - VP/UI REFS vp=%d ui=%d', len(_vp_refs),
+            len(_ui_refs))
+        _to_add = [('viewport', _vp_refs)]
+        if not ignore_ui and not ref:
+            _to_add.append(('helper', _ui_refs))
+        _LOGGER.debug('   - TO ADD %s', _to_add)
+
+        # Add options to menu
+        for _label, _refs in _to_add:
+
+            _refs = [
+                _ref for _ref in _refs
+                if _ref.output and _ref.output.pini_task != 'lookdev']
+
+            # if ref:  # Attach existing ref
+            #     _funcs = []
+            #     for _ref in _refs:
+            #         _funcs += [wrap_fn(_ref.attach_shaders, ref)]
+            #     _func = chain_fns(*_funcs)
+            #     menu.add_action(
+            #         f'Assign to {_label} selection', _func,
+            #         icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
+            # else:  # Bring in new ref
+            #     _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
+            #     _funcs = [_select_outs]
+            #     _funcs += [
+            #         wrap_fn(
+            #             self.stage_import, lookdev, attach_to=_ref.namespace)
+            #         for _ref in _refs]
+            #     _funcs += [self.ui.SSceneRefs.redraw]
+            #     _func = chain_fns(*_funcs)
+            #     menu.add_action(
+            #         f'Apply to {_label} selection', _func,
+            #         icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
+
+            _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
+            _funcs = [_select_outs]
+            _funcs += [
+                wrap_fn(
+                    self.stage_import, lookdev, attach_to=_ref.namespace)
+                for _ref in _refs]
+            _funcs += [self.ui.SSceneRefs.redraw]
+            _func = chain_fns(*_funcs)
+            menu.add_action(
+                f'Apply to {_label} selection', _func,
+                icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
 
     def _jump_to_latest_out_work(self, output):
         """Jump to latest work file for the given output.
@@ -508,77 +592,6 @@ class PHUiBase(
         _out.build_thumbnail(self.work.image, force=True)
         obt_pixmap(self.work.image, force=True)
         self.ui.WWorks.redraw()
-
-    def _add_output_lookdev_opts(
-            self, menu, lookdev, ignore_ui=False, ref=False):
-        """Add output lookdev attach options for abcs.
-
-        Args:
-            menu (QMenu): menu to add options to
-            lookdev (CPOutput): lookdev to attach
-            ignore_ui (bool): don't add options relating to ui selection
-                (eg. apply lookdev to selected scene ref)
-            ref (CPipeRef): scene ref associated with this output
-        """
-        _LOGGER.debug(' - ADD OUTPUT LOOKDEV OPTS')
-
-        # Check for shd yml file
-        if not lookdev.content_type == 'ShadersMa':
-            return
-
-        # Store shd yml on menu to avoid garbage collection
-        menu.add_separator()
-        menu.add_action(
-            'Edit shaders yaml', wrap_fn(_shd_yml_edit, lookdev),
-            icon=icons.EDIT)
-        menu.add_action(
-            'Print shaders data', wrap_fn(_shd_yml_print, lookdev),
-            icon=icons.PRINT)
-        menu.add_separator()
-
-        # Add reapply to target option
-        _trg = ref.find_target() if ref else None
-        _LOGGER.debug('   - ATTACH TRG %s -> %s', ref, _trg)
-        if _trg:
-            _text = f'Reapply to "{_trg.namespace}"'
-            _func = wrap_fn(ref.attach_to, _trg) if ref else None
-            menu.add_action(_text, _func, icon=LOOKDEV_BG_ICON)
-
-        # Find apply options to add
-        _vp_refs = dcc.find_pipe_refs(selected=True)
-        _ui_refs = self.ui.SSceneRefs.selected_datas()
-        _LOGGER.debug(
-            'ADD OUTPUT LOOKDEV OPTS vp=%d ui=%d', len(_vp_refs),
-            len(_ui_refs))
-        _to_add = [('viewport', _vp_refs)]
-        if not ignore_ui and not ref:
-            _to_add.append(('helper', _ui_refs))
-
-        # Add options to menu
-        for _label, _refs in _to_add:
-
-            _refs = [_ref for _ref in _refs
-                     if _ref.output and _ref.output.pini_task != 'lookdev']
-
-            if ref:  # Attach existing ref
-                _funcs = []
-                for _ref in _refs:
-                    _funcs += [wrap_fn(_ref.attach_shaders, ref)]
-                _func = chain_fns(*_funcs)
-                menu.add_action(
-                    f'Assign to {_label} selection', _func,
-                    icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
-            else:  # Bring in new ref
-                _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
-                _funcs = [_select_outs]
-                _funcs += [
-                    wrap_fn(self.stage_import, lookdev, attach_to=_ref)
-                    for _ref in _refs]
-                _funcs += [self.ui.SSceneRefs.redraw]
-                _func = chain_fns(*_funcs)
-                menu.add_action(
-                    f'Apply to {_label} selection', _func,
-                    icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
 
     def _callback__MainPane(self, index=None, save=True, switch_tabs=True):
 
