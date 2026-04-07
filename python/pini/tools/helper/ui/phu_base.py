@@ -393,7 +393,8 @@ class PHUiBase(
             pub.entity.find_publishes(force=True)
             pub.job.find_publishes(force=True)
         self._callback__Refresh()
-        work.update_outputs()
+        if work:
+            work.update_outputs()
 
     def _add_output_path_opts(
             self, menu, output, output_c, delete, delete_callback):

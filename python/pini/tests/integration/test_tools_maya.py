@@ -37,14 +37,16 @@ class TestSanityCheck(unittest.TestCase):
             'CheckAssetHierarchy', task='lookdev', action='ModelPublish')
 
         assert sanity_check.find_check(
-            'CheckShaders', task='lookdev')
+            'CheckLookdevShaders', action='LookdevPublish')
         assert not sanity_check.find_check(
-            'CheckShaders', task='model', catch=True)
+            'CheckLookdevShaders', action='ModelPublish', catch=True)
+        assert sanity_check.find_check(
+            'CheckModelShaders', action='ModelPublish', catch=True)
         assert not sanity_check.find_check(
-            'CheckShaders', task='model', action='BasicPublish', catch=True,
+            'CheckLookdevShaders', task='model', action='BasicPublish', catch=True,
             filter_='CheckShaders')
         assert not sanity_check.find_check(
-            'CheckShaders', task='model', action='BasicPublish', catch=True)
+            'CheckModelShaders', task='model', action='BasicPublish', catch=True)
 
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', catch=True)

@@ -1,3 +1,18 @@
+## [8.57.0] - Tue 2026-04-07 08:59
+### Summary
+ - Pini Helper:
+    - maya lookdev publish import referenced shaders (blee),
+    - maya reference asset use tag in namespace if non-default tag (mkim),
+ - Sanity Check:
+    - maya check shaders apply in model/basic publish,
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish import refd shds,
+ - pini.tools.sanity_check CheckShaders -> CheckShaders + CheckLookdevShaders,
+ - pini.tools.sanity_check.CheckLookdevShaders disable flag refd shds,
+ - pini.tools.helper.output_to_namespace use tag in namespace if non-default,
+ - maya_pini.tex.Shader.duplicate bugfix,
+
+
 ## [8.56.0] - Mon 2026-04-06 14:11
 ### Summary
  - Pini Helper:

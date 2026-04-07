@@ -234,6 +234,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
     def _clean_scene(self):
         """Apply clean scene options to prepare for publish."""
         _LOGGER.debug('CLEAN SCENE')
+
         _remove_junk = self.settings['remove_junk']
         _remove_sets = self.settings['remove_sets']
         _remove_dlayers = self.settings['remove_dlayers']

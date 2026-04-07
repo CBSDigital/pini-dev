@@ -489,6 +489,8 @@ def output_to_namespace(output, attach_to=None, ignore=(), base=None):
         _base = base
     elif output.type_ in ('publish', 'publish_seq'):
         _base = _ety_name
+        if output.tag and output.tag != pipe.DEFAULT_TAG:
+            _base += f'_{output.tag}'
     elif output.type_ == 'cache' and output.output_type == 'cam':
         _mode = 'cache'
         _base = f'{_ety_name}_{output.output_name}'

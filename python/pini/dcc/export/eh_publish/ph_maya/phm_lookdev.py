@@ -124,7 +124,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
         # Check + read scene
         self.progress.set_pc(15)
-        _clean_junk()
+        self._clean_scene()
         _assignments = lookdev.read_shader_assignments(referenced=False)
         if not _assignments:
             if lookdev.read_shader_assignments(referenced=True):
@@ -165,6 +165,11 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _LOGGER.debug(' - COMPLETE %s', self.outputs)
 
         return self.outputs
+
+    def _clean_scene(self):
+        """Clean scene in preparation for publish."""
+        _import_refd_shds()
+        _clean_junk()
 
     def _handle_export_ass(self):
         """Handle export ass file."""
@@ -419,6 +424,20 @@ def _clean_scene():
     cmds.delete(_dag_nodes + _unknown_nodes)
 
     return [_node for _node in _keep_nodes if cmds.objExists(_node)]
+
+
+def _import_refd_shds():
+    """Import referenced shaders."""
+    _LOGGER.debug('IMPORT REFERENCED SHADERS')
+    _refd_shds = lookdev.read_shader_assignments(fmt='shd', referenced=True)
+    _LOGGER.debug(' - REFD SHDS %d %s', len(_refd_shds), _refd_shds)
+    for _shd in _refd_shds:
+        _LOGGER.debug(' - SHD %s', _shd)
+        _geo = _shd.to_geo()
+        _LOGGER.debug('   - GEO %s', _geo)
+        _shd = _shd.duplicate()
+        _LOGGER.debug('   - SHD %s', _shd)
+        _shd.assign_to(_geo)
 
 
 def _read_cache_geo():

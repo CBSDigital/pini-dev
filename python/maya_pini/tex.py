@@ -71,7 +71,8 @@ class _Shader(pom.CNode):
         """
         assert not class_
         _dup = super().duplicate(
-            name=name, upstream_nodes=upstream_nodes, class_=pom.CNode)
+            name=name, upstream_nodes=upstream_nodes, class_=pom.CNode,
+            return_roots_only=False)
         _LOGGER.info('DUPLICATE %s %s', self, _dup)
         assert _dup
         _shd = _Shader(_dup)

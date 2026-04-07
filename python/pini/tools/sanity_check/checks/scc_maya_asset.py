@@ -743,32 +743,33 @@ class CheckForFaceAssignments(core.SCMayaCheck):
         shader.assign_to(geo)
 
 
-class CheckShaders(core.SCMayaCheck):
-    """Check the shader name matches the shading engine.
-
-    eg. myShader -> myShaderSE
-    """
+class CheckLookdevShaders(core.SCMayaCheck):
+    """Check lookdev shaders."""
 
     sort = 100
     action_filter = 'LookdevPublish'
-    task_filter = 'lookdev'
     depends_on = (CheckForFaceAssignments, )
 
-    def run(self, check_ai_shd=True):
+    def run(self, check_ai_shd=True, check_refd_geo=True, flag_refd_shds=False):
         """Run this check.
 
         Args:
             check_ai_shd (bool): check any attached arnold shader override
+            check_refd_geo (bool): check geometry is referenced
+            flag_refd_shds (bool): flag referenced shaders
         """
+        if flag_refd_shds:
+            self._flag_refd_shds()
+        self._check_shaders(
+            check_ai_shd=check_ai_shd, check_refd_geo=check_refd_geo)
 
-        # Check for referenced shaders
-        for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
-            _fix = wrap_fn(utils.import_referenced_shader, _shd)
-            self.add_fail(
-                f'Shader "{_shd}" is referenced - this must be imported into '
-                'the current scene',
-                node=_shd, fix=_fix)
+    def _check_shaders(self, check_ai_shd, check_refd_geo):
+        """Apply shaders check.
 
+        Args:
+            check_ai_shd (bool): check any attached arnold shader override
+            check_refd_geo (bool): check geometry is referenced
+        """
         _shds = lookdev.read_shader_assignments(
             catch=True, allow_face_assign=True, referenced=False)
         self.write_log('Found %d shaders: %s', len(_shds), _shds)
@@ -808,7 +809,8 @@ class CheckShaders(core.SCMayaCheck):
 
             self._check_engine_name(shd=_shd, engine=_se)
             self._flag_assigned_to_intermediate_node(engine=_se, shader=_shd)
-            self._check_for_unreferenced_geo(_shd)
+            if check_refd_geo:
+                self._check_for_unreferenced_geo(_shd)
 
             if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
 
@@ -829,6 +831,14 @@ class CheckShaders(core.SCMayaCheck):
                             type_='ai shader', base=_base, ignore=_ignore_names)
                         _ignore_names.add(_suggestion)
                         self.add_fail(_msg, fix=_fix, node=_ai_shd)
+
+    def _flag_refd_shds(self):
+        """Flag referenced shaders."""
+        for _shd in lookdev.read_shader_assignments(fmt='shd', referenced=True):
+            _fix = wrap_fn(utils.import_referenced_shader, _shd)
+            self.add_fail(
+                f'Shader "{_shd}" is referenced - this must be imported into '
+                'the current scene', node=_shd, fix=_fix)
 
     def _flag_assigned_to_intermediate_node(self, engine, shader):
         """Flag geo assigned to intermediate nodes.
@@ -941,6 +951,16 @@ class CheckShaders(core.SCMayaCheck):
             _fail.add_action('Select shader', wrap_fn(cmds.select, shd))
             _fail.add_action('Select nodes', wrap_fn(cmds.select, _assigns))
             self.add_fail(_fail)
+
+
+class CheckShaders(CheckLookdevShaders):
+    """Check model shaders."""
+
+    action_filter = 'ModelPublish BasicPublish'
+
+    def run(self):
+        """Run this check."""
+        super().run(check_refd_geo=False)
 
 
 class NoObjectsWithDefaultShader(core.SCMayaCheck):
