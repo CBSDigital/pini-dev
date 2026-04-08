@@ -11,9 +11,9 @@ def project_uses_udims():
     Returns:
         (bool): udims mode enabled
     """
-    from substance_pini import s_pipe
+    from spainter_pini import p_pipe
     _pub_dir = Dir(abs_path('~/tmp'))
-    _data = s_pipe.to_export_data()
+    _data = p_pipe.to_export_data()
     import pprint
     pprint.pprint(_data)
     _set_data = list(_data.values())[0]

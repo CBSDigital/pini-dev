@@ -1,3 +1,11 @@
+## [9.0.2] - Wed 2026-04-08 10:24
+### Summary
+ - Sanity Check:
+    - substance painter bugfix error on check project uses udims,
+### Updated
+ - spainter_pini.p_pipe.project_uses_udims bugfix error due to outdated mod ref,
+
+
 ## [9.0.1] - Wed 2026-04-08 10:07
 ### Summary
  - Pini Install:

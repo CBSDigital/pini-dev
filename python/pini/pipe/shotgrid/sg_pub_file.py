@@ -620,7 +620,7 @@ def create_pub_files_from_outputs(
     # Apply thumbs
     for _out, _result in qt.progress_bar(
             safe_zip(outputs, _results),
-            'Applying {:d} thumb{}', stack_key='BatchThumbs'):
+            'Applying {:d} shotgrid thumb{}', stack_key='BatchThumbs'):
         _out = pipe.CACHE.obt(_out)
         _thumb = thumb
         if _out.is_media() or _out.content_type in ('Texture', ):
