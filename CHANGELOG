@@ -1,3 +1,11 @@
+## [9.0.1] - Wed 2026-04-08 10:07
+### Summary
+ - Pini Install:
+    - substance painter bugfix error on build pini ui elements,
+### Updated
+ - pini.dcc.SubstancePainterDCC bugfix error on build ui elems,
+
+
 ## [9.0.0] - Wed 2026-04-08 09:46
 ### Summary
  - Pini Helper:

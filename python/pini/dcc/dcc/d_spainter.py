@@ -28,7 +28,7 @@ class SubstancePainterDCC(BaseDCC):
             parent (str): parent menu
             name (str): uid for divider
         """
-        from substance_pini import ui
+        from spainter_pini import ui
         _menu = ui.obt_menu(parent)
         _menu.prune_items(name=name)
         _menu.add_separator()
@@ -44,7 +44,7 @@ class SubstancePainterDCC(BaseDCC):
             name (str): uid for item
         """
         from pini import qt
-        from substance_pini import ui
+        from spainter_pini import ui
 
         _LOGGER.debug('ADD MENU ITEM %s', name)
 
@@ -124,7 +124,7 @@ class SubstancePainterDCC(BaseDCC):
 
     def get_main_window_ptr(self):
         """None if no dcc."""
-        from substance_pini import ui
+        from spainter_pini import ui
         return ui.to_main_window()
 
     def get_scene_data(self, key):  # pylint: disable=unused-argument
