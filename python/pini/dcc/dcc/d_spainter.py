@@ -7,17 +7,17 @@ import logging
 import substance_painter
 from substance_painter import project, exception
 
-from pini.utils import abs_path, to_str, wrap_fn, find_exe
+from pini.utils import abs_path, to_str, wrap_fn, find_exe, File
 
 from .d_base import BaseDCC
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class SubstanceDCC(BaseDCC):
-    """Manages interactions with substance."""
+class SubstancePainterDCC(BaseDCC):
+    """Manages interactions with substance painter."""
 
-    NAME = 'substance'
+    NAME = 'spainter'
     DEFAULT_EXTN = 'spp'
     VALID_EXTNS = 'spp'
 
@@ -70,7 +70,7 @@ class SubstanceDCC(BaseDCC):
         from pini.dcc import export
         _handlers = super()._build_export_handlers()
         _handlers += [
-            export.CSubstanceTexturePublish(),
+            export.CSPainterTexturePublish(),
         ]
         return _handlers
 
@@ -196,7 +196,9 @@ class SubstanceDCC(BaseDCC):
         """
         from pini import qt
         from pini.qt import QtWidgets
-        from substance_pini import ui
+        from spainter_pini import ui
+
+        _file = File(file_)
 
         # Find viewer
         _win = ui.to_main_window()
@@ -208,7 +210,9 @@ class SubstanceDCC(BaseDCC):
         _pix = qt.CPixmap(_view.size())
         _pix.fill('Transparent')
         _view.render(_pix)
-        _pix.save_as(file_, force=True)
+        _pix.save_as(_file, force=True)
+
+        return _file
 
     def unsaved_changes(self):
         """Test whether the current scene has unsaved changes.

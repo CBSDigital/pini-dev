@@ -3,13 +3,15 @@
 import logging
 import operator
 import os
+import pprint
 import platform
 import re
+import time
 
-from pini import pipe
+from pini import pipe, qt
 from pini.pipe import cache
 from pini.utils import (
-    Seq, Video, TMP, single, File, to_str, abs_path, check_heart)
+    Seq, Video, TMP, single, File, to_str, abs_path, check_heart, safe_zip)
 
 from . import sg_handler
 
@@ -114,13 +116,13 @@ def _to_pub_type(output):
     return shotgrid.SGC.find_pub_type(_match, type_=_type)
 
 
-def _apply_thumb(path, thumb, id_):
+def _apply_thumb(thumb, id_, path=None):
     """Apply thumbnail image.
 
     Args:
-        path (Path): path being registered
         thumb (File): apply thumbnail image
         id_ (id): publish id
+        path (Path): path being registered
     """
     from pini.pipe import shotgrid
 
@@ -241,7 +243,8 @@ def _build_pub_data(
 
 
 def _build_pub_data_from_output(
-        output, status='cmpt', sg_proj=None, sg_ety=None, upstream_files=None):
+        output, status='cmpt', sg_proj=None, sg_ety=None, upstream_files=None,
+        thumb=None):
     """Build publish data dict from an output.
 
     Args:
@@ -250,6 +253,7 @@ def _build_pub_data_from_output(
         sg_proj (SGCProj): project
         sg_ety (SGCEntity): entity
         upstream_files (dict list): list of upstream published file entries
+        thumb (str): path to thumb (used if work file is registered)
 
     Returns:
         (dict): publish data
@@ -286,7 +290,7 @@ def _build_pub_data_from_output(
 
     # Add scene file
     _scene_entry = _obt_scene_entry(
-        output, user=_sg_user, task=_sg_task, notes=_notes)
+        output, user=_sg_user, task=_sg_task, notes=_notes, thumb=thumb)
     if _scene_entry:
         _data['sg_scene_file'] = _scene_entry
         _LOGGER.debug(' - SCENE ENTRY %s', _scene_entry)
@@ -355,7 +359,6 @@ def _find_sg_pub(output, sg_ety):
     Returns:
         (SGCPubFile|None): pub file entry (if any)
     """
-    from pini import qt
     _LOGGER.info(' - FIND SG PUB %s', output)
 
     _sg_pubs = sg_ety.find_pub_files(path=output.path)
@@ -433,7 +436,7 @@ def _obt_job(path, job, entity):
     return _job
 
 
-def _obt_scene_entry(output, user, task, notes):
+def _obt_scene_entry(output, user, task, notes, thumb=None):
     """Obtain PublishedFile data for the given output.
 
     Args:
@@ -441,6 +444,7 @@ def _obt_scene_entry(output, user, task, notes):
         user (SGCUser): output user
         task (SGCTask): output task
         notes (str): publish notes
+        thumb (str): thumbnail path
 
     Returns:
         (dict): scene file data
@@ -470,7 +474,7 @@ def _obt_scene_entry(output, user, task, notes):
 
     _pub = create_pub_file_from_path(
         _scene, job=output.job, entity=output.entity, user=user, task=task,
-        notes=notes, ver_n=output.ver_n, name=_name)
+        notes=notes, ver_n=output.ver_n, name=_name, thumb=thumb)
     _LOGGER.info(' - SCENE PUB %s', _pub)
     return _pub
 
@@ -496,6 +500,7 @@ def create_pub_file_from_path(
     Returns:
         (dict): scene file data
     """
+    _LOGGER.debug('CREATE PUB FILE FROM PATH %s', path)
     from pini.pipe import shotgrid
     assert isinstance(path, str)
     _path = abs_path(path)
@@ -518,7 +523,10 @@ def create_pub_file_from_path(
         if thumb:
             shotgrid.upload_thumbnail(
                 'PublishedFile', _pub['id'], to_str(thumb))
+        _pub = {'id': _pub['id'], 'type': 'PublishedFile'}
 
+    _LOGGER.debug(' - PUB %s', _pub)
+    assert len(_pub) == 2
     return _pub
 
 
@@ -548,3 +556,77 @@ def _normalise_path_to_pipeline(path, entity):
     if _path.startswith(_ety.path):
         return _path
     return f'{_ety.path}/{_ety.rel_path(_path)}'
+
+
+def create_pub_files_from_outputs(
+        outputs, thumb=None, upstream_files=None, force=False):
+    """Create mutiple pub files from outputs in batch operation.
+
+    Args:
+        outputs (CPOutput list): outputs to register
+        thumb (str): path to thumbnail
+        upstream_files (list): upstream files
+        force (bool): update existing entries
+
+    Returns:
+        (dict list): new entries data
+    """
+
+    # Prepare batch data
+    _batch_data = []
+    _batch_outs = []
+    _results_map = {}
+    for _out in outputs:
+
+        _sg_pub = _find_sg_pub(_out, sg_ety=_out.entity.sg_entity)
+        if _sg_pub and not force:
+            _results_map[_out] = {
+                'id': _sg_pub.id_, 'entity_type': 'PublishedFile'}
+            continue
+
+        _out_data = _build_pub_data_from_output(
+            _out, thumb=thumb, upstream_files=upstream_files)
+
+        _out_batch_data = {
+            'request_type': 'update' if _sg_pub else 'create',
+            'entity_type': 'PublishedFile',
+            'data': _out_data}
+        if _sg_pub:
+            _out_batch_data['entity_id'] = _sg_pub.id_
+            for _key in ['created_by', 'updated_by']:
+                _out_data.pop(_key)
+        _batch_data.append(_out_batch_data)
+        _batch_outs.append(_out)
+
+    # Send batch data
+    if _batch_data:
+        _start = time.time()
+        _LOGGER.info(' - BATCH DATA %s', _batch_data)
+
+        _batch_result = sg_handler.batch(_batch_data)
+        _LOGGER.info(' - BATCH RESULT %s', _batch_result)
+        _LOGGER.info(
+            ' - CREATED %d ENTRIES in %.0fs', len(_batch_result),
+            time.time() - _start)
+        for _out, _result in safe_zip(_batch_outs, _batch_result):
+            _results_map[_out] = {
+                'id': _result['id'], 'entity_type': 'PublishedFile'}
+
+    # Update cache (required for thumbs)
+    _results = [_results_map[_out] for _out in outputs]
+    _LOGGER.debug(' - RESULTS %s', pprint.pformat(_results))
+    pipe.CACHE.reset()
+
+    # Apply thumbs
+    for _out, _result in qt.progress_bar(
+            safe_zip(outputs, _results),
+            'Applying {:d} thumb{}', stack_key='BatchThumbs'):
+        _out = pipe.CACHE.obt(_out)
+        _thumb = thumb
+        if _out.is_media() or _out.content_type in ('Texture', ):
+            _thumb = None
+        elif thumb and not _thumb:
+            continue
+        _apply_thumb(thumb=_thumb, id_=_result['id'], path=_out)
+
+    return _results

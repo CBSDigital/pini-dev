@@ -495,7 +495,7 @@ class MayaDCC(BaseDCC):
         Args:
             file_ (str): path to save image to
         """
-        blast_frame(file_, settings='Nice', force=True)
+        return blast_frame(file_, settings='Nice', force=True)
 
     def unsaved_changes(self):
         """Test whether there are currently unsaved changes.

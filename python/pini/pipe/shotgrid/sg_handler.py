@@ -45,6 +45,9 @@ class _CSGHandler(shotgun_api3.Shotgun):
         """
         return sorted(self.schema_entity_read().keys())
 
+    # def batch(self, data):
+    #     return super()
+
     def create(self, entity_type, data, safe=True):  # pylint: disable=arguments-renamed
         """Create an entity.
 
@@ -242,6 +245,18 @@ def find(
         raise ValueError
 
     return _results
+
+
+def batch(data):
+    """Batch multiple operations.
+
+    Args:
+        data (dict list): operations data
+
+    Returns:
+        (dict list): batch result
+    """
+    return to_handler().batch(data)
 
 
 def find_all_data(entity_type, id_):

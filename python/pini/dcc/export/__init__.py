@@ -32,5 +32,5 @@ elif dcc.NAME == 'hou':
     from .eh_blast import CHouFlipbook
     from .eh_render import CHouDeadlineRender
 
-elif dcc.NAME == 'substance':
-    from .eh_publish import CSubstanceTexturePublish
+elif dcc.NAME == 'spainter':
+    from .eh_publish import CSPainterTexturePublish

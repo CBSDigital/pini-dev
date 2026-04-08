@@ -1,6 +1,6 @@
-"""Sanity checks for substance."""
+"""Sanity checks for substance painter."""
 
-from substance_pini.utils import project_uses_udims
+from spainter_pini.utils import project_uses_udims
 
 from .. import core
 

@@ -497,10 +497,12 @@ def blast_frame(file_, settings='Nice', force=False):
     _file.delete(force=force, wording='replace')
     _frame = int(cmds.currentTime(query=True))
     _rng = [_frame]
-    _tmp_seq = TMP.to_seq('tmp.%04d.' + file_.extn)
+    _tmp_seq = TMP.to_seq('tmp.%04d.' + _file.extn)
     _tmp_seq.delete(force=True)
     assert not _tmp_seq.exists()
     blast(clip=_tmp_seq, range_=_rng, settings=settings)
     assert _tmp_seq.exists()
     _tmp_file = File(_tmp_seq[_frame])
     _tmp_file.move_to(_file)
+
+    return _file

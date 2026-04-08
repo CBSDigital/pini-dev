@@ -23,5 +23,5 @@ elif dcc.NAME == 'maya':
         INSTALLER)
 elif dcc.NAME == 'nuke':
     from .dcc.i_nuke import PINukeMenuInstaller, INSTALLER
-elif dcc.NAME == 'substance':
-    from .dcc.i_substance import PISubstanceInstaller, INSTALLER
+elif dcc.NAME == 'spainter':
+    from .dcc.i_spainter import PISPainterInstaller, INSTALLER

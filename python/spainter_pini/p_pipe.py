@@ -1,4 +1,4 @@
-"""Pipeline tools for substance."""
+"""Pipeline tools for substance painter."""
 
 import logging
 import os
@@ -34,7 +34,7 @@ def export_textures(
     _work = work or pipe.CACHE.obt_cur_work()
     assert _work
     _tmpl_name = 'texture_seq'
-    _tmpl = _work.job.find_template(_tmpl_name, dcc_='substance', catch=True)
+    _tmpl = _work.job.find_template(_tmpl_name, dcc_='spainter', catch=True)
     if not _tmpl:
         raise RuntimeError(
             f'No "{_tmpl_name}" template found in job "{_work.job.name}" - '
@@ -142,7 +142,7 @@ def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
     # Determine preset
     _preset_url = preset
     if not _preset_url:
-        _preset_url = os.environ.get('PINI_SUBSTANCE_EXPORT_PRESET')
+        _preset_url = os.environ.get('PINI_SPAINTER_EXPORT_PRESET')
     if not _preset_url:
         _preset_url = "starter_assets/PBR Metallic Roughness"
     _LOGGER.info(' - EXPORT PRESET %s', _preset_url)

@@ -13,7 +13,7 @@ from pini import qt, icons, pipe, dcc
 from pini.qt import QtWidgets
 from pini.pipe import cache
 from pini.tools import error, usage
-from pini.utils import cache_result, str_to_seed, last, is_pascal
+from pini.utils import cache_result, str_to_seed, is_pascal
 
 from . import eh_utils, eh_ui
 
@@ -538,20 +538,10 @@ class CExportHandler:
         _LOGGER.info(' - OUTPUTS %d %s', len(self.outputs), self.outputs)
         from pini.pipe import shotgrid
         _work_thumb = self.work.image if self.work.image.exists() else None
-        for _last, _out in qt.progress_bar(
-                last(self.outputs),
-                'Register {:d} output{} in shotgrid',
-                stack_key='ShotgridRegister'):
 
-            _LOGGER.info(' - REGISTER %s update_cache=%d', _out, _last)
-
-            _thumb = _work_thumb
-            if _out.basic_type in ('texture', 'render', 'video'):
-                _thumb = None
-
-            shotgrid.create_pub_file_from_output(
-                _out, thumb=_thumb, force=True, update_cache=_last,
-                upstream_files=upstream_files)
+        shotgrid.create_pub_files_from_outputs(
+            self.outputs, thumb=_work_thumb, upstream_files=upstream_files,
+            force=True)
 
     def _update_pipe_cache(self, reset_cache=True):
         """Update pipeline cache.

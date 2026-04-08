@@ -331,7 +331,7 @@ class CUiBase:
     def _apply_env_hacks(self):
         """Apply hacks to accomodate for different environment.
 
-        ie. setup nuke/substance qt fixes for this interface.
+        ie. setup nuke/spainter qt fixes for this interface.
         """
 
         # Setup QHBoxLayout size policies cache to fix bad transfer
@@ -343,10 +343,10 @@ class CUiBase:
             self._fix_hbox_size_policies()
 
         # Apply button size constraints to accommodate bad transfer
-        # from designer to pyside6/substance
+        # from designer to pyside6/spainter
         self._size_limits_yml = _file.to_file(
             base=_file.base + '_bsl', extn='yml', hidden=True)
-        if dcc.NAME in ('substance', ):
+        if dcc.NAME in ('spainter', ):
             self._fix_size_limits()
 
     def save_hbox_size_policies(self):
@@ -406,7 +406,7 @@ class CUiBase:
     def save_size_limits(self):
         """Save widget size limits to yml.
 
-        The yml is then used to apply missing limits in substance, which
+        The yml is then used to apply missing limits in spainter, which
         seemed to lose size limit data from ui files, most likely due
         to PySide6 issues.
         """

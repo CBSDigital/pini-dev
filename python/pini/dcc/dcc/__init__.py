@@ -12,7 +12,7 @@ _LOGGER = logging.getLogger(__name__)
 DCC = None
 DCCS = [
     'maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal', 'terragen',
-    'substance', 'sdesign']
+    'spainter', 'sdesign']
 
 _LOGGER.debug('IMPORT DCC')
 
@@ -71,15 +71,15 @@ if not DCC:
 
 if not DCC:
     try:
-        from .d_substance import SubstanceDCC
-        DCC = SubstanceDCC()
+        from .d_spainter import SubstancePainterDCC
+        DCC = SubstancePainterDCC()
     except ImportError as _exc:
-        _LOGGER.debug(' - SUBSTANCE REJECTED %s', _exc)
+        _LOGGER.debug(' - SUBSTANCE PAINTER REJECTED %s', _exc)
 
 if not DCC:
     try:
-        from . import d_sdesign
-        DCC = d_sdesign.SubstanceDesignerDCC()
+        from .d_sdesigner import SubstanceDesignerDCC
+        DCC = SubstanceDesignerDCC()
     except ImportError as _exc:
         _LOGGER.debug(' - SUBSTANCE DESIGNER REJECTED %s', _exc)
 
@@ -89,4 +89,5 @@ if not DCC:
     _LOGGER.debug(' - ACCEPTED NO DCC')
 
 if DCC and DCC.NAME:
-    assert DCC.NAME in DCCS
+    if DCC.NAME not in DCCS:
+        raise RuntimeError(DCC.NAME)

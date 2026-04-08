@@ -24,9 +24,9 @@ EXTN_TO_DCC = {
     'nknc': 'nuke',
     'ma': 'maya',
     'mb': 'maya',
-    'spp': 'substance',
+    'spp': 'spainter',
     'tgd': 'terragen',
-    'sbs': 'sdesign',
+    'sbs': 'sdesigner',
 }
 
 

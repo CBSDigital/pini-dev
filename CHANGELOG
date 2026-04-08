@@ -1,3 +1,20 @@
+## [9.0.0] - Wed 2026-04-08 09:46
+### Summary
+ - Pini Helper:
+    - substance publish optimised for speed,
+    - substance bugfix message box dialogs not working,
+### Updated
+ - pini.dcc renamed substance -> spainter,
+ - pini.dcc renamed sdesign -> sdesigner,
+ - pini.dcc.take_snapshot returns File,
+ - pini.dcc.export.CExportHandler._register_in_shotgrid use batch register,
+ - pini.pipe.install_set_work_callback removed deprecated fn,
+ - pini.pipe.shotgrid.create_pub_files_from_outputs added,
+ - pipe.pipe.shotgrid.create_pub_file_from_path returns only basic id/type data,
+ - pini.qt.raise_dialog bugfix bad offsetting in spainter,
+ - maya_pini.utils.blast_frame bugfix error on file_ as str,
+
+
 ## [8.58.0] - Tue 2026-04-07 12:38
 ### Summary
  - Pini Helper:

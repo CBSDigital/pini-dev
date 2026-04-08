@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 class SubstanceDesignerDCC(BaseDCC):
     """Manages interactions with substance."""
 
-    NAME = 'sdesign'
+    NAME = 'sdesigner'
     DEFAULT_EXTN = 'sbs'
     VALID_EXTNS = 'sbs'
 

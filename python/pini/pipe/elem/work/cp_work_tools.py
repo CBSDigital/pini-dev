@@ -3,7 +3,7 @@
 import logging
 
 from pini import dcc, icons, pipe
-from pini.utils import abs_path, HOME, install_callback
+from pini.utils import abs_path, HOME
 
 from ...cp_utils import map_path
 
@@ -55,21 +55,14 @@ def cur_work(work_dir=None, catch=True):
         return None
 
 
-def install_set_work_callback(callback):
-    """Install callback to be applied on set work.
-
-    Args:
-        callback (fn): callback to execute on set work
-    """
-    from pini.tools import release
-    release.apply_deprecation('11/03/25', 'Use pini.utils.install_callback')
-    install_callback('SetWork', callback)
-
-
 def load_recent():
     """Load most recent work file."""
     from pini import qt
-    _latest = recent_work()[0].find_latest()
+    _recent = recent_work()
+    if not _recent:
+        qt.warning('No recent work found')
+        return
+    _latest = _recent[0].find_latest()
     qt.ok_cancel(
         'Load latest work file?\n\n' + _latest.path,
         title='Load recent', icon=icons.find('Monkey Face'))

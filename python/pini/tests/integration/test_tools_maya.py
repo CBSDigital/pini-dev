@@ -41,12 +41,12 @@ class TestSanityCheck(unittest.TestCase):
         assert not sanity_check.find_check(
             'CheckLookdevShaders', action='ModelPublish', catch=True)
         assert sanity_check.find_check(
-            'CheckModelShaders', action='ModelPublish', catch=True)
+            'CheckShaders', action='ModelPublish', catch=True)
         assert not sanity_check.find_check(
             'CheckLookdevShaders', task='model', action='BasicPublish', catch=True,
             filter_='CheckShaders')
-        assert not sanity_check.find_check(
-            'CheckModelShaders', task='model', action='BasicPublish', catch=True)
+        assert sanity_check.find_check(
+            'CheckShaders', task='model', action='BasicPublish', catch=True)
 
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', catch=True)

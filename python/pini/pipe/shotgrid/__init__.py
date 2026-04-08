@@ -15,7 +15,8 @@ from .sg_entity import (
 from .sg_task import create_task, task_to_step_name
 from .sg_ver import create_ver
 from .sg_pub_file import (
-    create_pub_file, create_pub_file_from_output, create_pub_file_from_path)
+    create_pub_file, create_pub_file_from_output, create_pub_file_from_path,
+    create_pub_files_from_outputs)
 
 from .sg_tools import update_work_task
 

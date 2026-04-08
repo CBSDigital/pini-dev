@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 class CheckRefsLatest(SCPipeCheck):
     """Check all pipeline references are using the latest version."""
 
-    dcc_filter = '-nuke -substance'
+    dcc_filter = '-nuke -spainter'
 
     def run(self):
         """Run this check."""
@@ -45,7 +45,7 @@ class CheckRefsLatest(SCPipeCheck):
 class CheckAbcFpsMatchesScene(SCPipeCheck):
     """Check frame rate of referenced abcs matches current scene FPS."""
 
-    dcc_filter = '-substance'
+    dcc_filter = '-spainter'
 
     def run(self):
         """Run this check."""
@@ -71,7 +71,7 @@ class CheckAbcFpsMatchesScene(SCPipeCheck):
 class CheckRenderRes(SCCheck):
     """Check resolution matches resolution applied in settings."""
 
-    dcc_filter = '-hou -substance'
+    dcc_filter = '-hou -spainter'
 
     def run(self):
         """Run this check."""
@@ -98,7 +98,7 @@ class CheckRenderRes(SCCheck):
 class CheckFps(SCCheck):
     """Check fps matches fps applied in settings."""
 
-    dcc_filter = '-substance'
+    dcc_filter = '-spainter'
 
     def run(self):
         """Run this check."""

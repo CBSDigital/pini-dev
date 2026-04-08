@@ -24,11 +24,11 @@ from .elem import (
     cur_asset, CPShot, cur_shot, to_shot, CPEntity, to_entity,
     cur_entity, find_entity, recent_entities, CPWorkDir, cur_work_dir,
     to_work_dir, cur_task, map_task, CPWork, cur_work, add_recent_work,
-    install_set_work_callback, recent_work, load_recent, to_work,
-    CPOutputFile, CPOutputSeq, OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES,
-    to_output, ver_sort, CPOutputVideo, OUTPUT_VIDEO_TYPES,
-    CPOutputBase, cur_output, CPOutputSeqDir, STATUS_ORDER, RECENT_WORK_YAML,
-    OUTPUT_SEQ_CACHE_EXTNS, to_default_settings)
+    recent_work, load_recent, to_work, CPOutputFile, CPOutputSeq,
+    OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES, to_output, ver_sort, CPOutputVideo,
+    OUTPUT_VIDEO_TYPES, CPOutputBase, cur_output, CPOutputSeqDir,
+    STATUS_ORDER, RECENT_WORK_YAML, OUTPUT_SEQ_CACHE_EXTNS,
+    to_default_settings)
 
 from .cp_template import CPTemplate, glob_templates, glob_template
 from .cp_utils import (

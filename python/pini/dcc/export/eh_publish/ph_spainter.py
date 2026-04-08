@@ -10,15 +10,15 @@ from pini import icons, qt, dcc
 from pini.qt import QtWidgets
 from pini.utils import last
 
-from substance_pini import s_pipe
+from spainter_pini import p_pipe
 
 from . import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CSubstanceTexturePublish(ph_basic.CBasicPublish):
-    """Manages a substance texture publish."""
+class CSPainterTexturePublish(ph_basic.CBasicPublish):
+    """Manages a substance painter texture publish."""
 
     NAME = 'Substance Texture Publish'
     ICON = icons.find('Framed Picture')
@@ -81,7 +81,7 @@ class CSubstanceTexturePublish(ph_basic.CBasicPublish):
             sanity_check_ (bool): apply sanity checks
             force (bool): replace existing without confirmation
         """
-        return s_pipe.export_textures(
+        return p_pipe.export_textures(
             work=self.work, browser=browser, force=force, sets=sets,
             progress=self.progress)
 
@@ -154,7 +154,7 @@ def _raise_outputs_dialog(sets=None, parent=None):
 
     # Build export data
     _exports = {}
-    for _set, _files in s_pipe.to_export_data(sets=sets).items():
+    for _set, _files in p_pipe.to_export_data(sets=sets).items():
         _set_items = []
         for _file_data in _files:
             _res = _file_data['res']
