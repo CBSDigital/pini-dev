@@ -77,8 +77,16 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
 
             # Build output
             _LOGGER.debug('   - TMPL %s', _sg_pub_file.template)
-            _out = pipe.to_output(
-                _sg_pub_file.path, template=_tmpl, entity=self)
+            _LOGGER.debug('   - PATH %s', _sg_pub_file.path)
+            _LOGGER.debug('   - ETY %s', self)
+            try:
+                _out = pipe.to_output(
+                    _sg_pub_file.path, template=_tmpl, entity=self)
+            except ValueError:
+                _LOGGER.warning(
+                    ' - FAILED TO FORCE TMPL %s ON OUT %s',
+                    _tmpl, _sg_pub_file)
+                continue
             _out.sg_pub_file = _sg_pub_file
             _out.status = _sg_pub_file.status
             _LOGGER.debug('   - OUT %s', _out)

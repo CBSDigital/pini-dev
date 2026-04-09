@@ -335,14 +335,19 @@ class CCPJobBase(CPJob):
             _works += _ety.find_works(**kwargs)
         return _works
 
-    def find_outputs(self, **kwargs):
+    def find_outputs(self, progress=False, **kwargs):
         """Find outputs in this job.
+
+        Args:
+            progress (bool): show progress bar
 
         Returns:
             (CCPOutput list): outputs
         """
         _outs = []
-        for _ety in self.entities:
+        for _ety in qt.progress_bar(
+                self.entities, 'Reading {:d} entities', show=progress,
+                stack_key='ReadJobOutputs'):
             _outs += _ety.find_outputs(**kwargs)
         return _outs
 

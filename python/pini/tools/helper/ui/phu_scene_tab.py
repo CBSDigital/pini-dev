@@ -1148,11 +1148,18 @@ class PHSceneTab:
             self._callback__SReset()
         if not (isinstance(attach_to, str) or attach_to is None):
             raise RuntimeError(attach_to)
-
-        # Determine import namespace
-        _out = pipe.CACHE.obt(output)
-        _LOGGER.debug(' - OUT %s', repr(_out))
         _work_dir = work_dir or self.work_dir
+
+        # Obtain output
+        try:
+            _out = pipe.CACHE.obt(output)
+        except ValueError:
+            qt.warning(
+                f'Output missing from pipe cache:\n\n{output}\n\n'
+                f'Would you like to try resetting the cache?')
+            pipe.CACHE.reset()
+            _out = pipe.CACHE.obt(output)
+        _LOGGER.debug(' - OUT %s', repr(_out))
 
         # Build list of staged refs
         _refs = []

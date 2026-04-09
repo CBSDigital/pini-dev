@@ -1,3 +1,21 @@
+## [9.1.0] - Thu 2026-04-09 11:16
+### Summary
+ - Pini Helper:
+    - maya better error on file missing from disk (rcalderon),
+    - catch error on import publish missing from cache (eehamann),
+ - Sanity Check:
+    - maya check shaders on model publish disable fail on not shaders found (eeheman/skay),
+### Updated
+ - pini.dcc.create_ref maya handled error on missing file,
+ - pini.dcc.export.CMayaLookdevPublish store geo src in metadata,
+ - pini.pipe.CPEntitySG._read_outputs catch error on bad output path in sg,
+ - pini.pipe.CPJob.find_outputs added progress flag,
+ - pini.tools.sanity_check.CheckShaders disable flag no shd assigns found,
+ - pini.tools.helper bugfix error on stage lookdev import with no src geo found,
+ - pini.tools.helper offer reset cache on import asset missing from cache,
+ - maya_pini.m_pipe.read_publish_metadata made public,
+
+
 ## [9.0.2] - Wed 2026-04-08 10:24
 ### Summary
  - Sanity Check:

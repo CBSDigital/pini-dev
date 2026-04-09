@@ -3,6 +3,7 @@
 import logging
 
 from pini import pipe, dcc
+from pini.tools import error
 from pini.utils import passes_filter, EMPTY, Path, abs_path
 
 from maya_pini import open_maya as pom
@@ -47,6 +48,8 @@ def create_ref(path, namespace, group=EMPTY, parent=None, force=False):
         _ref = prm_node.create_rs_pxy(
             _path, namespace=namespace, group=group)
     else:
+        if not _out.exists(force=True):
+            raise error.HandledError(f'File missing from disk:\n\n{_out}')
         _pom_ref = pom.create_ref(
             _path, namespace=namespace, parent=parent, force=force)
         _ns = _pom_ref.namespace

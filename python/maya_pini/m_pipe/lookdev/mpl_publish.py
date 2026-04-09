@@ -273,6 +273,29 @@ def _read_geo_settings():
     return _settings
 
 
+def _read_geo_src():
+    """Read path to geometry source reference.
+
+    Returns:
+        (str|None): path to geo source (if any)
+    """
+    _shds = read_shader_assignments()
+    _geo_srcs = []
+    _geo_src = None
+    for _shd, _data in _shds.items():
+        _geos = _data['geos']
+        for _geo in _geos:
+            _ref = pom.CReference(_geo)
+            _LOGGER.debug(' - TEST GEO %s %s', _geo, _ref)
+            if not _geo_src:
+                _geo_src = _ref
+            elif _geo_src == _ref:
+                pass
+            else:
+                return None
+    return str(_geo_src.path)
+
+
 def _read_lights():
     """Read lights setting.
 
@@ -318,6 +341,7 @@ def read_publish_metadata():
     # Gather data
     _data = {}
     _data['shds'] = _shds
+    _data['geo_src'] = _read_geo_src()
     _data['settings'] = _read_geo_settings()
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
     _data['override_sets'] = read_override_sets()
@@ -360,6 +384,7 @@ def read_shader_assignments(
             allow_face_assign=allow_face_assign, filter_=filter_)
         if not _shd:
             continue
+        _LOGGER.debug(' - ADDING %s %s', _shd, _shd_data)
         _shds.append(_shd)
         _data[str(_shd)] = _shd_data
 

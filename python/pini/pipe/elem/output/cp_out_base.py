@@ -110,7 +110,8 @@ class CPOutputBase:
         self._latest = latest
 
     def _init_extract_data_from_templates(
-            self, types, templates=None, template=None, task=None):
+            self, types, templates=None, template=None, task=None,
+            log=9):
         """Match path with a template and extract data.
 
         Args:
@@ -118,8 +119,9 @@ class CPOutputBase:
             templates (CPTemplate list): force list of templates to check
             template (CPTemplate): force template to use
             task (str): apply task (if known)
+            log (int): log level
         """
-        _LOGGER.log(9, ' - EXTRACT DATA FROM TEMPLATES %s', self.path)
+        _LOGGER.log(log, ' - EXTRACT DATA FROM TEMPLATES %s', self.path)
 
         # Apply templates to data. Apply single template alone to get better
         # error on fail. NOTE: sometimes the templates can fail due to data
@@ -128,22 +130,22 @@ class CPOutputBase:
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
-            _LOGGER.log(9, ' - TMPL %s %s', self.template, self.template.anchor)
-            _LOGGER.log(9, ' - PATH %s', self.path)
+            _LOGGER.log(log, ' - TMPL %s %s', self.template, self.template.anchor)
+            _LOGGER.log(log, ' - PATH %s', self.path)
             try:
                 self.data = self.template.parse(self.path)
             except lucidity.ParseError as _exc:
-                _LOGGER.log(9, ' - ERROR %s', _exc)
+                _LOGGER.log(log, ' - ERROR %s', _exc)
                 raise ValueError(_exc) from _exc
         else:
             try:
                 self.data, self.template = lucidity.parse(self.path, _tmpls)
             except lucidity.ParseError as _exc:
-                _LOGGER.log(9, ' - PATH "%s"', self.path)
-                _LOGGER.log(9, ' - ERROR %s', _exc)
+                _LOGGER.log(log, ' - PATH "%s"', self.path)
+                _LOGGER.log(log, ' - ERROR %s', _exc)
                 raise ValueError(
                     'No output templates matched path ' + self.path) from _exc
-        _LOGGER.log(9, ' - TEMPLATE %d %s', _tmpls.index(self.template),
+        _LOGGER.log(log, ' - TEMPLATE %d %s', _tmpls.index(self.template),
                     self.template)
 
         cp_utils.validate_tokens(self.data, job=self.job)

@@ -387,16 +387,6 @@ def output_to_imports(  # pylint: disable=too-many-branches
     _LOGGER.debug('OUTPUT TO IMPORTS %s', output)
     _work_dir = work_dir or pipe.CACHE.cur_work_dir
 
-    # Determine base namespace
-    _LOGGER.debug(' - ATTACH TO %s', attach_to)
-    if attach_to:
-        assert isinstance(attach_to, str)
-        _base_ns = attach_to
-    else:
-        _base_ns = namespace or output_to_namespace(
-            output, attach_to=attach_to, ignore=ignore, base=base)
-    _LOGGER.debug(' - BASE NS %s', _base_ns)
-
     # Determing base + curves + lookdev outputs
     _base = _crvs = _lookdev = None
     if output.content_type == 'CurvesMb':
@@ -405,9 +395,19 @@ def output_to_imports(  # pylint: disable=too-many-branches
         _crvs = output
     elif output.content_type == 'ShadersMa':
         _lookdev = output
-        _base = _lookdev_to_base(output)
+        _base = _lookdev_to_geo_src(output)
     else:
         _base = output
+
+    # Determine base namespace
+    _LOGGER.debug(' - ATTACH TO %s', attach_to)
+    if attach_to:
+        assert isinstance(attach_to, str)
+        _base_ns = attach_to
+    else:
+        _base_ns = namespace or output_to_namespace(
+            _base, attach_to=attach_to, ignore=ignore, base=base)
+    _LOGGER.debug(' - BASE NS %s', _base_ns)
 
     # Auto apply lookdev if not already assigned
     if not _lookdev and dcc.NAME == 'maya':
@@ -440,16 +440,26 @@ def output_to_imports(  # pylint: disable=too-many-branches
     return _imps
 
 
-def _lookdev_to_base(lookdev):
+def _lookdev_to_geo_src(lookdev, catch=False):
     """Determine base asset from the given lookdev.
 
     Args:
         lookdev (CCPOutputFile): lookdev to read
+        catch (bool): no error if failed to find geo source
 
     Returns:
         (CCPOutputFile): base model/rig
     """
     _LOGGER.debug('   - LOOKDEV TO BASE %s', lookdev)
+
+    # Check metadata
+    _geo_src = lookdev.metadata.get('geo_src')
+    _LOGGER.debug('     - GEO SRC %s', _geo_src)
+    if _geo_src:
+        _geo_out = pipe.CACHE.obt_output(_geo_src)
+        return _geo_out.find_latest()
+
+    # Test match by entity/tag
     _ety = lookdev.entity
     _LOGGER.debug('     - ETY %s', _ety)
     _tags = [lookdev.tag]
@@ -464,6 +474,10 @@ def _lookdev_to_base(lookdev):
             if _base:
                 _LOGGER.debug('     - ACCEPTED %s', _base)
                 return _base
+
+    if not catch:
+        raise RuntimeError(
+            f"Failed to find geometry source for lookdev {lookdev}")
     return None
 
 

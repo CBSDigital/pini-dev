@@ -3,7 +3,7 @@
 import os
 import logging
 
-from maya import cmds, mel
+from maya import cmds
 
 from pini import pipe, dcc
 from pini.dcc import export
@@ -429,31 +429,6 @@ class CheckUVs(core.SCMayaCheck):
             self.add_fail(_msg, node=geo, fix=_fix)
 
 
-class CheckModelGeo(core.SCMayaCheck):
-    """Check naming of cache set geometry."""
-
-    task_filter = 'model'
-    _ignore_names = None
-    depends_on = (CheckCacheSet, )
-
-    def run(self):
-        """Run this check."""
-        _geos = m_pipe.read_cache_set()
-        self.write_log('Found %d geos: %s', len(_geos), _geos)
-        for _geo in _geos:
-
-            # Check for incoming connections to transform attrs
-            for _plug in _geo.tfm_plugs:
-                if _plug.find_incoming():
-                    self.add_fail(
-                        f'Plug has incoming connections: "{_plug}"',
-                        fix=_plug.break_conns)
-
-            # Check redshift displacement disabled
-            if _geo.shp.has_attr('rsEnableDisplacement'):
-                self.check_attr(_geo.shp.plug['rsEnableDisplacement'], False)
-
-
 class CheckForVertexColorSets(core.SCMayaCheck):
     """Check geometry has no vertex colour sets."""
 
@@ -566,64 +541,6 @@ class CheckForCameras(core.SCMayaCheck):
             if str(_cam).strip('|') in DEFAULT_NODES:
                 continue
             self.add_fail(f'Camera {_cam}', node=_cam)
-
-
-class CheckForNgons(core.SCMayaCheck):
-    """Check for polygons with more than four sides."""
-
-    task_filter = 'model'
-    depends_on = (CheckGeoNaming, )
-    sort = 100
-
-    def run(self):
-        """Run this check."""
-        self._check_count = 0
-        for _geo in self.update_progress(m_pipe.read_cache_set()):
-            self._check_geo(_geo)
-
-    def _check_geo(self, geo):
-        """Check the given geo for ngons.
-
-        Args:
-            geo (CMesh): mesh to check
-        """
-        assert isinstance(geo, pom.CMesh)
-        self._check_count += 1
-
-        # Check for mesh marked in scene data as check passed
-        _uid = geo.n_vtxs, geo.n_edges, geo.n_faces
-        _key = f'SanityCheck.CheckForNgons.{geo}.Passed'
-        _data = dcc.get_scene_data(_key)
-        if _data == _uid:
-            if self._check_count < 100:
-                self.write_log('geo marked as passed check %s', geo)
-            return
-
-        # Apply ngons check (slow)
-        cmds.select(geo)
-        mel.eval(
-            'polyCleanupArgList 4 { '
-            '    "0","2","1","0","1","0","0","0","0","1e-05","0",'
-            '    "1e-05","0","1e-05","0","-1","0","0" }')
-        if cmds.ls(selection=True):
-            _msg = f'Mesh "{geo}" contains ngons'
-            self.add_fail(
-                _msg, node=geo, fix=wrap_fn(self.fix_ngons, geo))
-        else:
-            dcc.set_scene_data(_key, _uid)
-
-    def fix_ngons(self, geo):
-        """Fix ngons in the given mesh.
-
-        Args:
-            geo (str): mesh to fix
-        """
-        cmds.select(geo)
-        mel.eval(
-            'polyCleanupArgList 4 {'
-            '    "0","1","1","0","1","0","0","0","0","1e-05","0",'
-            '    "1e-05","0","1e-05","0","-1","0","0" }')
-        cmds.select(geo)
 
 
 class FindUnneccessarySkinClusters(core.SCMayaCheck):
@@ -750,33 +667,39 @@ class CheckLookdevShaders(core.SCMayaCheck):
     action_filter = 'LookdevPublish'
     depends_on = (CheckForFaceAssignments, )
 
-    def run(self, check_ai_shd=True, check_refd_geo=True, flag_refd_shds=False):
+    def run(
+            self, check_ai_shd=True, check_refd_geo=True, flag_refd_shds=False,
+            shds_required=True):
         """Run this check.
 
         Args:
             check_ai_shd (bool): check any attached arnold shader override
             check_refd_geo (bool): check geometry is referenced
             flag_refd_shds (bool): flag referenced shaders
+            shds_required (bool): shading assignments are required
         """
         if flag_refd_shds:
             self._flag_refd_shds()
         self._check_shaders(
-            check_ai_shd=check_ai_shd, check_refd_geo=check_refd_geo)
+            check_ai_shd=check_ai_shd, check_refd_geo=check_refd_geo,
+            shds_required=shds_required)
 
-    def _check_shaders(self, check_ai_shd, check_refd_geo):
+    def _check_shaders(self, check_ai_shd, check_refd_geo, shds_required):
         """Apply shaders check.
 
         Args:
             check_ai_shd (bool): check any attached arnold shader override
             check_refd_geo (bool): check geometry is referenced
+            shds_required (bool): shading assignments are required
         """
         _shds = lookdev.read_shader_assignments(
             catch=True, allow_face_assign=True, referenced=False)
         self.write_log('Found %d shaders: %s', len(_shds), _shds)
-        if not _shds:
+        if not _shds and shds_required:
             self.add_fail(
                 'No shader assignments found - this publish saves out shading '
                 'assignments so you need to apply shaders to your geometry')
+
         _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
         _ignore_names = set()
         for _shd, _data in _shds.items():
@@ -960,7 +883,7 @@ class CheckShaders(CheckLookdevShaders):
 
     def run(self):
         """Run this check."""
-        super().run(check_refd_geo=False)
+        super().run(check_refd_geo=False, shds_required=False)
 
 
 class NoObjectsWithDefaultShader(core.SCMayaCheck):

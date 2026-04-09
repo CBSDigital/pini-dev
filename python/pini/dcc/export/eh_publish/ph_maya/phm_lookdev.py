@@ -237,6 +237,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
         # Read shaders + save to yml
         _shd_data = lookdev.read_publish_metadata()
+        _geo_src = _shd_data.get('geo_src')
         self.shd_yml.write_yml(_shd_data, force=True, fix_unicode=True)
         _LOGGER.info(' - WROTE SHD YML %s', self.shd_yml)
 
@@ -248,6 +249,8 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         save_scene(self.publish.path, selection=True, force=_force)
 
         self.publish.add_metadata(shd_yml=self.shd_yml.path)
+        if _geo_src:
+            self.publish.add_metadata(geo_src=_geo_src)
         self.outputs.append(self.publish)
 
     def _register_in_shotgrid(self, upstream_files=None, link_textures=True):
