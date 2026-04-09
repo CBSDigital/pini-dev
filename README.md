@@ -36,8 +36,11 @@ Hou install:
 
 Environment Variables:
  
- - PINI_DEFAULT_FONT_SIZE - apply default text size for qt interfaces
- - PINI_PUB_JUNK_GRPS - list of groups which can be junked on publish
-      eg. JUNK|WORKFLOW
-      default - JUNK
- - PINI_HOU_APPLY_SCALE_FIX - set to 0 to disable 0.01 abc scaling in houdini
+ - PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS - Set to 0 to disable autogenerate ass.gz 
+      templates. If this is disabled then ass.gz output templates must be
+      declared specifically in the job.cfg file. Default is enabled.
+ - PINI_DEFAULT_FONT_SIZE - Apply default text size for qt interfaces.
+ - PINI_HOU_APPLY_SCALE_FIX - Set to 0 to disable 0.01 abc scaling in 
+      houdini. Default is enabled.
+ - PINI_PUB_JUNK_GRPS - List of groups which can be junked on publish
+      (eg. "JUNK|WORKFLOW"). Default is just "JUNK".

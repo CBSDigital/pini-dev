@@ -1,10 +1,18 @@
+## [9.2.0] - Thu 2026-04-09 16:22
+### Summary
+ - Pini Pipeline:
+    - allow disable auto generate ass.gz templates via $PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS,
+### Updated
+ - pini.pipe.build_job_templates allow disable autogen ass.gz tmpls via $PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS,
+
+
 ## [9.1.0] - Thu 2026-04-09 11:16
 ### Summary
  - Pini Helper:
     - maya better error on file missing from disk (rcalderon),
-    - catch error on import publish missing from cache (eehamann),
+    - catch error on import publish missing from cache (eehemann),
  - Sanity Check:
-    - maya check shaders on model publish disable fail on not shaders found (eeheman/skay),
+    - maya check shaders on model publish disable fail on not shaders found (eehemann/skay),
 ### Updated
  - pini.dcc.create_ref maya handled error on missing file,
  - pini.dcc.export.CMayaLookdevPublish store geo src in metadata,
