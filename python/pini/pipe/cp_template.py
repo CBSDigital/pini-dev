@@ -4,6 +4,7 @@
 
 import collections
 import logging
+import os
 import time
 
 import lucidity
@@ -531,8 +532,6 @@ def build_job_templates(job, catch=True):
     Returns:
         ({name: Template list} dict): template name/object data
     """
-    from pini import install
-
     _LOGGER.debug('BUILD TEMPLATES %s', job.name)
     _start = time.time()
 
@@ -586,7 +585,7 @@ def build_job_templates(job, catch=True):
 
     _build_seq_dir_tmpls(_tmpls, job=job)
     _build_sequence_tmpl(_tmpls, job=job)
-    if install.read_env('PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS', default=True):
+    if os.environ.get('PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS') != '0':
         _build_ass_gz_tmpls(_tmpls, job=job)
     _LOGGER.debug(
         ' - BUILT %s TEMPLATES IN %.02fs', job.name, time.time() - _start)

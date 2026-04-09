@@ -1,3 +1,11 @@
+## [9.2.1] - Thu 2026-04-09 16:28
+### Summary
+ - Pini Pipeline:
+    - bugfix allow disable auto generate ass.gz templates via $PINI_PIPE_AUTOGEN_ASS_GZ_TMPLS,
+### Updated
+ - pini.pipe.build_job_templates fix circular import,
+
+
 ## [9.2.0] - Thu 2026-04-09 16:22
 ### Summary
  - Pini Pipeline:
