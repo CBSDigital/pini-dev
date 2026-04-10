@@ -164,6 +164,31 @@ def reset_sel(func):
     return _reset_sel_func
 
 
+def restore(selection=False):
+    """Build a decorator which restores selected scene attributes after exec.
+
+    Args:
+        selection (bool): restore scene selection
+
+    Returns:
+        (fn): decorator
+    """
+
+    def _restore_dec(func):
+
+        @functools.wraps(func)
+        def _restore_fn(*args, **kwargs):
+            _func = func
+            if selection:
+                _func = restore_sel(_func)
+            _result = _func(*args, **kwargs)
+            return _result
+
+        return _restore_fn
+
+    return _restore_dec
+
+
 def restore_ns(func):
     """Restore the current namespace after executing the function.
 

@@ -274,6 +274,7 @@ def save_abc(  # pylint: disable=too-many-branches
         (File): exported abc
         (str): job arg (if in job_arg mode)
     """
+    from pini import dcc
     _LOGGER.debug('EXPORT ABC')
     if format_ not in ('Ogawa', 'HDF'):
         raise RuntimeError(format_)
@@ -295,7 +296,12 @@ def save_abc(  # pylint: disable=too-many-branches
         if strip_namespaces:
             _job_arg += '-stripNamespaces '
         if range_:
-            _start, _end = range_
+            if range_ == 'From timeline':
+                _start, _end = dcc.t_range(int)
+            elif isinstance(range_, (list, tuple)) and len(range_) == 2:
+                _start, _end = range_
+            else:
+                raise NotImplementedError(range_)
             _start -= 1
             _end += 1
             _job_arg += f'-frameRange {_start:d} {_end:d} '
@@ -451,7 +457,12 @@ def save_fbx(
     _mel(f'FBXExportBakeComplexAnimation -v {_bool_to_mel(animation)}')
     _mel(f'FBXExportConstraints -v {_bool_to_mel(constraints)}')
 
-    _range = range_ or dcc.t_range()
+    if not range_ or range_ == 'From timeline':
+        _range = dcc.t_range()
+    elif isinstance(range_, (tuple, list)) and len(range_) == 2:
+        _range = range_
+    else:
+        raise ValueError(range_)
     _mel(f'FBXExportBakeComplexStart -v {_range[0]:f}')
     _mel(f'FBXExportBakeComplexEnd -v {_range[1]:f}')
     _mel(f'FBXExportBakeComplexStep -v {step:f}')

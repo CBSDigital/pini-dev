@@ -800,7 +800,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _fmt = fmt
         if _fmt == 'auto':
             if not _file:
-                raise RuntimeError
+                raise RuntimeError('Apply file or select fmt mpa/mpb')
             _fmt = _file.extn
         _LOGGER.debug(' - FMT %s', _fmt)
 
@@ -809,10 +809,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _tmp_file.delete(force=True)
 
         if _fmt == 'mpa':
-            # _file = self._save_mpa_preset(_file)
             mel.eval(f'saveAttrPreset "{self}" "tmp" false')
         elif _fmt == 'mpb':
-            # _file = self._save_mpb_preset(_file)
             cmds.nodePreset(save=(self, "tmp"))
         else:
             raise NotImplementedError(_file)
@@ -823,7 +821,11 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         if _file:
             _tmp_file.copy_to(_file, verbose=0)
 
-        return _file or _tmp_file
+        if not _file:
+            _extn_file = _tmp_file.to_file(extn=fmt)
+            _tmp_file.copy_to(_extn_file, force=True)
+            return _extn_file
+        return _file
 
     def __eq__(self, other):
         if isinstance(other, CBaseNode):

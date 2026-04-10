@@ -9,6 +9,7 @@ from maya import cmds
 
 from pini.utils import Seq, str_to_ints, File, TMP, single, Video, wrap_fn
 
+# from .mu_eval import process_deferred_events
 from .mu_dec import reset_ns
 from .mu_namespace import del_namespace, set_namespace
 
@@ -261,6 +262,11 @@ def _exec_blast(
     _filename = f'{seq.dir}/{seq.base}'
     _LOGGER.debug(' - BLAST FILENAME %s', _filename)
     _LOGGER.debug(' - START/END %d/%d', _start, _end)
+    # process_deferred_events()
+    # cmds.refresh()
+    # for _img_plane in cmds.ls(type='imagePlane'):
+    #     _size = cmds.imagePlane(_img_plane, q=True, imageSize=True)
+    #     _LOGGER.info(' - IMG PLANE %s %s', _img_plane, _size)
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True, forceOverwrite=True,
@@ -332,6 +338,8 @@ def _to_range(range_):
 
     # Interpret as string (eg. 1001-1100)
     if isinstance(range_, str):
+        if range_ == 'From timeline':
+            return dcc.t_range()
         _frames = str_to_ints(range_)
         return _frames[0], _frames[-1]
 

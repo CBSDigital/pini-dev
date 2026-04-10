@@ -693,6 +693,17 @@ class CExportHandlerUI(qt.CUiContainer):
 
         self._callback__Range()
 
+    def has_elem(self, name):
+        """Check whether the ui has an element of the given name.
+
+        Args:
+            name (str): name to match
+
+        Returns:
+            (bool): ui element
+        """
+        return name in self._elems
+
     def to_frames(self):
         """Get list of frames to export.
 

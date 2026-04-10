@@ -137,7 +137,7 @@ class CheckFrameRange(SCCheck):
         _ety_sg = shotgrid.SGC.find_entity(_ety)
         _sg_rng = _ety_sg.data['sg_head_in'], _ety_sg.data['sg_tail_out']
         if None in _sg_rng:
-            self.write_log('No range found in %s', _ety)
+            self.write_log('No range (head_in/tail_out) found in %s', _ety)
             return
         _cur_rng = dcc.t_range(int)
         if _sg_rng != _cur_rng:

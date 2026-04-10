@@ -247,7 +247,7 @@ class CExportHandler:
         """
         _mode = self.ui.Range.currentText()
         if _mode == 'From timeline':
-            return dcc.t_range(int)
+            return 'From timeline'
         if _mode == 'Manual':
             return (
                 self.ui.RangeManualStart.value(),
@@ -356,7 +356,6 @@ class CExportHandler:
 
         self._set_work()
 
-        # _notes = self._obt_notes()
         self.metadata = self.build_metadata()
         _notes = self.metadata.get('notes')
         self._check_for_overwrite()

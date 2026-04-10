@@ -469,7 +469,8 @@ def _lookdev_to_geo_src(lookdev, catch=False):
     for _task in ['model', 'rig']:
         for _tag in _tags:
             _base = _ety.find_output(
-                task=_task, tag=_tag, ver_n='latest', extn='ma', catch=True)
+                task=_task, tag=_tag, ver_n='latest', extn='ma',
+                catch=True)
             _LOGGER.debug('     - TESTING %s %s -> %s', _task, _tag, _base)
             if _base:
                 _LOGGER.debug('     - ACCEPTED %s', _base)

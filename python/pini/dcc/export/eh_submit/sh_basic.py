@@ -113,12 +113,15 @@ class CBasicSubmitter(export.CExportHandler):
         self.ui.Render.redraw()
 
     def _callback__Render(self):
-        _render = self.ui.Render.selected_data()
-        _LOGGER.debug('CALLBACK Render %s', _render)
-        _notes = ''
-        if _render:
-            _notes = _render.metadata['notes']
-        self.ui.Notes.setText(_notes)
+
+        # Pass notes from media to submit notes
+        if self.ui.has_elem('Notes'):
+            _render = self.ui.Render.selected_data()
+            _LOGGER.debug('CALLBACK Render %s', _render)
+            _notes = ''
+            if _render:
+                _notes = _render.metadata.get('notes', '')
+            self.ui.Notes.setText(_notes)
 
     def _callback__RenderFilter(self):
         _LOGGER.debug('CALLBACK RenderFilter')

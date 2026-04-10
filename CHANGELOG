@@ -1,3 +1,17 @@
+## [9.3.0] - Fri 2026-04-10 11:05
+### Summary
+ - Pini Helper:
+    - maya cache bugfix range from timeline not passing updates from sanity check fixes (kakuna),
+    - submit bugfix bad entity error on launch (kakuna),
+### Updated
+ - pini.dcc.export.CExportHandlerUI.has_elem added,
+ - pini.dcc.export.CBaseExportHandler.to_range use 'From timeline' to accomodate sanity check updates,
+ - pini.dcc.export.CBasicSubmitter pass media notes to notes field bugfix error on notes disables,
+ - maya_pini.utils.restore added,
+ - maya_pini.utils blast/save_abc/save_fbx allow 'From timeline' as range,
+ - maya_pini.open_maya.save_preset bugfix bad extn on no file passed,
+
+
 ## [9.2.1] - Thu 2026-04-09 16:28
 ### Summary
  - Pini Pipeline:
