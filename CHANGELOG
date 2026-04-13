@@ -1,3 +1,11 @@
+## [9.3.2] - Mon 2026-04-13 08:20
+### Summary
+ - Pini Helper:
+    - maya submit render bugfix error on no layer range override (eehemann),
+### Updated
+ - pini.farm.deadline.submit_maya_render bugfix error on no layer range override,
+
+
 ## [9.3.1] - Mon 2026-04-13 07:42
 ### Summary
  - Pini Helper:

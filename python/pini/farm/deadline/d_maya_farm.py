@@ -140,7 +140,7 @@ class CDMayaFarm(d_farm.CDFarm):
         return _result
 
 
-def _to_default_val(plug):
+def _to_non_override_val(plug):
     """To default value for the given plug.
 
     ie. to value ignoring any render layer overrides.
@@ -152,7 +152,11 @@ def _to_default_val(plug):
         (float): value
     """
     _LOGGER.debug('TO DEFAULT VAL %s', plug)
-    _input = plug.find_incoming().node
+    _incoming = plug.find_incoming()
+    if not _incoming:
+        return plug.get_val()
+
+    _input = _incoming.node
     _input_t = _input.object_type()
     _LOGGER.debug(' - INPUT %s %s', _input, _input_t)
     if _input_t == 'unitToTimeConversion':
@@ -178,7 +182,7 @@ def _to_layer_val(attr, layer):
     """
     _LOGGER.debug(' - TO LYR VAL %s %s', attr, layer)
     _plug = pom.CPlug(attr)
-    _val = _to_default_val(_plug)
+    _val = _to_non_override_val(_plug)
     if layer.pass_name == 'masterLayer':
         return _val
 
