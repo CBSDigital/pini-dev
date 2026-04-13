@@ -1,4 +1,30 @@
-"""Profiling tools."""
+"""Profiling tools.
+
+
+SIMPLIFILED PROFILE:
+
+import cProfile
+import os
+import pstats
+import time
+_prf = cProfile.Profile()
+_prf.enable()
+_start = time.time()
+# <<< TEST CODE HERE >>>
+_dur = time.time() - _start
+print(f'STARTUP TOOK {_dur:.01f}s')
+_prf.disable()
+_file = 'C:/Users/hvanderbeek/tmp/profile.txt'
+_file_r = 'C:/Users/hvanderbeek/tmp/profile_readable.txt'
+_prf.dump_stats(_file)
+_hook = open(_file_r, 'w')
+_stats = pstats.Stats(_file, stream=_hook)
+_stats.sort_stats('cumulative')
+_stats.print_stats()
+_hook.close()
+os.system(f'subl {_file_r}')
+
+"""
 
 import cProfile
 import functools
@@ -71,6 +97,7 @@ def profile_stop(name='pini', gprof2dot=False, bkp=True):
     _stats.sort_stats('cumulative')
     _stats.print_stats()
     _LOGGER.info(' - WROTE READABLE %s', _txt.path)
+    _hook.close()
 
     # Bkp readable file
     if bkp:

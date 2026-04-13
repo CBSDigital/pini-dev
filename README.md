@@ -40,7 +40,9 @@ Environment Variables:
       templates. If this is disabled then ass.gz output templates must be
       declared specifically in the job.cfg file. Default is enabled.
  - PINI_DEFAULT_FONT_SIZE - Apply default text size for qt interfaces.
+ - PINI_INSTALL_DISABLE - Disable install pini.
  - PINI_HOU_APPLY_SCALE_FIX - Set to 0 to disable 0.01 abc scaling in 
       houdini. Default is enabled.
  - PINI_PUB_JUNK_GRPS - List of groups which can be junked on publish
       (eg. "JUNK|WORKFLOW"). Default is just "JUNK".
+ - PINI_UI_INSTALL_DISABLE - Disable building of interface elements.

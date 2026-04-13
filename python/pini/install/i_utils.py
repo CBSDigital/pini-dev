@@ -58,7 +58,7 @@ def _build_ui_disabled(build_ui):
         _LOGGER.info(' - BATCH MODE - NOT BUILDING UI ELEMENTS')
         return True
 
-    if os.environ.get('PINI_UI INSTALL_DISABLE'):
+    if os.environ.get('PINI_UI_INSTALL_DISABLE'):
         _LOGGER.info(" - BUILD UI DISABLED VIA $PINI_INSTALL_UI_DISABLE")
         return True
 
