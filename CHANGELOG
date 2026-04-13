@@ -1,3 +1,14 @@
+## [9.3.1] - Mon 2026-04-13 07:42
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click work/output with new cache (mkim/cstewart/rcalderon),
+### Updated
+ - pini.utils.Image added aspect/res properties,
+ - pini.qt.to_p allow no args,
+ - pini.tools.helper.add_output_opts bugfix error on invalid range,
+ - maya_pini.m_pipe.cache bugfix range not written to metadata,
+
+
 ## [9.3.0] - Fri 2026-04-10 11:05
 ### Summary
  - Pini Helper:

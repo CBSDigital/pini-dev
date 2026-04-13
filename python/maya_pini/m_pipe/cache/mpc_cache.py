@@ -232,8 +232,18 @@ def _exec_local_cache(
 
     # Update metadata + pipeline cache
     if update_metadata:
+
+        # Determine range
+        _range = flags['range_']
+        if isinstance(_range, str):
+            if _range == 'From timeline':
+                _range = dcc.t_range(int)
+            else:
+                raise NotImplementedError(_range)
+
+        # Update metadata
         _write_metadata(
-            outputs=outputs, cacheables=cacheables, range_=flags['range_'],
+            outputs=outputs, cacheables=cacheables, range_=_range,
             checks_data=checks_data, step=flags['step'])
         if pipe.SHOTGRID_AVAILABLE:
             from pini.pipe import shotgrid

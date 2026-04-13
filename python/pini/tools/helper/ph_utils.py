@@ -370,7 +370,8 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
 
 
 def output_to_imports(  # pylint: disable=too-many-branches
-        output, work_dir=None, namespace=None, ignore=(), attach_to=None, base=None):
+        output, work_dir=None, namespace=None, ignore=(), attach_to=None,
+        base=None):
     """Build a list of imports for the given output.
 
     Args:

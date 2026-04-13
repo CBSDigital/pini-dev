@@ -105,7 +105,7 @@ class TestHelper(unittest.TestCase):
         assert _base_out.pini_task == 'rig'
 
         assert _lookdev.tag == pipe.DEFAULT_TAG
-        _base = ph_utils._lookdev_to_base(_lookdev)
+        _base = ph_utils._lookdev_to_geo_src(_lookdev)
         assert _base
         assert _base.tag == pipe.DEFAULT_TAG
 

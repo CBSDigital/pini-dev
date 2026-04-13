@@ -368,13 +368,20 @@ class PHUiBase(
             'Print metadata',
             wrap_fn(_print_metadata, output),
             icon=icons.PRINT)
-        if output.range_ and len(set(output.range_)) > 1:
+        if (
+                output.range_ and
+                isinstance(output.range_, (list, tuple)) and
+                len(set(output.range_)) == 2):
             _start, _end = output.range_
-            menu.add_action(
-                f'Apply range ({_start:.00f}-{_end:.00f})',
-                wrap_fn(dcc.set_range, output.range_[0], output.range_[1]),
-                icon=icons.find('Left-Right Arrow'),
-                enabled=output.range_ != dcc.t_range(int))
+            _msg = f'Apply range ({_start:.00f}-{_end:.00f})'
+            _func = wrap_fn(dcc.set_range, output.range_[0], output.range_[1])
+            _en = True
+        else:
+            _msg = 'No range found'
+            _en = False
+            _func = None
+        menu.add_action(
+            _msg, _func, icon=icons.find('Left-Right Arrow'), enabled=_en)
 
         # Add lookdev opts
         if _apply_lookdev_opts(output, ref):

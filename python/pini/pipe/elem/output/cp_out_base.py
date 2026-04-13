@@ -130,7 +130,8 @@ class CPOutputBase:
             template=template, templates=templates, types=types)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
-            _LOGGER.log(log, ' - TMPL %s %s', self.template, self.template.anchor)
+            _LOGGER.log(
+                log, ' - TMPL %s %s', self.template, self.template.anchor)
             _LOGGER.log(log, ' - PATH %s', self.path)
             try:
                 self.data = self.template.parse(self.path)

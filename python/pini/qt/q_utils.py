@@ -520,6 +520,8 @@ def to_p(*args, **kwargs):
                 isinstance(args[0], int) and
                 isinstance(args[1], int)):
             _result = QtCore.QPoint(*args)
+        elif not args:
+            _result = QtCore.QPoint()
         else:
             raise ValueError(args)
 

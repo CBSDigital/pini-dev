@@ -15,6 +15,24 @@ _LOGGER = logging.getLogger(__name__)
 class Image(File):
     """Represents an image file on disk."""
 
+    @property
+    def aspect(self):
+        """Obtain aspect ratio for this image.
+
+        Returns:
+            (float): aspect
+        """
+        return self.to_aspect()
+
+    @property
+    def res(self):
+        """Obtain resolution for this image.
+
+        Returns:
+            (Res): resolution
+        """
+        return self.to_res()
+
     def convert(self, file_, size=None, catch=False, force=False):
         """Convert this image to a different format.
 
