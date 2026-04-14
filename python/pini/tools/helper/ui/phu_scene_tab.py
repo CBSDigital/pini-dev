@@ -523,14 +523,13 @@ class PHSceneTab:
                 _text += f'Exported: {_t_str}\n'
 
             # Add range
-            if not _out.range_ or _out.range_ == (None, None):
-                _fmt = None
+            _fmt = None
+            if not _out.range_:
+                pass
             elif len(_out.range_) == 1:
                 _fmt = 'Range: {:.00f}\n'
             elif len(_out.range_) == 2:
                 _fmt = 'Range: {:.00f}-{:.00f}\n'
-            else:
-                raise ValueError(_out.range_)
             if _fmt:
                 _text += _fmt.format(*_out.range_)
 
