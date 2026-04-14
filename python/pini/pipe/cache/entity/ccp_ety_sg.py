@@ -215,7 +215,15 @@ class CCPEntitySG(ccp_ety_base.CCPEntityBase):
 
         # Check output
         if _out:
-            assert isinstance(_out, pipe.CPOutputBase)
-            assert isinstance(_out, cache.CCPOutputBase)
+            if (
+                    not isinstance(_out, pipe.CPOutputBase) or
+                    not isinstance(_out, cache.CCPOutputBase)):
+                _LOGGER.error(' - OUTPUT   %s', output)
+                _LOGGER.error(' - OUTPUT C %s', _out)
+                _LOGGER.error(
+                    ' - TYPE %s pipe=%d cache=%d', type(_out),
+                    isinstance(_out, pipe.CPOutputBase),
+                    isinstance(_out, cache.CCPOutputBase))
+                raise RuntimeError(_out)
 
         return _out

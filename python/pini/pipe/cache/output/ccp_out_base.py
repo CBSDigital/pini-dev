@@ -264,6 +264,8 @@ class CCPOutputBase(elem.CPOutputBase):
 
         # Add ass.gz
         if self.pini_task in ('model', 'rig'):
+
+            # Add ass
             _LOGGER.debug(
                 ' - CHECKING FOR AssArchive tag=%s ety=%s', self.tag,
                 self.entity)
@@ -273,16 +275,34 @@ class CCPOutputBase(elem.CPOutputBase):
             if _ass:
                 _reps.append(_ass)
 
-        # Add vrmesh
-        if self.pini_task in ('model', ):
-            _vrm = self.entity.find_output(
-                extn='ma', tag=self.tag, type_='publish', ver_n='latest',
-                content_type='VrmeshMa', catch=True)
-            if _vrm:
-                _LOGGER.debug(' - FOUND VRMESH %s', _vrm)
-                _reps.append(_vrm)
+        if self.entity.profile == 'asset':
 
-        if self.content_type == 'VrmeshMa':
+            # Add rs pxy
+            if self.content_type != 'RedshiftProxy':
+                _rs_pxy = self.entity.find_output(
+                    content_type='RedshiftProxy', ver_n='latest', tag=self.tag,
+                    catch=True)
+                if _rs_pxy:
+                    _reps.append(_rs_pxy)
+
+            # Add rs pxy
+            if self.content_type != 'VrmeshMa':
+                _vrm = self.entity.find_output(
+                    content_type='VrmeshMa', ver_n='latest', tag=self.tag,
+                    catch=True)
+                if _vrm:
+                    _reps.append(_vrm)
+
+        if self.content_type in ('VrmeshMa', 'RedshiftProxy'):
+
+            # Add model
+            _mdl = self.entity.find_output(
+                extn='ma', tag=self.tag, task='model', ver_n='latest',
+                content_type='BasicMa', catch=True)
+            if _mdl:
+                _reps.append(_mdl)
+
+            # Add shaders ma
             _shds = self.entity.find_output(
                 extn='ma', tag=self.tag, type_='publish', ver_n=self.ver_n,
                 content_type='ShadersMa', catch=True)

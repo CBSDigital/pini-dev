@@ -270,13 +270,15 @@ class CMayaRef(prm_base.CMayaPipeRef):
 
             return self
 
-        if out.type_ == 'ass_gz':
+        if out.type_ == 'ass_gz' or out.extn in ('rs', ):
             _ns = self.namespace
             _grp = self.node.to_parent()
             _mtx = self.ref.top_node.to_m()
             _LOGGER.debug('   - MTX %s', _mtx)
+            _LOGGER.debug('   - DELETE EXISTING %s', self)
             self.delete(force=True)
-            _ref = pipe_ref.create_ai_standin(out, namespace=_ns, group=_grp)
+            _LOGGER.debug(' - LOAD %s', out)
+            _ref = pipe_ref.create_ref(out, namespace=_ns, group=_grp)
             _LOGGER.debug('   - REF %s', _ref)
             _mtx.apply_to(_ref.top_node)
             return _ref

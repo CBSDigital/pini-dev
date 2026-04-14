@@ -52,7 +52,13 @@ class _CMayaNodeRef(prm_base.CMayaPipeRef):
         Args:
             out (CPOutput|CPOutputSeq): new standin to apply
         """
-        raise NotImplementedError
+        if out.content_type == self.output.content_type:
+            raise NotImplementedError
+        _mtx = self._to_mtx()
+        self.delete(force=True)
+        _ref = dcc.create_ref(out, namespace=self.namespace)
+        _mtx.apply_to(_ref.top_node)
+        return _ref
 
 
 class CMayaAiStandIn(_CMayaNodeRef):
@@ -265,14 +271,6 @@ class CMayaRsProxyRef(_CMayaNodeRef):
         _LOGGER.debug(' - PATH %s', _path)
         super().__init__(
             path=_path, namespace=str(_mesh), node=node, top_node=_mesh)
-
-    def update(self, out):
-        """Update this node to a new output.
-
-        Args:
-            out (CPOutput|CPOutputSeq): output to apply
-        """
-        raise NotImplementedError
 
 
 class CMayaRsVolume(_CMayaNodeRef):

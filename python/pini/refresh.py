@@ -80,6 +80,7 @@ RELOAD_ORDER = [
     'pini.pipe.cache.entity.ccp_ety_sg',
     'pini.pipe.cache.entity.ccp_ety',
     'pini.pipe.cache.entity',
+    'pini.pipe.cache.output.ccp_out_base',
     'pini.pipe.cache.output',
     'pini.pipe.cache.work_dir',
     'pini.pipe.cache.ccp_work',

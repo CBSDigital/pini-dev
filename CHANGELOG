@@ -1,3 +1,14 @@
+## [9.4.0] - Tue 2026-04-14 10:53
+### Summary
+ - Pini Helper:
+    - maya right-click scene ref update rep added redshift proxy option (rcalderon),
+### Updated
+ - pini.dcc.pipe_ref.CMayaNodeRef.update implemented generic func,
+ - pini.dcc.pipe_ref.CMayaRef.update implemented switch to rs pxy,
+ - pini.pipe.cache.CCPOuputBase.find_reps added rs pxy + model reps,
+ - maya_pini.ref.FileRef.delete apply delete_foster_parent via $PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT,
+
+
 ## [9.3.3] - Mon 2026-04-13 11:56
 ### Summary
  - Pini Install:

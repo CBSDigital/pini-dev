@@ -1083,6 +1083,8 @@ class PHSceneTab:
         _reps_menu = menu.add_menu('Update rep', enabled=bool(_reps))
         for _rep in _reps:
             _label = to_nice(_rep.content_type)
+            if _label == 'basic ma':
+                _label = f'{_rep.pini_task} ma'
             _fns = []
             for _ref in refs:
                 _fn = wrap_fn(self.stage_ref_update, ref=_ref, output=_rep)

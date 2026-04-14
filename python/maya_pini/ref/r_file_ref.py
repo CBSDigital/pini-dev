@@ -3,6 +3,7 @@
 # pylint: disable=too-many-public-methods
 
 import logging
+import os
 
 from maya import cmds
 
@@ -146,7 +147,7 @@ class FileRef(r_path_ref.PathRef):
             return f'{_parent_ns}:{_file_ns}'
         return _file_ns
 
-    def delete(self, force=False, delete_foster_parent=True):
+    def delete(self, force=False, delete_foster_parent=None):
         """Delete this reference.
 
         Args:
@@ -154,7 +155,18 @@ class FileRef(r_path_ref.PathRef):
             delete_foster_parent (bool): also remove any leftover
                 foster parent node
         """
-        from pini import qt
+        _LOGGER.debug('DELETE %s', self)
+        from pini import qt, install
+
+        # Check whether to delete foster parent
+        _delete_foster_parent = delete_foster_parent
+        if _delete_foster_parent is None:
+            _delete_foster_parent = not install.read_env(
+                'PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT', True)
+            _LOGGER.debug(
+                ' - DELETE FOSTER PARENT ENV %s',
+                os.environ['PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT'])
+        _LOGGER.debug(' - DELETE FOSTER PARENT %d', _delete_foster_parent)
 
         if not force:
             _ns_s = self.namespace or '<no namespace>'
@@ -165,8 +177,8 @@ class FileRef(r_path_ref.PathRef):
         self.unload()
         cmds.file(self.path_uid, removeReference=True)
 
-        if delete_foster_parent:
-            _foster_parent = str(self.ref_node) + 'fosterParent1'
+        if _delete_foster_parent:
+            _foster_parent = f'{self.ref_node}fosterParent1'
             if cmds.objExists(_foster_parent):
                 cmds.delete(_foster_parent)
 
