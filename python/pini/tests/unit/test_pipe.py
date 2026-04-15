@@ -45,6 +45,51 @@ class TestPipe(unittest.TestCase):
         _LOGGER.info(_work_nk)
         assert _work_nk.extn == 'nk'
 
+    def test_loose_ver_padding_tmpls(self):
+
+        _dir = PINI_TMP.to_subdir('LooseVerTest')
+        _dir.flush(force=True)
+
+        _pattern = _dir.path + r'/test_v{ver:\d+}.ma'
+        _tmpl = pipe.CPTemplate(_pattern)
+        _test_work_dir = testing.find_test_model().work_dir
+
+        _paths = {}
+        for _ver in ['01', '001', '99', '100']:
+            _path = _tmpl.format(ver=_ver)
+            _LOGGER.info(' - PATH %s', _path)
+            File(_path).touch()
+            _paths[_ver] = _path
+
+        _work_01 = pipe.CPWork(
+            _paths['01'], template=_tmpl, work_dir=_test_work_dir, safe=False)
+        _LOGGER.info(' - WORK 01 %s', _work_01)
+        assert _work_01.ver == '01'
+        assert _work_01.ver_n == 1
+
+        _work_001 = pipe.CPWork(
+            _paths['001'], template=_tmpl, work_dir=_test_work_dir, safe=False)
+        _LOGGER.info(' - WORK 001 %s', _work_001)
+        assert _work_001.ver == '001'
+        assert _work_001.ver_n == 1
+
+        _work_99 = pipe.CPWork(
+            _paths['99'], template=_tmpl, work_dir=_test_work_dir, safe=False)
+        _LOGGER.info(' - WORK 99 %s', _work_99)
+        assert _work_99.ver == '99'
+        assert _work_99.ver_n == 99
+        assert _work_01 < _work_99
+        assert _work_001 < _work_99
+
+        _work_100 = pipe.CPWork(
+            _paths['100'], template=_tmpl, work_dir=_test_work_dir, safe=False)
+        _LOGGER.info(' - WORK 100 %s', _work_100)
+        assert _work_100.ver == '100'
+        assert _work_100.ver_n == 100
+        assert _work_01 < _work_100
+        assert _work_001 < _work_100
+        assert _work_99 < _work_100
+
     def test_output_video_metadata_caching(self):
 
         testing.enable_file_system(True)

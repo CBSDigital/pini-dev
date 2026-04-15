@@ -39,13 +39,14 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
     user = None
     ver = None
 
-    def __init__(self, file_, work_dir=None, template=None):
+    def __init__(self, file_, work_dir=None, template=None, safe=True):
         """Constructor.
 
         Args:
             file_ (str): path to work file
             work_dir (CPWorkDir): force parent work dir
             template (CPTemplate): force template
+            safe (bool): run safety checks
         """
         _file = abs_path(file_)
         _LOGGER.debug('INIT %s %s', type(self).__name__, file_)
@@ -70,21 +71,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         self.task = self.work_dir.task
         self.step = self.work_dir.step
 
-        # Find templates
-        if template:
-            _tmpls = [template]
-        else:
-            _tmpls = [
-                _tmpl.apply_data(
-                    work_dir=self.work_dir.path, entity=self.entity.name,
-                    task=self.work_dir.task, extn=self.extn,
-                    step=self.work_dir.step, shot=self.entity.name)
-                for _tmpl in self.job.find_templates(
-                    type_='work', profile=self.entity.profile,
-                    dcc_=self.dcc)]
-        _LOGGER.log(9, ' - TMPLS %s', _tmpls)
-
         # Extract data - use single template if possible for better error
+        _tmpls = self._find_tmpls(template=template)
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
             try:
@@ -99,7 +87,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - EXC %s', _exc)
                 raise ValueError('Lucidity rejected ' + self.path) from _exc
-        validate_tokens(_data, job=self.job)
+        if safe:
+            validate_tokens(_data, job=self.job)
 
         # Setup up data
         self.data = {}
@@ -121,6 +110,30 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         self.image = self.to_dir().to_file(
             f'.pini/image/{self.base}.jpg')
 
+    def _find_tmpls(self, template):
+        """Find work templates to test against.
+
+        Args:
+            template (CPTemplate): force template
+
+        Returns:
+            (CPTemplate list): templates
+        """
+        if template:
+            _tmpls = [template]
+        else:
+            _tmpls = [
+                _tmpl.apply_data(
+                    work_dir=self.work_dir.path, entity=self.entity.name,
+                    task=self.work_dir.task, extn=self.extn,
+                    step=self.work_dir.step, shot=self.entity.name)
+                for _tmpl in self.job.find_templates(
+                    type_='work', profile=self.entity.profile,
+                    dcc_=self.dcc)]
+        _LOGGER.log(9, ' - TMPLS %s', _tmpls)
+
+        return _tmpls
+
     @property
     def cmp_key(self):
         """Obtain sort key for this work file.
@@ -131,7 +144,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         Returns:
             (tuple): sort key
         """
-        return self.work_dir.path, self.filename
+        return self.work_dir.path, self.ver_n, self.filename
 
     @property
     def metadata(self):

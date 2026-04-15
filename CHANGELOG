@@ -1,3 +1,13 @@
+## [9.4.2] - Wed 2026-04-15 13:54
+### Summary
+ - Pini Helper:
+    - bugfix error on version padding overflow (blee/esantallan),
+### Updated
+ - pini.pipe.CPWork added safe flag for testing,
+ - pini.pipe.CPWork.cmp_key include ver_n,
+ - pini.tools.sanity_check.CheckCacheSet fix missing set name on multiple top nodes + added node select opt,
+
+
 ## [9.4.1] - Tue 2026-04-14 11:04
 ### Summary
  - Pini Helper:

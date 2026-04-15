@@ -223,7 +223,7 @@ def _check_for_mutiple_top_nodes(set_, check):
 
     _msg = (
         f'Cache set should contain one single node to avoid '
-        f'abcs with multiple top nodes - cache_SET contains '
+        f'abcs with multiple top nodes - "{set_}" contains '
         f'{len(_top_nodes):d} top nodes')
     _fix = None
     _shared_parent = single(
@@ -252,7 +252,7 @@ def _check_for_mutiple_top_nodes(set_, check):
                 _fix_shared_parent, parent=_shared_parent, nodes=_top_nodes,
                 set_=set_, grp=_grp)
 
-    check.add_fail(_msg, fix=_fix)
+    check.add_fail(_msg, fix=_fix, node=set_)
 
 
 def _check_for_overlapping_nodes(set_, check):

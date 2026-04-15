@@ -165,7 +165,7 @@ class FileRef(r_path_ref.PathRef):
                 'PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT', True)
             _LOGGER.debug(
                 ' - DELETE FOSTER PARENT ENV %s',
-                os.environ['PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT'])
+                os.environ.get('PINI_MAYA_DISABLE_AUTO_DELETE_FOSTER_PARENT'))
         _LOGGER.debug(' - DELETE FOSTER PARENT %d', _delete_foster_parent)
 
         if not force:
