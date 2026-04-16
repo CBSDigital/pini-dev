@@ -82,6 +82,12 @@ class TestSanityCheck(unittest.TestCase):
         assert not sanity_check.find_check(
             'CheckAOVs', task='lookdev', catch=True)
 
+        # Test CheckCtrlsSet - should only be applied in rigging
+        assert not sanity_check.find_check(
+            'CheckCtrlsSet', task='model', catch=True)
+        assert sanity_check.find_check(
+            'CheckCtrlsSet', task='rig', catch=True)
+
     def test_basic_checks_import(self):
 
         assert scc_maya.CheckCacheables

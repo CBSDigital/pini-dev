@@ -35,7 +35,7 @@ def find_check(name=None, catch=False, **kwargs):
 
 
 def find_checks(  # pylint: disable=too-many-branches
-        filter_=None, work=None, task=EMPTY, action=None, name=None,
+        filter_=None, work=EMPTY, task=EMPTY, action=None, name=None,
         profile=None, force=False):
     """Find sanity checks to apply.
 
@@ -54,6 +54,7 @@ def find_checks(  # pylint: disable=too-many-branches
     Returns:
         (SCCheck list): checks
     """
+    _LOGGER.debug('FIND CHECKS')
 
     # Check action
     if testing.dev_mode() and action:
@@ -66,7 +67,8 @@ def find_checks(  # pylint: disable=too-many-branches
         assert is_pascal(action)
 
     _all_checks = read_checks(force=force)
-    _work = work or pipe.cur_work()
+    _work = work if work is not EMPTY else pipe.cur_work()
+    _profile = profile or (_work.profile if _work else None)
     _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
 
     # Apply name/filter elimination first to help debugging
@@ -83,17 +85,18 @@ def find_checks(  # pylint: disable=too-many-branches
         _task = task
     else:
         _task = _work.pini_task if _work else None
-    _disable_task_filter = _task == 'all'
-    if not _disable_task_filter:
+    _glob_disable_task_filter = _task == 'all'
+    if not _glob_disable_task_filter:
         _task = pipe.map_task(_task, fmt='pini')
-    _LOGGER.debug(
-        'FIND CHECKS action=%s task=%s work=%action, s', action, _task, _work)
 
     # Apply checks filtering based on work
+    _LOGGER.debug(
+        ' - FILTERING CHECKS %d action=%s task=%s work=%s', len(_all_checks),
+        action, _task, _work)
     _checks = []
-    for _check in _all_checks:
+    for _idx, _check in enumerate(_all_checks):
 
-        _LOGGER.debug(' - CHECKING %s', _check)
+        _LOGGER.debug(' - CHECKING [%d] %s', _idx, _check)
 
         # Check enabled
         if not _check.enabled:
@@ -112,7 +115,6 @@ def find_checks(  # pylint: disable=too-many-branches
 
         # Apply profile filter
         if _check.profile_filter:
-            _profile = _work.profile if _work else profile
             if not _profile:
                 _LOGGER.debug(
                     '   - REJECTED NO PROFILE')
@@ -124,10 +126,11 @@ def find_checks(  # pylint: disable=too-many-branches
                 continue
 
         # Apply action filter
-        _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
+        _LOGGER.debug('   - ACTION FILTER %s %s', action, _check.action_filter)
         if not action and _check.action_filter and _check.action_req:
             _LOGGER.debug('   - ACTION REQ FILTER')
             continue
+        _disable_task_filter = _glob_disable_task_filter
         if action and _check.action_filter:
             if not passes_filter(action, _check.action_filter):
                 _LOGGER.debug('   - REJECTED ACTION')
@@ -137,7 +140,7 @@ def find_checks(  # pylint: disable=too-many-branches
 
         # Apply task filter
         if _disable_task_filter:
-            pass
+            _LOGGER.debug('   - TASK FILTER DISBLED')
         elif _task is None:
             if _check.task_filter:
                 _LOGGER.debug(

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pini Docs</title>
+</head>
+
+<body>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+  
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+    </style>
+
+    <h1><a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUMayaUi.html">PUMayaUi</a> <div style="float: right"><a href="C:/Users/hvanderbeek/dev/pini-dev/docs/index.html">pini-9.5.0</a></div></h1>
+
+    <h2>Maya interface built from a python file.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+
+    <!-- Add show inherited checkbox -->
+    <span style="float:right;">
+        <input 
+            type="checkbox" 
+            id="ShowInherited" 
+            align="right"
+            name="ShowInherited" 
+            />
+        <label 
+            for="ShowInherited" 
+            align="right"
+            >
+                Show inherited
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>    
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['add_arg', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.add_arg(arg)</b></font><br><br><small>&ensp;Add argument</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>arg</b> (PUArg): arg to add</small>', 'pini.tools.PUMayaUi.add_arg'],
+             ['<font color="Grey">add_def</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.add_def(def_)</b></font><br><br><small>&ensp;Add function to the interface</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUDef.html">(PUDef)</a>: function to add</small>', 'pini.tools.PUMayaUi.add_def'],
+             ['add_menu', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.add_menu(name)</b></font><br><br><small>&ensp;Add menu to interface</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>name</b> (str): menu name</small>', 'pini.tools.PUMayaUi.add_menu'],
+             ['add_menu_item', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.add_menu_item(parent, label, command=None, image=None)</b></font><br><br><small>&ensp;Add menu item to the given menu</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>parent</b> (str): menu to add item to</small><br><small><b>label</b> (str): item label</small><br><small><b>command</b> (fn): item callback</small><br><small><b>image</b> (str): path to item image</small>', 'pini.tools.PUMayaUi.add_menu_item'],
+             ['add_menu_separator', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.add_menu_separator(parent)</b></font><br><br><small>&ensp;Add a separator item to the given menu bar</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>parent</b> (str): menu to add item to</small>', 'pini.tools.PUMayaUi.add_menu_separator'],
+             ['add_separator', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.add_separator()</b></font><br><br><small>&ensp;Add separator</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '', 'pini.tools.PUMayaUi.add_separator'],
+             ['<font color="Grey">build_ui</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.build_ui(load_settings=True, def_filter=None)</b></font><br><br><small>&ensp;Build interface</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>load_settings</b> (bool): load settings on launch</small><br><small><b>def_filter</b> (str): apply def name filter</small>', 'pini.tools.PUMayaUi.build_ui'],
+             ['close', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.close()</b></font><br><br><small>&ensp;Close this interface</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '', 'pini.tools.PUMayaUi.close'],
+             ['<font color="Grey">close_event</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.close_event()</b></font><br><br><small>&ensp;Called when interface is closed</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '', 'pini.tools.PUMayaUi.close_event'],
+             ['collapse_all', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.collapse_all()</b></font><br><br><small>&ensp;Collapse all sections</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '', 'pini.tools.PUMayaUi.collapse_all'],
+             ['finalize_def', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.finalize_def(def_)</b></font><br><br><small>&ensp;Finalize function</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>def_</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUDef.html">(PUDef)</a>: function to finalize</small>', 'pini.tools.PUMayaUi.finalize_def'],
+             ['finalize_ui', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.finalize_ui(show=True)</b></font><br><br><small>&ensp;Finalize building interface</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>show</b> (bool): show interface</small>', 'pini.tools.PUMayaUi.finalize_ui'],
+             ['<font color="Grey">find_elem</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.find_elem(def_, arg)</b></font><br><br><small>&ensp;Find an element of this interface</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(str): element name</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> (str): def name</small><br><small><b>arg</b> (str): arg name</small>', 'pini.tools.PUMayaUi.find_elem'],
+             ['<font color="Grey">find_elems</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.find_elems(def_, arg)</b></font><br><br><small>&ensp;Find ui elements</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(list): matching elements</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> (str): def name</small><br><small><b>arg</b> (str): arg name</small>', 'pini.tools.PUMayaUi.find_elems'],
+             ['init_def', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.init_def(def_)</b></font><br><br><small>&ensp;Initiate new function</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>def_</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUDef.html">(PUDef)</a>: function to initiate</small>', 'pini.tools.PUMayaUi.init_def'],
+             ['init_ui', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.init_ui()</b></font><br><br><small>&ensp;Inititiate interface window</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '', 'pini.tools.PUMayaUi.init_ui'],
+             ['<font color="Grey">load_settings</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.load_settings(settings=None)</b></font><br><br><small>&ensp;Load settings from disk</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(dict): settings that were applied</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>settings</b> (dict): override settings dict</small>', 'pini.tools.PUMayaUi.load_settings'],
+             ['move', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.move(pos)</b></font><br><br><small>&ensp;Move this window to the given position</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>pos</b> (tuple): x/y pos</small>', 'pini.tools.PUMayaUi.move'],
+             ['<font color="Grey">PUBaseUi</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi(py_file, title=None, base_col="RoyalBlue", load_settings=True, def_filter=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>py_file</b> (str): path to py file to build into interface</small><br><small><b>title</b> (str): override interface title</small><br><small><b>base_col</b> (str|QColor): override interface base colour</small><br><small><b>load_settings</b> (bool): load settings on launch</small><br><small><b>def_filter</b> (str): apply def name filter</small>', 'pini.tools.PUMayaUi.PUBaseUi'],
+             ['<font color="Grey">read_elem</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.read_elem(def_, arg)</b></font><br><br><small>&ensp;Read an element\'s value</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): arg value</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> (str): def name</small><br><small><b>arg</b> (str): arg name</small>', 'pini.tools.PUMayaUi.read_elem'],
+             ['<font color="Grey">read_settings</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.read_settings()</b></font><br><br><small>&ensp;Read ui settings</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(dict): ui settings</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '', 'pini.tools.PUMayaUi.read_settings'],
+             ['<font color="Grey">rebuild</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.rebuild(load_settings=True)</b></font><br><br><small>&ensp;Rebuild this interface</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>load_settings</b> (bool): load settings on rebuild</small>', 'pini.tools.PUMayaUi.rebuild'],
+             ['<font color="Grey">reset_settings</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.reset_settings(def_=None)</b></font><br><br><small>&ensp;Reset interface settings</small><br><br><small>&ensp;NOTE: should function after reload</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUDef.html">(PUDef)</a>: only reset settings on this function</small>', 'pini.tools.PUMayaUi.reset_settings'],
+             ['<font color="Grey">save_settings</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.save_settings()</b></font><br><br><small>&ensp;Save settings to disk</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '', 'pini.tools.PUMayaUi.save_settings'],
+             ['<font color="Grey">set_elem</font>', 'pini.tools.PUMayaUi', '<font color="Fuchsia"><b>PUMayaUi.set_elem(def_, arg, val)</b></font><br><br><small>&ensp;Set an element\'s value</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_base.py</font></small>', '<small><b>def_</b> (str): def name</small><br><small><b>arg</b> (str): arg name</small><br><small><b>val</b> (any): value to apply</small>', 'pini.tools.PUMayaUi.set_elem'],
+             ['set_section', 'pini.tools.PUMayaUi', '<font color="DarkMagenta"><b>PUMayaUi.set_section(section)</b></font><br><br><small>&ensp;Set current collapsable section</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><b>section</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PUSection.html">(PUSection)</a>: section to apply</small>', 'pini.tools.PUMayaUi.set_section'],
+         ]
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function ClearTextFilter() {
+            console.log(' - CLEAR')
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add show inherited
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        _show_inherited_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });            
+        function renderDataInTheTable() {
+
+            console.log('DRAW TABLE');
+            // console.log(' - TEXT FILTER', filter);
+            const _filter = document.getElementById('TextFilter').value
+            console.log(' - TEST FILTER', _filter);
+            _show_inherited = document.getElementById('ShowInherited').checked
+            console.log(' - SHOW INHERITED', _show_inherited);
+            const _table = document.getElementById("FuncsTable");
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+                
+                _total += 1;
+                
+                var _name = Object.values(_item)[0]
+                var _loc = Object.values(_item)[1]
+                var _docs = Object.values(_item)[2]
+                var _args = Object.values(_item)[3]
+                const _path = Object.values(_item)[4]
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+                
+                // Appply filter
+                if (
+                        _filter && 
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
+                var _is_inherited = _docs.includes('Inherited from:')
+                console.log(' - ADD', _path, _is_inherited)
+                
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row
+                _count += 1;
+                let _values = Object.values(_item);
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+            console.log(' - SET INFO', _info, _info_field)
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>
