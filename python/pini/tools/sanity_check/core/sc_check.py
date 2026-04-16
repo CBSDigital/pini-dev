@@ -33,6 +33,7 @@ class SCCheck:
     profile_filter = None  # eg. asset/shot
     task_filter = None  # eg. model/rig
     action_filter = None  # eg. render/cache
+    action_req = False  # ie. should only run on action
 
     depends_on = ()
 
@@ -164,6 +165,17 @@ class SCCheck:
         self.fails.append(_fail)
 
         return _fail
+
+    def check_cur_work(self):
+        """Check there is a current work file.
+
+        Returns:
+            (bool): whether the check passed
+        """
+        if not pipe.cur_work():
+            self.add_fail('No asset/shot - save your file using pini')
+            return False
+        return True
 
     def edit(self):
         """Edit this check's code."""

@@ -13,4 +13,4 @@ else:
 
 from .cp_work_tools import (
     cur_work, add_recent_work, recent_work, load_recent, to_work,
-    RECENT_WORK_YAML)
+    RECENT_WORK_YAML, NoCurrentWork, check_cur_work)

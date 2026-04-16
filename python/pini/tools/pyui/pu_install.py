@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 def install(
         label=None, icon=None, clear=(), browser=(), hide=(), choices=None,
         label_w=None, selection=(), block_reload=False, col=None,
-        callbacks=None):
+        callbacks=None, labels=None):
     """Builds a decorator which allows metadata to be added to a function.
 
     Args:
@@ -34,6 +34,7 @@ def install(
             function through the interface
         col (str|QColor): colour for the button
         callbacks (dict): callbacks to be executed on arg changed
+        labels (dict): override arg labels
 
     Returns:
         (fn): decorator
@@ -42,6 +43,7 @@ def install(
         _dec = cpnt.PUDef(
             func, label=label, icon=icon, clear=clear, browser=browser,
             hide=hide, choices=choices, label_w=label_w, selection=selection,
-            block_reload=block_reload, col=col, callbacks=callbacks)
+            block_reload=block_reload, col=col, callbacks=callbacks,
+            labels=labels)
         return _dec
     return _build_pyui_dec

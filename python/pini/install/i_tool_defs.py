@@ -198,6 +198,19 @@ def _build_sanity_check():
             icon=sanity_check.ICON)
         _sanity.add_context(_sc_task)
 
+    _sanity.add_divider('SanityCheckDivider2')
+
+    # Add action filter modes
+    for _action in ['Cache', 'Render']:
+        _name = _action.capitalize()
+        _sc_task = PITool(
+            name='SanityCheck' + _name, command='\n'.join([
+                'from pini.tools import sanity_check',
+                f'sanity_check.launch_ui(action="{_action}")']),
+            label=f'Launch {_name} Sanity Check',
+            icon=sanity_check.ICON)
+        _sanity.add_context(_sc_task)
+
     return _sanity
 
 

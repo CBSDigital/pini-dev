@@ -80,6 +80,10 @@ def create_render_layer(name):
     Returns:
         (CRenderLayer): render layer
     """
+    _lyrs = {_lyr.pass_name for _lyr in find_render_layers()}
+    if name in _lyrs:
+        _LOGGER.info(' - LAYER %s ALREADY EXISTS', name)
+        return find_render_layer(name)
     _rs = renderSetup.instance()
     _rs.createRenderLayer(name)
     return find_render_layer(name)

@@ -26,7 +26,8 @@ class PUDef:
     def __init__(
             self, func, py_def=None, icon=None, label=None, clear=(),
             browser=(), hide=(), selection=(), choices=None, col=None,
-            label_w=None, block_reload=False, callbacks=None):
+            label_w=None, block_reload=False, callbacks=None,
+            labels=None):
         """Constructor.
 
         Args:
@@ -45,6 +46,7 @@ class PUDef:
             block_reload (bool): do not reload module when executing this
                 function through the interface
             callbacks (dict): arg changed callbacks
+            labels (dict): override arg labels
         """
         self.func = func
         self.py_def = py_def
@@ -58,6 +60,7 @@ class PUDef:
         self.hide = hide
         self.choices = choices or {}
         self.callbacks = callbacks or {}
+        self.labels = labels or {}
 
         self.col = col
         self.label_w = label_w
@@ -137,6 +140,7 @@ class PUDef:
                 _name, py_arg=_py_arg, clear=_name in self.clear,
                 browser=_browser, py_def=self.py_def, pyui_file=self.pyui_file,
                 choices=self.choices.get(_name),
+                label=self.labels.get(_name),
                 callback=self.callbacks.get(_name),
                 label_w=self.label_w, selection=_selection, docs=_docs)
             _args.append(_arg)

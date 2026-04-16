@@ -110,6 +110,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         self.elems[arg.py_def.name][arg.name].append(_row)
 
         # Add label
+        _LOGGER.debug('   - LABEL %s', arg.label)
         cmds.text(arg.label, align='left', statusBarMessage=arg.docs)
 
         # Add arg field
@@ -186,6 +187,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         """
         _LOGGER.debug('   - ADD ARG FIELD %s', arg)
         _name = _arg_to_elem_name(arg)
+        _LOGGER.debug('     - NAME %s', _name)
         _set_fn = None
         _default = arg.default
         if _default is None or _default is EMPTY:
@@ -439,8 +441,8 @@ def _build_apply_fn(field):
         (fn): function to apply data to field
     """
 
-    def _apply_val(val):
-        _LOGGER.debug('APPLY VAL %s %s', field, val)
+    def _apply_val(val, log=9):
+        _LOGGER.log(log, 'APPLY VAL %s %s', field, val)
         if cmds.textField(field, query=True, exists=True):
             cmds.textField(field, edit=True, text=val)
         elif cmds.checkBox(field, query=True, exists=True):

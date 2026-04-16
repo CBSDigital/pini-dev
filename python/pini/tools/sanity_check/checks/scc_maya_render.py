@@ -143,14 +143,15 @@ class CheckAOVs(SCMayaCheck):
 
     profile_filter = 'shot'
     action_filter = 'render'
-    task_filter = 'lookdev lighting'
     label = 'Check AOVs'
     sort = 40  # Before check render globals
 
     def run(self):
         """Run this check."""
-        _ren = cur_renderer()
+        if not self.check_renderer():
+            return
         self._aovs = pom.find_aovs()
+        _ren = cur_renderer()
         if _ren == 'arnold':
             self._check_aovs_arnold()
         if _ren == 'redshift':
@@ -175,25 +176,26 @@ class CheckAOVs(SCMayaCheck):
         self.write_log('Required AOVs %s', _req_aovs)
 
         # Check aovs
+        _aovs = sorted({_aov.name for _aov in pom.find_aovs()})
+        self.write_log('Cur AOVs %s', _req_aovs)
         for _aov in _req_aovs:
             _vr_name = {
-                'Bump Normals': 'BumpNormals',
-                'Depth': 'Z-depth',
-                'Diffuse Lighting': 'Diffuse',
-                'Emission': 'Self Illumination',
-                'Global Illumination': 'GI',
-                'Reflections': 'Reflection',
-                'Refractions': 'Refraction',
-                'Shadows': 'Shadow',
-                'Specular Lighting': 'Specular',
-                'World Position': 'Sampler Info',
-            }.get(_aov, _aov)
-            _node = f'vrayRE_{_vr_name.replace("-", "_").replace(" ", "_")}'
-            self.write_log('check %s -> %s (%s)', _aov, _vr_name, _node)
-            if not cmds.objExists(_node):
+                'Depth': 'zdepth',
+                'Diffuse Lighting': 'diffuse',
+                'Emission': 'selfIllum',
+                'Global Illumination': 'gi',
+                'Normals': 'normals',
+                'Reflections': 'reflect',
+                'Refractions': 'refract',
+                'Shadows': 'shadow',
+                'Specular Lighting': 'specular',
+                'World Position': 'samplerInfo',
+            }.get(_aov, to_camel(_aov))
+            self.write_log('check %s -> %s', _aov, _vr_name)
+            if _vr_name not in _aovs:
                 self.add_fail(
                     f'Missing vray {_aov} AOV',
-                    fix=wrap_fn(_create_aov, type_=_vr_name, name=_node))
+                    fix=wrap_fn(pom.create_aov, type_=_vr_name))
 
         # Check no anti-aliasing on depth
         if cmds.objExists("vrayRE_Z_depth"):
@@ -217,7 +219,7 @@ class CheckAOVs(SCMayaCheck):
             if _aov in _cur_aovs:
                 continue
             _msg = f'AOV "{_aov}" is missing from the scene'
-            _fix = wrap_fn(_create_aov, _aov)
+            _fix = wrap_fn(pom.create_aov, _aov)
             self.add_fail(_msg, fix=_fix)
 
     def _check_for_broken_cryto_aovs(self):
@@ -258,57 +260,6 @@ class CheckAOVs(SCMayaCheck):
                 _msg = f'AOV "{_aov_name}" not connected to shader "{_shd}"'
                 _fix = wrap_fn(_shd_col.connect, _shd_plug)
                 self.add_fail(_msg, fix=_fix, node=_aov)
-
-
-def _create_aov(type_, name=None):
-    """Create the given AOV.
-
-    Args:
-        type_ (str): AOV type
-        name (str): AOV name (if required)
-    """
-    _ren = cur_renderer()
-    _LOGGER.info('CREATE AOV (%s) %s %s', _ren, type_, name)
-    if _ren == 'arnold':
-        from mtoa import aovs
-
-        cmds.lockNode('initialParticleSE', lock=False, lockUnpublished=False)
-
-        _LOGGER.info('ADD AOV %s type=%s', name, type_)
-        _api = aovs.AOVInterface()
-        _match = (
-            "setAttr: The attribute 'initialParticleSE.aiCustomAOVs[0]"
-            ".aovName' is locked or connected and cannot be modified.")
-        try:
-            _api.addAOV(name, aovType=type_)
-        except RuntimeError as _exc:
-            _exc = str(_exc).strip()
-            if _exc != _match:
-                _LOGGER.info(' - ERROR "%s"', _exc)
-                _LOGGER.info(' - MATCH "%s"', _match)
-                raise _exc
-    elif _ren == 'redshift':
-        cmds.rsCreateAov(type=type_)
-        mel.eval('redshiftUpdateActiveAovList')
-    elif _ren == 'vray':
-        _vr_chan = {
-            'GI': 'giChannel',
-            'Reflection': 'reflectChannel',
-            'Refraction': 'refractChannel',
-            'Sampler Info': 'samplerInfo',
-            'Self Illumination': 'selfIllumChannel',
-            'Z-depth': 'zdepthChannel',
-        }.get(type_, f'{to_camel(type_)}Channel')
-        _mel = f'vrayAddRenderElement {_vr_chan}'
-        mel.eval(_mel)
-        _node = pom.CNode(name)
-        if type_ == 'Sampler Info':
-            _node.plug['vray_name_samplerinfo'].set_val('Point')
-        elif type_ == 'Z-depth':
-            _node.plug['vray_depthFromCamera_zdepth'].set_val(True)
-            _node.plug['vray_filtering_zdepth'].set_val(False)
-    else:
-        raise NotImplementedError(_ren)
 
 
 class CheckCustomAovConnections(SCMayaCheck):
@@ -424,6 +375,9 @@ class CheckRenderGlobals(SCMayaCheck):
         Returns:
             (bool): whether check completed successfully
         """
+        self.check_cur_work()
+        self.check_renderer()
+
         _ren = cur_renderer()
         self.write_log('renderer %s', _ren)
 

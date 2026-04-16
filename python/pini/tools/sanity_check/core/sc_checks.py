@@ -29,16 +29,14 @@ def find_check(name=None, catch=False, **kwargs):
         (SCCheck): matching check
     """
     _LOGGER.debug('FIND CHECK %s', name)
-    _checks = find_checks(**kwargs)
+    _checks = find_checks(name=name, **kwargs)
     _LOGGER.debug(' - MATCHED %d CHECKs %s', len(_checks), _checks)
-    if name:
-        _checks = [_check for _check in _checks if _check.name == name]
-        _LOGGER.debug(' - NAME MATCHED %d CHECKs %s', len(_checks), _checks)
     return single(_checks, catch=catch)
 
 
 def find_checks(  # pylint: disable=too-many-branches
-        filter_=None, work=None, task=EMPTY, action=None, force=False):
+        filter_=None, work=None, task=EMPTY, action=None, name=None,
+        profile=None, force=False):
     """Find sanity checks to apply.
 
     Args:
@@ -49,6 +47,8 @@ def find_checks(  # pylint: disable=too-many-branches
             are returned
         action (str): apply action filter
             (eg. render/cache)
+        name (str): filter by check name
+        profile (str): apply profile filter
         force (bool): force reread checks from disk
 
     Returns:
@@ -56,18 +56,27 @@ def find_checks(  # pylint: disable=too-many-branches
     """
 
     # Check action
-    if action and not (
-            action.endswith('Publish') or
-            action.endswith('Cache') or
-            action.endswith('Render') or
-            action in ('Blast', )):
-        raise ValueError(action)
-    if action and testing.dev_mode():
+    if testing.dev_mode() and action:
+        if not (
+                action.endswith('Publish') or
+                action.endswith('Cache') or
+                action.endswith('Render') or
+                action in ('Blast', )):
+            raise ValueError(action)
         assert is_pascal(action)
 
     _all_checks = read_checks(force=force)
     _work = work or pipe.cur_work()
     _sc_settings = _work.entity.settings['sanity_check'] if _work else {}
+
+    # Apply name/filter elimination first to help debugging
+    if name:
+        _all_checks = [_check for _check in _all_checks if _check.name == name]
+        _LOGGER.debug(' - NAME %s -> %d CHECKS', name, len(_all_checks))
+    if filter_:
+        _all_checks = apply_filter(
+            _all_checks, filter_, key=operator.attrgetter('name'))
+        _LOGGER.debug(' - FILTER %s -> %d CHECKS', filter_, len(_all_checks))
 
     # Determine task
     if task is not EMPTY:
@@ -80,11 +89,7 @@ def find_checks(  # pylint: disable=too-many-branches
     _LOGGER.debug(
         'FIND CHECKS action=%s task=%s work=%action, s', action, _task, _work)
 
-    # Filter checks based on work
-    if filter_:  # Apply basic to help debugging
-        _all_checks = apply_filter(
-            _all_checks, filter_, key=operator.attrgetter('name'))
-    _LOGGER.debug(' - FILTERING %d CHECKS', len(_all_checks))
+    # Apply checks filtering based on work
     _checks = []
     for _check in _all_checks:
 
@@ -106,37 +111,46 @@ def find_checks(  # pylint: disable=too-many-branches
             continue
 
         # Apply profile filter
-        _profile = _work.profile if _work else None
-        if not _profile:
-            pass
-        elif not passes_filter(_profile, _check.profile_filter):
-            _LOGGER.debug(
-                '   - REJECTED PROFILE profile=%s filter=%s',
-                _profile, _check.profile_filter)
-            continue
+        if _check.profile_filter:
+            _profile = _work.profile if _work else profile
+            if not _profile:
+                _LOGGER.debug(
+                    '   - REJECTED NO PROFILE')
+                continue
+            if not passes_filter(_profile, _check.profile_filter):
+                _LOGGER.debug(
+                    '   - REJECTED PROFILE profile=%s filter=%s',
+                    _profile, _check.profile_filter)
+                continue
 
-        # Apply action + task filters (action overrides task)
+        # Apply action filter
+        _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
+        if not action and _check.action_filter and _check.action_req:
+            _LOGGER.debug('   - ACTION REQ FILTER')
+            continue
         if action and _check.action_filter:
-            _LOGGER.debug('   - ACTION FILTER %s', _check.action_filter)
             if not passes_filter(action, _check.action_filter):
                 _LOGGER.debug('   - REJECTED ACTION')
                 continue
+            _LOGGER.debug('   - ACTION PASS DISABLES TASK FILTER')
+            _disable_task_filter = True
+
+        # Apply task filter
+        if _disable_task_filter:
+            pass
+        elif _task is None:
+            if _check.task_filter:
+                _LOGGER.debug(
+                    '   - REJECTED TASK FILTER %s', _check.task_filter)
+                continue
+        elif isinstance(_task, str):
+            if not passes_filter(_task, _check.task_filter):
+                _LOGGER.debug(
+                    '   - REJECTED TASK task=%s filter=%s',
+                    _task, _check.task_filter)
+                continue
         else:
-            if _disable_task_filter:
-                pass
-            elif _task is None:
-                if _check.task_filter:
-                    _LOGGER.debug(
-                        '   - REJECTED TASK FILTER %s', _check.task_filter)
-                    continue
-            elif isinstance(_task, str):
-                if not passes_filter(_task, _check.task_filter):
-                    _LOGGER.debug(
-                        '   - REJECTED TASK task=%s filter=%s',
-                        _task, _check.task_filter)
-                    continue
-            else:
-                raise ValueError(_task)
+            raise ValueError(_task)
 
         _LOGGER.debug('   - ACCEPTED %s', _check)
         _checks.append(_check)

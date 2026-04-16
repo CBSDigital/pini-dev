@@ -12,7 +12,7 @@ import time
 from pini import icons, qt
 from pini.utils import (
     PyFile, str_to_seed, wrap_fn, abs_path, last, copy_text, HOME, strftime,
-    basic_repr)
+    basic_repr, passes_filter)
 
 from .. import cpnt
 
@@ -47,7 +47,7 @@ class PUBaseUi:
 
     def __init__(
             self, py_file, title=None, base_col='RoyalBlue',
-            load_settings=True):
+            load_settings=True, def_filter=None):
         """Constructor.
 
         Args:
@@ -55,6 +55,7 @@ class PUBaseUi:
             title (str): override interface title
             base_col (str|QColor): override interface base colour
             load_settings (bool): load settings on launch
+            def_filter (str): apply def name filter
         """
         self.py_file = cpnt.PUFile(py_file)
         self.name = self.mod.__name__
@@ -80,7 +81,7 @@ class PUBaseUi:
         self.elems = collections.defaultdict(
             wrap_fn(collections.defaultdict, list))
 
-        self.build_ui(load_settings=load_settings)
+        self.build_ui(load_settings=load_settings, def_filter=def_filter)
 
     @property
     def mod(self):
@@ -93,11 +94,12 @@ class PUBaseUi:
             self._mod = self.py_file.to_module()
         return self._mod
 
-    def build_ui(self, load_settings=True):
+    def build_ui(self, load_settings=True, def_filter=None):
         """Build interface.
 
         Args:
             load_settings (bool): load settings on launch
+            def_filter (str): apply def name filter
         """
         _LOGGER.debug(' - BUILD UI')
 
@@ -110,6 +112,8 @@ class PUBaseUi:
 
         for _last, _item in last(_elems):
             if isinstance(_item, cpnt.PUDef):
+                if def_filter and not passes_filter(_item.name, def_filter):
+                    continue
                 self.add_def(_item)
                 _sep = not _last
             elif isinstance(_item, cpnt.PUSection):

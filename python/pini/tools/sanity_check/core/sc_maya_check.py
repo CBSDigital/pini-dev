@@ -8,7 +8,7 @@ from maya import cmds
 from pini.utils import wrap_fn
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import to_shps
+from maya_pini.utils import to_shps, cur_renderer
 
 from . import sc_check
 
@@ -90,6 +90,18 @@ class SCMayaCheck(sc_check.SCCheck):
             _fix = wrap_fn(func, *_args, edit=True, **_kwargs)
             self.add_fail(_fail, fix=_fix)
             _LOGGER.debug(' - ADDED FAIL %s', _fail)
+
+    def check_renderer(self):
+        """Check whther the current renderer is implemented.
+
+        Returns:
+            (bool): whether check passed
+        """
+        _ren = cur_renderer()
+        if _ren in ('mayaSoftware', ):
+            self.add_fail(f'Renderer {_ren} not implemented')
+            return False
+        return True
 
     def check_shp(self, node):
         """Check node shapes.

@@ -401,12 +401,7 @@ class CExportHandler:
                 "or omitted in shotgrid.",
                 title='Error', parent=self._ui_parent)
 
-        raise error.HandledError(
-            "No current work file - please save your scene using "
-            "PiniHelper before exporting.\n\n"
-            "This allows the tools to tell what job/task you are working "
-            "in, to know where to save the files to.",
-            title='Error', parent=self._ui_parent)
+        raise pipe.NoCurrentWork(parent=self._ui_parent)
 
     def _check_for_overwrite(self):
         """Check for existing files that will be overwritten."""

@@ -29,6 +29,8 @@ class TestSanityCheck(unittest.TestCase):
 
     def test_task_and_action_filters(self):
 
+        # Test asset hierarchy check - we want this to run on model publish
+        # and in model task
         assert sanity_check.find_check(
             'CheckAssetHierarchy', task='model')
         assert not sanity_check.find_check(
@@ -36,6 +38,7 @@ class TestSanityCheck(unittest.TestCase):
         assert sanity_check.find_check(
             'CheckAssetHierarchy', task='lookdev', action='ModelPublish')
 
+        # Test CheckShaders/CheckLookdevShaders
         assert sanity_check.find_check(
             'CheckLookdevShaders', action='LookdevPublish')
         assert not sanity_check.find_check(
@@ -48,21 +51,36 @@ class TestSanityCheck(unittest.TestCase):
         assert sanity_check.find_check(
             'CheckShaders', task='model', action='BasicPublish', catch=True)
 
+        # Test CheckModelGeo - should run in model + not in rig
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', catch=True)
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', action='BasicPublish', catch=True)
-        assert not sanity_check.find_check(
-            'CheckModelGeo', task='rig', action='BasicPublish', catch=True)
+        assert sanity_check.find_check(
+            'CheckModelGeo', task='rig', action='ModelPublish', catch=True)
 
-        # Check skin clusters check only applied under BasicPublish / rig
+        # Test FindUnneccessarySkinClusters check only applied under BasicPublish / rig
         assert sanity_check.find_check(
-            filter_='skinclusters', action='BasicPublish', catch=True)
+            'FindUnneccessarySkinClusters', action='BasicPublish', catch=True)
         assert sanity_check.find_check(
-            filter_='skinclusters', action='BasicPublish', task='rig')
+            'FindUnneccessarySkinClusters', action='BasicPublish', task='rig')
         assert not sanity_check.find_check(
-            filter_='skinclusters', action='ModelPublish', task='model',
+            'FindUnneccessarySkinClusters', action='ModelPublish', task='model',
             catch=True)
+
+        # Test CheckAOVs - we only want this check to run on render in shots
+        assert sanity_check.find_check(
+            'CheckAOVs', action='Render', profile='shots')
+        assert not sanity_check.find_check(
+            'CheckAOVs', action='Render', task='model', catch=True)
+        assert not sanity_check.find_check(
+            'CheckAOVs', action='Render', task='lookdev', catch=True)
+        assert sanity_check.find_check(
+            'CheckAOVs', task='lighting', profile='shots')
+        assert not sanity_check.find_check(
+            'CheckAOVs', task='lighting', profile='assets', catch=True)
+        assert not sanity_check.find_check(
+            'CheckAOVs', task='lookdev', catch=True)
 
     def test_basic_checks_import(self):
 

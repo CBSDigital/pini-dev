@@ -1,3 +1,23 @@
+## [9.5.0] - Thu 2026-04-16 14:41
+### Summary
+ - Sanity Check:
+    - maya check AOVs updated to use shared code,
+### Updated
+ - pini.pipe NoCurrentWork/check_cur_work added,
+ - pini.install sanity check ctx added cache/render action checks,
+ - pini.tools.pyui.install added labels arg,
+ - pini.tools.pyui.PUBaseUi added def_filter arg,
+ - pini.tools.pyui.PUMayaUi made public,
+ - pini.tools.sanity_check.SCCheck action_req/check_cur_work added,
+ - pini.tools.sanity_check.SCMayaCheck.check_renderer added,
+ - pini.tools.sanity_check.find_checks added name filter,
+ - pini.tools.sanity_check.find_checks reworked action filter + accommodate action_req,
+ - pini.tools.sanity_check.CheckModelGeo added ModelPublish action filter,
+ - pini.tools.sanity_check.CheckAOVs updated to use pom.create_aov,
+ - maya_pini.open_maya.create_aov added,
+ - maya_pini.open_maya.create_render_layer do nothing if layer already exists,
+
+
 ## [9.4.2] - Wed 2026-04-15 13:54
 ### Summary
  - Pini Helper:

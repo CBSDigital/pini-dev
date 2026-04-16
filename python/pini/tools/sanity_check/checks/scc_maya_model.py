@@ -76,9 +76,11 @@ class CheckForNgons(core.SCMayaCheck):
 class CheckModelGeo(core.SCMayaCheck):
     """Check naming of cache set geometry."""
 
+    action_filter = 'ModelPublish'
     task_filter = 'model'
-    _ignore_names = None
     depends_on = (scc_maya_asset.CheckCacheSet, )
+
+    _ignore_names = None
 
     def run(self):
         """Run this check."""

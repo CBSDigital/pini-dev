@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 class CheckAssetHierarchy(core.SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
-    action_filter = 'Publish'
+    action_filter = 'Publish -LookdevPublish'
     task_filter = 'model rig'
     sort = 30
 

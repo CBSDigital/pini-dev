@@ -3,6 +3,7 @@
 import logging
 
 from pini import dcc, icons, pipe
+from pini.tools import error
 from pini.utils import abs_path, HOME
 
 from ...cp_utils import map_path
@@ -10,6 +11,23 @@ from ...cp_utils import map_path
 _LOGGER = logging.getLogger(__name__)
 
 RECENT_WORK_YAML = HOME.to_file(f'.pini/{dcc.NAME}_recent_work.yml')
+
+
+class NoCurrentWork(error.HandledError):
+    """Raised when there is no current work file."""
+
+    def __init__(self, parent=None):
+        """Constructor.
+
+        Args:
+            parent (QDialog): parent dialog
+        """
+        super().__init__(
+            "No current work file - please save your scene using "
+            "PiniHelper before exporting.\n\n"
+            "This allows the tools to tell what job/task you are working "
+            "in, to know where to save the files to.",
+            title='Error', parent=parent)
 
 
 def add_recent_work(work):
@@ -31,6 +49,24 @@ def add_recent_work(work):
     _paths = _paths[:20]
 
     RECENT_WORK_YAML.write_yml(_paths, force=True)
+
+
+def check_cur_work(parent=None):
+    """Check there is a current work file.
+
+    Args:
+        parent (QDialog): parent dialog
+
+    Returns:
+        (CPWork): current work
+
+    Raises:
+        (NoCurrentWork): if there is no current work
+    """
+    _work = cur_work()
+    if not _work:
+        raise NoCurrentWork(parent=parent)
+    return _work
 
 
 def cur_work(work_dir=None, catch=True):

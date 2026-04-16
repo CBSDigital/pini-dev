@@ -28,7 +28,7 @@ from .elem import (
     OUTPUT_FILE_TYPES, OUTPUT_SEQ_TYPES, to_output, ver_sort, CPOutputVideo,
     OUTPUT_VIDEO_TYPES, CPOutputBase, cur_output, CPOutputSeqDir,
     STATUS_ORDER, RECENT_WORK_YAML, OUTPUT_SEQ_CACHE_EXTNS,
-    to_default_settings)
+    to_default_settings, NoCurrentWork, check_cur_work)
 
 from .cp_template import CPTemplate, glob_templates, glob_template
 from .cp_utils import (
