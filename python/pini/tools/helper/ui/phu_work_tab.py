@@ -697,12 +697,15 @@ class PHWorkTab:
         # Set label/header
         _icon = None
         _header = f'{out.type_.capitalize()}: {out.filename}'
+
         _label = f'{out.basic_type.capitalize()} - {out.filename}'
         if out.type_ in ('publish', 'publish_seq'):
             _label = to_nice(out.content_type).capitalize()
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
             _name = out.output_name or out.dcc_
+            if out.output_type and out.output_type != out.extn:
+                _name += f' {out.output_type}'
             _label = f'Cache - {_name} ({out.extn})'
         elif isinstance(out, pipe.CPOutputSeq):
             _header += ' ' + ints_to_str(out.frames)

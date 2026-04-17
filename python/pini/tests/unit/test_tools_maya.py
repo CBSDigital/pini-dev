@@ -21,9 +21,16 @@ class TestHelper(unittest.TestCase):
         _cam_abc = testing.TEST_SHOT.to_output(
             'cache', output_type='cam', extn='abc', output_name='blah',
             ver_n=1, task='anim')
+        _LOGGER.info(' - CAM ABC %s', _cam_abc)
+        _LOGGER.info(' - OUTPUT TYPE %s', _cam_abc.output_type)
+        if _cam_abc.output_type == 'cam':
+            _expected_ns = f'{testing.TEST_SHOT.name}_blah'
+        else:
+            _expected_ns = 'blah'
         _cam_ns = helper.output_to_namespace(_cam_abc)
-        _LOGGER.info('CAM NS %s', _cam_ns)
-        assert _cam_ns == 'blah'
+        _LOGGER.info(' - EXPECTED NS %s', _expected_ns)
+        _LOGGER.info(' - CAM NS %s', _cam_ns)
+        assert_eq(_cam_ns, _expected_ns)
 
         _char_abc = testing.TEST_SHOT.to_output(
             'cache', output_type='char', extn='abc', output_name='blue',

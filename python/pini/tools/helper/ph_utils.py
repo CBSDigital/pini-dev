@@ -497,8 +497,12 @@ def output_to_namespace(output, attach_to=None, ignore=(), base=None):
     Returns:
         (str): namespace for this output
     """
+    _LOGGER.debug('OUTPUT TO NAMESPACE %s', output)
     if attach_to:
         return attach_to.namespace + '_shd'
+
+    _LOGGER.debug(' - TYPE %s', output.type_)
+    _LOGGER.debug(' - OUTPUT TYPE %s', output.output_type)
 
     _mode = 'asset'
     _ety_name = output.asset or output.shot
@@ -511,11 +515,13 @@ def output_to_namespace(output, attach_to=None, ignore=(), base=None):
     elif output.type_ == 'cache' and output.output_type == 'cam':
         _mode = 'cache'
         _base = f'{_ety_name}_{output.output_name}'
+        _LOGGER.debug(' - CAM CACHE %s %s', _base, _mode)
     elif output.type_ == 'cache' and output.output_name == 'restCache':
         _base = _ety_name
     elif output.type_ in ['cache', 'cache_seq', 'ass_gz']:
         _mode = 'cache'
         _base = output.output_name or _ety_name
+        _LOGGER.debug(' - GENERIC CACHE %s %s', _base, _mode)
     elif isinstance(output, (Seq, Video)):
         _ver = f'v{output.ver_n:03d}'
         _base = output.base.replace(_ver, '').strip('_')

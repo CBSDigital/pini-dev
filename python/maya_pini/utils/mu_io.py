@@ -393,13 +393,14 @@ def save_ass(geo, ass, force=False):
     assert _ass.exists()
 
 
-def _mel(cmd):
+def _mel(cmd, log=10):
     """Execute mel command.
 
     Args:
         cmd (str): mel command
+        log (int): log level
     """
-    _LOGGER.info(cmd)
+    _LOGGER.log(log, cmd)
     mel.eval(cmd)
 
 

@@ -13,7 +13,8 @@ from pini.utils import single, wrap_fn, plural, check_heart
 from maya_pini import ref, open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_node, to_long)
+    DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_node, to_long,
+    cur_renderer)
 
 from .. import core, utils
 
@@ -211,6 +212,9 @@ class CheckCacheSet(core.SCMayaCheck):
 
         Args:
             tfms (CTransform list): cache set transforms
+
+        Returns:
+            (bool): whether check failed
         """
 
         # Check for referenced transforms
@@ -665,6 +669,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
 
     sort = 100
     action_filter = 'LookdevPublish'
+    task_filter = 'lookdev'
     depends_on = (CheckForFaceAssignments, )
 
     def run(
@@ -678,82 +683,108 @@ class CheckLookdevShaders(core.SCMayaCheck):
             flag_refd_shds (bool): flag referenced shaders
             shds_required (bool): shading assignments are required
         """
-        if flag_refd_shds:
+        self.check_ai_shd = check_ai_shd
+        self.check_refd_geo = check_refd_geo
+        self.flag_refd_shds = flag_refd_shds
+        self.shds_required = shds_required
+
+        self._ignore_names = set()
+
+        if self.flag_refd_shds:
             self._flag_refd_shds()
-        self._check_shaders(
-            check_ai_shd=check_ai_shd, check_refd_geo=check_refd_geo,
-            shds_required=shds_required)
+        self._check_shaders()
 
-    def _check_shaders(self, check_ai_shd, check_refd_geo, shds_required):
-        """Apply shaders check.
+    def _check_shaders(self):
+        """Apply shaders check."""
 
-        Args:
-            check_ai_shd (bool): check any attached arnold shader override
-            check_refd_geo (bool): check geometry is referenced
-            shds_required (bool): shading assignments are required
-        """
+        # Find shaders
         _shds = lookdev.read_shader_assignments(
             catch=True, allow_face_assign=True, referenced=False)
         self.write_log('Found %d shaders: %s', len(_shds), _shds)
-        if not _shds and shds_required:
+
+        # Flag no shading assignments
+        if not _shds and self.shds_required:
             self.add_fail(
                 'No shader assignments found - this publish saves out shading '
                 'assignments so you need to apply shaders to your geometry')
 
-        _ren = cmds.getAttr('defaultRenderGlobals.currentRenderer')
-        _ignore_names = set()
+        # Check shaders
         for _shd, _data in _shds.items():
+            self._check_shader(_shd, data=_data)
 
-            self.write_log('Checking shader %s', _shd)
+    def _check_shader(self, shd, data):
+        """Check shader.
 
-            if _shd == 'lambert1':
-                continue
+        Args:
+            shd (str): shader to check
+            data (dict): shader data
+        """
+        self.write_log('Checking shader %s', shd)
 
-            _se = _data['shadingEngine']
-            self.write_log(' - shading engine %s', _se)
-            _type = cmds.objectType(_shd)
-            _select_shd = wrap_fn(cmds.select, _shd)
+        if shd == 'lambert1':
+            return
 
-            # Flag namespace
-            if _shd != to_clean(_shd):
-                _msg = f'Shader "{_shd}" is using a namespace'
-                _fix = wrap_fn(cmds.rename, _shd, to_clean(_shd))
-                self.add_fail(_msg, fix=_fix, node=_shd)
-                continue
+        _se = data['shadingEngine']
+        self.write_log(' - shading engine %s', _se)
+        _type = cmds.objectType(shd)
+        _select_shd = wrap_fn(cmds.select, shd)
 
-            # Flag missing MTL suffix
-            if not _shd.endswith('_MTL'):
+        # Flag namespace
+        if shd != to_clean(shd):
+            _msg = f'Shader "{shd}" is using a namespace'
+            _fix = wrap_fn(cmds.rename, shd, to_clean(shd))
+            self.add_fail(_msg, fix=_fix, node=shd)
+            return
+
+        # Flag missing MTL suffix
+        if not shd.endswith('_MTL'):
+            _msg, _fix, _suggestion = utils.fix_node_suffix(
+                shd, suffix='_MTL', alts=['_shd', '_mtl', '_SHD', '_Mat'],
+                type_='shader', ignore=self._ignore_names)
+            self._ignore_names.add(_suggestion)
+            self.add_fail(_msg, fix=_fix, node=shd)
+            return
+
+        self._check_engine_name(shd=shd, engine=_se)
+        self._check_assigned_geo(engine=_se, shader=shd)
+        if self.check_refd_geo:
+            self._check_for_unreferenced_geo(shd)
+
+        _ren = cur_renderer()
+        if _ren == 'arnold':
+            self._run_arnold_checks(shd, data=data, type_=_type)
+
+    def _run_arnold_checks(self, shd, data, type_):
+        """Run arnold shader checks.
+
+        Args:
+            shd (str): shader to check
+            data (dict): shader data
+            type_ (str): shader node type
+        """
+        if 'arnold' not in dcc.allowed_renderers():
+            return
+
+        # Flag non-arnold shader
+        _se = data['shadingEngine']
+        if (
+                self.settings.get('flag_non_arnold', True) and
+                utils.shd_is_arnold(engine=_se, type_=type_)):
+            _msg = f'Shader "{shd}" ({type_}) is not arnold shader'
+            self.add_fail(_msg, node=shd)
+            return
+
+        # Check ai shader suffix
+        _ai_shd = data.get('ai_shd')
+        _base = shd[:-4]
+        if self.check_ai_shd and _ai_shd:
+            if not _ai_shd.endswith('_AIS'):
                 _msg, _fix, _suggestion = utils.fix_node_suffix(
-                    _shd, suffix='_MTL', alts=['_shd', '_mtl', '_SHD', '_Mat'],
-                    type_='shader', ignore=_ignore_names)
-                _ignore_names.add(_suggestion)
-                self.add_fail(_msg, fix=_fix, node=_shd)
-                continue
-
-            self._check_engine_name(shd=_shd, engine=_se)
-            self._flag_assigned_to_intermediate_node(engine=_se, shader=_shd)
-            if check_refd_geo:
-                self._check_for_unreferenced_geo(_shd)
-
-            if _ren == 'arnold' and 'arnold' in dcc.allowed_renderers():
-
-                # Flag non-arnold shader
-                if utils.shd_is_arnold(engine=_se, type_=_type):
-                    _msg = f'Shader "{_shd}" ({_type}) is not arnold shader'
-                    self.add_fail(_msg, node=_shd)
-                    continue
-
-                # Check ai shader suffix
-                _ai_shd = _data.get('ai_shd')
-                _base = _shd[:-4]
-                if check_ai_shd and _ai_shd:
-                    if not _ai_shd.endswith('_AIS'):
-                        _msg, _fix, _suggestion = utils.fix_node_suffix(
-                            _ai_shd, suffix='_AIS',
-                            alts=['_shd', '_mtl', '_SHD'],
-                            type_='ai shader', base=_base, ignore=_ignore_names)
-                        _ignore_names.add(_suggestion)
-                        self.add_fail(_msg, fix=_fix, node=_ai_shd)
+                    _ai_shd, suffix='_AIS',
+                    alts=['_shd', '_mtl', '_SHD'],
+                    type_='ai shader', base=_base, ignore=self._ignore_names)
+                self._ignore_names.add(_suggestion)
+                self.add_fail(_msg, fix=_fix, node=_ai_shd)
 
     def _flag_refd_shds(self):
         """Flag referenced shaders."""
@@ -763,7 +794,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
                 f'Shader "{_shd}" is referenced - this must be imported into '
                 'the current scene', node=_shd, fix=_fix)
 
-    def _flag_assigned_to_intermediate_node(self, engine, shader):
+    def _check_assigned_geo(self, engine, shader):
         """Flag geo assigned to intermediate nodes.
 
         Args:
@@ -783,17 +814,10 @@ class CheckLookdevShaders(core.SCMayaCheck):
                     node=_assign)
                 _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
                 self.add_fail(_fail)
-                return
+                continue
 
-            # Catch duplicate node
-            if '|' in _assign:
-                _fail = core.SCFail(
-                    f'Shader "{shader}" is assigned to duplicate node '
-                    f'"{_assign}".',
-                    node=_assign)
-                _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
-                self.add_fail(_fail)
-                return
+            if self._check_for_assign_to_dup_geo(_assign, shader=shader):
+                continue
 
             _geo = pom.cast_node(_assign, maintain_shapes=True)
             self.write_log(' - check geo %s %s', _geo, _geo.object_type())
@@ -812,6 +836,37 @@ class CheckLookdevShaders(core.SCMayaCheck):
             _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
             _fail.add_action('Fix', _fix, is_fix=True)
             self.add_fail(_fail)
+
+    def _check_for_assign_to_dup_geo(self, assign, shader):
+        """Check for assignment to duplicate geometry.
+
+        Args:
+            assign (str): geometry assignment
+            shader (str): shader
+
+        Returns:
+            (bool): whether check failed
+        """
+        if '|' not in assign:
+            return False
+
+        # Check dup nodes are not junk
+        _, _name = assign.rsplit('|', 1)
+        _nodes = cmds.ls(_name)
+        _pub_nodes = [
+            _node for _node in _nodes
+            if not m_pipe.node_is_junk(_node)]
+        if len(_pub_nodes) <= 1:
+            return False
+
+        # Abuild fail
+        _fail = core.SCFail(
+            f'Shader "{shader}" is assigned to duplicate node '
+            f'"{assign}".',
+            node=assign)
+        _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
+        self.add_fail(_fail)
+        return True
 
     def _unassign_shader(self, engine, geo):
         """Unassign a shader from the given geometry.
@@ -880,6 +935,7 @@ class CheckShaders(CheckLookdevShaders):
     """Check model shaders."""
 
     action_filter = 'ModelPublish BasicPublish'
+    task_filter = 'model rig'
 
     def run(self):
         """Run this check."""

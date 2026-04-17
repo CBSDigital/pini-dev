@@ -146,12 +146,15 @@ def find_checks(  # pylint: disable=too-many-branches
                 _LOGGER.debug(
                     '   - REJECTED TASK FILTER %s', _check.task_filter)
                 continue
+            _LOGGER.debug('   - NO TASK FILTER')
         elif isinstance(_task, str):
             if not passes_filter(_task, _check.task_filter):
                 _LOGGER.debug(
                     '   - REJECTED TASK task=%s filter=%s',
                     _task, _check.task_filter)
                 continue
+            _LOGGER.debug(
+                '   - PASSED TASK FILTER "%s" "%s"', _task, _check.task_filter)
         else:
             raise ValueError(_task)
 

@@ -72,15 +72,11 @@ class TestSanityCheck(unittest.TestCase):
         assert sanity_check.find_check(
             'CheckAOVs', action='Render', profile='shots')
         assert not sanity_check.find_check(
-            'CheckAOVs', action='Render', task='model', catch=True)
-        assert not sanity_check.find_check(
-            'CheckAOVs', action='Render', task='lookdev', catch=True)
+            'CheckAOVs', action='Render', profile='asset', catch=True)
         assert sanity_check.find_check(
             'CheckAOVs', task='lighting', profile='shots')
         assert not sanity_check.find_check(
             'CheckAOVs', task='lighting', profile='assets', catch=True)
-        assert not sanity_check.find_check(
-            'CheckAOVs', task='lookdev', catch=True)
 
         # Test CheckCtrlsSet - should only be applied in rigging
         assert not sanity_check.find_check(

@@ -1,3 +1,20 @@
+## [9.6.0] - Fri 2026-04-17 13:33
+### Summary
+ - Pini Helper:
+    - bugfix error on submit due to locked old submit dirs,
+    - right-click work file better labelling for outputs,
+ - Sanity Check:
+    - bugfix running multiple shaders checks,
+    - check shaders ignore assigns to duplicate geo if duplicates in junk grp,
+### Updated
+ - pini.farm.deadline added catch to delete old deadline submit files,
+ - pini.tools.sanity_check.CheckLookdevShaders added lookdev task filter,
+ - pini.tools.sanity_check.CheckShaders added model/rig task filter,
+ - pini.tools.sanity_check.CheckShaders remove duplicate geo fails for junk geo,
+ - pini.tools.helper work ctx show output_type for output menus,
+ - maya_pini.m_pipe.node_is_junk added,
+
+
 ## [9.5.1] - Thu 2026-04-16 16:31
 ### Summary
  - Sanity Check:

@@ -114,6 +114,25 @@ def find_top_node(catch=False):
     raise ValueError('Failed to find top node')
 
 
+def node_is_junk(node):
+    """Check whether to given node is junk.
+
+    Args:
+        node (str): node to check
+
+    Returns:
+        (bool): whether node is in any junk group
+    """
+    _LOGGER.info('NODE IS JUNK %s', node)
+    _long = to_long(node)
+    _LOGGER.info(' - LONG %s', _long)
+    if not _long.startswith('|'):
+        raise ValueError(_long)
+    _tokens = _long.split('|')
+    _LOGGER.info(' - TOKENS %s', _tokens)
+    return _tokens[1] in JUNK_GRPS
+
+
 def _read_cache_set_nodes(set_, mode, remove_junk=True):
     """Read cache set contents.
 

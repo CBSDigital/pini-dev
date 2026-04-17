@@ -68,7 +68,7 @@ def flush_old_submissions(job, max_age='2w', count=20, force=False):
                 f'submission{plural(_to_delete)}?',
                 title="Clean submissions", icon=icons.CLEAN)
         for _sub in qt.progress_bar(_to_delete):
-            _sub.delete(force=True)
+            _sub.delete(force=True, catch=True)
 
 
 def info_key_sort(key):
