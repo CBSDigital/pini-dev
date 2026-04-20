@@ -1,3 +1,11 @@
+## [9.6.1] - Mon 2026-04-20 10:10
+### Summary
+ - Pini Helper:
+    - asset submit to shotgrid bugfix error on no linked work file (bshepperd),
+### Updated
+ - pini.dcc.export.CBaseExportHandler._register_in_shotgrid bugfix error on no work,
+
+
 ## [9.6.0] - Fri 2026-04-17 13:33
 ### Summary
  - Pini Helper:
