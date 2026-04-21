@@ -122,11 +122,14 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
             _size_str = self.work.nice_size()
 
         # Build date str
-        _age = time.time() - self._mtime
-        if _age > YEAR_SECS:
-            _date_s = strftime('%a %b %d %Y', self._mtime)
+        if not self._mtime:
+            _date_s = '<missing>'
         else:
-            _date_s = strftime('%a %b %d %H:%M%P', self._mtime)
+            _age = time.time() - self._mtime
+            if _age > YEAR_SECS:
+                _date_s = strftime('%a %b %d %Y', self._mtime)
+            else:
+                _date_s = strftime('%a %b %d %H:%M%P', self._mtime)
 
         _text = '\n'.join([
             f'v{self.work.ver} - {_date_s}',

@@ -290,7 +290,7 @@ class CPWorkDir(Dir):
 
     def to_work(
             self, tag=None, ver_n=1, user=None, dcc_=None, extn=None,
-            class_=None, catch=False):
+            class_=None, safe=True, catch=False):
         """Build a work file object with this work dir's tokens.
 
         Args:
@@ -301,6 +301,7 @@ class CPWorkDir(Dir):
             dcc_ (str): override dcc
             extn (str): force file extension
             class_ (class): override work object class
+            safe (bool): apply token validation
             catch (bool): no error if tokens do not create valid tag
 
         Returns:
@@ -360,7 +361,7 @@ class CPWorkDir(Dir):
         _file = _tmpl.format(_data)
         _LOGGER.debug(' - FILE %s', _file)
         try:
-            return _class(_file, work_dir=_work_dir)
+            return _class(_file, work_dir=_work_dir, safe=safe, dcc_=dcc_)
         except ValueError as _exc:
             if catch:
                 return None

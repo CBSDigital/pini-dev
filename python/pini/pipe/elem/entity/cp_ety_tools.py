@@ -76,8 +76,9 @@ def to_entity(match, job=None, catch=False):
     # Treat as job/shot label
     if isinstance(match, str) and match.count('/') == 1:
         _job_s, _ety_s = match.split('/')
-        _job = job or pipe.find_job(_job_s)
-        return _job.find_entity(_ety_s)
+        _job = job or pipe.find_job(_job_s, catch=True)
+        if _job:
+            return _job.find_entity(_ety_s)
 
     # Treat as entity name
     if isinstance(match, str) and not norm_path(match).count('/'):

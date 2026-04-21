@@ -1,3 +1,17 @@
+## [9.7.0] - Tue 2026-04-21 11:49
+### Summary
+ - Pini Helper:
+    - bugfix error on browse to work file created off-pipeline (eehemann),
+### Updated
+ - pini.pipe.CPTemplate.parse added safe arg to disable token validation,
+ - pini.pipe.to_entity improved handling for unable to find job,
+ - pini.pipe.CPWorkDir.to_work added safe arg to disable token validation,
+ - pini.pipe.CPWork added dcc_ flag to override dcc,
+ - pini.pipe.CPWork safe mode disables extn check,
+ - pini.pipe.CPWork find_next/to_work added safe arg to disable token validation,
+ - pini.tools.helper bugfix error on display work w/o mtime,
+
+
 ## [9.6.1] - Mon 2026-04-20 10:10
 ### Summary
  - Pini Helper:

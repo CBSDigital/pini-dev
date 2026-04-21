@@ -391,7 +391,7 @@ class CPTemplate(lucidity.Template):
         """
         return len(self.keys()) == 0
 
-    def parse(self, path):
+    def parse(self, path, safe=True):
         """Wrapper for parse function.
 
         Maintains applied data so that this data is still returned in
@@ -400,6 +400,7 @@ class CPTemplate(lucidity.Template):
 
         Args:
             path (str): path to parse
+            safe (bool): apply token validation
 
         Returns:
             (dict): token/value data
@@ -418,7 +419,7 @@ class CPTemplate(lucidity.Template):
             raise _exc
         _LOGGER.debug(' - PARSED %s', _data)
 
-        if self.job:
+        if self.job and safe:
             try:
                 validate_tokens(_data, job=self.job)
             except ValueError as _exc:

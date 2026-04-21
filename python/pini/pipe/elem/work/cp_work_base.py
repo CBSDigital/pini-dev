@@ -39,22 +39,24 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
     user = None
     ver = None
 
-    def __init__(self, file_, work_dir=None, template=None, safe=True):
+    def __init__(
+            self, file_, work_dir=None, template=None, dcc_=None, safe=True):
         """Constructor.
 
         Args:
             file_ (str): path to work file
             work_dir (CPWorkDir): force parent work dir
             template (CPTemplate): force template
+            dcc_ (str): force dcc (otherwise determined from extn)
             safe (bool): run safety checks
         """
         _file = abs_path(file_)
         _LOGGER.debug('INIT %s %s', type(self).__name__, file_)
         super().__init__(_file)
 
-        if self.extn not in EXTN_TO_DCC:
+        if safe and self.extn not in EXTN_TO_DCC:
             raise ValueError(self.extn)
-        self.dcc = EXTN_TO_DCC[self.extn]
+        self.dcc = dcc_ or EXTN_TO_DCC[self.extn]
 
         # Set up entity/job
         self.work_dir = work_dir or CPWorkDir(_file)
@@ -76,7 +78,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if len(_tmpls) == 1:
             self.template = single(_tmpls)
             try:
-                _data = self.template.parse(self.path)
+                _data = self.template.parse(self.path, safe=safe)
             except lucidity.ParseError as _exc:
                 _LOGGER.debug(' - TMPL %s', self.template)
                 _LOGGER.debug(' - EXC %s', _exc)
@@ -248,7 +250,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             return None
         raise ValueError('No versions found ' + self.path)
 
-    def find_next(self, user=None, class_=None):
+    def find_next(self, user=None, class_=None, safe=True):
         """Find next version, ie. one after the latest one.
 
         This version should not exist on disk.
@@ -256,6 +258,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         Args:
             user (str): override user
             class_ (class): override work file class
+            safe (bool): apply token validation
 
         Returns:
             (CPWork): next version
@@ -276,7 +279,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if self.dcc == dcc.NAME:
             _extn = dcc.DEFAULT_EXTN
         _next = self.to_work(
-            ver_n=_ver_n, class_=class_, user=_user, extn=_extn)
+            ver_n=_ver_n, class_=class_, user=_user, extn=_extn, safe=safe)
         assert _next.work_dir is self.work_dir
         return _next
 
@@ -825,7 +828,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
     def to_work(
             self, task=None, tag=EMPTY, user=EMPTY, ver_n=None,
-            dcc_=None, extn=EMPTY, class_=None):
+            dcc_=None, extn=EMPTY, safe=True, class_=None):
         """Build a work file using this work file's template data.
 
         Args:
@@ -835,6 +838,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             ver_n (int): override version number
             dcc_ (str): override dcc
             extn (str): override extension
+            safe (bool): apply token validation
             class_ (class): override work file class
 
         Returns:
@@ -879,7 +883,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             has_key={'tag': 'tag' in _data})
         _LOGGER.debug(' - TMPL %s', _tmpl)
 
-        return _class(_tmpl.format(_data), work_dir=_work_dir)
+        return _class(_tmpl.format(_data), work_dir=_work_dir, safe=safe)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key
