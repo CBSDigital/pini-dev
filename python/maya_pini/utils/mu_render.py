@@ -199,9 +199,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         _LOGGER.debug(' - TMP FILE %s', _tmp_file)
         _tmp_file.move_to(file_)
 
-    assert file_.exists()
-    assert file_.size()
-    assert file_.size() > 7053
+    assert file_.size() > 10000
 
 
 def _exec_cmdline_render(

@@ -11,14 +11,28 @@ _LOGGER = logging.getLogger(__name__)
 
 DCC = None
 DCCS = [
-    'maya', 'nuke', 'hou', 'c4d', 'flame', 'blender', 'unreal', 'terragen',
-    'spainter', 'sdesign']
+    'blender',
+    'c4d',
+    'flame',
+    'hou',
+    'maya',
+    'nuke',
+    'sdesigner',
+    'spainter',
+    'syntheyes',
+    'terragen',
+    'unreal',
+]
 
 _LOGGER.debug('IMPORT DCC')
 
 if not DCC and os.environ.get('PINI_DCC') == 'terragen':
     from .d_terragen import TerragenDCC
     DCC = TerragenDCC()
+
+if not DCC and os.environ.get('PINI_DCC') == 'syntheyes':
+    from .d_syntheyes import SyntheyesDCC
+    DCC = SyntheyesDCC()
 
 if not DCC:
     try:

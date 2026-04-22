@@ -39,7 +39,8 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
 
         super().__init__(
             node=self.ref, src_ref=_src_ref, extn=extn, top_node=ref.top_node,
-            output_name=_output_name, label=_label, ref=ref)
+            output_name=_output_name, label=_label, ref=ref,
+            output_type=extn)
 
     def _set_name(self, name):
         """Rename this cacheable.

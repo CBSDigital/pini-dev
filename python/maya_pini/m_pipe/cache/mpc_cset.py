@@ -34,7 +34,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         _output_name = self.cache_set.replace('_CSET', '')
         super().__init__(
             output_name=_output_name, label=f'{_output_name} (CSET)',
-            output_type='geo', node=self.cache_set, extn=extn,
+            output_type=extn, node=self.cache_set, extn=extn,
             src_ref=None)
 
         if not self.to_geo():

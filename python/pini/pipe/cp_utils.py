@@ -25,6 +25,7 @@ EXTN_TO_DCC = {
     'ma': 'maya',
     'mb': 'maya',
     'spp': 'spainter',
+    'sni': 'syntheyes',
     'tgd': 'terragen',
     'sbs': 'sdesigner',
 }

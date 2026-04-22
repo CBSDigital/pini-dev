@@ -54,9 +54,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         _LOGGER.debug('INIT %s %s', type(self).__name__, file_)
         super().__init__(_file)
 
-        if safe and self.extn not in EXTN_TO_DCC:
+        if safe and self.extn not in cp_utils.EXTN_TO_DCC:
             raise ValueError(self.extn)
-        self.dcc = dcc_ or EXTN_TO_DCC[self.extn]
+        self.dcc = dcc_ or cp_utils.EXTN_TO_DCC[self.extn]
 
         # Set up entity/job
         self.work_dir = work_dir or CPWorkDir(_file)
@@ -250,7 +250,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             return None
         raise ValueError('No versions found ' + self.path)
 
-    def find_next(self, user=None, class_=None, safe=True):
+    def find_next(self, user=None, class_=None):
         """Find next version, ie. one after the latest one.
 
         This version should not exist on disk.
@@ -258,7 +258,6 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         Args:
             user (str): override user
             class_ (class): override work file class
-            safe (bool): apply token validation
 
         Returns:
             (CPWork): next version
@@ -279,7 +278,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         if self.dcc == dcc.NAME:
             _extn = dcc.DEFAULT_EXTN
         _next = self.to_work(
-            ver_n=_ver_n, class_=class_, user=_user, extn=_extn, safe=safe)
+            ver_n=_ver_n, class_=class_, user=_user, extn=_extn)
         assert _next.work_dir is self.work_dir
         return _next
 
@@ -883,7 +882,9 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             has_key={'tag': 'tag' in _data})
         _LOGGER.debug(' - TMPL %s', _tmpl)
 
-        return _class(_tmpl.format(_data), work_dir=_work_dir, safe=safe)
+        return _class(
+            _tmpl.format(_data), work_dir=_work_dir, safe=safe,
+            dcc_=dcc_ or self.dcc)
 
     def __lt__(self, other):
         return self.cmp_key < other.cmp_key

@@ -1,3 +1,16 @@
+## [9.8.0] - Wed 2026-04-22 12:56
+### Summary
+ - Pini Helper:
+    - maya asset abc cache fix revert export dir to incude extn (eehemann),
+### Updated
+ - pini.dcc.SyntheyesDCC adding WIP,
+ - pini.pipe.EXTN_TO_DCC added sni/syntheyes,
+ - pini.pipe.CPWork.find_next removed safe arg,
+ - maya_pini.utils.render apply min size 10k,
+ - maya_pini.m_pipe.cache refactored to put find funcs in separate submodule,
+ - maya_pini.m_pipe.cache CPCacheableSet/CPCacheableRef apply output_type as extn,
+
+
 ## [9.7.0] - Tue 2026-04-21 11:49
 ### Summary
  - Pini Helper:
