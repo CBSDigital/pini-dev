@@ -565,3 +565,58 @@ class CheckOverscan(SCMayaCheck):
             self.check_attr('redshiftOptions.overscanY', _overscan)
         else:
             self.write_log('renderer not implemented')
+
+
+def _find_colspace(name, spaces=None):
+    """Find a colspace matching the given name.
+
+    Args:
+        name (str): name to search for
+        spaces (str list): valid colorspaces
+
+    Returns:
+        (str): name of matching colorspace
+    """
+    _spaces = spaces or sorted(cmds.colorManagementPrefs(
+        query=True, inputSpaceNames=True))
+    if name in _spaces:
+        return name
+    raise ValueError(name)
+
+
+class FixBrokenColspaces(SCMayaCheck):
+    """Tests file/imagePlane nodes for broken colorspaces."""
+
+    def run(self):
+        """Run this check."""
+        _spaces = sorted(cmds.colorManagementPrefs(
+            query=True, inputSpaceNames=True))
+
+        for _ref in ref.find_attr_refs(types=['file', 'imagePlane']):
+
+            _node = pom.CNode(_ref.node)
+
+            _plug = _node.plug['colorSpace']
+            _cur_space = _plug.get_val()
+            self.write_log('checking file %s %s', _ref, _cur_space)
+            if _cur_space in _spaces:
+                continue
+            self.write_log(' - broken file %s', _ref.path)
+
+            _tokens = re.split('[_.]', _ref.path.base)
+            self.write_log(' - tokens %s', _tokens)
+
+            if _ref.path.extn == 'exr':
+                _match = 'ACEScg'
+            elif 'BC' in _tokens:
+                _match = 'sRGB - Texture'
+            else:
+                _match = 'Raw'
+            _apply_space = _find_colspace(_match, spaces=_spaces)
+            _type = _node.object_type()
+            self.add_fail(
+                f'Node "{_node}" '
+                f'referencing "{_ref.path.filename}" '
+                f'has broken colspace "{_cur_space}" when it '
+                f'should be "{_apply_space}"', node=_node,
+                fix=wrap_fn(_plug.set_val, _apply_space))
