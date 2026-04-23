@@ -37,7 +37,7 @@ def create_pub_file(path):
 
 def create_pub_file_from_output(
         output, thumb=None, status='cmpt', update_cache=True,
-        upstream_files=None, force=False):
+        upstream_files=None, notes=None, force=False):
     """Create PublishedFile entry in shotgrid.
 
     Args:
@@ -47,6 +47,7 @@ def create_pub_file_from_output(
         update_cache (bool): update cache on create
             (disable for multiple creates)
         upstream_files (dict list): list of upstream published file entries
+        notes (str): publish notes
         force (bool): if an entry exists, update data
 
     Returns:
@@ -69,7 +70,7 @@ def create_pub_file_from_output(
 
     _data = _build_pub_data_from_output(
         output, sg_ety=_sg_ety, sg_proj=_sg_proj, status=status,
-        upstream_files=upstream_files)
+        upstream_files=upstream_files, notes=notes)
 
     # Apply to shotgrid
     if not _sg_pub:
@@ -244,7 +245,7 @@ def _build_pub_data(
 
 def _build_pub_data_from_output(
         output, status='cmpt', sg_proj=None, sg_ety=None, upstream_files=None,
-        thumb=None):
+        thumb=None, notes=None):
     """Build publish data dict from an output.
 
     Args:
@@ -254,6 +255,7 @@ def _build_pub_data_from_output(
         sg_ety (SGCEntity): entity
         upstream_files (dict list): list of upstream published file entries
         thumb (str): path to thumb (used if work file is registered)
+        notes (str): publish notes
 
     Returns:
         (dict): publish data
@@ -262,7 +264,7 @@ def _build_pub_data_from_output(
 
     _LOGGER.debug(
         ' - BUILD PUB DATA FROM OUTPUT %s ', output.path)
-    _notes = output.metadata.get('notes')
+    _notes = notes or output.metadata.get('notes')
 
     _sg_proj = sg_proj or shotgrid.SGC.find_proj(output.job)
     _sg_ety = sg_ety or _sg_proj.find_entity(output.entity)

@@ -11,7 +11,7 @@ from pini.dcc import export
 from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import to_long
+from maya_pini.utils import to_long, find_light_types
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -254,17 +254,10 @@ def to_light_shp(node):
     Returns:
         (CNode|None): light shape (if any)
     """
-    _light_types = {
-        'aiLightPortal',
-        'VRayLightDomeShape',
-        'VRayLightIESShape',
-        'VRayLightRectShape',
-        'VRayLightSphereShape',
-        'VRaySunTarget',
-    }
+    _light_types = find_light_types()
     _light_shps = []
     for _shp in node.to_shps():
         _type = _shp.object_type()
-        if _type in _light_types or _type.endswith('Light'):
+        if _type in _light_types:
             _light_shps.append(_shp)
     return single(_light_shps, catch=True)

@@ -1,3 +1,19 @@
+## [9.9.0] - Thu 2026-04-23 14:41
+### Summary
+ - Maya Utilies:
+    - bugfix error on save node preset,
+    - added light handling tools,
+### Updated
+ - pini.utils.find_viewer updated arg match -> name,
+ - pini.utils.find_viewer allow name as Viewer,
+ - pini.dcc.SyntheyesDCC implemented get_scene_data/set_scene_data,
+ - pini.pipe.shotgrid.create_pub_file_from_output added notes arg,
+ - maya_pini.utils added find_lights/node_is_light/find_light_types,
+ - maya_pini.utils.render fail render if image size < 9k,
+ - maya_pini.open_maya.CBaseNode deprecated to_anim -> find_anims for symmetry,
+ - maya_pini.open_maya.CBaseNode.save_preset bugfix error on no file/fmt arg,
+
+
 ## [9.8.0] - Wed 2026-04-22 12:56
 ### Summary
  - Pini Helper:

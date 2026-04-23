@@ -255,11 +255,11 @@ class _WMPlayer(_Viewer):
         subprocess.Popen(_cmds)
 
 
-def find_viewer(name=None, plays_seqs=None, plays_videos=None):
+def find_viewer(match=None, plays_seqs=None, plays_videos=None):
     """Find a viewer on this machine.
 
     Args:
-        name (str): name for viewer - if no name is passed then
+        match (str): name for viewer - if no name is passed then
             $PINI_VIEWER is used
         plays_seqs (bool): filter by ability to play image sequences
         plays_videos (bool): filter by ability to play videos
@@ -267,20 +267,23 @@ def find_viewer(name=None, plays_seqs=None, plays_videos=None):
     Returns:
         (Viewer): matching viewer
     """
-    _name = name or os.environ.get('PINI_VIEWER')
+    if isinstance(match, _Viewer):
+        return match
+    _match = match or os.environ.get('PINI_VIEWER')
     _viewers = find_viewers(plays_seqs=plays_seqs, plays_videos=plays_videos)
     if not _viewers:
         return None
-    if not _name:
+    if not _match:
         return sorted(_viewers, key=_viewer_sort)[0]
 
     # Match by name
-    _match = single([_viewer for _viewer in _viewers if _viewer.NAME == _name],
-                    catch=True)
+    _match = single(
+        [_viewer for _viewer in _viewers if _viewer.NAME == _match],
+        catch=True)
     if _match:
         return _match
-    if name:
-        raise ValueError('Failed to find viewer ' + name)
+    if match:
+        raise ValueError(f'Failed to find viewer {match}')
     return _viewers[0]
 
 

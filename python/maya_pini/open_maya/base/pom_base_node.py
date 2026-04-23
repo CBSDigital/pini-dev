@@ -8,6 +8,7 @@ from maya import cmds, mel
 
 from pini import qt
 from pini.qt import QtGui
+from pini.tools import release
 from pini.utils import (
     basic_repr, single, abs_path, File, cache_result, passes_filter)
 from maya_pini.utils import (
@@ -372,6 +373,17 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         return cmds.objExists(self)
 
+    def find_anims(self):
+        """Find anim curves attached to this node.
+
+        Returns:
+            (CAnimCurve list): anim curves
+        """
+        from maya_pini import open_maya as pom
+        _nodes = self.find_incoming(
+            type_='animCurve', connections=False, plugs=False)
+        return [pom.CAnimCurve(_node) for _node in _nodes]
+
     @functools.wraps(pom_utils.find_connections)
     def find_connections(self, **kwargs):
         """Find connections to this node.
@@ -582,7 +594,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Args:
             type_ (str): tangent type to apply (eg. spline)
         """
-        for _anim in self.to_anim():
+        for _anim in self.find_anims():
             _anim.set_tangents(type_)
 
     def to_anim(self):
@@ -591,10 +603,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (CAnimCurve list): anim curves
         """
-        from maya_pini import open_maya as pom
-        _nodes = self.find_incoming(
-            type_='animCurve', connections=False, plugs=False)
-        return [pom.CAnimCurve(_node) for _node in _nodes]
+        release.apply_deprecation('22/04/26', 'Use find_anims')
+        return self.find_anims()
 
     def to_anim_range(self):
         """Obtain range for this node's animation.
@@ -603,7 +613,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (tuple): start/end
         """
         _start, _end = sys.maxsize, -sys.maxsize
-        for _crv in self.to_anim():
+        for _crv in self.find_anims():
             _c_start, _c_end = _crv.t_range()
             _start = min(_start, _c_start)
             _end = max(_end, _c_end)
@@ -800,8 +810,9 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _fmt = fmt
         if _fmt == 'auto':
             if not _file:
-                raise RuntimeError('Apply file or select fmt mpa/mpb')
-            _fmt = _file.extn
+                _fmt = 'mpa'
+            else:
+                _fmt = _file.extn
         _LOGGER.debug(' - FMT %s', _fmt)
 
         _tmp_file = self._to_preset_tmp(_fmt)
@@ -822,8 +833,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             _tmp_file.copy_to(_file, verbose=0)
 
         if not _file:
-            _extn_file = _tmp_file.to_file(extn=fmt)
-            _tmp_file.copy_to(_extn_file, force=True)
+            _extn_file = _tmp_file.to_file(extn=_fmt)
+            _tmp_file.copy_to(_extn_file, verbose=0, force=True)
             return _extn_file
         return _file
 
