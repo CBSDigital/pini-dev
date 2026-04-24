@@ -423,7 +423,7 @@ class PHHeader:
             f"It will have an underscore prepended to its name and "
             f"will no longer be visible in the pipeline.",
             icon=_ARCHIVE_ICON,
-            title='Archive ' + self.entity.profile.capitalize())
+            title='Archive ' + self.entity.profile)
 
         # Record who archived
         _t_str = strftime('%y%m%d_%H%M%S')
