@@ -386,7 +386,7 @@ def _exec_export_abc(work, force=False):
 
     # Save abc
     _abc = work.to_output(
-        _tmpl, output_type='geo', output_name='restCache', extn='abc')
+        _tmpl, output_type='abc', output_name='restCache', extn='abc')
     _LOGGER.info(' - REST CACHE ABC %s', _abc)
     _geo = m_pipe.read_cache_set(set_=_cache_set, mode='top')
     if not _geo:

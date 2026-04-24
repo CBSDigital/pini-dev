@@ -1,3 +1,11 @@
+## [9.10.1] - Fri 2026-04-24 10:48
+### Summary
+ - Pini Helper:
+    - reverted publish abc folder geo -> abc (eehemann),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish abc export apply output_type as abc,
+
+
 ## [9.10.0] - Thu 2026-04-23 15:39
 ### Summary
  - Sanity Check:
