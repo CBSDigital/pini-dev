@@ -8,7 +8,8 @@ import time
 from maya import cmds, mel
 
 from pini import icons
-from pini.utils import File, single, find_exe, system, check_heart, Res
+from pini.utils import (
+    File, single, find_exe, system, check_heart, Res, nice_size)
 
 from . import mu_eval
 
@@ -199,7 +200,18 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         _LOGGER.debug(' - TMP FILE %s', _tmp_file)
         _tmp_file.move_to(file_)
 
-    assert file_.size() > 90e3
+    # Catch failed renders
+    _area = res[0] * res[1]
+    _size = file_.size()
+    _min_size_pp = 0.173
+    _min_size_pp = 0.15
+    _min_size = _area * _min_size_pp
+    if _size < _min_size:
+        _LOGGER.info(' - FILE %s', file_)
+        _LOGGER.info(' - SIZE PP %f', _size / _area)
+        raise RuntimeError(
+            f'Render too small {nice_size(_size)} '
+            f'(min allowed {nice_size(_min_size)}) {file_}')
 
 
 def _exec_cmdline_render(

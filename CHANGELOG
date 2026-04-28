@@ -1,3 +1,14 @@
+## [9.11.0] - Tue 2026-04-28 10:50
+### Summary
+ - Sanity Check:
+    - check model geo bugfix error on multiple duplicate shape nodes (mkim),
+### Updated
+ - pini.pipe.CPOutput.to_stream use tmpl source to fix embedded ver token in ver dirs,
+ - pini.tools.santy_check fix bad shape names bugfix multiple junk duplicates,
+ - maya_pini.utils.render fail small renders based on size per pixel,
+ - maya_pini.tex.create_shader added,
+
+
 ## [9.10.1] - Fri 2026-04-24 10:48
 ### Summary
  - Pini Helper:

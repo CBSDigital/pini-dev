@@ -271,6 +271,28 @@ def create_file(ftn=None, colspace='sRGB', name='file'):
     return _file
 
 
+def create_shader(type_='lambert', name=None, col=None):
+    """Create a shader.
+
+    Args:
+        type_ (str): shader type
+        name (str): shader name
+        col (CPlug|str|QColor): colour channel
+
+    Returns:
+        (Shader): shader
+    """
+    _node = cmds.shadingNode(type_, asShader=True, name=name)
+    _shd = _Shader(_node)
+    assert _shd
+    if col:
+        if isinstance(col, pom.CPlug):
+            col.connect(_shd.col)
+        else:
+            _shd.set_col(col)
+    return _shd
+
+
 def create_surface_shader(name='surfaceShader', col=None):
     """Create a surface shader texture.
 

@@ -123,13 +123,13 @@ def node_is_junk(node):
     Returns:
         (bool): whether node is in any junk group
     """
-    _LOGGER.info('NODE IS JUNK %s', node)
+    _LOGGER.debug('NODE IS JUNK %s', node)
     _long = to_long(node)
-    _LOGGER.info(' - LONG %s', _long)
+    _LOGGER.debug(' - LONG %s', _long)
     if not _long.startswith('|'):
         raise ValueError(_long)
     _tokens = _long.split('|')
-    _LOGGER.info(' - TOKENS %s', _tokens)
+    _LOGGER.debug(' - TOKENS %s', _tokens)
     return _tokens[1] in JUNK_GRPS
 
 

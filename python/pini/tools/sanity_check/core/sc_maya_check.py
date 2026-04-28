@@ -5,10 +5,10 @@ import logging
 
 from maya import cmds
 
-from pini.utils import wrap_fn
+from pini.utils import wrap_fn, check_heart
 
-from maya_pini import open_maya as pom
-from maya_pini.utils import to_shps, cur_renderer
+from maya_pini import open_maya as pom, m_pipe
+from maya_pini.utils import to_shps, cur_renderer, to_unique
 
 from . import sc_check
 
@@ -179,6 +179,22 @@ def _fix_bad_shape(cur_shp, new_shp):
         cur_shp (str): current shape
         new_shp (str): correctly named shape
     """
+
+    # Rename shapes in junk
+    while True:
+        check_heart()
+        _candidates = sorted([
+            _node for _node in cmds.ls(new_shp)
+            if m_pipe.node_is_junk(_node) and
+            _node != cur_shp])
+        if not _candidates:
+            break
+        _LOGGER.debug(' - CANDIDATES %s', _candidates)
+        _to_rename = _candidates.pop(0)
+        _LOGGER.debug('   - TO RENAME %s', _to_rename)
+        _new_name = to_unique(new_shp, ignore=[new_shp])
+        _LOGGER.debug('   - NEW NAME %s', _new_name)
+        cmds.rename(_to_rename, _new_name)
     if cmds.objExists(new_shp):
-        cmds.rename(new_shp, f'{new_shp}1')
+        raise RuntimeError(f'Failed to free shape name {new_shp}')
     cmds.rename(cur_shp, new_shp)

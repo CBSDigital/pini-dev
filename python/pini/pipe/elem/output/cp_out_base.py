@@ -649,10 +649,13 @@ class CPOutputBase:
         Returns:
             (str): path to stream version zero
         """
+        _LOGGER.debug('TO STREAM %s', self)
         _data = copy.copy(self.data)
         if 'ver' in _data:
             _data['ver'] = '0' * len(_data['ver'])
-        return self.template.format(_data)
+        _LOGGER.debug(' - DATA %s', _data)
+        _LOGGER.debug(' - TEMPLATE %s', self.template)
+        return self.template.source.format(_data)
 
     def to_work(self, dcc_=None, user=None, tag=None, extn=EMPTY, catch=True):
         """Map this output to a work file.
