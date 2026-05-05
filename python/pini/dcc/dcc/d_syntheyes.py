@@ -42,8 +42,20 @@ class SyntheyesDCC(BaseDCC):
             return None
         return abs_path(_file)
 
+    def _force_load(self, file_):
+        """Force load the given scene.
+
+        Args:
+            file_ (str): scene to load
+        """
+        _file = File(file_)
+        _LOGGER.debug('FORCE LOAD %s', _file)
+        self.lev.ClearChanged()
+        self.lev.OpenSNI(_file.path)
+
     def _force_new_scene(self):
         """Force new scene."""
+        self.lev.ClearChanged()
         self.lev.PerformActionByNameAndWait('Close')
 
     def _force_save(self, file_=None):
@@ -52,10 +64,18 @@ class SyntheyesDCC(BaseDCC):
         Args:
             file_ (str): path to save scene to
         """
+        _LOGGER.debug('FORCE SAVE %s', file_)
         if file_:
             _file = File(file_)
+            _LOGGER.debug(' - CLEAR CHANGED')
+            self.lev.ClearChanged()
+            _LOGGER.debug(' - SET SNI %s', _file)
             self.lev.SetSNIFileName(_file.path)
+        elif not self.cur_file():
+            raise RuntimeError('No current scene')
+        _LOGGER.debug(' - APPLY SAVE')
         self.lev.PerformActionByNameAndWait('Save')
+        _LOGGER.debug(' - DONE')
 
     def get_scene_data(self, key):
         """Retrieve data stored with this scene.
@@ -64,6 +84,16 @@ class SyntheyesDCC(BaseDCC):
             key (str): data to obtain
         """
         return _read_scn_data().get(key)
+
+    def set_range(self, start, end):
+        """Set current frame range.
+
+        Args:
+            start (float): start frame
+            end (float): end frame
+        """
+        self.lev.SetAnimStart(start)
+        self.lev.SetAnimEnd(end)
 
     def set_scene_data(self, key, val):
         """Store data within this scene.
@@ -86,6 +116,28 @@ class SyntheyesDCC(BaseDCC):
         _prefs_mesh.kind = _data_s
         _lev.Accept("Update prefs mesh")
 
+    def t_end(self, class_=float):
+        """Get end frame.
+
+        Args:
+            class_ (class): override result type
+
+        Returns:
+            (float): end time
+        """
+        return class_(self.lev.AnimEnd())
+
+    def t_start(self, class_=float):
+        """Get start frame.
+
+        Args:
+            class_ (class): override result type
+
+        Returns:
+            (float): start time
+        """
+        return class_(self.lev.AnimStart())
+
     def to_level(self, force=False):
         """Obtain level object.
 
@@ -98,6 +150,14 @@ class SyntheyesDCC(BaseDCC):
         if force or not self._lev:
             self._lev = _to_level()
         return self._lev
+
+    def unsaved_changes(self):
+        """Test whether the current scene has unsaved changes.
+
+        Returns:
+            (bool): unsaved changes
+        """
+        return self.to_level().HasChanged()
 
 
 def _obt_prefs_mesh(level=None):
@@ -133,7 +193,7 @@ def _read_scn_data():
     _prefs_mesh = _obt_prefs_mesh()
 
     _data_s = _prefs_mesh.kind
-    _LOGGER.info(' - DATA S %s', _data_s)
+    _LOGGER.debug(' - DATA S %s', _data_s)
     if not _data_s or _data_s in ('Custom', ):
         return {}
 

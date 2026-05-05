@@ -1,7 +1,10 @@
+import logging
 import unittest
 
 from pini import qt, dcc
 from pini.tools import release
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TestQt(unittest.TestCase):
@@ -73,7 +76,12 @@ class TestQt(unittest.TestCase):
 
         # Make sure ui onscreen + settings load
         _main = dcc.get_main_window_ptr()
-        _on_pos = _main.pos() + qt.to_p(100)
+        if _main:
+            _root = _main.pos()
+        else:
+            _root = qt.to_p()
+            _LOGGER.info(' - NO MAIN WINDOW FOUND')
+        _on_pos = _root + qt.to_p(100)
         assert qt.p_is_onscreen(_on_pos)
         _ui.move(_on_pos)
         _ui.resize(1000, 700)
@@ -82,7 +90,7 @@ class TestQt(unittest.TestCase):
         assert _ui._load_geometry_settings(screen='N/A')
 
         # Check load geometry rejected of offscreen
-        _off_pos = _main.pos() - qt.to_p(200)
+        _off_pos = _root - qt.to_p(200)
         assert not qt.p_is_onscreen(_off_pos)
         _ui.move(_off_pos)
         _ui.save_settings()

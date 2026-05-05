@@ -10,7 +10,7 @@ _LOGGER = logging.getLogger(__name__)
 ICON = icons.find("Spiral Notepad")
 
 
-def get_sg_result_cacher(use_args=()):
+def get_sg_result_cacher(use_args=None):
     """Get result cacher for the shotgrid cache namespace.
 
     Args:

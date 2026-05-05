@@ -219,11 +219,12 @@ class CReference(om.MFnReference, ref.FileRef):
             _nodes.add(_node)
         return sorted(_nodes)
 
-    def find_skeleton(self, namespace=None, catch=True):
+    def find_skeleton(self, namespace=None, root=None, catch=True):
         """Find this node's skeleton.
 
         Args:
             namespace (str): override search namespace
+            root (str): override name of root node for skeleton
             catch (bool): no error if no skeleton found
 
         Returns:
@@ -231,6 +232,10 @@ class CReference(om.MFnReference, ref.FileRef):
         """
         _LOGGER.debug('FIND SKEL %s', self)
         from maya_pini import open_maya as pom
+
+        if root:
+            _root = self.to_node(root)
+            return pom.CSkeleton(_root)
 
         _ns = namespace or self.namespace
         _skels = [

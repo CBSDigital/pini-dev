@@ -24,8 +24,9 @@ class TestDCC(unittest.TestCase):
         except RuntimeError:
             pass
         else:
-            raise AssertionError
-        _tmp = Dir(TMP_PATH).to_file('tmp.mb')
+            raise RuntimeError(
+                'Force save on empty scene should raise RuntimeError')
+        _tmp = Dir(TMP_PATH).to_file(f'tmp.{dcc.DEFAULT_EXTN}')
         dcc.save(_tmp, force=True)
         dcc._force_save()
 
@@ -130,7 +131,7 @@ class TestPublish(unittest.TestCase):
         _LOGGER.info('BASIC PUB %s', _basic_pub)
         assert not error.TRIGGERED
         if not _basic_pub:
-            assert dcc.NAME in ['hou', 'nuke']
+            assert dcc.NAME in ['hou', 'nuke', 'syntheyes']
         else:
             _helper.ui.MainPane.select_tab(_helper.ui.ExportTab)
             assert _work_1.job is _job_c

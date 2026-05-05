@@ -65,6 +65,7 @@ def get_result_cacher(use_args=None, namespace='default', max_age=None):
 
     Args:
         use_args (list): limit the list of args to use
+            (False means do not use args)
         namespace (str): cache namespace
         max_age (float): force recalculate after this many seconds
 
@@ -81,8 +82,9 @@ def get_result_cacher(use_args=None, namespace='default', max_age=None):
             _args_key = _get_args_key(
                 func=func, args=args, kwargs=kwargs, use_args=use_args)
             _force = kwargs.get('force')
-            _LOGGER.debug('[cache_result] - ARGS KEY (%s): %s',
-                          func.__name__, _args_key)
+            _LOGGER.debug(
+                '[cache_result] - ARGS KEY (%s): %s use_args=%s',
+                func.__name__, _args_key, use_args)
             _results = obt_results_cache(namespace)
 
             # Determine whether result needs to be calculated
@@ -165,9 +167,19 @@ def _get_args_key(func, args, kwargs, use_args=None):
         _arg_idx = _idx - len(_args)
         if _arg_name in ['force', 'verbose']:
             continue
-        if use_args and _arg_name not in use_args:
-            continue
 
+        # Apply use_args
+        if use_args is False:
+            continue
+        if use_args is None:
+            pass
+        elif isinstance(use_args, (list, tuple)):
+            if _arg_name not in use_args:
+                continue
+        else:
+            raise TypeError(use_args)
+
+        # Add key for this arg
         if _idx < len(args):
             _val = args[_idx]
         elif _arg_name in kwargs:

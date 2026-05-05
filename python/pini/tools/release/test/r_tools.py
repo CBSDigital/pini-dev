@@ -128,7 +128,10 @@ def run_tests(mode='all', tests=None, safe=True, force=False):
             raise ValueError(mode)
 
     # Run tests
-    _pos = dcc.get_main_window_ptr().geometry().center() + qt.to_p(0, -200)
+    _ptr = dcc.get_main_window_ptr()
+    _pos = None
+    if _ptr:
+        _pos = _ptr.geometry().center() + qt.to_p(0, -200)
     for _idx, _test in qt.progress_bar(
             enumerate(_tests, start=1), 'Running {:d} test{}', pos=_pos,
             stack_key='RunTests', show=len(_tests) > 1):

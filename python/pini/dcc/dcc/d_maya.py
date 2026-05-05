@@ -387,7 +387,9 @@ class MayaDCC(BaseDCC):
             if _fps == fps:
                 break
         else:
-            _name = f'{fps}fps'
+            assert round(fps) == fps
+            _fps_i = round(fps)
+            _name = f'{_fps_i:d}fps'
         cmds.currentUnit(time=_name)
 
     def set_frame(self, frame):

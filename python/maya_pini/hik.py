@@ -113,7 +113,7 @@ class PHIKNode(pom.CNode):
 
     def bake_to_skel(
             self, range_=None, step=None, loop=False, skel=None,
-            euler_filter=True, force=False):
+            euler_filter=True, simulation=True, force=False):
         """Bake animation to skeleton.
 
         Args:
@@ -122,6 +122,8 @@ class PHIKNode(pom.CNode):
             loop (bool): apply looping
             skel (CSkeleton): skeleton to bake to
             euler_filter (bool): apply euler filter
+            simulation (bool): bake as simulation (moves timelines - best to
+                have on to see progress)
             force (bool): supress any bake warnings
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
@@ -152,7 +154,7 @@ class PHIKNode(pom.CNode):
         _LOGGER.info(' - PLUGS %s', _plugs)
         mel.eval(f'hikBakeCharacterPre "{self}"')
         cmds.bakeResults(
-            _plugs, simulation=True, time=_rng, sampleBy=_step,
+            _plugs, simulation=simulation, time=_rng, sampleBy=_step,
             oversamplingRate=1, disableImplicitControl=True,
             preserveOutsideKeys=True, sparseAnimCurveBake=False,
             removeBakedAttributeFromLayer=False,
@@ -499,7 +501,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
                     ('hand', 'Hand')]:
                 _jnt_map.append((_side_skel + _src, _side_hik + _dest))
 
-    elif skel.name == 'RokokoRaw2':
+    elif skel.name in ('RokokoRaw2', 'Rokoko1'):
         _jnt_map = [
             ('Root', 'Reference'),
             ('Hips', 'Hips'),
@@ -550,6 +552,8 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             ('LeftShin', 'LeftLeg'),
             ('RightFoot', 'RightFoot'),
             ('LeftFoot', 'LeftFoot')]
+        if skel.name == 'Rokoko1':
+            _jnt_map.pop(0)
 
     else:
         raise ValueError(skel.name)

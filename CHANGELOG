@@ -1,3 +1,21 @@
+## [9.12.0] - Tue 2026-05-05 14:50
+### Summary
+ - Pini Helper:
+    - maya submit deadline render bugfix error on submit single frame using range from render globals (eehemann),
+### Updated
+ - pini.utils.PROERTIES added,
+ - pini.utils.get_result_cacher use_args as False means ignore args,
+ - pini.dcc.SyntheyesDCC working for pini helper,
+ - pini.dcc.MayaDCC.set_fps bugfix error on fps as float,
+ - pini.farm.deadline.submit_maya_render range from render globals bugfix missing last frame,
+ - pini.tools.release.run_tests bugfix error on no main window ptr,
+ - maya_pini.open_maya.CAnimCurve.find_target return None on unconnected,
+ - maya_pini.open_maya.CPlug.find_anim returns CAnimCurve,
+ - maya_pini.open_maya.find_skeleton added root arg,
+ - maya_pini.open_maya.CSkeleton set_pose/set_zero_pose/to_bbox/to_pose added,
+ - maya_pini.hik.PHIKNode.bake_to_skel added simulation arg,
+
+
 ## [9.11.0] - Tue 2026-04-28 10:50
 ### Summary
  - Sanity Check:

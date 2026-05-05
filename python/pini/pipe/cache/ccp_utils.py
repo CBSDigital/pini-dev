@@ -39,8 +39,7 @@ def pipe_cache_on_obj(func):
     Returns:
         (fn): decorated method
     """
-    _cacher = get_result_cacher(
-        use_args=('self', ), namespace='pipe')
+    _cacher = get_result_cacher(use_args=('self', ), namespace='pipe')
     return _cacher(func)
 
 

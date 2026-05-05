@@ -423,8 +423,21 @@ def _get_desktop_path():
     return up_norm.abs_path('~/Desktop')
 
 
+def _get_properties_dir():
+    """Get properties directory path.
+
+    Returns:
+        (Dir|None): properties dir
+    """
+    _props = os.environ.get('PINI_PROPERTIES_PATH')
+    if not _props:
+        return None
+    return Dir(up_norm.abs_path(_props))
+
+
 DESKTOP_PATH = _get_desktop_path()
 DESKTOP = Dir(DESKTOP_PATH)
 HOME = Dir(up_utils.HOME_PATH)
 TMP = Dir(up_utils.TMP_PATH)
 PINI_TMP = TMP.to_subdir('.pini')
+PROPERTIES = _get_properties_dir()

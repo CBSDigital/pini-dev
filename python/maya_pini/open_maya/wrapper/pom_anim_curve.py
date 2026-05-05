@@ -56,7 +56,10 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Returns:
             (CPlug): target
         """
-        return single(self.output.find_outgoing())
+        _trg = self.output.find_outgoing()
+        if not _trg:
+            return None
+        return single(_trg)
 
     def connect(self, plug, force=False):
         """Connect this anim curve to the given plug.

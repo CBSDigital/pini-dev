@@ -59,7 +59,7 @@ class TestHelper(unittest.TestCase):
             _helper.ui.MainPane.select_tab('Scene')
             if dcc.NAME == 'maya':
                 _tabs = ['SAssetsTab', 'SEntityTab', 'SMediaTab']
-            elif dcc.NAME in ('nuke', 'hou'):
+            elif dcc.NAME in ('nuke', 'hou', 'syntheyes'):
                 _tabs = ['SEntityTab', 'SMediaTab']
             else:
                 raise NotImplementedError(dcc.NAME)
@@ -132,6 +132,10 @@ class TestHelper(unittest.TestCase):
 
         dcc.new_scene(force=True)
         dcc.set_range(*_abc.metadata['range'])
+
+        if 'abc' not in dcc.REF_EXTNS:
+            _LOGGER.info(' - DCC %s CANNOT REFERENCE ABC', dcc.NAME)
+            return
 
         # Test pipe ref funcs
         dcc.create_ref(_abc, namespace='RefAbc')

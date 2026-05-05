@@ -768,8 +768,10 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             (CAnimCurve|None): anim curve (if any)
         """
         from maya_pini import open_maya as pom
-        return single(pom.CMDS.listConnections(self, type='animCurve'),
-                      catch=True)
+        _anim = self.find_incoming(plugs=False, type_='animCurve')
+        if not _anim:
+            return None
+        return pom.CAnimCurve(_anim)
 
     def to_node(self):
         """Obtain this plug's node.

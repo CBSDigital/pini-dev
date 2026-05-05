@@ -4,7 +4,6 @@
 
 import logging
 import operator
-import os
 import re
 import time
 
@@ -12,16 +11,18 @@ from maya import cmds
 
 from pini import dcc, qt
 from pini.utils import (
-    single, cache_property, basic_repr, passes_filter, File, cache_result,
-    EMPTY)
+    single, cache_property, basic_repr, passes_filter, cache_result, EMPTY,
+    PROPERTIES)
 
 from maya_pini.utils import (
     to_clean, bake_results, to_namespace, to_node, CONSTRAINT_TYPES)
 
+from . import pom_joint
+
 _LOGGER = logging.getLogger(__name__)
-_NAME_MAPPINGS_YML = os.environ.get('MAYA_PINI_SKELETON_NAMES')
-if _NAME_MAPPINGS_YML:
-    _NAME_MAPPINGS_YML = File(_NAME_MAPPINGS_YML)
+_NAME_MAPPINGS_YML = None
+if PROPERTIES:
+    _NAME_MAPPINGS_YML = PROPERTIES.to_file('maya/skeleton/names.yml')
 
 
 class CSkeleton:  # pylint: disable=too-many-public-methods
@@ -103,6 +104,19 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             (str): identifier
         """
         return ','.join([_jnt.clean_name for _jnt in self.joints])
+
+    @property
+    def _zero_pose_file(self):
+        """Build path to zero pose file for this skeleton.
+
+        NOTE: requires $PINI_PROPERTIES_PATH to be set.
+
+        Returns:
+            (File|None): zero pose file
+        """
+        if not PROPERTIES:
+            return None
+        return PROPERTIES.to_file(f'maya/skeleton/zero/{self.name}.pkl')
 
     def add_to_grp(self, grp):
         """Add root joint to the given group.
@@ -366,41 +380,6 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 continue
             _plug.anim.loop(offset=_offset)
 
-    def to_joint(self, name, catch=True, log=9):
-        """Find a joint in this skeleton.
-
-        Args:
-            name (str): match by name
-            catch (bool): no error if no joint found
-            log (int): apply log level
-
-        Returns:
-            (CJoint): joint
-        """
-        from maya_pini import open_maya as pom
-        _LOGGER.log(log, 'TO JOINT %s', name)
-
-        # Try simple name match
-        _name = to_clean(name)
-        _node = to_node(_name, namespace=self.namespace)
-        _LOGGER.log(log, ' - NODE %s', _node)
-        if cmds.objExists(_node):
-            return pom.CJoint(_node)
-        _LOGGER.log(log, ' - NODE DOES NOT EXIST')
-
-        if not catch:
-            raise ValueError(name)
-        return None
-
-    def to_ref(self):
-        """Find this skeleton's associated reference.
-
-        Returns:
-            (FileRef): reference
-        """
-        from maya_pini import open_maya as pom
-        return pom.find_ref(self.namespace)
-
     def _read_name(self):
         """Read name of this skeleton.
 
@@ -422,6 +401,17 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             assert self.uid_str in _mappings
         return _mappings[self.uid_str]
 
+    @cache_result
+    def _read_zero_pose(self):
+        """Read zero pose from file.
+
+        Returns:
+            (dict|None): zero pose (if one has been saved)
+        """
+        if self._zero_pose_file and self._zero_pose_file.exists():
+            return self._zero_pose_file.read_pkl()
+        return None
+
     def set_col(self, col):
         """Set colour of this skeleton.
 
@@ -439,6 +429,36 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """
         for _jnt in self.joints:
             _jnt.plug['radius'].set_val(radius)
+
+    def set_pose(self, pose, break_conns=False):
+        """Apply a pose to this skeleton.
+
+        Args:
+            pose (dict): joint position data
+            break_conns (bool): break connections on apply
+        """
+        _LOGGER.debug('SET POSE')
+        for _plug_s, _val in pose.items():
+            _node, _attr = _plug_s.split('.')
+            _jnt_name = f'{self.namespace}:{_node}' if self.namespace else _node
+            _jnt = pom_joint.CJoint(_jnt_name)
+            _plug = _jnt.plug[_attr]
+            _LOGGER.debug(' - APPLY %s -> %s', _plug, _val)
+            _plug.set_val(_val, break_conns=break_conns)
+
+    def set_zero_pose(self, pose=None):
+        """Set zero pose for this skeleton.
+
+        This is saved to file and applied whenever this skeleton is zeroed,
+        allowed skeletons with offsets on their zero poses to be correctly
+        reset.
+
+        Args:
+            pose (dict): pose to apply
+        """
+        _pose = pose or self.to_pose()
+        self._zero_pose_file.write_pkl(_pose)
+        self._read_zero_pose(force=True)
 
     def t_dur(self):
         """Obtain this skeleton's animation's timeline duration.
@@ -468,9 +488,40 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """
         return self.root.tx.t_range(class_=class_)
 
-    def unhide(self):
-        """Show this skelton via its root joint."""
-        self.root.unhide()
+    def to_bbox(self):
+        """Obtain bounding box for this skeleton.
+
+        Returns:
+            (CBoundingBox): bbox
+        """
+        from maya_pini import open_maya as pom
+        return pom.to_bbox(self.joints)
+
+    def to_joint(self, name, catch=True, log=9):
+        """Find a joint in this skeleton.
+
+        Args:
+            name (str): match by name
+            catch (bool): no error if no joint found
+            log (int): apply log level
+
+        Returns:
+            (CJoint): joint
+        """
+        from maya_pini import open_maya as pom
+        _LOGGER.log(log, 'TO JOINT %s', name)
+
+        # Try simple name match
+        _name = to_clean(name)
+        _node = to_node(_name, namespace=self.namespace)
+        _LOGGER.log(log, ' - NODE %s', _node)
+        if cmds.objExists(_node):
+            return pom.CJoint(_node)
+        _LOGGER.log(log, ' - NODE DOES NOT EXIST')
+
+        if not catch:
+            raise ValueError(name)
+        return None
 
     def to_name(self, catch=True):
         """Obtain name assigned to this skeleton.
@@ -488,6 +539,31 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 return None
             raise _exc
 
+    def to_pose(self):
+        """Read this skeleton's current pose.
+
+        Returns:
+            (dict): joint position data
+        """
+        _pose = {}
+        for _plug in self.plugs:
+            _key = f'{_plug.node.clean_name}.{_plug.attr}'
+            _pose[_key] = round(_plug.get_val(), 3)
+        return _pose
+
+    def to_ref(self):
+        """Find this skeleton's associated reference.
+
+        Returns:
+            (FileRef): reference
+        """
+        from maya_pini import open_maya as pom
+        return pom.find_ref(self.namespace)
+
+    def unhide(self):
+        """Show this skelton via its root joint."""
+        self.root.unhide()
+
     def zero(self, break_conns=False):
         """Zero out this skeleton.
 
@@ -495,6 +571,15 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             break_conns (bool): break connections
         """
         _LOGGER.debug('ZERO %s', self)
+
+        # Check for saved pose
+        _zero_pose = self._read_zero_pose()
+        if _zero_pose:
+            _LOGGER.info(' - APPLYING SAVED ZERO POSE')
+            self.set_pose(_zero_pose, break_conns=break_conns)
+            return
+
+        # Otherwise simply zero joints
         for _jnt in self.joints:
             for _plug in [_jnt.rx, _jnt.ry, _jnt.rz]:
                 if _plug.is_locked():

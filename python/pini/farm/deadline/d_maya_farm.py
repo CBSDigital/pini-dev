@@ -7,7 +7,7 @@ from maya.app.renderSetup.model import renderSetup
 
 from pini import pipe, qt, dcc
 from pini.dcc import export
-from pini.utils import single, plural
+from pini.utils import single, plural, ints_to_str
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import cur_renderer
@@ -212,7 +212,7 @@ def _to_layer_val(attr, layer):
     return _val
 
 
-def _to_layer_frames(layer):
+def _to_layer_frames(layer=None):
     """Read layer render frames from render globals.
 
     This takes account of any layer overrides which may have been applied.
@@ -224,10 +224,21 @@ def _to_layer_frames(layer):
         (int list): frames
     """
     _LOGGER.debug('TO LYR FRAMES %s', layer)
+
+    _lyr = layer
+    if not _lyr:
+        _lyr = pom.cur_render_layer()
+    if isinstance(_lyr, str):
+        _lyr = pom.find_render_layer(_lyr)
+    _LOGGER.debug(' - LAYER %s', _lyr)
+
     _start = int(_to_layer_val(
-        "defaultRenderGlobals.startFrame", layer=layer))
+        "defaultRenderGlobals.startFrame", layer=_lyr))
     _end = int(_to_layer_val(
-        "defaultRenderGlobals.endFrame", layer=layer))
+        "defaultRenderGlobals.endFrame", layer=_lyr))
     _step = int(_to_layer_val(
-        "defaultRenderGlobals.byFrameStep", layer=layer))
-    return list(range(_start, _end, _step))
+        "defaultRenderGlobals.byFrameStep", layer=_lyr))
+    _LOGGER.debug(' - START/END/INC %d %d %d', _start, _end, _step)
+    _frames = list(range(_start, _end + 1, _step))
+    _LOGGER.debug(' - FRAMES %s %s', ints_to_str(_frames), _frames)
+    return _frames
