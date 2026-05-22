@@ -80,7 +80,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
         _LOGGER.debug(' - RESULT "%s"', _result)
 
         # Process results
-        if _name == 'annotate':
+        if _name in ('annotate', 'spotLight'):
             _shp = _result.strip()
             _tfm = to_parent(_shp)
             _result = pom.CTransform(_tfm)

@@ -280,20 +280,30 @@ def _read_geo_src():
         (str|None): path to geo source (if any)
     """
     _shds = read_shader_assignments()
-    _geo_srcs = []
+
     _geo_src = None
     for _shd, _data in _shds.items():
         _geos = _data['geos']
         for _geo in _geos:
-            _ref = pom.CReference(_geo)
+
+            # Obtain reference object
+            try:
+                _ref = pom.CReference(_geo)
+            except ValueError:
+                continue  # ie. geo is not referenced
+
             _LOGGER.debug(' - TEST GEO %s %s', _geo, _ref)
             if not _geo_src:
                 _geo_src = _ref
             elif _geo_src == _ref:
                 pass
             else:
-                return None
-    return str(_geo_src.path)
+                return None  # ie. multiple sources
+
+    if _geo_src:
+        return str(_geo_src.path)
+
+    return None
 
 
 def _read_lights():

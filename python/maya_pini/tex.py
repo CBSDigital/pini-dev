@@ -97,6 +97,8 @@ class _Shader(pom.CNode):
             self.set_ftn(col, colspace=colspace)
         elif isinstance(col, pom.CPlug):
             col.connect(self.col)
+        elif isinstance(col, pom.CNode) and col.object_type() == 'file':
+            col.plug['outColor'].connect(self.col)
         else:
             raise ValueError(col)
 
@@ -282,8 +284,12 @@ def create_shader(type_='lambert', name=None, col=None):
     Returns:
         (Shader): shader
     """
-    _node = cmds.shadingNode(type_, asShader=True, name=name)
-    _shd = _Shader(_node)
+    _kwargs = {}
+    if name:
+        _kwargs['name'] = name
+    _node = cmds.shadingNode(type_, asShader=True, **_kwargs)
+    _type = {'surfaceShader': _SurfaceShader}.get(type_, _Shader)
+    _shd = _type(_node)
     assert _shd
     if col:
         if isinstance(col, pom.CPlug):
