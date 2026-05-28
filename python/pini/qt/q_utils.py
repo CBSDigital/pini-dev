@@ -311,7 +311,7 @@ def obt_pixmap(file_: str):
         (CPixmap): pixmap
     """
     if not isinstance(file_, str):
-        raise RuntimeError(f'Bad type {file_} ({type(file_).__name__}')
+        raise RuntimeError(f'Bad type {file_} ({type(file_).__name__})')
     return to_pixmap(file_)
 
 

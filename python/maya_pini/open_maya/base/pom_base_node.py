@@ -70,6 +70,15 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         return to_clean(str(self))
 
     @property
+    def message(self):
+        """Obtain message attribute.
+
+        Returns:
+            (CPlug): message plug
+        """
+        return self.plug['message']
+
+    @property
     def namespace(self):
         """Obtain namespace of this node.
 

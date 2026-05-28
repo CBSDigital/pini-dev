@@ -640,13 +640,15 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None, catch=False):
     raise ValueError(f'Failed to find skeleton {match or namespace}')
 
 
-def find_skeletons(namespace=EMPTY, filter_=None, referenced=None):
+def find_skeletons(
+        namespace=EMPTY, filter_=None, referenced=None, min_jnts=None):
     """Find skeletons in the current scene.
 
     Args:
         namespace (str): filter by exact namespace
         filter_ (str): apply namespace filter
         referenced (bool): filter by referenced status
+        min_jnts (int): ignore skeletons with less than this many joints
 
     Returns:
         (CSkeleton list): matching skeletons
@@ -658,6 +660,8 @@ def find_skeletons(namespace=EMPTY, filter_=None, referenced=None):
         if not passes_filter(_skel.namespace, filter_):
             continue
         if referenced is not None and _skel.root.is_referenced() != referenced:
+            continue
+        if min_jnts and len(_skel.joints) <= min_jnts:
             continue
         _skels.append(_skel)
     return _skels

@@ -81,6 +81,7 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
 
         # Process results
         if _name in ('annotate', 'spotLight'):
+            # Single result returing shape
             _shp = _result.strip()
             _tfm = to_parent(_shp)
             _result = pom.CTransform(_tfm)
@@ -95,7 +96,8 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
             _result = pom.CNurbsCurve(_tfm)
         elif _name in ['curve']:
             _result = pom.CNurbsCurve(_result)
-        elif _name == 'imagePlane':
+        elif _name in ('imagePlane', 'revolve'):
+            # 2 results with tfm/shp
             _tfm, _ = _result
             _result = pom.CTransform(_tfm)
         elif _name in ['createNode', 'pathAnimation', 'shadingNode']:

@@ -187,7 +187,7 @@ class _SGCEntity(sgc_elem.SGCElem):
         _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
         return _tasks
 
-    def find_ver(self, match, catch=True, force=False, **kwargs):
+    def find_ver(self, match=None, catch=True, force=False, **kwargs):
         """Find version.
 
         Args:

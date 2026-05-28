@@ -375,10 +375,11 @@ class CheckRenderGlobals(SCMayaCheck):
         Returns:
             (bool): whether check completed successfully
         """
+        _ren = cur_renderer()
+
         self.check_cur_work()
         self.check_renderer()
 
-        _ren = cur_renderer()
         self.write_log('renderer %s', _ren)
 
         # Check renderer
@@ -417,6 +418,8 @@ class CheckRenderGlobals(SCMayaCheck):
                     ('redshiftOptions.motionBlurShutterStart', 0.25),
                 ]
 
+            self._rs_check_for_bad_tags()
+
         elif _ren == 'vray':
             _attrs_to_check += [
                 ('vraySettings.cam_mbOn', True),
@@ -443,17 +446,6 @@ class CheckRenderGlobals(SCMayaCheck):
         for _attr, _val in _attrs_to_check:
             self.check_attr(_attr, _val, catch=True)
 
-        # Check include all lights in render layers
-        _ial = cmds.optionVar(query='renderSetup_includeAllLights')
-        if not _ial:
-            self.add_fail(
-                'The render setup option "Include all lights in each render '
-                'layer by default" is disabled - as this setting cannot be '
-                'disabled in batch mode (due to a bug in maya), it needs to be '
-                'enabled', fix=wrap_fn(
-                    cmds.optionVar,
-                    intValue=('renderSetup_includeAllLights', True)))
-
         return not self.fails
 
     def _check_render_globals(self):
@@ -479,6 +471,25 @@ class CheckRenderGlobals(SCMayaCheck):
             fix=_init_render_globals)
         return False
 
+    def _rs_check_for_bad_tags(self):
+        """Check for bad tags in redshift render.
+
+        If the tag contains certain words that redshift uses for parsing
+        paths (eg. "Layer"), then it can cause a render to error when it
+        writes out the Cryptomatte pass, with a message saying that the
+        file is already being written to by another process.
+        """
+        _work = pipe.cur_work()
+        for _word in ['Layer', 'Lights']:
+            self.write_log('check tag for word %s', _word)
+            if _word in _work.tag:
+                self.add_fail(
+                    f'Your work file tag "{_work.tag}" includes the word '
+                    f'"{_word}" which causes a bug in redshift, causing it '
+                    'to error when writing out Cryptomatte AOVs for passes '
+                    'with underscores in their name.')
+                return
+
 
 def _init_render_globals():
     """Pop open render globals window and then close it."""
@@ -495,6 +506,8 @@ class CheckRenderLayers(SCMayaCheck):
     def __init__(self, *args, **kwargs):
         """Constructor."""
         super().__init__(*args, **kwargs)
+
+        # Setup prefixes
         _prefixes = {'bty', 'mte', 'sdw', 'ref', 'utl'}
         _prefixes |= set(self.settings.get('add_prefixes', []))
         _prefixes = sorted(_prefixes)
@@ -504,6 +517,7 @@ class CheckRenderLayers(SCMayaCheck):
         """Run this check."""
         self.write_log(' - prefixes %s', self.prefixes)
 
+        # Check layers
         for _lyr in pom.find_render_layers():
             self.write_log('Checking %s pass=%s', _lyr, _lyr.pass_name)
 

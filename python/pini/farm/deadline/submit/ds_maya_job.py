@@ -212,6 +212,7 @@ class CDMayaRenderJob(_CDMayaJob):
         _output_filename = output_filename or self.output.path.replace(
             '.%04d.', '.####.')
         _data = super()._build_info_data(output_filename=_output_filename)
+
         return _data
 
     def _build_job_data(self, output_file_path=None):
@@ -231,14 +232,18 @@ class CDMayaRenderJob(_CDMayaJob):
         _data = super()._build_job_data(
             output_file_path=_output_file_path)
 
+        # Add shared data
         _shared_data = {
             'FrameNumberOffset': '0',
             'LocalRendering': '0',
             'MaxProcessors': '0',
+            'Renderer': _ren,
             'RenderHalfFrames': '0',
             'RenderLayer': self.output.output_name,
-            'Renderer': _ren,
-            'UsingRenderLayers': '1'}
+            'RenderSetupIncludeLights': cmds.optionVar(
+                query='renderSetup_includeAllLights'),
+            'UsingRenderLayers': '1',
+        }
         _data.update(_shared_data)
 
         # Add renderer specific data

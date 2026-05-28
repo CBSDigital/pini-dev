@@ -102,11 +102,14 @@ class _CSGHandler(shotgun_api3.Shotgun):
         # Sanity check
         if safe:
             if fields:
-                _type_fields = self.find_fields(entity_type)
                 assert isinstance(fields, (list, tuple))
+                _req_roots = [_field.split('.')[0] for _field in fields]
+                _type_fields = self.find_fields(entity_type)
                 assert isinstance(_type_fields, (list, tuple))
-                _bad_fields = sorted(set(fields) - set(_type_fields))
+                _bad_fields = sorted(set(_req_roots) - set(_type_fields))
                 if _bad_fields:
+                    _LOGGER.info('REQUESTED FIELDS %s', fields)
+                    _LOGGER.info('REQUESTED ROOTS %s', _req_roots)
                     _LOGGER.info('FIELDS %s', self.find_fields(entity_type))
                     _bad_fields_s = '/'.join(_bad_fields)
                     raise RuntimeError(
@@ -149,8 +152,7 @@ class _CSGHandler(shotgun_api3.Shotgun):
         _LOGGER.debug('SG FIND ONE %s %s %s', entity_type, filters, fields)
         self.n_requests += 1
         _start = time.time()
-        _result = super().find_one(
-            entity_type, filters, fields)
+        _result = super().find_one(entity_type, filters, fields)
         self.request_t += time.time() - _start
         return _result
 

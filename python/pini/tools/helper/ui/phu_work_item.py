@@ -56,14 +56,14 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
         if work is helper.next_work:
             self.notes = 'this will be created if you version up'
             _icon = _NEXT_WORK_ICON
-            self.text_col = _NEXT_TEXT_COL
+            _text_col = _NEXT_TEXT_COL
             self.output_tags = []
             self._mtime = time.time()
             self._has_thumb = False
         else:
             _icon = ph_utils.work_to_icon(work)
             self.output_tags = _get_output_tags(self.work)
-            self.text_col = (
+            _text_col = (
                 _DEF_TEXT_COL if self.output_tags else _NO_OUTPUT_TEXT_COL)
             self._mtime = self.work.mtime()
             self._has_thumb = bool(self.work.obt_image())
@@ -77,7 +77,7 @@ class PHWorkItem(qt.CListViewPixmapItem):  # pylint: disable=too-many-instance-a
 
         super().__init__(
             list_view=list_view, col='Transparent', data=work,
-            height=max(
+            text_col=_text_col, height=max(
                 self.text_h, self.thumb_h + 20 if self._has_thumb else 0))
 
     @property

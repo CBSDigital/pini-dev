@@ -1,3 +1,29 @@
+## [9.13.0] - Thu 2026-05-28 10:38
+### Summary
+ - Pini Helper:
+    - maya submit deadline render bugfix include lights in all render layers by default setting not applied (cstewart),
+    - work file list bugfix text colours not applied,
+ - Sanity Check:
+    - maya redshift check render globals disable check for include all lights in all render layers by default setting,
+    - maya redshift check render globals flag bad tags which cause error on write cryptomatte,
+### Updated
+ - pini.utils.Seq.to_aspect added,
+ - pini.utils.Seq.tp_file bugfix error on no kwargs,
+ - pini.pipe.shotgrid.find bugfix field check error on nested fields,
+ - pini.pipe.shotgrid.SGCUser added sg_slack_token to fields,
+ - pini.pipe.shotgrid.SGVersion output/tag properties added,
+ - pini.pipe.shotgrid.SGCEntity.find_ver allow no match arg,
+ - pini.farm.deadline.CDMayaRenderJob._build_job_data added RenderSetupIncludeLights token,
+ - pini.farm.deadline.CDFarmJob update signature to include more data on create,
+ - pini.farm.deadline.CDFarmJob.to_job added,
+ - pini.farm.deadline.find_job added,
+ - pini.farm.deadline.find_jobs use GetJobsFilter to avoid having to read jobs separately,
+ - pini.tools.sanity_check.CheckRenderGlobals rs check for bad tag name,
+ - pini.tools.helper bugfix text cols on work items not applied,
+ - maya_pini.open_maya.CNode.message added,
+ - maya_pini.open_maya.find_skeletons added min_jnts arg,
+
+
 ## [9.12.1] - Fri 2026-05-22 12:09
 ### Summary
  - Pini Helper:

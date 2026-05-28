@@ -5,7 +5,9 @@ import logging
 import time
 
 from pini import pipe, qt
-from pini.utils import system, single, to_str, safe_zip, cache_result, find_exe
+from pini.utils import (
+    system, single, to_str, safe_zip, cache_result, find_exe, check_heart,
+    to_snake, to_time_f, get_result_cacher, File)
 
 from .. import base
 from . import submit, d_farm_job
@@ -38,21 +40,37 @@ class CDFarm(base.CFarm):
         _cmds = [find_exe('deadlinecommand'), '-GetLimitGroupNames']
         return system(_cmds).split()
 
+    def find_job(self, match):
+        """Find a job.
+
+        Args:
+            match (str): match by name/uid
+
+        Returns:
+            (CDFarmJob): farm job
+        """
+        return single([
+            _job for _job in self.find_jobs()
+            if match in (_job.uid, _job.name)])
+
     def find_jobs(
-            self, read_metadata=False, user=None, batch_name=None, force=False):
+            self, read_metadata=False, user=None, batch_name=None,
+            write_file=None, force=False):
         """Find existing deadline jobs for the current user.
 
         Args:
             read_metadata (bool): read job metadata
             user (str): override user
             batch_name (str): filter by batch name
+            write_file (File): write job details to file (for debugging)
             force (bool): force reread jobs
 
         Returns:
             (CDFarmJob list): farm jobs
         """
         _LOGGER.debug('FIND JOBS %d', read_metadata)
-        _all_jobs = self._read_jobs(user=user, force=force)
+        _all_jobs = self._read_jobs(
+            user=user, write_file=write_file, force=force)
 
         # Read metadata
         if read_metadata:
@@ -73,27 +91,51 @@ class CDFarm(base.CFarm):
 
         return _jobs
 
-    @cache_result
-    def _read_jobs(self, user=None, force=False):
+    @get_result_cacher(use_args=('user',))
+    def _read_jobs(
+            self, user=None, write_file=False, jobs=None, force=False):
         """Read existing deadline jobs for the current user.
 
         Args:
-            user (str): override user
+            user (str): override user (otherwise current user)
+            write_file (File): write job details to file (for debugging)
+            jobs (CDFarmJob list): override job list (to update cache)
             force (bool): force reread jobs
 
         Returns:
             (CDFarmJob list): farm jobs
         """
-        _user = user or getpass.getuser()
-        _cmds = [
-            find_exe('deadlinecommand'),
-            '-GetJobIdsFilter', f'UserName={_user}']
-        _start = time.time()
-        _results = system(_cmds, verbose=1).split()
-        _jobs = [d_farm_job.CDFarmJob(_result) for _result in _results]
-        _LOGGER.info(
-            ' - FOUND %d DEADLINE JOBS IN %.01fs', len(_jobs),
-            time.time() - _start)
+        from pini import farm
+
+        _jobs = jobs
+        if not _jobs:
+
+            # Read results
+            _user = user or getpass.getuser()
+            _deadline = find_exe('deadlinecommand')
+            _cmds = [_deadline, 'GetJobsFilter', f'UserName={_user}']
+            _start = time.time()
+            _result = system(_cmds, verbose=1)
+            farm.JOBS_READ_TIME = time.time()
+            farm.JOBS_READ_DUR = farm.JOBS_READ_TIME - _start
+            _result = _result.replace('\r', '')
+            if write_file:
+                write_file.write(_result, force=True)
+                _LOGGER.info(
+                    ' - WROTE FILE %s %s', write_file.nice_size(), write_file)
+
+            # Process results
+            _jobs = []
+            for _details_s in qt.progress_bar(_result.split('\n\n\n')):
+                _details_s = _details_s.strip()
+                if not _details_s:
+                    continue
+                _job = _details_to_job(_details_s, rtime=farm.JOBS_READ_TIME)
+                _jobs.append(_job)
+
+            _LOGGER.info(
+                ' - FOUND %d DEADLINE JOBS IN %.01fs', len(_jobs),
+                farm.JOBS_READ_DUR)
 
         return _jobs
 
@@ -340,3 +382,113 @@ def _build_update_job_py(outputs, metadata, work):
         f'_metadata = {metadata}',
         'farm.update_cache(work=_work, outputs=_outs, metadata=_metadata)']
     return '\n'.join(_lines)
+
+
+def _details_to_job(details, rtime):
+    """Convert job details string to a farm job object.
+
+    Args:
+        details (str): job details string (output by deadline command)
+        rtime (float): details read time
+
+    Returns:
+        (CDFarmJob): farm job
+    """
+    _details_s = details.strip()
+    assert _details_s
+
+    _data = {'rtime': rtime}
+    for _line in _details_s.split('\n'):
+        if not _line.strip():
+            continue
+        check_heart()
+        _key, _val = _line.strip().split('=', 1)
+
+        if _key not in [
+                'BatchName',
+                'Comment',
+                'ID',
+                'JobName',
+                # 'JobOutputDirectories',
+                'JobOutputFileNames',
+                'PluginInfoDictionary',
+                'Status',
+                'SubmitDateTimeString',
+                'UserName',
+        ]:
+            continue
+        _LOGGER.debug(' - LINE %s', _line)
+        _LOGGER.debug('   - KVP %s %s', _key, _val)
+        assert _key not in _data
+
+        # Clean data
+        if _key == 'SubmitDateTimeString':
+            _fmt = '%m/%d/%Y %H:%M:%S'
+            # _val = _val.strip()
+            _LOGGER.debug('   - CONVERT TIME "%s"', _val)
+            _val = to_time_f(time.strptime(_val, _fmt))
+        _key = {
+            'ID': 'uid',
+            'JobName': 'name',
+            'JobOutputFileNames': 'out_fname',
+            'PluginInfoDictionary': 'info_dict',
+            'SubmitDateTimeString': 'ctime',
+            'UserName': 'user',
+        }.get(_key, to_snake(_key))
+
+        _data[_key] = _val
+
+    # Build output path
+    _out_fname = _data.pop('out_fname', None)
+    _info_dict = _data.pop('info_dict', None)
+    if _out_fname and _info_dict:
+        _extn = File(_out_fname).extn
+        _path = _info_dict_to_path(_info_dict, extn=_extn)
+        _data['path'] = _path
+
+    _LOGGER.debug(' - ADD JOB %s', _data)
+    return d_farm_job.CDFarmJob(**_data)
+
+
+def _info_dict_to_path(dict_s, extn, log=10):
+    """Read output path from info dict.
+
+    Args:
+        dict_s (str): plugin info dict string
+        extn (str): output extension
+        log (int): log level
+
+    Returns:
+        (str): output path
+    """
+    _LOGGER.log(log, ' - INFO DICT %s', dict_s)
+    if not dict_s:
+        return None
+
+    # Process string into dict
+    _data = {}
+    for _kvp_s in dict_s.split(','):
+        _LOGGER.debug('   - KVP %s', _kvp_s)
+        _key, _val = _kvp_s.split('=', 1)
+        _LOGGER.debug('     - KEY / VAL %s %s', _key, _val)
+        _data[_key] = _val
+
+    # Determine prefix
+    _scn = _data['SceneFile']
+    _lyr = _data['RenderLayer']
+    if _lyr.startswith('rs_'):
+        _lyr = _lyr[3:]
+    _prefix = _data['OutputFilePrefix']
+    for _tokens, _val in [
+            (['<layer>', '<Layer>'], _lyr),
+            (['<Scene>'], File(_scn).base),
+    ]:
+        for _token in _tokens:
+            _prefix = _prefix.replace(_token, _val)
+    _LOGGER.log(log, ' - PREFIX %s', _prefix)
+
+    # Build path
+    _path = f'{_data["OutputFilePath"]}/{_prefix}.%04d.{extn}'
+    _LOGGER.log(log, ' - PATH %s', _path)
+
+    return _path

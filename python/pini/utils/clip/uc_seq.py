@@ -112,7 +112,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         Dir(self.dir).browser()
 
     def build_thumbnail(self, file_, width=100, frame=None, force=False):
-        """Build thumbnail for this video.
+        """Build thumbnail for this sequence.
 
         Args:
             file_ (str): thumbnail path
@@ -428,6 +428,15 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """Test this sequence's parent directory exists."""
         self.to_dir().mkdir()
 
+    def to_aspect(self):
+        """Obtain aspect ration of this sequence.
+
+        Returns:
+            (float): aspect ratio
+        """
+        _res = self.to_res()
+        return _res.aspect
+
     def _to_center_path(self):
         """Get central frame file path.
 
@@ -462,14 +471,14 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         """
         return self.to_range()[1]
 
-    def to_file(self, **kwargs):
+    def to_file(self, *args, **kwargs):
         """Map this sequence to a file object.
 
         Returns:
             (File): file using this seq's attributes
         """
         _path = f'{self.dir}/{self.base}.{self.extn}'
-        return File(_path).to_file(**kwargs)
+        return File(_path).to_file(*args, **kwargs)
 
     def to_frame_file(self, frame=None):
         """Obtain the file for the given frame.

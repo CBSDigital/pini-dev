@@ -8,9 +8,13 @@ from pini import dcc
 from .base import CFarm
 
 _LOGGER = logging.getLogger(__name__)
+
 NAME = os.environ.get('PINI_FARM')
 FARM = ICON = None
 IS_AVAILABLE = False
+
+JOBS_READ_TIME = None
+JOBS_READ_DUR = None
 
 if NAME == "Deadline":
     from .deadline import (
@@ -29,5 +33,6 @@ if FARM:
     for _name in dir(FARM):
         if _name.startswith('__'):
             continue
-        _attr = getattr(FARM, _name)
-        globals()[_name] = _attr
+        _val = getattr(FARM, _name)
+        _LOGGER.debug(' - SET ATTR %s %s', _name, _val)
+        globals()[_name] = _val

@@ -7,6 +7,7 @@ These are simple classes for storing shotgrid results.
 
 import logging
 
+from pini import pipe
 from pini.utils import basic_repr, Path, abs_path
 
 from . import sgc_elem
@@ -64,7 +65,7 @@ class SGCUser(sgc_elem.SGCElem):
     ENTITY_TYPE = 'HumanUser'
     FIELDS = (
         'name', 'email', 'login', 'sg_status_list', 'updated_at',
-        'groups')
+        'groups', 'sg_slack_token')
 
     def __init__(self, data):
         """Constructor.
@@ -73,10 +74,13 @@ class SGCUser(sgc_elem.SGCElem):
             data (dict): shotgrid data
         """
         super().__init__(data)
+
         self.login = data['login']
+        self.slack_id = data['sg_slack_token']
         self.name = data['name']
         self.email = data['email']
         self.status = data['sg_status_list']
+
         self.groups = [_item['name'] for _item in data['groups']]
 
     @property
@@ -164,7 +168,6 @@ class SGCPubFile(SGCPath):
             data (dict): shotgrid data
         """
         _LOGGER.debug('INIT SGCPubFile')
-        from pini import pipe
 
         _LOGGER.debug(' - DATA %s', data)
         if data['path_cache']:
@@ -214,6 +217,29 @@ class SGCVersion(sgc_elem.SGCElem):
 
         self.task = self.data['sg_task']['name']
         self.task_id = self.data['sg_task']['id']
+
+        self._output = None
+
+    @property
+    def output(self):
+        """Obtain output for this version's video.
+
+        Returns:
+            (CCPOutputVideo): output
+        """
+        if not self._output:
+            _LOGGER.info(' - BUILDING OUTPUT %s', self.path)
+            self._output = pipe.CACHE.obt_output(self.path)
+        return self._output
+
+    @property
+    def tag(self):
+        """Obtain pini tag for this version.
+
+        Returns:
+            (str): tag
+        """
+        return self.output.tag
 
     def __repr__(self):
         return basic_repr(self, self.path)
