@@ -113,7 +113,7 @@ class PHIKNode(pom.CNode):
 
     def bake_to_skel(
             self, range_=None, step=None, loop=False, skel=None,
-            euler_filter=True, simulation=True, force=False):
+            euler_filter=True, simulation=True, plugs=None, force=False):
         """Bake animation to skeleton.
 
         Args:
@@ -124,6 +124,7 @@ class PHIKNode(pom.CNode):
             euler_filter (bool): apply euler filter
             simulation (bool): bake as simulation (moves timelines - best to
                 have on to see progress)
+            plugs (CPlug list): override list of plugs to bake
             force (bool): supress any bake warnings
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
@@ -148,9 +149,13 @@ class PHIKNode(pom.CNode):
                 _rng = _src_keys[0], _src_keys[-1]
         _LOGGER.info(' - RANGE / STEP %s %s', _rng, _step)
 
+        # Get list of plugs to bake
+        _plugs = plugs
+        if not _plugs:
+            _plugs = [_skel.root.translate]
+            _plugs += [_jnt.rotate for _jnt in _skel.joints]
+
         # Bake anim (copied from HIK bake to skeleton)
-        _plugs = [_skel.root.translate]
-        _plugs += [_jnt.rotate for _jnt in _skel.joints]
         _LOGGER.info(' - PLUGS %s', _plugs)
         mel.eval(f'hikBakeCharacterPre "{self}"')
         cmds.bakeResults(
@@ -161,7 +166,7 @@ class PHIKNode(pom.CNode):
             removeBakedAnimFromLayer=False, bakeOnOverrideLayer=False,
             minimizeRotation=True, controlPoints=False, shape=True)
         mel.eval(f'hikBakeCharacterPost "{self}"')
-        cmds.DeleteStaticChannels()
+        cmds.DeleteAllStaticChannels()
         if euler_filter:
             cmds.filterCurve(_plugs)
 
@@ -280,10 +285,33 @@ class PHIKNode(pom.CNode):
         _LOGGER.debug(' - CURRENT CHAR %s', CHAR_LIST.get_val())
         cmds.refresh()
 
-        # CHAR_LIST.select_item(_char)
         process_deferred_events()
 
         assert CHAR_LIST.get_val() == self
+
+    def to_jnts(self):
+        """Read HIK joints from character definition.
+
+        Returns:
+            (CTransform list): joints
+        """
+        _jnts = set()
+        for _src, _dest in self.find_incoming():
+            if _src.attr != 'Character':
+                continue
+            _jnts.add(_src.node)
+        _jnts = sorted(_jnts)
+        return _jnts
+
+    def to_plugs(self):
+        """Read plugs controlled by HIK from character definition.
+
+        Returns:
+            (CPlug list): plugs
+        """
+        return sum([
+            _jnt.to_tfm_plugs(scale=False) for _jnt in self.to_jnts()],
+            [])
 
     def to_skel(self):
         """Obtain this HIK system's skeleton.
@@ -570,7 +598,9 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
 
 
 @restore_ns
-def build_hik(mapping, name='Auto', straighten_arms=False):
+def build_hik(
+        mapping, name='Auto', straighten_arms=False, reset_ns=True,
+        force=False):
     """Build an HIK character for the given skeleton.
 
     NOTE: the ui doesn't seem to update after building the HIK, but aside
@@ -581,29 +611,39 @@ def build_hik(mapping, name='Auto', straighten_arms=False):
         name (str): HIK character name
         straighten_arms (bool): apply arm align with y axis to allow locking
             of character definition
+        reset_ns (bool): build in root namespace (default: on)
+        force (bool): replace any existing HIK system with the same name
+            without confirmation
 
     Returns:
         (HIKCharacter): new character
     """
     _LOGGER.info('BUILD HIK CHARACTER %s', name)
 
+    if cmds.objExists(name):
+        if not force:
+            raise RuntimeError(f'Node "{name}" already exists')
+        cmds.delete(name)
+
     _mapping = mapping
     if isinstance(_mapping, pom.CSkeleton):
         _mapping = _skel_to_mapping(_mapping)
     assert isinstance(_mapping, list)
+    _LOGGER.debug(' - MAPPPING %s', _mapping)
     _root = _find_map_src('Hips', _mapping)
     _skel = pom.CSkeleton(_root)
 
     # Create character defintion
-    assert not pom.find_nodes(type_='HIKCharacterNode', namespace=None)
+    _pre_hiks = pom.find_nodes(type_='HIKCharacterNode')
     cmds.HIKCharacterControlsTool()
-    set_namespace(':')
+    if reset_ns:
+        set_namespace(':')
     try:
         mel.eval('hikCreateDefinition()')
     except SystemError:
         pass
-    assert pom.find_nodes(type_='HIKCharacterNode', namespace=None)
-    _hikc = single(pom.find_nodes(type_='HIKCharacterNode', namespace=None))
+    _post_hiks = pom.find_nodes(type_='HIKCharacterNode')
+    _hikc = single(set(_post_hiks) - set(_pre_hiks))
 
     for _jnt, _hik in _mapping:
         _LOGGER.debug(' - BIND HIK %s -> %s', _jnt, _hik)
@@ -651,6 +691,15 @@ def find_hik(match=None, catch=False, **kwargs):
         return single(_hiks)
 
     if isinstance(match, (pom.CReference, pom.CNode, pipe_ref.CPipeRef)):
+
+        # Try to match name
+        _name_hiks = [
+            _hik for _hik in _hiks if _hik == match]
+        _LOGGER.debug(' - FOUND %d NAME HIKS %s', len(_name_hiks), _name_hiks)
+        if len(_name_hiks) == 1:
+            return single(_name_hiks)
+
+        # Try to match namespace
         _ns_hiks = [
             _hik for _hik in _hiks if _hik.namespace == match.namespace]
         _LOGGER.debug(' - FOUND %d NS HIKS %s', len(_ns_hiks), _ns_hiks)
@@ -675,7 +724,9 @@ def find_hik(match=None, catch=False, **kwargs):
 
     if catch:
         return False
-    raise ValueError(match, kwargs)
+    _LOGGER.warning(' - FAILED TO FIND HIK %s', _hiks)
+    _LOGGER.warning(' - MATCH / KWARGS %s %s', match, kwargs)
+    raise ValueError(f'Failed to find hik {match or kwargs}')
 
 
 def find_hiks(referenced=None, task=None, namespace=EMPTY):

@@ -84,9 +84,19 @@ def get_file_cacher(file_):
             _force = kwargs.get('force')
             if _force or not _file.exists():
                 _result = func(*args, **kwargs)
-                _file.write_yml(_result, force=True)
+                if _file.extn == 'yml':
+                    _file.write_yml(_result, force=True)
+                elif _file.extn == 'pkl':
+                    _file.write_pkl(_result, force=True)
+                else:
+                    raise ValueError(_file)
             else:
-                _result = _file.read_yml()
+                if _file.extn == 'yml':
+                    _result = _file.read_yml()
+                elif _file.extn == 'pkl':
+                    _result = _file.read_pkl()
+                else:
+                    raise ValueError(_file)
             return _result
 
         return _file_cache_func

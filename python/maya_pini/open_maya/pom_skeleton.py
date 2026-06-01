@@ -45,7 +45,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         Returns:
             (CAnimCurve list): animation curve nodes
         """
-        return [_plug.anim for _plug in self.plugs]
+        return list(filter(bool, [_plug.anim for _plug in self.plugs]))
 
     @property
     def name(self):
@@ -592,20 +592,18 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         return basic_repr(self, str(self.root), separator='|')
 
 
-def find_skeleton(match=None, namespace=EMPTY, referenced=None, catch=False):
+def find_skeleton(match=None, catch=False, **kwargs):
     """Find a skeleton in the current scene.
 
     Args:
         match (str): match by filter or namespace
-        namespace (str): filter by namespace
-        referenced (bool): filter by referenced status
         catch (bool): no error if exactly one skeleton not found
 
     Returns:
         (CSkeleton): matching skeleton
     """
     _LOGGER.debug('FIND SKELETON')
-    _skels = find_skeletons(namespace=namespace, referenced=referenced)
+    _skels = find_skeletons(**kwargs)
     _LOGGER.debug(' - MATCHED %d SKELS %s', len(_skels), _skels)
 
     if not match and len(_skels) == 1:
@@ -615,7 +613,10 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None, catch=False):
     if len(_ns_matches) == 1:
         return single(_ns_matches)
 
-    _root_matches = [_skel for _skel in _skels if _skel.root == match]
+    _root_matches = [
+        _skel for _skel in _skels
+        if match in (_skel.root, _skel.root.to_clean())]
+    _LOGGER.debug(' - FOUND %d ROOT MATCHES', len(_root_matches))
     if len(_root_matches) == 1:
         return single(_root_matches)
 
@@ -637,7 +638,7 @@ def find_skeleton(match=None, namespace=EMPTY, referenced=None, catch=False):
 
     if catch:
         return None
-    raise ValueError(f'Failed to find skeleton {match or namespace}')
+    raise ValueError(f'Failed to find skeleton {match or kwargs}')
 
 
 def find_skeletons(

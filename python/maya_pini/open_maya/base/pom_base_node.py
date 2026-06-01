@@ -524,13 +524,14 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         return cmds.objectType(self.node)
 
-    def parent(self, parent=None, relative=None, world=None):
+    def parent(self, parent=None, relative=None, world=None, absolute=None):
         """Set this node's parent.
 
         Args:
             parent (str): new parent
             relative (bool): maintain local transforms
             world (bool): parent to world
+            absolute (bool): preserve existing world transforms
         """
         if world and not self.to_parent():
             return
@@ -541,6 +542,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         _kwargs = {}
         if relative is not None:
             _kwargs['relative'] = relative
+        if absolute is not None:
+            _kwargs['absolute'] = absolute
         if world is not None:
             _kwargs['world'] = world
 

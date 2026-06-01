@@ -164,11 +164,12 @@ def reset_sel(func):
     return _reset_sel_func
 
 
-def restore(selection=False):
+def restore(selection=False, frame=False):
     """Build a decorator which restores selected scene attributes after exec.
 
     Args:
         selection (bool): restore scene selection
+        frame (bool): restore current frame
 
     Returns:
         (fn): decorator
@@ -181,6 +182,8 @@ def restore(selection=False):
             _func = func
             if selection:
                 _func = restore_sel(_func)
+            if frame:
+                _func = restore_frame(_func)
             _result = _func(*args, **kwargs)
             return _result
 

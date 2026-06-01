@@ -258,7 +258,7 @@ def get_selected(multi=False):
     return single(_refs)
 
 
-def obtain_ref(file_, namespace, force=False):
+def obt_ref(file_, namespace, force=False):
     """Obtain a matching reference.
 
     If the reference doesn't exist then it is created. Otherwise,
@@ -281,3 +281,22 @@ def obtain_ref(file_, namespace, force=False):
         _LOGGER.info(' - REQUIRED FILE %s', _file.path)
         raise NotImplementedError('File mismatch')
     return _ref
+
+
+def obtain_ref(*args, **kwargs):
+    """Obtain a matching reference.
+
+    If the reference doesn't exist then it is created. Otherwise,
+    the path of the existing reference is checked.
+
+    Args:
+        file_ (str): path to reference
+        namespace (str): reference namespace
+        force (bool): replace existing reference without warning dialog
+
+    Returns:
+        (FileRef): matching reference
+    """
+    from pini.tools import release
+    release.apply_deprecation('29/05/26', 'Use obt_ref')
+    return obt_ref(*args, **kwargs)

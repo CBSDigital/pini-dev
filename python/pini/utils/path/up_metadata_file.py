@@ -15,7 +15,6 @@ class MetadataFile(up_file.File):
     the file itself.
     """
 
-    cache_file_extn = 'yml'
     cache_loc = 'adjacent'
     cache_namespace = None
 
@@ -30,8 +29,18 @@ class MetadataFile(up_file.File):
         super().__init__(file_)
         if cache_loc:
             self.cache_loc = cache_loc
-        if cache_file_extn:
-            self.cache_file_extn = cache_file_extn
+        self._cache_file_extn = cache_file_extn
+
+    @property
+    def cache_file_extn(self):
+        """Obtain cache file extn.
+
+        Returns:
+            (str): cache file extn (eg. yml/pkl)
+        """
+        if not self._cache_file_extn:
+            self._cache_file_extn = up_file.File(self.cache_fmt).extn
+        return self._cache_file_extn
 
     @property
     def cache_fmt(self):
@@ -40,7 +49,8 @@ class MetadataFile(up_file.File):
         Returns:
             (str): cache format
         """
-        _filename = f'{self.base}_{{func}}.{self.cache_file_extn}'
+        _fmt = self._cache_file_extn or 'yml'
+        _filename = f'{self.base}_{{func}}.{_fmt}'
 
         if self.cache_loc == 'adjacent':
             _ns_dir = f'{self.cache_namespace}/' if self.cache_namespace else ''

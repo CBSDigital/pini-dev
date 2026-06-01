@@ -35,17 +35,25 @@ def add_anim_offs(tfm, anims=None, anim=None, reset=False):
     _LOGGER.info('ADD ANIM OFFS %s (%d CRVS)', tfm, len(_anims))
 
     # Create attrs
-    _mult = tfm.add_attr('animMult', 1.0, force=reset)
     _offs = tfm.add_attr('animOffset', 0.0, force=reset)
+    _mult = tfm.add_attr('animMult', 1.0, force=reset)
     _anim_t = tfm.add_attr('animTime', 0.0)
 
     # Connect nodes
-    _offs_t = pom.minus_plug('time1.outTime', _offs)
-    _offs_t.multiply(_mult, output=_anim_t, force=True)
+    _offs_t = pom.CPlug('time1.outTime').multiply(_mult)
+    _offs_t.plus(_offs, output=_anim_t, force=True)
     _LOGGER.info(' - MULT/OFFS %s %s', _mult, _offs)
     for _crv in _anims:
         _crv.input.break_conns()
         _anim_t.connect(_crv.input, force=True)
+
+    # # Connect nodes
+    # _offs_t = pom.minus_plug('time1.outTime', _offs)
+    # _offs_t.multiply(_mult, output=_anim_t, force=True)
+    # _LOGGER.info(' - MULT/OFFS %s %s', _mult, _offs)
+    # for _crv in _anims:
+    #     _crv.input.break_conns()
+    #     _anim_t.connect(_crv.input, force=True)
 
     return _offs, _mult
 

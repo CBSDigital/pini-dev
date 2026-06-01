@@ -9,6 +9,7 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini import pipe
+from pini.tools import release
 from pini.utils import (
     basic_repr, single, check_heart, passes_filter, File)
 
@@ -174,6 +175,18 @@ class CReference(om.MFnReference, ref.FileRef):
         """
         return self.find_nodes(type_='animCurve')
 
+    def find_hik(self, match=None):
+        """Find HIK system in this reference.
+
+        Args:
+            match (str): match by root name / namespace
+
+        Returns:
+            (PHIKNode): HIK system
+        """
+        from maya_pini import hik
+        return hik.find_hik(match=match, namespace=self.namespace)
+
     def find_node(self, type_=None, name=None, catch=False):
         """Find a node in this reference.
 
@@ -240,7 +253,7 @@ class CReference(om.MFnReference, ref.FileRef):
         _ns = namespace or self.namespace
         _skels = [
             _skel for _skel in pom.find_skeletons()
-            if _skel.namespace.startswith(_ns)]
+            if _skel.namespace and _skel.namespace.startswith(_ns)]
         _LOGGER.debug(' - FOUND %d SKELS %s', len(_skels), _skels)
 
         # Try exact namespace match
@@ -530,7 +543,7 @@ def find_refs(
     return _p_refs
 
 
-def obtain_ref(file_, namespace):
+def obt_ref(file_, namespace):
     """Obtain a reference, creating it if needed.
 
     Args:
@@ -540,8 +553,22 @@ def obtain_ref(file_, namespace):
     Returns:
         (CReference): reference
     """
-    _ref = ref.obtain_ref(file_, namespace=namespace)
+    _ref = ref.obt_ref(file_, namespace=namespace)
     return CReference(_ref.ref_node)
+
+
+def obtain_ref(*args, **kwargs):
+    """Obtain a reference, creating it if needed.
+
+    Args:
+        file_ (str): path to reference
+        namespace (str): reference namespace
+
+    Returns:
+        (CReference): reference
+    """
+    release.apply_deprecation('29/05/26', 'Use obt_ref')
+    return obt_ref(*args, **kwargs)
 
 
 def selected_ref():

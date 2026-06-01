@@ -1,3 +1,33 @@
+## [9.14.0] - Mon 2026-06-01 11:42
+### Summary
+ - Pini Helper:
+    - bugfix error on load in houdini if PySide6 in sys.path,
+ - Maya Tools:
+    - extended HIK tools,
+### Updated
+ - pini.utils.MetadataFile bugfix bad cache_file_extn if cache_file property override,
+ - pini.utils.get_file_cacher added pkl extn handling,
+ - pini.qt.mgr refactored to remove PyQt + prioritise PySide2 inside dccs,
+ - maya_pini.utils.restore added frame arg,
+ - maya_pini.utils.save_fbx added skins/shapes args,
+ - maya_pini.utils.save_fbx save HIK skeleton definitions,
+ - maya_pini.ref deprecated obtain_ref -> obt_ref,
+ - maya_pini.open_maya.add_anim_offs bugfix mult applied before offset,
+ - maya_pini.open_maya.CNode.parent added absolute flag,
+ - maya_pini.open_maya deprecated obtain_ref -> obt_ref,
+ - maya_pini.open_maya.CReference.find_hik added,
+ - maya_pini.open_maya.CReference.find_skeleton bugfix error on skels w/o ns in scene,
+ - maya_pini.open_maya.CSkeleton.anim remove empty entries from plugs w/o anim,
+ - maya_pini.open_maya.find_skeleton pass kwargs to find_skeletons,
+ - maya_pini.open_maya.find_skeleton match as clean root,
+ - maya_pini.hik.PHIKNode.bake_to_skel added plugs flag,
+ - maya_pini.hik.PHIKNode to_jnts/to_plugs added,
+ - maya_pini.hik.build_hik added reset_ns flag,
+ - maya_pini.hik.build_hik added handling to allow HIK in ns,
+ - maya_pini.hik.build_hik catch existing HIK with name,
+ - maya_pini.jhik.find_hik added match by name,
+
+
 ## [9.13.0] - Thu 2026-05-28 10:38
 ### Summary
  - Pini Helper:

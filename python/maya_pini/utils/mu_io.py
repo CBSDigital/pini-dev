@@ -417,20 +417,22 @@ def _bool_to_mel(val):
 
 
 def save_fbx(
-        file_, selection=True, constraints=True, animation=False,
-        version='FBX201600', range_=None, step=1.0, ascii_=False,
-        force=False):
+        file_, selection=True, constraints=True, skins=True, shapes=True,
+        animation=False, range_=None, step=1.0, ascii_=False,
+        version='FBX201600', force=False):
     """Save fbx file to disk.
 
     Args:
         file_ (File): file to save to
         selection (bool): export selection
         constraints (bool): export constraints
+        skins (bool): export skins (default: on)
+        shapes (bool): export shapes (default: on)
         animation (bool): export animation
-        version (str): fbx version
         range_ (tuple): start/end (for complex animation)
         step (float): step size in frames (for complex animation)
         ascii_ (bool): save as ascii (otherwise binary)
+        version (str): fbx version
         force (bool): replace existing without confirmation
     """
     from pini import dcc
@@ -449,10 +451,11 @@ def save_fbx(
 
     _mel(f'FBXExportFileVersion -v "{version}"')
     _mel('FBXExportSmoothingGroups -v true')
-    _mel('FBXExportShapes -v true')
-    _mel('FBXExportSkins -v true')
+    _mel(f'FBXExportShapes -v {_bool_to_mel(shapes)}')
+    _mel(f'FBXExportSkins -v {_bool_to_mel(skins)}')
     _mel('FBXExportTangents -v true')
     _mel('FBXExportSmoothMesh -v false')
+    _mel('FBXExportSkeletonDefinitions -v true')
     _mel(f'FBXExportInAscii -v {_bool_to_mel(ascii_)}')
 
     _mel(f'FBXExportBakeComplexAnimation -v {_bool_to_mel(animation)}')
