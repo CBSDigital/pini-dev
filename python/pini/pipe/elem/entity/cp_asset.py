@@ -117,10 +117,10 @@ class CPAsset(cp_ety.CPEntity):
                 icon=icons.BUILD, title='Create asset',
                 parent=parent)
 
-        self.mkdir()
-
         super().create(
             force=True, parent=parent, shotgrid_=shotgrid_)
+
+        self.mkdir()
 
 
 def cur_asset(catch=True):

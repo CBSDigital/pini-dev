@@ -176,6 +176,8 @@ def _exec_frame_render(file_, mode, layer, res, cam):
     assert '~' not in file_.path
     _LOGGER.debug(' - DOES NOT EXIST')
 
+    # Exec render
+    _start = time.time()
     if mode == 'api':  # Deprecated ~2020
         from mtoa.cmds import arnoldRender
         arnoldRender.arnoldRender(
@@ -187,7 +189,8 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         mel.eval('renderSequence')
     else:
         raise ValueError(mode)
-    _LOGGER.debug(' - EXECUTED RENDER')
+    _dur = time.time() - _start
+    _LOGGER.info(' - RENDER COMPLETE %.01fs %s', _dur, file_)
 
     # Catch arnold appended _1 to filename
     if not file_.exists():

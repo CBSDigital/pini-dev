@@ -1,3 +1,13 @@
+## [9.15.0] - Tue 2026-06-02 13:00
+### Summary
+ - Pini Helper:
+    - work file right-click better labelling for publishes with output type,
+### Updated
+ - pini.pipe.CPEntitySG.create added with not implemented exc,
+ - pini.pipe.CPAsset.create mkdir moved to after super create call to avoid create dir w/o sg create,
+ - pini.tools.helper better publish labelling in work ctx,
+
+
 ## [9.14.0] - Mon 2026-06-01 11:42
 ### Summary
  - Pini Helper:

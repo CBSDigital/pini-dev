@@ -47,7 +47,8 @@ class SCMayaCheck(sc_check.SCCheck):
         _cur_val = _plug.get_val()
         _passed = _cur_val == val
         self.write_log(
-            ' - check setting %s == %s passed=%d', attr, val, _passed)
+            ' - check setting %s == %s (cur_val=%s) passed=%d',
+            attr, val, _cur_val, _passed)
         if _passed:
             return
         _msg = fail or f'Attribute "{_plug}" is not set to "{val}"'

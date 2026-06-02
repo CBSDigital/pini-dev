@@ -700,7 +700,11 @@ class PHWorkTab:
 
         _label = f'{out.basic_type.capitalize()} - {out.filename}'
         if out.type_ in ('publish', 'publish_seq'):
-            _label = to_nice(out.content_type).capitalize()
+            _type = to_nice(out.content_type).capitalize()
+            _name = out.output_name or out.output_type
+            _label = _type
+            if _name:
+                _label += f': {_name}'
             _icon = ph_utils.output_to_type_icon(out)
         elif out.type_ == 'cache':
             _name = out.output_name or out.dcc_

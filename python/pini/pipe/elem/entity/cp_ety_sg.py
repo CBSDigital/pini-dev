@@ -47,6 +47,16 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         """
         return self.job.sg_proj
 
+    def create(self, force=False, parent=None, shotgrid_=True):
+        """Create this asset.
+
+        Args:
+            force (bool): create asset without warning dialogs
+            parent (QDialog): parent for confirmation dialogs
+            shotgrid_ (bool): register in shotgrid (if available)
+        """
+        raise NotImplementedError
+
     def _read_outputs(self, force=False):
         """Read outputs in this entity.
 

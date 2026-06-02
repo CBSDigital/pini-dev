@@ -91,6 +91,9 @@ def _check_lookdev(force, model_pub):
     from maya_pini import tex
     _LOGGER.info('CHECK LOOKDEV')
 
+    if find_test_lookdev():
+        return
+
     _asset_c = pipe.CACHE.obt(TEST_ASSET)
     _work_dir = _asset_c.find_work_dir('lookdev', dcc_=dcc.NAME, catch=True)
     if not _work_dir:
