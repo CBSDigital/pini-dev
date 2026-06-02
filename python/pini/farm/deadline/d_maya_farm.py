@@ -24,7 +24,7 @@ class CDMayaFarm(d_farm.CDFarm):
             self, camera=None, comment='', priority=50, machine_limit=0,
             frames=None, chunk_size=1, version_up=False, checks_data=None,
             submit_=True, metadata=None, layers=None,
-            result='jobs', force=False, **kwargs):
+            result='jobs', res_pc=None, force=False, **kwargs):
         """Submit maya render job to the farm.
 
         Args:
@@ -42,6 +42,7 @@ class CDMayaFarm(d_farm.CDFarm):
             result (str): what to return
                 jobs - list of submitted jobs
                 msg - submit message
+            res_pc (float): override render resolution (in %)
             force (bool): submit without confirmation dialogs
 
         Returns:
@@ -91,7 +92,7 @@ class CDMayaFarm(d_farm.CDFarm):
                 stime=_stime, layer=_lyr.pass_name, priority=priority,
                 work=_work, frames=_frames, camera=_cam, comment=comment,
                 machine_limit=machine_limit, chunk_size=chunk_size,
-                scene=_render_scene, **kwargs)
+                scene=_render_scene, res_pc=res_pc, **kwargs)
             _render_jobs.append(_job)
             _LOGGER.debug('   - SCENE %s', _job.scene)
             assert _job.scene == _render_scene

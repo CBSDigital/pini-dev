@@ -10,7 +10,7 @@ from pini import pipe, dcc
 from pini.utils import File, Dir, abs_path, to_str
 
 from maya_pini import open_maya as pom, ref
-from maya_pini.utils import to_render_extn
+from maya_pini.utils import to_render_extn, to_render_res
 
 from . import ds_job, ds_utils
 
@@ -171,7 +171,8 @@ class CDMayaRenderJob(_CDMayaJob):
     stype = 'MayaRender'
     plugin = 'MayaRender'
 
-    def __init__(self, layer, work, camera, frames=None, **kwargs):
+    def __init__(
+            self, layer, work, camera, frames=None, res_pc=None, **kwargs):
         """Constructor.
 
         Args:
@@ -179,8 +180,10 @@ class CDMayaRenderJob(_CDMayaJob):
             work (CPWork): work file
             camera (CCamera): job camera
             frames (int list): job frame list
+            res_pc (float): override render resolution (in %)
         """
         self.layer = layer
+        self.res_pc = res_pc
         assert camera
 
         _fmt = to_render_extn()
@@ -218,6 +221,9 @@ class CDMayaRenderJob(_CDMayaJob):
     def _build_job_data(self, output_file_path=None):
         """Build job data for this submission.
 
+        NOTE: this information goes into the PluginInfoDictionary in the
+        job details
+
         Args:
             output_file_path (str): override output filepath
 
@@ -244,6 +250,10 @@ class CDMayaRenderJob(_CDMayaJob):
                 query='renderSetup_includeAllLights'),
             'UsingRenderLayers': '1',
         }
+        if self.res_pc and self.res_pc != 100:
+            _res = to_render_res() * self.res_pc / 100
+            _shared_data['ImageWidth'] = _res.width
+            _shared_data['ImageHeight'] = _res.height
         _data.update(_shared_data)
 
         # Add renderer specific data

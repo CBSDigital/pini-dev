@@ -24,6 +24,7 @@ class CRenderHandler(eh_base.CExportHandler):
 
     add_range = 'Frames'
     add_passes = True
+    add_res_pc = False
     add_cameras = True
 
     def __init__(self, priority=50, label_w=60):
@@ -83,6 +84,10 @@ class CRenderHandler(eh_base.CExportHandler):
                 name='Camera', items=_cams, val=_cam, label_w=60,
                 save_policy=qt.SavePolicy.NO_SAVE)
             _LOGGER.debug(' - CAM UI %s', self.ui.Camera)
+
+        if self.add_res_pc:
+            self.ui.add_spin_box(
+                name='ResPc', val=100, label_w=60, label='Res %')
 
         if self.add_passes:
             self.ui.add_list_widget(name='Passes')

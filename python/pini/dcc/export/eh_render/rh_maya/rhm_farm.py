@@ -24,6 +24,8 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
 
     LABEL = f'Renders the current scene to {farm.NAME}.'
 
+    add_res_pc = True
+
     def __init__(self, priority=60, label_w=80):
         """Constructor.
 
@@ -92,7 +94,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             self, passes, notes=None, version_up=True, camera=None, frames=None,
             render_=True, limit_grps=None, hide_img_planes=False, priority=50,
             machine_limit=15, chunk_size=1, strict_error_checking=True,
-            submit_suspended=False, force=False):
+            submit_suspended=False, res_pc=None, force=False):
         """Execute render.
 
         Args:
@@ -109,6 +111,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             chunk_size (int): job chunk size (frames to execute in one task)
             strict_error_checking (bool): apply deadline strict error checking
             submit_suspended (bool): submit job as suspended
+            res_pc (float): override render resolution (in %)
             force (bool): replace existing without confirmation
         """
         _lyrs = pom.find_render_layers(renderable=True)
@@ -130,7 +133,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             chunk_size=chunk_size, comment=notes, priority=priority,
             machine_limit=machine_limit, limit_groups=_limit_grps,
             strict_error_checking=strict_error_checking,
-            initial_status=_initial_status)
+            initial_status=_initial_status, res_pc=res_pc)
 
         for _revert in _reverts:
             _revert()
