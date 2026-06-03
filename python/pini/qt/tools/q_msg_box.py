@@ -181,9 +181,7 @@ def ok_cancel(
         icon=icon or icons.find('Tiger'), safe=safe)
 
 
-def notify(
-        msg, title='Notification', icon=None, parent=None,
-        verbose=1):
+def notify(msg, title='Notification', icon=None, **kwargs):
     """Raise notification dialog with "Ok" button.
 
     Args:
@@ -194,8 +192,8 @@ def notify(
         verbose (int): print process data
     """
     raise_dialog(
-        msg=msg, title=title, icon=icon or icons.find('Panda'), verbose=verbose,
-        buttons=('Ok', ), parent=parent)
+        msg=msg, title=title, icon=icon or icons.find('Panda'),
+        buttons=('Ok', ), **kwargs)
 
 
 def raise_dialog(
@@ -226,7 +224,7 @@ def raise_dialog(
     qt.get_application()
 
     # Check format in dev mode
-    if testing.dev_mode():
+    if safe and testing.dev_mode():
         assert_eq(title, title.capitalize())
 
     # Build dialog

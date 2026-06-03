@@ -775,6 +775,8 @@ def widget_to_signal(widget):  # pylint: disable=too-many-branches
         _signal = widget.toggled
     elif isinstance(widget, QtWidgets.QComboBox):
         _signal = widget.currentTextChanged
+    elif isinstance(widget, QtWidgets.QDoubleSpinBox):
+        _signal = widget.valueChanged
     elif isinstance(widget, QtWidgets.QLineEdit):
         _signal = widget.textChanged
     elif isinstance(widget, QtWidgets.QListWidget):

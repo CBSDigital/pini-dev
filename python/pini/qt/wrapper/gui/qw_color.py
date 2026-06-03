@@ -11,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 # Added cols - note: case is ignored so much be lower
 _EXTENDED_COLS = {
     'bottlegreen': (0, 106, 78),
+    'grape': (106, 13, 173),
     'plumred': (124, 41, 70),
     'navyblue': (25, 49, 120),
 }

@@ -1,3 +1,15 @@
+## [9.17.0] - Wed 2026-06-03 13:53
+### Summary
+ - Qt Wrapper:
+    - added handling for QDoubleSpinBox widgets,
+### Updated
+ - pini.qt.widget_to_signal added double spinbox handling,
+ - pini.qt added Grape colour,
+ - pini.qt.notify pass kwargs to raise dialog,
+ - pini.qt.raise_dialog safe flag applies to capitalisation check,
+ - maya_pini.utils.render_frame apply,
+
+
 ## [9.16.0] - Tue 2026-06-02 16:13
 ### Summary
  - Pini Helper:
