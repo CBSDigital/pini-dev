@@ -49,8 +49,8 @@ class PRTest:
         """Edit this test in a text editor."""
         self.method.edit()
 
-    def execute(self):
-        """Execute this test."""
+    def run(self):
+        """Run this test."""
         from pini.tools import error
 
         error.TRIGGERED = False

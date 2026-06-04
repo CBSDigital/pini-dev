@@ -1,3 +1,15 @@
+## [9.19.0] - Thu 2026-06-04 16:05
+### Summary
+ - Pini Helper:
+    - houdini farm submit bugfix error in 20.5 (cstewart),
+### Updated
+ - pini.dcc.export.CHouDeadlineRender rs added handling for archives disabled,
+ - pini.dcc.export.CHouDeadlineRender rs added handling for missing custom parms,
+ - pini.dcc.export.CHouDeadlineRender bugfix find submission batch name,
+ - pini.farm.deadline.find_jobs bugfix error on read hou job paths,
+ - pini.tools.release.PRTest renamed execute -> run for symmetry,
+
+
 ## [9.18.0] - Thu 2026-06-04 11:21
 ### Summary
  - Sanity Check:

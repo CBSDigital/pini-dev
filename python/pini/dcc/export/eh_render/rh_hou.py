@@ -243,11 +243,12 @@ def _apply_pipe_expr(parm, template, extn):
     parm.setExpression(_py, language=hou.exprLanguage.Python)
 
 
-def _setup_rs_rop(rop):
+def _setup_rs_rop(rop, catch=True):
     """Setup redshift ROP.
 
     Args:
         rop (RopNode): node to update
+        catch (bool): no error if parm is missing
 
     Returns:
         (CPOutput list): ROP outputs
@@ -258,16 +259,23 @@ def _setup_rs_rop(rop):
     _work = pipe.cur_work()
 
     # Set up redshift archive export
-    _rs_seq = _work.to_output(
-        'cache_seq', extn='rs', output_name=rop.name())
-    _LOGGER.info('     - RS SEQ %s', _rs_seq)
-    for _parm_s in [
-            'rspath',
-            'RS_archive_file',
-    ]:
-        _parm = rop.parm(_parm_s)
-        _apply_pipe_expr(_parm, template='cache_seq', extn='rs')
-    _outs.append(_rs_seq)
+    if rop.parm('RS_archive_enable').eval():
+        _rs_seq = _work.to_output(
+            'cache_seq', extn='rs', output_name=rop.name())
+        _LOGGER.info('     - RS SEQ %s', _rs_seq)
+        for _parm_s in [
+                'rspath',
+                'RS_archive_file',
+        ]:
+            _parm = rop.parm(_parm_s)
+            if not _parm:
+                _path = f'{rop.path()}.{_parm_s}'
+                if catch:
+                    _LOGGER.error(' - MISSING PATH %s', _path)
+                    continue
+                raise RuntimeError(f'Missing parm {_path}')
+            _apply_pipe_expr(_parm, template='cache_seq', extn='rs')
+        _outs.append(_rs_seq)
 
     # Set up render
     _exr = _work.to_output('render', extn='exr', output_name=rop.name())
@@ -285,10 +293,20 @@ def _setup_rs_rop(rop):
             'scene',
     ]:
         _parm = rop.parm(_parm)
+        if not _parm:
+            _path = f'{rop.path()}.{_parm_s}'
+            if catch:
+                _LOGGER.error(' - MISSING PATH %s', _path)
+                continue
+            raise RuntimeError(f'Missing parm {_path}')
         _parm.set('N/A')
         _parm.deleteAllKeyframes()
-    rop.parm('ver').set(-1)
-    rop.parm('ver').deleteAllKeyframes()
+
+    # Reset version parm
+    _ver = rop.parm('ver')
+    if _ver:
+        _ver.set(-1)
+        _ver.deleteAllKeyframes()
 
     return _outs
 
@@ -367,11 +385,8 @@ def _check_job_batch_name(job, batch_name, force=False):
         force (bool): force reread details
     """
     _LOGGER.info(' - CHECK JOB BATCH NAME %s', job)
-    job.to_details(force=force)
-
-    _batch_name = job.to_details()['Batch Name']
-    _LOGGER.info('   - CUR BATCH NAME %s (req %s)', _batch_name, batch_name)
-    if _batch_name == batch_name:
+    _LOGGER.info('   - CUR BATCH NAME %s (req %s)', job.batch_name, batch_name)
+    if job.batch_name == batch_name:
         return
 
     _LOGGER.info('   - UPDATING BATCH NAME')

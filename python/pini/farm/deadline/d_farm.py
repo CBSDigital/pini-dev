@@ -444,7 +444,8 @@ def _details_to_job(details, rtime):
     if _out_fname and _info_dict:
         _extn = File(_out_fname).extn
         _path = _info_dict_to_path(_info_dict, extn=_extn)
-        _data['path'] = _path
+        if _path:
+            _data['path'] = _path
 
     _LOGGER.debug(' - ADD JOB %s', _data)
     return d_farm_job.CDFarmJob(**_data)
@@ -472,6 +473,11 @@ def _info_dict_to_path(dict_s, extn, log=10):
         _key, _val = _kvp_s.split('=', 1)
         _LOGGER.debug('     - KEY / VAL %s %s', _key, _val)
         _data[_key] = _val
+
+    for _key in [
+            'SceneFile', 'RenderLayer', 'OutputFilePrefix', 'OutputFilePath']:
+        if _key not in _data:
+            return None
 
     # Determine prefix
     _scn = _data['SceneFile']
