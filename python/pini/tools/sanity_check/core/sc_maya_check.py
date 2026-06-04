@@ -5,7 +5,7 @@ import logging
 
 from maya import cmds
 
-from pini.utils import wrap_fn, check_heart
+from pini.utils import wrap_fn, check_heart, single
 
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import to_shps, cur_renderer, to_unique
@@ -28,32 +28,49 @@ class SCMayaCheck(sc_check.SCCheck):
         """Execute this check."""
         self._checked_shps = set()
 
-    def check_attr(self, attr, val, fail=None, catch=False):
+    def check_attr(self, attr, val, fail=None, create=False, catch=False):
         """Check a attribute has the given value.
 
         Args:
             attr (str): attribute to check
             val (any): expected value
             fail (str): override fail message
+            create (bool): allow the attribute to be created if it
+                doesn't exist
             catch (bool): no error if attr missing
         """
-        try:
-            _plug = pom.CPlug(attr)
-        except RuntimeError as _exc:
-            if catch:
-                self.write_log('Missing attr %s', attr)
+        if create and not cmds.objExists(attr):
+
+            _node_s, _attr = str(attr).split('.')
+            _node = pom.CNode(_node_s)
+            _fix = wrap_fn(_node.add_attr, _attr, val)
+
+        else:
+
+            # Build plug
+            try:
+                _plug = pom.CPlug(attr)
+            except RuntimeError as _exc:
+                if catch:
+                    self.write_log('Missing attr %s', attr)
+                    return
+                raise _exc
+
+            _cur_val = _plug.get_val()
+            _type = _plug.get_type()
+            if _type in ('float3', ):
+                _cur_val = single(_cur_val)
+            _passed = _cur_val == val
+            self.write_log(
+                ' - check setting %s == %s (cur_val=%s) passed=%d',
+                attr, val, _cur_val, _passed)
+            if _passed:
                 return
-            raise _exc
-        _cur_val = _plug.get_val()
-        _passed = _cur_val == val
-        self.write_log(
-            ' - check setting %s == %s (cur_val=%s) passed=%d',
-            attr, val, _cur_val, _passed)
-        if _passed:
-            return
-        _msg = fail or f'Attribute "{_plug}" is not set to "{val}"'
-        _fix = wrap_fn(_plug.set_val, val)
-        self.add_fail(_msg, fix=_fix, node=_plug.node)
+            _fix = wrap_fn(_plug.set_val, val)
+            _node = _plug.node
+
+        _msg = fail or f'Attribute "{attr}" is not set to "{val}"'
+        self.add_fail(_msg, fix=_fix, node=_node)
 
     def check_pref(self, func, flag, val, fail=None, elem=None, **kwargs):
         """Check a preference is set to the given value.

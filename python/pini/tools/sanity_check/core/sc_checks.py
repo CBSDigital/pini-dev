@@ -247,7 +247,8 @@ def _checks_from_py(py_file) -> list:
 
     # Check these checks were defined in this py file
     _checks = []
-    _class_names = [_class.name for _class in py_file.find_classes()]
+    _class_names = [
+        _class.name for _class in py_file.find_classes(internal=False)]
     for _type in _types:
         _src = abs_path(inspect.getfile(_type))
         _src = File(_src).to_file(extn='py')
@@ -257,6 +258,7 @@ def _checks_from_py(py_file) -> list:
         if _type.__name__ not in _class_names:
             _LOGGER.debug('   - REJECTED MISSING NAME %s', _type.__name__)
             continue
+        _LOGGER.debug('   - TYPE %s', _type.__name__)
         _check = _type()
         _checks.append(_check)
 

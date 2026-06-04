@@ -157,7 +157,7 @@ class PyElem:
         if internal is not None:
             _children = [
                 _child for _child in _children
-                if _child.internal != internal]
+                if _child.internal == internal]
 
         return _children
 
@@ -204,14 +204,14 @@ class PyElem:
         _match_s = '' if not match else f' "{match}"'
         raise ValueError(f'Failed to find class{_match_s} in {self.name}')
 
-    def find_classes(self):
+    def find_classes(self, **kwargs):
         """Find child classes of this object.
 
         Returns:
             (PyClass list): child classes
         """
         from pini.utils import PyClass
-        return [_elem for _elem in self.find_children()
+        return [_elem for _elem in self.find_children(**kwargs)
                 if isinstance(_elem, PyClass)]
 
     def find_def(self, match=None, internal=None, recursive=False, catch=False):

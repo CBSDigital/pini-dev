@@ -203,24 +203,17 @@ class CReference(om.MFnReference, ref.FileRef):
             _nodes = [_node for _node in _nodes if _node.clean_name == name]
         return single(_nodes, catch=catch)
 
-    def find_nodes(
-            self, type_=None, full_path=False, dag_only=False, filter_=None,
-            catch=True):
+    def find_nodes(self, type_=None, catch=True, **kwargs):
         """Find nodes in this reference.
 
         Args:
             type_ (str): filter by type
-            full_path (bool): use full node path
-            dag_only (bool): return only dag nodes
-            filter_ (str): apply filter to node name
             catch (bool): catch + ignore nodes that error on init
 
         Returns:
             (CBaseNode list): nodes
         """
-        _all_nodes = super().find_nodes(
-            type_=type_, dag_only=dag_only, full_path=full_path,
-            filter_=filter_)
+        _all_nodes = super().find_nodes(type_=type_, **kwargs)
         _nodes = set()
         for _node in _all_nodes:
             try:
@@ -230,7 +223,7 @@ class CReference(om.MFnReference, ref.FileRef):
                     raise _exc
                 continue
             _nodes.add(_node)
-        return sorted(_nodes)
+        return _nodes
 
     def find_skeleton(self, namespace=None, root=None, catch=True):
         """Find this node's skeleton.

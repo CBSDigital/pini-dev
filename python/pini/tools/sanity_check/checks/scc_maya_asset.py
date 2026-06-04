@@ -544,7 +544,7 @@ class CheckForCameras(core.SCMayaCheck):
                 continue
             if str(_cam).strip('|') in DEFAULT_NODES:
                 continue
-            self.add_fail(f'Camera {_cam}', node=_cam)
+            self.add_fail(f'Camera {_cam} inside asset hierarchy', node=_cam)
 
 
 class FindUnneccessarySkinClusters(core.SCMayaCheck):

@@ -1,3 +1,20 @@
+## [9.18.0] - Thu 2026-06-04 11:21
+### Summary
+ - Sanity Check:
+    - added functionality to create missing attributes,
+ - Open Maya Wrapper:
+    - better handling for updating colour attributes,
+### Updated
+ - pini.utils.PyFile.find_children bugfix apply internal filter,
+ - pini.utils.PyFile.find_classes pass kwargs to find_children,
+ - pini.tools.sanity_check.find_checks ignore internal objects,
+ - pini.tools.sanity_check.SCMayaCheck.check_attr added create opt,
+ - pini.tools.sanity_check.CheckForCameras better error message,
+ - maya_pini.open_maya.CPlug.set_val added handling for QColor,
+ - maya_pini.open_maya.CReference.find_nodes disabled sort,
+ - maya_pini.open_maya.CReference.find_nodes pass kwargs to FileRef.find_nodes,
+
+
 ## [9.17.0] - Wed 2026-06-03 13:53
 ### Summary
  - Qt Wrapper:

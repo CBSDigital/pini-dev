@@ -8,7 +8,9 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini import qt
+from pini.qt import QtGui
 from pini.utils import basic_repr, single, check_heart
+
 from maya_pini.utils import set_enum
 
 from . import pom_node
@@ -631,6 +633,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             col (CColor|str): colour (eg. OliveGreen)
         """
         _col = qt.to_col(col)
+        _LOGGER.debug('SET COL %s', _col)
         self.set_val(_col)
 
     def set_enum(self, val):
@@ -715,16 +718,21 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         # Apply value
         if isinstance(val, str):
+            _LOGGER.debug(' - APPLY STR %s', self)
             cmds.setAttr(self, val, type='string')
-            return
-        if isinstance(val, (pom.CArray3, qt.CColor)):
+        elif isinstance(val, QtGui.QColor):
+            _val = val.redF(), val.greenF(), val.blueF()
+            _LOGGER.debug(' - APPLY QColor %s %s', self, _val)
+            cmds.setAttr(self, *_val)
+        elif isinstance(val, pom.CArray3):
             _LOGGER.debug(' - APPLY ARRAY %s %s', self, val.to_tuple())
             cmds.setAttr(self, *val.to_tuple())
-            return
-        if isinstance(val, (tuple, list)) and len(val) == 3:
+        elif isinstance(val, (tuple, list)) and len(val) == 3:
+            _LOGGER.debug(' - APPLY TUPLE %s', val)
             cmds.setAttr(self, *val)
-            return
-        cmds.setAttr(str(self), val)
+        else:
+            _LOGGER.debug(' - APPLY BASIC %s', val)
+            cmds.setAttr(self, val)
 
     def t_dur(self):
         """Obtain this plugs's animation duration on the timeline.
