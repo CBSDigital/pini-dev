@@ -304,12 +304,14 @@ def _fix_shared_parent(parent, nodes, set_, grp):
 
 
 def find_top_level_nodes():
-    """Find non-default dag nodes with no parents.
+    """Find non-default no-dag dag nodes with no parents.
 
     Returns:
         (str list): top nodes
     """
-    return pom.find_nodes(top_node=True, default=False, filter_='-JUNK')
+    return [
+        _node for _node in pom.find_nodes(top_node=True, default=False)
+        if not m_pipe.node_is_junk(_node)]
 
 
 def fix_node_suffix(
