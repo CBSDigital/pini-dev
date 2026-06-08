@@ -435,7 +435,7 @@ class PHUiBase(
                 output_c.content_type in ('Render', 'Video') and
                 self.work):
             menu.add_action(
-                'Set as thumbnail', icon=icons.find('Picture'),
+                'Set as thumbnail', icon=icons.find('Framed Picture'),
                 func=wrap_fn(self._set_work_thumb, output))
 
         menu.add_separator()

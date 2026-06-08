@@ -1,3 +1,11 @@
+## [9.21.1] - Mon 2026-06-08 16:41
+### Summary
+ - Pini Helper:
+    - bugfix error on right-click work file,
+### Updated
+ - pini.tools.helper bugfix bad icon ref in work ctx,
+
+
 ## [9.21.0] - Mon 2026-06-08 16:32
 ### Summary
  - Pini Helper:
