@@ -1,5 +1,6 @@
 """Tools for managing maya publish handlers."""
 
+import importlib
 import logging
 import os
 
@@ -24,7 +25,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
     NAME = 'Maya Lookdev Publish'
     ACTION = 'LookdevPublish'
-    ICON = icons.find('Palette')
+    ICON = icons.find('Artist Palette')
     COL = 'Gold'
     TYPE = 'Publish'
 
@@ -370,6 +371,8 @@ def _export_ass(force):
     _ass.delete(wording='replace', force=force)
     assert not _ass.exists()
     _ass.test_dir()
+    cmds.loadPlugin('mtoa', quiet=True)
+    importlib.reload(cmds)
     cmds.arnoldExportAss(
         filename=_ass.path,
         selected=True,

@@ -1,3 +1,17 @@
+## [9.20.0] - Mon 2026-06-08 15:40
+### Summary
+ - Pini Install:
+    - optimised icons module to improve speed,
+### Updated
+ - pini.icons.find removed filter check for speed,
+ - pini.dcc.export.CMayaLookdevPublish bugfix error on export ass w/o mtoa loaded,
+ - pini.tools.sanity_check SCPipeCheck removed with functionality added to SCCheck,
+ - maya_pini.utils.render force cam visibilty to avoid white frame bug,
+ - maya_pini.open_maya.CBaseNode visibility moved from CBaseTransform,
+ - maya_pini.open_maya.CBaseNode.load_preset added fmt flag,
+ - maya_pini.tex.to_shd added aiStandardSurface handling,
+
+
 ## [9.19.1] - Fri 2026-06-05 12:16
 ### Summary
  - Sanity Check:

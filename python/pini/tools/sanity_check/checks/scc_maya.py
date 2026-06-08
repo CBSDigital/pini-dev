@@ -222,7 +222,11 @@ class CheckPlugins(core.SCMayaCheck):
 
         # Disable slow autoload
         for _plugin in [
-                'MASH', 'bifrostGraph', 'bifrostshellnode', 'bifrostvisplugin']:
+                'MASH',
+                'bifrostGraph',
+                'bifrostshellnode',
+                'bifrostvisplugin'
+        ]:
             self.write_log('Checking autoload ' + _plugin)
             if _plugin not in _plugins:
                 self.write_log(' - not available')

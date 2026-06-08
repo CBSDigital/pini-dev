@@ -177,6 +177,22 @@ class SCCheck:
             return False
         return True
 
+    def check_cache_up_to_date(self):
+        """Check this cache is not more than 20 minutes old.
+
+        Returns:
+            (bool): whether cache is outdated
+        """
+        _max_age = 20
+        _age = time.time() - pipe.CACHE.ctime
+        self.write_log('Found cache %s age=%s', pipe.CACHE, nice_age(_age))
+        if _age > _max_age * 60:
+            self.add_fail(
+                f'Cache is more than {_max_age:d} minutes old',
+                fix=pipe.CACHE.reset)
+            return False
+        return True
+
     def edit(self):
         """Edit this check's code."""
         _name = type(self).__name__
@@ -370,33 +386,6 @@ class SCCheck:
     def __repr__(self):
         _type = type(self).__name__.strip('_')
         return f'<SCCheck:{_type}>'
-
-
-class SCPipeCheck(SCCheck):
-    """Base class for any check which requires reading the pipeline."""
-
-    def check_cache_up_to_date(self):
-        """Check this cache is not more than 20 minutes old.
-
-        Returns:
-            (bool): whether cache is outdated
-        """
-        _max_age = 20
-        _age = time.time() - pipe.CACHE.ctime
-        self.write_log('Found cache %s age=%s', pipe.CACHE, nice_age(_age))
-        if _age > _max_age * 60:
-            self.add_fail(
-                f'Cache is more than {_max_age:d} minutes old',
-                fix=pipe.CACHE.reset)
-            return False
-        return True
-
-    def run(self):
-        """Run this check.
-
-        To be implemented in subclass.
-        """
-        raise NotImplementedError
 
 
 class _ProgressUpdater:

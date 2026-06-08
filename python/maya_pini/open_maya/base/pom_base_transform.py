@@ -160,15 +160,6 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """
         return self.to_tfm_plugs()
 
-    @property
-    def visibility(self):
-        """Obtain visibility plug.
-
-        Returns:
-            (CPlug): visibility
-        """
-        return self.plug['visibility']
-
     def find_children(
             self, type_=None, recursive=False, class_=None, filter_=None,
             types=None):

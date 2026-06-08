@@ -23,7 +23,7 @@ _NO_OUTPUT_TEXT_COL = qt.CColor('Grey')
 _NO_OUTPUT_TEXT_COL = _NO_OUTPUT_TEXT_COL.whiten(0.7)
 _NEXT_TEXT_COL = qt.CColor('Chartreuse')
 
-_NEXT_WORK_ICON = icons.find('Hatching')
+_NEXT_WORK_ICON = icons.find('Hatching Chick')
 
 _OUTPUT_ICONS = {
     'Cached': icons.find('Money Bag'),

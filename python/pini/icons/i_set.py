@@ -4,11 +4,13 @@ import codecs
 import logging
 
 from pini.utils import (
-    Seq, cache_property, single, to_snake, passes_filter, cache_result)
+    Seq, cache_property, to_snake, passes_filter, cache_result,
+    File, Dir, cache_method_to_file)
 
 from . import i_parser, i_emoji
 
 _LOGGER = logging.getLogger(__name__)
+_DIR = File(__file__).to_dir()
 
 
 class EmojiSet(Seq):
@@ -18,73 +20,74 @@ class EmojiSet(Seq):
         """Constructor."""
         super().__init__(*args, **kwargs)
         self.index = f'{self.dir}/index.html'
+        _name = Dir(self.dir).filename
+        self.cache_fmt = _DIR.to_file(f'cache/.{_name}_{{func}}.pkl').path
         self._matches = {}
 
-    def find(self, match, catch=False, verbose=0):
+    def find(self, match, catch=False):
         """Find the path to an emoji in this set.
 
         Args:
             match (str|int): match by name or index
             catch (bool): no error if exactly one emoji is not found
-            verbose (int): print process data
 
         Returns:
             (str): path to emoji
         """
-        _emoji = self.find_emoji(match=match, catch=catch, verbose=verbose)
+        _emoji = self.find_emoji(match=match, catch=catch)
         if not _emoji:
             return None
         return _emoji.path
 
-    def find_emoji(self, match, catch=False, verbose=0):
+    def find_emoji(self, match, catch=False):
         """Find an emoji in this set.
 
         Args:
             match (str|int): match by name or index
             catch (bool): no error if exactly one emoji is not found
-            verbose (int): print process data
 
         Returns:
             (Emoji): matching emoji
         """
+        _LOGGER.debug('FIND EMOJI %s', match)
         _emoji = self._matches.get(match)
-        if not _emoji:
-            _emojis = []
+        if _emoji:
+            return _emoji
 
-            # Find index to match
-            _idx = None
-            if isinstance(match, int):
-                _idx = match
-            elif isinstance(match, str) and match.isdigit():
-                _idx = int(match)
+        # Find index/str to match
+        _match_i = None
+        if isinstance(match, int):
+            _match_i = match
+        elif isinstance(match, str) and match.isdigit():
+            _match_i = int(match)
+        _match_s = None
+        if isinstance(match, str):
+            _match_s = match.lower()
+        _LOGGER.debug(' - MATCH "%s" "%s"', _match_i, _match_s)
+        if _match_i is None and not _match_s:
+            raise TypeError(match, type(match))
 
-            # Match by index/name/filter
-            for _o_emoji in self._emojis:  # pylint: disable=not-an-iterable
-                if isinstance(match, str):
-                    if _o_emoji.name.lower() == match.lower():
-                        _emoji = _o_emoji
-                        break
-                    if passes_filter(_o_emoji.name.lower(), match.lower()):
-                        _emojis.append(_o_emoji)
-                if _idx is not None and _o_emoji.index == _idx:
-                    _emoji = _o_emoji
-                    break
+        # Match by index/name/filter
+        for _o_emoji in self._emojis:  # pylint: disable=not-an-iterable
+            if _match_s and _o_emoji.name.lower() == _match_s:
+                _emoji = _o_emoji
+                break
+            if _match_i is not None and _o_emoji.index == _match_i:
+                _emoji = _o_emoji
+                break
 
-            # Handle fail
-            if not _emoji:
-                try:
-                    _emoji = single(_emojis, catch=catch)
-                except ValueError as _exc:
-                    if verbose:
-                        for _emoji in sorted(_emojis):
-                            _LOGGER.info(' - %s', _emoji.name)
-                    _emojis = sorted([_emoji.name for _emoji in _emojis])
-                    raise ValueError(
-                        f'Failed to match {match} - {_emojis}') from _exc
-
+        if _emoji:
             self._matches[match] = _emoji
+            return _emoji
 
-        return _emoji
+        # Handle fail
+        if catch:
+            return None
+        _emojis = '/'.join(sorted([
+            _o_emoji.name for _o_emoji in self._emojis
+            if passes_filter(_o_emoji.name.lower(), _match_s)]))
+        raise ValueError(
+            f'Failed to match {match} - possibly {_emojis}?')
 
     @cache_result
     def find_grp(self, name):
@@ -111,26 +114,41 @@ class EmojiSet(Seq):
         Returns:
             (Emoji list): all emojis
         """
-        # pylint: disable=no-member
-
         _emojis = []
-        for _name, _idx in self._html_parser.names.items():
-            _url = self._html_parser.urls[_name]
+        for _idx, _name, _url in self._to_parser_data():
             _emoji = i_emoji.Emoji(file_=self[_idx], name=_name, url=_url)
             _emojis.append(_emoji)
-
         return tuple(_emojis)
 
-    @cache_property
-    def _html_parser(self):
-        """Retrieve emoji index parser object.
+    @cache_method_to_file
+    def _to_parser_data(self, force=False):
+        """Obtain data by parsing index.html file.
+
+        Args:
+            force (bool): force reread index.html from disk
 
         Returns:
-            (EmojiIndexParser): parser
+            (tuple list): index/name/url
         """
+
+        # Parse html
         _hook = codecs.open(self.index, encoding='utf-8')
         _body = _hook.read()
         _hook.close()
         _parser = i_parser.EmojiIndexParser()
         _parser.feed(_body)
-        return _parser
+
+        # Organise data
+        _data = []
+        for _raw_name, _idx in _parser.names.items():
+            _name = _raw_name.strip()
+            _LOGGER.debug('NAME / IDX %s %d', _name, _idx)
+            if not _name:
+                _LOGGER.debug(' - REJECTED NO NAME')
+                continue
+            _url = _parser.urls[_raw_name]
+            if _url:
+                _url = _url.strip()
+            _data.append((_idx, _name, _url))
+
+        return _data

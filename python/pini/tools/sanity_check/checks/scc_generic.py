@@ -5,12 +5,12 @@ import logging
 from pini import dcc, pipe
 from pini.utils import wrap_fn, chain_fns, Res
 
-from ..core import SCCheck, SCPipeCheck
+from ..core import SCCheck
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CheckRefsLatest(SCPipeCheck):
+class CheckRefsLatest(SCCheck):
     """Check all pipeline references are using the latest version."""
 
     dcc_filter = '-nuke -spainter'
@@ -42,7 +42,7 @@ class CheckRefsLatest(SCPipeCheck):
         ref_.update(path)
 
 
-class CheckAbcFpsMatchesScene(SCPipeCheck):
+class CheckAbcFpsMatchesScene(SCCheck):
     """Check frame rate of referenced abcs matches current scene FPS."""
 
     dcc_filter = '-spainter'

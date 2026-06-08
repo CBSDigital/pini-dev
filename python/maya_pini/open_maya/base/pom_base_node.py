@@ -112,6 +112,15 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         return self.to_shp(catch=True)
 
+    @property
+    def visibility(self):
+        """Obtain visibility plug.
+
+        Returns:
+            (CPlug): visibility
+        """
+        return self.plug['visibility']
+
     def add_attr(
             self, name, value, force=False, locked=False, min_val=None,
             max_val=None, keyable=True):
@@ -778,25 +787,29 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             raise ValueError(fmt)
         return File(_file)
 
-    def load_preset(self, file_):
+    def load_preset(self, file_, fmt=None):
         """Load the given preset to this node.
 
         Args:
             file_ (str): path to preset file
+            fmt (str): preset format (if not determined by file extn)
+                mpa - mel format, can cause random crash
+                mpb - python format
         """
         _file = File(file_)
         assert _file.exists()
-        _tmp_file = self._to_preset_tmp(fmt=_file.extn)
+        _fmt = fmt or _file.extn
+        _tmp_file = self._to_preset_tmp(fmt=_fmt)
         if _tmp_file != _file:
             _file.copy_to(_tmp_file, force=True, verbose=0)
 
-        if _file.extn == 'mpa':
+        if _fmt == 'mpa':
             _cmd = f'{_get_load_preset_mel()} "{self}" "" "" "tmp" 1'
             mel.eval(_cmd)
-        elif _file.extn == 'mpb':
+        elif _fmt == 'mpb':
             cmds.nodePreset(load=(self, "tmp"))
         else:
-            raise ValueError(_file.path)
+            raise ValueError(_fmt)
 
     def save_preset(self, file_=None, fmt='auto', force=False):
         """Save this node's settings to a preset file.

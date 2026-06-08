@@ -285,7 +285,7 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
         _info = qt.CLabel(self)
         _info.resize(self.def_h, self.def_h)
         _info.move(0, 20)
-        _pix = qt.CPixmap(icons.find('Info'))
+        _pix = qt.CPixmap(icons.find('Information'))
         _info.setPixmap(_pix.resize(self.def_h))
         _h_layout.addWidget(_info)
 

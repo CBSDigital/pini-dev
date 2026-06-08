@@ -431,7 +431,9 @@ def to_shd(obj):
         _shd = _SurfaceShader(_node)
     elif _type == 'shadingEngine':
         _se = _node
-    elif _type in ['VRayMtl', 'VRayCarPaintMtl', 'VRayBlendMtl', 'phong']:
+    elif _type in [
+            'VRayMtl', 'VRayCarPaintMtl', 'VRayBlendMtl', 'phong',
+            'aiStandardSurface']:
         _shd = _Shader(_node)
 
     # Try finding connected shading engines (eg. new type of shading node)

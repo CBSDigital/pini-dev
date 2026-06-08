@@ -120,6 +120,10 @@ def render_frame(
     _cam = camera
     if not _cam:
         _cam = pom.find_render_cam()
+    else:
+        _cam = pom.CCamera(_cam)
+    _cam.visibility.set_val(True)
+    _cam.shp.visibility.set_val(True)
     _LOGGER.debug(' - CAM %s', _cam)
 
     # Prepare output path
