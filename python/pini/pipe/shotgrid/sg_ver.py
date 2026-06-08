@@ -64,6 +64,7 @@ def create_ver(
             if _out:
                 _pub_inputs.add(_out)
         _comment = _comment or _work.notes
+        _disable_other_vers(_work)
     _progress.set_pc(20)
 
     # Create version
@@ -290,6 +291,32 @@ def _build_ver_data(render, frames, comment, pub_files, pub_inputs, video):
             _data[_field].append(_file_data)
 
     return _data
+
+
+def _disable_other_vers(work):
+    """Set other versions in this stream to N/A.
+
+    This is so that the new version will be the only one set to review.
+
+    Args:
+        work (CPWork): work file
+    """
+    _ety = work.entity.sg_entity
+    _task = work.work_dir.sg_task
+
+    _o_vers = _ety.find_vers(
+        status='rev', tag=work.tag, task_id=_task.id_)
+    _LOGGER.info(' - APPLY N/A TO %d VERS: %s', len(_o_vers), _o_vers)
+    if not _o_vers:
+        return
+    _batch_data = [
+        {
+            'request_type': 'update',
+            'entity_type': 'Version',
+            'entity_id': _ver.id_,
+            'data': {'sg_status_list': 'na'}}
+        for _ver in _o_vers]
+    sg_handler.batch(_batch_data)
 
 
 def _obt_ver_elem(

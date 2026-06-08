@@ -17,7 +17,6 @@ def find(*args, **kwargs):
     Args:
         match (str|int): match by name or index
         catch (bool): no error if exactly one emoji is not found
-        verbose (int): print process data
 
     Returns:
         (str): path to emoji
@@ -32,7 +31,6 @@ def find_emoji(*args, **kwargs):
     Args:
         match (str|int): match by name or index
         catch (bool): no error if exactly one emoji is not found
-        verbose (int): print process data
 
     Returns:
         (Emoji): matching emoji

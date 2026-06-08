@@ -1,3 +1,12 @@
+## [9.21.0] - Mon 2026-06-08 16:32
+### Summary
+ - Pini Helper:
+    - asset submit version set other versions to N/A (eehemann),
+### Updated
+ - pini.pipe.shotgrid.batch made public,
+ - pini.pipe.shotgrid.create_ver set other versions to N/A,
+
+
 ## [9.20.0] - Mon 2026-06-08 15:40
 ### Summary
  - Pini Install:

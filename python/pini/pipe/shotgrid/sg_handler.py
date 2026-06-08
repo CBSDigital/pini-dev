@@ -253,12 +253,20 @@ def batch(data):
     """Batch multiple operations.
 
     Args:
-        data (dict list): operations data
+        data (dict list): operations data - list of dicts with keys:
+            request_type - eg. update/create
+            entity_type - eg. Version/PublishedFile
+            entity_id - entity ID
+            data - data to apply to request
 
     Returns:
         (dict list): batch result
     """
-    return to_handler().batch(data)
+    _LOGGER.debug('BATCH CMD SUBMIT')
+    _LOGGER.debug(' - DATA %d %s', len(data), data)
+    _handler = to_handler()
+    _LOGGER.debug(' - HANDLER %s', _handler)
+    return _handler.batch(data)
 
 
 def find_all_data(entity_type, id_):

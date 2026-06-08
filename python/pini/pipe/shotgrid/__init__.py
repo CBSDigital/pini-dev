@@ -6,7 +6,7 @@ from .sg_utils import ICON, output_to_work
 
 from .sg_handler import (
     to_handler, find, find_fields, find_one, update, create, find_all_data,
-    upload_filmstrip_thumbnail, upload_thumbnail, upload)
+    upload_filmstrip_thumbnail, upload_thumbnail, upload, batch)
 
 from .sg_job import create_job
 from .sg_sequence import create_sequence
