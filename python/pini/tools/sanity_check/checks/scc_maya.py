@@ -632,8 +632,12 @@ class CheckColorManagement(core.SCMayaCheck):
 
     enabled = False  # Disabled by default, can be enabled in settings
 
-    def run(self):
-        """Run this check."""
+    def run(self, check_view=False):
+        """Run this check.
+
+        Args:
+            check_view (bool): check viewport settings
+        """
         self.job = pipe.CACHE.cur_job
         self.entity = pipe.CACHE.cur_entity
 
@@ -658,8 +662,9 @@ class CheckColorManagement(core.SCMayaCheck):
             val=True)
         self.check_pref(
             func=cmds.colorManagementPrefs, flag='configFilePath', val=_ocio)
-        self.check_pref(
-            func=cmds.colorManagementPrefs, flag='viewName', val='Raw')
+        if check_view:
+            self.check_pref(
+                func=cmds.colorManagementPrefs, flag='viewName', val='Raw')
 
         self._check_file_node_colspaces()
 

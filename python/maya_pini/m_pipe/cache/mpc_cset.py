@@ -74,7 +74,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         Returns:
             (str): path to icon
         """
-        return icons.find('Urn')
+        return icons.find('Funeral Urn')
 
 
 def _read_cset_geo(cset):

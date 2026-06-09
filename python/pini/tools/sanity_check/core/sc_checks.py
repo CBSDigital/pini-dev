@@ -99,13 +99,14 @@ def find_checks(  # pylint: disable=too-many-branches
         _LOGGER.debug(' - CHECKING [%d] %s', _idx, _check)
 
         # Check enabled
-        if not _check.enabled:
-            _LOGGER.debug('   - CHECK DISBLED IN CODE')
-            continue
-        _settings = _sc_settings.get(_check.name, {})
-        _enabled = _settings.get('enabled', _check.enabled)
-        if not _enabled:
-            _LOGGER.debug('   - CHECK DISBLED IN SETTINGS')
+        if _check.name in _sc_settings:
+            _settings = _sc_settings[_check.name]
+            _enabled = _settings.get('enabled', _check.enabled)
+            if not _enabled:
+                _LOGGER.debug('   - CHECK DISABLED IN SETTINGS')
+                continue
+        elif not _check.enabled:
+            _LOGGER.debug('   - CHECK DISABLED IN CODE')
             continue
 
         # Apply dcc filter
@@ -140,7 +141,7 @@ def find_checks(  # pylint: disable=too-many-branches
 
         # Apply task filter
         if _disable_task_filter:
-            _LOGGER.debug('   - TASK FILTER DISBLED')
+            _LOGGER.debug('   - TASK FILTER DISABLED')
         elif _task is None:
             if _check.task_filter:
                 _LOGGER.debug(

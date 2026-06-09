@@ -1,3 +1,15 @@
+## [9.21.2] - Tue 2026-06-09 10:36
+### Summary
+ - Pini Helper:
+    - bugfix error build cache pane with CSET in scene,
+ - Sanity Check:
+    - check color management disabled update viewport,
+### Updated
+ - pini.tools.sanity_check.find_checks bugfix check enabled in settings not overriding disabled in code,
+ - pini.tools.sanity_check.CheckColorManagement disabled update viewport,
+ - maya_pini.m_pipe.CPCacheableSet bugfix access icon via filter name,
+
+
 ## [9.21.1] - Mon 2026-06-08 16:41
 ### Summary
  - Pini Helper:
