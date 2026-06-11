@@ -24,7 +24,7 @@ class CCPOutputSeqSG(ccp_out_seq_base.CCPOutputSeqBase):
 
         _pub_file = shotgrid.SGC.find_pub_file(self)
         _pub_file.omit()
-        self.job.find_outputs(force=True)
+        self.entity.find_outputs(force=True)
 
     @pipe_cache_to_file
     def _read_frames(self):

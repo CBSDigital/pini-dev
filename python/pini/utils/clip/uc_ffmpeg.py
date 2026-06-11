@@ -29,6 +29,8 @@ def find_ffmpeg_exe(exe='ffmpeg'):
     Returns:
         (File): ffmpeg executable
     """
+    from pini.tools import release
+    release.apply_deprecation('11/06/26', 'Use find_exe')
     _env_path = os.environ.get('FFMPEG_EXE')
     if _env_path:
         _exe = File(_env_path).to_file(base=exe)
@@ -206,7 +208,7 @@ def read_ffprobe(video):
     Returns:
         (str): ffprobe result
     """
-    _ffprobe_exe = find_ffmpeg_exe(exe='ffprobe')
+    _ffprobe_exe = find_exe('ffprobe')
 
     _cmds = [_ffprobe_exe.path, video.path]
     _LOGGER.debug(' - CMD %s', ' '.join(_cmds))
@@ -265,7 +267,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
                 f'Incomplete range {ints_to_str(seq.frames)} {seq.path}')
 
     _video = Video(abs_path(to_str(video)))
-    _ffmpeg = find_ffmpeg_exe()
+    _ffmpeg = find_exe('ffmpeg')
     _fps = fps or dcc.get_fps()
     if range_:
         _start, _end = range_
@@ -400,7 +402,7 @@ def video_to_frame(video, file_, res=None, frame=None, force=False):
     _LOGGER.info(' - TIME %f', _time)
 
     # Build ffmpeg commands
-    _ffmpeg = find_ffmpeg_exe()
+    _ffmpeg = find_exe('ffmpeg')
     _cmds = [
         _ffmpeg,
         '-ss', _time,
@@ -448,7 +450,7 @@ def video_to_seq(video, seq, fps=None, res=None, force=False, verbose=1):
     seq.test_dir()
 
     # Build ffmpeg commands
-    _ffmpeg = find_ffmpeg_exe()
+    _ffmpeg = find_exe('ffmpeg')
     _cmds = [
         _ffmpeg,
         '-i', video,

@@ -4,7 +4,7 @@ import logging
 import re
 
 from .path import File
-from .clip import find_ffmpeg_exe
+from .u_exe import find_exe
 from .u_misc import single
 from .u_system import system
 from . import u_res
@@ -102,7 +102,7 @@ class Image(File):
         Returns:
             (str list): ffprobe result lines
         """
-        _ffprobe_exe = find_ffmpeg_exe(exe='ffprobe')
+        _ffprobe_exe = find_exe('ffprobe')
         assert _ffprobe_exe
         _cmds = [_ffprobe_exe.path, self.path]
         _LOGGER.debug(' - CMD %s', ' '.join(_cmds))
@@ -174,7 +174,7 @@ def _convert_file_ffmpeg(
         catch (bool): no error if conversion fails
         force (bool): replace existing without confirmation
     """
-    _ffmpeg = find_ffmpeg_exe()
+    _ffmpeg = find_exe('ffmpeg')
     _cmds = [_ffmpeg]
     if colspace:
         _cmds += ['-apply_trc', colspace]

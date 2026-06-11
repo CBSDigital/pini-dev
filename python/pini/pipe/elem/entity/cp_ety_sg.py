@@ -2,8 +2,10 @@
 
 import collections
 import logging
+import os
+import pprint
 
-from pini.utils import last, CacheOutdatedError
+from pini.utils import last, CacheOutdatedError, cache_result, single
 
 from . import cp_ety_base
 
@@ -47,7 +49,7 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
         """
         return self.job.sg_proj
 
-    def create(self, force=False, parent=None, shotgrid_=True):
+    def create(self, force=False, parent=None, shotgrid_=True):  # pylint: disable=unused-argument
         """Create this asset.
 
         Args:
@@ -55,7 +57,28 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             parent (QDialog): parent for confirmation dialogs
             shotgrid_ (bool): register in shotgrid (if available)
         """
-        raise NotImplementedError
+        from pini.pipe import shotgrid
+
+        _LOGGER.info('CREATE %s', self)
+
+        # Find template
+        if self.profile == 'asset':
+            _tmpl = _find_asset_task_tmpl()
+        else:
+            raise NotImplementedError(self.profile)
+        _LOGGER.info(' - TMPL %s', _tmpl)
+
+        # Build data
+        _data = {
+            'code': self.asset,
+            'project': self.job.sg_proj.to_entry(),
+            'sg_asset_type': self.asset_type,
+            'task_template': _tmpl,
+        }
+        _LOGGER.info(' - DATA %s', _data)
+
+        _data = shotgrid.create(self.profile.capitalize(), _data)
+        _LOGGER.info(' - CREATED %s', self)
 
     def _read_outputs(self, force=False):
         """Read outputs in this entity.
@@ -178,3 +201,30 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
             _sg.delete(entity_type='PublishedFile', entity_id=_result['id'])
 
         self.sg_entity.find_pub_files(force=True)
+
+
+@cache_result
+def _find_asset_task_tmpl():
+    """Find asset task template.
+
+    Returns:
+        (dict): asset task template entry
+    """
+    from pini.pipe import shotgrid
+
+    _tmpl = os.environ.get('PINI_SG_ASSET_TEMPLATE')
+    if _tmpl:
+        _filter = 'code', 'is', _tmpl
+    else:
+        _filter = 'code', 'contains', 'Asset'
+
+    _tmpls = shotgrid.find(
+        'TaskTemplate', filters=[_filter], fields=['code'])
+    _LOGGER.info(' - TMPLS %s', _tmpls)
+
+    if len(_tmpls) != 1:
+        pprint.pprint(_tmpls)
+        raise RuntimeError(
+            f'Failed to find asset template (found {len(_tmpls)})')
+
+    return single(_tmpls)

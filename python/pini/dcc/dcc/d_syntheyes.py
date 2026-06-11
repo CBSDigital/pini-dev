@@ -106,12 +106,12 @@ class SyntheyesDCC(BaseDCC):
         _data[key] = val
         _data_s = json.dumps(_data)
 
-        _LOGGER.info(' - APPLY DATA %s', _data_s)
+        _LOGGER.debug(' - APPLY DATA %s', _data_s)
 
         _lev = SyPy.SyLevel()
         _lev.OpenExisting()
         _prefs_mesh = _obt_prefs_mesh(level=_lev)
-        _LOGGER.info(' - PREFS MESH %s', _prefs_mesh)
+        _LOGGER.debug(' - PREFS MESH %s', _prefs_mesh)
         _lev.Begin()
         _prefs_mesh.kind = _data_s
         _lev.Accept("Update prefs mesh")

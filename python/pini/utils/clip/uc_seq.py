@@ -183,7 +183,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
                 self.to_frame_files(), 'Checking {:d} frame{}'):
             if not _file.size():
                 raise AssertionError(f'Empty file {_file}')
-            if _file.size() <= 7053:
+            if _file.extn == 'exr' and _file.size() <= 7053:
                 raise AssertionError(f'Small file {_file}')
 
     def copy_to(

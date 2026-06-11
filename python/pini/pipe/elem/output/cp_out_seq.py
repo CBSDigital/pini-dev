@@ -5,7 +5,7 @@ import subprocess
 import time
 
 from pini import icons
-from pini.utils import File, Seq, Image, find_ffmpeg_exe
+from pini.utils import File, Seq, Image, find_exe
 
 from . import cp_out_base
 
@@ -81,7 +81,7 @@ class CPOutputSeq(Seq, cp_out_base.CPOutputBase):
         _out_res_s = f'{_out_w:d}x{_out_h:d}'
 
         # Build ffmpeg cmds
-        _ffmpeg = find_ffmpeg_exe()
+        _ffmpeg = find_exe('ffmpeg')
         _cmds = [_ffmpeg.path, '-y',
                  '-i', _img.path,
                  '-s', _out_res_s,

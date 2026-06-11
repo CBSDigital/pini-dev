@@ -445,8 +445,15 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             _out.extn not in ('iff', ) and
             _out.extn not in pipe.OUTPUT_SEQ_CACHE_EXTNS],
             key=cp_utils.output_clip_sort)
-        if _seqs:
-            _seqs[0].build_thumbnail(self.image)
+        while _seqs:
+            _seq = _seqs.pop(0)
+            try:
+                _seq.build_thumbnail(self.image)
+            except OSError as _exc:
+                _LOGGER.error(' - SEQ ERRORED ON BUILD THUMB %s', _exc)
+                _seq.delete()
+                continue
+            break
 
     def save(
             self, notes=None, reason=None, mtime=None, parent=None,

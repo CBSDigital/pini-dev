@@ -173,11 +173,12 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if execute:
             os.remove(self.path)
 
-    def diff(self, other, check_extn=True):
+    def diff(self, other, modal=True, check_extn=True):
         """Show diffs between this and another file.
 
         Args:
             other (str): file to compare with
+            modal (bool): launch diff tool modally (default is on)
             check_extn (bool): check file extension is approved
         """
         _other = File(other)
@@ -196,7 +197,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         # Execute diff
         _cmds = [_find_diff_exe(), self.path, _other.path]
-        system(_cmds)
+        system(_cmds, result=modal)
 
     def edit(self, line_n=None, verbose=0):
         """Edit this file in text editor.

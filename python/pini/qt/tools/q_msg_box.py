@@ -58,12 +58,12 @@ class _CMessageBox(QtWidgets.QMessageBox):
         _btn_map = {}
         for _button in _buttons:
             _btn_map[_button] = self.addButton(
-                _button, QtWidgets.QMessageBox.AcceptRole)
+                _button, QtWidgets.QMessageBox.ActionRole)
 
         # Make sure we have cancel behaviour
         if "Cancel" not in _btn_map:
             _btn_map["Cancel"] = self.addButton(
-                "Cancel", QtWidgets.QMessageBox.AcceptRole)
+                "Cancel", QtWidgets.QMessageBox.RejectRole)
             _btn_map["Cancel"].hide()
             _buttons += ["Cancel"]
         self.setEscapeButton(_btn_map["Cancel"])
@@ -114,28 +114,37 @@ class _CMessageBox(QtWidgets.QMessageBox):
         _LOGGER.debug(
             ' - VER py-%d.%d %s-%s', sys.version_info.major,
             sys.version_info.minor, LIB, LIB_VERSION)
-        _exec_result = self.exec_()
-        _LOGGER.debug(
-            ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
-
-        # Apply result offsetting
-        _py = sys.version_info.major, sys.version_info.minor
-        _LOGGER.debug(' - CHECK FOR OFFSET %s %s %s', LIB, dcc.NAME, _py)
-        if (
-                apply_offsetting and
-                LIB == 'PySide6' and
-                dcc.NAME in (None, 'spainter')):
-            _exec_result -= 2
-            _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
-            _LOGGER.debug(
-                ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
+        _btn = self.clickedButton()
+        _LOGGER.debug(' - CLICKED BUTTON %s', _btn)
 
         if self._force_result:
             _result = self._force_result
+
+        elif _btn:
+            _result = _btn.text()
+
         else:
+
+            _exec_result = self.exec()
+            _LOGGER.debug(
+                ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
+
+            # Apply result offsetting
+            _py = sys.version_info.major, sys.version_info.minor
+            _LOGGER.debug(' - CHECK FOR OFFSET %s %s %s', LIB, dcc.NAME, _py)
+            if (
+                    apply_offsetting and
+                    LIB == 'PySide6' and
+                    dcc.NAME in (None, 'spainter', 'syntheyes')):
+                _exec_result -= 2
+                _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
+                _LOGGER.debug(
+                    ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
             _result = self._force_result or self.buttons[_exec_result]
+
         if _result == "Cancel":
             raise q_utils.DialogCancelled
+
         return _result
 
     def keyPressEvent(self, event):

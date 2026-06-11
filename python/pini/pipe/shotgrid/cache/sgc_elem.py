@@ -138,7 +138,10 @@ class SGCElem(sgc_elem_reader.SGCElemReader):
         _data = {'sg_status_list': status}
         if status == 'omt':
             _desc = strftime('Omitted %d/%m/%y %H:%M:%S')
-            _data['description'] = _desc
+            _desc_field = {
+                'Task': 'sg_description',
+            }.get(self.ENTITY_TYPE, 'description')
+            _data[_desc_field] = _desc
         elif status in ('wtg', 'apr', 'lapr', 'ip'):
             pass
         else:

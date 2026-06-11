@@ -138,12 +138,13 @@ class _SGCEntity(sgc_elem.SGCElem):
             _pub_files.append(_pub_file)
         return _pub_files
 
-    def find_task(self, match=None, catch=False, **kwargs):
+    def find_task(self, match=None, catch=False, force=False, **kwargs):
         """Find a task within this entity.
 
         Args:
             match (Path|str): token to match
             catch (bool): no error if fail to match task
+            force (bool): force reread tasks from shotgrid
 
         Returns:
             (SGCTask): matching task
@@ -156,7 +157,7 @@ class _SGCEntity(sgc_elem.SGCElem):
         if hasattr(match, 'task'):
             _kwargs['task'] = _kwargs.get('task', match.task)
 
-        _tasks = self.find_tasks(**_kwargs)
+        _tasks = self.find_tasks(force=force, **_kwargs)
         if len(_tasks) == 1:
             return single(_tasks)
         _LOGGER.debug(' - FOUND %d TASKS', len(_tasks))
@@ -172,15 +173,18 @@ class _SGCEntity(sgc_elem.SGCElem):
             return None
         raise ValueError(match, kwargs)
 
-    def find_tasks(self, **kwargs):
+    def find_tasks(self, force=False, **kwargs):
         """Search tasks in this entity.
+
+        Args:
+            force (bool): force reread tasks from shotgrid
 
         Returns:
             (SGCTask list): tasks
         """
         _LOGGER.debug('FIND TASKS %s', kwargs)
         _tasks = []
-        for _task in self._read_tasks():
+        for _task in self._read_tasks(force=force):
             if not sgc_utils.passes_filters(_task, **kwargs):
                 continue
             _tasks.append(_task)

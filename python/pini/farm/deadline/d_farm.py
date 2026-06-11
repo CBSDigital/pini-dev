@@ -7,7 +7,7 @@ import time
 from pini import pipe, qt
 from pini.utils import (
     system, single, to_str, safe_zip, cache_result, find_exe, check_heart,
-    to_snake, to_time_f, get_result_cacher, File)
+    to_snake, to_time_f, get_result_cacher, File, abs_path)
 
 from .. import base
 from . import submit, d_farm_job
@@ -409,7 +409,7 @@ def _details_to_job(details, rtime):
                 'Comment',
                 'ID',
                 'JobName',
-                # 'JobOutputDirectories',
+                'JobOutputDirectories',
                 'JobOutputFileNames',
                 'PluginInfoDictionary',
                 'Status',
@@ -430,6 +430,7 @@ def _details_to_job(details, rtime):
         _key = {
             'ID': 'uid',
             'JobName': 'name',
+            'JobOutputDirectories': 'out_dirs',
             'JobOutputFileNames': 'out_fname',
             'PluginInfoDictionary': 'info_dict',
             'SubmitDateTimeString': 'ctime',
@@ -439,15 +440,22 @@ def _details_to_job(details, rtime):
         _data[_key] = _val
 
     # Build output path
+    _path = None
+    _out_dirs = _data.pop('out_dirs', None)
     _out_fname = _data.pop('out_fname', None)
     _info_dict = _data.pop('info_dict', None)
     if _out_fname and _info_dict:
         _extn = File(_out_fname).extn
         _path = _info_dict_to_path(_info_dict, extn=_extn)
-        if _path:
-            _data['path'] = _path
+    if not _path and _out_dirs and _out_fname:
+        _LOGGER.debug(' - OUT DIRS %s', _out_dirs)
+        _LOGGER.debug(' - OUT FNAME %s', _out_fname)
+        _path = abs_path(f'{_out_dirs}/{_out_fname}')
+        _path = _path.replace('.####.', '.%04d.')
+    _data['path'] = _path
+    _LOGGER.debug('   - PATH %s', _path)
 
-    _LOGGER.debug(' - ADD JOB %s', _data)
+    _LOGGER.debug('   - ADD JOB %s', _data)
     return d_farm_job.CDFarmJob(**_data)
 
 

@@ -163,7 +163,7 @@ def render_frame(
     _LOGGER.debug(' - RENDER COMPLETE')
 
 
-def _exec_frame_render(file_, mode, layer, res, cam):
+def _exec_frame_render(file_, mode, layer, res, cam, check_size=False):
     """Execute frame render.
 
     Args:
@@ -172,6 +172,7 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         layer (str): force render layer
         res (tuple): render resolution
         cam (CCamera): render camera
+        check_size (bool): check render size to flag blank frames
     """
     from maya_pini import open_maya as pom
 
@@ -208,17 +209,18 @@ def _exec_frame_render(file_, mode, layer, res, cam):
         _tmp_file.move_to(file_)
 
     # Catch failed renders
-    _area = res[0] * res[1]
-    _size = file_.size()
-    _min_size_pp = 0.173
-    _min_size_pp = 0.15
-    _min_size = _area * _min_size_pp
-    if _size < _min_size:
-        _LOGGER.info(' - FILE %s', file_)
-        _LOGGER.info(' - SIZE PP %f', _size / _area)
-        raise RuntimeError(
-            f'Render too small {nice_size(_size)} '
-            f'(min allowed {nice_size(_min_size)}) {file_}')
+    if check_size:
+        _area = res[0] * res[1]
+        _size = file_.size()
+        _min_size_pp = 0.173
+        _min_size_pp = 0.15
+        _min_size = _area * _min_size_pp
+        if _size < _min_size:
+            _LOGGER.info(' - FILE %s', file_)
+            _LOGGER.info(' - SIZE PP %f', _size / _area)
+            raise RuntimeError(
+                f'Render too small {nice_size(_size)} '
+                f'(min allowed {nice_size(_min_size)}) {file_}')
 
 
 def _exec_cmdline_render(

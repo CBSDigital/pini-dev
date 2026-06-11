@@ -1,5 +1,7 @@
 """Tools for managing the find function."""
 
+# pylint: disable=too-many-branches
+
 import logging
 import os
 
@@ -9,6 +11,7 @@ from ..u_misc import EMPTY
 from . import up_norm
 
 _LOGGER = logging.getLogger(__name__)
+_N_FINDS = 0
 
 
 def find(
@@ -42,6 +45,7 @@ def find(
     Returns:
         (str list): list of file paths
     """
+    global _N_FINDS
     from pini.utils import File, Dir
 
     _LOGGER.debug('FIND %s', path)
@@ -54,6 +58,7 @@ def find(
     _data = _read_find_data(
         dir_=_dir, depth=depth, catch_missing=catch_missing,
         hidden=hidden, catch_access_error=catch_access_error)
+    _N_FINDS += 1
 
     # Setup extns filter
     _extns = set(extns or [])
@@ -113,7 +118,15 @@ def _read_find_data(
     _data = []
 
     _LOGGER.debug('READ FIND DATA %s', dir_.path)
-    if not dir_.exists():
+
+    # Check whether dir exists
+    try:
+        _exists = dir_.exists()
+    except OSError as _exc:
+        if catch_access_error:
+            return []
+        raise _exc
+    if not _exists:
         if catch_missing:
             return _data
         raise OSError('Missing dir ' + dir_.path)

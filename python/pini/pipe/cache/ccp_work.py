@@ -102,7 +102,7 @@ class CCPWork(CPWork):
         """Read outputs generated from this work file.
 
         Args:
-            match_metadata (bool): ignore output without this file
+            match_metadata (bool): ignore outputs without this file
                 marked as their source in their metadata
             force (bool): force reread from disk
 

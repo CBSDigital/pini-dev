@@ -17,8 +17,8 @@ from pini.utils import (
     get_method_to_file_cacher, ints_to_str, str_to_seed, clip, find_exe,
     merge_dicts, to_snake, strftime, to_ord, to_camel, PyFile, Res, HOME,
     file_to_seq, split_base_index, nice_age, find_viewers, to_pascal,
-    Image, TMP, search_dict_for_key, find_ffmpeg_exe, MetadataFile,
-    get_result_to_file_cacher, build_cache_fmt)
+    Image, TMP, search_dict_for_key, MetadataFile, get_result_to_file_cacher,
+    build_cache_fmt)
 from pini.utils.u_mel_file import _MelExpr
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,9 +39,7 @@ class TestUtils(unittest.TestCase):
     def test_find_exe(self):
 
         assert find_exe('ffmpeg')
-        assert find_ffmpeg_exe()
-        # assert find_exe('maya')
-        # assert find_exe('mayapy')
+        assert find_exe('ffprobe')
 
     def test_find_viewers(self):
         assert find_viewers()

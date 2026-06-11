@@ -20,9 +20,12 @@ def _build_cmds(cmd, verbose):
         (str list): commands list
     """
     from pini.utils import Path, Seq, clip
+    _LOGGER.debug(' - BUILD CMDS "%s"', cmd)
 
     if isinstance(cmd, (list, tuple)):
         _cmds = cmd
+    elif isinstance(cmd, Path):
+        _cmds = [cmd]
     else:
         _cmds = []
         if platform.system() == 'Windows':
@@ -59,7 +62,6 @@ def system(
     Returns:
         (str|tuple|None): result (if requested)
     """
-
     _cmds = _build_cmds(cmd, verbose=verbose)
 
     # Submit command

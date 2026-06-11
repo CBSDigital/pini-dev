@@ -1,3 +1,27 @@
+## [9.22.0] - Thu 2026-06-11 10:13
+### Summary
+ - Pini Helper:
+    - bugfix error on browse to work file with deleted image seq (mkim),
+### Updated
+ - pini.utils.File.diff added modal flag,
+ - pini.utils.find added counter,
+ - pini.utils.find bugfix not catching access denied,
+ - pini.utils.find_ffmpeg_exe deprecated,
+ - pini.utils.Seq.check_for_bad_frames only check for small exrs,
+ - pini.utils.find_exe optimised for speed,
+ - pini.utils.find_exes made public,
+ - pini.utils.system allow single File arg,
+ - pini.pipe.CPEntitySG.create implemented for assets,
+ - pini.pipe.CPWork._check_image catch error on thumb seq deleted,
+ - pini.pipe.CPOutputSeqSG.delete bugfix recaching job,
+ - pini.pipe.shotgrid.SGCTask.set_status bugfix error on omit,
+ - pini.pipe.shotgrid.SGCEntity find_task/find_tasks added force,
+ - pini.qt.raise_dialog use clickedButton for more reliable results,
+ - pini.qt.raise_dialog apply PySide6 offsetting in syntheyes as bkp,
+ - pini.farm.deadline.find_jobs bugfix output path not determined for hou jobs,
+ - maya_pini.utils.render disabled file size check,
+
+
 ## [9.21.2] - Tue 2026-06-09 10:36
 ### Summary
  - Pini Helper:
