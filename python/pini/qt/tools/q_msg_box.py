@@ -135,7 +135,7 @@ class _CMessageBox(QtWidgets.QMessageBox):
             if (
                     apply_offsetting and
                     LIB == 'PySide6' and
-                    dcc.NAME in (None, 'spainter', 'syntheyes')):
+                    dcc.NAME in (None, 'spainter', 'syntheyes', 'blender')):
                 _exec_result -= 2
                 _LOGGER.debug(' - APPLYING PySide6 OFFSET %s', LIB)
                 _LOGGER.debug(

@@ -3,7 +3,7 @@
 import logging
 
 from pini import icons, qt
-from pini.utils import File, email
+from pini.utils import File, email, copy_text, wrap_fn
 
 from . import e_error
 
@@ -82,6 +82,11 @@ class _ErrorCatcherUi(qt.CUiDialog):
     def _callback__SendEmail(self):
         self.error.send_email()
         self.close()
+
+    def _context__SendEmail(self, menu):
+        menu.add_item(
+            'Copy traceback', wrap_fn(copy_text, self.error.to_text()),
+            icon=icons.COPY)
 
 
 def launch_ui(error=None, parent=None, show=True, stack_key=None):

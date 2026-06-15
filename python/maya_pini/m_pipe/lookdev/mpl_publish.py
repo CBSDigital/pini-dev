@@ -373,6 +373,7 @@ def read_shader_assignments(
         fmt (str): results format
             dict - full shader details as dict
             shd - simple list of shaders
+            geo - shaded geometry
         allow_face_assign (bool): do not ignore face assignments (eg. for
             speed tree assets)
         referenced (bool): filter by shader referenced status
@@ -388,6 +389,7 @@ def read_shader_assignments(
     _data = {}
     _ses = pom.find_nodes(type_='shadingEngine')
     _shds = []
+    _geos = []
     for _se in _ses:
         _shd, _shd_data = _read_se(
             engine=_se, referenced=referenced,
@@ -396,6 +398,7 @@ def read_shader_assignments(
             continue
         _LOGGER.debug(' - ADDING %s %s', _shd, _shd_data)
         _shds.append(_shd)
+        _geos += _shd_data['geos']
         _data[str(_shd)] = _shd_data
 
     if not catch and not _data:
@@ -406,6 +409,8 @@ def read_shader_assignments(
         _result = _data
     elif fmt == 'shd':
         _result = _shds
+    elif fmt == 'geo':
+        _result = _geos
     else:
         raise NotImplementedError(fmt)
     return _result

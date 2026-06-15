@@ -1,3 +1,19 @@
+## [9.23.0] - Mon 2026-06-15 13:24
+### Summary
+ - Sanity Check:
+    - maya check asset hierarchy bugfix false positive on duplicate MDL in scene,
+    - maya check shaders added fix for face assign,
+    - maya check shaders bugfix error on renamed geo (mkim),
+### Updated
+ - pini.dcc.BlenderDCC get_scene_data/set_scene_data implemented,
+ - pini.qt.raise_dialog apply PySide6 offsetting in blender,
+ - pini.tools.error added SendEmail ctx copy traceback,
+ - pini.tools.sanity_check.CheckAssetHierarchy bugfix false positive on duplicate MDL,
+ - pini.tools.sanity_check.CheckLookdevShaders added face assign fix,
+ - pini.tools.sanity_check.CheckShaders depends on CheckGeoNaming,
+ - maya_pini.m_pipe.read_shader_assignments added fmt as geo,
+
+
 ## [9.22.0] - Thu 2026-06-11 10:13
 ### Summary
  - Pini Helper:

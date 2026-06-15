@@ -97,11 +97,12 @@ def find_checks(  # pylint: disable=too-many-branches
     for _idx, _check in enumerate(_all_checks):
 
         _LOGGER.debug(' - CHECKING [%d] %s', _idx, _check)
+        _check_settings = _sc_settings.get(_check.name)
+        _LOGGER.debug('   - CHECK SETTINGS %s', _check_settings)
 
         # Check enabled
         if _check.name in _sc_settings:
-            _settings = _sc_settings[_check.name]
-            _enabled = _settings.get('enabled', _check.enabled)
+            _enabled = _check_settings.get('enabled', _check.enabled)
             if not _enabled:
                 _LOGGER.debug('   - CHECK DISABLED IN SETTINGS')
                 continue

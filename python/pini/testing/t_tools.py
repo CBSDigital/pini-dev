@@ -11,6 +11,7 @@ from pini.utils import (
     check_heart, TMP, Image, abs_path, PyFile, strftime, File)
 
 _LOGGER = logging.getLogger(__name__)
+_LOGGING_FILE = None
 
 TEST_YML = TMP.to_file('test.yml')
 TEST_DIR = TMP.to_subdir('PiniTesting')
@@ -161,6 +162,8 @@ def setup_logging(file_=False, edit=False, flush='all', name=None):
         flush (bool): remove existing handlers
         name (str): override log file label (default is dcc name)
     """
+    global _LOGGING_FILE
+
     _LOGGER.debug('SETUP LOGGING')
 
     _logger = logging.getLogger()
@@ -202,6 +205,7 @@ def setup_logging(file_=False, edit=False, flush='all', name=None):
             _file.edit()
         _file_hander = _PFileHandler(_file.path)
         _handlers.append(_file_hander)
+        _LOGGING_FILE = _file
     _LOGGER.info(' - HANDLERS %d %s', len(_handlers), _handlers)
 
     # Setup handlers

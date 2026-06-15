@@ -527,7 +527,7 @@ def _disable_btn_on_exec(func, btn, col):
     def _wrapped_fn(*args, **kwargs):
 
         _whitened = col.whiten(0.25)
-        _LOGGER.info("DISABLE BTN ON EXEC %s %s", func, btn)
+        _LOGGER.debug("DISABLE BTN ON EXEC %s %s", func, btn)
         _set_btn_col(btn, col=_whitened)
         btn.setEnabled(False)
         dcc.refresh()

@@ -2,11 +2,15 @@
 
 # pylint: disable=abstract-method
 
+import logging
+
 import bpy
 
 from pini.utils import abs_path, File
 
 from . import d_base
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class BlenderDCC(d_base.BaseDCC):
@@ -43,6 +47,18 @@ class BlenderDCC(d_base.BaseDCC):
         _file = File(file_ or self.cur_file())
         bpy.ops.wm.save_as_mainfile(filepath=_file.path)
 
+    def get_scene_data(self, key):
+        """Retrieve data stored with this scene.
+
+        Args:
+            key (str): data to obtain
+
+        Returns:
+            (any): data which has been stored in the scene
+        """
+        _LOGGER.debug('GET SCENE DATA %s', key)
+        return bpy.context.scene.get(key)
+
     def _read_version(self):
         """Read application version tuple.
 
@@ -52,6 +68,16 @@ class BlenderDCC(d_base.BaseDCC):
             (tuple): major/minor/patch
         """
         return [int(_item) for _item in bpy.app.version_string.split('.')]
+
+    def set_scene_data(self, key, val):
+        """Store data within this scene.
+
+        Args:
+            key (str): name of data to store
+            val (any): value of data to store
+        """
+        _LOGGER.debug('SET SCENE DATA key=%s val=%s', key, val)
+        bpy.context.scene[key] = val
 
     def t_end(self, class_=float):
         """Get end frame.
