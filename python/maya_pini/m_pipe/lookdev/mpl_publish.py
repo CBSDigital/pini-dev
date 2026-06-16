@@ -47,10 +47,11 @@ def find_export_nodes(filter_=None):
         _export_nodes.add(_dummy)
 
     # Add lights
-    _lights = mp_utils.read_cache_set(mode='lights')
-    _export_nodes |= {_light.clean_name for _light in _lights}
+    _lights = read_lights()
     _export_nodes |= {
-        mp_utils.to_light_shp(_light).clean_name for _light in _lights}
+        to_clean(_light) for _light in _lights}
+    _export_nodes |= {
+        to_clean(mp_utils.to_light_shp(_light)) for _light in _lights}
 
     if filter_:
         _export_nodes = [
@@ -112,54 +113,6 @@ def obt_top_node():
     else:
         _grp = pom.CTransform('SHD')
     return _grp
-
-
-def read_override_sets(crop_namespace=True):
-    """Read override sets.
-
-    This is any set contained in override_SET, or any RedshiftMeshParameters
-    nodes if redshift is enabled.
-
-    Args:
-        crop_namespace (bool): remove namespace from geos
-
-    Returns:
-        (dict): set/geos
-    """
-    _LOGGER.debug('READ OVERRIDE SETS')
-
-    # Build list of sets to check
-    _sets = set()
-    if cmds.objExists('overrides_SET'):
-        _over_set = pom.CNode('overrides_SET')
-        _sets.add(_over_set)
-        for _item in pom.CMDS.sets(_over_set, query=True):
-            if _item.object_type() == 'objectSet':
-                _sets.add(_item)
-    _set_types = []
-    if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
-        _set_types += [
-            'RedshiftMeshParameters',
-            'RedshiftMatteParameters',
-            'RedshiftVisibility']
-    if cmds.pluginInfo('vrayformaya', query=True, loaded=True):
-        _set_types += ['VRayDisplacement']
-    _LOGGER.debug(' - SET TYPES %s', _set_types)
-    for _set_type in _set_types:
-        _sets |= set(pom.find_nodes(type_=_set_type))
-
-    # Read contents of sets
-    _data = {}
-    for _set in _sets:
-        _geos = set()
-        for _item in pom.CMDS.sets(_set, query=True):
-            if _item.object_type() != 'objectSet':
-                _geos.add(_item.clean_name if crop_namespace else _item)
-        if not _geos:
-            continue
-        _data[str(_set)] = sorted(_geos)
-
-    return _data
 
 
 def _read_clean_shd_assignments():
@@ -306,16 +259,16 @@ def _read_geo_src():
     return None
 
 
-def _read_lights():
-    """Read lights setting.
-
-    If there are lights in the cache set, then these are stored in the
-    lookdev publish, and this is flagged in the metadata.
+def read_lights():
+    """Read lights in the current scene.
 
     Returns:
-        (bool): whether there are lights in cache set
+        (CTransform list): lights
     """
-    return bool(mp_utils.read_cache_set(mode='lights'))
+    _lgts = []
+    _lgts += mp_utils.read_cache_set('lights')
+    _lgts += read_mesh_lights(fmt='node')
+    return _lgts
 
 
 def _read_map_top_node_attrs():
@@ -337,6 +290,47 @@ def _read_map_top_node_attrs():
     return _attrs
 
 
+def read_mesh_lights(fmt='clean'):
+    """Read mesh lights in the current scene.
+
+    Args:
+        fmt (str): results to return
+            clean - cleaned string results for metadata
+            node - CTransform node references
+
+    Returns:
+        (dict): lights + geos
+    """
+    _geos = read_shader_assignments(fmt='geo')
+
+    _mesh_lgts_s = {}
+    _mesh_lgts_n = {}
+
+    for _lgt_s in pom.find_nodes(type_='RedshiftPhysicalLight'):
+
+        _lgt_t = _lgt_s.to_parent()
+        _LOGGER.info('LGT %s', _lgt_t)
+
+        _mesh = _lgt_s.plug['areaShapeObject'].find_incoming(plugs=False)
+        _LOGGER.info(' - MESH %s', _mesh)
+        if not _mesh:
+            continue
+        if _mesh not in _geos:
+            continue
+
+        _LOGGER.info(' - VALID MESH LIGHT')
+        _mesh_lgts_n[_lgt_t] = _mesh
+        _mesh_lgts_s[str(_lgt_t)] = to_clean(_mesh)
+
+    if fmt == 'clean':
+        _result = _mesh_lgts_s
+    elif fmt == 'node':
+        _result = _mesh_lgts_n
+    else:
+        raise ValueError(fmt)
+    return _result
+
+
 def read_publish_metadata():
     """Read all shading data to save to yml file.
 
@@ -355,8 +349,57 @@ def read_publish_metadata():
     _data['settings'] = _read_geo_settings()
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
     _data['override_sets'] = read_override_sets()
-    _data['lights'] = _read_lights()
+    _data['lights'] = bool(read_lights())
+    _data['mesh_lights'] = read_mesh_lights()
     _data['top_node_attrs'] = _read_map_top_node_attrs()
+
+    return _data
+
+
+def read_override_sets(crop_namespace=True):
+    """Read override sets.
+
+    This is any set contained in override_SET, or any RedshiftMeshParameters
+    nodes if redshift is enabled.
+
+    Args:
+        crop_namespace (bool): remove namespace from geos
+
+    Returns:
+        (dict): set/geos
+    """
+    _LOGGER.debug('READ OVERRIDE SETS')
+
+    # Build list of sets to check
+    _sets = set()
+    if cmds.objExists('overrides_SET'):
+        _over_set = pom.CNode('overrides_SET')
+        _sets.add(_over_set)
+        for _item in pom.CMDS.sets(_over_set, query=True):
+            if _item.object_type() == 'objectSet':
+                _sets.add(_item)
+    _set_types = []
+    if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
+        _set_types += [
+            'RedshiftMeshParameters',
+            'RedshiftMatteParameters',
+            'RedshiftVisibility']
+    if cmds.pluginInfo('vrayformaya', query=True, loaded=True):
+        _set_types += ['VRayDisplacement']
+    _LOGGER.debug(' - SET TYPES %s', _set_types)
+    for _set_type in _set_types:
+        _sets |= set(pom.find_nodes(type_=_set_type))
+
+    # Read contents of sets
+    _data = {}
+    for _set in _sets:
+        _geos = set()
+        for _item in pom.CMDS.sets(_set, query=True):
+            if _item.object_type() != 'objectSet':
+                _geos.add(_item.clean_name if crop_namespace else _item)
+        if not _geos:
+            continue
+        _data[str(_set)] = sorted(_geos)
 
     return _data
 
@@ -490,7 +533,7 @@ def setup_lights():
 
     # Move any lights in cache set into group
     _lights_grp = None
-    _lights = mp_utils.read_cache_set(mode='lights')
+    _lights = read_lights()
     _LOGGER.debug(' - LIGHTS %s', _lights)
     for _light in _lights:
         _LOGGER.debug('   - ADD LIGHT %s', _light)

@@ -9,6 +9,6 @@ from .ui import launch_ui, UI_FILE, ICON, launch_export_ui
 if dcc.NAME == 'maya':
     from .utils import read_cache_set_geo, find_top_level_nodes
     from .core import SCMayaCheck
-    from .checks import CheckRenderGlobals
+    from .checks import CheckRenderGlobals, CheckAssetHierarchy
 
 DIALOG = None

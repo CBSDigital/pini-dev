@@ -256,7 +256,7 @@ def to_light_shp(node):
     """
     _light_types = find_light_types()
     _light_shps = []
-    for _shp in node.to_shps():
+    for _shp in pom.CTransform(node).to_shps():
         _type = _shp.object_type()
         if _type in _light_types:
             _light_shps.append(_shp)

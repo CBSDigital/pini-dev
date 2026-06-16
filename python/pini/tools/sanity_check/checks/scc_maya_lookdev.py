@@ -1,20 +1,17 @@
 """Maya lookdev checks."""
 
-import os
 import logging
 
 from maya import cmds
 
-from pini import pipe, dcc
-from pini.dcc import export
+from pini import dcc
 from pini.tools import error
-from pini.utils import single, wrap_fn, plural, check_heart, chain_fns
+from pini.utils import wrap_fn, plural, chain_fns
 
-from maya_pini import ref, open_maya as pom, m_pipe, tex
+from maya_pini import open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_node, to_long,
-    cur_renderer, to_node)
+    DEFAULT_NODES, to_clean, to_node, to_long, cur_renderer)
 
 from .. import core, utils
 
@@ -295,13 +292,13 @@ class CheckLookdevShaders(core.SCMayaCheck):
             (SCFail|None): fail (if any)
         """
         if '.f[' not in assign:
-            return
+            return None
         self.write_log('   - face assign')
 
         _fix = None
 
         # Check for fixable all faces assigned
-        _all_faces =f'{geo}.f[0:{geo.n_faces - 1:d}]'
+        _all_faces = f'{geo}.f[0:{geo.n_faces - 1:d}]'
         self.write_log('   - all faces %s', _all_faces)
         if geo and assign == _all_faces:
             _fix = chain_fns(

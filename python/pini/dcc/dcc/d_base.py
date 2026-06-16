@@ -173,7 +173,7 @@ class BaseDCC:
         if match:
             _matches = [
                 _ref for _ref in _refs
-                if match in (_ref.namespace, _ref.ref)]
+                if match in (_ref.namespace, _ref.ref, _ref.path)]
             return single(_matches, **_kwargs)
         return single(_refs, **_kwargs)
 
