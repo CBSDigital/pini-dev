@@ -1,3 +1,12 @@
+## [9.25.0] - Tue 2026-06-16 16:39
+### Summary
+ - Pini Helper:
+    - maya lookdev publish/attach apply redshift mesh lights (cstewart/sspicher),
+### Updated
+ - pini.dcc.CMayaShadersRef.attach_to attach mesh lights,
+ - maya_pini.open_maya.CBaseTransform.find_child added,
+
+
 ## [9.24.0] - Tue 2026-06-16 13:11
 ### Summary
  - Pini Helper:

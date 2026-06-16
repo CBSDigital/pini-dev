@@ -7,7 +7,7 @@ NOTE: specifically maya references.
 
 import logging
 
-from maya import cmds
+from maya import cmds, mel
 
 from pini import pipe, dcc
 from pini.utils import File, single, abs_path, cache_property, EMPTY
@@ -15,7 +15,8 @@ from pini.utils import File, single, abs_path, cache_property, EMPTY
 from maya_pini import open_maya as pom, tex, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace)
+    restore_sel, del_namespace, to_node, to_shps, restore_ns, set_namespace,
+    to_clean)
 
 from . import prm_base
 from .. import pr_base
@@ -326,6 +327,8 @@ class CMayaShadersRef(CMayaRef):
         self._apply_3d_place_nodes(target=target)
         if _data.get('lights'):
             self._apply_lights(target)
+        if _data.get('mesh_lights'):
+            self._apply_mesh_lights(target)
         if _data.get('top_node_attrs'):
             self._apply_top_node_attrs(target)
 
@@ -421,7 +424,7 @@ class CMayaShadersRef(CMayaRef):
             if _trg:
                 _name = str(_light.clean_name) + '_CONS'
                 _cons = self.ref.to_node(_name, fmt='str')
-                _LOGGER.debug('   - CONS %s', _cons)
+                _LOGGER.debug('   - CONS offs=%d %s', _offs, _cons)
                 if cmds.objExists(_cons):
                     cmds.delete(_cons)
                     _LOGGER.debug('   - DELETING EXISTING CONS')
@@ -430,14 +433,78 @@ class CMayaShadersRef(CMayaRef):
 
             # Set light enabled/disabled based on whether target exists
             _en = bool(_trg)
+            _light.set_visible(_en)
             _shp = m_pipe.to_light_shp(_light)
             if not _shp:
                 _LOGGER.error(' - FAILED TO FIND LIGHT SHAPE %s', _light)
                 continue
             _type = _shp.object_type()
-            _plug = {'RedshiftPhysicalLight': 'on'}.get(_type, 'enabled')
-            _light.set_visible(_en)
-            _light.shp.plug[_plug].set_val(_en)
+            _attr = {'RedshiftPhysicalLight': 'on'}.get(_type, 'enabled')
+            if _shp.has_attr(_attr):
+                _shp.plug[_attr].set_val(_en)
+
+    def _apply_mesh_lights(self, target):
+        """Apply mesh lights to target meshes.
+
+        Args:
+            target (CReference):  reference to apply mesh lights to
+        """
+        for _src_lgt_name, _mesh_name in self.shd_data['mesh_lights'].items():
+            _LOGGER.info('MESH LGT %s -> %s', _src_lgt_name, _mesh_name)
+            _mesh = target.ref.to_node(_mesh_name)
+            _LOGGER.info(' - MESH %s', _mesh)
+            _src_lgt = self.ref.to_node(_src_lgt_name)
+            _LOGGER.info(' - SRC LGT %s', _src_lgt)
+            self._apply_mesh_light(mesh=_mesh, src_lgt=_src_lgt)
+
+    @restore_ns
+    def _apply_mesh_light(self, src_lgt, mesh):
+        """Apply mesh light to target mesh.
+
+        Args:
+            src_lgt (CTransform): source mesh light
+            mesh (CMesh): mesh to apply light to
+        """
+        _type = src_lgt.shp.object_type()
+        if _type != 'RedshiftPhysicalLight':
+            raise NotImplementedError(_type)
+
+        # Create trg light
+        _trg_lgt_name = f'{self.namespace}:{to_clean(src_lgt)}_SCN'
+        _LOGGER.info(' - NAME %s', _trg_lgt_name)
+        if not cmds.objExists(_trg_lgt_name):
+            set_namespace(f':{self.namespace}')
+            mel.eval('redshiftCreateLight "RedshiftPhysicalLight"')
+            _trg_lgt = pom.CTransform(single(cmds.ls(selection=True)))
+            _trg_lgt = _trg_lgt.rename(to_clean(_trg_lgt_name))
+        else:
+            _trg_lgt = pom.CTransform(_trg_lgt_name)
+        _LOGGER.info(' - TRG LGT %s', _trg_lgt)
+        _trg_lgt_shp = _trg_lgt.find_child(type_='RedshiftPhysicalLight')
+        _LOGGER.info(' - TRG LGT SHP %s', _trg_lgt_shp)
+
+        # Hide locator in scene
+        _trg_lgt_shp.plug['overrideEnabled'].set_val(True)
+        _trg_lgt_shp.plug['overrideVisibility'].set_val(False)
+
+        # Constrain to mesh
+        _trg_lgt.add_to_grp(src_lgt.to_parent())
+        _trg_lgt.reset_tfms()
+        mesh.parent_constraint(_trg_lgt, maintain_offset=False)
+        mesh.scale_constraint(_trg_lgt, maintain_offset=False)
+
+        # Connect to mesh
+        _trg_lgt_shp.plug['areaShape'].set_enum('Mesh')
+        mesh.shp.message.connect(
+            _trg_lgt.shp.plug['areaShapeObject'], break_conns=True)
+        mesh.set_outliner_col('Yellow')
+        mesh.shp.plug['primaryVisibility'].set_val(False)
+
+        # Apply settings from src light + hide src
+        _settings = src_lgt.shp.save_preset()
+        _LOGGER.info(' - SETTINGS %s', _settings)
+        _trg_lgt_shp.load_preset(_settings)
+        src_lgt.hide()
 
     def _apply_shaders(self, shds, target, catch=True):
         """Apply shaders to target ref.

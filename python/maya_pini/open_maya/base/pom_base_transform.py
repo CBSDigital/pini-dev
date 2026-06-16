@@ -160,6 +160,17 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """
         return self.to_tfm_plugs()
 
+    def find_child(self, catch=False, **kwargs):
+        """Find a child of this node.
+
+        Args:
+            catch (bool): no error if no single child matched
+
+        Returns:
+            (CNode): child
+        """
+        return single(self.find_children(**kwargs), catch=catch)
+
     def find_children(
             self, type_=None, recursive=False, class_=None, filter_=None,
             types=None):
