@@ -1,3 +1,12 @@
+## [9.26.0] - Thu 2026-06-18 15:24
+### Summary
+ - Pini Helper:
+    - apply $OCIO from settings to env on load/save,
+### Updated
+ - pini.pipe.CPWork.set_env apply $OCIO if ocio in settings,
+ - pini.pipe.CACHE.find_entities pass kwargs to job.find_entities,
+
+
 ## [9.25.0] - Tue 2026-06-16 16:39
 ### Summary
  - Pini Helper:

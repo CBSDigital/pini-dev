@@ -250,7 +250,7 @@ class CCPRoot(elem.CPRoot):
         _LOGGER.debug(' - C JOBS %d %s', len(_c_jobs), _c_jobs)
         return _c_jobs
 
-    def find_entities(self, filter_=None):
+    def find_entities(self, **kwargs):
         """Find all entites in the pipeline.
 
         Args:
@@ -260,7 +260,7 @@ class CCPRoot(elem.CPRoot):
             (CCPEntity list): matching entites
         """
         return sum(
-            [_job.find_entities(filter_=filter_) for _job in self.jobs], [])
+            [_job.find_entities(**kwargs) for _job in self.jobs], [])
 
     def to_job(self, name):
         """Obtain a job object matching the given name.

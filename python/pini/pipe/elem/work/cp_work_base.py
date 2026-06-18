@@ -660,6 +660,10 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         os.environ['PINI_TAG'] = self.tag or ''
         os.environ['PINI_VER'] = self.ver
 
+        _ocio = self.entity.settings.get('ocio')
+        if _ocio:
+            os.environ['OCIO'] = _ocio
+
         dcc.set_env(self)
         _callback = find_callback('SetWork')
         if _callback:
