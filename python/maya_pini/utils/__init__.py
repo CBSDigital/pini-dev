@@ -9,7 +9,7 @@ from .mu_light import find_lights, node_is_light, find_light_types
 from .mu_dec import (
     restore_ns, restore_sel, restore_frame, get_ns_cleaner, use_tmp_ns,
     reset_ns, reset_sel, pause_viewport, hide_img_planes,
-    disable_scanner_callbacks, revert_scene, restore)
+    disable_scanner_callbacks, revert_scene, restore, restore_cam)
 from .mu_io import (
     load_scene, save_scene, save_abc, save_ass, save_fbx, save_obj,
     save_redshift_proxy, load_redshift_proxy)

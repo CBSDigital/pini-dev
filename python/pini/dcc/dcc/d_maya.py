@@ -35,17 +35,18 @@ class MayaDCC(BaseDCC):
     VALID_EXTNS = ('ma', 'mb', 'abc', 'fbx')
     REF_EXTNS = ('ma', 'mb', 'abc', 'fbx', 'vdb', 'ass', 'usd', 'gz', 'rs')
 
-    def add_menu_divider(self, parent, name):
+    def add_menu_divider(self, parent, name, label=None):
         """Add menu divider to maya ui.
 
         Args:
             parent (str): parent menu
             name (str): uid for divider
+            label (str): label for divider
         """
         _parent = ui.obtain_menu(parent)
         if cmds.menuItem(name, query=True, exists=True):
             cmds.deleteUI(name)
-        cmds.menuItem(name, parent=_parent, divider=True)
+        cmds.menuItem(name, parent=_parent, divider=True, dividerLabel=label)
 
     def add_menu_item(self, parent, command, image, label, name):
         """Add menu item to maya ui.

@@ -46,7 +46,8 @@ class CArray3:
         return _str
 
     def to_loc(
-            self, name='point', scale=None, col=None, build=True, group=None):
+            self, name='point', scale=None, col=None, build=True, group=None,
+            replace=False):
         """Build a locator at this point in space.
 
         Args:
@@ -55,6 +56,7 @@ class CArray3:
             col (str): locator colour
             build (bool): execute build locator (to allow easy disable via var)
             group (str): add loc to group
+            replace (bool): replace any existing node with the same name
 
         Returns:
             (CTransform): locator
@@ -65,6 +67,8 @@ class CArray3:
             return None
 
         # Build loc
+        if replace and cmds.objExists(name):
+            cmds.delete(name)
         _name = to_unique(name)
         _loc = pom.CMDS.spaceLocator(name=_name)
         if _loc.shp != str(_loc) + "Shape":

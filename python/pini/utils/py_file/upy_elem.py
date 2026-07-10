@@ -133,9 +133,7 @@ class PyElem:
         _children = []
 
         _parent = None if isinstance(self, PyFile) else self
-        _ast = self.to_ast(catch=True)
-        if not _ast:
-            raise RuntimeError('Failed to read py ' + self.py_file.path)
+        _ast = self.to_ast()
         for _idx, _item in enumerate(_ast.body):
 
             # Check if ast object is addable

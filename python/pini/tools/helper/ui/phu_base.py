@@ -537,27 +537,6 @@ class PHUiBase(
                 _ref for _ref in _refs
                 if _ref.output and _ref.output.pini_task != 'lookdev']
 
-            # if ref:  # Attach existing ref
-            #     _funcs = []
-            #     for _ref in _refs:
-            #         _funcs += [wrap_fn(_ref.attach_shaders, ref)]
-            #     _func = chain_fns(*_funcs)
-            #     menu.add_action(
-            #         f'Assign to {_label} selection', _func,
-            #         icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
-            # else:  # Bring in new ref
-            #     _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
-            #     _funcs = [_select_outs]
-            #     _funcs += [
-            #         wrap_fn(
-            #             self.stage_import, lookdev, attach_to=_ref.namespace)
-            #         for _ref in _refs]
-            #     _funcs += [self.ui.SSceneRefs.redraw]
-            #     _func = chain_fns(*_funcs)
-            #     menu.add_action(
-            #         f'Apply to {_label} selection', _func,
-            #         icon=LOOKDEV_BG_ICON, enabled=bool(_refs))
-
             _select_outs = wrap_fn(self.ui.MainPane.select_tab, 'Scene')
             _funcs = [_select_outs]
             _funcs += [

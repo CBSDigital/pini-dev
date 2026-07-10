@@ -395,16 +395,27 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         return pom.CMDS.scaleConstraint(
             self, target, maintainOffset=maintain_offset)
 
-    def reset_tfms(self, scale=True, break_conns=False):
+    def reset_tfms(
+            self, translate=True, rotate=True, scale=True, break_conns=False):
         """Reset transforms on this node.
 
         Args:
+            translate (bool): reset translate
+            rotate (bool): reset rotate
             scale (bool): reset scale
             break_conns (bool): break connections on reset
         """
-        _attrs = 'tr'
+
+        # Determine attrs to reset
+        _attrs = ''
+        if translate:
+            _attrs += 't'
+        if rotate:
+            _attrs += 'r'
         if scale:
             _attrs += 's'
+
+        # Apply reset
         for _axis in 'xyz':
             for _attr in _attrs:
                 _val = {'s': 1, 't': 0, 'r': 0}[_attr]

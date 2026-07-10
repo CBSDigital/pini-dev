@@ -108,19 +108,23 @@ class PyDefDocs:
             raise _exc
         return _args
 
-    def _read_args(self):
+    def _read_args(self, log=9):
         """Read args documentation from these docs.
+
+        Args:
+            log (int): apply log level
 
         Returns:
             (PyArgDoc list): arg list
         """
+        _LOGGER.debug('READ ARGS %s', self)
         if not self.args_str:
             return []
 
         # Separate out texts
         _arg_strs = []
         for _line in self.args_str.split('\n'):
-            _LOGGER.log(9, 'LINE %s', _line)
+            _LOGGER.log(log, ' - LINE %s', _line)
             if not _line.startswith(' ' * 8):
                 if not _line.startswith(' ' * 4):
                     _LOGGER.info(' - FAILED TO READ ARGS %s', self)
@@ -197,6 +201,7 @@ class _PyArgDocs:
         Args:
             docstring (str): docstring body
         """
+        _LOGGER.debug('INIT PyArgDocs %s', docstring)
         self.docstring = docstring
         self.name, self.type_, _, self.body = re.split('[():]', docstring, 3)
         self.name = self.name.strip()

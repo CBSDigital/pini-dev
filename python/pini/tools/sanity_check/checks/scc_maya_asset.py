@@ -608,4 +608,5 @@ class CheckShaders(scc_maya_lookdev.CheckLookdevShaders):
 
     def run(self):
         """Run this check."""
-        super().run(check_refd_geo=False, shds_required=False)
+        super().run(
+            check_refd_geo=False, shds_required=False, check_ai_shd=False)

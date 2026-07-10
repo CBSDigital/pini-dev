@@ -98,7 +98,9 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (str): namespace
         """
-        return str(self.associatedNamespace(shortName=True))
+        _LOGGER.debug('NAMESPACE %s', self)
+        _ns = self.associatedNamespace(shortName=True)
+        return str(_ns)
 
     @property
     def plugs(self):
@@ -460,7 +462,13 @@ def find_ref(match=None, catch=True, **kwargs):
 
     _match_refs = [
         _ref for _ref in _refs
-        if _ref.namespace in (match, to_namespace(match))]
+        if match in (_ref.namespace, _ref, _ref.ref_node)]
+    if len(_match_refs) == 1:
+        return single(_match_refs)
+
+    _ns_matches = [
+        _ref for _ref in _refs
+        if _ref.namespace == to_namespace(match)]
     if len(_match_refs) == 1:
         return single(_match_refs)
 

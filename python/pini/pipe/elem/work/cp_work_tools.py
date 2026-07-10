@@ -91,18 +91,23 @@ def cur_work(work_dir=None, catch=True):
         return None
 
 
-def load_recent():
-    """Load most recent work file."""
+def load_recent(force=False):
+    """Load most recent work file.
+
+    Args:
+        force (bool): load recent without confirmation
+    """
     from pini import qt
     _recent = recent_work()
     if not _recent:
         qt.warning('No recent work found')
         return
     _latest = _recent[0].find_latest()
-    qt.ok_cancel(
-        'Load latest work file?\n\n' + _latest.path,
-        title='Load recent', icon=icons.find('Monkey Face'))
-    _latest.load()
+    if not force:
+        qt.ok_cancel(
+            'Load latest work file?\n\n' + _latest.path,
+            title='Load recent', icon=icons.find('Monkey Face'))
+    _latest.load(force=force)
 
 
 def recent_work():

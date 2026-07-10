@@ -314,6 +314,17 @@ class HouDCC(BaseDCC):
         """
         return class_(hou.playbar.frameRange()[1])
 
+    def t_frame(self, class_=float):
+        """Obtain current frame.
+
+        Args:
+            class_ (class): override type of data to return (eg. int)
+
+        Returns:
+            (float): current frame
+        """
+        return class_(hou.frame())
+
     def t_start(self, class_=float):
         """Get start frame.
 

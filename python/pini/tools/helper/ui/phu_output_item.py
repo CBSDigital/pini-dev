@@ -67,7 +67,7 @@ class PHOutputItem(qt.CListViewPixmapItem):
 
     @property
     def label(self):
-        """Obtain main label for this output element.
+        """Obtain main label for this output element (ie. top left data).
 
         Returns:
             (str): label
@@ -75,9 +75,12 @@ class PHOutputItem(qt.CListViewPixmapItem):
         _out = self.output
         _ety_name = _out.asset or _out.shot
 
-        # Handle restCache abcs
-        if _out.extn in ('abc', 'fbx') and _out.output_name == 'restCache':
-            return f'{_ety_name} ({_out.pini_task} {_out.extn})'
+        # Handle restCache or typed abcs/fbx
+        if _out.extn in ('abc', 'fbx'):
+            if _out.output_name == 'restCache':
+                return f'{_ety_name} ({_out.pini_task} {_out.extn})'
+            if _out.output_type:
+                return f'{_ety_name} ({_out.output_type})'
 
         # Handle shdCache ass.gz
         if _out.extn == 'gz' and _out.output_name == 'shdCache':

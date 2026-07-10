@@ -192,7 +192,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if check_extn and self.extn not in [
                 'py', 'txt', None, 'yml', 'gizmo', 'mel', 'cs', 'env',
                 'xml', 'bat', 'vbs', 'ma', 'md', 'ui', 'rc', 'html',
-                'kdenlive']:
+                'kdenlive', 'json']:
             raise ValueError(self.extn)
 
         # Execute diff

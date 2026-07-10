@@ -5,7 +5,6 @@ import logging
 from maya import cmds
 from maya.api import OpenMaya as om
 
-from pini.tools import release
 from pini.utils import single, EMPTY, passes_filter
 from maya_pini.utils import (
     to_parent, to_shp, restore_sel, DEFAULT_NODES, to_unique)
@@ -14,13 +13,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @restore_sel
-def add_anim_offs(tfm, anims=None, anim=None, reset=False):
+def add_anim_offs(tfm, anims=None, reset=False):
     """Build animation offset controls.
 
     Args:
         tfm (CTransform): node to apply offset controls on
         anims (CAnimCurve list): animation to offset
-        anim (CAnimCurve list): animation to offset (deprecated)
         reset (bool): reset any existing offset settings
 
     Returns:
@@ -29,9 +27,6 @@ def add_anim_offs(tfm, anims=None, anim=None, reset=False):
     from maya_pini import open_maya as pom
 
     _anims = anims
-    if anim:
-        _anims = anim
-        release.apply_deprecation('06/01/26', 'Use anims arg')
     _LOGGER.info('ADD ANIM OFFS %s (%d CRVS)', tfm, len(_anims))
 
     # Create attrs
@@ -46,14 +41,6 @@ def add_anim_offs(tfm, anims=None, anim=None, reset=False):
     for _crv in _anims:
         _crv.input.break_conns()
         _anim_t.connect(_crv.input, force=True)
-
-    # # Connect nodes
-    # _offs_t = pom.minus_plug('time1.outTime', _offs)
-    # _offs_t.multiply(_mult, output=_anim_t, force=True)
-    # _LOGGER.info(' - MULT/OFFS %s %s', _mult, _offs)
-    # for _crv in _anims:
-    #     _crv.input.break_conns()
-    #     _anim_t.connect(_crv.input, force=True)
 
     return _offs, _mult
 
@@ -371,19 +358,25 @@ def _read_ls_results(pattern, selected, type_, dag_only, top_node):
     return pom.CMDS.ls(*_args, **_kwargs)
 
 
-def get_selected(class_=None, multi=False):
+def get_selected(class_=None, multi=False, type_=None):
     """Obtain selected pom node.
 
     Args:
         class_ (class): cast result to this class
         multi (bool): allow multiple selection
+        type_ (str): apply node type filter
 
     Returns:
         (CNode): selected node
     """
     _LOGGER.debug('GET SELECTED')
     assert isinstance(multi, bool)
-    _sel = cmds.ls(selection=True)
+
+    _kwargs = {}
+    if type_:
+        _kwargs['type'] = type_
+    _sel = cmds.ls(selection=True, **_kwargs)
+
     if multi:
         return list(filter(bool, [
             cast_node(_item, class_=class_, catch=True)

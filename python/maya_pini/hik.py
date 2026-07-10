@@ -132,14 +132,15 @@ class PHIKNode(pom.CNode):
         _LOGGER.info(' - SKEL %s', _skel)
 
         # Read range + step size from source anim
+        _hips = self.read_map()['Hips']
         _rng = range_
         _step = step
         if not _rng or not step:
-            _src_skel = pom.find_skeleton(self.get_source().namespace)
-            _LOGGER.info(' - SRC SKEL %s', _src_skel)
-            _src_root = _src_skel.root
-            _LOGGER.info(' - SRC ROOT %s', _src_root)
-            _src_ktvs = _src_root.rx.get_ktvs()
+            _src = self.get_source()
+            if not _src:
+                raise RuntimeError(f'Failed to determine HIK source {self}')
+            _LOGGER.info(' - HIPS %s', _hips)
+            _src_ktvs = _src.read_map()['Hips'].rx.get_ktvs()
             assert _src_ktvs
             _src_keys = [_time for _time, _ in _src_ktvs]
             _LOGGER.info(' - SRC KEYS %s', _src_keys)
@@ -152,7 +153,7 @@ class PHIKNode(pom.CNode):
         # Get list of plugs to bake
         _plugs = plugs
         if not _plugs:
-            _plugs = [_skel.root.translate]
+            _plugs = [_hips.translate]
             _plugs += [_jnt.rotate for _jnt in _skel.joints]
 
         # Bake anim (copied from HIK bake to skeleton)
@@ -174,7 +175,7 @@ class PHIKNode(pom.CNode):
         if loop:
             _LOGGER.debug(' - APPLY LOOP %s', loop)
             if loop == 'Path':
-                _offs_trgs = [_skel.root.tz]
+                _offs_trgs = [_hips.tz]
             elif loop in (True, 'Loopable'):
                 _offs_trgs = []
             else:
@@ -189,6 +190,23 @@ class PHIKNode(pom.CNode):
                 _offs = _crv.target in _offs_trgs
                 _LOGGER.debug('   - OFFS %s', _offs)
                 _crv.loop(offset=_offs)
+
+    def is_locked(self):
+        """Test whether this character definition is locked.
+
+        Returns:
+            (bool): whether locked
+        """
+        return self.plug['InputCharacterizationLock'].get_val()
+
+    def lock(self):
+        """Lock this character definition."""
+        if self.is_locked():
+            _LOGGER.info('ALREADY LOCKED %s', self)
+            return
+        self.set_current()
+        mel.eval('hikToggleLockDefinition')
+        process_deferred_events()
 
     def get_source(self):
         """Obtain source for this HIK node.
@@ -288,6 +306,27 @@ class PHIKNode(pom.CNode):
         process_deferred_events()
 
         assert CHAR_LIST.get_val() == self
+
+    def read_map(self):
+        """Read current HIK mapping.
+
+        Returns:
+            (dict): bone name / joint mappings
+        """
+        _LOGGER.debug('READ MAP %s', self)
+        _map = {}
+        for _src, _dest in self.find_connections(type_='joint'):
+            _LOGGER.debug(' - SRC / DEST "%s" -> "%s"', _src, _dest)
+            if _src.to_node() == self:
+                assert _dest.attr == 'Character'
+                _map[_src.attr] = _dest.to_node()
+            elif _dest.to_node() == self:
+                assert _src.attr == 'Character'
+                _map[_dest.attr] = _src.to_node()
+            else:
+                raise ValueError
+
+        return _map
 
     def to_jnts(self):
         """Read HIK joints from character definition.
@@ -487,7 +526,9 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     _name = skel.to_name(catch=True)
 
     # Use default 1:1 name map
-    if _name in ('Mutant', 'Carl', 'Adam', 'Mia', 'Swat', None, 'RokokoRaw1'):
+    if _name in (
+            'Mutant', 'Carl', 'Adam', 'Mia', 'Swat', None, 'RokokoRaw1',
+            'Hou', 'HouSkel1'):
         _jnts = ['Hips', 'Spine', 'Spine1', 'Spine2', 'Spine3', 'Neck', 'Head']
         for _side in ['Left', 'Right']:
             for _name in [
@@ -582,6 +623,83 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             ('LeftFoot', 'LeftFoot')]
         if skel.name == 'Rokoko1':
             _jnt_map.pop(0)
+
+    # elif skel.name in ('HouSkel1', ):
+    #     _jnt_map = [
+    #         ('Root', 'Hips'),
+    #         ('Spine1', 'Spine'),
+    #         ('Spine2', 'Spine1'),
+    #         ('Spine3', 'Spine2'),
+    #         ('Spine4', 'Spine3'),
+    #         ('Chest', 'Spine4'),
+    #         ('Head', 'Head'),
+    #         ('Neck', 'Neck'),
+    #         ('RightShoulder', 'RightShoulder'),
+    #         ('LeftShoulder', 'LeftShoulder'),
+    #         ('RightUpperArm', 'RightArm'),
+    #         ('LeftUpperArm', 'LeftArm'),
+    #         ('RightElbow', 'RightForeArm'),
+    #         ('LeftElbow', 'LeftForeArm'),
+    #         ('RightHand', 'RightHand'),
+    #         ('LeftHand', 'LeftHand'),
+    #         ('RightThumb1', 'RightHandThumb1'),
+    #         ('LeftThumb1', 'LeftHandThumb1'),
+    #         ('LeftThumb2', 'LeftHandThumb2'),
+    #         ('RightThumb2', 'RightHandThumb2'),
+    #         ('RightThumb3', 'RightHandThumb3'),
+    #         ('LeftThumb3', 'LeftHandThumb3'),
+    #         ('LeftThumb4', 'LeftHandThumb4'),
+    #         ('RightThumb4', 'RightHandThumb4'),
+    #         ('RightIndex2', 'RightHandIndex1'),
+    #         ('LeftIndex2', 'LeftHandIndex1'),
+    #         ('RightIndex3', 'RightHandIndex2'),
+    #         ('LeftIndex3', 'LeftHandIndex2'),
+    #         ('RightIndex1', 'RightInHandIndex'),
+    #         ('LeftIndex1', 'LeftInHandIndex'),
+    #         ('RightIndex4', 'RightHandIndex3'),
+    #         ('LeftIndex4', 'LeftHandIndex3'),
+    #         ('RightIndex5', 'RightHandIndex4'),
+    #         ('LeftIndex5', 'LeftHandIndex4'),
+    #         ('RightMiddle1', 'RightInHandMiddle'),
+    #         ('LeftMiddle1', 'LeftInHandMiddle'),
+    #         ('RightMiddle2', 'RightHandMiddle1'),
+    #         ('LeftMiddle2', 'LeftHandMiddle1'),
+    #         ('RightMiddle3', 'RightHandMiddle2'),
+    #         ('LeftMiddle3', 'LeftHandMiddle2'),
+    #         ('RightMiddle4', 'RightHandMiddle3'),
+    #         ('LeftMiddle4', 'LeftHandMiddle3'),
+    #         ('RightMiddle5', 'RightHandMiddle4'),
+    #         ('LeftMiddle5', 'LeftHandMiddle4'),
+    #         ('RightRing1', 'RightInHandRing'),
+    #         ('LeftRing1', 'LeftInHandRing'),
+    #         ('RightRing2', 'RightHandRing1'),
+    #         ('LeftRing2', 'LeftHandRing1'),
+    #         ('RightRing3', 'RightHandRing2'),
+    #         ('LeftRing3', 'LeftHandRing2'),
+    #         ('RightRing4', 'RightHandRing3'),
+    #         ('LeftRing4', 'LeftHandRing3'),
+    #         ('RightRing5', 'RightHandRing4'),
+    #         ('LeftRing5', 'LeftHandRing4'),
+    #         ('RightPinky1', 'RightInHandPinky'),
+    #         ('LeftPinky1', 'LeftInHandPinky'),
+    #         ('RightPinky2', 'RightHandPinky1'),
+    #         ('LeftPinky2', 'LeftHandPinky1'),
+    #         ('RightPinky3', 'RightHandPinky2'),
+    #         ('LeftPinky3', 'LeftHandPinky2'),
+    #         ('RightPinky4', 'RightHandPinky3'),
+    #         ('LeftPinky4', 'LeftHandPinky3'),
+    #         ('RightPinky5', 'RightHandPinky4'),
+    #         ('LeftPinky5', 'LeftHandPinky4'),
+    #         ('RightHip', 'RightUpLeg'),
+    #         ('RightKnee', 'RightLeg'),
+    #         ('LeftKnee', 'LeftLeg'),
+    #         ('RightHeel', 'RightFoot'),
+    #         ('LeftHeel', 'LeftFoot'),
+    #         ('RightBall', 'RightToeBase'),
+    #         ('LeftBall', 'LeftToeBase'),
+    #         ('RightToe', 'LeftFootExtraFinger1'),
+    #         ('LeftToe', 'RightFootExtraFinger1'),
+    #         ('LeftHip', 'LeftUpLeg')]
 
     else:
         raise ValueError(skel.name)

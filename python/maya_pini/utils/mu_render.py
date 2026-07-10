@@ -83,7 +83,62 @@ def _apply_globals_settings(path, col_mgt=None, animation=False):
     _LOGGER.debug(' - SETUP ARNOLD')
 
 
-def render_frame(
+def _check_arnold():
+    """Check arnold is set up correctly."""
+    _ren = cur_renderer()
+    if _ren != 'arnold':
+        raise NotImplementedError(_ren)
+
+    cmds.loadPlugin('mtoa', quiet=True)
+    _LOGGER.debug(' - LOADED PLUGIN')
+
+    _quality = cmds.getAttr('defaultArnoldDriver.quality')
+    _LOGGER.debug(' - CHECK QUALITY %d', _quality)
+    assert _quality == 100
+
+
+def _check_cam(camera):
+    """Determined render cam.
+
+    Args:
+        camera (str): force camera
+
+    Returns:
+        (CCamera): render cam
+    """
+    from maya_pini import open_maya as pom
+
+    _cam = camera
+    if not _cam:
+        _cam = pom.find_render_cam()
+    else:
+        _cam = pom.CCamera(_cam)
+    _cam.visibility.set_val(True)
+    _cam.shp.visibility.set_val(True)
+    _LOGGER.debug(' - CAM %s', _cam)
+
+    return _cam
+
+
+def _check_res(res):
+    """Check render resolution.
+
+    Args:
+        res (tuple): force res
+
+    Returns:
+        (tuple): render res
+    """
+    if not res:
+        _res_x = cmds.getAttr('defaultResolution.width')
+        _res_y = cmds.getAttr('defaultResolution.height')
+    else:
+        _res_x, _res_y = res
+    _LOGGER.debug(' - RES %dx%d', _res_x, _res_y)
+    return _res_x, _res_y
+
+
+def _exec_render_frame(
         file_, camera=None, layer='defaultRenderLayer', col_mgt=None,
         res=None, mode='mel', pre_frame=None, pre_frame_mel=None,
         post_frame=None, post_frame_mel=None, force=False):
@@ -102,42 +157,16 @@ def render_frame(
         post_frame_mel (str): post frame mel to execute
         force (bool): overwrite without confirmation
     """
-    from maya_pini import open_maya as pom
+    _LOGGER.debug(' - EXEC RENDER FRAME force=%d', force)
 
-    _ren = cur_renderer()
-    if _ren != 'arnold':
-        raise NotImplementedError(_ren)
-
-    _LOGGER.debug('RENDER FRAME force=%d', force)
-    cmds.loadPlugin('mtoa', quiet=True)
-    _LOGGER.debug(' - LOADED PLUGIN')
-
-    _quality = cmds.getAttr('defaultArnoldDriver.quality')
-    _LOGGER.debug(' - CHECK QUALITY %d', _quality)
-    assert _quality == 100
-
-    # Get camera
-    _cam = camera
-    if not _cam:
-        _cam = pom.find_render_cam()
-    else:
-        _cam = pom.CCamera(_cam)
-    _cam.visibility.set_val(True)
-    _cam.shp.visibility.set_val(True)
-    _LOGGER.debug(' - CAM %s', _cam)
+    _check_arnold()
+    _cam = _check_cam(camera)
+    _res = _check_res(res)
 
     # Prepare output path
     _file = File(file_)
     _file.test_dir()
     _file.delete(force=force, wording='replace')
-
-    # Get res
-    if not res:
-        _res_x = cmds.getAttr('defaultResolution.width')
-        _res_y = cmds.getAttr('defaultResolution.height')
-    else:
-        _res_x, _res_y = res
-    _LOGGER.debug(' - RES %dx%d', _res_x, _res_y)
 
     _apply_globals_settings(_file, col_mgt=col_mgt)
 
@@ -150,8 +179,8 @@ def render_frame(
         _LOGGER.info(' - EXECUTING PRE FRAME MEL %s', pre_frame_mel)
         mel.eval(pre_frame_mel)
     mu_eval.process_deferred_events()
-    _exec_frame_render(
-        file_=_file, mode=mode, layer=layer, res=[_res_x, _res_y], cam=_cam)
+    _exec_arnold_render(
+        file_=_file, mode=mode, layer=layer, res=_res, cam=_cam)
     if post_frame:
         post_frame()
     if post_frame_mel:
@@ -163,7 +192,7 @@ def render_frame(
     _LOGGER.debug(' - RENDER COMPLETE')
 
 
-def _exec_frame_render(file_, mode, layer, res, cam, check_size=False):
+def _exec_arnold_render(file_, mode, layer, res, cam, check_size=False):
     """Execute frame render.
 
     Args:
@@ -192,6 +221,17 @@ def _exec_frame_render(file_, mode, layer, res, cam, check_size=False):
             raise NotImplementedError(layer)
         cmds.renderWindowEditor('renderView', edit=True, currentCamera=cam)
         mel.eval('renderSequence')
+    elif mode == 'ArnoldRenderView':
+        _start = time.time()
+        cmds.arnoldRenderView(opt=["Refresh Render", "True"])
+        import arnold
+        while arnold.AiRenderIsAnyActive():
+            check_heart()
+            cmds.refresh()
+            _dur = time.time() - _start
+            _LOGGER.info(' - WAITING FOR RENDER %.01fs', _dur)
+            time.sleep(1)
+        cmds.arnoldRenderView(opt=["Save Image", file_.path])
     else:
         raise ValueError(mode)
     _dur = time.time() - _start
@@ -332,7 +372,7 @@ def render(
                 _frames, 'Rendering {:d} frame{}', stack_key='MayaRender'):
             check_heart()
             cmds.currentTime(_frame)
-            render_frame(
+            _exec_render_frame(
                 file_=File(seq[_frame]), camera=camera,
                 pre_frame_mel=pre_frame_mel, post_frame_mel=post_frame_mel,
                 pre_frame=pre_frame, post_frame=post_frame)
@@ -349,6 +389,17 @@ def render(
     assert seq.exists()
     if view:
         seq.view()
+
+
+@_revert_render_window
+@functools.wraps(_exec_render_frame)
+def render_frame(*args, **kwargs):
+    """Render a single frame.
+
+    Returns:
+        (File): file that was rendered
+    """
+    return _exec_render_frame(*args, **kwargs)
 
 
 def _obt_image_fmts_map():

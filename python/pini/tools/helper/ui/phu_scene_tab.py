@@ -136,15 +136,19 @@ class PHSceneTab:
         Returns:
             (CPOutput list): outputs
         """
+        _LOGGER.debug('READ ALL OUTPUTS')
         _tab = self.ui.SOutputsPane.currentWidget()
         _ren_basic_types = ['render', 'blast', 'plate']
         _filter = os.environ.get('PINI_HELPER_OUTPUT_FILTER')
+        _LOGGER.debug(' - FILTER %s', _filter)
 
         _outs = []
         if _tab == self.ui.SAssetsTab:
             _outs = self.job.find_publishes(
                 extns=dcc.REF_EXTNS, filter_=_filter)
         elif _tab == self.ui.SEntityTab:
+            _LOGGER.debug(
+                ' - CHECKING ETY OUTS %d %s', bool(self.entity), self.entity)
             if self.entity:
                 _outs += [
                     _out for _out in self.entity.find_outputs(
@@ -158,6 +162,7 @@ class PHSceneTab:
         else:
             raise ValueError(_tab)
 
+        _LOGGER.debug(' - FOUND %d OUTPUTS', len(_outs))
         return _outs
 
     def _redraw__SOutputType(self):

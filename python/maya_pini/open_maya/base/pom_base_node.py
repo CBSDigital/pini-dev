@@ -402,6 +402,19 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             type_='animCurve', connections=False, plugs=False)
         return [pom.CAnimCurve(_node) for _node in _nodes]
 
+    def find_connected(self, type_, catch=True):
+        """Find a connected node of the given type.
+
+        Args:
+            type_ (str): node type to match
+            catch (bool): no error if no single node matched
+
+        Returns:
+            (CNode): matching node
+        """
+        return single(set(self.find_connections(
+            type_=type_, plugs=False, connections=False)), catch=catch)
+
     @functools.wraps(pom_utils.find_connections)
     def find_connections(self, **kwargs):
         """Find connections to this node.
@@ -577,13 +590,20 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """Select this node."""
         cmds.select(self, replace=True)
 
-    def set_col(self, col):
-        """Set viewport colour of this node.
+    def set_col(self, col, mode='viewport'):
+        """Set colour of this node.
 
         Args:
             col (str): name of colour to apply
+            mode (str): which colour to apply
+                viewport - update viewport colour (default)
+                outliner - update outliner colour
+                all - update all colours
         """
-        set_col(self.node, col)
+        if mode in ('viewport', 'all'):
+            set_col(self.node, col)
+        if mode in ('outliner', 'all'):
+            self.set_outliner_col(col)
 
     def set_key(self, frame=None, tangents=None):
         """Set keyframe on this node (ie. key all channels).

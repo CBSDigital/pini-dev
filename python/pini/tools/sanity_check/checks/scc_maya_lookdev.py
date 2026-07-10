@@ -184,6 +184,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
         # Flag non-arnold shader
         _se = data['shadingEngine']
         if (
+                self.check_ai_shd and
                 self.settings.get('flag_non_arnold', True) and
                 utils.shd_is_arnold(engine=_se, type_=type_)):
             _msg = f'Shader "{shd}" ({type_}) is not arnold shader'

@@ -24,15 +24,18 @@ DCCS = [
     'unreal',
 ]
 
-_LOGGER.debug('IMPORT DCC')
+_ENV_DCC = os.environ.get('PINI_DCC')
+_LOGGER.debug('IMPORT DCC %s', _ENV_DCC)
 
-if not DCC and os.environ.get('PINI_DCC') == 'terragen':
+if not DCC and _ENV_DCC == 'terragen':
     from .d_terragen import TerragenDCC
     DCC = TerragenDCC()
 
-if not DCC and os.environ.get('PINI_DCC') == 'syntheyes':
+if not DCC and _ENV_DCC == 'syntheyes':
+    _LOGGER.debug(' - IMPORT SyntheyesDCC')
     from .d_syntheyes import SyntheyesDCC
     DCC = SyntheyesDCC()
+    _LOGGER.debug(' - IMPORT SyntheyesDCC COMPLETE %s', DCC)
 
 if not DCC:
     try:

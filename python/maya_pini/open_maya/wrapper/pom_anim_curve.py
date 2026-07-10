@@ -103,7 +103,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Args:
             offset (bool): apply cycle with offset
         """
-        _mode = 'cycle' if not offset else 'cycleRelative'
+        _mode = 'Cycle' if not offset else 'Cycle with offset'
         self.set_infinity(_mode)
 
     def set_infinity(self, mode):
@@ -112,7 +112,17 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Args:
             mode (str): mode to apply (eg. cycle/cycleOffset/linear)
         """
-        self.target.set_infinity(mode)
+        _val = {
+            'linear': 2,
+            'cycle': 3,
+            'cycleOffset': 4,
+            'Cycle': 3,
+            'Cycle with offset': 4,
+        }[mode]
+        if mode in ['linear', 'cycle', 'cycleOffset']:
+            release.apply_deprecation('10/07/26', f'Deprecated loop mode {mode}')
+        self.plug['preInfinity'].set_val(_val)
+        self.plug['postInfinity'].set_val(_val)
 
     def set_tangents(self, type_):
         """Set tangents for this curve.
@@ -241,21 +251,6 @@ def find_anims(namespace=None, filter_=None, referenced=None):
             continue
         _anims.append(_anim)
     return _anims
-
-
-def find_anim(*args, **kwargs):
-    """Find anim curves in this scene (deprecated).
-
-    Args:
-        namespace (str): apply namespace filter
-        filter_ (str): apply name filter
-        referenced (bool): apply referened filter
-
-    Returns:
-        (CAnimCurve): anim curves
-    """
-    release.apply_deprecation('06/01/26', 'Use find_anims')
-    return find_anims(*args, **kwargs)
 
 
 def loop_anims(anims):

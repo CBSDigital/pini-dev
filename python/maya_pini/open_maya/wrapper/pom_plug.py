@@ -472,17 +472,22 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         if hide:
             self.hide()
 
-    def minus(self, input_, output=None):
+    def minus(self, input_, output=None, type_=None, force=False):
         """Build a minus node with this plug as the first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
+            type_ (str): force attribute type (eg. float) - this can be used
+                when attributeQuery has trouble reading type, for example in
+                the case of compound attributes
+            force (bool): replace any existing connection to the output plug
 
         Returns:
             (CPlug): output connection
         """
-        return minus_plug(self, input_, output=output)
+        return minus_plug(
+            self, input_, output=output, type_=type_, force=force)
 
     def modulo(self, modulo, output=None):
         """Build a modulo node with this plug as input.
@@ -575,22 +580,41 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         return _out
 
-    def plus(self, input_, output=None, name='plus', force=False):
+    def negate(self, type_=None):
+        """Negate this plug (ie. 0 - plug value).
+
+        Args:
+            type_ (str): force attribute type (eg. float) - this can be used
+                when attributeQuery has trouble reading type, for example in
+                the case of compound attributes
+
+        Returns:
+            (CPlug): output plug
+        """
+        return minus_plug(0, self, type_=type_)
+
+    def plus(self, input_, output=None, name='plus', type_=None, force=False):
         """Build a plus node in with this plug as the first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
             name (str): override node name
+            type_ (str): force attribute type (eg. float) - this can be used
+                when attributeQuery has trouble reading type, for example in
+                the case of compound attributes
             force (bool): replace any existing output connection
 
         Returns:
             (CPlug): output plug on add node
         """
-        return plus_plug(self, input_, output=output, name=name, force=force)
+        return plus_plug(
+            self, input_, output=output, name=name, type_=type_, force=force)
 
     def reverse(self, output=None, as_3d=None):
         """Build a reverse node and connect it to this node.
+
+        NOTE: this is not the same as negating the value.
 
         Args:
             output (CPlug): output
@@ -602,15 +626,16 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         from maya_pini import open_maya as pom
         _reverse = pom.CMDS.createNode('reverse')
 
-        _this_is_3d = bool(self.list_children())
-        _3d = _this_is_3d if as_3d is None else as_3d
-        _LOGGER.debug('REVERSE %s 3d=%d this_3d=%d', self, _3d, _this_is_3d)
+        _as_3d = as_3d
+        if _as_3d is None:
+            _as_3d = bool(self.list_children())
+        _LOGGER.debug('REVERSE %s as_3d=%d', self, _as_3d)
 
-        if not _3d:
+        if not _as_3d:
             self.connect(_reverse.plug['inputX'])
             _out = _reverse.plug['outputX']
         else:
-            if not _this_is_3d:
+            if not _as_3d:
                 for _axis in 'XYZ':
                     self.connect(_reverse.plug[f'input{_axis}'])
             else:
@@ -619,7 +644,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
 
         if output:
             _out_is_3d = bool(output.list_children())
-            if _out_is_3d == _3d:
+            if _out_is_3d == _as_3d:
                 _out.connect(output)
             else:
                 raise NotImplementedError(_out, output)
@@ -652,6 +677,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Args:
             mode (str): infinity mode to apply
         """
+        from pini.tools import release
+        release.apply_deprecation('02/07/26', 'Use CPlug.set_infinity')
         assert mode in ['cycle', 'cycleRelative', 'linear']
         cmds.setInfinity(self, preInfinite=mode, postInfinite=mode)
 
@@ -815,14 +842,21 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         return basic_repr(self, self.name, separator='|')
 
 
-def plus_plug(input1, input2, output=None, name='plus', force=False):
+def plus_plug(
+        input1, input2, input3=None, input4=None, output=None, name='plus',
+        type_=None, force=False):
     """Build a plus node in with the given values as inputs.
 
     Args:
         input1 (CPlug|float): first/left value
         input2 (CPlug|float): second/right value
+        input3 (CPlug|float): third value
+        input4 (CPlug|float): fouth value
         output (CPlug): output
         name (str): override node name
+        type_ (str): force attribute type (eg. float) - this can be used
+            when attributeQuery has trouble reading type, for example in
+            the case of compound attributes
         force (bool): replace any existing output connection
 
     Returns:
@@ -834,35 +868,30 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
 
     # Determine attr size
     if isinstance(input1, CPlug):
-        _type = input1.get_type()
+        _type = type_ or input1.get_type()
     elif isinstance(input2, CPlug):
-        _type = input2.get_type()
+        _type = type_ or input2.get_type()
     else:
         raise ValueError(f'Unable to determine type {input1}/{input2}')
     _size = {
-        'doubleLinear': 1,
+        'double': 1,
         'double3': 3,
+        'doubleLinear': 1,
         'float': 1,
         'long': 1,
         'time': 1,
     }[_type]
     _LOGGER.debug(' - SIZE %d type=%s', _size, _type)
 
-    # Connect/set input0
-    _attr_0 = f'{_add}.input{_size:d}D[0]'
-    _LOGGER.debug(' - ATTR 0 %s', _attr_0)
-    if isinstance(input1, _connect_types):
-        cmds.connectAttr(input1, _attr_0)
-    else:
-        cmds.setAttr(_attr_0, input1)
-
-    # Connect/set input1
-    _attr_1 = f'{_add}.input{_size:d}D[1]'
-    _LOGGER.debug(' - ATTR 1 %s', _attr_1)
-    if isinstance(input2, _connect_types):
-        cmds.connectAttr(input2, _attr_1)
-    else:
-        cmds.setAttr(_attr_1, input2)
+    for _idx, _input in enumerate([input1, input2, input3, input4], start=1):
+        if _input is None:
+            continue
+        _attr = f'{_add}.input{_size:d}D[{_idx}]'
+        _LOGGER.debug(' - ATTR %d %s', _idx, _attr)
+        if isinstance(_input, _connect_types):
+            cmds.connectAttr(_input, _attr)
+        else:
+            cmds.setAttr(_attr, _input)
 
     # Connect output
     _output = f'{_add}.output{_size:d}D'
@@ -873,19 +902,23 @@ def plus_plug(input1, input2, output=None, name='plus', force=False):
     return CPlug(_output)
 
 
-def minus_plug(input1, input2, output=None, force=False):
+def minus_plug(input1, input2, output=None, type_=None, force=False):
     """Build a minus node with the given values as inputs.
 
     Args:
         input1 (CPlug|float): first/left value
         input2 (CPlug|float): second/right value
         output (CPlug): output
+        type_ (str): force attribute type (eg. float) - this can be used
+            when attributeQuery has trouble reading type, for example in
+            the case of compound attributes
         force (bool): replace any existing output connection
 
     Returns:
         (CPlug): output plug on add node
     """
-    _out = plus_plug(input1, input2, output=output, force=force)
+    _out = plus_plug(
+        input1, input2, output=output, type_=type_, name='minus', force=force)
     _out.node.plug['operation'].set_enum('Subtract')
     return _out
 

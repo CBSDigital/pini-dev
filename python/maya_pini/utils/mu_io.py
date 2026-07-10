@@ -209,7 +209,8 @@ def save_scene(file_=None, selection=False, revert=None, force=False):
     Args:
         file_ (str): save path
         selection (bool): export selection
-        revert (bool): revert filename
+        revert (bool): revert filename (default is file name is reverted
+            unless there is no current filename)
         force (bool): overwrite existing file without warning dialog
     """
     from pini import qt, dcc
@@ -428,7 +429,7 @@ def save_fbx(
         constraints (bool): export constraints
         skins (bool): export skins (default: on)
         shapes (bool): export shapes (default: on)
-        animation (bool): export animation
+        animation (bool): export animation (default is off)
         range_ (tuple): start/end (for complex animation)
         step (float): step size in frames (for complex animation)
         ascii_ (bool): save as ascii (otherwise binary)

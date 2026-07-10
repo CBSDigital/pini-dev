@@ -21,11 +21,13 @@ class CBasicPublish(eh_base.CExportHandler):
     LABEL = 'Makes a copy of this scene in the publish directory'
     ACTION = 'BasicPublish'
 
-    def build_metadata(self, **kwargs):
+    def build_metadata(self, has_anim=False, **kwargs):
         """Obtain metadata for this publish.
 
         Args:
-            work (CPWork): override workfile to read metadata from
+            has_anim (bool): enable to include full range (by default
+                this is cropped to a single frame)
+            src (CPWork): override workfile to read metadata from
             run_checks (bool): run sanity checks before publish
             task (str): task to pass to sanity check
             force (bool): force completion without any confirmations
@@ -35,8 +37,9 @@ class CBasicPublish(eh_base.CExportHandler):
         """
         _data = super().build_metadata(**kwargs)
         _data['publish_type'] = type(self).__name__
-        _frame = dcc.t_frame(int)
-        _data['range'] = (_frame, _frame)
+        if not has_anim:
+            _frame = dcc.t_frame(int)
+            _data['range'] = (_frame, _frame)
         return _data
 
     def _update_pipe_cache(self):

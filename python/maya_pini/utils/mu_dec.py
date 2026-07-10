@@ -164,12 +164,17 @@ def reset_sel(func):
     return _reset_sel_func
 
 
-def restore(selection=False, frame=False):
+def restore(
+        selection=False, frame=False, namespace=False, camera=False,
+        shelf=False):
     """Build a decorator which restores selected scene attributes after exec.
 
     Args:
         selection (bool): restore scene selection
         frame (bool): restore current frame
+        namespace (bool): restore current namespace
+        camera (bool): restore active viewport camera
+        shelf (bool): restore selected shelf
 
     Returns:
         (fn): decorator
@@ -184,12 +189,40 @@ def restore(selection=False, frame=False):
                 _func = restore_sel(_func)
             if frame:
                 _func = restore_frame(_func)
+            if namespace:
+                _func = restore_ns(_func)
+            if camera:
+                _func = restore_cam(_func)
+            if shelf:
+                _func = restore_shelf(_func)
             _result = _func(*args, **kwargs)
             return _result
 
         return _restore_fn
 
     return _restore_dec
+
+
+def restore_cam(func):
+    """Restore the active after executing the function.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _restore_cam_func(*args, **kwargs):
+        from maya_pini import open_maya as pom
+        _cam = pom.active_cam()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            cmds.lookThru(_cam)
+
+    return _restore_cam_func
 
 
 def restore_ns(func):
@@ -232,6 +265,27 @@ def restore_frame(func):
         return _result
 
     return _restore_frame_func
+
+
+def restore_shelf(func):
+    """Restore selected shelf after executing function.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _restore_shelf_fn(*args, **kwargs):
+        from maya_pini import ui
+        _shelf = ui.cur_shelf()
+        _result = func(*args, **kwargs)
+        ui.select_shelf(_shelf)
+        return _result
+
+    return _restore_shelf_fn
 
 
 def restore_sel(func):

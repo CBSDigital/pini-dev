@@ -12,7 +12,7 @@ from pini.utils import single, plural, wrap_fn
 from maya_pini import open_maya as pom, m_pipe
 from maya_pini.utils import (
     restore_sel, del_namespace, DEFAULT_NODES, save_abc, to_clean,
-    save_fbx)
+    save_fbx, process_deferred_events)
 
 from .. import ph_basic
 
@@ -343,21 +343,29 @@ def _import_refs(refs_mode, refs):
         _LOGGER.info(' - IMPORT REF %s', _ref)
         _ns = _ref.namespace  # Need to read before import
         _nodes = _ref.find_nodes(dag_only=True)
+        _LOGGER.info('   - FOUND %d NODES', len(_nodes))
+        process_deferred_events()
         _ref.import_()
+        _LOGGER.info('   - IMPORT SUCCESSFUL')
 
         # Apply refs mode
         if refs_mode == 'Import into root namespace':
             cmds.namespace(moveNamespace=(_ns, ':'), force=True)
             del_namespace(_ns, force=True)
-        elif refs_mode == 'Import replacing namespaces with underscores':
-            _LOGGER.debug(' - IMPORT REFS USING UNDERSCORES')
+        elif refs_mode in (
+                'Import replacing namespaces with underscores',
+                PubRefsMode.IMPORT_USING_UNDERSCORES):
+            _LOGGER.debug('   - IMPORT REFS USING UNDERSCORES')
             for _node in _nodes:
+                _LOGGER.debug('   - CHECKING NODE %s', _node)
+                _new_name = str(_node).replace(':', '_')
+                _LOGGER.debug('     - NEW NAME %s', _new_name)
                 if not cmds.objExists(_node):
                     _LOGGER.info(
-                        '   - FAILED TO RENAME "%s" -> "%s"', _node, _new_name)
+                        '     - FAILED TO RENAME "%s" -> "%s"', _node,
+                        _new_name)
                     continue
-                _new_name = str(_node).replace(':', '_')
-                _LOGGER.debug('   - RENAME "%s" -> "%s"', _node, _new_name)
+                _LOGGER.debug('     - RENAME "%s" -> "%s"', _node, _new_name)
                 _node.rename(_new_name)
         else:
             raise ValueError(refs_mode)

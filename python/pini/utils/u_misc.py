@@ -186,32 +186,33 @@ def ints_to_str(ints):
     Returns:
         (str): readable string
     """
-    _LOGGER.debug('STR TO INTS %s', ints)
+    _ints = to_list(ints)
+    _LOGGER.debug('STR TO INTS %s', _ints)
 
     # Determine step size
-    _steps = {ints[_idx + 1] - ints[_idx] for _idx in range(len(ints) - 1)}
+    _steps = {_ints[_idx + 1] - _ints[_idx] for _idx in range(len(_ints) - 1)}
     _step = single(_steps, catch=True)
     _LOGGER.debug(' - STEPS %s', _steps)
 
     if _step:
-        _str = f'{min(ints):d}-{max(ints):d}'
+        _str = f'{min(_ints):d}-{max(_ints):d}'
         if _step != 1:
             _str += f'x{_step:d}'
 
     else:
         _str = ''
-        for _idx, _int in enumerate(ints):
-            _last = _idx == len(ints) - 1
+        for _idx, _int in enumerate(_ints):
+            _last = _idx == len(_ints) - 1
             _LOGGER.debug(' - ADDING idx=%d idx=%d last=%d str=%s',
                           _idx, _int, _last, _str)
             if not _idx:
                 _str += str(_int)
-            elif ints[_idx - 1] != _int - 1:
+            elif _ints[_idx - 1] != _int - 1:
                 _str += f',{_int}'
             elif (  # Range use hyphen
                     not _last and
-                    ints[_idx - 1] == _int - 1 and
-                    ints[_idx + 1] == _int + 1):
+                    _ints[_idx - 1] == _int - 1 and
+                    _ints[_idx + 1] == _int + 1):
                 pass
             else:
                 _str += f'-{_int}'
@@ -651,7 +652,12 @@ def to_list(obj):
         return obj
     if isinstance(obj, str):
         return [obj]
-    if isinstance(obj, (types.GeneratorType, typing.ValuesView, range)):
+    if isinstance(obj, (
+            collections.abc.KeysView,
+            range,
+            types.GeneratorType,
+            typing.ValuesView,
+    )):
         return list(obj)
     raise NotImplementedError(obj)
 

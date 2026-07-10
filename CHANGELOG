@@ -1,3 +1,48 @@
+## [9.27.0] - Fri 2026-07-10 13:58
+### Summary
+ - Pini Install:
+    - bugfix shelf button right-click menu dividers missing labels,
+ - Pini Helper:
+    - scene outputs better labelling for abc/fbx publishes,
+### Updated
+ - pini.utils ints_to_str/to_list added handling for dict_keys,
+ - pini.utils.File.diff added json to allowed extns,
+ - pini.utils.PyElem.find_children removed custom error to avoid supressing traceback,
+ - pini.dcc.HouDCC.t_frame implemented,
+ - pini.dcc.MayaDCC.add_menu_divider added label arg,
+ - pini.dcc.export.CBasicPublish.build_metadata added has_anim flag,
+ - pini.pipe.load_recent added force flag,
+ - pini.install.PIMayaShelfInstaller._build_context_item use label for dividers,
+ - pini.tools.sanity_check.CheckShaders disabled check for ai shaders,
+ - pini.tools.helper scene output better labelling for abc/fbx publishes,
+ - maya_pini.utils.restore_cam added,
+ - maya_pini.utils.restore added camera/namespace/shelf opts,
+ - maya_pini.utils.render_frame bugfix not closing render window,
+ - maya_pini.utils.render_frame added ArnoldRenderView mode,
+ - maya_pini.open_maya.find_anim removed deprecated func,
+ - maya_pini.open_maya.add_anim_offs removed deprecated anim arg,
+ - maya_pini.open_maya.get_selected added type_ arg,
+ - maya_pini.open_maya.CBaseNode.find_connected added,
+ - maya_pini.open_maya.CBaseNode.set_col added mode for apply outliner col,
+ - maya_pini.open_maya.CBaseTransform.reset_tfm added translate/rotate flags,
+ - maya_pini.open_maya.CPoint.to_loc added replace arg,
+ - maya_pini.open_maya.CAnimCurve.loop deprecated pini loop modes,
+ - maya_pini.open_maya.CAnimCurve.loop apply directly to curve node attrs,
+ - maya_pini.open_maya.CPlug.minus added force/type_ args,
+ - maya_pini.open_maya.CPlug.plus added force arg,
+ - maya_pini.open_maya.CPlug.negate added,,
+ - maya_pini.open_maya.CPlug.reverse simplfied type check code,,
+ - maya_pini.open_maya.CPlug.set_infinty deprecated,
+ - maya_pini.open_maya.plus_plug added input3/input4/type_ args,
+ - maya_pini.open_maya.minus_plug added type_ arg,
+ - maya_pini.open_maya.find_ref try simple namespace match,
+ - maya_pini.ui fix_broken_shelves/find_shelves/cur_shelf added,
+ - maya_pini.hik.PHIKNode.bake_to_skel read hips from HIK,
+ - maya_pini.hik.PHIKNode lock/is_locked added,
+ - maya_pini.hik.PHIKNode.read_map added,
+ - maya_pini.hik._skel_to_mapping added hou skels,
+
+
 ## [9.26.0] - Thu 2026-06-18 15:24
 ### Summary
  - Pini Helper:

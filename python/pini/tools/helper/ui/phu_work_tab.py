@@ -478,18 +478,6 @@ class PHWorkTab:
 
         self.ui.WWorkPath.redraw()
 
-    # def _callback__WWorksRefresh(self):
-    #     _LOGGER.info('REFRESH WORKS')
-    #     if not self.work_dir:
-    #         _LOGGER.info('NO WORKDIR TO REFRESH')
-    #         return
-    #     _work = self.work
-    #     self.work_dir.find_works(force=True)
-    #     self.ui.WTagText.setText('')
-    #     self.ui.WTags.redraw()
-    #     if _work and _work.exists():
-    #         self.jump_to(_work)
-
     def _callback__WWorksShowAll(self):
         self.ui.WWorks.redraw()
 
