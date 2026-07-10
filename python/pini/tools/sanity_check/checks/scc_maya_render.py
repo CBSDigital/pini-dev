@@ -421,11 +421,9 @@ class CheckRenderGlobals(SCMayaCheck):
             self._rs_check_for_bad_tags()
 
         elif _ren == 'vray':
-            _attrs_to_check += [
-                ('vraySettings.cam_mbOn', True),
-            ]
             if _mblur:
                 _attrs_to_check += [
+                    ('vraySettings.cam_mbOn', True),
                     ('vraySettings.cam_mbCameraMotionBlur', True),
                     ('vraySettings.cam_mbDuration', 0.5),
                     ('vraySettings.cam_mbIntervalCenter', 0),
