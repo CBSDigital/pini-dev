@@ -2,7 +2,6 @@
 
 import logging
 
-from pini import pipe
 from hou_pini import h_pipe
 
 from . import bh_base
@@ -46,4 +45,4 @@ class CHouFlipbook(bh_base.CBlastHandler):
             format_=format_, view=view, range_=self.to_range(), burnins=burnins,
             save=False, force=force or force_replace, update_cache=False,
             update_metadata=False)
-        return [pipe.CACHE.obt(_out)]
+        return [_out]

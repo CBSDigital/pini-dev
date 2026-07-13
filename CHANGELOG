@@ -1,3 +1,12 @@
+## [9.27.2] - Mon 2026-07-13 12:45
+### Summary
+ - Pini Helper:
+    - houdini flipbook bugfix error on finalize (cstewart),
+### Updated
+ - pini.dcc.export.CExportHandlerUI.assemble_range_elems better labelling for manual start/end elems,
+ - pini.dcc.export.CHouFlipbook.export bugfix trying to use cacheable output,
+
+
 ## [9.27.1] - Fri 2026-07-10 14:41
 ### Summary
  - Sanity Check:

@@ -658,11 +658,13 @@ class CExportHandlerUI(qt.CUiContainer):
                 'Custom', 'Current frame']
         else:
             raise ValueError(_mode)
+        _LOGGER.debug(' - APPLY RANGE MODE %s %s', _mode, _opts)
         _refresh = self.build_icon_btn(
             'RangeRefresh', icons.REFRESH,
             callback=self._callback__RangeRefresh)
         self.add_combo_box('Range', items=_opts, add_elems=[_refresh])
 
+        # Set up elements based on mode
         if _mode == 'Continuous':
             _start_e = self.add_spin_box(
                 'RangeManualStart', max_=10000, val=_start, width=_width,
@@ -670,10 +672,9 @@ class CExportHandlerUI(qt.CUiContainer):
                 ui_only=True,
                 label='Frames', stretch=False)
             _lyt = self.RangeManualStartLyt
-            _sep_e = self.build_label('RangeManualSep', width=5)
+            _sep_e = self.build_label('RangeManualSep', text='  to  ')
             _end_e = self.build_spin_box(
                 'RangeManualEnd', max_=10000, val=_end, width=_width,
-                # save_policy=qt.SavePolicy.NO_SAVE,
                 ui_only=True)
             for _elem in [_start_e, _end_e]:
                 _elem.setButtonSymbols(QtWidgets.QSpinBox.NoButtons)
@@ -784,7 +785,7 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def _callback__Range(self):
         _mode = self.Range.currentText()
-        _LOGGER.debug('CALLBACK Range')
+        _LOGGER.debug('CALLBACK Range mode=%s', _mode)
 
         for _name, _vis in [
 
@@ -800,7 +801,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 ('RangeStepSize', _mode == 'From timeline'),
         ]:
 
-            _LOGGER.debug(' - UPDATE %s %s', _name, _vis)
+            _LOGGER.debug(' - UPDATE %s vis=%d', _name, _vis)
             if _name not in self._elems:
                 _LOGGER.debug('   - ELEM NOT FOUND')
                 continue
