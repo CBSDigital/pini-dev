@@ -10,6 +10,7 @@ import time
 from maya import cmds
 
 from pini import dcc, qt
+from pini.tools import release
 from pini.utils import (
     single, cache_property, basic_repr, passes_filter, cache_result, EMPTY,
     PROPERTIES)
@@ -375,7 +376,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
     def loop(self):
         """Loop this skeleton's animation."""
         for _plug in self.plugs:
-            _offset = _plug.attr in ['tx', 'tz']
+            _offset = _plug.attr in ['tz']
             if not _plug.anim:
                 continue
             _plug.anim.loop(offset=_offset)
@@ -592,7 +593,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         return basic_repr(self, str(self.root), separator='|')
 
 
-def find_skeleton(match=None, catch=False, **kwargs):
+def find_skel(match=None, catch=False, **kwargs):
     """Find a skeleton in the current scene.
 
     Args:
@@ -641,7 +642,17 @@ def find_skeleton(match=None, catch=False, **kwargs):
     raise ValueError(f'Failed to find skeleton {match or kwargs}')
 
 
-def find_skeletons(
+def find_skeleton(*args, **kwargs):
+    """Find a skeleton in the current scene (deprecated).
+
+    Returns:
+        (CSkeleton): matching skeleton
+    """
+    release.apply_deprecation('15/07/26', 'Use find_skel')
+    return find_skel(*args, **kwargs)
+
+
+def find_skels(
         namespace=EMPTY, filter_=None, referenced=None, min_jnts=None):
     """Find skeletons in the current scene.
 
@@ -655,7 +666,7 @@ def find_skeletons(
         (CSkeleton list): matching skeletons
     """
     _skels = []
-    for _skel in _read_skeletons():
+    for _skel in _read_skels():
         if namespace is not EMPTY and _skel.namespace != namespace:
             continue
         if not passes_filter(_skel.namespace, filter_):
@@ -668,7 +679,17 @@ def find_skeletons(
     return _skels
 
 
-def _read_skeletons():
+def find_skeletons(*args, **kwargs):
+    """Find skeletons in the current scene (deprecated).
+
+    Returns:
+        (CSkeleton list): matching skeletons
+    """
+    release.apply_deprecation('15/07/26', 'Use find_skels')
+    return find_skels(*args, **kwargs)
+
+
+def _read_skels():
     """Read skeletons in the current scene.
 
     Returns:
@@ -703,7 +724,7 @@ def _read_name_mappings(force=False):
     return _NAME_MAPPINGS_YML.read_yml(catch=True)
 
 
-def selected_skeleton():
+def sel_skel():
     """Read selected skeleton.
 
     Returns:
@@ -713,3 +734,13 @@ def selected_skeleton():
             for _node in cmds.ls(selection=True) or []}
     _ns = single(_nss)
     return find_skeleton(namespace=_ns)
+
+
+def selected_skeleton(*args, **kwargs):
+    """Read selected skeleton (deprecated).
+
+    Returns:
+        (CSkeleton): selected skeleton
+    """
+    release.apply_deprecation('15/07/26', 'Use sel_skel')
+    return sel_skel(*args, **kwargs)

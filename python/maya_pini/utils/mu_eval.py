@@ -10,12 +10,13 @@ from maya import cmds
 _LOGGER = logging.getLogger(__name__)
 
 
-def process_deferred_events(max_iterations=1000, catch=False):
+def process_deferred_events(max_iterations=1000, catch=False, verbose=True):
     """Wait until all events in evalDeferred list have been processed.
 
     Args:
         max_iterations (int): number of iterations before fail
         catch (bool): no error on overflow
+        verbose (bool): write to log on execute
     """
     _start = time.time()
     _n_events = 0
@@ -44,7 +45,8 @@ def process_deferred_events(max_iterations=1000, catch=False):
             return
         raise RuntimeError(_msg)
 
-    _LOGGER.info(
-        ' - WAITED FOR evalDeferred STACK TO PROCESS (%.01fs - %d events '
-        '- %d iterations)',
-        time.time() - _start, _n_events, _idx)
+    if verbose:
+        _LOGGER.info(
+            ' - WAITED FOR evalDeferred STACK TO PROCESS (%.01fs - %d events '
+            '- %d iterations)',
+            time.time() - _start, _n_events, _idx)

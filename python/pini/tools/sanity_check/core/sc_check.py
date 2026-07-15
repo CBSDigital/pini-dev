@@ -19,6 +19,7 @@ class SCCheck:
     """Base class for all sanity checks."""
 
     _label = None
+    _task = None
     _update_ui = None
 
     log = ''
@@ -137,6 +138,15 @@ class SCCheck:
             (tuple): sort key
         """
         return self.sort, self.name
+
+    @property
+    def task(self):
+        """Determine task for this check.
+
+        Returns:
+            (str): task (pini task)
+        """
+        return self._task or pipe.cur_work().pini_task
 
     def add_fail(self, fail, node=None, fix=None):
         """Add a fail for this check.
@@ -346,6 +356,14 @@ class SCCheck:
         assert 0.0 <= progress <= 100.0
         if self._update_ui:
             self._update_ui(lazy=True)
+
+    def set_task(self, task):
+        """Force task for this test.
+
+        Args:
+            task (str): task to apply
+        """
+        self._task = task
 
     def write_log(self, text, *args, lazy=False):
         """Write log information for this check.

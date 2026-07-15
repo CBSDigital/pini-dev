@@ -227,7 +227,7 @@ class CReference(om.MFnReference, ref.FileRef):
             _nodes.add(_node)
         return _nodes
 
-    def find_skeleton(self, namespace=None, root=None, catch=True):
+    def find_skel(self, namespace=None, root=None, catch=True):
         """Find this node's skeleton.
 
         Args:
@@ -247,7 +247,7 @@ class CReference(om.MFnReference, ref.FileRef):
 
         _ns = namespace or self.namespace
         _skels = [
-            _skel for _skel in pom.find_skeletons()
+            _skel for _skel in pom.find_skels()
             if _skel.namespace and _skel.namespace.startswith(_ns)]
         _LOGGER.debug(' - FOUND %d SKELS %s', len(_skels), _skels)
 
@@ -271,6 +271,15 @@ class CReference(om.MFnReference, ref.FileRef):
         if catch:
             return None
         raise ValueError(_skels)
+
+    def find_skeleton(self, *args, **kwargs):
+        """Find this node's skeleton (deprecated).
+
+        Returns:
+            (CSkeleton|None): skeleton (if any)
+        """
+        release.apply_deprecation('15/07/26', 'Use find_skel')
+        return self.find_skel(*args, **kwargs)
 
     def find_top_nodes(self):
         """Find top nodes of this reference.

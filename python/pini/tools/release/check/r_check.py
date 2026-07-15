@@ -126,7 +126,8 @@ class CheckFile(MetadataFile):
         from pini.tools import error
         if abs_path(__file__) == self.path:
             return
-        for _line_n, _line in enumerate(self.read_lines(), start=1):
+        _lines = self.read_lines()
+        for _line_n, _line in enumerate(_lines, start=1):
             if (
                     'release.apply_deprecation(' in _line and
                     not _line.strip().startswith('#')):
@@ -134,7 +135,14 @@ class CheckFile(MetadataFile):
                 _line = _line.strip()
                 _LOGGER.info(' - LINE %s', _line)
                 assert _line.startswith('release.apply_deprecation(')
-                _date_s = re.split('["\']', _line)[1]
+                if _line.endswith('release.apply_deprecation('):
+                    _next_line = _lines[_line_n]
+                    _LOGGER.debug(' - USING NEXT LINE %s', _next_line)
+                    _tokens = re.split('["\']', _next_line)
+                    _LOGGER.debug(' - TOKENS %s', _tokens)
+                    _date_s = _tokens[1]
+                else:
+                    _date_s = re.split('["\']', _line)[1]
                 _LOGGER.info(' - DATE S %s', _date_s)
                 _age = time.time() - to_time_f(_date_s)
                 _LOGGER.info(' - AGE %s', nice_age(_age))

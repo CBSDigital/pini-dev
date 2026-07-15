@@ -1,3 +1,20 @@
+## [9.28.0] - Wed 2026-07-15 16:30
+### Summary
+ - Sanity Check:
+    - allow force task of check,
+### Updated
+ - pini.tools.pyui.PUTool block attempt to read title on title overridden,
+ - pini.tools.release.PRCheck.apply_deprecation_check added handling for multi-line deprecations,
+ - pini.tools.sanity_check.SCCheck added task/set_task,
+ - maya_pini.utils.process_deferred_events added verbose flag,
+ - maya_pini.open_maya.CArray3.apply_to added as_tfm flag,
+ - maya_pini.open_maya.CReference deprecated find_skeleton -> find_skel,
+ - maya_pini.open_maya deprecated find_skeleton -> find_skel,
+ - maya_pini.open_maya deprecated find_skeletons -> find_skels,
+ - maya_pini.open_maya deprecated selected_skeletons -> sel_skel,
+ - maya_pini.open_maya.CSkeleton.loop only apply offset to Hips.tz,
+
+
 ## [9.27.2] - Mon 2026-07-13 12:45
 ### Summary
  - Pini Helper:

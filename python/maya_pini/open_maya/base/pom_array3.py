@@ -14,15 +14,18 @@ _LOGGER = logging.getLogger(__name__)
 class CArray3:
     """Base class for any 3D array object (eg. CPoint, CVector)."""
 
-    def apply_to(self, obj):
+    def apply_to(self, obj, as_tfm=True):
         """Apply this data to the given object's translation in world space.
 
         Args:
             obj (str): node to apply translation to
+            as_tfm (bool): apply as transform
         """
         from maya_pini import open_maya as pom
-        _tfm = pom.to_tfm(obj)
-        cmds.xform(_tfm, worldSpace=True, translation=self.to_tuple())
+        _obj = obj
+        if as_tfm:
+            _obj = pom.to_tfm(_obj)
+        cmds.xform(_obj, worldSpace=True, translation=self.to_tuple())
 
     def move(self, obj, relative=True):
         """Apply this data to the given object.

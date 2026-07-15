@@ -166,12 +166,12 @@ class PUFile(PyFile):
         from pini.tools import pyui
 
         _LOGGER.debug(' - ADD TOOLKIT %s', self.path)
-        _LOGGER.debug('   - TITLE %s', self.title)
-
-        _name = prefix + to_pascal(self.title)
-        _path = abs_path(self.path)
 
         _title = title or self.title
+        _LOGGER.debug('   - TITLE %s', _title)
+        _name = prefix + to_pascal(_title)
+        _path = abs_path(self.path)
+
         _label = label or _title
         _tool = install.PITool(
             _name, label=_label,

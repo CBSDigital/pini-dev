@@ -28,7 +28,8 @@ from .pom_utils import (
 
 from .pom_joint import CJoint
 from .pom_skeleton import (
-    CSkeleton, find_skeletons, find_skeleton, selected_skeleton)
+    CSkeleton, find_skeletons, find_skeleton, selected_skeleton,
+    find_skel, find_skels, sel_skel)
 from .pom_render_layer import (
     find_render_layers, CRenderLayer, cur_render_layer, find_render_layer,
     create_render_layer)

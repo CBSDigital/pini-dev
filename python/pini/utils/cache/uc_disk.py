@@ -121,7 +121,7 @@ def get_method_to_file_cacher(
         mtime_outdates (bool): use the object mtime to outdate the cache
             ie. if the object has been modified more recently than the
             cache then this renders the cache invalid and forces the
-            result to be recalculated
+            result to be recalculated (default is False)
         min_mtime (float): if the cache file's mtime is before then then
             it's ignored
         max_age (float): apply maximum cache age in seconds - if the cache

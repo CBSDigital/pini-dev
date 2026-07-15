@@ -120,7 +120,8 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             'Cycle with offset': 4,
         }[mode]
         if mode in ['linear', 'cycle', 'cycleOffset']:
-            release.apply_deprecation('10/07/26', f'Deprecated loop mode {mode}')
+            release.apply_deprecation(
+                '10/07/26', f'Deprecated loop mode {mode}')
         self.plug['preInfinity'].set_val(_val)
         self.plug['postInfinity'].set_val(_val)
 
