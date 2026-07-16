@@ -475,6 +475,7 @@ def save_fbx(
     _mel(f'FBXExport -f "{_file.path}" -s')
 
     assert _file.exists()
+    return _file
 
 
 def save_obj(file_, selection=True, materials=True, force=False):

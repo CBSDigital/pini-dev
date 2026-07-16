@@ -508,7 +508,7 @@ def _read_se(engine, referenced, allow_face_assign, filter_):
     if not allow_face_assign:
         _geo_ss = [_geo_s for _geo_s in _geo_ss if '.' not in _geo_s]
         _LOGGER.debug(' - GEO SHPS (C) %d %s', len(_geo_ss), _geo_ss)
-    _geos = [to_parent(_geo_s) for _geo_s in _geo_ss]
+    _geos = [_assign_to_tfm(_geo_s) for _geo_s in _geo_ss]
     _LOGGER.debug(' - GEOS (X) %s', _geos)
     if not _geos:
         return None, None
@@ -586,3 +586,21 @@ def setup_place_3d_nodes():
         _nodes |= {_place, _loc, _place_grp, _shd_grp}
 
     return _nodes
+
+
+def _assign_to_tfm(assign):
+    """Obtain transform for the shading assignment.
+
+    NOTE: face assigns are ignored as they are aleady applied to
+    transform (eg. "pCube.f[0:4]")
+
+    Args:
+        assign (str): assignment (normally shape name)
+
+    Returns:
+        (str): transform
+    """
+    # Don't convert face assigns
+    if '.' in assign:
+        return assign
+    return to_parent(assign)

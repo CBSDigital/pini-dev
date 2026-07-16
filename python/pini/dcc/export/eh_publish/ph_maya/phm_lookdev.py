@@ -13,7 +13,7 @@ from maya_pini import ref, m_pipe
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
     restore_sel, DEFAULT_NODES, to_long, to_namespace, save_scene,
-    save_redshift_proxy, disable_scanner_callbacks)
+    save_redshift_proxy, disable_scanner_callbacks, save_fbx)
 
 from .. import ph_basic
 
@@ -61,6 +61,9 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             return
 
         self.ui.add_separator()
+        self.ui.add_check_box(
+            val=False, name='ShdFbx',
+            label='Export shaded fbx of geo')
         if _ass:
             self.ui.add_check_box(
                 val=True, name='Ass',
@@ -94,7 +97,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=None, snapshot=True, bkp=True,
             progress=True, ass=False, vrm_ma=False, rs_pxy=False,
-            pxy_anim=False, force=False):
+            pxy_anim=False, shd_fbx=False, force=False):
         """Execute lookdev publish.
 
         Args:
@@ -107,6 +110,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             vrm_ma (bool): export vrmesh ma file
             rs_pxy (bool): export redshift proxy
             pxy_anim (bool): include anim in proxies
+            shd_fbx (bool): export shaded fbx
             force (bool): force overwrite without confirmation
 
         Returns:
@@ -156,9 +160,14 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         self.progress.set_pc(50)
 
         # Export shaders ma
-        _LOGGER.debug(' - GENERATE SHADERS %s', self.outputs)
-        self._handle_export_shaders_scene()
+        _LOGGER.debug(' - GENERATE SHD FBX %s', self.outputs)
+        self._handle_export_shd_fbx()
         self.progress.set_pc(60)
+
+        # Export shaders ma
+        _LOGGER.debug(' - GENERATE SHADERS %s', self.outputs)
+        self._handle_export_shds_ma()
+        self.progress.set_pc(70)
         assert self.publish in self.outputs
 
         self.progress.set_pc(80)
@@ -232,7 +241,30 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         _rs_pxy.add_metadata(animated=_anim)
         self.outputs.append(_rs_pxy)
 
-    def _handle_export_shaders_scene(self):
+    def _handle_export_shd_fbx(self):
+        """Handle shaded fbx export."""
+        _force = self.settings['force']
+        _export_shd_fbx = self.settings['shd_fbx']
+        if not _export_shd_fbx:
+            return
+
+        # Determine nodes to export
+        _nodes = set()
+        for _fmt in ['shd', 'geo']:
+            _nodes |= {
+                str(_node) for _node in lookdev.read_shader_assignments(
+                    fmt=_fmt, allow_face_assign=True)}
+        _nodes = sorted(_nodes)
+
+        # Execute export
+        _shd_fbx = self.work.to_output(
+            'publish', output_type='ShadedGeo', extn='fbx')
+        cmds.select(_nodes)
+        save_fbx(_shd_fbx, selection=True, force=True)
+        _LOGGER.info(' - EXPORTED SHD FBX %s', _shd_fbx)
+        self.outputs.append(_shd_fbx)
+
+    def _handle_export_shds_ma(self):
         """Handle export shaders ma file."""
         _force = self.settings['force']
 

@@ -89,8 +89,8 @@ class CheckLookdevShaders(core.SCMayaCheck):
     task_filter = 'lookdev'
 
     def run(
-            self, check_ai_shd=True, check_refd_geo=True, flag_refd_shds=False,
-            shds_required=True):
+            self, check_ai_shd=None, check_refd_geo=True, flag_refd_shds=False,
+            shds_required=True, check_face_assign=False):
         """Run this check.
 
         Args:
@@ -98,11 +98,15 @@ class CheckLookdevShaders(core.SCMayaCheck):
             check_refd_geo (bool): check geometry is referenced
             flag_refd_shds (bool): flag referenced shaders
             shds_required (bool): shading assignments are required
+            check_face_assign (bool): flag face assignments (now handled in
+                separate check so disabled by default)
         """
-        self.check_ai_shd = check_ai_shd
+        self.check_ai_shd = self.read_setting(
+            'CheckAiShd', default=True, force=check_ai_shd)
         self.check_refd_geo = check_refd_geo
         self.flag_refd_shds = flag_refd_shds
         self.shds_required = shds_required
+        self.check_face_assign = check_face_assign
 
         self._ignore_names = set()
 
@@ -231,7 +235,8 @@ class CheckLookdevShaders(core.SCMayaCheck):
             self.write_log(' - check geo %s %s', _geo, _geo.object_type())
 
             # Check for face assigns
-            if self._check_for_face_assigns(_assign, shd=_shd, geo=_geo):
+            if self.check_face_assign and self._check_for_face_assigns(
+                    _assign, shd=_shd, geo=_geo):
                 continue
 
             if _geo.object_type() != 'mesh':
@@ -357,15 +362,25 @@ class CheckLookdevShaders(core.SCMayaCheck):
         _shd = tex.to_shd(shd)
         _ref = None
         _assigns = _shd.to_assignments()
+        _nodes = set()
         for _assign in _assigns:
+
+            # Obtain node (for face assigns)
+            _node_s = to_node(_assign)
+            if _node_s in _nodes:
+                continue
+            _nodes.add(_node_s)
+
             try:
-                _node = pom.cast_node(_assign)
+                _node = pom.cast_node(_node_s)
             except ValueError:
                 continue
             if not _node.is_referenced():
                 continue
+
             _ref = pom.find_ref(_node.namespace)
             break
+
         if not _ref:
             _fail = core.SCFail(
                 f'Shader "{shd}" is not assigned to referenced geometry, '

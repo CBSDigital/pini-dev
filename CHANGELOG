@@ -1,3 +1,18 @@
+## [9.29.0] - Thu 2026-07-16 12:40
+### Summary
+ - Pini Helper:
+    - lookdev publish added export shaded fbx option (blee),
+ - Sanity Check:
+    - maya lookdev checks bugfix overlapping face assignment checks,
+### Updated
+ - pini.dcc.export.CMayaLookdevPublish added shd fbx option,
+ - pini.tools.sanity_check.SCCheck.read_setting added,
+ - pini.tools.sanity_check.CheckLookdevShaders allow check_ai_shd override toggle from settings,
+ - pini.tools.sanity_check.CheckLookdevShaders disabled check for face assigns,
+ - maya_pini.utils.save_fbx returns file,
+ - maya_pini.m_pipe.lookdev.read_shading_assignments bugfix face assigns returning parent tfm,
+
+
 ## [9.28.0] - Wed 2026-07-15 16:30
 ### Summary
  - Sanity Check:

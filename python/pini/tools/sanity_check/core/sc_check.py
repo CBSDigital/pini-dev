@@ -267,6 +267,22 @@ class SCCheck:
         """
         return _ProgressUpdater(data, check=self)
 
+    def read_setting(self, name, default, force=None):
+        """Obtain value for a setting for this check.
+
+        Args:
+            name (str): name of setting to check (eg. CheckAiShd)
+            default (any): default value for setting (eg. False)
+            force (any): force the value of the setting
+                (eg. True/False - None is ignored)
+
+        Returns:
+            (any): value for setting
+        """
+        if force is not None:
+            return force
+        return self.settings.get(name, default)
+
     def _read_settings(self):
         """Read settings for this check.
 
