@@ -338,7 +338,9 @@ def _build_upstream_textures(paths, work=None):
     for _pub in shotgrid.find(
             'PublishedFile', filters=_filters, fields=['path_cache']):
         _LOGGER.info(' - ALREADY PUBLISHED %s', _pub)
-        _to_pub.remove(_rel_paths[_pub['path_cache']])
+        _pub_path = _rel_paths[_pub['path_cache']]
+        if _pub_path in _to_pub:
+            _to_pub.remove(_pub_path)
         _up_pubs.append(_pub)
 
     # Register remaining files

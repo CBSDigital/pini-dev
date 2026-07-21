@@ -222,12 +222,12 @@ def get_result_to_file_cacher(
         @functools.wraps(func)
         def _cache_func(*args, **kwargs):
 
-            _LOGGER.info('CACHE FUNC %s', func)
+            _LOGGER.debug('CACHE FUNC %s', func)
             assert file_.extn == 'pkl'
 
             # Determine cache action
             _force = kwargs.get('force', False)
-            _LOGGER.info(' - FORCE %s', _force)
+            _LOGGER.debug(' - FORCE %s', _force)
             _results = obt_results_cache(namespace)
             _action = _determine_cache_action(
                 force=_force, results=_results, key=func,

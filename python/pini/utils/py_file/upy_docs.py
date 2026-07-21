@@ -27,7 +27,13 @@ class PyDefDocs:
         _LOGGER.debug('INIT PyDefDocs')
         self.body = body or ''
         self.def_ = def_
-        self.def_name = def_name or def_.name
+
+        # Set def name (for repr)
+        self.def_name = def_name
+        if not self.def_name and def_:
+            self.def_name = def_.name
+        if not self.def_name:
+            self.def_name = 'DEF_NOT_SET'
 
         _text = self.body
 
@@ -171,6 +177,8 @@ class PyDefDocs:
         _def = def_ or self.def_
         if mode == 'Raw':
             _result = self.body
+        elif mode == 'Title':
+            _result = self.title
         elif mode == 'Header':
             _result = self.header
         elif mode == 'SingleLine':

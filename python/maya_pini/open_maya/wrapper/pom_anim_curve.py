@@ -113,6 +113,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             mode (str): mode to apply (eg. cycle/cycleOffset/linear)
         """
         _val = {
+            'Linear': 2,
             'linear': 2,
             'cycle': 3,
             'cycleOffset': 4,
@@ -120,8 +121,13 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             'Cycle with offset': 4,
         }[mode]
         if mode in ['linear', 'cycle', 'cycleOffset']:
+            _correct = {
+                'linear': 'Linear',
+                'cycle': 'Cycle',
+                'cycleOffset': 'Cycle with offset',
+            }[mode]
             release.apply_deprecation(
-                '10/07/26', f'Deprecated loop mode {mode}')
+                '10/07/26', f'Deprecated loop mode {mode} (use {_correct})')
         self.plug['preInfinity'].set_val(_val)
         self.plug['postInfinity'].set_val(_val)
 
@@ -262,3 +268,13 @@ def loop_anims(anims):
     """
     for _anim in anims:
         _anim.loop()
+
+
+def shift_anims(offset):
+    """Shift all animation curves in the current scene.
+
+    Args:
+        offset (float): time offset in frames
+    """
+    for _anim in find_anims():
+        _anim.t_offset(offset)

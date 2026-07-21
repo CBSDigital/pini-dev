@@ -4,10 +4,10 @@ import unittest
 from maya import cmds
 
 from pini import dcc
-from pini.utils import single, TMP
+from pini.utils import single, TMP, assert_eq
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import use_tmp_ns
+from maya_pini.utils import use_tmp_ns, to_clean
 
 from maya_pini.open_maya.wrapper import pom_plug
 
@@ -240,6 +240,68 @@ class TestOpenMaya(unittest.TestCase):
             _node = pom.CNode(_node)
             pom_plug._to_mplug(node=_node, attr=_plug)
             pom.CPlug(_attr)
+
+    @use_tmp_ns
+    def test_plug_maths(self):
+
+        _node = pom.CMDS.createNode('unknown')
+        for _val in range(10):
+            _attr = f'V{_val}'
+            _plug = _node.add_attr(_attr, float(_val), force=True)
+            setattr(_node, _attr, _plug)
+            _LOGGER.info(' - ADDED PLUG %s %d', _plug, _val)
+        _node.out = _node.add_attr('output', 0.0, force=True)
+
+        # Test plus
+        _node.V0.plus(_node.V1, output=_node.out)
+        assert _node.out.get_val() == 1
+        _out = pom.plus_plug(
+            _node.V0, _node.V1, _node.V2, output=_node.out, force=True)
+        assert _node.out.get_val() == 3
+        assert to_clean(_out).startswith('plus')
+
+        # Test minus
+        _node.V0.minus(_node.V1, output=_node.out, force=True)
+        assert _node.out.get_val() == -1
+        _out = pom.minus_plug(1, _node.V0, output=_node.out, force=True)
+        assert _node.out.get_val() == 1
+        assert to_clean(_out).startswith('minus')
+
+        # Test multiply
+        _node.V0.multiply(_node.V1, output=_node.out, force=True)
+        assert _node.out.get_val() == 0
+        _node.V2.multiply(_node.V3, output=_node.out, force=True)
+        assert _node.out.get_val() == 6
+        _out = pom.multiply_plug(_node.V3, _node.V2, output=_node.out, force=True)
+        assert_eq(_node.out.get_val(), 6)
+        assert to_clean(_out).startswith('multiply')
+
+        # Test divide
+        _node.V6.divide(_node.V2, output=_node.out, force=True)
+        assert _node.out.get_val() == 3
+        _out = pom.divide_plug(12, _node.V4, output=_node.out, force=True)
+        assert_eq(_node.out.get_val(), 3)
+        assert to_clean(_out).startswith('divide')
+
+        # Test reverse
+        _out = _node.V6.reverse(output=_node.out, force=True)
+        assert _node.out.get_val() == -5
+        assert to_clean(_out).startswith('reverse')
+
+        # Test negate
+        _out = _node.V6.negate(output=_node.out, force=True)
+        assert _node.out.get_val() == -6
+        assert to_clean(_out).startswith('negate')
+
+        # Test invert
+        _out = _node.V5.invert(output=_node.out, force=True)
+        assert_eq(_node.out.get_val(), 0.2, dp=4)
+        assert to_clean(_out).startswith('invert')
+
+        # Test modulo
+        _out = _node.V5.modulo(_node.V3, output=_node.out, force=True)
+        assert _node.out.get_val() == 2
+        assert to_clean(_out).startswith('modulo')
 
     @use_tmp_ns
     def test_read_cache_set_test(self):

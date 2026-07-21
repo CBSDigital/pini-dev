@@ -14,4 +14,4 @@ from .t_profile import (
     to_profiler, PROFILE_TXT_FMT)
 from .t_tools import (
     dev_mode, setup_logging, TEST_YML, TEST_DIR, obt_image, set_dev_mode,
-    clear_print, print_exec_code)
+    clear_print, print_exec_code, inspect)

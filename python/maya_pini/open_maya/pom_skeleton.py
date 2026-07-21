@@ -13,7 +13,7 @@ from pini import dcc, qt
 from pini.tools import release
 from pini.utils import (
     single, cache_property, basic_repr, passes_filter, cache_result, EMPTY,
-    PROPERTIES)
+    PROPERTIES, safe_zip)
 
 from maya_pini.utils import (
     to_clean, bake_results, to_namespace, to_node, CONSTRAINT_TYPES)
@@ -381,6 +381,40 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 continue
             _plug.anim.loop(offset=_offset)
 
+    def matches(self, skel, dp=4, catch=False):
+        """Test whether this skeleton matches the pose of another one.
+
+        Args:
+            skel (CSkeleton): skeleton to compare with
+            dp (int): match decimal places
+            catch (bool): no error if skeletons fail to match
+
+        Returns:
+            (bool): whether skeletons match
+        """
+        _LOGGER.debug('MATCHES %s -> %s', self, skel)
+        for _this_jnt, _other_jnt in safe_zip(self.joints, skel.joints):
+            for _axis in 'xyz':
+                _this_plug = _this_jnt.plug[f'r{_axis}']
+                _this_val = round(_this_plug.get_val(), dp)
+                _other_plug = _other_jnt.plug[f'r{_axis}']
+                _other_val = round(_other_plug.get_val(), dp)
+                _LOGGER.debug(
+                    ' - CMP %s=%s %s=%s', _this_plug, _this_val,
+                    _other_plug, _other_val)
+                if _this_val != _other_val:
+                    _LOGGER.info('MATCH FAIL')
+                    _LOGGER.info(' - THIS %s %s', _this_plug, _this_val)
+                    _LOGGER.info(' - OTHER %s %s', _other_plug, _other_val)
+                    if catch:
+                        return False
+                    raise RuntimeError(f'Attr mismatch {_this_jnt}')
+        return True
+
+    def parent(self, *args, **kwargs):
+        """Apply parenting of this skeleton's root."""
+        self.root.parent(*args, **kwargs)
+
     def _read_name(self):
         """Read name of this skeleton.
 
@@ -604,7 +638,7 @@ def find_skel(match=None, catch=False, **kwargs):
         (CSkeleton): matching skeleton
     """
     _LOGGER.debug('FIND SKELETON')
-    _skels = find_skeletons(**kwargs)
+    _skels = find_skels(**kwargs)
     _LOGGER.debug(' - MATCHED %d SKELS %s', len(_skels), _skels)
 
     if not match and len(_skels) == 1:

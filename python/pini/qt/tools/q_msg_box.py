@@ -114,6 +114,8 @@ class _CMessageBox(QtWidgets.QMessageBox):
         _LOGGER.debug(
             ' - VER py-%d.%d %s-%s', sys.version_info.major,
             sys.version_info.minor, LIB, LIB_VERSION)
+
+        _exec_result = self.exec()  # Run before read clickedButton
         _btn = self.clickedButton()
         _LOGGER.debug(' - CLICKED BUTTON %s', _btn)
 
@@ -125,11 +127,10 @@ class _CMessageBox(QtWidgets.QMessageBox):
 
         else:
 
-            _exec_result = self.exec()
             _LOGGER.debug(
                 ' - EXEC RESULT %s buttons=%s', _exec_result, self.buttons)
 
-            # Apply result offsetting
+            # Apply result offsetting (should be able to remove this)
             _py = sys.version_info.major, sys.version_info.minor
             _LOGGER.debug(' - CHECK FOR OFFSET %s %s %s', LIB, dcc.NAME, _py)
             if (

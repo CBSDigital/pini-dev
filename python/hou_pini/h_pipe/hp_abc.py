@@ -4,7 +4,7 @@ import logging
 
 import hou
 
-from pini import dcc, install
+from pini import dcc
 from pini.utils import File, single
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,6 +23,7 @@ def import_abc(abc, namespace, mode='archive', apply_scale_fix=None):
     Returns:
         (CPipeRef): abc reference
     """
+    from pini import install
 
     # Read scale fix env if undeclared
     _apply_scale_fix = apply_scale_fix

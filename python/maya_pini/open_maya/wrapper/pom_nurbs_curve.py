@@ -111,7 +111,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             target (str): object to attach to this curve
             use_u_length (bool): convert motion path uValue
                 to curve length (uLength) representing the real
-                curve length rather than fractional length
+                curve length rather than fractional length (default: off)
             follow_axis (str): motion path follow axis
             up_axis (str): motion path up axis
             loop (bool): apply looping (default is off for open

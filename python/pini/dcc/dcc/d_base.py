@@ -612,17 +612,18 @@ class BaseDCC:
         """
         raise NotImplementedError
 
-    def t_frames(self, mode='Timeline'):
+    def t_frames(self, mode='Timeline', step=1):
         """Get list of timeline frames.
 
         Args:
             mode (str): where to read range from
+            step (int): step size
 
         Returns:
             (int list): all frames in timeline
         """
         assert mode == 'Timeline'
-        return list(range(self.t_start(int), self.t_end(int) + 1))
+        return list(range(self.t_start(int), self.t_end(int) + step, step))
 
     def t_range(self, class_=float, expand=0):
         """Get start/end frames.

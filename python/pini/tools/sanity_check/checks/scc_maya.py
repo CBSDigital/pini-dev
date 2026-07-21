@@ -13,7 +13,8 @@ from pini.utils import (
     to_str)
 
 from maya_pini import ref, open_maya as pom, m_pipe, ui
-from maya_pini.utils import DEFAULT_NODES, to_clean, cur_renderer
+from maya_pini.utils import (
+    DEFAULT_NODES, to_clean, cur_renderer, set_namespace)
 
 from .. import core, utils
 
@@ -745,3 +746,18 @@ class CheckSecurityPrefs(core.SCMayaCheck):
                 'aggresive and pini handles it more effectively. You will '
                 'have to confirm the updates when you apply this fix.',
                 fix=chain_fns(_fixes))
+
+
+class CheckForNamespace(core.SCMayaCheck):
+    """Check whether maya is currently in a namespace."""
+
+    sort = 0
+
+    def run(self):
+        """Run this check."""
+        _cur_ns = cmds.namespaceInfo(currentNamespace=True)
+        if _cur_ns and _cur_ns != ':':
+            self.add_fail(
+                f'Currently in a namespace ":{_cur_ns}" - this can break '
+                'tools and sanity check fixes',
+                fix=wrap_fn(set_namespace, ':'))

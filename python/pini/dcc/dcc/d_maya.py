@@ -454,7 +454,7 @@ class MayaDCC(BaseDCC):
         """
         return class_(cmds.currentTime(query=True))
 
-    def t_frames(self, mode='Timeline'):
+    def t_frames(self, mode='Timeline', **kwargs):
         """Get list of timeline frames.
 
         Args:
@@ -468,7 +468,7 @@ class MayaDCC(BaseDCC):
             _end = int(cmds.getAttr('defaultRenderGlobals.endFrame'))
             _step = int(cmds.getAttr('defaultRenderGlobals.byFrameStep'))
             return list(range(_start, _end + 1, _step))
-        return super().t_frames()
+        return super().t_frames(**kwargs)
 
     def t_start(self, class_=float):
         """Get timeline start frame.
@@ -480,6 +480,17 @@ class MayaDCC(BaseDCC):
             (float): start time
         """
         return class_(cmds.playbackOptions(query=True, minTime=True))
+
+    def t_mid(self, class_=float):
+        """Obtain centre frame of timeline.
+
+        Args:
+            class_ (class): override result type
+
+        Returns:
+            (float): mid frame
+        """
+        return class_((self.t_start() + self.t_end()) / 2)
 
     def t_end(self, class_=float):
         """Get timeline end frame.

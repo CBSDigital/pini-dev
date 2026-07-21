@@ -1,10 +1,12 @@
 """Tools for adding functionilty to OpenMaya.MPlug object."""
 
+# pylint: disable=too-many-lines
+
 import functools
 import logging
 import re
 
-from maya import cmds
+from maya import cmds, OpenMaya as lom
 from maya.api import OpenMaya as om
 
 from pini import qt
@@ -175,7 +177,15 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (str list): attibute query result
         """
-        return cmds.attributeQuery(self.attr, node=self.node, **kwargs)
+        try:
+            return cmds.attributeQuery(self.attr, node=self.node, **kwargs)
+        except RuntimeError as _exc:
+            _msg = str(_exc).strip()
+            _LOGGER.info(' - ERROR "%s"', _msg)
+            if _msg == 'Attribute name not recognized.':
+                raise RuntimeError(
+                    f'Attribute name {self} not recognized.') from _exc
+            raise _exc
 
     def break_conns(self):
         """Break any incoming connection to this plug."""
@@ -206,19 +216,20 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """Delete this attribute."""
         cmds.deleteAttr(self)
 
-    def divide(self, input_, output=None):
+    def divide(self, input_, output=None, as_3d=None, force=False):
         """Build a divide node with this plug as first input.
 
         Args:
             input_ (CPlug): second input
             output (CPlug): output
+            as_3d (bool): force 3D connection
+            force (bool): force break connections on output
 
         Returns:
             (CPlug): output connection
         """
-        _out = self.multiply(input_, output)
-        _out.node.plug['operation'].set_enum('Divide')
-        return _out
+        return divide_plug(
+            self, input_, output=output, as_3d=as_3d, force=force)
 
     def get_col(self):
         """Read this plug as a colour.
@@ -426,6 +437,48 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         """Hide this plug in channel box."""
         cmds.setAttr(self, keyable=False)
 
+    def invert(self, output, name='invert', force=False):
+        """Build nodes to calculate the inverse of this plug's value.
+
+        Inverse is one divided by the value.
+
+        Args:
+            output (CPlug): connect output
+            name (str): override node name
+            force (bool): force replace incoming connections on output
+
+        Returns:
+            (CPlug): inverse node output
+        """
+        return divide_plug(1, self, name=name, output=output, force=force)
+
+    def is_3d(self):
+        """Test whether this plug is a 3D attr.
+
+        Returns:
+            (bool): whether 3D
+        """
+        return not self.isArray and self.isCompound and self.numChildren() == 3
+
+    def is_col(self):
+        """Test whether this is a colour attribute.
+
+        NOTE: this hasn't been implemented in maya.api.OpenMaya so the legacy
+        implementation (in maya.OpenMaya) is used.
+
+        Returns:
+            (bool): whether this is a colour attribute
+        """
+        _sel = lom.MSelectionList()
+        _plug = lom.MPlug()
+
+        _sel.add(self.name)
+        _sel.getPlug(0, _plug)
+        _attr = _plug.attribute()
+        _fn_attr = lom.MFnAttribute(_attr)
+
+        return _fn_attr.isUsedAsColor()
+
     def is_locked(self):
         """Test whether this plug is locked.
 
@@ -459,8 +512,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Args:
             offset (bool): apply cycle with offset
         """
-        _mode = 'cycle' if not offset else 'cycleRelative'
-        self.set_infinity(_mode)
+        _mode = 'Cycle' if not offset else 'Cycle with offset'
+        self.anim.set_infinity(_mode)
 
     def lock(self, hide=False):
         """Unlock this plug.
@@ -489,12 +542,13 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         return minus_plug(
             self, input_, output=output, type_=type_, force=force)
 
-    def modulo(self, modulo, output=None):
+    def modulo(self, modulo, output=None, force=False):
         """Build a modulo node with this plug as input.
 
         Args:
             modulo (CPlug|float): right hand input for modulo operation
             output (CPlug): output
+            force (bool): replace any existing connection to the output plug
 
         Returns:
             (CPlug): output connection
@@ -517,7 +571,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             raise ValueError(modulo)
 
         if output:
-            _mod.plug['output'].connect(output)
+            _mod.plug['output'].connect(output, force=force)
 
         return _mod_out
 
@@ -536,62 +590,26 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Returns:
             (CPlug): output connection
         """
-        _3d = bool(self.list_children()) if as_3d is None else as_3d
-        _LOGGER.debug(
-            'MULTIPLY %s X %s -> %s (3d=%d)', self, input_, output, _3d)
-        from maya_pini import open_maya as pom
+        return multiply_plug(
+            self, input_, output=output, name=name, as_3d=as_3d, force=force)
 
-        if not _3d:
-            _mult_i1 = 'input1X'
-            _mult_i2 = 'input2X'
-            _mult_o = 'outputX'
-        else:
-            _mult_i1 = 'input1'
-            _mult_i2 = 'input2'
-            _mult_o = 'output'
-
-        _mult = pom.CMDS.createNode('multiplyDivide', name=name)
-        cmds.connectAttr(self, _mult.plug[_mult_i1])
-
-        # Set/connect input
-        _i2 = _mult.plug[_mult_i2]
-        if isinstance(input_, (int, float, tuple)):
-            _mult.plug[_mult_i2].set_val(input_)
-        elif isinstance(input_, (CPlug, str)):
-            _input = input_
-            if isinstance(_input, str):
-                _input = CPlug(_input)
-            _in_3d = bool(_input.list_children())
-            _LOGGER.debug(' - CONNECT INPUT %s 3d=%d', _input, _in_3d)
-            if _3d == _in_3d:
-                _input.connect(_i2)
-            elif not _in_3d and _3d:
-                for _axis in 'XYZ':
-                    _input.connect(_mult.plug[f'input2{_axis}'])
-            else:
-                raise NotImplementedError
-        else:
-            raise ValueError(input_)
-
-        _out = _mult.plug[_mult_o]
-        if output:
-            _LOGGER.debug(' - CONNECT OUTPUT %s %s', _out, output)
-            cmds.connectAttr(_out, output, force=force)
-
-        return _out
-
-    def negate(self, type_=None):
+    def negate(self, output=None, type_=None, name='negate', force=False):
         """Negate this plug (ie. 0 - plug value).
 
         Args:
+            output (CPlug): output
             type_ (str): force attribute type (eg. float) - this can be used
                 when attributeQuery has trouble reading type, for example in
                 the case of compound attributes
+            name (str): override node name
+            force (bool): replace any existing connection on the output
 
         Returns:
             (CPlug): output plug
         """
-        return minus_plug(0, self, type_=type_)
+        return minus_plug(
+            0, self, type_=type_, output=output, force=force,
+            name=name)
 
     def plus(self, input_, output=None, name='plus', type_=None, force=False):
         """Build a plus node in with this plug as the first input.
@@ -611,7 +629,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         return plus_plug(
             self, input_, output=output, name=name, type_=type_, force=force)
 
-    def reverse(self, output=None, as_3d=None):
+    def reverse(self, output=None, as_3d=None, force=False):
         """Build a reverse node and connect it to this node.
 
         NOTE: this is not the same as negating the value.
@@ -619,6 +637,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Args:
             output (CPlug): output
             as_3d (bool): force 3D connection
+            force (bool): replace any existing output connection
 
         Returns:
             (CPlug): reverse output
@@ -645,7 +664,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         if output:
             _out_is_3d = bool(output.list_children())
             if _out_is_3d == _as_3d:
-                _out.connect(output)
+                _out.connect(output, force=force)
             else:
                 raise NotImplementedError(_out, output)
 
@@ -842,6 +861,104 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         return basic_repr(self, self.name, separator='|')
 
 
+def divide_plug(
+        input1, input2, output=None, name='divide', as_3d=None, force=False):
+    """Build a divide node to calculate the first input divided by the second.
+
+    Args:
+        input1 (CPlug|float): first input
+        input2 (CPlug|float): second input
+        output (CPlug): output
+        name (str): override node name
+        as_3d (bool): force node to be (or not be) calculated in 3d - by
+            default this is determined from the input node type)
+        force (bool): replace any existing output connection
+
+    Returns:
+        (CPlug): output plug on divide node
+    """
+    _out = multiply_plug(
+        input1, input2, output=output, as_3d=as_3d, force=force, name=name)
+    _out.node.plug['operation'].set_enum('Divide')
+    return _out
+
+
+def minus_plug(
+        input1, input2, output=None, type_=None, name='minus', force=False):
+    """Build a minus node with the given values as inputs.
+
+    Args:
+        input1 (CPlug|float): first/left value
+        input2 (CPlug|float): second/right value
+        output (CPlug): output
+        type_ (str): force attribute type (eg. float) - this can be used
+            when attributeQuery has trouble reading type, for example in
+            the case of compound attributes
+        name (str): override node name
+        force (bool): replace any existing output connection
+
+    Returns:
+        (CPlug): output plug on mult node
+    """
+    _out = plus_plug(
+        input1, input2, output=output, type_=type_, name=name, force=force)
+    _out.node.plug['operation'].set_enum('Subtract')
+    return _out
+
+
+def multiply_plug(
+        input1, input2, output, name='multiply', as_3d=None, force=False):
+    """Build a multiply node for the two inputs.
+
+    Args:
+        input1 (CPlug|float): first input
+        input2 (CPlug|float): second input
+        output (CPlug): output
+        name (str): override node name
+        as_3d (bool): force node to be (or not be) calculated in 3d - by
+            default this is determined from the input node type)
+        force (bool): replace any existing output connection
+
+    Returns:
+        (CPlug): output plug on multiply node
+    """
+    from maya_pini import open_maya as pom
+
+    # Read inputs
+    _as_3d = as_3d
+    _inputs = []
+    for _input in [input1, input2]:
+        if isinstance(_input, (int, float, tuple, CPlug)):
+            pass
+        elif isinstance(_input, str):
+            _input = CPlug(_input)
+        else:
+            raise NotImplementedError(_input)
+        _inputs.append(_input)
+
+        if _as_3d is None and isinstance(_input, CPlug):
+            _as_3d = _input.is_3d()
+
+    _mult = pom.CMDS.createNode('multiplyDivide', name=name)
+
+    # Connect inputs
+    _suffix = '' if _as_3d else 'X'
+    for _idx, _input in enumerate(_inputs, start=1):
+        _plug = _mult.plug[f'input{_idx}{_suffix}']
+        if isinstance(_input, CPlug):
+            _input.connect(_plug)
+        else:
+            _plug.set_val(_input)
+
+    # Connect output
+    _out = _mult.plug[f'output{_suffix}']
+    if output:
+        _LOGGER.debug(' - CONNECT OUTPUT %s %s', _out, output)
+        cmds.connectAttr(_out, output, force=force)
+
+    return _out
+
+
 def plus_plug(
         input1, input2, input3=None, input4=None, output=None, name='plus',
         type_=None, force=False):
@@ -902,27 +1019,6 @@ def plus_plug(
     return CPlug(_output)
 
 
-def minus_plug(input1, input2, output=None, type_=None, force=False):
-    """Build a minus node with the given values as inputs.
-
-    Args:
-        input1 (CPlug|float): first/left value
-        input2 (CPlug|float): second/right value
-        output (CPlug): output
-        type_ (str): force attribute type (eg. float) - this can be used
-            when attributeQuery has trouble reading type, for example in
-            the case of compound attributes
-        force (bool): replace any existing output connection
-
-    Returns:
-        (CPlug): output plug on add node
-    """
-    _out = plus_plug(
-        input1, input2, output=output, type_=type_, name='minus', force=force)
-    _out.node.plug['operation'].set_enum('Subtract')
-    return _out
-
-
 def selected_plug():
     """Obtain currently selected plug in channel box.
 
@@ -939,6 +1035,7 @@ def selected_plugs():
         (CPlug list): selected plugs
     """
     from maya_pini import open_maya as pom
+
     _plugs = []
     _attrs = cmds.channelBox(
         "mainChannelBox", query=True, selectedMainAttributes=True) or []

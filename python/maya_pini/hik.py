@@ -1,5 +1,7 @@
 """Tools for managing human IK."""
 
+# pylint: disable=too-many-lines
+
 import collections
 import logging
 import pprint
@@ -151,10 +153,7 @@ class PHIKNode(pom.CNode):
         _LOGGER.info(' - RANGE / STEP %s %s', _rng, _step)
 
         # Get list of plugs to bake
-        _plugs = plugs
-        if not _plugs:
-            _plugs = [_hips.translate]
-            _plugs += [_jnt.rotate for _jnt in _skel.joints]
+        _plugs = plugs or self.to_plugs()
 
         # Bake anim (copied from HIK bake to skeleton)
         _LOGGER.info(' - PLUGS %s', _plugs)
@@ -172,6 +171,8 @@ class PHIKNode(pom.CNode):
             cmds.filterCurve(_plugs)
 
         # Apply looping
+        _anims = list(filter(bool, [_plug.to_anim() for _plug in _plugs]))
+        _LOGGER.info(' - BUILD %d ANIMS %s', len(_anims), _anims)
         if loop:
             _LOGGER.debug(' - APPLY LOOP %s', loop)
             if loop == 'Path':
@@ -180,8 +181,7 @@ class PHIKNode(pom.CNode):
                 _offs_trgs = []
             else:
                 raise ValueError(loop)
-            for _crv in pom.find_anims(
-                    namespace=self.namespace, referenced=False):
+            for _crv in _anims:
                 _LOGGER.debug(' - CURVE %s', _crv)
                 if not _crv.output.find_connections():
                     _LOGGER.debug('   - DELETE UNCONNECTED')
@@ -190,6 +190,10 @@ class PHIKNode(pom.CNode):
                 _offs = _crv.target in _offs_trgs
                 _LOGGER.debug('   - OFFS %s', _offs)
                 _crv.loop(offset=_offs)
+
+        # Apply spline tangents
+        for _anim in _anims:
+            _anim.set_tangents('spline')
 
     def is_locked(self):
         """Test whether this character definition is locked.
@@ -327,6 +331,14 @@ class PHIKNode(pom.CNode):
                 raise ValueError
 
         return _map
+
+    def to_hips(self):
+        """Obtain hip joint for this skeleton.
+
+        Returns:
+            (CJoint): hips
+        """
+        return self.read_map()['Hips']
 
     def to_jnts(self):
         """Read HIK joints from character definition.

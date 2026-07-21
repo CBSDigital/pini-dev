@@ -17,6 +17,8 @@ from . import r_docs, r_issue, r_autofix
 DIR = File(__file__).to_dir()
 
 _LOGGER = logging.getLogger(__name__)
+
+_RELEASE_CFG = None
 _PYLINT_RC = DIR.to_file('pylint.rc')
 
 
@@ -262,13 +264,23 @@ class CheckFile(MetadataFile):
             (str): pycodestyle reading
         """
         _exe = _find_pycodestyle_exe()
-        _ignore = list(ignore) + [
+
+        # Find checks to ignore
+        _ignore = set(ignore) | {
             'E402',  # module level import not at top of file (use pylint)
             'E501',  # line too long
             'E722',  # bare except (use pylint)
             'W504',  # line break after binary operator'
             'E252',  # missing whitespace around parameter equals
-        ]
+        }
+        for _key in ['disable_checks', 'disable_checks_pycodestyle']:
+            for _check, _filter in _obt_cfg()[_key].items():
+                if passes_filter(self.path, _filter):
+                    _ignore.add(_check)
+        _ignore = sorted(_ignore)
+        _LOGGER.info(' - IGNORE %s', _ignore)
+        _LOGGER.info(' - RELEASE CFG %s', _RELEASE_CFG)
+
         _cmds = [
             _exe,
             self,
@@ -429,13 +441,18 @@ def _obt_cfg(force=False):
     Returns:
         (dict): release config
     """
-    _LOGGER.info('READING RELEASE CONFIG')
-    _cfg = {'disable_checks': {}}
+    global _RELEASE_CFG
 
-    _cfg_file = os.environ.get('PINI_RELEASE_CFG')
-    _LOGGER.info(' - CFG FILE %s', _cfg_file)
-    if _cfg_file:
-        _file_cfg = File(_cfg_file).read_yml() or {}
+    _LOGGER.info('READING RELEASE CONFIG')
+    _cfg = {
+        'disable_checks': {},
+        'disable_checks_pycodestyle': {},
+    }
+
+    _RELEASE_CFG = os.environ.get('PINI_RELEASE_CFG')
+    _LOGGER.info(' - CFG FILE %s', _RELEASE_CFG)
+    if _RELEASE_CFG:
+        _file_cfg = File(_RELEASE_CFG).read_yml() or {}
         _LOGGER.info(' - FILE CFG %s', _file_cfg)
         _cfg = merge_dicts(_cfg, _file_cfg)
     return _cfg

@@ -324,6 +324,7 @@ class CheckForEmptyNamespaces(core.SCMayaCheck):
     """Check scene for empty namespaces."""
 
     profile_filter = 'asset'
+    sort = 90  # Other fixes may have cleaned namespaces
 
     def run(self):
         """Run this check."""

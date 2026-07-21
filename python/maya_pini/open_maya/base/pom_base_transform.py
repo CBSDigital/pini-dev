@@ -369,17 +369,9 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         Returns:
             (CTransform): constraint
         """
-        from maya_pini import open_maya as pom
-        _trg = pom.CTransform(target)
-        _kwargs = {}
-        if skip is not None:
-            _kwargs['skip'] = skip
-        if force:
-            for _plug in _trg.to_tfm_plugs(scale=False, rotate=False):
-                _LOGGER.debug(' - BREAK CONNECT %s', _plug)
-                _plug.break_conns()
-        return pom.CMDS.pointConstraint(
-            self, target, maintainOffset=maintain_offset, **_kwargs)
+        return point_constraint(
+            self, target, maintain_offset=maintain_offset, skip=skip,
+            force=force)
 
     def scale_constraint(self, target, maintain_offset=False):
         """Build a scale constraint from this node to the given target.
@@ -530,3 +522,35 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         assert isinstance(scale, (float, int))
         for _plug in [self.sx, self.sy, self.sz]:
             _plug.set_val(scale)
+
+
+def point_constraint(*args, maintain_offset=False, skip=None, force=False):
+    """Build a point constraint.
+
+    First args are list of sources followed by target.
+
+    Args:
+        maintain_offset (bool): maintain current offset
+        skip (str): axes to skip (eg. y)
+        force (bool): replace any existing connections
+
+    Returns:
+        (CTransform): constraint node
+    """
+    from maya_pini import open_maya as pom
+
+    assert len(args) > 1
+    _sources, _target = args[:-1], args[-1]
+
+    if force:
+        _target = pom.CTransform(_target)
+        for _plug in _target.to_tfm_plugs(scale=False, rotate=False):
+            _LOGGER.debug(' - BREAK CONNECT %s', _plug)
+            _plug.break_conns()
+
+    _kwargs = {}
+    if skip is not None:
+        _kwargs['skip'] = skip
+
+    return pom.CMDS.pointConstraint(
+        *_sources, _target, maintainOffset=maintain_offset, **_kwargs)

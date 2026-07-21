@@ -429,7 +429,7 @@ def save_fbx(
         constraints (bool): export constraints
         skins (bool): export skins (default: on)
         shapes (bool): export shapes (default: on)
-        animation (bool): export animation (default is off)
+        animation (bool): export animation (default: off)
         range_ (tuple): start/end (for complex animation)
         step (float): step size in frames (for complex animation)
         ascii_ (bool): save as ascii (otherwise binary)

@@ -1,14 +1,17 @@
 """General testing tools."""
 
 import functools
-import inspect
+import inspect as _inspect
 import logging
 import os
 import sys
 
+import tabulate
+
 from pini import icons, dcc
 from pini.utils import (
-    check_heart, TMP, Image, abs_path, PyFile, strftime, File)
+    check_heart, TMP, Image, abs_path, PyFile, strftime, File, passes_filter,
+    PyDefDocs, is_camel)
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGING_FILE = None
@@ -33,6 +36,86 @@ def dev_mode():
         (bool): whether currently in dev mode
     """
     return os.environ.get('PINI_DEV') == '1'
+
+
+def inspect(  # pylint: disable=too-many-branches
+        obj, filter_=None, type_filter=None, camel=None,
+        hide_private=True, hide_internal=True, hide_fns=False,
+        val_w=20, docs_w=60):
+    """Inspect attributes on the given object.
+
+    Args:
+        obj (any): object to inspect
+        filter_ (str): apply attribute name filter
+        type_filter (str): apply type filter
+        camel (bool): filter by attribute name camel case status
+        hide_private (bool): hide private attrs (ie. attrs with two
+            leading underscores)
+        hide_internal (bool): hide internal attrs (ie. attrs with
+            a leading underscore)
+        hide_fns (bool): hide functions
+        val_w (int): apply value width limit
+        docs_w (int): apply docs width limit
+    """
+    _data = []
+
+    for _name in dir(obj):
+
+        # Apply filters
+        if _name.startswith('__'):
+            if hide_private:
+                continue
+        elif hide_internal:
+            if _name.startswith('_'):
+                continue
+        if not passes_filter(_name, filter_):
+            continue
+        if camel is not None and not is_camel(_name) == camel:
+            continue
+
+        # Read attribute value
+        try:
+            _attr = getattr(obj, _name)
+        except Exception as _exc:  # pylint: disable=broad-exception-caught
+            _attr = f'[{type(_exc).__name__}]'
+
+        _is_func = hasattr(_attr, '__call__')
+        if hide_fns and _is_func:
+            continue
+
+        # Check type
+        _type = type(_attr).__name__
+        _type = {
+            'builtin_function_or_method': '<builtin>',
+        }.get(_type, _type)
+        if type_filter and not passes_filter(_type, type_filter):
+            continue
+
+        _val = str('<func>' if _is_func else _attr)
+        if len(_val) > val_w:
+            _val = _val[:val_w] + ' ...'
+
+        _doc = getattr(_attr, '__doc__', '') or ''
+        if _doc:
+            _doc = PyDefDocs(_doc).to_str(mode='Title')
+        if len(_doc) > docs_w:
+            _doc = _doc[:docs_w] + ' ...'
+
+        _data.append({
+            'attr': _name,
+            'type': _type,
+            'docs': _doc,
+            'val': _val,
+        })
+
+    _headers = (
+        'attr',
+        'type',
+        'docs',
+        'val',
+    )
+    _table = [[_item[_key] for _key in _headers] for _item in _data]
+    print(tabulate.tabulate(_table, headers=_headers))
 
 
 def obt_image(extn='exr'):
@@ -95,7 +178,7 @@ def print_exec_code(func, mod=None):
         # Determine module info + import str
         _mod = mod
         if not _mod:
-            _file = abs_path(inspect.getfile(func))
+            _file = abs_path(_inspect.getfile(func))
             _LOGGER.debug(' - FILE %s', _file)
             _mod = PyFile(_file).to_module()
             _LOGGER.debug(' - MOD %s', _mod)

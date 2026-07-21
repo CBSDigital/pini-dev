@@ -10,7 +10,7 @@ Issues:
    ie. cmds.objectType(_node) does not work so that _node['tx'] works
 """
 
-from .base import CBaseNode, CArray3, CBaseTransform
+from .base import CBaseNode, CArray3, CBaseTransform, point_constraint
 from .wrapper import (
     CCamera, CMesh, CNode, CPlug, CTransform, CPoint, CNurbsCurve,
     CVector, X_AXIS, Y_AXIS, Z_AXIS, ORIGIN, CBoundingBox, to_bbox,
@@ -18,7 +18,8 @@ from .wrapper import (
     CReference, find_ref, find_refs, create_ref, active_cam, obtain_ref,
     selected_plugs, to_plug, find_cams, set_render_cam, find_render_cam,
     find_cam, selected_plug, IDENTITY, selected_ref, TIME, OBJECT_SPACE,
-    find_anims, loop_anims, obt_ref)
+    find_anims, loop_anims, obt_ref, shift_anims, multiply_plug,
+    divide_plug)
 
 from .pom_cmds import CMDS
 from .pom_utils import (
