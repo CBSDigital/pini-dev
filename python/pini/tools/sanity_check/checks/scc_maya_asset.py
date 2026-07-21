@@ -14,7 +14,7 @@ from maya_pini.utils import (
     DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_long)
 
 from .. import core, utils
-from . import scc_maya_lookdev
+from . import scc_maya_lookdev, scc_maya
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -254,26 +254,54 @@ class CheckCtrlsSet(core.SCMayaCheck):
     """Check rig has controls set."""
 
     task_filter = 'rig'
+    depends_on = (scc_maya.CheckForNamespace, )
 
     def run(self):
         """Run this check."""
+
+        # Check for set
         _name = m_pipe.find_ctrls_set(mode='name')
         if not cmds.objExists(_name):
             _fix = wrap_fn(cmds.sets, name=_name, empty=True)
             self.add_fail(f'Missing ctrls set "{_name}"', fix=_fix)
             return
-        _set = pom.CNode(_name)
-        _type = _set.object_type()
-        self.write_log('Found set %s %s', _set, _type)
+
+        self.set = pom.CNode(_name)
+        _type = self.set.object_type()
+        self.write_log('Found set %s %s', self.set, _type)
         if _type != 'objectSet':
             self.add_fail('Bad ctrls set "{_name}" type "{_type}"')
             return
-        _nodes = cmds.sets(_set, query=True) or []
-        self.write_log('Found %d nodes', len(_nodes))
-        if not _nodes:
+        self.ctrls = cmds.sets(self.set, query=True) or []
+        self.write_log('Found %d nodes', len(self.ctrls))
+        if not self.ctrls:
             self.add_fail(f'Empty ctrls set "{_name}" type')
             return
-        self.write_log('Checked set %s %s', _name, _set)
+        self.write_log('Checked set %s %s', _name, self.set)
+
+        self._check_ctrls_for_namespace()
+
+    def _check_ctrls_for_namespace(self):
+        """Flag controls using namespace.
+
+        This is disabled if this asset has already been published to avoid
+        losing animation in scenes using old versions of a rig.
+        """
+        self.write_log('check ctrls for namespace')
+        _work = pipe.CACHE.obt_cur_work()
+        _pubs = _work.work_dir.find_outputs(type_='publish', tag=_work.tag)
+        if _pubs:
+            self.write_log(' - disabled as publishes found')
+            return
+        for _ctrl in self.ctrls:
+            _ctrl = pom.cast_node(_ctrl)
+            if not _ctrl.namespace:
+                continue
+            _msg = f'Control "{_ctrl}" is using a namespace'
+            _fix = None
+            if not _ctrl.is_referenced():
+                _fix = wrap_fn(cmds.rename, _ctrl, to_clean(_ctrl))
+            self.add_fail(_msg, fix=_fix, node=_ctrl)
 
 
 class CheckRenderStats(core.SCMayaCheck):
