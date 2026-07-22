@@ -148,6 +148,16 @@ class SCCheck:
         """
         return self._task or pipe.cur_work().pini_task
 
+    def add_ctx_items(self, menu):
+        """Add custom items.
+
+        This allows custom items to be added when this check is right-clicked
+        in the sanity check interface.
+
+        Args:
+            menu (QMenu): menu to add items to
+        """
+
     def add_fail(self, fail, node=None, fix=None):
         """Add a fail for this check.
 

@@ -430,8 +430,17 @@ class SanityCheckUi(qt.CUiDialog):
     def _context__Checks(self, menu):
         _check = self.ui.Checks.selected_data()
         if _check:
+
             menu.add_action(
                 'Edit check code', _check.edit, icon=icons.EDIT)
+            _nodes = {_fail.node for _fail in _check.fails}
+            _action = wrap_fn(dcc.select_node, _nodes)
+            menu.add_action(
+                'Select all failed nodes', _action, icon=icons.SELECT,
+                enabled=bool(_nodes))
+            menu.add_separator()
+
+            _check.add_ctx_items(menu)
 
     def _context__Fails(self, menu):
         _fail = self.ui.Fails.selected_data()

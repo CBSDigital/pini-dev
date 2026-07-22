@@ -285,7 +285,7 @@ class MayaDCC(BaseDCC):
         elif _type in ('list', 'tuple'):
             _data = ast.literal_eval(_data)
         elif _type in ['str', 'unicode']:
-            pass
+            _data = _data.replace(r'\"', '"')
         else:
             raise NotImplementedError(_type)
         return _data

@@ -16,6 +16,7 @@ class TestDCC(unittest.TestCase):
                 'Hello!',
                 1.0,
                 ['A', 'B'],
+                'name "HELLO"',
         ]:
             _LOGGER.info(' - DATA %s', _data)
             dcc.set_scene_data('Test', _data)

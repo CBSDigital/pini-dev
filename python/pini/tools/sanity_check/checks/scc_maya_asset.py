@@ -383,9 +383,11 @@ class CheckForEmptyNamespaces(core.SCMayaCheck):
 class CheckUVs(core.SCMayaCheck):
     """Check UVs on current scene geo."""
 
-    task_filter = 'model rig'
     _label = 'Check UVs'
+
+    task_filter = 'model rig'
     depends_on = (CheckCacheSet, )
+    sort = 90
 
     def run(self):
         """Run this check."""
@@ -444,10 +446,10 @@ class CheckUVs(core.SCMayaCheck):
                 _msg = (
                     f'Geo "{geo}" is using empty uv set "map1" (should use '
                     f'"{_set}")')
-                self.add_fail(_msg, node=geo, fix=_fix)
+                self.add_fail(_msg, node=geo)
             else:
                 _msg = f'Geo "{geo}" empty uv set "map1"'
-                self.add_fail(_msg, node=geo, fix=_fix)
+                self.add_fail(_msg, node=geo)
             return
 
         # Flag unused sets

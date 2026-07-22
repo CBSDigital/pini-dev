@@ -767,7 +767,7 @@ def sel_skel():
     _nss = {to_namespace(_node)
             for _node in cmds.ls(selection=True) or []}
     _ns = single(_nss)
-    return find_skeleton(namespace=_ns)
+    return find_skel(namespace=_ns)
 
 
 def selected_skeleton(*args, **kwargs):

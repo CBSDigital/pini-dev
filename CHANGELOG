@@ -1,3 +1,16 @@
+## [9.32.0] - Wed 2026-07-22 15:33
+### Summary
+ - Sanity Check:
+    - check uvs bugfix broken fix option on empty uv set (eehemann),
+    - added check right-click option to select all failed nodes (eehemann),
+### Updated
+ - pini.dcc.MayaDCC.get_scene_data bugfix double quotes have escape char added,
+ - pini.tools.sanity_check.SCCheck.add_ctx_items added force custom elems,
+ - pini.tools.sanity_check.CheckUVs apply sort 90,
+ - pini.tools.sanity_check.CheckUVs bugfix broken fix opt on empty uvs,
+ - pini.tools.sanity_check ui added check ctx select all failed nodes,
+
+
 ## [9.31.0] - Tue 2026-07-21 13:15
 ### Summary
  - Sanity Check:
