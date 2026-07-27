@@ -72,6 +72,38 @@ class SCMayaCheck(sc_check.SCCheck):
         _msg = fail or f'Attribute "{attr}" is not set to "{val}"'
         self.add_fail(_msg, fix=_fix, node=_node)
 
+    def check_opt_var(self, flag, val, type_='float', category=None):
+        """Check an optionVar setting.
+
+        Args:
+            flag (str): name of optionVar to check (eg. playbackMaxDefault)
+            val (any): value to assert
+            type_ (str): force var type
+            category (str): optionVar category (eg. Animation)
+        """
+
+        # Read value
+        _cur_val = cmds.optionVar(query=flag)
+        if val == _cur_val:
+            return
+
+        # Build kwargs
+        _type = type_
+        if not _type:
+            _type = type(val).__name__
+        _kwargs = {}
+        if category:
+            _kwargs['category'] = category
+        _kwargs = {f'{_type}Value': (flag, val)}
+        if category:
+            _kwargs['category'] = category
+
+        # Add fail
+        _fix = wrap_fn(cmds.optionVar, **_kwargs)
+        self.add_fail(
+            f'The optionVar setting "{flag}" is not {val} (currently set '
+            f'to {_cur_val})', fix=_fix)
+
     def check_pref(self, func, flag, val, fail=None, elem=None, **kwargs):
         """Check a preference is set to the given value.
 
@@ -213,6 +245,17 @@ def _fix_bad_shape(cur_shp, new_shp):
         _new_name = to_unique(new_shp, ignore=[new_shp])
         _LOGGER.debug('   - NEW NAME %s', _new_name)
         cmds.rename(_to_rename, _new_name)
+
+    # Rename intermediate node
+    if cmds.objExists(new_shp):
+        _node = pom.CNode(new_shp)
+        if _node.plug['intermediateObject'].get_val():
+            _new_name = to_unique(new_shp, ignore=[new_shp])
+            _LOGGER.debug('   - NEW NAME %s', _new_name)
+            _node.rename(_new_name)
+
+    # Flag unhandled fail
     if cmds.objExists(new_shp):
         raise RuntimeError(f'Failed to free shape name {new_shp}')
+
     cmds.rename(cur_shp, new_shp)

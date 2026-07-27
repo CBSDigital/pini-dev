@@ -14,7 +14,7 @@ from maya_pini.utils import (
     DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_long)
 
 from .. import core, utils
-from . import scc_maya_lookdev, scc_maya
+from . import scc_maya
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -412,7 +412,8 @@ class CheckUVs(core.SCMayaCheck):
         _set = single(
             cmds.polyUVSet(geo, query=True, currentUVSet=True) or [],
             catch=True)
-        _sets = cmds.polyUVSet(geo, query=True, allUVSets=True) or []
+        _sets = sorted(set(
+            cmds.polyUVSet(geo, query=True, allUVSets=True) or []))
         _fix = wrap_fn(utils.fix_uvs, geo)
         self.write_log('Checking geo %s cur=%s, sets=%s', geo, _set, _sets)
 
@@ -628,16 +629,3 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
                 f'and a single input joint - this can cause bloat in abcs '
                 f'and cause memory issues')
             self.add_fail(_msg, node=_geo.shp)
-
-
-class CheckShaders(scc_maya_lookdev.CheckLookdevShaders):
-    """Check model shaders."""
-
-    action_filter = 'ModelPublish BasicPublish'
-    task_filter = 'model rig'
-    depends_on = (CheckGeoNaming, )
-
-    def run(self):
-        """Run this check."""
-        super().run(
-            check_refd_geo=False, shds_required=False, check_ai_shd=False)

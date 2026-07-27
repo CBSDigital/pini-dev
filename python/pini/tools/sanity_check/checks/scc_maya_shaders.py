@@ -6,14 +6,15 @@ from maya import cmds
 
 from pini import dcc
 from pini.tools import error
-from pini.utils import wrap_fn, plural, chain_fns
+from pini.utils import wrap_fn, chain_fns, plural
 
 from maya_pini import open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
 from maya_pini.utils import (
-    DEFAULT_NODES, to_clean, to_node, to_long, cur_renderer)
+    DEFAULT_NODES, to_clean, to_node, cur_renderer, to_long)
 
 from .. import core, utils
+from . import scc_maya_asset
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ _LOGGER = logging.getLogger(__name__)
 class CheckForFaceAssignments(core.SCMayaCheck):
     """Checks for shaders assigned to faces rather than geometry."""
 
-    task_filter = 'lookdev'
-    action_filter = 'LookdevPublish'
+    task_filter = 'lookdev model rig'
+    action_filter = 'Publish'
 
     def run(self):
         """Run this check."""
@@ -242,6 +243,8 @@ class CheckLookdevShaders(core.SCMayaCheck):
             if _geo.object_type() != 'mesh':
                 continue
             self.write_log('   - is mesh')
+
+            # Flag intermediate assigns
             if not _geo.plug['intermediateObject'].get_val():
                 continue
             _msg = (
@@ -249,7 +252,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
                 f'"{_geo}" which is not renderable. This assigment has '
                 f'no effect and may bloat the publish file.')
             _fix = wrap_fn(
-                self._unassign_shader, engine=engine, geo=_geo)
+                self._unassign_shader, engine=engine, assign=_assign)
             _fail = core.SCFail(_msg, node=_geo)
             _fail.add_action('Select shader', wrap_fn(cmds.select, shader))
             _fail.add_action('Fix', _fix, is_fix=True)
@@ -308,9 +311,8 @@ class CheckLookdevShaders(core.SCMayaCheck):
         self.write_log('   - all faces %s', _all_faces)
         if geo and assign == _all_faces:
             _fix = chain_fns(
-                wrap_fn(self._unassign_shader, engine=shd.to_se(), geo=assign),
+                wrap_fn(self._unassign_shader, engine=shd.to_se(), assign=assign),
                 wrap_fn(shd.assign_to, geo))
-
         _fail = core.SCFail(
             f'Shader "{shd}" is face assignment "{assign}".',
             node=assign, fix=_fix)
@@ -319,14 +321,18 @@ class CheckLookdevShaders(core.SCMayaCheck):
         self.add_fail(_fail)
         return _fail
 
-    def _unassign_shader(self, engine, geo):
+    def _unassign_shader(self, engine, assign):
         """Unassign a shader from the given geometry.
 
         Args:
             engine (str): shading engine (set)
-            geo (str): geometry to detatch
+            assign (str): geometry to detatch
         """
-        cmds.sets(geo, edit=True, remove=engine)
+        _LOGGER.debug('UNASSIGN %s -> %s', engine, assign)
+        if not (cmds.objExists(assign) and cmds.objExists(engine)):
+            _LOGGER.info(' - FAILED TO UNASSIGN %s -> %s', engine, assign)
+            return
+        cmds.sets(assign, edit=True, remove=engine)
 
     def _check_engine_name(self, shd, engine):
         """Check shading group matches shader.
@@ -390,6 +396,19 @@ class CheckLookdevShaders(core.SCMayaCheck):
             _fail.add_action('Select shader', wrap_fn(cmds.select, shd))
             _fail.add_action('Select nodes', wrap_fn(cmds.select, _assigns))
             self.add_fail(_fail)
+
+
+class CheckShaders(CheckLookdevShaders):
+    """Check model shaders."""
+
+    action_filter = 'ModelPublish BasicPublish'
+    task_filter = 'model rig'
+    depends_on = (scc_maya_asset.CheckGeoNaming, )
+
+    def run(self):
+        """Run this check."""
+        super().run(
+            check_refd_geo=False, shds_required=False, check_ai_shd=False)
 
 
 class NoObjectsWithDefaultShader(core.SCMayaCheck):

@@ -42,7 +42,8 @@ class SCCheck:
         """Constructor."""
         self._log_writes = 0
         self._log_flagged_lazy = False
-        self.disable_key = f'Pini.SanityCheck.{type(self).__name__}.Disable'
+        self.settings_key = f'Pini.SanityCheck.{type(self).__name__}'
+        self.disable_key = f'{self.settings_key}.Disable'
         self.reset()
 
     @property
