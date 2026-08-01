@@ -1,3 +1,15 @@
+## [9.33.1] - Fri 2026-07-31 17:01
+### Summary
+ - Sanity Check:
+    - check paths bugfix error on normalise udim path (eehemann),
+### Updated
+ - pini.utils.is_camel bugfix false positive on underscore in str,
+ - pini.utils.to_seq bugfix error on valid <UDIM> path,
+ - pini.dcc.cur_frame removed deprecated func,
+ - pini.pipe.SUBMIT_AVAILABLE bugfix applied $PINI_PIPE_ENABLE_SUBMIT as 0,
+ - pini.testing.inspect added list/dict handling,
+
+
 ## [9.33.0] - Mon 2026-07-27 15:18
 ### Summary
  - Sanity Check:

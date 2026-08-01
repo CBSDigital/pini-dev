@@ -107,16 +107,6 @@ class MayaDCC(BaseDCC):
         """
         return cur_file()
 
-    def cur_frame(self):
-        """Obtain current frame.
-
-        Returns:
-            (int): current frame
-        """
-        from pini.tools import release
-        release.apply_depreaction('14/08/25', 'Use t_frame')
-        return int(cmds.currentTime(query=True))
-
     def error(self, error):
         """Raise a maya error.
 

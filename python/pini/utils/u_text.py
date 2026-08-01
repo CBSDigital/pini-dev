@@ -61,8 +61,9 @@ def is_camel(text):
     """
     if not text:
         return False
-    if ' ' in text:
-        return False
+    for _char in ' _':
+        if _char in text:
+            return False
     if text[0].isupper():
         return False
     return True

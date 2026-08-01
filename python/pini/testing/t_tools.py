@@ -57,9 +57,22 @@ def inspect(  # pylint: disable=too-many-branches
         val_w (int): apply value width limit
         docs_w (int): apply docs width limit
     """
-    _data = []
 
-    for _name in dir(obj):
+    _items = []
+    if isinstance(obj, list):
+        _items = [(str(_idx), _item) for _idx, _item in enumerate(obj)]
+    elif isinstance(obj, dict):
+        _items = obj.items()
+    else:
+        for _name in dir(obj):
+            try:
+                _attr = getattr(obj, _name)
+            except Exception as _exc:  # pylint: disable=broad-exception-caught
+                _attr = f'[{type(_exc).__name__}]'
+            _items.append((_name, _attr))
+
+    _data = []
+    for _name, _attr in _items:
 
         # Apply filters
         if _name.startswith('__'):
@@ -72,12 +85,6 @@ def inspect(  # pylint: disable=too-many-branches
             continue
         if camel is not None and not is_camel(_name) == camel:
             continue
-
-        # Read attribute value
-        try:
-            _attr = getattr(obj, _name)
-        except Exception as _exc:  # pylint: disable=broad-exception-caught
-            _attr = f'[{type(_exc).__name__}]'
 
         _is_func = hasattr(_attr, '__call__')
         if hide_fns and _is_func:
@@ -96,6 +103,8 @@ def inspect(  # pylint: disable=too-many-branches
             _val = _val[:val_w] + ' ...'
 
         _doc = getattr(_attr, '__doc__', '') or ''
+        if _type in ('list', 'dict', 'str', 'int'):
+            _doc = ''
         if _doc:
             _doc = PyDefDocs(_doc).to_str(mode='Title')
         if len(_doc) > docs_w:

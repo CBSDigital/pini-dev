@@ -311,7 +311,8 @@ class CheckLookdevShaders(core.SCMayaCheck):
         self.write_log('   - all faces %s', _all_faces)
         if geo and assign == _all_faces:
             _fix = chain_fns(
-                wrap_fn(self._unassign_shader, engine=shd.to_se(), assign=assign),
+                wrap_fn(
+                    self._unassign_shader, engine=shd.to_se(), assign=assign),
                 wrap_fn(shd.assign_to, geo))
         _fail = core.SCFail(
             f'Shader "{shd}" is face assignment "{assign}".',

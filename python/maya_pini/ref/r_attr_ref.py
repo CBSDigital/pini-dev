@@ -141,11 +141,14 @@ class AttrRef(r_path_ref.PathRef):
         Args:
             path (str): path to update to
         """
+        _LOGGER.debug('UPDATE %s', self)
         _path = path
+        _LOGGER.debug(' - PATH %s', _path)
 
         if self.has_udim_tiles:
 
             _path = to_seq(_path)
+            _LOGGER.debug(' - UDIM PATH %s', _path)
             assert isinstance(self.path, Seq)
 
             # Maintain same frame (if applicable)

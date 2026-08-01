@@ -30,6 +30,7 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             frames (int list): force frames cache
             safe (bool): only allow sequences with <base>.%04d.<extn> format
         """
+        _LOGGER.debug('INIT SEQ safe=%d %s', safe, path)
         _path = path
         _frames = frames
         if isinstance(_path, Seq) and _path.has_frames_cache():
@@ -64,8 +65,10 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
                     '<UDIM>', '<U>_<V>']:
 
+                _LOGGER.debug(' - TESTING FRAME EXPR %s', _expr)
                 if self.filename.count(_expr) != 1:
                     continue
+                _LOGGER.debug(' - MATCHED FRAME EXPR %s', _expr)
                 self.frame_expr = _expr
                 self.base, _ = self.filename.rsplit(_expr)
                 self.base = self.base.strip('.')

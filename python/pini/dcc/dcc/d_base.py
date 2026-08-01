@@ -115,16 +115,6 @@ class BaseDCC:
         """
         return None
 
-    def cur_frame(self):
-        """Obtain current frame.
-
-        Returns:
-            (int): current frame
-        """
-        from pini.tools import release
-        release.apply_depreaction('14/08/25', 'Use t_frame')
-        raise NotImplementedError
-
     def error(self, error):
         """Raise an error.
 

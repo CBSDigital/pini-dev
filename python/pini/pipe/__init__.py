@@ -16,7 +16,7 @@ GLOBAL_CACHE_ROOT = Dir(
 SHOTGRID_AVAILABLE = bool(
     os.environ.get('PINI_SG_KEY') and
     os.environ.get('PINI_SG_URL'))
-SUBMIT_AVAILABLE = os.environ.get('PINI_PIPE_ENABLE_SUBMIT', False)
+SUBMIT_AVAILABLE = os.environ.get('PINI_PIPE_ENABLE_SUBMIT') == '1'
 
 from .elem import (
     CPJob, ROOT, find_jobs, find_job, cur_job, CPRoot, obt_job,

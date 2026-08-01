@@ -199,6 +199,7 @@ def _file_to_seq_unsafe(file_):
             _tokens[-2].isdigit() or _is_fr_expr(_tokens[-2])):
         _LOGGER.debug('   - USING TOKENS %s', _tokens)
         _f_str, _extn = _tokens[-2], _tokens[-1]
+        _LOGGER.debug('   - FSTR %s', _f_str)
         _head_len = len(file_.filename) - len(_f_str) - len(_extn) - 1
         _head = file_.filename[:_head_len]
         _tail = file_.filename[-len(_extn) - 1:]
@@ -264,8 +265,10 @@ def to_seq(obj, catch=True, safe=False):
         for _token in ('.####.', '.$F4.'):
             _seq = _seq.replace(_token, '.%04d.')
         _LOGGER.debug(' - STR %s', _seq)
-        if '%04d' in _seq:
+        try:
             return uc_seq.Seq(_seq, safe=safe)
+        except ValueError:
+            pass
         _seq = file_to_seq(_obj, catch=True, safe=safe)
         if _seq:
             return _seq
