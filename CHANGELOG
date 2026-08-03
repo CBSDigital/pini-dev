@@ -1,3 +1,11 @@
+## [9.33.2] - Mon 2026-08-03 16:16
+### Summary
+ - Pini Helper:
+    - substance painter export textures bugfix bit depth not read from preset file (eehemann),
+### Updated
+ - spainter_pini.p_pipe.export_textures removed bit depth from export data,
+
+
 ## [9.33.1] - Fri 2026-07-31 17:01
 ### Summary
  - Sanity Check:

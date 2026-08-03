@@ -166,7 +166,6 @@ def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
         "exportParameters": [{
             "parameters": {
                 "fileFormat": extn,
-                "bitDepth": "8",
                 "dithering": True,
                 "paddingAlgorithm": "infinite",
                 'size': size,
@@ -188,7 +187,6 @@ def to_export_data(sets=None):
     _cfg = to_export_cfg(_pub_dir, extn='png')
     _parms = single(_cfg['exportParameters'])['parameters']
     _res = _parms['size']
-    _bits = _parms['bitDepth']
     _sets = [_item['rootPath'] for _item in _cfg['exportList']]
 
     # Build export data
@@ -202,8 +200,7 @@ def to_export_data(sets=None):
         for _file in _files:
             _data.append({
                 'filename': File(_file).filename,
-                'res': _res,
-                'bits': _bits})
+                'res': _res})
         _exports[_set] = _data
 
     return _exports
