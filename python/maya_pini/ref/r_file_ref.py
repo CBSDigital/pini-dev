@@ -279,7 +279,10 @@ class FileRef(r_path_ref.PathRef):
 
         _top_nodes = []
         for _node, _path in safe_zip(_nodes, _paths):
-            _LOGGER.debug(' - CHECKING %s %s', _node, _path)
+            _LOGGER.debug(' - CHECKING "%s" "%s"', _node, _path)
+            if not _path:
+                _LOGGER.debug('   - MISSING DAG PATH')
+                continue
             assert _path.endswith(_node)
             if str(_path).count('|') > _min_depth:
                 continue

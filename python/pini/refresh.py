@@ -7,6 +7,7 @@ environments where qt is not availabe (eg. C4D).
 import importlib
 import logging
 import os
+import pprint
 import sys
 import time
 import traceback
@@ -214,6 +215,7 @@ def find_mods(base=None):
     Returns:
         (mod list): matching modules
     """
+    _LOGGER.debug('FIND MODS')
     _mods = []
     for _name, _mod in sorted(sys.modules.items()):
         if (
@@ -221,7 +223,9 @@ def find_mods(base=None):
                 not hasattr(_mod, '__file__') or
                 not _mod.__file__):
             continue
-        if base and not _name.startswith(base):
+        _LOGGER.debug('CHECKING %s %s', _name, _mod)
+        _base = _name.split('.')[0]
+        if base != _base:
             continue
         _mods.append(_mod)
 
@@ -429,7 +433,8 @@ def _count_root_match_fails(root, mods):
     return _fails
 
 
-def update_libs(check_root, filter_=None, attempts=7, verbose=1):
+def update_libs(
+        check_root, filter_=None, attempts=7, mods=None, verbose=1):
     """Update libraries to match the given root.
 
     The libraries are reloaded until all of their file paths have been updated
@@ -440,13 +445,14 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
         check_root (str): required root paths
         filter_ (str): module name filter
         attempts (int): maximum number of attempts
+        mods (mod list): sorted list of modules
         verbose (int): print process data
     """
     _root = abs_path(check_root) + '/'
     _LOGGER.info('UPDATE LIBS root=%s', _root)
 
     # Find modules to reload
-    _mods = _find_pini_mods(filter_=filter_)
+    _mods = mods or _find_pini_mods(filter_=filter_)
     _LOGGER.info(
         ' - FOUND %d MODS %s', len(_mods), _mods if verbose > 1 else '')
     assert _mods
@@ -468,12 +474,9 @@ def update_libs(check_root, filter_=None, attempts=7, verbose=1):
         reload_libs(mods=_mods, verbose=0)
         _dur = time.time() - _start
     else:
-        import pprint
-        pprint.pprint(_fails)
+        pprint.pprint(_fails, width=300)
         _LOGGER.error(' - FAILS %s', _fails)
-        # import testing
-        # testing.print_sys_paths()
-        pprint.pprint(sys.path)
+        pprint.pprint(sys.path, width=300)
         raise RuntimeError(_root)
 
     if verbose > 1:

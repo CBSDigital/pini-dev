@@ -144,7 +144,9 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                      simulation=simulation, add_offs=add_offs)
         _LOGGER.debug(' - BAKED RESULTS IN %.01fs', time.time() - _start)
 
-    def bind_to(self, skel, mode='constrain', translate=True, filter_=None):
+    def bind_to(
+            self, skel, mode='constrain', translate=True, filter_=None,
+            catch=False):
         """This skeleton to another one.
 
         ie. this skeleton will be driven by the skeleton provided.
@@ -156,6 +158,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
                 connect - use direct connections
             translate (bool): connect translation on root
             filter_ (str): filter the list of joints to bind
+            catch (bool): no error if bone fails to bind
         """
         from maya_pini import open_maya as pom
         _LOGGER.debug('BIND %s -> %s', self, skel)
@@ -184,7 +187,12 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         _cnts = []
         for _src_jnt, _trg_jnt, _cons_fn, _attr in _to_connect:
             if mode == 'constrain':
-                _cnt = _cons_fn(_src_jnt, _trg_jnt, maintainOffset=True)
+                try:
+                    _cnt = _cons_fn(_src_jnt, _trg_jnt, maintainOffset=True)
+                except RuntimeError as _exc:
+                    if catch:
+                        continue
+                    raise _exc
                 _cnts.append(_cnt)
             elif mode == 'connect':
                 for _axis in 'xyz':
@@ -447,14 +455,18 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             return self._zero_pose_file.read_pkl()
         return None
 
-    def set_col(self, col):
+    def set_col(self, col, mode='viewport'):
         """Set colour of this skeleton.
 
         Args:
             col (str): colour to apply (eg. red/green/blue)
+            mode (str): what to apply
+                viewport - update viewport colour (default)
+                outliner - update outliner colour
+                all - update both
         """
         for _jnt in self.joints:
-            _jnt.set_col(col)
+            _jnt.set_col(col, mode=mode)
 
     def set_joint_radius(self, radius):
         """Set radius for all joints.

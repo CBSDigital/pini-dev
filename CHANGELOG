@@ -1,3 +1,15 @@
+## [9.34.0] - Wed 2026-08-05 13:57
+### Summary
+ - Pini Helper:
+    - maya update reference catch error on dag node missing path (cstewart),
+### Updated
+ - pini.refresh.find_mods bugfix false match on base,
+ - pini.refresh.update_libs added mods arg,
+ - maya_pini.ref.FileRef.find_top_nodes bugfix error on dag node w/o path,
+ - maya_pini.open_maya.CSkeleton.bind_to added catch,
+ - maya_pini.open_maya.CSkeleton.set_col added mode,
+
+
 ## [9.33.2] - Mon 2026-08-03 16:16
 ### Summary
  - Pini Helper:
