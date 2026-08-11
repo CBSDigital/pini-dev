@@ -14,7 +14,9 @@ from pini.utils import (
 from . import mu_eval
 
 _LOGGER = logging.getLogger(__name__)
+
 _REN_FMTS_MAP = {}
+_ARV_OPTS_ATTR = 'defaultArnoldRenderOptions.ARV_options'
 
 
 def cur_renderer():
@@ -222,16 +224,7 @@ def _exec_arnold_render(file_, mode, layer, res, cam, check_size=False):
         cmds.renderWindowEditor('renderView', edit=True, currentCamera=cam)
         mel.eval('renderSequence')
     elif mode == 'ArnoldRenderView':
-        _start = time.time()
-        cmds.arnoldRenderView(opt=["Refresh Render", "True"])
-        import arnold
-        while arnold.AiRenderIsAnyActive():
-            check_heart()
-            cmds.refresh()
-            _dur = time.time() - _start
-            _LOGGER.info(' - WAITING FOR RENDER %.01fs', _dur)
-            time.sleep(1)
-        cmds.arnoldRenderView(opt=["Save Image", file_.path])
+        _arv_exec_render(file_=file_, cam=cam)
     else:
         raise ValueError(mode)
     _dur = time.time() - _start
@@ -261,6 +254,101 @@ def _exec_arnold_render(file_, mode, layer, res, cam, check_size=False):
             raise RuntimeError(
                 f'Render too small {nice_size(_size)} '
                 f'(min allowed {nice_size(_min_size)}) {file_}')
+
+
+def _arv_apply_cam(cam):
+    """Force arnold render view camera.
+
+    Args:
+        cam (CCamera): camera to apply
+    """
+    from pini import dcc
+    from maya_pini import open_maya as pom
+
+    cmds.arnoldRenderView(mode="close")
+
+    # Force cam
+    for _o_cam in pom.find_cams():
+        _ren = cam == _o_cam
+        _o_cam.shp.plug['renderable'].set_val(_ren)
+        _LOGGER.debug('     - SET CAM RENDERABLE %s %d', _o_cam, _ren)
+    cmds.lookThru(cam)
+    _arv_set_cam_opt(cam)
+
+    # Save/load scene
+    _start = time.time()
+    _file = dcc.cur_file()
+    assert _file
+    dcc.save(force=True)
+    dcc.load(_file)
+    _dur = time.time() - _start
+    _LOGGER.debug('     - EXEC SAVE/LOAD IN %.01fs %s', _dur, _file)
+
+
+def _arv_exec_render(file_, cam):
+    """Execute an arnold render view render.
+
+    Args:
+        file_ (File): file to render to
+        cam (CCamera): render camera
+    """
+    import arnold
+    _LOGGER.debug('   - ARV EXEC RENDER')
+
+    # Check camera
+    _LOGGER.debug('     - CHECK CAM %s', cam)
+    if cam.shp != _arv_read_cam_opt():
+        _LOGGER.debug('     - APPLY CAM %s', cam)
+        _arv_apply_cam(cam)
+
+    # Check render view is open
+    if (
+            not cmds.window('ArnoldRenderView', query=True, exists=True) or
+            not cmds.window('ArnoldRenderView', query=True, visible=True)):
+        cmds.arnoldRenderView(mode="open")
+
+    # Exec render + wait for complete
+    _start = time.time()
+    cmds.arnoldRenderView(opt=["Refresh Render", "True"])
+    while arnold.AiRenderIsAnyActive():
+        check_heart()
+        cmds.refresh()
+        _dur = time.time() - _start
+        _LOGGER.debug('     - WAITING FOR RENDER %.01fs', _dur)
+        time.sleep(0.5)
+    cmds.arnoldRenderView(opt=["Save Image", file_.path])
+
+
+def _arv_read_cam_opt():
+    """Read camera setting in arnold render view options.
+
+    Returns:
+        (str): ARV camera
+    """
+    _opts_s = cmds.getAttr(_ARV_OPTS_ATTR)
+    _opts_d = {
+        _opt.split('=', 1)[0]: _opt.split('=', 1)[1]
+        for _opt in _opts_s.split(';') if _opt}
+    return _opts_d.get('Camera')
+
+
+def _arv_set_cam_opt(cam):
+    """Apply camera setting in arnold render view options.
+
+    Args:
+        cam (CCamera): camera to apply
+    """
+    _opts_s = cmds.getAttr(_ARV_OPTS_ATTR)
+    _opts_d = {
+        _opt.split('=', 1)[0]: _opt.split('=', 1)[1]
+        for _opt in _opts_s.split(';') if _opt}
+
+    if _opts_d.get('Camera') != cam.shp:
+        _opts_d['Camera'] = str(cam.shp)
+        _opts_s = ';'.join(f'{_key}={_val}' for _key, _val in _opts_d.items())
+        _opts_s += ';'
+        cmds.setAttr(_ARV_OPTS_ATTR, _opts_s, type='string')
+        _LOGGER.info('     - UPDATED %s', _ARV_OPTS_ATTR)
 
 
 def _exec_cmdline_render(
@@ -367,7 +455,7 @@ def render(
         seq.delete(wording='replace', icon=icons.find('Sponge'), frames=_frames)
 
     # Execute render
-    if _mode in ['api', 'mel']:
+    if _mode in ['api', 'mel', 'ArnoldRenderView']:
         for _frame in qt.progress_bar(
                 _frames, 'Rendering {:d} frame{}', stack_key='MayaRender'):
             check_heart()
@@ -375,7 +463,7 @@ def render(
             _exec_render_frame(
                 file_=File(seq[_frame]), camera=camera,
                 pre_frame_mel=pre_frame_mel, post_frame_mel=post_frame_mel,
-                pre_frame=pre_frame, post_frame=post_frame)
+                pre_frame=pre_frame, post_frame=post_frame, mode=_mode)
         assert seq.exists(force=True)
     elif _mode == 'cmdline':
         if pre_frame or post_frame:

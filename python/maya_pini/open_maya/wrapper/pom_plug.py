@@ -696,8 +696,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
         Args:
             mode (str): infinity mode to apply
         """
-        from pini.tools import release
-        release.apply_deprecation('02/07/26', 'Use CPlug.set_infinity')
+        from pini.utils import apply_deprecation
+        apply_deprecation('02/07/26', 'Use CPlug.set_infinity')
         assert mode in ['cycle', 'cycleRelative', 'linear']
         cmds.setInfinity(self, preInfinite=mode, postInfinite=mode)
 

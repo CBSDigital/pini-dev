@@ -27,7 +27,7 @@ class BaseDCC:
     _export_handlers = None
 
     def add_menu_divider(self, parent, name):
-        """Add menu divider to maya ui.
+        """Add menu divider to ui.
 
         Args:
             parent (str): parent menu
@@ -35,7 +35,7 @@ class BaseDCC:
         """
 
     def add_menu_item(self, parent, command, image, label, name):
-        """Add menu item to maya ui.
+        """Add menu item to ui.
 
         Args:
             parent (str): parent menu
@@ -52,7 +52,7 @@ class BaseDCC:
         one export handler for each action can exist.
 
         Args:
-            handler (CRenderHandler): render handler to add.
+            handler (CExportHandler): export handler to add.
         """
         _LOGGER.debug('ADD RENDER HANDLER %s', handler)
         self._check_export_handlers()

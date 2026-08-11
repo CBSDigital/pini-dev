@@ -64,6 +64,16 @@ class OptionMenu:
         _item = _items[_sel - 1]
         return cmds.menuItem(_item, query=True, label=True)
 
+    def get_opts(self):
+        """Read options labels in this menu.
+
+        Returns:
+            (str list): option labels
+        """
+        _items = cmds.optionMenu(self.field, query=True, itemListLong=True)
+        return [
+            cmds.menuItem(_item, query=True, label=True) for _item in _items]
+
     def set_val(self, value, catch=True):
         """Set current value of this option menu.
 

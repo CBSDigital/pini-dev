@@ -4,8 +4,8 @@ import codecs
 import logging
 
 from pini.utils import (
-    Seq, cache_property, to_snake, passes_filter, cache_result,
-    File, Dir, cache_method_to_file)
+    Seq, to_snake, passes_filter, cache_result, File, Dir,
+    cache_method_to_file)
 
 from . import i_parser, i_emoji
 
@@ -23,6 +23,15 @@ class EmojiSet(Seq):
         _name = Dir(self.dir).filename
         self.cache_fmt = _DIR.to_file(f'cache/.{_name}_{{func}}.pkl').path
         self._matches = {}
+
+    @property
+    def _emojis(self):
+        """Obtain list of emojis for this set.
+
+        Returns:
+            (Emoji list): emojis
+        """
+        return self._read_emojis()
 
     def find(self, match, catch=False):
         """Find the path to an emoji in this set.
@@ -107,9 +116,12 @@ class EmojiSet(Seq):
         _names = getattr(i_const, _name)
         return tuple(self.find(_name) for _name in _names)
 
-    @cache_property
-    def _emojis(self):
+    @cache_result
+    def _read_emojis(self, force=False):
         """Retrieve full emoji list.
+
+        Args:
+            force (bool): force reread from index html
 
         Returns:
             (Emoji list): all emojis

@@ -5,8 +5,7 @@ import logging
 from maya import cmds
 from maya.api import OpenMayaAnim as oma
 
-from pini.tools import release
-from pini.utils import single, passes_filter
+from pini.utils import single, passes_filter, apply_deprecation
 
 from maya_pini.utils import to_clean
 
@@ -126,7 +125,7 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
                 'cycle': 'Cycle',
                 'cycleOffset': 'Cycle with offset',
             }[mode]
-            release.apply_deprecation(
+            apply_deprecation(
                 '10/07/26', f'Deprecated loop mode {mode} (use {_correct})')
         self.plug['preInfinity'].set_val(_val)
         self.plug['postInfinity'].set_val(_val)

@@ -25,6 +25,7 @@ _NAME_ICON_MAP = {
     'ground': 'Desert',
     'hand': 'Waving Hand: Medium Skin Tone',
     'lamppost': 'Light Bulb',
+    'lemon': 'Lemon',
     'lightrig': 'Light Bulb',
     'lumber': 'Wood',
     'kitchencounter': 'Fork and Knife with Plate',

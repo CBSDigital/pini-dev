@@ -168,15 +168,15 @@ def _ast_attr_to_val(attr, catch=False):
     Returns:
         (any): value of attribute
     """
-    _LOGGER.info(
+    _LOGGER.debug(
         'READ ATTR %s attr=%s val=%s', attr, attr.attr, attr.value)
     _attr = attr
     _path = []
-    _LOGGER.info(' - ATTR %s', _attr)
+    _LOGGER.debug(' - ATTR %s', _attr)
     while hasattr(_attr, 'value'):
         check_heart()
         _path.insert(0, _attr.attr)
-        _LOGGER.info(' - PATH %s %s', _path, _attr)
+        _LOGGER.debug(' - PATH %s %s', _path, _attr)
         _attr = _attr.value
     _attr_name = '.'.join(_path)
     _mod_name = _attr.id
@@ -190,11 +190,11 @@ def _ast_attr_to_val(attr, catch=False):
     while len(_path) > 1:
         check_heart()
         _parent = getattr(_parent, _path.pop(0))
-        _LOGGER.info(' - PARENT %s', _parent)
+        _LOGGER.debug(' - PARENT %s', _parent)
     try:
         return getattr(_parent, single(_path))
     except AttributeError as _exc:
-        _LOGGER.info(' - FAILED TO READ ATTR VAL %s', attr)
+        _LOGGER.debug(' - FAILED TO READ ATTR VAL %s', attr)
         if catch:
             return None
         raise _exc

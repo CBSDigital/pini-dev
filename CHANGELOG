@@ -1,3 +1,22 @@
+## [9.35.0] - Tue 2026-08-11 14:01
+### Summary
+ - Pini Helper:
+    - bugfix error on launch/browse with scene from invalid job open (blee),
+### Updated
+ - pini.utils.apply_deprecation moved from pini.release to improve architecture,
+ - pini.utils.Dir.copy_to better confirm dialog text,
+ - pini.utils.File.write added newline arg,
+ - pini.utils.abs_path remove deprecated win arg,
+ - pini.utils.Video.convert added,
+ - pini.pipe.CACHE.cur_job job must be in cache jobs list,
+ - pini.refresh bugfix reload order for icons/pipe.entity,
+ - maya_pini.utils.render added ArnoldRenderView mode,
+ - maya_pini.m_pipe.find_top_node added task specific handling,
+ - maya_pini.open_maya.CMDS.instance added,
+ - maya_pini.open_maya.CMesh.instance added,
+ - maya_pini.ui.OptionMenu.get_opts added,
+
+
 ## [9.34.0] - Wed 2026-08-05 13:57
 ### Summary
  - Pini Helper:

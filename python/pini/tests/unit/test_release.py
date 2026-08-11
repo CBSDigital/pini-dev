@@ -1,4 +1,5 @@
 import logging
+import time
 import unittest
 
 from pini import qt, testing
@@ -494,6 +495,34 @@ class TestRelease(unittest.TestCase):
                     raise RuntimeError('No error raised')
 
         _LOGGER.info('DOCS CHECKS PASSED')
+
+    def test_deprecation_check(self):
+
+        _tmp = TMP.to_file('.pini/deprecation_test.py')
+
+        # A recent deprecation should pass
+        _recent = time.strftime('%d/%m/%y')
+        _tmp.write(
+            f"def _f():\n    apply_deprecation('{_recent}', 'Use x')\n",
+            force=True)
+        release.CheckFile(_tmp).apply_deprecation_check()
+
+        # An out of date deprecation (>25 weeks) should raise
+        _old = time.strftime(
+            '%d/%m/%y', time.localtime(time.time() - 60 * 60 * 24 * 7 * 30))
+        _tmp.write(
+            f"def _f():\n    apply_deprecation('{_old}', 'Use x')\n",
+            force=True)
+        with self.assertRaises(error.FileError):
+            release.CheckFile(_tmp).apply_deprecation_check()
+
+        # The definition line itself must not be read as a deprecation
+        _tmp.write(
+            "def apply_deprecation(date, msg):\n    return date, msg\n",
+            force=True)
+        release.CheckFile(_tmp).apply_deprecation_check()
+
+        _LOGGER.info('DEPRECATION CHECK PASSED')
 
     def test_docs_suggestions(self):
 

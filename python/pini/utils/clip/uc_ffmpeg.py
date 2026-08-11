@@ -7,6 +7,7 @@ import time
 from ..cache import cache_result
 from ..path import Dir, File, TMP_PATH, abs_path
 
+from ..u_deprecate import apply_deprecation
 from ..u_exe import find_exe
 from ..u_misc import to_str, ints_to_str
 from ..u_system import system
@@ -29,8 +30,7 @@ def find_ffmpeg_exe(exe='ffmpeg'):
     Returns:
         (File): ffmpeg executable
     """
-    from pini.tools import release
-    release.apply_deprecation('11/06/26', 'Use find_exe')
+    apply_deprecation('11/06/26', 'Use find_exe')
     _env_path = os.environ.get('FFMPEG_EXE')
     if _env_path:
         _exe = File(_env_path).to_file(base=exe)
@@ -473,3 +473,27 @@ def video_to_seq(video, seq, fps=None, res=None, force=False, verbose=1):
                  nice_age(time.time() - _start))
 
     return seq
+
+
+def video_to_video(src, trg, verbose=1, force=False):
+    """Convert video to video.
+
+    Args:
+        src (str): path to source video
+        trg (str): path to target video
+        verbose (int): verbosity
+        force (bool): replace existing without confirmation
+    """
+    _src = File(src)
+    _trg = File(trg)
+    _trg.delete(wording='replace', force=force)
+    _cmds = [
+        'ffmpeg', '-i', _src,
+        # '-c:v', 'copy',
+        # '-c:a', 'aac',
+        '-b:a', '192k',
+        _trg]
+    assert not _trg.exists()
+    system(_cmds, verbose=verbose)
+    assert _trg.exists()
+    _LOGGER.info(' - COMPLETED CONVERT VIDEO %s', _trg)

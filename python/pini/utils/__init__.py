@@ -4,6 +4,7 @@ from . import u_email as email
 
 from .u_assert import assert_eq
 from .u_callbacks import install_callback, find_callback
+from .u_deprecate import apply_deprecation
 from .u_exe import find_exe, find_exes
 from .u_filter import apply_filter, passes_filter
 from .u_func import wrap_fn, chain_fns, null_fn
@@ -32,7 +33,6 @@ from .u_ma_file import MaFile
 
 from .u_image import Image
 from .u_res import Res
-from .u_yaml import register_custom_yaml_handler
 
 from .path import (
     Path, Dir, File, abs_path, norm_path, HOME_PATH, TMP_PATH, find,

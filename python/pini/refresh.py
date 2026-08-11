@@ -33,6 +33,11 @@ RELOAD_ORDER = [
     'pini.utils.clip',
     'pini.utils',
 
+    'pini.icons.i_emoji',
+    'pini.icons.i_set',
+    'pini.icons.i_parser',
+    'pini.icons',
+
     'pini.dcc.dcc.d_base',
     'pini.dcc.dcc',
     'pini.dcc.pipe_ref.pr_base',
@@ -62,6 +67,9 @@ RELOAD_ORDER = [
     'pini.pipe.elem.entity.cp_ety_base',
     'pini.pipe.elem.entity.cp_ety_disk',
     'pini.pipe.elem.entity.cp_ety_sg',
+    'pini.pipe.elem.entity.cp_ety',
+    'pini.pipe.elem.entity.cp_asset',
+    'pini.pipe.elem.entity.cp_shot',
     'pini.pipe.elem.entity',
     'pini.pipe.elem.asset',
     'pini.pipe.elem.shot',
@@ -434,7 +442,7 @@ def _count_root_match_fails(root, mods):
 
 
 def update_libs(
-        check_root, filter_=None, attempts=7, mods=None, verbose=1):
+        check_root, filter_=None, attempts=10, mods=None, verbose=1):
     """Update libraries to match the given root.
 
     The libraries are reloaded until all of their file paths have been updated
@@ -467,8 +475,8 @@ def update_libs(
             _LOGGER.info(' - NO FAILS attempt=%d', _attempt)
             break
         _LOGGER.info(
-            ' - RELOADING MODS attempt=%d fails=%d %s %s',
-            _attempt, len(_fails),
+            ' - RELOADING MODS attempt=%d/%d fails=%d %s %s',
+            _attempt, attempts, len(_fails),
             f'dur={_dur:.01f}s' if _dur else '',
             sorted([_mod.__name__ for _mod in _fails]) if verbose > 1 else '')
         reload_libs(mods=_mods, verbose=0)

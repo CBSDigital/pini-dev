@@ -64,6 +64,8 @@ class CCPRoot(elem.CPRoot):
         _job = elem.cur_job()
         if not _job:
             return None
+        if _job not in self.jobs:
+            return None
         return self.obt_job(_job)
 
     @property

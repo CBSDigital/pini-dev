@@ -481,12 +481,18 @@ def to_icon(arg):
     Returns:
         (QIcon): icon
     """
+    _LOGGER.debug('TO ICON %s type=%s', arg, type(arg))
     _arg = arg
     if isinstance(_arg, QtGui.QIcon):
+        _LOGGER.debug(' - ALREADY ICON')
         return _arg
     if isinstance(_arg, (str, File)):
         _arg = to_pixmap(_arg)
-    return QtGui.QIcon(_arg)
+        _LOGGER.debug(' - BUILD PIXMAP %s', _arg)
+    _LOGGER.debug(' - BUILD ICON %s', _arg)
+    _icon = QtGui.QIcon(_arg)
+    _LOGGER.debug(' - ICON %s', _icon)
+    return _icon
 
 
 def to_p(*args, **kwargs):

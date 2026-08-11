@@ -125,19 +125,31 @@ class CheckFile(MetadataFile):
 
         Any deprecations older than half a year should be removed.
         """
+        _LOGGER.debug('APPLY DEPRECATION CHECK %s', self)
         from pini.tools import error
-        if abs_path(__file__) == self.path:
+
+        # Ignore this + definition + tests
+        from pini.utils import u_deprecate
+        for _file in [u_deprecate.__file__, __file__]:
+            if abs_path(_file) == self.path:
+                _LOGGER.debug(' - IGNORING FLAGGED FILE')
+                return
+        if self.is_test():
+            _LOGGER.debug(' - IGNORING TEST')
             return
+
         _lines = self.read_lines()
         for _line_n, _line in enumerate(_lines, start=1):
+            _stripped = _line.strip()
             if (
-                    'release.apply_deprecation(' in _line and
-                    not _line.strip().startswith('#')):
+                    'apply_deprecation(' in _line and
+                    not _stripped.startswith('#') and
+                    not _stripped.startswith('def ')):
                 _LOGGER.info('FOUND DEPRECATION')
-                _line = _line.strip()
+                _line = _stripped
                 _LOGGER.info(' - LINE %s', _line)
-                assert _line.startswith('release.apply_deprecation(')
-                if _line.endswith('release.apply_deprecation('):
+                assert _line.startswith('apply_deprecation(')
+                if _line.endswith('apply_deprecation('):
                     _next_line = _lines[_line_n]
                     _LOGGER.debug(' - USING NEXT LINE %s', _next_line)
                     _tokens = re.split('["\']', _next_line)
@@ -329,8 +341,9 @@ class CheckFile(MetadataFile):
         _disable = set()
         if self.is_test():
             _disable |= {
-                'C2801',  # unnecessary-dunder-call
                 'C0301',  # line-too-long
+                'C2801',  # unnecessary-dunder-call
+                'C0302',  # too-many-lines
                 'R0915',  # too-many-statements
                 'W0212',  # protected-access
                 'W0613',  # unused-argument

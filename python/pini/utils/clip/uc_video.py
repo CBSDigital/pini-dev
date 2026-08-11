@@ -130,6 +130,15 @@ class Video(path.MetadataFile, uc_clip.Clip):
         _res = self._to_thumb_res(width)
         self.to_frame(file_, frame=frame, force=force, res=_res)
 
+    def convert(self, target, force=False):
+        """Convert this video to a different video format.
+
+        Args:
+            target (str): path to target video
+            force (bool): replace existing without confirmation
+        """
+        return uc_ffmpeg.video_to_video(self, target, force=force)
+
     def to_fps(self):
         """Obtain fps of this video.
 

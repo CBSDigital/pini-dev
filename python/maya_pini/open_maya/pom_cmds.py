@@ -104,12 +104,14 @@ def _results_wrapper(func, node=None):  # pylint: disable=too-many-statements
             _result = pom.CNode(_result)
         elif _name in [
                 'aimConstraint',
+                'instance',
                 'orientConstraint',
                 'parentConstraint',
                 'pointConstraint',
                 'scaleConstraint',
                 'spaceLocator',
         ]:
+            # Single transform result in list
             _tfm = single(_result)
             _result = pom.CTransform(_tfm)
         elif _name in ['group']:

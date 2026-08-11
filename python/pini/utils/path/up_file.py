@@ -499,7 +499,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
     def write(
             self, text, force=False, wording='Overwrite', encoding='utf-8',
-            diff=False):
+            diff=False, newline=None):
         """Write text to this file.
 
         Args:
@@ -508,6 +508,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
             wording (str): override warning dialog wording
             encoding (str): apply encoding (eg. utf-8)
             diff (bool): offer to show diffs before overwrite
+            newline (str): apply new line character
         """
         up_utils.error_on_file_system_disabled()
 
@@ -525,7 +526,10 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
 
         # Write file
         self.test_dir()
-        with open(self.path, 'w', encoding=encoding) as _file:
+        _kwargs = {}
+        if newline:
+            _kwargs['newline'] = newline
+        with open(self.path, 'w', encoding=encoding, **_kwargs) as _file:
             _file.write(text)
 
     def _write_apply_diff(self, text, wording=None):

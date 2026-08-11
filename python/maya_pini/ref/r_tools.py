@@ -297,6 +297,6 @@ def obtain_ref(*args, **kwargs):
     Returns:
         (FileRef): matching reference
     """
-    from pini.tools import release
-    release.apply_deprecation('29/05/26', 'Use obt_ref')
+    from pini.utils import apply_deprecation
+    apply_deprecation('29/05/26', 'Use obt_ref')
     return obt_ref(*args, **kwargs)

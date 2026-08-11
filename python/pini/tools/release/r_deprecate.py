@@ -1,23 +1,11 @@
-"""Tools for managing code deprecation."""
+"""Tools for managing code deprecation.
 
-import time
+The implementation has moved to pini.utils.apply_deprecation so that low-level
+modules (eg. maya_pini.open_maya, pini.utils) can flag deprecations without
+importing the pini.tools.release package. This re-export is retained for
+backwards compatibility.
+"""
 
+# pylint: disable=unused-import
 
-def apply_deprecation(date, msg):
-    """Apply a deprecation at this point in the code.
-
-    This will raise a deprecation error if we are in dev mode,
-    otherwise do nothing.
-
-    Args:
-        date (str): deprecation date string (used to remove code
-            after a certain period on release)
-        msg (str): deprecation message
-    """
-    from pini import testing
-    from pini.tools import error
-    if not testing.dev_mode():
-        return
-    error.TRIGGERED = True
-    _mtime = time.strptime(date, '%d/%m/%y')  # Check date is valid
-    raise DeprecationWarning(f'{msg} ({date})')
+from pini.utils import apply_deprecation

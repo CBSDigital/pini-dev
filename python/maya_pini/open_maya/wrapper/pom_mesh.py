@@ -95,6 +95,18 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         _pt, _ = self.getClosestPoint(point, pom.WORLD_SPACE)
         return pom.CPoint(_pt)
 
+    def instance(self, name=None):
+        """Instance this mesh's shape.
+
+        Args:
+            name (str): name for instance
+
+        Returns:
+            (CTransform): instance transform
+        """
+        from maya_pini import open_maya as pom
+        return pom.CTransform(single(cmds.instance(self.shp, name=name)))
+
     def is_referenced(self):
         """Check whether this node is referenced.
 

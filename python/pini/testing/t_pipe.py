@@ -140,6 +140,9 @@ def _check_test_assets(force=False):
     from maya_pini import open_maya as pom
     _LOGGER.info('CHECK TEST ASSET %s', TEST_ASSET)
 
+    assert isinstance(TEST_ASSET, pipe.CPAsset)
+    assert isinstance(TEST_ASSET, pipe.CPEntity)
+    assert issubclass(pipe.CPAsset, pipe.CPEntity)
     _test_entity(TEST_ASSET)
     _test_entity(TMP_ASSET)
 

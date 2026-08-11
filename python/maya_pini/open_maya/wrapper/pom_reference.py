@@ -9,9 +9,8 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini import pipe
-from pini.tools import release
 from pini.utils import (
-    basic_repr, single, check_heart, passes_filter, File)
+    basic_repr, single, check_heart, passes_filter, File, apply_deprecation)
 
 from maya_pini import ref
 from maya_pini.utils import to_namespace, to_clean, bake_results
@@ -278,7 +277,7 @@ class CReference(om.MFnReference, ref.FileRef):
         Returns:
             (CSkeleton|None): skeleton (if any)
         """
-        release.apply_deprecation('15/07/26', 'Use find_skel')
+        apply_deprecation('15/07/26', 'Use find_skel')
         return self.find_skel(*args, **kwargs)
 
     def find_top_nodes(self):
@@ -577,7 +576,7 @@ def obtain_ref(*args, **kwargs):
     Returns:
         (CReference): reference
     """
-    release.apply_deprecation('29/05/26', 'Use obt_ref')
+    apply_deprecation('29/05/26', 'Use obt_ref')
     return obt_ref(*args, **kwargs)
 
 

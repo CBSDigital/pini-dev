@@ -8,9 +8,9 @@ from maya import cmds, mel
 
 from pini import qt
 from pini.qt import QtGui
-from pini.tools import release
 from pini.utils import (
-    basic_repr, single, abs_path, File, cache_result, passes_filter)
+    basic_repr, single, abs_path, File, cache_result, passes_filter,
+    apply_deprecation)
 from maya_pini.utils import (
     to_namespace, to_clean, to_shps, set_col, add_to_grp, to_long,
     add_to_set, add_to_dlayer)
@@ -644,7 +644,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (CAnimCurve list): anim curves
         """
-        release.apply_deprecation('22/04/26', 'Use find_anims')
+        apply_deprecation('22/04/26', 'Use find_anims')
         return self.find_anims()
 
     def to_anim_range(self):

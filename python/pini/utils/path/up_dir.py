@@ -94,7 +94,7 @@ class Dir(up_path.Path):
         assert self.exists()
         assert self.is_dir()
         _target = Dir(trg)
-        _target.delete(force=force)
+        _target.delete(wording='Replace', force=force)
         shutil.copytree(self.path, _target.path)
 
     def delete(self, wording='Delete', catch=False, verbose=True, force=False):

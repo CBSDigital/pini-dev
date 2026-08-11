@@ -10,7 +10,7 @@ from . import up_utils
 _LOGGER = logging.getLogger(__name__)
 
 
-def abs_path(path, win=False, root=None, mode=None):
+def abs_path(path, root=None, mode=None):
     r"""Make the given path absolute and normalised.
 
     eg. C://path -> C:/path
@@ -19,8 +19,6 @@ def abs_path(path, win=False, root=None, mode=None):
 
     Args:
         path (str): path to process
-        win (bool): use windows normalisation (eg. C:\path)
-            [DEPRECATED - use mode='win']
         root (str): override cwd as root
         mode (str): pathing mode
             drive - replace UNC paths for disk mounts
@@ -66,31 +64,23 @@ def abs_path(path, win=False, root=None, mode=None):
         _path = _path[:2] + '/' + _path[2:]
 
     _path = norm_path(_path)
-    _path = _apply_mode(_path, mode=mode, win=win)
+    _path = _apply_mode(_path, mode=mode)
 
     return _path
 
 
-def _apply_mode(path, mode, win):
+def _apply_mode(path, mode):
     r"""Apply pathing mode.
 
     Args:
         path (str): path to process
         mode (str): pathing mode
-        win (bool): use windows normalisation (eg. C:\path)
 
     Returns:
         (str): path with mode applied
     """
     _path = path
-
     _mode = mode
-    if win:
-        from pini.tools import release
-        release.apply_deprecation('04/08/25', 'Use mode="win"')
-        assert not _mode
-        _mode = 'win'
-
     if _mode is None:
         pass
     elif _mode == 'win':
@@ -99,7 +89,6 @@ def _apply_mode(path, mode, win):
         _path = _apply_replace_root(_path, env='PINI_ABS_PATH_DRIVE_MAP')
     else:
         raise ValueError(_mode)
-
     return _path
 
 

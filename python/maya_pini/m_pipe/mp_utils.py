@@ -96,18 +96,23 @@ def find_top_node(catch=False):
     Returns:
         (CTransform): top node
     """
-    _top_node = None
-    _from_set = read_cache_set(mode='top')
-    if _from_set and len(_from_set) == 1:
-        _top_node = single(_from_set)
 
-    _ref = pom.find_ref(catch=True)
-    if _ref:
-        return _ref.top_node
-    _dag = pom.find_node(
-        top_node=True, default=False, catch=True, filter_='-JUNK')
-    if _dag:
-        return _dag
+    if pipe.cur_task() == 'lookdev':
+
+        _from_set = read_cache_set(mode='top')
+        if _from_set and len(_from_set) == 1:
+            return single(_from_set)
+
+        _ref = pom.find_ref(catch=True)
+        if _ref:
+            return _ref.top_node
+
+    if pipe.cur_task() in ('model', 'rig'):
+
+        _dag = pom.find_node(
+            top_node=True, default=False, catch=True, filter_='-JUNK')
+        if _dag:
+            return _dag
 
     if catch:
         return None
