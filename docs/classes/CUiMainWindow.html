@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CUiMainWindow</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.35.0</a></span>
+    </header>
+
+    <h1><a href="classes/CUiMainWindow.html">CUiMainWindow</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Object</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QObject</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QMainWindow</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiMainWindow.html"><b>CUiMainWindow</b></a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QPaintDevice</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QMainWindow</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiMainWindow.html"><b>CUiMainWindow</b></a><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiBase.html">CUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">CUiBaseDummy</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiMainWindow.html"><b>CUiMainWindow</b></a></div><br><br>
+    <h2>Wrapper for QMainWindow class.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['qt.CUiMainWindow', 'pini.qt', '<font color="DarkMagenta"><b>CUiMainWindow(ui_file, parent=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>ui_file</b> (str): path to ui file</small><br>&ensp;<small><b>parent</b> (QWidget): parent widget</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_main_window.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow</code></small>', 'pini.qt.CUiMainWindow', ''],
+             ['<font color="Grey">qt.CUiMainWindow.add_shortcut</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.add_shortcut(key, action, label)</b></font><br><br><small>&ensp;Add shortcut for this interface</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>key</b> (str): shortcut key</small><br>&ensp;<small><b>action</b> (fn): shortcut action</small><br>&ensp;<small><b>label</b> (str): shortcut label</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.add_shortcut</code></small>', 'pini.qt.CUiMainWindow.add_shortcut', ''],
+             ['qt.CUiMainWindow.closeEvent', 'pini.qt', '<font color="DarkMagenta"><b>CUiMainWindow.closeEvent(event=None)</b></font><br><br><small>&ensp;Triggered by closing dialog</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>event</b> (QCloseEvent): close event</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_main_window.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.closeEvent</code></small>', 'pini.qt.CUiMainWindow.closeEvent', ''],
+             ['<font color="Grey">qt.CUiMainWindow.delete</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.delete()</b></font><br><br><small>&ensp;Delete this interface</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.delete</code></small>', 'pini.qt.CUiMainWindow.delete', ''],
+             ['qt.CUiMainWindow.deleteLater', 'pini.qt', '<font color="DarkMagenta"><b>CUiMainWindow.deleteLater()</b></font><br><br><small>&ensp;Delete this dialog</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_main_window.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.deleteLater</code></small>', 'pini.qt.CUiMainWindow.deleteLater', ''],
+             ['<font color="Grey">qt.CUiMainWindow.find_widget</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.find_widget(match, catch=False)</b></font><br><br><small>&ensp;Find widget in this dialog</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>match</b> (str): match by name</small><br>&ensp;<small><b>catch</b> (bool): no error if no widget found</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(QWidget): matching widget</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.find_widget</code></small>', 'pini.qt.CUiMainWindow.find_widget', ''],
+             ['<font color="Grey">qt.CUiMainWindow.find_widgets</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.find_widgets(filter_=None, class_=None)</b></font><br><br><small>&ensp;Find widgets belonging to this interface</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>filter_</b> (str): filter results by name</small><br>&ensp;<small><b>class_</b> (class): filter by widget class</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(QWidget list): widgets</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.find_widgets</code></small>', 'pini.qt.CUiMainWindow.find_widgets', ''],
+             ['<font color="Grey">qt.CUiMainWindow.init_ui</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.init_ui()</b></font><br><br><small>&ensp;To be implemented in subclass</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.init_ui</code></small>', 'pini.qt.CUiMainWindow.init_ui', ''],
+             ['<font color="Grey">qt.CUiMainWindow.keyPressEvent</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.keyPressEvent(event)</b></font><br><br><small>&ensp;Executed on key press</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>event</b> (QEvent): key press event</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.keyPressEvent</code></small>', 'pini.qt.CUiMainWindow.keyPressEvent', ''],
+             ['<font color="Grey">qt.CUiMainWindow.load_setting</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.load_setting(widget)</b></font><br><br><small>&ensp;Load a widget setting</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>widget</b> (QWidget): widget to update</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.load_setting</code></small>', 'pini.qt.CUiMainWindow.load_setting', ''],
+             ['<font color="Grey">qt.CUiMainWindow.load_settings</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.load_settings(geometry=True, type_filter=None, filter_=None)</b></font><br><br><small>&ensp;Load interface settings</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>geometry</b> (bool): load window position/size</small><br>&ensp;<small><b>type_filter</b> (str): apply widget type name filter</small><br>&ensp;<small><b>filter_</b> (str): apply widget name filter</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.load_settings</code></small>', 'pini.qt.CUiMainWindow.load_settings', ''],
+             ['<font color="Grey">qt.CUiMainWindow.rebuild_ui</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.rebuild_ui()</b></font><br><br><small>&ensp;Rebuild ui object using a dummy namespace</small><br><br><small>&ensp;This is used to fix over-aggressive garbage collection in PySide in</small><br><small>&ensp;maya, which will often delete the elements attached to the ui.</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(DummyUi): rebuilt ui</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.rebuild_ui</code></small>', 'pini.qt.CUiMainWindow.rebuild_ui', ''],
+             ['<font color="Grey">qt.CUiMainWindow.save_hbox_size_policies</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.save_hbox_size_policies()</b></font><br><br><small>&ensp;Save hbox layout size policies</small><br><br><small>&ensp;This read the horizonal size policies of all widgets in</small><br><small>&ensp;QHBoxLayout layouts and saves them to a hidden hsp.yml</small><br><small>&ensp;in the same directory as the ui file.</small><br><small>&ensp;</small><br><small>&ensp;This allows them to be applied in nuke, whose ui loader</small><br><small>&ensp;seems to lose this information.</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.save_hbox_size_policies</code></small>', 'pini.qt.CUiMainWindow.save_hbox_size_policies', ''],
+             ['<font color="Grey">qt.CUiMainWindow.save_settings</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.save_settings(filter_=None, pos=None, force=False)</b></font><br><br><small>&ensp;Save settings to disk</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>filter_</b> (str): filter settings by widget name</small><br>&ensp;<small><b>pos</b> (bool): save window postion - by default this will only happen<br>&ensp;&ensp;&ensp;if the window is visible; there is a bug in PySide where if<br>&ensp;&ensp;&ensp;you close a window is seems to move 21 pixel south which<br>&ensp;&ensp;&ensp;causes the position to shift each time, so this is to prevent<br>&ensp;&ensp;&ensp;that from happening</small><br>&ensp;<small><b>force</b> (bool): save settings even if store settings is disabled<br>&ensp;&ensp;&ensp;for this dialog</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.save_settings</code></small>', 'pini.qt.CUiMainWindow.save_settings', ''],
+             ['<font color="Grey">qt.CUiMainWindow.save_size_limits</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.save_size_limits()</b></font><br><br><small>&ensp;Save widget size limits to yml</small><br><br><small>&ensp;The yml is then used to apply missing limits in spainter, which</small><br><small>&ensp;seemed to lose size limit data from ui files, most likely due</small><br><small>&ensp;to PySide6 issues.</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.save_size_limits</code></small>', 'pini.qt.CUiMainWindow.save_size_limits', ''],
+             ['<font color="Grey">qt.CUiMainWindow.set_window_icon</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.set_window_icon(icon)</b></font><br><br><small>&ensp;Set window icon</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>icon</b> (str): path to icon</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.set_window_icon</code></small>', 'pini.qt.CUiMainWindow.set_window_icon', ''],
+             ['<font color="Grey">qt.CUiMainWindow.settings</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.settings()</b></font><br><br><small>&ensp;Obtain the settings object</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(QSettings): settings</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.settings</code></small>', 'pini.qt.CUiMainWindow.settings', ''],
+             ['<font color="Grey">qt.CUiMainWindow.start_timer</font>', 'pini.qt', '<font color="Fuchsia"><b>CUiMainWindow.start_timer(fps)</b></font><br><br><small>&ensp;Start timer at the given frame rate</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>fps</b> (float): frame rate of timer event</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini import qt<br>qt.CUiMainWindow.start_timer</code></small>', 'pini.qt.CUiMainWindow.start_timer', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+
+                // Apply text filter
+                if (
+                        _filter &&
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

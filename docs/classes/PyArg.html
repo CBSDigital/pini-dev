@@ -2,12 +2,21 @@
 <html>
 
 <head>
-    <title>Pini Docs</title>
+    <meta charset="utf-8">
+    <title>PyArg</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
 </head>
 
 <body>
 
+
     <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -19,17 +28,100 @@
             text-align: left;
             padding: 8px;
         }
-  
+
         .red { color:red; }
         .green { color:DarkGreen; }
         .black { color:black; }
         .blue { color:CornflowerBlue; }
         .boldBlue { color:CornflowerBlue; font-weight:bold; }
 
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
     </style>
 
-    <h1><a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PyArg.html">PyArg</a> <div style="float: right"><a href="C:/Users/hvanderbeek/dev/pini-dev/docs/index.html">pini-9.34.0</a></div></h1>
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.35.0</a></span>
+    </header>
 
+    <h1><a href="classes/PyArg.html">PyArg</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/PyArg.html"><b>PyArg</b></a></div><br><br>
     <h2>Represents an argument to a python function.</h2>
     <br>
 
@@ -40,20 +132,14 @@
     <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
     <text id='FilterInfo'>(Displaying a/b items)</text>
 
-
     <!-- Add show inherited checkbox -->
-    <span style="float:right;">
-        <input 
-            type="checkbox" 
-            id="ShowInherited" 
-            align="right"
-            name="ShowInherited" 
-            />
-        <label 
-            for="ShowInherited" 
-            align="right"
-            >
-                Show inherited
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
         </label>
     </span>
     <br>
@@ -62,73 +148,143 @@
     <!-- Add table for data -->
     <div id="data-table">
         <table id="FuncsTable">
-        </table>    
+        </table>
     </div>
     <script type="text/javascript" charset="utf-8">
 
         var _objs = [
-             ['PyArg', 'pini.utils.PyArg', '<font color="DarkMagenta"><b>PyArg(name, parent, has_default, default=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_arg.py</font></small>', '<small><b>name</b> (str): arg name</small><br><small><b>parent</b> <a href="C:/Users/hvanderbeek/dev/pini-dev/docs/classes/PyDef.html">(PyDef)</a>: parent python def</small><br><small><b>has_default</b> (bool): whether this arg has default value<br>&ensp;&ensp;(ie. arg or kwarg)</small><br><small><b>default</b> (any): arg default</small>', 'pini.utils.PyArg.PyArg'],
-             ['to_docs', 'pini.utils.PyArg', '<font color="DarkMagenta"><b>PyArg.to_docs(mode="Object")</b></font><br><br><small>&ensp;Obtain docstrings for this argument</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyArgDocs|str): docs</small><br><br><small>Defined in: <font color="DeepSkyBlue">python/pini/utils/py_file/upy_arg.py</font></small>', '<small><b>mode</b> (str): type of data to retrieve<br>&ensp;&ensp;Object - arg docs object containing all data<br>&ensp;&ensp;SingleLine - docs as a single line string</small>', 'pini.utils.PyArg.to_docs'],
+             ['PyArg', 'pini.utils', '<font color="DarkMagenta"><b>PyArg(name, parent, has_default, default=None)</b></font><br><br><small>&ensp;Constructor</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>name</b> (str): arg name</small><br>&ensp;<small><b>parent</b> <a href="classes/PyDef.html">(PyDef)</a>: parent python def</small><br>&ensp;<small><b>has_default</b> (bool): whether this arg has default value<br>&ensp;&ensp;&ensp;(ie. arg or kwarg)</small><br>&ensp;<small><b>default</b> (any): arg default</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/py_file/upy_arg.py</font></small>', '<small><code>from pini.utils import PyArg<br>PyArg</code></small>', 'pini.utils.PyArg', ''],
+             ['PyArg.to_docs', 'pini.utils', '<font color="DarkMagenta"><b>PyArg.to_docs(mode="Object")</b></font><br><br><small>&ensp;Obtain docstrings for this argument</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>mode</b> (str): type of data to retrieve<br>&ensp;&ensp;&ensp;Object - arg docs object containing all data<br>&ensp;&ensp;&ensp;SingleLine - docs as a single line string</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(PyArgDocs|str): docs</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/py_file/upy_arg.py</font></small>', '<small><code>from pini.utils import PyArg<br>PyArg.to_docs</code></small>', 'pini.utils.PyArg.to_docs', ''],
          ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
 
         // Add text filter
         const _filter_field = document.getElementById('TextFilter');
         _filter_field.addEventListener('input', (event) => {
             renderDataInTheTable();
-        });            
+        });
         function ClearTextFilter() {
-            console.log(' - CLEAR')
             document.getElementById("TextFilter").value = "";
             renderDataInTheTable();
         }
 
-        // Add show inherited
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
         const _show_inherited_field = document.getElementById('ShowInherited');
-        _show_inherited_field.addEventListener('input', (event) => {
-            renderDataInTheTable();
-        });            
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
         function renderDataInTheTable() {
 
-            console.log('DRAW TABLE');
-            // console.log(' - TEXT FILTER', filter);
             const _filter = document.getElementById('TextFilter').value
-            console.log(' - TEST FILTER', _filter);
-            _show_inherited = document.getElementById('ShowInherited').checked
-            console.log(' - SHOW INHERITED', _show_inherited);
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
             const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
 
             _table.innerHTML = '';
             var _count = 0;
             var _total = 0;
 
             _objs.forEach(_item => {
-                
+
                 _total += 1;
-                
-                var _name = Object.values(_item)[0]
-                var _loc = Object.values(_item)[1]
-                var _docs = Object.values(_item)[2]
-                var _args = Object.values(_item)[3]
-                const _path = Object.values(_item)[4]
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
 
                 const _path_l = _path.toLowerCase()
                 const _filter_l = _filter.toLowerCase()
-                
-                // Appply filter
+
+                // Apply text filter
                 if (
-                        _filter && 
+                        _filter &&
                         !_path_l.includes(_filter_l)
                 ) {
                     return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
                 var _is_inherited = _docs.includes('Inherited from:')
-                console.log(' - ADD', _path, _is_inherited)
-                
+
                 if (!_show_inherited && _is_inherited) {
                     return; }
 
-                // Build row
+                // Build row (name, location, docs, import)
                 _count += 1;
-                let _values = Object.values(_item);
                 let _row = document.createElement("tr");
                 _values.slice(0, 4).forEach((_value) => {
                     let _cell = document.createElement("td");
@@ -144,7 +300,6 @@
             var _info = `(Displaying ${_count}/${_total} items)`;
             const _info_field = document.getElementById("FilterInfo");
             _info_field.innerHTML = _info;
-            console.log(' - SET INFO', _info, _info_field)
         }
 
         renderDataInTheTable(_objs);

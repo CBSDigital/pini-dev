@@ -237,9 +237,11 @@ class CMayaRef(prm_base.CMayaPipeRef):
             _mtx = self._to_mtx()
             _grp = self._to_parent()
             if reset:
-                _grp = None
+                _grp = EMPTY
                 if self.ref.top_node:
                     _grp = self.ref.top_node.to_parent()
+                    if _grp and _grp.is_referenced():
+                        _grp = EMPTY
                 _LOGGER.debug(
                     '   - APPLY RESET top_node="%s" grp="%s"',
                     self.ref.top_node, _grp)
@@ -361,13 +363,14 @@ class CMayaShadersRef(CMayaRef):
             _parent.parent_constraint(_loc)
             _parent.scale_constraint(_loc)
 
-    def _apply_override_sets(self, target):
+    def _apply_override_sets(self, target, log=9):
         """Add abc geometry to ai override sets.
 
         Args:
             target (CPipeRef): reference to get geometry from
+            log (int): log level
         """
-        _LOGGER.debug('APPLY AI OVERRIDE SETS ref=%s', target)
+        _LOGGER.log(log, 'APPLY AI OVERRIDE SETS ref=%s', target)
 
         # Obtain override sets from shd data
         _sets = self.shd_data.get('override_sets', {})
@@ -375,7 +378,7 @@ class CMayaShadersRef(CMayaRef):
         # Rebuild sets with geo from this ref
         for _set_name, _clean_geos in _sets.items():
 
-            _LOGGER.debug(' - APPLYING SET %s %s', _set_name, _clean_geos)
+            _LOGGER.log(log, ' - APPLYING SET %s %s', _set_name, _clean_geos)
 
             # Find set
             _set = self.to_node(_set_name, catch=True)
@@ -388,12 +391,12 @@ class CMayaShadersRef(CMayaRef):
             for _geo in _clean_geos:
                 _geo = target.to_node(_geo, catch=True)
                 if not _geo or not cmds.objExists(_geo):
-                    _LOGGER.debug('   - MISSING GEO %s', _geo)
+                    _LOGGER.log(log, '   - MISSING GEO %s', _geo)
                     continue
-                _LOGGER.debug('   - ADDING GEO %s', _geo)
+                _LOGGER.log(log, '   - ADDING GEO %s', _geo)
                 _geos.append(_geo)
 
-            _LOGGER.debug('   - GEOS %s', _geos)
+            _LOGGER.log(log, '   - GEOS %s', _geos)
             if _geos:
                 cmds.sets(_geos, addElement=_set)
 

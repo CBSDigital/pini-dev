@@ -309,7 +309,8 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (CTransform): group
         """
         from maya_pini import open_maya as pom
-        _grp = pom.CTransform(add_to_grp(node=self.node, grp=grp))
+        _grp = add_to_grp(node=self.node, grp=grp)
+        _grp = pom.CTransform(_grp)
         if col:
             _grp.set_outliner_col(col)
         return _grp

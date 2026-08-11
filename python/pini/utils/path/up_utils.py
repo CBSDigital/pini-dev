@@ -355,3 +355,9 @@ def _read_file_content(file_, catch, encoding):
                 ' - FILE ERRORED ON READ %s %s', _file.path, _exc)
             return _file, ''
         raise _exc
+    except OSError as _exc:
+        if catch:
+            _LOGGER.warning(
+                ' - OSError ON READ %s %s', _file.path, _exc)
+            return _file, ''
+        raise _exc

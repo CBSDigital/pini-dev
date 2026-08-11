@@ -98,7 +98,10 @@ class CReference(om.MFnReference, ref.FileRef):
             (str): namespace
         """
         _LOGGER.debug('NAMESPACE %s', self)
-        _ns = self.associatedNamespace(shortName=True)
+        try:
+            _ns = self.associatedNamespace(shortName=True)
+        except RuntimeError:
+            return None
         return str(_ns)
 
     @property

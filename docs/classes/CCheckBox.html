@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CCheckBox</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.35.0</a></span>
+    </header>
+
+    <h1><a href="classes/CCheckBox.html">CCheckBox</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Object</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QObject</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QAbstractButton</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QCheckBox</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CCheckBox.html"><b>CCheckBox</b></a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QPaintDevice</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QAbstractButton</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QCheckBox</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CCheckBox.html"><b>CCheckBox</b></a><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CBaseWidget.html">CBaseWidget</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CCheckBox.html"><b>CCheckBox</b></a></div><br><br>
+    <h2>Wrapper for QCheckBox.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">qt.CCheckBox.apply_save_policy_on_change</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.apply_save_policy_on_change(settings)</b></font><br><br><small>&ensp;Apply save policy on widget value changed</small><br><br><small>&ensp;This callback is connected to the widget changed signal so that if the</small><br><small>&ensp;save policy is set to save on change, the settings are saved. This is</small><br><small>&ensp;applied like this so that the save policy can be change dynamically -</small><br><small>&ensp;ie. the widget can be built and then the save policy is applied.</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>settings</b> <a href="classes/CSettings.html">(CSettings)</a>: parent widget settings</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.apply_save_policy_on_change</code></small>', 'pini.qt.CCheckBox.apply_save_policy_on_change', ''],
+             ['<font color="Grey">qt.CCheckBox.get_data</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.get_data()</b></font><br><br><small>&ensp;Obtain data embedded in this widget</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): embedded data</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.get_data</code></small>', 'pini.qt.CCheckBox.get_data', ''],
+             ['<font color="Grey">qt.CCheckBox.get_scene_setting</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.get_scene_setting()</b></font><br><br><small>&ensp;Read current setting (if any) for this widget from the current scene</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): widget setting</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.get_scene_setting</code></small>', 'pini.qt.CCheckBox.get_scene_setting', ''],
+             ['qt.CCheckBox.get_val', 'pini.qt', '<font color="DarkMagenta"><b>CCheckBox.get_val()</b></font><br><br><small>&ensp;Obtain value of this checkbox</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): checked state</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_check_box.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.get_val</code></small>', 'pini.qt.CCheckBox.get_val', ''],
+             ['<font color="Grey">qt.CCheckBox.has_scene_setting</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.has_scene_setting()</b></font><br><br><small>&ensp;Test whether this widget has a scene setting currently applied</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(bool): whether scene setting exists</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.has_scene_setting</code></small>', 'pini.qt.CCheckBox.has_scene_setting', ''],
+             ['<font color="Grey">qt.CCheckBox.load_setting</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.load_setting()</b></font><br><br><small>&ensp;Apply value from settings</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.load_setting</code></small>', 'pini.qt.CCheckBox.load_setting', ''],
+             ['<font color="Grey">qt.CCheckBox.read_setting</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.read_setting()</b></font><br><br><small>&ensp;Read current setting for this widget</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(any): widget setting</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.read_setting</code></small>', 'pini.qt.CCheckBox.read_setting', ''],
+             ['<font color="Grey">qt.CCheckBox.set_col</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.set_col(col)</b></font><br><br><small>&ensp;Set text colour</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>col</b> (str): colour to apply</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.set_col</code></small>', 'pini.qt.CCheckBox.set_col', ''],
+             ['<font color="Grey">qt.CCheckBox.set_data</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.set_data(data)</b></font><br><br><small>&ensp;Embed data in this widget</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>data</b> (any): data to embed</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.set_data</code></small>', 'pini.qt.CCheckBox.set_data', ''],
+             ['<font color="Grey">qt.CCheckBox.set_save_policy</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.set_save_policy(policy)</b></font><br><br><small>&ensp;Apply save policy to this widget</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>policy</b> <a href="classes/SavePolicy.html">(SavePolicy)</a>: save policy to apply</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.set_save_policy</code></small>', 'pini.qt.CCheckBox.set_save_policy', ''],
+             ['<font color="Grey">qt.CCheckBox.set_settings_key</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.set_settings_key(key)</b></font><br><br><small>&ensp;Override the default scene settings key for this widget</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>key</b> (str): settings key name to apply</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.set_settings_key</code></small>', 'pini.qt.CCheckBox.set_settings_key', ''],
+             ['qt.CCheckBox.set_val', 'pini.qt', '<font color="DarkMagenta"><b>CCheckBox.set_val(val)</b></font><br><br><small>&ensp;Set checkbox checked state</small><br><br><small><font color="DodgerBlue">&ensp;Args</font></small><br>&ensp;<small><b>val</b> (bool): state to apply</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_check_box.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.set_val</code></small>', 'pini.qt.CCheckBox.set_val', ''],
+             ['<font color="Grey">qt.CCheckBox.to_dialog</font>', 'pini.qt', '<font color="Fuchsia"><b>CCheckBox.to_dialog()</b></font><br><br><small>&ensp;Obtain parent dialog for this control</small><br><br><small><font color="DodgerBlue">&ensp;Returns</font></small> <small>(<a href="classes/CUiBase.html">CUiBase</a>): dialog</small><br><br><small>Inherited from: <a href="classes/CBaseWidget.html">CBaseWidget</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/wrapper/widgets/qw_base_widget.py</font></small>', '<small><code>from pini import qt<br>qt.CCheckBox.to_dialog</code></small>', 'pini.qt.CCheckBox.to_dialog', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                const _path_l = _path.toLowerCase()
+                const _filter_l = _filter.toLowerCase()
+
+                // Apply text filter
+                if (
+                        _filter &&
+                        !_path_l.includes(_filter_l)
+                ) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>
