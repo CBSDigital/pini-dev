@@ -1,9 +1,7 @@
 """Tools for managing pyui interfaces in maya."""
 
-import collections
 import logging
 import sys
-import types
 
 from maya import cmds
 
@@ -193,18 +191,8 @@ class PUMayaUi(pu_base.PUBaseUi):
         if _default is None or _default is EMPTY:
             _default = ''
         if arg.choices:
-            if isinstance(
-                    arg.choices, (tuple, list, set, collections.abc.Iterable)):
-                _choices = arg.choices
-                _select = _default
-            elif isinstance(arg.choices, pu_choice_mgr.PUChoiceMgr):
-                _choices = arg.choices.choices
-                _select = arg.choices.default
-            elif isinstance(arg.choices, types.FunctionType):
-                _choices = arg.choices()
-                _select = _default
-            else:
-                raise ValueError(arg.choices)
+            _choices = arg.to_choices()
+            _select = arg.to_default()
             _LOGGER.debug('     - CHOICES %s %s', _select, _choices)
             _opt_menu = ui.create_option_menu(
                 options=_choices, select=_select,

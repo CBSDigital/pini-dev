@@ -66,14 +66,14 @@ def _apply_globals_settings(path, col_mgt=None, animation=False):
         _col_mgt = {'jpg': True}.get(path.extn, False)
 
     cmds.setAttr("defaultArnoldRenderOptions.abortOnError", False)
-    cmds.setAttr("defaultArnoldRenderOptions.abortOnLicenseFail",
-                 True)  # Avoid watermark
+    cmds.setAttr(  # Avoid watermark
+        "defaultArnoldRenderOptions.abortOnLicenseFail", True)
     cmds.setAttr("defaultArnoldDriver.mergeAOVs", True)
     _extn = {'jpg': 'jpeg'}.get(path.extn, path.extn)
     cmds.setAttr('defaultArnoldDriver.aiTranslator', _extn, type='string')
     cmds.setAttr("defaultArnoldDriver.colorManagement", int(_col_mgt))
-    cmds.setAttr('defaultArnoldDriver.prefix',
-                 f"{path.dir}/{path.base}", type='string')
+    cmds.setAttr(
+        'defaultArnoldDriver.prefix', f"{path.dir}/{path.base}", type='string')
     _LOGGER.debug(' - COL MGT %d', _col_mgt)
 
     cmds.setAttr("defaultRenderGlobals.animation", animation)
@@ -82,7 +82,7 @@ def _apply_globals_settings(path, col_mgt=None, animation=False):
         cmds.setAttr('defaultRenderGlobals.putFrameBeforeExt', True)
         cmds.setAttr('defaultRenderGlobals.extensionPadding', 4)
 
-    _LOGGER.debug(' - SETUP ARNOLD')
+    _LOGGER.debug(' - SETUP ARNOLD GLOBALS')
 
 
 def _check_arnold():
@@ -218,7 +218,7 @@ def _exec_arnold_render(file_, mode, layer, res, cam, check_size=False):
         from mtoa.cmds import arnoldRender
         arnoldRender.arnoldRender(
             res[0], res[1], True, True, cam, ' -layer ' + layer)
-    elif mode == 'mel':
+    elif mode in ('mel', None):
         if layer != pom.cur_render_layer():
             raise NotImplementedError(layer)
         cmds.renderWindowEditor('renderView', edit=True, currentCamera=cam)
@@ -310,13 +310,33 @@ def _arv_exec_render(file_, cam):
     # Exec render + wait for complete
     _start = time.time()
     cmds.arnoldRenderView(opt=["Refresh Render", "True"])
-    while arnold.AiRenderIsAnyActive():
-        check_heart()
-        cmds.refresh()
-        _dur = time.time() - _start
-        _LOGGER.debug('     - WAITING FOR RENDER %.01fs', _dur)
-        time.sleep(0.5)
+    try:
+        while arnold.AiRenderIsAnyActive():
+            check_heart()
+            _dur = time.time() - _start
+            _LOGGER.debug('     - WAITING FOR RENDER %.01fs', _dur)
+            time.sleep(0.4)
+    finally:
+        cmds.refresh(suspend=False)
     cmds.arnoldRenderView(opt=["Save Image", file_.path])
+    _dur = time.time() - _start
+    _LOGGER.debug('     - SAVED RENDER IN %.01fs', _dur)
+
+
+def _arv_reset():
+    """Reset arnold render view.
+
+    This resets ARV cache to avoid memory overload due to ass sequences
+    accumulating in animated aiStandIn nodes.
+    """
+    import arnold
+
+    cmds.arnoldRenderView(opt=["Scene Updates", "0"])
+    cmds.arnoldRenderView(opt=["Run IPR", "0"])
+    cmds.arnoldRenderView(opt=["Abort Render", "True"])
+    while arnold.AiRenderIsAnyActive():
+        time.sleep(0.1)
+    cmds.arnoldRenderView(mode="close")   # drop the universe
 
 
 def _arv_read_cam_opt():
@@ -437,6 +457,7 @@ def render(
         verbose (int): print process data
     """
     from pini import dcc, qt
+
     _LOGGER.info('RENDER %s', seq)
 
     _frames = dcc.t_frames() if frames is None else frames
@@ -456,15 +477,21 @@ def render(
 
     # Execute render
     if _mode in ['api', 'mel', 'ArnoldRenderView']:
+
         for _frame in qt.progress_bar(
                 _frames, 'Rendering {:d} frame{}', stack_key='MayaRender'):
             check_heart()
-            cmds.currentTime(_frame)
+            _LOGGER.debug('RENDER FRAME %d', _frame)
+            _arv_reset()
+            cmds.currentTime(_frame, update=True)
             _exec_render_frame(
                 file_=File(seq[_frame]), camera=camera,
                 pre_frame_mel=pre_frame_mel, post_frame_mel=post_frame_mel,
                 pre_frame=pre_frame, post_frame=post_frame, mode=_mode)
+
+        _arv_reset()
         assert seq.exists(force=True)
+
     elif _mode == 'cmdline':
         if pre_frame or post_frame:
             raise NotImplementedError

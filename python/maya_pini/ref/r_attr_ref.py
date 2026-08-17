@@ -108,9 +108,9 @@ class AttrRef(r_path_ref.PathRef):
 
         # Check for file seqs
         elif (
-                self._node_type == 'file' and
+                self._node_type in ('file', 'aiStandIn') and
                 cmds.getAttr(f'{self.node}.useFrameExtension')):
-            _path = file_to_seq(_path, safe=False)
+            _path = to_seq(_path, safe=False)
 
         return _path
 
@@ -225,6 +225,7 @@ def find_attr_refs(types=(), type_=None, referenced=None):
             # Apply referenced filter
             if referenced is not None and referenced != cmds.referenceQuery(
                     _node, isNodeReferenced=True):
+                _LOGGER.debug('   - REJECTED BY REFERENCED FILTER')
                 continue
 
             # Build AttrRef object
@@ -233,6 +234,7 @@ def find_attr_refs(types=(), type_=None, referenced=None):
             _a_ref = AttrRef(_chan, node_type=_type)
             _LOGGER.debug('   - CHECKING NODE %s %s', _chan, _a_ref.path)
             if not _a_ref.path:
+                _LOGGER.debug('   - REF HAS NO PATH')
                 continue
 
             _a_refs.append(_a_ref)

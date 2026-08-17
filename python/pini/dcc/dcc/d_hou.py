@@ -214,6 +214,7 @@ class HouDCC(BaseDCC):
         _handlers = super()._build_export_handlers()
         _handlers += [
             export.CHouFlipbook(),
+            export.CHouBasicPublish(),
         ]
         if farm.IS_AVAILABLE and farm.NAME == 'Deadline':
             _handlers += [export.CHouDeadlineRender()]

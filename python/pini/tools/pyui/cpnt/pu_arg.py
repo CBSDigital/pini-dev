@@ -2,7 +2,12 @@
 
 # pylint: disable=too-many-instance-attributes
 
+import collections
+import types
+
 from pini.utils import basic_repr, to_nice
+
+from ..cpnt import pu_choice_mgr
 
 
 class PUArg(object):
@@ -64,6 +69,40 @@ class PUArg(object):
             (str): uid
         """
         return '.'.join([self.pyui_file.uid, self.py_def.name, self.name])
+
+    def to_choices(self):
+        """Obtain list of choices for this arg.
+
+        Returns:
+            (str list): choices
+        """
+        if not self.choices:
+            return None
+        if isinstance(
+                self.choices, (tuple, list, set, collections.abc.Iterable)):
+            return self.choices
+        if isinstance(self.choices, pu_choice_mgr.PUChoiceMgr):
+            return self.choices.choices
+        if isinstance(self.choices, types.FunctionType):
+            return self.choices()
+        raise ValueError(self.choices)
+
+    def to_default(self):
+        """Obtain default choice for this arg.
+
+        Returns:
+            (str): default selection
+        """
+        if not self.choices:
+            return None
+        if isinstance(
+                self.choices, (tuple, list, set, collections.abc.Iterable)):
+            return self.default
+        if isinstance(self.choices, pu_choice_mgr.PUChoiceMgr):
+            return self.choices.default
+        if isinstance(self.choices, types.FunctionType):
+            return self.default
+        raise ValueError(self.choices)
 
     def __repr__(self):
         return basic_repr(self, self.name)

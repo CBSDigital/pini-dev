@@ -1,3 +1,22 @@
+## [9.36.0] - Mon 2026-08-17 11:11
+### Summary
+ - Pini Helper:
+    - maya bugfix reference abc omitted source asset (nwray),
+    - houdini added basic publisher,
+### Updated
+ - pini.dcc.export.CHouBasicPublish added,
+ - pini.pipe.CACHE.CCPOutputFile.find_lookdev_shaders catch error on omitted asset,
+ - pini.qt.progress_bar bugfix not showing w/o dcc,
+ - pini.tools.pyui.install bugfix choices as func erroring on PUQtUi,
+ - pini.tools.pyui.installPUArg added to_choices/to_default,
+ - maya_pini.utils.to_unique if base does not exist return base,
+ - maya_pini.utils.save_ass bugfix ass.gz not compressed,
+ - maya_pini.utils.render bugfix animated aiStandIn nodes not updating,
+ - maya_pini.ref.AttrRef.path added handing for aiStandIn ass seq,
+ - maya_pini.open_maya.create_loc added scale arg,
+ - maya_pini.ui.reset_viewport added,
+
+
 ## [9.35.1] - Tue 2026-08-11 15:26
 ### Summary
  - Pini Helper:

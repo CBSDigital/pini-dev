@@ -201,9 +201,10 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
         """
         if arg.choices:
             _field = qt.CComboBox()
+            _choices = arg.to_choices()
             _field.set_items(
-                [str(_choice) for _choice in arg.choices],
-                data=arg.choices, select=arg.default)
+                [str(_choice) for _choice in _choices],
+                data=_choices, select=arg.to_default())
             _read_fn = _field.selected_data
             _set_fn = _to_lazy_combobox_select(_field)
         elif isinstance(arg.default, str) or arg.default is None:

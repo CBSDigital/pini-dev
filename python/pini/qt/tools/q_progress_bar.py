@@ -91,7 +91,7 @@ class _ProgressDialog(QtWidgets.QDialog):
         _flush_unused_bars(stack_key=stack_key)
 
         # Avoid batch mode seg fault
-        if dcc.batch_mode():
+        if dcc.NAME and dcc.batch_mode():
             raise RuntimeError("Cannot create progress bar in batch mode")
 
         _items = items
@@ -366,7 +366,7 @@ def progress_bar(items, *args, **kwargs):
     _show = kwargs.get('show', True)
     if not _show:
         return items
-    if dcc.batch_mode():
+    if dcc.NAME and dcc.batch_mode():
         _LOGGER.info('DISABLE PROGRESS BAR IN BATCH MODE')
         return items
     if not items:

@@ -44,7 +44,7 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
             self._exists = File(self).exists()
         return self._exists
 
-    def find_lookdev_shaders(self, tag=EMPTY):
+    def find_lookdev_shaders(self, tag=EMPTY):  # pylint: disable=too-many-branches
         """Find matching lookdev for this output.
 
         This is used to find a lookdev publish to attach to an abc export.
@@ -84,7 +84,8 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
             if _asset_path:
                 _out = pipe.to_output(_asset_path)
                 _out = pipe.CACHE.obt(_out)
-                _asset = _out.entity
+                if _out:
+                    _asset = _out.entity
         if not _asset:
             _LOGGER.debug(' - NO ASSET FOUND')
             return None

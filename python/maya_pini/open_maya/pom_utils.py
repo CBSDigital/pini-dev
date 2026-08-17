@@ -138,19 +138,20 @@ def _cast_tfm(node):
     return _class
 
 
-def create_loc(name='loc', col=None, outliner_col=None):
+def create_loc(name='loc', col=None, outliner_col=None, scale=None):
     """Create locator.
 
     Args:
         name (str): override locator name
         col (str): apply viewport colour
         outliner_col (str): apply outliner colour
+        scale (float): apply scale
 
     Returns:
         (CTransform): locator
     """
     from maya_pini import open_maya as pom
-    _loc = pom.CPoint().to_loc(name=name)
+    _loc = pom.CPoint().to_loc(name=name, scale=scale)
     if col:
         _loc.set_col(col)
     if outliner_col:

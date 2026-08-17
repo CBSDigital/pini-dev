@@ -31,6 +31,7 @@ if dcc.NAME == 'maya':
 elif dcc.NAME == 'hou':
     from .eh_blast import CHouFlipbook
     from .eh_render import CHouDeadlineRender
+    from .eh_publish import CHouBasicPublish
 
 elif dcc.NAME == 'spainter':
     from .eh_publish import CSPainterTexturePublish

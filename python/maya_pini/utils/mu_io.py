@@ -1,12 +1,14 @@
 """General maya utilies for inputtting/outputting files."""
 
+import gzip
 import logging
 import os
+import shutil
 
 from maya import cmds, mel
 
 from pini import icons
-from pini.utils import File, wrap_fn, Seq
+from pini.utils import File, wrap_fn, Seq, TMP
 
 from . import mu_dec, mu_misc
 
@@ -368,30 +370,39 @@ def save_ass(geo, ass, force=False):
         ass (str): path to ass file to write to
         force (bool): overwrite existing without confirmation
     """
+    _LOGGER.info('SAVE ASS')
     cmds.loadPlugin('mtoa', quiet=True)
 
-    _ass = File(ass)
-    if ass.extn == 'ass':
+    # Prepare output paths
+    _out = File(ass)
+    if _out.extn == 'ass':
         _compressed = False
-    elif ass.filename.endwith('.ass.gz'):
+        _ass = _out
+    elif _out.filename.endswith('.ass.gz'):
         _compressed = True
+        _ass = TMP.to_file('tmp.ass')
+        _ass.delete(force=True)
     else:
-        raise ValueError(ass)
-    cmds.select(geo)
+        raise ValueError(_out)
+    _LOGGER.info(' - OUT %s', _out)
+    _LOGGER.info(' - ASS %s', _ass)
+    _out.delete(wording='replace', force=force, icon=icons.find('Peach'))
 
-    _ass.delete(wording='replace', force=force, icon=icons.find('Peach'))
+    # Execute export
+    assert not _out.exists()
     assert not _ass.exists()
     _ass.test_dir()
-    cmds.arnoldExportAss(
-        filename=_ass.path,
-        selected=True,
-        shadowLinks=False,
-        mask=6399,
-        lightLinks=False,
-        compressed=_compressed,
-        boundingBox=True,
-        cam='perspShape')
+    cmds.select(geo)
+    cmds.arnoldExportAss(filename=_ass.path, selected=True, boundingBox=True)
     assert _ass.exists()
+
+    if _compressed:
+        _out.test_dir()
+        with open(_ass.path, 'rb') as _src, gzip.open(_out.path, 'wb') as _dst:
+            shutil.copyfileobj(_src, _dst)
+        _ass.delete(force=True)
+
+    return _out
 
 
 def _mel(cmd, log=10):

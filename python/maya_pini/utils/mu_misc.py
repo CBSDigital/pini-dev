@@ -484,15 +484,19 @@ def to_unique(base, suffix='', ignore=(), start_idxs=None):
     Returns:
         (str): unique name
     """
+
+    # Check whether name exists
+    _ns = cmds.namespaceInfo(currentNamespace=True)
+    if not cmds.objExists(f'{_ns}:{base}'):
+        return base
+
+    # Extract base + try adding index suffix
     _base = base
     while _base[-1].isdigit():
         _base = _base[:-1]
-    _ns = cmds.namespaceInfo(currentNamespace=True)
-
     _idx = 0
     if start_idxs is not None and _base in start_idxs:
         _idx = start_idxs[base]
-
     while True:
         check_heart()
         _idx_str = str(_idx) if _idx else ''

@@ -9,6 +9,8 @@ from maya import cmds, mel
 from pini.utils import wrap_fn, single, apply_filter, EMPTY, cache_result
 from maya_pini.utils import to_parent, to_node
 
+from . import mui_vp
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -174,7 +176,6 @@ def get_active_cam():
     Returns:
         (str): camera transform
     """
-    from . import mui_vp
     _editor = mui_vp.get_active_model_editor()
     if not _editor:
         return None
@@ -266,6 +267,12 @@ def raise_attribute_editor():
     """
     _ae = mel.eval('getUIComponentDockControl("Attribute Editor", false)')
     cmds.workspaceControl(_ae, edit=True, collapse=False)
+
+
+def reset_viewport():
+    """Reset current viewport."""
+    cmds.deleteUI(mui_vp.get_active_model_editor())
+    mel.eval('setNamedPanelLayout "Single Perspective View"')
 
 
 def reset_window(filter_):
