@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CMayaPlayblast</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/CMayaPlayblast.html">CMayaPlayblast</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CExportHandler.html">CExportHandler</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">CBlastHandler</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CMayaPlayblast.html"><b>CMayaPlayblast</b></a></div><br><br>
+    <h2>Blast handler for maya.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['export.CMayaPlayblast', 'pini.dcc.export', '<font color="DarkMagenta"><b>CMayaPlayblast(label_w=80)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>label_w</b> (int): label width in ui</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_blast/bh_maya.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast</code></small>', 'pini.dcc.export.CMayaPlayblast', ''],
+             ['<font color="Grey">export.CMayaPlayblast.build_metadata</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.build_metadata()</b></font><br><br><small>&nbsp;Obtain metadata to apply to a generated export.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict): metadata</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.build_metadata</code></small>', 'pini.dcc.export.CMayaPlayblast.build_metadata', ''],
+             ['<font color="Grey">export.CMayaPlayblast.build_ui</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.build_ui()</b></font><br><br><small>&nbsp;Build ui elements.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">CBlastHandler</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_blast/bh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.build_ui</code></small>', 'pini.dcc.export.CMayaPlayblast.build_ui', ''],
+             ['<font color="Grey">export.CMayaPlayblast.exec</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.exec(notes, version_up, snapshot, force)</b></font><br><br><small>&nbsp;Execute this export.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>notes</b> (str): cache notes</small><br><small>&nbsp;&nbsp;&nbsp;<b>version_up</b> (bool): version up after export</small><br><small>&nbsp;&nbsp;&nbsp;<b>snapshot</b> (bool): take thumbnail snapshot on export</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): replace existing outputs without confirmation</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.exec</code></small>', 'pini.dcc.export.CMayaPlayblast.exec', ''],
+             ['<font color="Grey">export.CMayaPlayblast.exec_from_ui</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.exec_from_ui()</b></font><br><br><small>&nbsp;Execute blast using settings from ui.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">CBlastHandler</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_blast/bh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.exec_from_ui</code></small>', 'pini.dcc.export.CMayaPlayblast.exec_from_ui', ''],
+             ['export.CMayaPlayblast.export', 'pini.dcc.export', '<font color="DarkMagenta"><b>CMayaPlayblast.export(notes=None, version_up=False, snapshot=True, save=True, bkp=True, camera=None, view=True, range_=None, format_="mp4", burnins=True, settings="As is", output_name="blast", res=None, force_replace=False, run_checks=False, checks_data=None, update_cache=True, force=False)</b></font><br><br><small>&nbsp;Blast current scene.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>notes</b> (str): export notes</small><br><small>&nbsp;&nbsp;&nbsp;<b>version_up</b> (bool): version up after export</small><br><small>&nbsp;&nbsp;&nbsp;<b>snapshot</b> (bool): take thumbnail snapshot on export</small><br><small>&nbsp;&nbsp;&nbsp;<b>save</b> (bool): save work file on export</small><br><small>&nbsp;&nbsp;&nbsp;<b>bkp</b> (bool): save bkp file</small><br><small>&nbsp;&nbsp;&nbsp;<b>camera</b> (str): blast camera</small><br><small>&nbsp;&nbsp;&nbsp;<b>view</b> (bool): view blast</small><br><small>&nbsp;&nbsp;&nbsp;<b>range_</b> (tuple): override range</small><br><small>&nbsp;&nbsp;&nbsp;<b>format_</b> (str): blast format (eg. mp4/jpg)</small><br><small>&nbsp;&nbsp;&nbsp;<b>burnins</b> (bool): apply burnins (mov only)</small><br><small>&nbsp;&nbsp;&nbsp;<b>settings</b> (str): apply settings (eg. "Nice", "As is")</small><br><small>&nbsp;&nbsp;&nbsp;<b>output_name</b> (str): apply outputs name<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;<camera> - uses camera name</small><br><small>&nbsp;&nbsp;&nbsp;<b>res</b> (str): blast res (eg. "Full", "Half")</small><br><small>&nbsp;&nbsp;&nbsp;<b>force_replace</b> (bool): replace existing without confirmation</small><br><small>&nbsp;&nbsp;&nbsp;<b>run_checks</b> (bool): apply sanity check</small><br><small>&nbsp;&nbsp;&nbsp;<b>checks_data</b> (dict): apply sanity checks data</small><br><small>&nbsp;&nbsp;&nbsp;<b>update_cache</b> (bool): update pipe cache</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force blast with no confirmation dialogs</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_blast/bh_maya.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.export</code></small>', 'pini.dcc.export.CMayaPlayblast.export', ''],
+             ['<font color="Grey">export.CMayaPlayblast.init_export</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.init_export()</b></font><br><br><small>&nbsp;Initiate export.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">CBlastHandler</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_blast/bh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.init_export</code></small>', 'pini.dcc.export.CMayaPlayblast.init_export', ''],
+             ['<font color="Grey">export.CMayaPlayblast.post_export</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.post_export()</b></font><br><br><small>&nbsp;Execute post export code.</small><br><br><small>&nbsp;Executed after export. It will:</small><br><small>&nbsp; - update metadata of generated outputs</small><br><small>&nbsp; - update pipeline cache</small><br><small>&nbsp; - apply version up flag</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.post_export</code></small>', 'pini.dcc.export.CMayaPlayblast.post_export', ''],
+             ['<font color="Grey">export.CMayaPlayblast.set_settings</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.set_settings()</b></font><br><br><small>&nbsp;Setup settings dict.</small><br><br><small>&nbsp;Settings are initiated from the base class export methods kwargs (eg.</small><br><small>&nbsp;version_up, notes), then updated with this class\'s export method\'s</small><br><small>&nbsp;kwargs (so that the defaults are defined in this method\'s signature),</small><br><small>&nbsp;and then updated with any kwargs passed by this export.</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.set_settings</code></small>', 'pini.dcc.export.CMayaPlayblast.set_settings', ''],
+             ['<font color="Grey">export.CMayaPlayblast.to_frames</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.to_frames()</b></font><br><br><small>&nbsp;Obtain list of export frames.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int list): frames</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.to_frames</code></small>', 'pini.dcc.export.CMayaPlayblast.to_frames', ''],
+             ['<font color="Grey">export.CMayaPlayblast.to_icon</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.to_icon()</b></font><br><br><small>&nbsp;Obtain icon for this export handler.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): path to icon</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.to_icon</code></small>', 'pini.dcc.export.CMayaPlayblast.to_icon', ''],
+             ['<font color="Grey">export.CMayaPlayblast.to_range</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.to_range()</b></font><br><br><small>&nbsp;Read range based on current ui settings.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.to_range</code></small>', 'pini.dcc.export.CMayaPlayblast.to_range', ''],
+             ['<font color="Grey">export.CMayaPlayblast.ui_is_active</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.ui_is_active()</b></font><br><br><small>&nbsp;Test whether this export handler\'s ui is currently active.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): ui active status</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.ui_is_active</code></small>', 'pini.dcc.export.CMayaPlayblast.ui_is_active', ''],
+             ['<font color="Grey">export.CMayaPlayblast.update_ui</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CMayaPlayblast.update_ui(parent, layout)</b></font><br><br><small>&nbsp;Builds the ui into the given layout, flushing any existing widgets.</small><br><br><small>&nbsp;This method should not be overloaded - use the build_ui method.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (QWidget): parent widget</small><br><small>&nbsp;&nbsp;&nbsp;<b>layout</b> (QLayout): layout to add elements to</small><br><br><small>Inherited from: <a href="classes/CExportHandler.html">CExportHandler</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_base.py</font></small>', '<small><code>from pini.dcc import export<br>export.CMayaPlayblast.update_ui</code></small>', 'pini.dcc.export.CMayaPlayblast.update_ui', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

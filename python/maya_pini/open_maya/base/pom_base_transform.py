@@ -255,8 +255,8 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         """
         _LOGGER.debug('FREEZE TFMS %s', self)
         if force:
-            for _plug in self.tfm_plugs:
-                _LOGGER.debug(' - BREAK CONNS %s', _plug)
+            for _plug in self.to_tfm_plugs(parent=True):
+                _LOGGER.debug(' - UNLOCK / BREAK CONNS %s', _plug)
                 _plug.break_conns()
                 _plug.unlock()
         cmds.makeIdentity(
@@ -471,13 +471,15 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
                 raise RuntimeError(
                     f'Failed to solidify non-default value {_plug}')
 
-    def to_tfm_plugs(self, translate=True, rotate=True, scale=True):
+    def to_tfm_plugs(
+            self, translate=True, rotate=True, scale=True, parent=False):
         """Find transformation plugs.
 
         Args:
             translate (bool): include translate plugs
             rotate (bool): include rotate plugs
             scale (bool): include scale plugs
+            parent (bool): include parent plugs
 
         Returns:
             (CPlug list): transformation plugs
@@ -485,10 +487,16 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         _plugs = []
         if translate:
             _plugs += [self.tx, self.ty, self.tz]
+            if parent:
+                _plugs += [self.translate]
         if rotate:
             _plugs += [self.rx, self.ry, self.rz]
+            if parent:
+                _plugs += [self.rotate]
         if scale:
             _plugs += [self.sx, self.sy, self.sz]
+            if parent:
+                _plugs += [self.scale]
         return _plugs
 
     def unhide(self, unlock=False):

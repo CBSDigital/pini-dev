@@ -1,3 +1,13 @@
+## [9.36.1] - Wed 2026-08-19 08:08
+### Summary
+ - Pini Helper:
+    - maya model publish bugfix error on freeze transforms on geo with locked parent transform plugs (blee),
+### Updated
+ - pini.utils.abs_path added cygwin mode,
+ - maya_pini.open_maya.CBaseTransform.freeze_tfm unlock parent tfm attrs,
+ - maya_pini.open_maya.CBaseTransform.to_tfm_plugs added parent flag,
+
+
 ## [9.36.0] - Mon 2026-08-17 11:11
 ### Summary
  - Pini Helper:

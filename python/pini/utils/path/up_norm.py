@@ -25,6 +25,7 @@ def abs_path(path, root=None, mode=None):
                 eg: //mount/Projects -> P:
                 NOTE: mapping must be set up using $PINI_ABS_PATH_DRIVE_MAP
             win - use windows normalisation (eg. C:\path)
+            cygwin - use cygwin normalisation (eg. /c/path)
 
     Returns:
         (str): absolute path
@@ -87,6 +88,12 @@ def _apply_mode(path, mode):
         _path = _path.replace('/', '\\')
     elif _mode == 'drive':
         _path = _apply_replace_root(_path, env='PINI_ABS_PATH_DRIVE_MAP')
+    elif _mode == 'cygwin':
+        assert _path[1] == ':'
+        assert _path[2] == '/'
+        _drive = _path[0]
+        assert _drive.isupper()
+        _path = f'/{_drive.lower()}/{_path[3:]}'
     else:
         raise ValueError(_mode)
     return _path

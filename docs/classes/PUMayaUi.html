@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>PUMayaUi</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/PUMayaUi.html">PUMayaUi</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">PUBaseUi</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/PUMayaUi.html"><b>PUMayaUi</b></a></div><br><br>
+    <h2>Maya interface built from a python file.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">pyui.PUMayaUi</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi(py_file, title=None, base_col="RoyalBlue", load_settings=True, def_filter=None)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>py_file</b> (str): path to py file to build into interface</small><br><small>&nbsp;&nbsp;&nbsp;<b>title</b> (str): override interface title</small><br><small>&nbsp;&nbsp;&nbsp;<b>base_col</b> (str|QColor): override interface base colour</small><br><small>&nbsp;&nbsp;&nbsp;<b>load_settings</b> (bool): load settings on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>def_filter</b> (str): apply def name filter</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi</code></small>', 'pini.tools.pyui.PUMayaUi', ''],
+             ['pyui.PUMayaUi.add_arg', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.add_arg(arg)</b></font><br><br><small>&nbsp;Add argument.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>arg</b> (PUArg): arg to add</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_arg</code></small>', 'pini.tools.pyui.PUMayaUi.add_arg', ''],
+             ['<font color="Grey">pyui.PUMayaUi.add_def</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.add_def(def_)</b></font><br><br><small>&nbsp;Add function to the interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> <a href="classes/PUDef.html">(PUDef)</a>: function to add</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_def</code></small>', 'pini.tools.pyui.PUMayaUi.add_def', ''],
+             ['pyui.PUMayaUi.add_menu', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.add_menu(name)</b></font><br><br><small>&nbsp;Add menu to interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): menu name</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_menu</code></small>', 'pini.tools.pyui.PUMayaUi.add_menu', ''],
+             ['pyui.PUMayaUi.add_menu_item', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.add_menu_item(parent, label, command=None, image=None)</b></font><br><br><small>&nbsp;Add menu item to the given menu.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (str): menu to add item to</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): item label</small><br><small>&nbsp;&nbsp;&nbsp;<b>command</b> (fn): item callback</small><br><small>&nbsp;&nbsp;&nbsp;<b>image</b> (str): path to item image</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_menu_item</code></small>', 'pini.tools.pyui.PUMayaUi.add_menu_item', ''],
+             ['pyui.PUMayaUi.add_menu_separator', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.add_menu_separator(parent)</b></font><br><br><small>&nbsp;Add a separator item to the given menu bar.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (str): menu to add item to</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_menu_separator</code></small>', 'pini.tools.pyui.PUMayaUi.add_menu_separator', ''],
+             ['pyui.PUMayaUi.add_separator', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.add_separator()</b></font><br><br><small>&nbsp;Add separator.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.add_separator</code></small>', 'pini.tools.pyui.PUMayaUi.add_separator', ''],
+             ['<font color="Grey">pyui.PUMayaUi.build_ui</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.build_ui(load_settings=True, def_filter=None)</b></font><br><br><small>&nbsp;Build interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>load_settings</b> (bool): load settings on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>def_filter</b> (str): apply def name filter</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.build_ui</code></small>', 'pini.tools.pyui.PUMayaUi.build_ui', ''],
+             ['pyui.PUMayaUi.close', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.close()</b></font><br><br><small>&nbsp;Close this interface.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.close</code></small>', 'pini.tools.pyui.PUMayaUi.close', ''],
+             ['<font color="Grey">pyui.PUMayaUi.close_event</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.close_event()</b></font><br><br><small>&nbsp;Called when interface is closed.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.close_event</code></small>', 'pini.tools.pyui.PUMayaUi.close_event', ''],
+             ['pyui.PUMayaUi.collapse_all', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.collapse_all()</b></font><br><br><small>&nbsp;Collapse all sections.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.collapse_all</code></small>', 'pini.tools.pyui.PUMayaUi.collapse_all', ''],
+             ['pyui.PUMayaUi.finalize_def', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.finalize_def(def_)</b></font><br><br><small>&nbsp;Finalize function.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> <a href="classes/PUDef.html">(PUDef)</a>: function to finalize</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.finalize_def</code></small>', 'pini.tools.pyui.PUMayaUi.finalize_def', ''],
+             ['pyui.PUMayaUi.finalize_ui', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.finalize_ui(show=True)</b></font><br><br><small>&nbsp;Finalize building interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>show</b> (bool): show interface</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.finalize_ui</code></small>', 'pini.tools.pyui.PUMayaUi.finalize_ui', ''],
+             ['<font color="Grey">pyui.PUMayaUi.find_elem</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.find_elem(def_, arg)</b></font><br><br><small>&nbsp;Find an element of this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> (str): def name</small><br><small>&nbsp;&nbsp;&nbsp;<b>arg</b> (str): arg name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): element name</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.find_elem</code></small>', 'pini.tools.pyui.PUMayaUi.find_elem', ''],
+             ['<font color="Grey">pyui.PUMayaUi.find_elems</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.find_elems(def_, arg)</b></font><br><br><small>&nbsp;Find ui elements.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> (str): def name</small><br><small>&nbsp;&nbsp;&nbsp;<b>arg</b> (str): arg name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(list): matching elements</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.find_elems</code></small>', 'pini.tools.pyui.PUMayaUi.find_elems', ''],
+             ['pyui.PUMayaUi.init_def', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.init_def(def_)</b></font><br><br><small>&nbsp;Initiate new function.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> <a href="classes/PUDef.html">(PUDef)</a>: function to initiate</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.init_def</code></small>', 'pini.tools.pyui.PUMayaUi.init_def', ''],
+             ['pyui.PUMayaUi.init_ui', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.init_ui()</b></font><br><br><small>&nbsp;Inititiate interface window.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.init_ui</code></small>', 'pini.tools.pyui.PUMayaUi.init_ui', ''],
+             ['<font color="Grey">pyui.PUMayaUi.load_settings</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.load_settings(settings=None)</b></font><br><br><small>&nbsp;Load settings from disk.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>settings</b> (dict): override settings dict</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict): settings that were applied</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.load_settings</code></small>', 'pini.tools.pyui.PUMayaUi.load_settings', ''],
+             ['pyui.PUMayaUi.move', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.move(pos)</b></font><br><br><small>&nbsp;Move this window to the given position.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>pos</b> (tuple): x/y pos</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.move</code></small>', 'pini.tools.pyui.PUMayaUi.move', ''],
+             ['<font color="Grey">pyui.PUMayaUi.read_elem</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.read_elem(def_, arg)</b></font><br><br><small>&nbsp;Read an element\'s value.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> (str): def name</small><br><small>&nbsp;&nbsp;&nbsp;<b>arg</b> (str): arg name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(any): arg value</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.read_elem</code></small>', 'pini.tools.pyui.PUMayaUi.read_elem', ''],
+             ['<font color="Grey">pyui.PUMayaUi.read_settings</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.read_settings()</b></font><br><br><small>&nbsp;Read ui settings.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict): ui settings</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.read_settings</code></small>', 'pini.tools.pyui.PUMayaUi.read_settings', ''],
+             ['<font color="Grey">pyui.PUMayaUi.rebuild</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.rebuild(load_settings=True)</b></font><br><br><small>&nbsp;Rebuild this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>load_settings</b> (bool): load settings on rebuild</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.rebuild</code></small>', 'pini.tools.pyui.PUMayaUi.rebuild', ''],
+             ['<font color="Grey">pyui.PUMayaUi.reset_settings</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.reset_settings(def_=None)</b></font><br><br><small>&nbsp;Reset interface settings.</small><br><br><small>&nbsp;NOTE: should function after reload</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> <a href="classes/PUDef.html">(PUDef)</a>: only reset settings on this function</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.reset_settings</code></small>', 'pini.tools.pyui.PUMayaUi.reset_settings', ''],
+             ['<font color="Grey">pyui.PUMayaUi.save_settings</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.save_settings()</b></font><br><br><small>&nbsp;Save settings to disk.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.save_settings</code></small>', 'pini.tools.pyui.PUMayaUi.save_settings', ''],
+             ['<font color="Grey">pyui.PUMayaUi.set_elem</font>', 'pini.tools.pyui', '<font color="Fuchsia"><b>PUMayaUi.set_elem(def_, arg, val)</b></font><br><br><small>&nbsp;Set an element\'s value.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>def_</b> (str): def name</small><br><small>&nbsp;&nbsp;&nbsp;<b>arg</b> (str): arg name</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (any): value to apply</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PUBaseUi</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_base.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.set_elem</code></small>', 'pini.tools.pyui.PUMayaUi.set_elem', ''],
+             ['pyui.PUMayaUi.set_section', 'pini.tools.pyui', '<font color="DarkMagenta"><b>PUMayaUi.set_section(section)</b></font><br><br><small>&nbsp;Set current collapsable section.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>section</b> <a href="classes/PUSection.html">(PUSection)</a>: section to apply</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/pyui/ui/pu_maya.py</font></small>', '<small><code>from pini.tools import pyui<br>pyui.PUMayaUi.set_section</code></small>', 'pini.tools.pyui.PUMayaUi.set_section', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

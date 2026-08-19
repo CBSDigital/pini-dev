@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>EmojiSet</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/EmojiSet.html">EmojiSet</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Clip</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/Seq.html">Seq</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/EmojiSet.html"><b>EmojiSet</b></a></div><br><br>
+    <h2>Represents a set of emojis with an index.html descriptor.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['icons.EmojiSet', 'pini.icons', '<font color="DarkMagenta"><b>EmojiSet()</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/icons/i_set.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet</code></small>', 'pini.icons.EmojiSet', ''],
+             ['<font color="Grey">icons.EmojiSet.add_frame</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.add_frame(frame)</b></font><br><br><small>&nbsp;Add a frame to the frames cache.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): frame to add</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.add_frame</code></small>', 'pini.icons.EmojiSet.add_frame', ''],
+             ['<font color="Grey">icons.EmojiSet.browser</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.browser()</b></font><br><br><small>&nbsp;Open a browser in this seq\'s parent directory.</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.browser</code></small>', 'pini.icons.EmojiSet.browser', ''],
+             ['<font color="Grey">icons.EmojiSet.build_thumbnail</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.build_thumbnail(file_, width=100, frame=None, force=False)</b></font><br><br><small>&nbsp;Build thumbnail for this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): thumbnail path</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): thumbnail width in pixels</small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): select frame to export (default is middle frame)</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): overwrite existing without confirmation</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.build_thumbnail</code></small>', 'pini.icons.EmojiSet.build_thumbnail', ''],
+             ['<font color="Grey">icons.EmojiSet.check_for_bad_frames</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.check_for_bad_frames()</b></font><br><br><small>&nbsp;Check frames for bad files.</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.check_for_bad_frames</code></small>', 'pini.icons.EmojiSet.check_for_bad_frames', ''],
+             ['<font color="Grey">icons.EmojiSet.contains</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.contains(file_)</b></font><br><br><small>&nbsp;Test whether this sequence contains the given file.</small><br><br><small>&nbsp;eg. Seq(\'blah.%04d.jpg\').contains(\'blah.0001.jpg\') -> True</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): file to test</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether file follows sequence pattern</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.contains</code></small>', 'pini.icons.EmojiSet.contains', ''],
+             ['<font color="Grey">icons.EmojiSet.copy_to</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.copy_to(target, frames=None, check_match=True, progress=True, force=False, verbose=1)</b></font><br><br><small>&nbsp;Copy this file sequence to another location.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/Seq.html">(Seq)</a>: target location</small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): override frames to copy</small><br><small>&nbsp;&nbsp;&nbsp;<b>check_match</b> (bool): check existing frame match before replacing</small><br><small>&nbsp;&nbsp;&nbsp;<b>progress</b> (bool): show progress</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): replace existing without confirmation</small><br><small>&nbsp;&nbsp;&nbsp;<b>verbose</b> (int): show process data</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.copy_to</code></small>', 'pini.icons.EmojiSet.copy_to', ''],
+             ['<font color="Grey">icons.EmojiSet.delete</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.delete(wording="delete", frames=None, icon=None, parent=None, force=False)</b></font><br><br><small>&nbsp;Delete this image sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>wording</b> (str): override wording on warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): limit list of frames to delete</small><br><small>&nbsp;&nbsp;&nbsp;<b>icon</b> (str): override icon on warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (QDialog): parent for warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): delete without confirmation</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.delete</code></small>', 'pini.icons.EmojiSet.delete', ''],
+             ['<font color="Grey">icons.EmojiSet.exists</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.exists(frames=None, force=False)</b></font><br><br><small>&nbsp;Test whether this sequence exists.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): list of frames to check exist - if any of these frames are missing then the result is False</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether sequence exists</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.exists</code></small>', 'pini.icons.EmojiSet.exists', ''],
+             ['icons.EmojiSet.find', 'pini.icons', '<font color="DarkMagenta"><b>EmojiSet.find(match, catch=False)</b></font><br><br><small>&nbsp;Find the path to an emoji in this set.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>match</b> (str|int): match by name or index</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if exactly one emoji is not found</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): path to emoji</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/icons/i_set.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.find</code></small>', 'pini.icons.EmojiSet.find', ''],
+             ['icons.EmojiSet.find_emoji', 'pini.icons', '<font color="DarkMagenta"><b>EmojiSet.find_emoji(match, catch=False)</b></font><br><br><small>&nbsp;Find an emoji in this set.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>match</b> (str|int): match by name or index</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if exactly one emoji is not found</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Emoji.html">Emoji</a>): matching emoji</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/icons/i_set.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.find_emoji</code></small>', 'pini.icons.EmojiSet.find_emoji', ''],
+             ['icons.EmojiSet.find_grp', 'pini.icons', '<font color="DarkMagenta"><b>EmojiSet.find_grp(name)</b></font><br><br><small>&nbsp;Find named group of emojis within this set.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name of group (eg. fruit)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str list): list of emoji paths</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/icons/i_set.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.find_grp</code></small>', 'pini.icons.EmojiSet.find_grp', ''],
+             ['<font color="Grey">icons.EmojiSet.find_range</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.find_range(force=False)</b></font><br><br><small>&nbsp;Find start/end frames of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.find_range</code></small>', 'pini.icons.EmojiSet.find_range', ''],
+             ['<font color="Grey">icons.EmojiSet.has_frames_cache</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.has_frames_cache()</b></font><br><br><small>&nbsp;Check whether this sequence has a frames cache.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether frames cache</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.has_frames_cache</code></small>', 'pini.icons.EmojiSet.has_frames_cache', ''],
+             ['<font color="Grey">icons.EmojiSet.is_editable</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.is_editable()</b></font><br><br><small>&nbsp;Test whether this is editable in a text editor.</small><br><br><small>&nbsp;Provided for symmetry with Path object.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): false</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.is_editable</code></small>', 'pini.icons.EmojiSet.is_editable', ''],
+             ['<font color="Grey">icons.EmojiSet.is_missing_frames</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.is_missing_frames(frames=None)</b></font><br><br><small>&nbsp;Test whether this sequence\'s frame range is incomplete.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): expected frames</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether frames are missing</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.is_missing_frames</code></small>', 'pini.icons.EmojiSet.is_missing_frames', ''],
+             ['<font color="Grey">icons.EmojiSet.move_to</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.move_to(target, progress=False)</b></font><br><br><small>&nbsp;Move this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/Seq.html">(Seq)</a>: target sequence</small><br><small>&nbsp;&nbsp;&nbsp;<b>progress</b> (bool): show progress bar</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.move_to</code></small>', 'pini.icons.EmojiSet.move_to', ''],
+             ['<font color="Grey">icons.EmojiSet.mtime</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.mtime()</b></font><br><br><small>&nbsp;Obtain mtime of this sequence using the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): mtime</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.mtime</code></small>', 'pini.icons.EmojiSet.mtime', ''],
+             ['<font color="Grey">icons.EmojiSet.nice_range</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.nice_range()</b></font><br><br><small>&nbsp;Get this sequence\'s frame range in a readable form.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): readable range (eg. 1-100)</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.nice_range</code></small>', 'pini.icons.EmojiSet.nice_range', ''],
+             ['<font color="Grey">icons.EmojiSet.nice_size</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.nice_size()</b></font><br><br><small>&nbsp;Get size of this file in a readable for (eg. 10GB).</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.nice_size</code></small>', 'pini.icons.EmojiSet.nice_size', ''],
+             ['<font color="Grey">icons.EmojiSet.owner</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.owner()</b></font><br><br><small>&nbsp;Obtain owner of this sequence using the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): owner</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.owner</code></small>', 'pini.icons.EmojiSet.owner', ''],
+             ['<font color="Grey">icons.EmojiSet.size</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.size()</b></font><br><br><small>&nbsp;Obtain total size of this file sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.size</code></small>', 'pini.icons.EmojiSet.size', ''],
+             ['<font color="Grey">icons.EmojiSet.strftime</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.strftime(fmt=None)</b></font><br><br><small>&nbsp;Get formatted time string using this sequence\'s mtime.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>fmt</b> (str): time format string</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.strftime</code></small>', 'pini.icons.EmojiSet.strftime', ''],
+             ['<font color="Grey">icons.EmojiSet.test_dir</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.test_dir()</b></font><br><br><small>&nbsp;Test this sequence\'s parent directory exists.</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.test_dir</code></small>', 'pini.icons.EmojiSet.test_dir', ''],
+             ['<font color="Grey">icons.EmojiSet.to_aspect</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_aspect()</b></font><br><br><small>&nbsp;Obtain aspect ration of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): aspect ratio</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_aspect</code></small>', 'pini.icons.EmojiSet.to_aspect', ''],
+             ['<font color="Grey">icons.EmojiSet.to_dir</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_dir()</b></font><br><br><small>&nbsp;Get this sequence\'s parent directory.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Dir.html">Dir</a>): parent dir</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_dir</code></small>', 'pini.icons.EmojiSet.to_dir', ''],
+             ['<font color="Grey">icons.EmojiSet.to_dur</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_dur()</b></font><br><br><small>&nbsp;Obtain duration (in frames) of this image sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): duration</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_dur</code></small>', 'pini.icons.EmojiSet.to_dur', ''],
+             ['<font color="Grey">icons.EmojiSet.to_end</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_end()</b></font><br><br><small>&nbsp;Obtain last/end frame of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): last frame</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_end</code></small>', 'pini.icons.EmojiSet.to_end', ''],
+             ['<font color="Grey">icons.EmojiSet.to_file</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_file()</b></font><br><br><small>&nbsp;Map this sequence to a file object.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a>): file using this seq\'s attributes</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_file</code></small>', 'pini.icons.EmojiSet.to_file', ''],
+             ['<font color="Grey">icons.EmojiSet.to_frame_file</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_frame_file(frame=None)</b></font><br><br><small>&nbsp;Obtain the file for the given frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): frame number to request - by default the central frame is used</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a>): frame file</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_frame_file</code></small>', 'pini.icons.EmojiSet.to_frame_file', ''],
+             ['<font color="Grey">icons.EmojiSet.to_frame_files</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_frame_files()</b></font><br><br><small>&nbsp;Build list of all files in this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a> list): frame files</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_frame_files</code></small>', 'pini.icons.EmojiSet.to_frame_files', ''],
+             ['<font color="Grey">icons.EmojiSet.to_frames</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_frames(frames=None, force=False)</b></font><br><br><small>&nbsp;Find frames of this sequence.</small><br><br><small>&nbsp;This is read from disk the first time, and then subsequently</small><br><small>&nbsp;the cached value is used. This can be overridden using the</small><br><small>&nbsp;force flag.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): force list of frames into cache</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force read from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int list): list of frame numbers</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_frames</code></small>', 'pini.icons.EmojiSet.to_frames', ''],
+             ['<font color="Grey">icons.EmojiSet.to_range</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_range(force=False)</b></font><br><br><small>&nbsp;Find start/end frames of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_range</code></small>', 'pini.icons.EmojiSet.to_range', ''],
+             ['<font color="Grey">icons.EmojiSet.to_res</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_res()</b></font><br><br><small>&nbsp;Obtain resolution for this image sequence.</small><br><br><small>&nbsp;Resolution is read from the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_res</code></small>', 'pini.icons.EmojiSet.to_res', ''],
+             ['<font color="Grey">icons.EmojiSet.to_seq</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_seq(extn=None)</b></font><br><br><small>&nbsp;Build a sequence object based on this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>extn</b> (str): override extension</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Seq.html">Seq</a>): new sequence object</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_seq</code></small>', 'pini.icons.EmojiSet.to_seq', ''],
+             ['<font color="Grey">icons.EmojiSet.to_start</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_start()</b></font><br><br><small>&nbsp;Obtain start/first frame of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): first frame</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_start</code></small>', 'pini.icons.EmojiSet.to_start', ''],
+             ['<font color="Grey">icons.EmojiSet.to_video</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.to_video(video, burnins=False, force=False)</b></font><br><br><small>&nbsp;Convert this image sequence to a video.</small><br><br><small>&nbsp;NOTE: for docs see clip.seq_to_video</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>video</b> <a href="classes/File.html">(File)</a>: file to create</small><br><small>&nbsp;&nbsp;&nbsp;<b>burnins</b> (bool): add burnins</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): overwrite existing without confirmation</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Video.html">Video</a>): video file</small><br><br><small>Inherited from: <a href="classes/Seq.html">Seq</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.to_video</code></small>', 'pini.icons.EmojiSet.to_video', ''],
+             ['<font color="Grey">icons.EmojiSet.view</font>', 'pini.icons', '<font color="Fuchsia"><b>EmojiSet.view(viewer=None, start_frame=None)</b></font><br><br><small>&nbsp;View this clip.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>viewer</b> (str): force viewer</small><br><small>&nbsp;&nbsp;&nbsp;<b>start_frame</b> (int): override start frame</small><br><br><small>Inherited from: <font color="DeepSkyBlue">Clip</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_clip.py</font></small>', '<small><code>from pini import icons<br>icons.EmojiSet.view</code></small>', 'pini.icons.EmojiSet.view', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

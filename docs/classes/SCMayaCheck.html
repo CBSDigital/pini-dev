@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>SCMayaCheck</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/SCMayaCheck.html">SCMayaCheck</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/SCCheck.html">SCCheck</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/SCMayaCheck.html"><b>SCMayaCheck</b></a></div><br><br>
+    <h2>Base class for any maya check.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['<font color="Grey">sanity_check.SCMayaCheck</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck()</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck</code></small>', 'pini.tools.sanity_check.SCMayaCheck', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.add_ctx_items</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.add_ctx_items(menu)</b></font><br><br><small>&nbsp;Add custom items.</small><br><br><small>&nbsp;This allows custom items to be added when this check is right-clicked</small><br><small>&nbsp;in the sanity check interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>menu</b> (QMenu): menu to add items to</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.add_ctx_items</code></small>', 'pini.tools.sanity_check.SCMayaCheck.add_ctx_items', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.add_fail</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.add_fail(fail, node=None, fix=None)</b></font><br><br><small>&nbsp;Add a fail for this check.</small><br><br><small>&nbsp;This represents a part of the check having failed, and provides</small><br><small>&nbsp;information about the failure and how to fix it.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>fail</b> (str|SCFail): failure</small><br><small>&nbsp;&nbsp;&nbsp;<b>node</b> (any): node associated with failure</small><br><small>&nbsp;&nbsp;&nbsp;<b>fix</b> (fn): function to fix issue</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/SCFail.html">SCFail</a>): fail</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.add_fail</code></small>', 'pini.tools.sanity_check.SCMayaCheck.add_fail', ''],
+             ['sanity_check.SCMayaCheck.check_attr', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.check_attr(attr, val, fail=None, create=False, catch=False)</b></font><br><br><small>&nbsp;Check a attribute has the given value.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>attr</b> (str): attribute to check</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (any): expected value</small><br><small>&nbsp;&nbsp;&nbsp;<b>fail</b> (str): override fail message</small><br><small>&nbsp;&nbsp;&nbsp;<b>create</b> (bool): allow the attribute to be created if it doesn\'t exist</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if attr missing</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_attr</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_attr', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.check_cache_up_to_date</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.check_cache_up_to_date()</b></font><br><br><small>&nbsp;Check this cache is not more than 20 minutes old.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether cache is outdated</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_cache_up_to_date</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_cache_up_to_date', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.check_cur_work</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.check_cur_work()</b></font><br><br><small>&nbsp;Check there is a current work file.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether the check passed</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_cur_work</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_cur_work', ''],
+             ['sanity_check.SCMayaCheck.check_opt_var', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.check_opt_var(flag, val, type_="float", category=None)</b></font><br><br><small>&nbsp;Check an optionVar setting.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>flag</b> (str): name of optionVar to check (eg. playbackMaxDefault)</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (any): value to assert</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): force var type</small><br><small>&nbsp;&nbsp;&nbsp;<b>category</b> (str): optionVar category (eg. Animation)</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_opt_var</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_opt_var', ''],
+             ['sanity_check.SCMayaCheck.check_pref', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.check_pref(func, flag, val, fail=None, elem=None)</b></font><br><br><small>&nbsp;Check a preference is set to the given value.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>func</b> (fn): maya.cmds function to query/edit</small><br><small>&nbsp;&nbsp;&nbsp;<b>flag</b> (str): name of flag to read</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (any): required value for preference</small><br><small>&nbsp;&nbsp;&nbsp;<b>fail</b> (str): override fail message</small><br><small>&nbsp;&nbsp;&nbsp;<b>elem</b> (str): element arg (if required)</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_pref</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_pref', ''],
+             ['sanity_check.SCMayaCheck.check_renderer', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.check_renderer()</b></font><br><br><small>&nbsp;Check whther the current renderer is implemented.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether check passed</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_renderer</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_renderer', ''],
+             ['sanity_check.SCMayaCheck.check_shp', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.check_shp(node)</b></font><br><br><small>&nbsp;Check node shapes.</small><br><br><small>&nbsp;Checks for multiple shape nodes and shape nodes not matching</small><br><small>&nbsp;transform.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>node</b> <a href="classes/CTransform.html">(CTransform)</a>: node to check</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.check_shp</code></small>', 'pini.tools.sanity_check.SCMayaCheck.check_shp', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.edit</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.edit()</b></font><br><br><small>&nbsp;Edit this check\'s code.</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.edit</code></small>', 'pini.tools.sanity_check.SCMayaCheck.edit', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.execute</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.execute(catch=True, update_ui=None)</b></font><br><br><small>&nbsp;Execute this check.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): don\'t error if the check fails</small><br><small>&nbsp;&nbsp;&nbsp;<b>update_ui</b> (fn): function to update a ui to give progress feedback</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.execute</code></small>', 'pini.tools.sanity_check.SCMayaCheck.execute', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.read_setting</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.read_setting(name, default, force=None)</b></font><br><br><small>&nbsp;Obtain value for a setting for this check.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name of setting to check (eg. CheckAiShd)</small><br><small>&nbsp;&nbsp;&nbsp;<b>default</b> (any): default value for setting (eg. False)</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (any): force the value of the setting (eg. True/False - None is ignored)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(any): value for setting</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.read_setting</code></small>', 'pini.tools.sanity_check.SCMayaCheck.read_setting', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.reset</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.reset()</b></font><br><br><small>&nbsp;Reset this check.</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.reset</code></small>', 'pini.tools.sanity_check.SCMayaCheck.reset', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.reset_and_run</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.reset_and_run()</b></font><br><br><small>&nbsp;Reset this test and then run it.</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.reset_and_run</code></small>', 'pini.tools.sanity_check.SCMayaCheck.reset_and_run', ''],
+             ['sanity_check.SCMayaCheck.run', 'pini.tools.sanity_check', '<font color="DarkMagenta"><b>SCMayaCheck.run()</b></font><br><br><small>&nbsp;Execute this check.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_maya_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.run</code></small>', 'pini.tools.sanity_check.SCMayaCheck.run', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.run_and_fix</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.run_and_fix()</b></font><br><br><small>&nbsp;Run this check and apply any fixes.</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.run_and_fix</code></small>', 'pini.tools.sanity_check.SCMayaCheck.run_and_fix', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.set_disabled</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.set_disabled(disabled=True)</b></font><br><br><small>&nbsp;Set the disabled state of this check (default is disabled).</small><br><br><small>&nbsp;This applies scene data to mark this check as disabled.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>disabled</b> (bool): disabled state to apply</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.set_disabled</code></small>', 'pini.tools.sanity_check.SCMayaCheck.set_disabled', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.set_progress</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.set_progress(progress)</b></font><br><br><small>&nbsp;Set current progress of this check.</small><br><br><small>&nbsp;If there is a ui embedded in this check, it is updated with the</small><br><small>&nbsp;new progress value.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>progress</b> (float): progress percentage (in range 0 to 100)</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.set_progress</code></small>', 'pini.tools.sanity_check.SCMayaCheck.set_progress', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.set_task</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.set_task(task)</b></font><br><br><small>&nbsp;Force task for this test.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>task</b> (str): task to apply</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.set_task</code></small>', 'pini.tools.sanity_check.SCMayaCheck.set_task', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.update_progress</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.update_progress(data)</b></font><br><br><small>&nbsp;Build a generator to iterate the given data.</small><br><br><small>&nbsp;As the generator is iterated, the progress is updated in any ui</small><br><small>&nbsp;which has been embedded in this check.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>data</b> (list): data to iterate</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(generator): generator to iterate</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.update_progress</code></small>', 'pini.tools.sanity_check.SCMayaCheck.update_progress', ''],
+             ['<font color="Grey">sanity_check.SCMayaCheck.write_log</font>', 'pini.tools.sanity_check', '<font color="Fuchsia"><b>SCMayaCheck.write_log(text, lazy=False)</b></font><br><br><small>&nbsp;Write log information for this check.</small><br><br><small>&nbsp;This information is used to provide information about the check</small><br><small>&nbsp;progress to the user. It behaves like a Logger object, and arg data</small><br><small>&nbsp;is passed into the log text using modulo formatting.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>text</b> (str): text to log</small><br><small>&nbsp;&nbsp;&nbsp;<b>lazy</b> (bool): stop writing this log if log has already been written to 100 times</small><br><br><small>Inherited from: <a href="classes/SCCheck.html">SCCheck</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/sanity_check/core/sc_check.py</font></small>', '<small><code>from pini.tools import sanity_check<br>sanity_check.SCMayaCheck.write_log</code></small>', 'pini.tools.sanity_check.SCMayaCheck.write_log', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CTransform</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/CTransform.html">CTransform</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CBaseNode.html">CBaseNode</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CBaseTransform.html">CBaseTransform</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CTransform.html"><b>CTransform</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">MFnBase</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">MFnDependencyNode</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">MFnDagNode</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">MFnTransform</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CTransform.html"><b>CTransform</b></a></div><br><br>
+    <h2>Wrapper for OpenMaya.MFnTransform object.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['pom.CTransform', 'maya_pini.open_maya', '<font color="DarkMagenta"><b>CTransform(node)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>node</b> (str): node to build transform from</small><br><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/wrapper/pom_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform</code></small>', 'maya_pini.open_maya.CTransform', ''],
+             ['<font color="Grey">pom.CTransform.add_attr</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.add_attr(name, value, force=False, locked=False, min_val=None, max_val=None, keyable=True)</b></font><br><br><small>&nbsp;Add an attribute to this node.</small><br><br><small>&nbsp;The attribute type is based on the type of the value provided.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): attribute name</small><br><small>&nbsp;&nbsp;&nbsp;<b>value</b> (any): attribute value</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force apply value</small><br><small>&nbsp;&nbsp;&nbsp;<b>locked</b> (bool): lock attribute on create</small><br><small>&nbsp;&nbsp;&nbsp;<b>min_val</b> (float|int): set minimum value</small><br><small>&nbsp;&nbsp;&nbsp;<b>max_val</b> (float|int): set maximum value</small><br><small>&nbsp;&nbsp;&nbsp;<b>keyable</b> (bool): keyable + channel box status</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a>): new attribute</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.add_attr</code></small>', 'maya_pini.open_maya.CTransform.add_attr', ''],
+             ['<font color="Grey">pom.CTransform.add_enum</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.add_enum(name, opts, value=None)</b></font><br><br><small>&nbsp;Create an enum attribute.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): attibute name</small><br><small>&nbsp;&nbsp;&nbsp;<b>opts</b> (str list): enum options</small><br><small>&nbsp;&nbsp;&nbsp;<b>value</b> (str): default value</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a>): new plug</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.add_enum</code></small>', 'maya_pini.open_maya.CTransform.add_enum', ''],
+             ['<font color="Grey">pom.CTransform.add_to_dlayer</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.add_to_dlayer(layer)</b></font><br><br><small>&nbsp;Add this node to a display layer.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>layer</b> (str): name of layer to add to</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.add_to_dlayer</code></small>', 'maya_pini.open_maya.CTransform.add_to_dlayer', ''],
+             ['<font color="Grey">pom.CTransform.add_to_grp</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.add_to_grp(grp, col=None)</b></font><br><br><small>&nbsp;Add this node to a group.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>grp</b> (str): name of group to add to</small><br><small>&nbsp;&nbsp;&nbsp;<b>col</b> (str): outliner colour for group</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): group</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.add_to_grp</code></small>', 'maya_pini.open_maya.CTransform.add_to_grp', ''],
+             ['<font color="Grey">pom.CTransform.add_to_set</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.add_to_set(set_)</b></font><br><br><small>&nbsp;Add this node to a set.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>set_</b> (str): name of set to add to</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.add_to_set</code></small>', 'maya_pini.open_maya.CTransform.add_to_set', ''],
+             ['<font color="Grey">pom.CTransform.aim_constraint</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.aim_constraint(target, maintain_offset=False)</b></font><br><br><small>&nbsp;Build an aim constraint from this node to the given target.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/CTransform.html">(CTransform)</a>: node to constrain</small><br><small>&nbsp;&nbsp;&nbsp;<b>maintain_offset</b> (bool): maintain offset</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): constraint</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.aim_constraint</code></small>', 'maya_pini.open_maya.CTransform.aim_constraint', ''],
+             ['<font color="Grey">pom.CTransform.apply_shd</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.apply_shd(shd)</b></font><br><br><small>&nbsp;Apply shader to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>shd</b> (str): shader to apply</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.apply_shd</code></small>', 'maya_pini.open_maya.CTransform.apply_shd', ''],
+             ['<font color="Grey">pom.CTransform.break_conns</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.break_conns()</b></font><br><br><small>&nbsp;Break incoming connections on this node.</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.break_conns</code></small>', 'maya_pini.open_maya.CTransform.break_conns', ''],
+             ['<font color="Grey">pom.CTransform.delete</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.delete()</b></font><br><br><small>&nbsp;Delete this node.</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.delete</code></small>', 'maya_pini.open_maya.CTransform.delete', ''],
+             ['<font color="Grey">pom.CTransform.delete_history</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.delete_history()</b></font><br><br><small>&nbsp;Delete history on this node.</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.delete_history</code></small>', 'maya_pini.open_maya.CTransform.delete_history', ''],
+             ['<font color="Grey">pom.CTransform.duplicate</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.duplicate(name=None, upstream_nodes=False, instance_leaf=False, return_roots_only=True, input_connections=False, class_=None)</b></font><br><br><small>&nbsp;Duplicate this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): node name</small><br><small>&nbsp;&nbsp;&nbsp;<b>upstream_nodes</b> (bool): duplicate upstream nodes</small><br><small>&nbsp;&nbsp;&nbsp;<b>instance_leaf</b> (bool): duplicate as instance</small><br><small>&nbsp;&nbsp;&nbsp;<b>return_roots_only</b> (bool): return root nodes</small><br><small>&nbsp;&nbsp;&nbsp;<b>input_connections</b> (bool): duplicate input connections</small><br><small>&nbsp;&nbsp;&nbsp;<b>class_</b> (class): override node class</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CBaseNode.html">CBaseNode</a>): duplicated node</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.duplicate</code></small>', 'maya_pini.open_maya.CTransform.duplicate', ''],
+             ['<font color="Grey">pom.CTransform.exists</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.exists()</b></font><br><br><small>&nbsp;Test whether this node exists.</small><br><br><small>&nbsp;NOTE: this would have to be a node that was created after the api</small><br><small>&nbsp;object was constructed.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether exists</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.exists</code></small>', 'maya_pini.open_maya.CTransform.exists', ''],
+             ['<font color="Grey">pom.CTransform.find_anims</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_anims()</b></font><br><br><small>&nbsp;Find anim curves attached to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CAnimCurve.html">CAnimCurve</a> list): anim curves</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_anims</code></small>', 'maya_pini.open_maya.CTransform.find_anims', ''],
+             ['<font color="Grey">pom.CTransform.find_child</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_child(catch=False)</b></font><br><br><small>&nbsp;Find a child of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if no single child matched</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CNode.html">CNode</a>): child</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_child</code></small>', 'maya_pini.open_maya.CTransform.find_child', ''],
+             ['<font color="Grey">pom.CTransform.find_children</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_children(type_=None, recursive=False, class_=None, filter_=None, types=None)</b></font><br><br><small>&nbsp;Find children of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): filter by type</small><br><small>&nbsp;&nbsp;&nbsp;<b>recursive</b> (bool): recurve into children\'s children</small><br><small>&nbsp;&nbsp;&nbsp;<b>class_</b> (class): cast results to this node type, ignoring any which fail to cast</small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): filter by child name</small><br><small>&nbsp;&nbsp;&nbsp;<b>types</b> (str list): filter by list of types</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CNode.html">CNode</a> list): children</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_children</code></small>', 'maya_pini.open_maya.CTransform.find_children', ''],
+             ['<font color="Grey">pom.CTransform.find_connected</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_connected(type_, catch=True)</b></font><br><br><small>&nbsp;Find a connected node of the given type.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): node type to match</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if no single node matched</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CNode.html">CNode</a>): matching node</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_connected</code></small>', 'maya_pini.open_maya.CTransform.find_connected', ''],
+             ['<font color="Grey">pom.CTransform.find_incoming</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_incoming(type_=None, connections=True, plugs=True)</b></font><br><br><small>&nbsp;Find incoming connections to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): filter by node type</small><br><small>&nbsp;&nbsp;&nbsp;<b>connections</b> (bool): return src/dest pairs or just dests</small><br><small>&nbsp;&nbsp;&nbsp;<b>plugs</b> (bool): return plugs rather than nodes</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(list): incoming connections</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_incoming</code></small>', 'maya_pini.open_maya.CTransform.find_incoming', ''],
+             ['<font color="Grey">pom.CTransform.find_outgoing</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_outgoing(type_=None, connections=True, plugs=True)</b></font><br><br><small>&nbsp;Find outgoing connections from this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): filter by node type</small><br><small>&nbsp;&nbsp;&nbsp;<b>connections</b> (bool): return src/dest pairs or just dests</small><br><small>&nbsp;&nbsp;&nbsp;<b>plugs</b> (bool): return plugs rather than nodes</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(list): outgoing connections</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_outgoing</code></small>', 'maya_pini.open_maya.CTransform.find_outgoing', ''],
+             ['<font color="Grey">pom.CTransform.find_plugs</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.find_plugs(user_defined=False, keyable=None, head=None, filter_=None, type_=None)</b></font><br><br><small>&nbsp;Find plugs on this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>user_defined</b> (bool): return only user defined attributes</small><br><small>&nbsp;&nbsp;&nbsp;<b>keyable</b> (bool): return only keyable plugs</small><br><small>&nbsp;&nbsp;&nbsp;<b>head</b> (str): filter by start of attribute name (eg. vray/ai)</small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): apply attibute name filter</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): filter by attribute type</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a> list): matching plugs</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.find_plugs</code></small>', 'maya_pini.open_maya.CTransform.find_plugs', ''],
+             ['<font color="Grey">pom.CTransform.fix_shp_name</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.fix_shp_name()</b></font><br><br><small>&nbsp;Make sure shape name matches transform name.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.fix_shp_name</code></small>', 'maya_pini.open_maya.CTransform.fix_shp_name', ''],
+             ['<font color="Grey">pom.CTransform.flush</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.flush()</b></font><br><br><small>&nbsp;Flush this node\'s history and transformation.</small><br><br><small>&nbsp;This resets the pivot to the origin, freezes transforms</small><br><small>&nbsp;and deletes construction history.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.flush</code></small>', 'maya_pini.open_maya.CTransform.flush', ''],
+             ['<font color="Grey">pom.CTransform.freeze_tfms</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.freeze_tfms(translate=True, rotate=True, scale=True, force=False)</b></font><br><br><small>&nbsp;Freeze transforms on this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>translate</b> (bool): freeze translation</small><br><small>&nbsp;&nbsp;&nbsp;<b>rotate</b> (bool): freeze rotation</small><br><small>&nbsp;&nbsp;&nbsp;<b>scale</b> (bool): freeze scale</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): break connections before freeze</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.freeze_tfms</code></small>', 'maya_pini.open_maya.CTransform.freeze_tfms', ''],
+             ['<font color="Grey">pom.CTransform.has_attr</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.has_attr(attr)</b></font><br><br><small>&nbsp;Check whether this node has the given attribute.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>attr</b> (str): name of attr to check for</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether attribute exists</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.has_attr</code></small>', 'maya_pini.open_maya.CTransform.has_attr', ''],
+             ['<font color="Grey">pom.CTransform.hide</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.hide()</b></font><br><br><small>&nbsp;Hide this node.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.hide</code></small>', 'maya_pini.open_maya.CTransform.hide', ''],
+             ['<font color="Grey">pom.CTransform.is_instanced</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.is_instanced()</b></font><br><br><small>&nbsp;Check if this node is an instanced shape node.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether instanced</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.is_instanced</code></small>', 'maya_pini.open_maya.CTransform.is_instanced', ''],
+             ['<font color="Grey">pom.CTransform.is_referenced</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.is_referenced()</b></font><br><br><small>&nbsp;Check whether this node is referenced.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether referenced</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.is_referenced</code></small>', 'maya_pini.open_maya.CTransform.is_referenced', ''],
+             ['<font color="Grey">pom.CTransform.is_visible</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.is_visible()</b></font><br><br><small>&nbsp;Test whether this node is visible.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether visible</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.is_visible</code></small>', 'maya_pini.open_maya.CTransform.is_visible', ''],
+             ['<font color="Grey">pom.CTransform.list_attr</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.list_attr(keyable=False, user_defined=False, type_=None)</b></font><br><br><small>&nbsp;Apply listAttr command to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>keyable</b> (bool): return only keyable attributes</small><br><small>&nbsp;&nbsp;&nbsp;<b>user_defined</b> (bool): return only user defined attributes</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): apply attribute type filter</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a> list): matching plugs</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.list_attr</code></small>', 'maya_pini.open_maya.CTransform.list_attr', ''],
+             ['<font color="Grey">pom.CTransform.load_preset</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.load_preset(file_, fmt=None)</b></font><br><br><small>&nbsp;Load the given preset to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): path to preset file</small><br><small>&nbsp;&nbsp;&nbsp;<b>fmt</b> (str): preset format (if not determined by file extn)<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;mpa - mel format, can cause random crash<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;mpb - python format</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.load_preset</code></small>', 'maya_pini.open_maya.CTransform.load_preset', ''],
+             ['<font color="Grey">pom.CTransform.lock_tfms</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.lock_tfms()</b></font><br><br><small>&nbsp;Lock transforms on this node.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.lock_tfms</code></small>', 'maya_pini.open_maya.CTransform.lock_tfms', ''],
+             ['<font color="Grey">pom.CTransform.move</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.move()</b></font><br><br><small>&nbsp;Move this object relative to its current position.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.move</code></small>', 'maya_pini.open_maya.CTransform.move', ''],
+             ['<font color="Grey">pom.CTransform.object_type</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.object_type()</b></font><br><br><small>&nbsp;Read this node\'s object type.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): object type</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.object_type</code></small>', 'maya_pini.open_maya.CTransform.object_type', ''],
+             ['<font color="Grey">pom.CTransform.orient_constraint</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.orient_constraint(target, maintain_offset=False, force=False)</b></font><br><br><small>&nbsp;Build an orient constraint from this node to the given target.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/CTransform.html">(CTransform)</a>: node to constrain</small><br><small>&nbsp;&nbsp;&nbsp;<b>maintain_offset</b> (bool): maintain offset</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): break connections before create constraint</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): constraint</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.orient_constraint</code></small>', 'maya_pini.open_maya.CTransform.orient_constraint', ''],
+             ['<font color="Grey">pom.CTransform.parent</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.parent(parent=None, relative=None, world=None, absolute=None)</b></font><br><br><small>&nbsp;Set this node\'s parent.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (str): new parent</small><br><small>&nbsp;&nbsp;&nbsp;<b>relative</b> (bool): maintain local transforms</small><br><small>&nbsp;&nbsp;&nbsp;<b>world</b> (bool): parent to world</small><br><small>&nbsp;&nbsp;&nbsp;<b>absolute</b> (bool): preserve existing world transforms</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.parent</code></small>', 'maya_pini.open_maya.CTransform.parent', ''],
+             ['<font color="Grey">pom.CTransform.parent_constraint</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.parent_constraint(target, maintain_offset=False, name=None, force=False)</b></font><br><br><small>&nbsp;Build a parent constraint from this node to the given target.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/CTransform.html">(CTransform)</a>: node to constrain</small><br><small>&nbsp;&nbsp;&nbsp;<b>maintain_offset</b> (bool): maintain offset</small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name for constraint node</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): break connections on target before apply constraint to avoid already connected error</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): constraint</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.parent_constraint</code></small>', 'maya_pini.open_maya.CTransform.parent_constraint', ''],
+             ['<font color="Grey">pom.CTransform.point_constraint</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.point_constraint(target, maintain_offset=False, skip=None, force=False)</b></font><br><br><small>&nbsp;Build a point constraint from this node to the given target.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/CTransform.html">(CTransform)</a>: node to constrain</small><br><small>&nbsp;&nbsp;&nbsp;<b>maintain_offset</b> (bool): maintain offset</small><br><small>&nbsp;&nbsp;&nbsp;<b>skip</b> (str): axes to skip (eg. y)</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): break connections before create constraint</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): constraint</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.point_constraint</code></small>', 'maya_pini.open_maya.CTransform.point_constraint', ''],
+             ['<font color="Grey">pom.CTransform.rename</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.rename(name)</b></font><br><br><small>&nbsp;Rename this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): new name to apply</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CBaseNode.html">CBaseNode</a>): update node</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.rename</code></small>', 'maya_pini.open_maya.CTransform.rename', ''],
+             ['<font color="Grey">pom.CTransform.reset_tfms</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.reset_tfms(translate=True, rotate=True, scale=True, break_conns=False)</b></font><br><br><small>&nbsp;Reset transforms on this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>translate</b> (bool): reset translate</small><br><small>&nbsp;&nbsp;&nbsp;<b>rotate</b> (bool): reset rotate</small><br><small>&nbsp;&nbsp;&nbsp;<b>scale</b> (bool): reset scale</small><br><small>&nbsp;&nbsp;&nbsp;<b>break_conns</b> (bool): break connections on reset</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.reset_tfms</code></small>', 'maya_pini.open_maya.CTransform.reset_tfms', ''],
+             ['<font color="Grey">pom.CTransform.save_preset</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.save_preset(file_=None, fmt="auto", force=False)</b></font><br><br><small>&nbsp;Save this node\'s settings to a preset file.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): override preset file</small><br><small>&nbsp;&nbsp;&nbsp;<b>fmt</b> (str): preset format<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;mpa - mel format, can cause random crash<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;mpb - python format</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): overwrite existing without confirmation</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a>): file which was saved</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.save_preset</code></small>', 'maya_pini.open_maya.CTransform.save_preset', ''],
+             ['<font color="Grey">pom.CTransform.scale_constraint</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.scale_constraint(target, maintain_offset=False)</b></font><br><br><small>&nbsp;Build a scale constraint from this node to the given target.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/CTransform.html">(CTransform)</a>: node to constrain</small><br><small>&nbsp;&nbsp;&nbsp;<b>maintain_offset</b> (bool): maintain offset</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>): constraint</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.scale_constraint</code></small>', 'maya_pini.open_maya.CTransform.scale_constraint', ''],
+             ['<font color="Grey">pom.CTransform.select</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.select()</b></font><br><br><small>&nbsp;Select this node.</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.select</code></small>', 'maya_pini.open_maya.CTransform.select', ''],
+             ['<font color="Grey">pom.CTransform.set_col</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_col(col, mode="viewport")</b></font><br><br><small>&nbsp;Set colour of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>col</b> (str): name of colour to apply</small><br><small>&nbsp;&nbsp;&nbsp;<b>mode</b> (str): which colour to apply<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;viewport - update viewport colour (default)<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;outliner - update outliner colour<br>&nbsp;&nbsp;&nbsp;&ensp;&ensp;all - update all colours</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_col</code></small>', 'maya_pini.open_maya.CTransform.set_col', ''],
+             ['<font color="Grey">pom.CTransform.set_key</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_key(frame=None, tangents=None)</b></font><br><br><small>&nbsp;Set keyframe on this node (ie. key all channels).</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (float): frame to keyframe on</small><br><small>&nbsp;&nbsp;&nbsp;<b>tangents</b> (str): apply tangent type (eg. linear/spline)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_key</code></small>', 'maya_pini.open_maya.CTransform.set_key', ''],
+             ['<font color="Grey">pom.CTransform.set_outliner_col</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_outliner_col(col)</b></font><br><br><small>&nbsp;Set outliner colour of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>col</b> (str): colour to apply</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_outliner_col</code></small>', 'maya_pini.open_maya.CTransform.set_outliner_col', ''],
+             ['<font color="Grey">pom.CTransform.set_p</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_p(pos)</b></font><br><br><small>&nbsp;Apply the given position to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>pos</b> <a href="classes/CPoint.html">(CPoint)</a>: position to apply</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_p</code></small>', 'maya_pini.open_maya.CTransform.set_p', ''],
+             ['<font color="Grey">pom.CTransform.set_pivot</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_pivot(pos=None, scale=True, rotate=True)</b></font><br><br><small>&nbsp;Set pivot on this node.</small><br><br><small>&nbsp;By default pivot is set to the origin.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>pos</b> <a href="classes/CPoint.html">(CPoint)</a>: pivot to apply</small><br><small>&nbsp;&nbsp;&nbsp;<b>scale</b> (bool): apply to scale pivot</small><br><small>&nbsp;&nbsp;&nbsp;<b>rotate</b> (bool): apply to rotate pivot</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_pivot</code></small>', 'maya_pini.open_maya.CTransform.set_pivot', ''],
+             ['<font color="Grey">pom.CTransform.set_tangents</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_tangents(type_)</b></font><br><br><small>&nbsp;Set tangents for all this node\'s animation.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): tangent type to apply (eg. spline)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_tangents</code></small>', 'maya_pini.open_maya.CTransform.set_tangents', ''],
+             ['<font color="Grey">pom.CTransform.set_visible</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.set_visible(visible=True, unlock=False)</b></font><br><br><small>&nbsp;Set this transform\'s visibility.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>visible</b> (bool): visibility to apply</small><br><small>&nbsp;&nbsp;&nbsp;<b>unlock</b> (bool): also unlock attribute</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.set_visible</code></small>', 'maya_pini.open_maya.CTransform.set_visible', ''],
+             ['<font color="Grey">pom.CTransform.solidify</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.solidify(col="Yellow")</b></font><br><br><small>&nbsp;Solidify this transform.</small><br><br><small>&nbsp;This locks and hides the transform channels and colours it in</small><br><small>&nbsp;yellow in the outliner. It is used to mark this group as for</small><br><small>&nbsp;organsation only (eg. for CHAR/PROP/GEO groups) and to avoid</small><br><small>&nbsp;artists applying transforms to it, which could affect future</small><br><small>&nbsp;imports using this group.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>col</b> (str): override group colour</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.solidify</code></small>', 'maya_pini.open_maya.CTransform.solidify', ''],
+             ['<font color="Grey">pom.CTransform.to_anim</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_anim()</b></font><br><br><small>&nbsp;Find anim curves attached to this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CAnimCurve.html">CAnimCurve</a> list): anim curves</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_anim</code></small>', 'maya_pini.open_maya.CTransform.to_anim', ''],
+             ['<font color="Grey">pom.CTransform.to_anim_range</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_anim_range()</b></font><br><br><small>&nbsp;Obtain range for this node\'s animation.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_anim_range</code></small>', 'maya_pini.open_maya.CTransform.to_anim_range', ''],
+             ['<font color="Grey">pom.CTransform.to_attr</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_attr(attr)</b></font><br><br><small>&nbsp;Get the path on an attribute on this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>attr</b> (str): attribute name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): attribute path</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_attr</code></small>', 'maya_pini.open_maya.CTransform.to_attr', ''],
+             ['<font color="Grey">pom.CTransform.to_bbox</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_bbox()</b></font><br><br><small>&nbsp;Obtain this node\'s bounding box.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CBoundingBox.html">CBoundingBox</a>): bounding box</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_bbox</code></small>', 'maya_pini.open_maya.CTransform.to_bbox', ''],
+             ['<font color="Grey">pom.CTransform.to_clean</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_clean()</b></font><br><br><small>&nbsp;Obtain clean node name (ie. without namespaces).</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): clean name</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_clean</code></small>', 'maya_pini.open_maya.CTransform.to_clean', ''],
+             ['<font color="Grey">pom.CTransform.to_long</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_long()</b></font><br><br><small>&nbsp;Get full path of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): full path (eg. |persp|perspShape)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_long</code></small>', 'maya_pini.open_maya.CTransform.to_long', ''],
+             ['<font color="Grey">pom.CTransform.to_m</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_m(world_space=True)</b></font><br><br><small>&nbsp;Get transformation matrix for this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>world_space</b> (bool): read matrix in world or local space</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CMatrix.html">CMatrix</a>): matrix</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_m</code></small>', 'maya_pini.open_maya.CTransform.to_m', ''],
+             ['<font color="Grey">pom.CTransform.to_p</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_p()</b></font><br><br><small>&nbsp;Get position of this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPoint.html">CPoint</a>): global position</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_p</code></small>', 'maya_pini.open_maya.CTransform.to_p', ''],
+             ['<font color="Grey">pom.CTransform.to_parent</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_parent()</b></font><br><br><small>&nbsp;Obtain this node\'s parent.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CTransform.html">CTransform</a>|None): parent (if any)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_parent</code></small>', 'maya_pini.open_maya.CTransform.to_parent', ''],
+             ['<font color="Grey">pom.CTransform.to_plug</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_plug(name)</b></font><br><br><small>&nbsp;Obtain a plug (attribute) on this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): attribute name (eg. tx)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a>): attribute plug</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_plug</code></small>', 'maya_pini.open_maya.CTransform.to_plug', ''],
+             ['<font color="Grey">pom.CTransform.to_reference</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_reference()</b></font><br><br><small>&nbsp;Obtain this node\'s parent reference.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CReference.html">CReference</a>|None): reference (if any)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_reference</code></small>', 'maya_pini.open_maya.CTransform.to_reference', ''],
+             ['<font color="Grey">pom.CTransform.to_shp</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_shp(type_=None, catch=False)</b></font><br><br><small>&nbsp;Obtain this node\'s shape.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): filter by type</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if no/mutiple shapes found</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CNode.html">CNode</a>|None): shape (if any)</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_shp</code></small>', 'maya_pini.open_maya.CTransform.to_shp', ''],
+             ['<font color="Grey">pom.CTransform.to_shps</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_shps(type_=None)</b></font><br><br><small>&nbsp;Read this node\'s shapes.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): apply type filter</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CNode.html">CNode</a> list): shapes</small><br><br><small>Inherited from: <a href="classes/CBaseNode.html">CBaseNode</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_node.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_shps</code></small>', 'maya_pini.open_maya.CTransform.to_shps', ''],
+             ['<font color="Grey">pom.CTransform.to_tfm_plugs</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.to_tfm_plugs(translate=True, rotate=True, scale=True)</b></font><br><br><small>&nbsp;Find transformation plugs.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>translate</b> (bool): include translate plugs</small><br><small>&nbsp;&nbsp;&nbsp;<b>rotate</b> (bool): include rotate plugs</small><br><small>&nbsp;&nbsp;&nbsp;<b>scale</b> (bool): include scale plugs</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPlug.html">CPlug</a> list): transformation plugs</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.to_tfm_plugs</code></small>', 'maya_pini.open_maya.CTransform.to_tfm_plugs', ''],
+             ['<font color="Grey">pom.CTransform.u_scale</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.u_scale(scale)</b></font><br><br><small>&nbsp;Apply uniform scale to this noode.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>scale</b> (float): scale to apply</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.u_scale</code></small>', 'maya_pini.open_maya.CTransform.u_scale', ''],
+             ['<font color="Grey">pom.CTransform.unhide</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.unhide(unlock=False)</b></font><br><br><small>&nbsp;Unhide this node.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>unlock</b> (bool): unlock visibility if locked</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.unhide</code></small>', 'maya_pini.open_maya.CTransform.unhide', ''],
+             ['<font color="Grey">pom.CTransform.unlock_tfms</font>', 'maya_pini.open_maya', '<font color="Fuchsia"><b>CTransform.unlock_tfms()</b></font><br><br><small>&nbsp;Unlock transforms on this node.</small><br><br><small>Inherited from: <a href="classes/CBaseTransform.html">CBaseTransform</a></small><br><small>Defined in: <font color="DeepSkyBlue">maya_pini/open_maya/base/pom_base_transform.py</font></small>', '<small><code>from maya_pini import open_maya as pom<br>pom.CTransform.unlock_tfms</code></small>', 'maya_pini.open_maya.CTransform.unlock_tfms', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = 'maya' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

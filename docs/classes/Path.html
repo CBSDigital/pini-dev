@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Path</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/Path.html">Path</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/Path.html"><b>Path</b></a></div><br><br>
+    <h2>Represents a path on disk.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['Path', 'pini.utils', '<font color="DarkMagenta"><b>Path(path)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>path</b> (str): path on disk</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path</code></small>', 'pini.utils.Path', ''],
+             ['Path.age', 'pini.utils', '<font color="DarkMagenta"><b>Path.age()</b></font><br><br><small>&nbsp;Obtain age of this path, time since modified time.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): age in seconds</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.age</code></small>', 'pini.utils.Path.age', ''],
+             ['Path.ctime', 'pini.utils', '<font color="DarkMagenta"><b>Path.ctime()</b></font><br><br><small>&nbsp;Get creation time for this path.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.ctime</code></small>', 'pini.utils.Path.ctime', ''],
+             ['Path.exists', 'pini.utils', '<font color="DarkMagenta"><b>Path.exists(catch=False, root=None)</b></font><br><br><small>&nbsp;Test whether this path exists.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if permission denied (returns False)</small><br><small>&nbsp;&nbsp;&nbsp;<b>root</b> (str): override pwd for relative paths</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether exists</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.exists</code></small>', 'pini.utils.Path.exists', ''],
+             ['Path.is_abs', 'pini.utils', '<font color="DarkMagenta"><b>Path.is_abs()</b></font><br><br><small>&nbsp;Test whether this path is absolute.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether absolute</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.is_abs</code></small>', 'pini.utils.Path.is_abs', ''],
+             ['Path.is_dir', 'pini.utils', '<font color="DarkMagenta"><b>Path.is_dir()</b></font><br><br><small>&nbsp;Test whether is path is a directory.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether directory</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.is_dir</code></small>', 'pini.utils.Path.is_dir', ''],
+             ['Path.is_file', 'pini.utils', '<font color="DarkMagenta"><b>Path.is_file()</b></font><br><br><small>&nbsp;Test whether is path is a file.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether file</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.is_file</code></small>', 'pini.utils.Path.is_file', ''],
+             ['Path.mkdir', 'pini.utils', '<font color="DarkMagenta"><b>Path.mkdir()</b></font><br><br><small>&nbsp;Create this path as a directory, with all parent dirs.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.mkdir</code></small>', 'pini.utils.Path.mkdir', ''],
+             ['Path.mtime', 'pini.utils', '<font color="DarkMagenta"><b>Path.mtime()</b></font><br><br><small>&nbsp;Get last modified time for this path.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): mtime in secs</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.mtime</code></small>', 'pini.utils.Path.mtime', ''],
+             ['Path.nice_age', 'pini.utils', '<font color="DarkMagenta"><b>Path.nice_age()</b></font><br><br><small>&nbsp;Get nice age for this file (eg. 1w2d).</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): nice age</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.nice_age</code></small>', 'pini.utils.Path.nice_age', ''],
+             ['Path.nice_size', 'pini.utils', '<font color="DarkMagenta"><b>Path.nice_size(catch=False)</b></font><br><br><small>&nbsp;Get size of this file in a readable for (eg. 10GB).</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error on missing file</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.nice_size</code></small>', 'pini.utils.Path.nice_size', ''],
+             ['Path.owner', 'pini.utils', '<font color="DarkMagenta"><b>Path.owner()</b></font><br><br><small>&nbsp;Get file owner.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): owner</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.owner</code></small>', 'pini.utils.Path.owner', ''],
+             ['Path.replace', 'pini.utils', '<font color="DarkMagenta"><b>Path.replace(find, replace)</b></font><br><br><small>&nbsp;Apply string find/replace to this path object.</small><br><br><small>&nbsp;Returns a Path object of matching type.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>find</b> (str): find string</small><br><small>&nbsp;&nbsp;&nbsp;<b>replace</b> (str): replace string</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Path.html">Path</a>): updated path</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.replace</code></small>', 'pini.utils.Path.replace', ''],
+             ['Path.size', 'pini.utils', '<font color="DarkMagenta"><b>Path.size(catch=False)</b></font><br><br><small>&nbsp;Obtain size of this path and its contents.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if path is missing/unreadable</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.size</code></small>', 'pini.utils.Path.size', ''],
+             ['Path.strftime', 'pini.utils', '<font color="DarkMagenta"><b>Path.strftime(fmt=None)</b></font><br><br><small>&nbsp;Get mtime as formatted string.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>fmt</b> (str): format to apply</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.strftime</code></small>', 'pini.utils.Path.strftime', ''],
+             ['Path.test_dir', 'pini.utils', '<font color="DarkMagenta"><b>Path.test_dir()</b></font><br><br><small>&nbsp;Test this path\'s parent directory exists, creating if needed.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.test_dir</code></small>', 'pini.utils.Path.test_dir', ''],
+             ['Path.to_abs', 'pini.utils', '<font color="DarkMagenta"><b>Path.to_abs(root=None)</b></font><br><br><small>&nbsp;Map this path to an absolute path.</small><br><br><small>&nbsp;If the path is already absolute, it is simply returned.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>root</b> (str): apply root for relative path (if none provided the cwd is used)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Path.html">Path</a>): absolute path</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.to_abs</code></small>', 'pini.utils.Path.to_abs', ''],
+             ['Path.to_dir', 'pini.utils', '<font color="DarkMagenta"><b>Path.to_dir(levels=1)</b></font><br><br><small>&nbsp;Get parent directory for this path.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>levels</b> (int): how many levels to go up</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Dir.html">Dir</a>): parent dir</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/path/up_path.py</font></small>', '<small><code>from pini.utils import Path<br>Path.to_dir</code></small>', 'pini.utils.Path.to_dir', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

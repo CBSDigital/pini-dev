@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CPTemplate</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.36.0</a></span>
+    </header>
+
+    <h1><a href="classes/CPTemplate.html">CPTemplate</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Template</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CPTemplate.html"><b>CPTemplate</b></a></div><br><br>
+    <h2>Adds pini-specific functionality to the basic template class.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['pipe.CPTemplate', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate(pattern, name=None, anchor=2, separate_dir=False, path_type=None, job=None, alt=None, source=None)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small>&nbsp;For a dcc template override the dcc needs to be at the front of the</small><br><small>&nbsp;name. A profile override can then follow, but they must be in that</small><br><small>&nbsp;order, eg:</small><br><small>&nbsp;</small><br><small>&nbsp;    maya_shot_render maya_render shot_render</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>pattern</b> (str): template pattern</small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): template name</small><br><small>&nbsp;&nbsp;&nbsp;<b>anchor</b> (Enum): anchor type (default is Template.ANCHOR_END)</small><br><small>&nbsp;&nbsp;&nbsp;<b>separate_dir</b> (bool): check dir first and then filename - this allows more complex paths to be parsed successfully (eg. abc files with many tokens)</small><br><small>&nbsp;&nbsp;&nbsp;<b>path_type</b> (str): specify path type (d for dir, f for file)</small><br><small>&nbsp;&nbsp;&nbsp;<b>job</b> (CPJob): template job (used to validate tokens)</small><br><small>&nbsp;&nbsp;&nbsp;<b>alt</b> (int): this is used to prioritise different versions of the same templates type - eg. if cache and cache_alt1 templates are declared, the basic pattern (alt will be zero) will be used for caching, but the alt1 pattern will still be valid and appear in output lists</small><br><small>&nbsp;&nbsp;&nbsp;<b>source</b> <a href="classes/CPTemplate.html">(CPTemplate)</a>: original source of this template (if any)</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate</code></small>', 'pini.pipe.CPTemplate', ''],
+             ['pipe.CPTemplate.apply_data', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.apply_data()</b></font><br><br><small>&nbsp;Apply data to this template.</small><br><br><small>&nbsp;This generates a new template with known data applied, which can be</small><br><small>&nbsp;useful if some data is already known - eg. if we know entity and</small><br><small>&nbsp;task then it can make it easier for lucidity to extract the remaining</small><br><small>&nbsp;data from a path if we apply that data to the template.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPTemplate.html">CPTemplate</a>): updated template</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.apply_data</code></small>', 'pini.pipe.CPTemplate.apply_data', ''],
+             ['pipe.CPTemplate.crop_to_token', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.crop_to_token(token, include_token_dir=True, name=None)</b></font><br><br><small>&nbsp;Crop this template to the given token.</small><br><br><small>&nbsp;eg. {A}/{B}/{C} cropped to B would return {A}/{B}</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>token</b> (str): token to crop to</small><br><small>&nbsp;&nbsp;&nbsp;<b>include_token_dir</b> (bool): include the token dir</small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): update template name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPTemplate.html">CPTemplate</a>): cropped template</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.crop_to_token</code></small>', 'pini.pipe.CPTemplate.crop_to_token', ''],
+             ['pipe.CPTemplate.duplicate', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.duplicate(name=None, pattern=None, separate_dir=None)</b></font><br><br><small>&nbsp;Duplicate this template.</small><br><br><small>&nbsp;Embedded data and anchor are maintained.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): update name</small><br><small>&nbsp;&nbsp;&nbsp;<b>pattern</b> (str): update pattern</small><br><small>&nbsp;&nbsp;&nbsp;<b>separate_dir</b> (bool): update separate_dir setting</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPTemplate.html">CPTemplate</a>): duplicate</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.duplicate</code></small>', 'pini.pipe.CPTemplate.duplicate', ''],
+             ['pipe.CPTemplate.format', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.format()</b></font><br><br><small>&nbsp;Apply data to this template.</small><br><br><small>&nbsp;By default this method accepts a dict, but it is overloaded here</small><br><small>&nbsp;to allow data to be passed as kwargs.</small><br><small>&nbsp;</small><br><small>&nbsp;eg.</small><br><small>&nbsp;</small><br><small>&nbsp;>>> _tmpl = CPTemplate(\'test\', \'{a}/{b}\')</small><br><small>&nbsp;</small><br><small>&nbsp;# This is default behaviour</small><br><small>&nbsp;>>> _tmpl.format({\'a": \'A\', \'b\': \'B\'})</small><br><small>&nbsp;\'A/B\'</small><br><small>&nbsp;</small><br><small>&nbsp;# This is added functionality</small><br><small>&nbsp;>>> _tmpl.format(a=\'A\', b=\'B\')</small><br><small>&nbsp;\'A/B\'</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): pattern string formatted with data provided</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.format</code></small>', 'pini.pipe.CPTemplate.format', ''],
+             ['pipe.CPTemplate.glob_paths', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.glob_paths(job, type_="d")</b></font><br><br><small>&nbsp;Glob paths matching this template.</small><br><br><small>&nbsp;This will search a maxiumum of two directories deep for paths</small><br><small>&nbsp;which match this template\'s pattern.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>job</b> (CPJob): current job (to validate tokens)</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): path type (d/f)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str list): valid paths</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.glob_paths</code></small>', 'pini.pipe.CPTemplate.glob_paths', ''],
+             ['pipe.CPTemplate.glob_token', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.glob_token(token, job=None, type_="d")</b></font><br><br><small>&nbsp;Search disks for valid values of the given token.</small><br><br><small>&nbsp;The template is cropped to the given token, and then the remaining</small><br><small>&nbsp;directory is searched for paths which given valid values of the</small><br><small>&nbsp;token.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>token</b> (str): token to glob</small><br><small>&nbsp;&nbsp;&nbsp;<b>job</b> (CPJob): job (to validate token values)</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): type of path to search for (d/f)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str list): valid token values</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.glob_token</code></small>', 'pini.pipe.CPTemplate.glob_token', ''],
+             ['pipe.CPTemplate.glob_tokens', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.glob_tokens(job, type_="d")</b></font><br><br><small>&nbsp;Glob all tokens in this template.</small><br><br><small>&nbsp;Find all valid instances of this template. Generally this</small><br><small>&nbsp;requires the template to be hardened (ie. no tokens in the</small><br><small>&nbsp;path) up until the final few directories.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>job</b> (CPJob): containing job (to validate tokens)</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (str): type of path to glob (ie. f/d)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict list): list of token instances</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.glob_tokens</code></small>', 'pini.pipe.CPTemplate.glob_tokens', ''],
+             ['pipe.CPTemplate.is_abs', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.is_abs()</b></font><br><br><small>&nbsp;Test whether this template\'s pattern is absolute.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether absolute</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.is_abs</code></small>', 'pini.pipe.CPTemplate.is_abs', ''],
+             ['pipe.CPTemplate.is_resolved', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.is_resolved()</b></font><br><br><small>&nbsp;Test whether this template has been resolved.</small><br><br><small>&nbsp;ie. all tokens have data applied</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether any keys remain</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.is_resolved</code></small>', 'pini.pipe.CPTemplate.is_resolved', ''],
+             ['pipe.CPTemplate.parse', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.parse(path, safe=True)</b></font><br><br><small>&nbsp;Wrapper for parse function.</small><br><br><small>&nbsp;Maintains applied data so that this data is still returned in</small><br><small>&nbsp;the parse result. Remaps data to check parse was successful.</small><br><small>&nbsp;Also applies separate dir mode.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>path</b> (str): path to parse</small><br><small>&nbsp;&nbsp;&nbsp;<b>safe</b> (bool): apply token validation</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict): token/value data</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.parse</code></small>', 'pini.pipe.CPTemplate.parse', ''],
+             ['pipe.CPTemplate.split_hardened', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.split_hardened(name="tmp")</b></font><br><br><small>&nbsp;Split this template into a hardened dir and the remaining template.</small><br><br><small>&nbsp;eg:</small><br><small>&nbsp;</small><br><small>&nbsp;Template(\'C:/test/{token}\') -> Dir(\'C:/test\'), Template(\'{token}\')</small><br><small>&nbsp;Template(\'C:/A/{B}/{C}_{D}\') -> Dir(\'C:/A\'), Template(\'{B}/{C}_{D}\')</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): override template name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(Dir, <a href="classes/CPTemplate.html">CPTemplate</a>): hardened dir, remaining template</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.split_hardened</code></small>', 'pini.pipe.CPTemplate.split_hardened', ''],
+             ['pipe.CPTemplate.to_dir', 'pini.pipe', '<font color="DarkMagenta"><b>CPTemplate.to_dir(name=None)</b></font><br><br><small>&nbsp;Move this template up one level, ie. find its directory.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): override new template name</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CPTemplate.html">CPTemplate</a>): parent template</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/pipe/cp_template.py</font></small>', '<small><code>from pini import pipe<br>pipe.CPTemplate.to_dir</code></small>', 'pini.pipe.CPTemplate.to_dir', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>
