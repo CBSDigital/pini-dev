@@ -1,3 +1,12 @@
+## [9.36.2] - Wed 2026-08-19 12:44
+### Summary
+ - Pini Helper:
+    - bugfix error on launch due to capitalized username (esantellan),
+### Updated
+ - pini.pipe.shotgrid.SGC.find_user ignore capitalisation in match,
+ - pini.pipe.shotgrid.SGC.find_users bugfix error on apply filter,
+
+
 ## [9.36.1] - Wed 2026-08-19 08:08
 ### Summary
  - Pini Helper:

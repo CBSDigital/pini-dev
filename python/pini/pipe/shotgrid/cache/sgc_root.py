@@ -322,27 +322,36 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         _users = self.find_users(force=force, **kwargs)
         _users = [_user for _user in _users if _user.status != 'dis']
 
+        # Try match login
         _login_matches = [
             _user for _user in _users
-            if _match == _user.login]
+            if _match.lower() == _user.login.lower()]
         if len(_login_matches) == 1:
-            return single(_login_matches)
+            _user = single(_login_matches)
+            _LOGGER.debug(' - MATCHED LOGIN %s', _user)
+            return _user
         _LOGGER.debug(
             ' - FOUND %d LOGIN MATCHES', len(_login_matches))
 
+        # Try match name
         _name_to_login_matches = [
             _user for _user in _users
-            if _name_to_login(_user.name) == _match]
+            if _name_to_login(_user.name) == _match.lower()]
         if len(_name_to_login_matches) == 1:
-            return single(_name_to_login_matches)
+            _user = single(_name_to_login_matches)
+            _LOGGER.debug(' - MATCHED NAME %s', _user)
+            return _user
         _LOGGER.debug(
             ' - FOUND %d NAME TO LOGIN MATCHES', len(_name_to_login_matches))
 
+        # Try match email
         _email_matches = [
             _user for _user in _users
-            if _email_to_login(_user.email) == _match]
+            if _email_to_login(_user.email) == _match.lower()]
         if len(_email_matches) == 1:
-            return single(_email_matches)
+            _user = single(_email_matches)
+            _LOGGER.debug(' - MATCHED EMAIL %s', _user)
+            return _user
         _LOGGER.debug(' - FOUND %d EMAIL MATCHES', len(_email_matches))
 
         if catch:
@@ -360,7 +369,8 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
         """
         _users = []
         for _user in self._read_users(force=force):
-            if not sgc_utils.passes_filters(_user, **kwargs):
+            if not sgc_utils.passes_filters(
+                    _user, filter_attr='name', **kwargs):
                 continue
             _users.append(_user)
         return _users
