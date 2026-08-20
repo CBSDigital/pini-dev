@@ -166,7 +166,7 @@ def reset_sel(func):
 
 def restore(
         selection=False, frame=False, namespace=False, camera=False,
-        shelf=False):
+        shelf=False, modified=False):
     """Build a decorator which restores selected scene attributes after exec.
 
     Args:
@@ -175,6 +175,7 @@ def restore(
         namespace (bool): restore current namespace
         camera (bool): restore active viewport camera
         shelf (bool): restore selected shelf
+        modified (bool): restore file modified status
 
     Returns:
         (fn): decorator
@@ -195,6 +196,8 @@ def restore(
                 _func = restore_cam(_func)
             if shelf:
                 _func = restore_shelf(_func)
+            if modified:
+                _func = restore_modified(_func)
             _result = _func(*args, **kwargs)
             return _result
 
@@ -265,6 +268,27 @@ def restore_frame(func):
         return _result
 
     return _restore_frame_func
+
+
+def restore_modified(func):
+    """Restore the file modified after executing the function.
+
+    Args:
+        func (fn): function to decorate
+
+    Returns:
+        (fn): decorated function
+    """
+
+    @functools.wraps(func)
+    def _restore_modified_func(*args, **kwargs):
+        _mod = cmds.file(query=True, modified=True)
+        _result = func(*args, **kwargs)
+        cmds.file(modified=_mod)
+        _LOGGER.debug(' - REVERT FILE MODIFIED %d', _mod)
+        return _result
+
+    return _restore_modified_func
 
 
 def restore_shelf(func):

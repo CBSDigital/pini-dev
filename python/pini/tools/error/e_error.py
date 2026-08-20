@@ -7,7 +7,8 @@ import traceback
 
 from pini import dcc, icons
 from pini.tools import usage
-from pini.utils import nice_age, email, basic_repr, to_session_dur
+from pini.utils import (
+    nice_age, email, basic_repr, to_session_dur, get_user)
 
 from . import e_trace_line
 
@@ -61,11 +62,15 @@ class PEError:
         _text += f'{prefix}{self.type_name}: {self.message}'
         return _text.strip()
 
-    def send_email(self):
-        """Send email to support for this error."""
-        from pini import qt
-        from .e_dialog import EMOJI
+    def to_details(self, html=True):
+        """Obtain error details as a string.
 
+        Args:
+            html (bool): format as html for email
+
+        Returns:
+            (str): error details
+        """
         _dcc_ver = '-' + dcc.to_version(str) if dcc.NAME else ''
         _lines = [
             f'<b>DCC</b> {dcc.NAME}{_dcc_ver}',
@@ -73,6 +78,7 @@ class PEError:
             f'<b>MACHINE</b> {platform.node()}',
             f'<b>PINI SESSION</b> {nice_age(to_session_dur("pini"))}',
             f'<b>DCC SESSION</b> {nice_age(to_session_dur("dcc"))}',
+            f'<b>USER</b> {get_user()}',
             '',
         ]
         for _mod, _ver in usage.get_mod_vers():
@@ -85,8 +91,21 @@ class PEError:
             f'<code><font size="4">{_exc}</font></code>',
         ]
         _body = '<br>\n'.join(_lines)
-        _body = _body.replace(' ', '&nbsp;')
 
+        if not html:
+            for _tag in [
+                    '<b>', '</b>', '<br>', '<code><font size="4">',
+                    '</font></code>']:
+                _body = _body.replace(_tag, '')
+
+        return _body
+
+    def send_email(self):
+        """Send email to support for this error."""
+        from pini import qt
+        from .e_dialog import EMOJI
+
+        _body = self.to_details()
         _icon = EMOJI.to_unicode()
         _subject = _icon + f' [ERROR] {self.message}'
 

@@ -1,3 +1,16 @@
+## [9.36.3] - Thu 2026-08-20 14:20
+### Summary
+ - Pini Helper:
+    - bugfix file modified lingering on save (cstewart),
+### Updated
+ - pini.dcc.MayaDCC.set_env only apply ocio cfg on demand to avoid file modified,
+ - pini.pipe.shotgrid.SGC.find_user better error on fail,
+ - pini.tools.error send email ctx added copy details opt,
+ - pini.tools.error apply send email ctx to view code opts,
+ - pini.tools.error.PEError.to_details added,
+ - maya_pini.utils.restore added modified flag,
+
+
 ## [9.36.2] - Wed 2026-08-19 12:44
 ### Summary
  - Pini Helper:

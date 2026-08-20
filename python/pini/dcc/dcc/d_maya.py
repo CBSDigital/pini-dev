@@ -359,14 +359,23 @@ class MayaDCC(BaseDCC):
             cmds.arnoldRenderView(opt=("Snapshots Folder", _dir.path))
             _LOGGER.debug(' - SET ARNOLD SNAPSHOTS %s', _dir.path)
 
-        # Apply ocio
+        # Apply ocio - only apply if change requrired because edit
+        # released deferred callback which sets file modified
         _apply_ocio = work.entity.settings.get('apply_ocio')
         _ocio = work.entity.settings.get('ocio')
         _LOGGER.debug(' - APPLY OCIO en=%d %s', _apply_ocio, _ocio)
         if _apply_ocio and _ocio:
-            cmds.colorManagementPrefs(edit=True, cmEnabled=True)
-            cmds.colorManagementPrefs(edit=True, cmConfigFileEnabled=True)
-            cmds.colorManagementPrefs(edit=True, configFilePath=_ocio)
+            for _flag, _val in [
+                    ('cmEnabled', True),
+                    ('cmConfigFileEnabled', True),
+                    ('configFilePath', _ocio),
+            ]:
+                _cur_val = cmds.colorManagementPrefs(
+                    query=True, **{_flag: True})
+                if _val != _cur_val:
+                    _LOGGER.debug(
+                        ' - APPLY FLAG %s %s %s', _flag, _val, _cur_val)
+                    cmds.colorManagementPrefs(edit=True, **{_flag: _val})
 
     def set_fps(self, fps):
         """Set frame rate.

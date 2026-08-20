@@ -84,9 +84,16 @@ class _ErrorCatcherUi(qt.CUiDialog):
         self.close()
 
     def _context__SendEmail(self, menu):
-        menu.add_item(
+        menu.add_action(
             'Copy traceback', wrap_fn(copy_text, self.error.to_text()),
             icon=icons.COPY)
+        menu.add_action(
+            'Copy details',
+            wrap_fn(copy_text, self.error.to_details(html=False)),
+            icon=icons.COPY)
+
+    def _context__ViewCode(self, menu):
+        self._context__SendEmail(menu)
 
 
 def launch_ui(error=None, parent=None, show=True, stack_key=None):

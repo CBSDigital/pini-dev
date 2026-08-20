@@ -356,7 +356,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
 
         if catch:
             return None
-        raise ValueError(match)
+        raise ValueError(f'Failed to find shotgrid user "{match}"')
 
     def find_users(self, force=False, **kwargs):
         """Find users.
