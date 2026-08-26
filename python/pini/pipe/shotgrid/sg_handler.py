@@ -187,6 +187,7 @@ def _to_filters(filters, job=None, entity=None, id_=None, ids=None, path=None):
     from pini.pipe import shotgrid
 
     _filters = list(filters) if filters else []
+
     if job:
         _proj_s = shotgrid.SGC.find_proj(job)
         _filters.append(_proj_s.to_filter())
@@ -200,6 +201,7 @@ def _to_filters(filters, job=None, entity=None, id_=None, ids=None, path=None):
     if path:
         _rel_path = pipe.ROOT.rel_path(path)
         _filters.append(('path_cache', 'is', _rel_path))
+
     return _filters
 
 

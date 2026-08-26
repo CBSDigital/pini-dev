@@ -150,13 +150,21 @@ class SGCProj(sgc_elem.SGCElem):
             return single(_etys)
         _LOGGER.debug(' - MATCHED %d ETYS', len(_etys))
 
+        # Attempt basic match
+        _match_etys = [
+            _ety for _ety in self.entities
+            if match in (_ety.name, _ety.id_)]
+        _LOGGER.debug(' - MATCH ETYS %d %s', len(_match_etys), _match_etys)
+        if len(_match_etys) == 1:
+            return single(_match_etys)
+
         # Attempt string match
         _match_s = to_str(match)
         _LOGGER.debug(' - MATCH_S %s', _match_s)
         _match_etys = [
             _ety for _ety in self.entities
             if _match_s in (_ety.name, )]
-        _LOGGER.debug(' - MATCH ETYS %d %s', len(_match_etys), _match_etys)
+        _LOGGER.debug(' - MATCH_S ETYS %d %s', len(_match_etys), _match_etys)
         if len(_match_etys) == 1:
             return single(_match_etys)
 

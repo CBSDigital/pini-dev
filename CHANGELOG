@@ -1,3 +1,18 @@
+## [9.37.0] - Wed 2026-08-26 15:25
+### Summary
+ - Pini Helper:
+    - maya model publish remove unused shaders (eehemann/sspicher),
+### Updated
+ - pini.utils.File.diff added xgen extn,
+ - pini.dcc.export.CMayaBasicPublish remove unused shaders on clean scene,
+ - pini.dcc.export.CMayaBasicPublish fix duplicate render setups on clean scene,
+ - pini.pipe.shotgrid.SGC.SGCProj.find_entity added match by name/id,
+ - pini.pipe.shotgrid.SGC.find_proj match by proj,
+ - pini.pipe.shotgrid.SGC.find_user match by name filter,
+ - maya_pini.hik.PHIKNode.bake_to_skel added add_anim_offs opt,
+ - maya_pini.hik.PHIKNode.to_skel bugfix error on no HIK source,
+
+
 ## [9.36.3] - Thu 2026-08-20 14:20
 ### Summary
  - Pini Helper:

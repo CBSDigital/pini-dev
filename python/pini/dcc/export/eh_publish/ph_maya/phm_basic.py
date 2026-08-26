@@ -4,7 +4,7 @@ import enum
 import logging
 import os
 
-from maya import cmds
+from maya import cmds, mel
 
 from pini import dcc, icons
 from pini.utils import single, plural, wrap_fn
@@ -279,6 +279,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         if _remove_alayers:
             cmds.delete(cmds.ls(type='animLayer'))
 
+        _remove_unused_shds()
+
 
 def _apply_refs_mode_opt(refs_mode):
     """Apply references mode option.
@@ -330,6 +332,9 @@ def _import_refs(refs_mode, refs):
         refs_mode (PubRefsMode): references mode
         refs (CReference list): references
     """
+    from pini.tools import sanity_check
+
+    # Import refs
     for _ref in refs:
 
         # Delete JUNK refs
@@ -369,6 +374,10 @@ def _import_refs(refs_mode, refs):
                 _node.rename(_new_name)
         else:
             raise ValueError(refs_mode)
+
+    # Remove duplicate render setups
+    _check = sanity_check.find_check('FixDuplicateRenderSetups', task=None)
+    _check.run_and_fix()
 
 
 def _exec_export_abc(work, force=False):
@@ -523,6 +532,12 @@ def _remove_junk_refs(grp='JUNK'):
             catch=True)
         if _grp == grp:
             _ref.delete(force=True)
+
+
+def _remove_unused_shds():
+    """Remove unused shaders from the scene."""
+    mel.eval(
+        'hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes")')
 
 
 def set_pub_refs_mode(mode):

@@ -113,9 +113,10 @@ class PHIKNode(pom.CNode):
         #     bakeOnOverrideLayer false -minimizeRotation true -
         #     controlPoints false -shape true
 
-    def bake_to_skel(
+    def bake_to_skel(  # pylint: disable=too-many-branches,too-many-statements
             self, range_=None, step=None, loop=False, skel=None,
-            euler_filter=True, simulation=True, plugs=None, force=False):
+            euler_filter=True, simulation=True, plugs=None,
+            add_anim_offs=False, force=False):
         """Bake animation to skeleton.
 
         Args:
@@ -127,6 +128,7 @@ class PHIKNode(pom.CNode):
             simulation (bool): bake as simulation (moves timelines - best to
                 have on to see progress)
             plugs (CPlug list): override list of plugs to bake
+            add_anim_offs (bool): add anim offset controls
             force (bool): supress any bake warnings
         """
         _LOGGER.info('BAKE TO SKEL %s', self)
@@ -194,6 +196,10 @@ class PHIKNode(pom.CNode):
         # Apply spline tangents
         for _anim in _anims:
             _anim.set_tangents('spline')
+
+        if add_anim_offs:
+            _rig = pom.find_ref(namespace=self.namespace)
+            pom.add_anim_offs(anims=_anims, tfm=_rig.top_node)
 
     def is_locked(self):
         """Test whether this character definition is locked.
@@ -370,7 +376,10 @@ class PHIKNode(pom.CNode):
         Returns:
             (CSkeleton): skeleton
         """
-        _root = self.plug['Hips'].find_incoming(plugs=False)
+        _hips = self.plug['Hips']
+        _root = _hips.find_incoming(plugs=False)
+        if not _root:
+            _root = single(_hips.find_outgoing(plugs=False))
         return pom.CSkeleton(_root)
 
 

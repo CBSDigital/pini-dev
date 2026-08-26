@@ -103,7 +103,7 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
 
         _match_projs = [
             _job for _job in self.find_projs(force=force)
-            if _match in (_job.name, _job.id_, _job.prefix, _job.job)]
+            if _match in (_job.name, _job.id_, _job.prefix, _job.job, _job)]
         if len(_match_projs) == 1:
             return single(_match_projs)
 
@@ -353,6 +353,15 @@ class SGCRoot(sgc_elem_reader.SGCElemReader):
             _LOGGER.debug(' - MATCHED EMAIL %s', _user)
             return _user
         _LOGGER.debug(' - FOUND %d EMAIL MATCHES', len(_email_matches))
+
+        # Try name filter matches
+        _name_matches = [
+            _user for _user in _users if passes_filter(_user.name, match)]
+        if len(_name_matches) == 1:
+            _user = single(_name_matches)
+            _LOGGER.debug(' - MATCHED NAME FILTER %s', _user)
+            return _user
+        _LOGGER.debug(' - FOUND %d NAME FILTER MATCHES', len(_name_matches))
 
         if catch:
             return None
