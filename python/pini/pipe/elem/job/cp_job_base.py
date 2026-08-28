@@ -9,7 +9,8 @@ import os
 from pini import dcc, icons
 from pini.utils import (
     Dir, abs_path, single, norm_path, merge_dicts, to_str, is_abs,
-    apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result)
+    apply_filter, DATA_PATH, File, cache_on_obj, EMPTY, cache_result,
+    passes_filter)
 
 from .. import cp_settings_elem, root
 from ... import cp_template, cp_utils
@@ -162,20 +163,11 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         _LOGGER.log(9, 'BUILD TEMPLATE %s', self)
         return cp_template.build_job_templates(job=self, catch=catch)
 
-    def find_template(
-            self, type_, profile=None, dcc_=EMPTY, alt=EMPTY,
-            has_key=None, want_key=None, catch=False):
+    def find_template(self, type_, catch=False, **kwargs):
         """Find a single template within this job's templates.
 
         Args:
             type_ (str): template type (eg. shot_entity_path/work)
-            profile (str): template profile (ie. asset/shot)
-            dcc_ (str): template dcc (eg. nuke/maya)
-            alt (int): filter by alt version of template
-            has_key (dict): dict of keys and whether that key should
-                be present in the template
-            want_key (list): list of keys which are preferred
-                but not necessary
             catch (bool): no error if no matching template found
 
         Returns:
@@ -184,9 +176,7 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         _LOGGER.log(9, 'FIND TEMPLATE %s', type_)
 
         # Find matching templates
-        _tmpls = self.find_templates(
-            type_=type_, profile=profile, dcc_=dcc_, has_key=has_key,
-            want_key=want_key, alt=alt)
+        _tmpls = self.find_templates(type_=type_, **kwargs)
         if len(_tmpls) == 1:
             return single(_tmpls)
         _LOGGER.log(9, ' - FOUND %s TEMPLATES', len(_tmpls))
@@ -203,7 +193,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             return None
         _LOGGER.log(
             9, 'FAILED TO FIND TEMPLATE tmpls=%d has_key=%s want_key=%s '
-            'tmpls=%s', len(_tmpls), has_key, want_key, _tmpls)
+            'tmpls=%s', len(_tmpls), kwargs.get('has_key'),
+            kwargs.get('want_key'), _tmpls)
         if _tmpls:
             raise ValueError(
                 f'Matched {len(_tmpls):d} "{type_}" templates in '
@@ -230,8 +221,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
         return _tmpl
 
     def find_templates(
-            self, type_=None, profile=None, dcc_=EMPTY, alt=EMPTY, has_key=None,
-            want_key=None, pattern=None):
+            self, type_=None, has_key=None, want_key=None, pattern=None,
+            filter_=None, profile=None, dcc_=EMPTY, alt=EMPTY):
         """Find templates in this job.
 
         The list is sorted in order of precendence, ie. a nuke_shot_work
@@ -240,14 +231,15 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
 
         Args:
             type_ (str): template type (eg. work_dir/work/entity_path)
-            profile (str): filter by profile (ie. asset/shot)
-            dcc_ (str): filter by dcc
-            alt (int): filter by alt version of template
             has_key (dict): dict of keys and whether that key should
                 be present in the template
             want_key (dict): dict of keys which are preferred
                 but not necessary
             pattern (str): match template by pattern
+            filter_ (str): apply pattern filter
+            profile (str): filter by profile (ie. asset/shot)
+            dcc_ (str): filter by dcc
+            alt (int): filter by alt version of template
 
         Returns:
             (CPTemplate list): matching templates
@@ -266,6 +258,8 @@ class CPJobBase(cp_settings_elem.CPSettingsLevel):
             if pattern and _tmpl.pattern != pattern:
                 continue
             if alt is not EMPTY and _tmpl.alt != alt:
+                continue
+            if filter_ and not passes_filter(_tmpl.pattern, filter_):
                 continue
             _tmpls.append(_tmpl)
         _LOGGER.log(9, ' - MATCHED %d TMPLS %s', len(_tmpls), _tmpls)

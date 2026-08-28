@@ -335,8 +335,11 @@ class SCCheck:
     def run_and_fix(self):
         """Run this check and apply any fixes."""
         _LOGGER.info('RUN AND FIX %s', self)
+
+        self.reset()
         self.run()
 
+        # Run fixes
         _iter = 0
         while self.fails:
             check_heart()

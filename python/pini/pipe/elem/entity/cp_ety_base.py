@@ -472,7 +472,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
     def to_output(
             self, template, task=None, step=None, tag=None,
             output_type=None, output_name=None, dcc_=None, user=None, ver_n=1,
-            extn=None, **kwargs):
+            ver=None, extn=None, **kwargs):
         """Build an output object for this entity.
 
         Args:
@@ -485,6 +485,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             dcc_ (str): output dcc (if applicable)
             user (str): output user (if applicable)
             ver_n (int): output version
+            ver (str): override full version string (overrides ver_n arg)
             extn (str): output extension
 
         Returns:
@@ -513,7 +514,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
                      'cache': 'abc'}.get(_tmpl.type_)
 
         _ver_pad = self.job.cfg['tokens']['ver']['len']
-        _ver = str(ver_n).zfill(_ver_pad)
+        _ver = ver or str(ver_n).zfill(_ver_pad)
 
         # Build data dict
         _data = copy.copy(self.data)

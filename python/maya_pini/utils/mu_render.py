@@ -87,9 +87,12 @@ def _apply_globals_settings(path, col_mgt=None, animation=False):
 
 def _check_arnold():
     """Check arnold is set up correctly."""
+
+    # Error if not arnold
     _ren = cur_renderer()
     if _ren != 'arnold':
-        raise NotImplementedError(_ren)
+        raise NotImplementedError(
+            'Local render not implelemted for renderer {_ren}')
 
     cmds.loadPlugin('mtoa', quiet=True)
     _LOGGER.debug(' - LOADED PLUGIN')

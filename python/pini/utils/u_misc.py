@@ -86,6 +86,26 @@ def basic_repr(obj, label, show_nice_id=None, separator=':'):
     return _str
 
 
+def build_sort(list_):
+    """Build a sort fuction which priorities items in list.
+
+    Args:
+        list_ (list): list of priority items
+
+    Returns:
+        (fn): sort func
+    """
+
+    def _sort(item):
+        if item in list_:
+            _idx = list_.index(item)
+        else:
+            _idx = len(list_)
+        return _idx, item
+
+    return _sort
+
+
 def clamp(val, min_, max_):
     """Clamp a value to within a range.
 
@@ -336,7 +356,7 @@ def nice_size(bytes_):
     return ''.join([str(_size), _name[_idx]])
 
 
-def null_dec(func):
+def null_dec(func, **kwargs):  # pylint: disable=unused-argument
     """Build a decorator that does nothing.
 
     Useful for substituting a decorator which isn't available.

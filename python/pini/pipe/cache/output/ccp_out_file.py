@@ -102,15 +102,16 @@ class CCPOutputFile(elem.CPOutputFile, ccp_out_base.CCPOutputBase):
         _tags = sorted(
             {_lookdev.tag for _lookdev in _lookdevs}, key=pipe.tag_sort)
         _default_tag = self.job.cfg['tokens']['tag']['default']
+        _tag = None
         if _out.tag in _tags:
             _tag = _out.tag
         elif _default_tag in _tags:
             _tag = _default_tag
-        else:
-            _tag = _tags[0]
-        _LOGGER.debug(' - APPLY TAG FILTER %s %s', _tag, _tags)
-        _lookdevs = [_lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
-        _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
+        if _tag:
+            _LOGGER.debug(' - APPLY TAG FILTER %s %s', _tag, _tags)
+            _lookdevs = [
+                _lookdev for _lookdev in _lookdevs if _lookdev.tag == _tag]
+            _LOGGER.debug(' - LOOKDEVS %d %s', len(_lookdevs), _lookdevs)
 
         # Return most recent if multiple
         if len(_lookdevs) == 1:

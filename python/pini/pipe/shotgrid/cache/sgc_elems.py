@@ -139,6 +139,7 @@ class SGCTask(sgc_elem.SGCElem):
 
         self.name = data['sg_short_name']
         self.task = self.name
+        self.long_name = data['content']
 
         # Set step
         self.step = self.step_id = None
@@ -159,7 +160,7 @@ class SGCPubFile(SGCPath):
     ENTITY_TYPE = 'PublishedFile'
     FIELDS = (
         'path_cache', 'path', 'sg_status_list', 'updated_at', 'updated_by',
-        'entity', 'project', 'task', 'published_file_type')
+        'entity', 'project', 'task', 'published_file_type', 'version_number')
 
     def __init__(self, data):
         """Constructor.
@@ -183,10 +184,12 @@ class SGCPubFile(SGCPath):
         _LOGGER.debug(' - PATH %s', _path)
 
         super().__init__(data, path=_path)
+
         assert data
         assert self.data
         _task_data = self.data.get('task', {}) or {}
         self.task_long = _task_data.get('name')
+        self.ver_n = data['version_number']
 
         # These are set after init
         self.validated = None

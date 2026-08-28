@@ -164,7 +164,7 @@ class _SGCEntity(sgc_elem.SGCElem):
 
         _matches = [
             _task for _task in _tasks
-            if match in (_task.name, )]
+            if match in (_task.name, _task.long_name)]
         if len(_matches) == 1:
             return single(_matches)
         _LOGGER.debug(' - MATCHED %d TASKS', len(_matches))

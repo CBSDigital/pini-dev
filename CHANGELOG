@@ -1,3 +1,24 @@
+## [9.38.0] - Fri 2026-08-28 12:00
+### Summary
+ - Pini Helper:
+    - maya apply lookdev apply newest not first alphabetically (nwray),
+    - maya mode publish bugfix error on clean scene due to stale sanity check reference (blee),
+### Updated
+ - pini.utils.build_sort added,
+ - pini.utils.null_dec take kwargs,
+ - pini.pipe.CPJob.find_template pass kwargs to find_templates,
+ - pini.pipe.CPJob.find_templates added filter_ arg,
+ - pini.pipe.CPEntity.to_output added ver arg,
+ - pini.pipe.CACHE.CCPEntity.obt_output bugfix catch not working on non-output,
+ - pini.pipe.CACHE.CCPOutput.find_lookdev_shaders disable select first tag alphabetically,
+ - pini.pipe.shotgrid.SGC.SGCTask.long_name added,
+ - pini.pipe.shotgrid.SGC.SGCPubFile.ver_n added,
+ - pini.pipe.shotgrid.SGC.SGCEntity.find_task match by long name,
+ - pini.pipe.shotgrid.SGC.SGCEntity.find_pub_files allow task as SGCTask,
+ - pini.tools.sanity_check.SCCheck.run_and_fix reset before run,
+ - maya_pini.utils.render better error on renderer not implemented,
+
+
 ## [9.37.0] - Wed 2026-08-26 15:25
 ### Summary
  - Pini Helper:
