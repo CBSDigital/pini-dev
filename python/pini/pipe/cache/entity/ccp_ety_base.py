@@ -152,7 +152,9 @@ class CCPEntityBase(CPEntity):
         _outs = []
 
         # Add outputs in this shot
-        if force:
+        if force > 1:
+            self._update_publishes_cache()
+        elif force:
             self._update_outputs_cache(force=force)
         for _out in super().find_outputs(type_=type_, **kwargs):
             if content_type and _out.content_type != content_type:

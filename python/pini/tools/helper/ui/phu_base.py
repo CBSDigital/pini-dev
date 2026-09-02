@@ -450,7 +450,6 @@ class PHUiBase(
             output (CPOutput): output to add options for
         """
         _LOGGER.debug(' - ADD OUTPUT FIND OPTS')
-        menu.add_separator()
 
         # Add find work
         _asset = None
@@ -462,9 +461,7 @@ class PHUiBase(
             _asset = output.src_ref
 
         # Add find asset
-        if (
-                not _asset and
-                output.basic_type in ('publish', 'publish_seq')):
+        if not _asset:
             _asset = output
             _asset = pipe.map_path(_asset)
             _LOGGER.debug('   - ASSET %s', _asset)

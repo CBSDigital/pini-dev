@@ -112,20 +112,6 @@ def _build_tmp_blast_cam(cam):
     _src.point_constraint(_cam, force=True)
     _src.orient_constraint(_cam, force=True)
 
-    # # Fix any image place colspaces - it seems these are not necessarily
-    # # made to match on duplicate
-    # for _src_plane, _cam_plane in safe_zip(
-    #         _src.shp.find_incoming(
-    #             type_='imagePlane', plugs=False, connections=False),
-    #         _cam.shp.find_incoming(
-    #             type_='imagePlane', plugs=False, connections=False),
-    # ):
-    #     _LOGGER.debug(
-    #         ' - CHECK IMG PLANE COLSPACE %s %s', _src_plane, _cam_plane)
-    #     _space = _src_plane.shp.plug['colorSpace'].get_val()
-    #     _LOGGER.debug('   - APPLY COLSPACE %s', _space)
-    #     _cam_plane.shp.plug['colorSpace'].set_val(_space)
-
     return _cam
 
 
@@ -189,6 +175,7 @@ def _build_tmp_viewport_window(res, camera, show=False, settings='Nice'):
             'joints': False,
             'locators': False,
             'nurbsCurves': False,
+            'pluginShapes': True,
             'selectionHiliteDisplay': False,
         }
     elif settings == 'As is':
@@ -262,11 +249,6 @@ def _exec_blast(
     _filename = f'{seq.dir}/{seq.base}'
     _LOGGER.debug(' - BLAST FILENAME %s', _filename)
     _LOGGER.debug(' - START/END %d/%d', _start, _end)
-    # process_deferred_events()
-    # cmds.refresh()
-    # for _img_plane in cmds.ls(type='imagePlane'):
-    #     _size = cmds.imagePlane(_img_plane, q=True, imageSize=True)
-    #     _LOGGER.info(' - IMG PLANE %s %s', _img_plane, _size)
     cmds.playblast(
         startTime=_start, endTime=_end, format='image', filename=_filename,
         viewer=False, widthHeight=res, offScreen=True, forceOverwrite=True,

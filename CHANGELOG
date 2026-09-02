@@ -1,3 +1,32 @@
+## [9.39.0] - Wed 2026-09-02 15:46
+### Summary
+ - Pini Helper:
+    - maya asset cache bugfix not updating publish cache (mkim),
+    - maya publish save xgen folders to publish dir (mkim/nwray/csoza),
+    - bugfix asset/shot right-click reread outputs,
+    - bugfix work right-click find output disabled,
+### Updated
+ - pini.utils.File.read_lines added body arg,
+ - pini.utils.strftime added %y%m%d_%H%M%S fmt reading,
+ - pini.dcc.MayaDCC.take_snapshot wait for deferred events to include xgen,
+ - pini.dcc.export.CExportHandler added job/entity properties,
+ - pini.dcc.export.CExportHandler._update_pipe_cache added update_pub_cache arg,
+ - pini.dcc.export.CBasicPublish apply xgen save,
+ - pini.dcc.export.CCacheHandler apply pub cache update,
+ - pini.pipe.CPEntity.create implemented for sg shots,
+ - pini.pipe.CACHE.CCPEntity.find_outputs force as 2 rebuilds publish cache,
+ - pini.qt.CTabWidget.select_tab added catch,
+ - pini.tools.helper bugfix EntityLabel ctx reread outputs,
+ - pini.tools.helper jump to work ctx include task in work opt label,
+ - pini.tools.helper work ctx find output bugfix disabled,
+ - pini.testing.print_env added,
+ - maya_pini.utils.blast nice settings includes plugin shapes eg. xgen,
+ - maya_pini.open_maya.find_nodes allow type_ as list like ls,
+ - maya_pini.m_pipe.save_publish_scene added to include xgen,
+ - maya_pini.m_pipe added xgen_in_use/XGEN_TYPES,
+ - maya_pini.ui.OptionMenu.get_val bugfix error on no opts,
+
+
 ## [9.38.0] - Fri 2026-08-28 12:00
 ### Summary
  - Pini Helper:

@@ -5,6 +5,8 @@ import logging
 import os
 import sys
 
+import tabulate
+
 from pini.utils import abs_path, Path, passes_filter
 
 _LOGGER = logging.getLogger(__name__)
@@ -163,6 +165,20 @@ def insert_sys_path(path):
         path (str): path to add
     """
     _add_sys_path(path, action='insert')
+
+
+def print_env(filter_=None):
+    """Print current environment.
+
+    Args:
+        filter_ (str): apply key/val filter
+    """
+    _data = [('ENV', 'VAL')]
+    for _env, _val in os.environ.items():
+        if filter_ and not passes_filter(f'{_env} {_val}', filter_):
+            continue
+        _data.append((_env, _val))
+    print(tabulate.tabulate(_data))
 
 
 def print_sys_paths(sort=False, filter_=None):

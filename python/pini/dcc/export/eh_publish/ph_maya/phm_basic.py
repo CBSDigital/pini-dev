@@ -207,7 +207,7 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
 
         # Save main publish file
         _LOGGER.info(' - OUTPUT %s', _pub.path)
-        dcc.save(_pub)
+        m_pipe.save_publish_scene(pub=_pub, work=self.work)
         self.outputs = [_pub]
         self.progress.set_pc(60)
 

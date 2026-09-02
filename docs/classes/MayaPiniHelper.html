@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>MayaPiniHelper</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.38.0</a></span>
+    </header>
+
+    <h1><a href="classes/MayaPiniHelper.html">MayaPiniHelper</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">MayaQWidgetBaseMixin</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">MayaQWidgetDockableMixin</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CDockableMixin.html">CDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiDockableMixin.html">CUiDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Object</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QObject</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QDialog</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CDockableMixin.html">CDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiDockableMixin.html">CUiDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QPaintDevice</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QWidget</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">QDialog</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CDockableMixin.html">CDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiDockableMixin.html">CUiDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiBase.html">CUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <font color="Grey">CUiBaseDummy</font><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiDockableMixin.html">CUiDockableMixin</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">PHHeader</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/PHUiBase.html">PHUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">PHWorkTab</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/PHUiBase.html">PHUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">PHExportTab</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/PHUiBase.html">PHUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">PHSceneTab</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/PHUiBase.html">PHUiBase</a><br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/MayaPiniHelper.html"><b>MayaPiniHelper</b></a></div><br><br>
+    <h2>Pini Helper in maya which docks to the main ui.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['helper.MayaPiniHelper', 'pini.tools.helper', '<font color="DarkMagenta"><b>MayaPiniHelper(admin=None, store_settings=True, jump_to=None, parent=None, show=True, reset_cache=True, title=None)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>admin</b> (bool): launch in admin mode</small><br><small>&nbsp;&nbsp;&nbsp;<b>store_settings</b> (bool): load settings on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>jump_to</b> (str): path to point helper to on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (QDialog): override parent dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>show</b> (bool): show on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>reset_cache</b> (bool): reset pipeline cache on launch</small><br><small>&nbsp;&nbsp;&nbsp;<b>title</b> (str): override helper window title</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/dcc/ph_maya.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper</code></small>', 'pini.tools.helper.MayaPiniHelper', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.add_output_opts</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.add_output_opts(menu, output, find_work=True, header=True, delete=None, add=True, ignore_ui=False, ref=None, delete_callback=None)</b></font><br><br><small>&nbsp;Add menu options for the given output.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>menu</b> (QMenu): menu to add options to</small><br><small>&nbsp;&nbsp;&nbsp;<b>output</b> (CPOutput): output to add options for</small><br><small>&nbsp;&nbsp;&nbsp;<b>find_work</b> (bool): add find work option</small><br><small>&nbsp;&nbsp;&nbsp;<b>header</b> (bool): include menu header</small><br><small>&nbsp;&nbsp;&nbsp;<b>delete</b> (bool): include delete option</small><br><small>&nbsp;&nbsp;&nbsp;<b>add</b> (bool): include add to current scene option</small><br><small>&nbsp;&nbsp;&nbsp;<b>ignore_ui</b> (bool): don\'t add options relating to ui selection (eg. apply lookdev to selected scene ref)</small><br><small>&nbsp;&nbsp;&nbsp;<b>ref</b> <a href="classes/CPipeRef.html">(CPipeRef)</a>: scene ref associated with this output</small><br><small>&nbsp;&nbsp;&nbsp;<b>delete_callback</b> (fn): callback to execute on output deletion</small><br><br><small>Inherited from: <a href="classes/PHUiBase.html">PHUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.add_output_opts</code></small>', 'pini.tools.helper.MayaPiniHelper.add_output_opts', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.add_shortcut</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.add_shortcut(key, action, label)</b></font><br><br><small>&nbsp;Add shortcut for this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>key</b> (str): shortcut key</small><br><small>&nbsp;&nbsp;&nbsp;<b>action</b> (fn): shortcut action</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): shortcut label</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.add_shortcut</code></small>', 'pini.tools.helper.MayaPiniHelper.add_shortcut', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.apply_docking</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.apply_docking()</b></font><br><br><small>&nbsp;Dock this widget to the main maya ui.</small><br><br><small>Inherited from: <a href="classes/CDockableMixin.html">CDockableMixin</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_mixin.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.apply_docking</code></small>', 'pini.tools.helper.MayaPiniHelper.apply_docking', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.apply_updates</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.apply_updates(msg=None, force=False)</b></font><br><br><small>&nbsp;Apply staged updates.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>msg</b> (str): override apply message</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): apply updates without confirmation</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PHSceneTab</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_scene_tab.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.apply_updates</code></small>', 'pini.tools.helper.MayaPiniHelper.apply_updates', ''],
+             ['helper.MayaPiniHelper.closeEvent', 'pini.tools.helper', '<font color="DarkMagenta"><b>MayaPiniHelper.closeEvent(event=None)</b></font><br><br><small>&nbsp;Triggered by close.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>event</b> (QEvent): close event</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/dcc/ph_maya.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.closeEvent</code></small>', 'pini.tools.helper.MayaPiniHelper.closeEvent', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.delete</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.delete()</b></font><br><br><small>&nbsp;Delete this interface.</small><br><br><small>Inherited from: <a href="classes/CUiDockableMixin.html">CUiDockableMixin</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_mixin.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.delete</code></small>', 'pini.tools.helper.MayaPiniHelper.delete', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.delete_existing_instances</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.delete_existing_instances()</b></font><br><br><small>&nbsp;Delete any instances of this class.</small><br><br><small>Inherited from: <a href="classes/CDockableMixin.html">CDockableMixin</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_mixin.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.delete_existing_instances</code></small>', 'pini.tools.helper.MayaPiniHelper.delete_existing_instances', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.dockCloseEventTriggered</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.dockCloseEventTriggered()</b></font><br><br><small>&nbsp;Triggered by close tab.</small><br><br><small>&nbsp;If it\'s floating or docked, this will run and delete it self when it</small><br><small>&nbsp;closes. You can choose not to delete it here so that you can still</small><br><small>&nbsp;re-open it through the right-click menu, but do disable any</small><br><small>&nbsp;callbacks/timers that will eat memory</small><br><br><small>Inherited from: <a href="classes/CDockableMixin.html">CDockableMixin</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_mixin.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.dockCloseEventTriggered</code></small>', 'pini.tools.helper.MayaPiniHelper.dockCloseEventTriggered', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.find_widget</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.find_widget(match, catch=False)</b></font><br><br><small>&nbsp;Find widget in this dialog.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>match</b> (str): match by name</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if no widget found</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QWidget): matching widget</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.find_widget</code></small>', 'pini.tools.helper.MayaPiniHelper.find_widget', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.find_widgets</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.find_widgets(filter_=None, class_=None)</b></font><br><br><small>&nbsp;Find widgets belonging to this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): filter results by name</small><br><small>&nbsp;&nbsp;&nbsp;<b>class_</b> (class): filter by widget class</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QWidget list): widgets</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.find_widgets</code></small>', 'pini.tools.helper.MayaPiniHelper.find_widgets', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.flush_notes_stack</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.flush_notes_stack()</b></font><br><br><small>&nbsp;Write notes changes to disk.</small><br><br><small>&nbsp;This is triggered by the timer function (every 5s) so that</small><br><small>&nbsp;the notes can be typed without constantly writing to disk</small><br><small>&nbsp;which would cause lag in the ui.</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PHWorkTab</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_work_tab.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.flush_notes_stack</code></small>', 'pini.tools.helper.MayaPiniHelper.flush_notes_stack', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.init_ui</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.init_ui()</b></font><br><br><small>&nbsp;Build ui elements.</small><br><br><small>Inherited from: <a href="classes/PHUiBase.html">PHUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.init_ui</code></small>', 'pini.tools.helper.MayaPiniHelper.init_ui', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.is_active</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.is_active()</b></font><br><br><small>&nbsp;Test whether this helper instance is active.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether active</small><br><br><small>Inherited from: <a href="classes/PHUiBase.html">PHUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.is_active</code></small>', 'pini.tools.helper.MayaPiniHelper.is_active', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.jump_to</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.jump_to(path)</b></font><br><br><small>&nbsp;Jump interface to the given path.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>path</b> (str): path to jump to</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether path was successfully applied</small><br><br><small>Inherited from: <a href="classes/PHUiBase.html">PHUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.jump_to</code></small>', 'pini.tools.helper.MayaPiniHelper.jump_to', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.load_setting</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.load_setting(widget)</b></font><br><br><small>&nbsp;Load a widget setting.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>widget</b> (QWidget): widget to update</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.load_setting</code></small>', 'pini.tools.helper.MayaPiniHelper.load_setting', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.load_settings</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.load_settings(geometry=True, type_filter=None, filter_=None)</b></font><br><br><small>&nbsp;Load interface settings.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>geometry</b> (bool): load window position/size</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_filter</b> (str): apply widget type name filter</small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): apply widget name filter</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.load_settings</code></small>', 'pini.tools.helper.MayaPiniHelper.load_settings', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.rebuild_ui</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.rebuild_ui()</b></font><br><br><small>&nbsp;Rebuild ui object using a dummy namespace.</small><br><br><small>&nbsp;This is used to fix over-aggressive garbage collection in PySide in</small><br><small>&nbsp;maya, which will often delete the elements attached to the ui.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(DummyUi): rebuilt ui</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.rebuild_ui</code></small>', 'pini.tools.helper.MayaPiniHelper.rebuild_ui', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.reset</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.reset()</b></font><br><br><small>&nbsp;Reset pini helper.</small><br><br><small>Inherited from: <a href="classes/PHUiBase.html">PHUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.reset</code></small>', 'pini.tools.helper.MayaPiniHelper.reset', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.save_hbox_size_policies</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.save_hbox_size_policies()</b></font><br><br><small>&nbsp;Save hbox layout size policies.</small><br><br><small>&nbsp;This read the horizonal size policies of all widgets in</small><br><small>&nbsp;QHBoxLayout layouts and saves them to a hidden hsp.yml</small><br><small>&nbsp;in the same directory as the ui file.</small><br><small>&nbsp;</small><br><small>&nbsp;This allows them to be applied in nuke, whose ui loader</small><br><small>&nbsp;seems to lose this information.</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.save_hbox_size_policies</code></small>', 'pini.tools.helper.MayaPiniHelper.save_hbox_size_policies', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.save_settings</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.save_settings(filter_=None, pos=None, force=False)</b></font><br><br><small>&nbsp;Save settings to disk.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): filter settings by widget name</small><br><small>&nbsp;&nbsp;&nbsp;<b>pos</b> (bool): save window postion - by default this will only happen if the window is visible; there is a bug in PySide where if you close a window is seems to move 21 pixel south which causes the position to shift each time, so this is to prevent that from happening</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): save settings even if store settings is disabled for this dialog</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.save_settings</code></small>', 'pini.tools.helper.MayaPiniHelper.save_settings', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.save_size_limits</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.save_size_limits()</b></font><br><br><small>&nbsp;Save widget size limits to yml.</small><br><br><small>&nbsp;The yml is then used to apply missing limits in spainter, which</small><br><small>&nbsp;seemed to lose size limit data from ui files, most likely due</small><br><small>&nbsp;to PySide6 issues.</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.save_size_limits</code></small>', 'pini.tools.helper.MayaPiniHelper.save_size_limits', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.set_title</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.set_title(title)</b></font><br><br><small>&nbsp;Set tab title.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>title</b> (str): title to apply</small><br><br><small>Inherited from: <a href="classes/CDockableMixin.html">CDockableMixin</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_mixin.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.set_title</code></small>', 'pini.tools.helper.MayaPiniHelper.set_title', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.set_window_icon</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.set_window_icon(icon)</b></font><br><br><small>&nbsp;Set window icon.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>icon</b> (str): path to icon</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.set_window_icon</code></small>', 'pini.tools.helper.MayaPiniHelper.set_window_icon', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.settings</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.settings()</b></font><br><br><small>&nbsp;Obtain the settings object.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QSettings): settings</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.settings</code></small>', 'pini.tools.helper.MayaPiniHelper.settings', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.stage_import</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.stage_import(output, attach_to=None, redraw=True, base=None, namespace=None, reset=False, work_dir=None)</b></font><br><br><small>&nbsp;Stage a reference to be imported.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>output</b> (CPOutput): output to be referenced</small><br><small>&nbsp;&nbsp;&nbsp;<b>attach_to</b> (str): attach the given output to this existing scene reference (eg. attach a lookdev to an existing abc in the scene)</small><br><small>&nbsp;&nbsp;&nbsp;<b>redraw</b> (bool): update scene refs list</small><br><small>&nbsp;&nbsp;&nbsp;<b>base</b> (str): override namespace base</small><br><small>&nbsp;&nbsp;&nbsp;<b>namespace</b> (str): force namespace of import</small><br><small>&nbsp;&nbsp;&nbsp;<b>reset</b> (bool): reset imports before adding import</small><br><small>&nbsp;&nbsp;&nbsp;<b>work_dir</b> (CCPWOrkDir): force context of this import</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PHSceneTab</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_scene_tab.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.stage_import</code></small>', 'pini.tools.helper.MayaPiniHelper.stage_import', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.stage_ref_update</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.stage_ref_update(ref, output)</b></font><br><br><small>&nbsp;Stage a reference update.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>ref</b> <a href="classes/CPipeRef.html">(CPipeRef)</a>: reference to update</small><br><small>&nbsp;&nbsp;&nbsp;<b>output</b> (CPOutput): path to update to</small><br><br><small>Inherited from: <font color="DeepSkyBlue">PHSceneTab</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/ui/phu_scene_tab.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.stage_ref_update</code></small>', 'pini.tools.helper.MayaPiniHelper.stage_ref_update', ''],
+             ['<font color="Grey">helper.MayaPiniHelper.start_timer</font>', 'pini.tools.helper', '<font color="Fuchsia"><b>MayaPiniHelper.start_timer(fps)</b></font><br><br><small>&nbsp;Start timer at the given frame rate.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>fps</b> (float): frame rate of timer event</small><br><br><small>Inherited from: <a href="classes/CUiBase.html">CUiBase</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/custom/qc_ui_base.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.start_timer</code></small>', 'pini.tools.helper.MayaPiniHelper.start_timer', ''],
+             ['helper.MayaPiniHelper.timerEvent', 'pini.tools.helper', '<font color="DarkMagenta"><b>MayaPiniHelper.timerEvent(event)</b></font><br><br><small>&nbsp;Triggered by timer.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>event</b> (QTimerEvent): triggered event</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/tools/helper/dcc/ph_maya.py</font></small>', '<small><code>from pini.tools import helper<br>helper.MayaPiniHelper.timerEvent</code></small>', 'pini.tools.helper.MayaPiniHelper.timerEvent', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

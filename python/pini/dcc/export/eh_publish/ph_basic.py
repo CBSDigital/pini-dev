@@ -44,14 +44,7 @@ class CBasicPublish(eh_base.CExportHandler):
 
     def _update_pipe_cache(self):
         """Update pipeline cache."""
-        _LOGGER.info('UPDATE PIPE CACHE')
-
-        # Update publish cache
-        _LOGGER.info(' - UPDATING PUBLISH CACHE')
-        self.work.entity.find_publishes(force=True)
-        self.work.job.find_publishes(force=True)
-
-        super()._update_pipe_cache()
+        super()._update_pipe_cache(update_pub_cache=True)
 
     def post_export(self, **kwargs):
         """Run post export scripts.

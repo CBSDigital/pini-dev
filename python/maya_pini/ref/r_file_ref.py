@@ -8,7 +8,7 @@ import os
 from maya import cmds
 
 from pini.utils import (
-    File, single, passes_filter, safe_zip, EMPTY, basic_repr,
+    File, single, passes_filter, safe_zip, EMPTY, basic_repr, to_list,
     split_base_index)
 from maya_pini.utils import (
     to_namespace, set_namespace, del_namespace, to_clean)
@@ -209,6 +209,7 @@ class FileRef(r_path_ref.PathRef):
             self.ref_node, nodes=True,
             dagPath=True, showFullPath=full_path) or []
         _LOGGER.debug(' - FOUND %d NODES', len(_all_nodes))
+        _types = to_list(type_)
 
         _nodes = []
         for _node in _all_nodes:
@@ -219,11 +220,11 @@ class FileRef(r_path_ref.PathRef):
                 continue
 
             # Apply type match
-            if type_:
+            if _types:
                 _type = cmds.objectType(_node)
-                _type_match = _type == type_
+                _type_match = _type in _types
                 _is_anim_curve = _type.startswith('animCurve')
-                _anim_curve_match = _is_anim_curve and type_ == 'animCurve'
+                _anim_curve_match = _is_anim_curve and 'animCurve' in _types
                 if not (_type_match or _anim_curve_match):
                     continue
 

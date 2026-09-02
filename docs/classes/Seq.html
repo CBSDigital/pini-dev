@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Seq</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.38.0</a></span>
+    </header>
+
+    <h1><a href="classes/Seq.html">Seq</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <font color="Grey">Clip</font><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/Seq.html"><b>Seq</b></a></div><br><br>
+    <h2>Represents a sequence of files.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['Seq', 'pini.utils', '<font color="DarkMagenta"><b>Seq(path, frames=None, safe=True)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>path</b> (str): path to seq (eg. C:/path/to/files/file.%04d.jpg)</small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): force frames cache</small><br><small>&nbsp;&nbsp;&nbsp;<b>safe</b> (bool): only allow sequences with <base>.%04d.<extn> format</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq</code></small>', 'pini.utils.Seq', ''],
+             ['Seq.add_frame', 'pini.utils', '<font color="DarkMagenta"><b>Seq.add_frame(frame)</b></font><br><br><small>&nbsp;Add a frame to the frames cache.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): frame to add</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.add_frame</code></small>', 'pini.utils.Seq.add_frame', ''],
+             ['Seq.browser', 'pini.utils', '<font color="DarkMagenta"><b>Seq.browser()</b></font><br><br><small>&nbsp;Open a browser in this seq\'s parent directory.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.browser</code></small>', 'pini.utils.Seq.browser', ''],
+             ['Seq.build_thumbnail', 'pini.utils', '<font color="DarkMagenta"><b>Seq.build_thumbnail(file_, width=100, frame=None, force=False)</b></font><br><br><small>&nbsp;Build thumbnail for this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): thumbnail path</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): thumbnail width in pixels</small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): select frame to export (default is middle frame)</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): overwrite existing without confirmation</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.build_thumbnail</code></small>', 'pini.utils.Seq.build_thumbnail', ''],
+             ['Seq.check_for_bad_frames', 'pini.utils', '<font color="DarkMagenta"><b>Seq.check_for_bad_frames()</b></font><br><br><small>&nbsp;Check frames for bad files.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.check_for_bad_frames</code></small>', 'pini.utils.Seq.check_for_bad_frames', ''],
+             ['Seq.contains', 'pini.utils', '<font color="DarkMagenta"><b>Seq.contains(file_)</b></font><br><br><small>&nbsp;Test whether this sequence contains the given file.</small><br><br><small>&nbsp;eg. Seq(\'blah.%04d.jpg\').contains(\'blah.0001.jpg\') -> True</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>file_</b> (str): file to test</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether file follows sequence pattern</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.contains</code></small>', 'pini.utils.Seq.contains', ''],
+             ['Seq.copy_to', 'pini.utils', '<font color="DarkMagenta"><b>Seq.copy_to(target, frames=None, check_match=True, progress=True, force=False, verbose=1)</b></font><br><br><small>&nbsp;Copy this file sequence to another location.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/Seq.html">(Seq)</a>: target location</small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): override frames to copy</small><br><small>&nbsp;&nbsp;&nbsp;<b>check_match</b> (bool): check existing frame match before replacing</small><br><small>&nbsp;&nbsp;&nbsp;<b>progress</b> (bool): show progress</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): replace existing without confirmation</small><br><small>&nbsp;&nbsp;&nbsp;<b>verbose</b> (int): show process data</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.copy_to</code></small>', 'pini.utils.Seq.copy_to', ''],
+             ['Seq.delete', 'pini.utils', '<font color="DarkMagenta"><b>Seq.delete(wording="delete", frames=None, icon=None, parent=None, force=False)</b></font><br><br><small>&nbsp;Delete this image sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>wording</b> (str): override wording on warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): limit list of frames to delete</small><br><small>&nbsp;&nbsp;&nbsp;<b>icon</b> (str): override icon on warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>parent</b> (QDialog): parent for warning dialog</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): delete without confirmation</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.delete</code></small>', 'pini.utils.Seq.delete', ''],
+             ['Seq.exists', 'pini.utils', '<font color="DarkMagenta"><b>Seq.exists(frames=None, force=False)</b></font><br><br><small>&nbsp;Test whether this sequence exists.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): list of frames to check exist - if any of these frames are missing then the result is False</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether sequence exists</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.exists</code></small>', 'pini.utils.Seq.exists', ''],
+             ['Seq.find_range', 'pini.utils', '<font color="DarkMagenta"><b>Seq.find_range(force=False)</b></font><br><br><small>&nbsp;Find start/end frames of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.find_range</code></small>', 'pini.utils.Seq.find_range', ''],
+             ['Seq.has_frames_cache', 'pini.utils', '<font color="DarkMagenta"><b>Seq.has_frames_cache()</b></font><br><br><small>&nbsp;Check whether this sequence has a frames cache.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether frames cache</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.has_frames_cache</code></small>', 'pini.utils.Seq.has_frames_cache', ''],
+             ['Seq.is_editable', 'pini.utils', '<font color="DarkMagenta"><b>Seq.is_editable()</b></font><br><br><small>&nbsp;Test whether this is editable in a text editor.</small><br><br><small>&nbsp;Provided for symmetry with Path object.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): false</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.is_editable</code></small>', 'pini.utils.Seq.is_editable', ''],
+             ['Seq.is_missing_frames', 'pini.utils', '<font color="DarkMagenta"><b>Seq.is_missing_frames(frames=None)</b></font><br><br><small>&nbsp;Test whether this sequence\'s frame range is incomplete.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): expected frames</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether frames are missing</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.is_missing_frames</code></small>', 'pini.utils.Seq.is_missing_frames', ''],
+             ['Seq.move_to', 'pini.utils', '<font color="DarkMagenta"><b>Seq.move_to(target, progress=False)</b></font><br><br><small>&nbsp;Move this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>target</b> <a href="classes/Seq.html">(Seq)</a>: target sequence</small><br><small>&nbsp;&nbsp;&nbsp;<b>progress</b> (bool): show progress bar</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.move_to</code></small>', 'pini.utils.Seq.move_to', ''],
+             ['Seq.mtime', 'pini.utils', '<font color="DarkMagenta"><b>Seq.mtime()</b></font><br><br><small>&nbsp;Obtain mtime of this sequence using the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): mtime</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.mtime</code></small>', 'pini.utils.Seq.mtime', ''],
+             ['Seq.nice_range', 'pini.utils', '<font color="DarkMagenta"><b>Seq.nice_range()</b></font><br><br><small>&nbsp;Get this sequence\'s frame range in a readable form.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): readable range (eg. 1-100)</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.nice_range</code></small>', 'pini.utils.Seq.nice_range', ''],
+             ['Seq.nice_size', 'pini.utils', '<font color="DarkMagenta"><b>Seq.nice_size()</b></font><br><br><small>&nbsp;Get size of this file in a readable for (eg. 10GB).</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): readable file size</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.nice_size</code></small>', 'pini.utils.Seq.nice_size', ''],
+             ['Seq.owner', 'pini.utils', '<font color="DarkMagenta"><b>Seq.owner()</b></font><br><br><small>&nbsp;Obtain owner of this sequence using the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): owner</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.owner</code></small>', 'pini.utils.Seq.owner', ''],
+             ['Seq.size', 'pini.utils', '<font color="DarkMagenta"><b>Seq.size()</b></font><br><br><small>&nbsp;Obtain total size of this file sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): size in bytes</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.size</code></small>', 'pini.utils.Seq.size', ''],
+             ['Seq.strftime', 'pini.utils', '<font color="DarkMagenta"><b>Seq.strftime(fmt=None)</b></font><br><br><small>&nbsp;Get formatted time string using this sequence\'s mtime.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>fmt</b> (str): time format string</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(str): formatted time string</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.strftime</code></small>', 'pini.utils.Seq.strftime', ''],
+             ['Seq.test_dir', 'pini.utils', '<font color="DarkMagenta"><b>Seq.test_dir()</b></font><br><br><small>&nbsp;Test this sequence\'s parent directory exists.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.test_dir</code></small>', 'pini.utils.Seq.test_dir', ''],
+             ['Seq.to_aspect', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_aspect()</b></font><br><br><small>&nbsp;Obtain aspect ration of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(float): aspect ratio</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_aspect</code></small>', 'pini.utils.Seq.to_aspect', ''],
+             ['Seq.to_dir', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_dir()</b></font><br><br><small>&nbsp;Get this sequence\'s parent directory.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Dir.html">Dir</a>): parent dir</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_dir</code></small>', 'pini.utils.Seq.to_dir', ''],
+             ['Seq.to_dur', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_dur()</b></font><br><br><small>&nbsp;Obtain duration (in frames) of this image sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): duration</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_dur</code></small>', 'pini.utils.Seq.to_dur', ''],
+             ['Seq.to_end', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_end()</b></font><br><br><small>&nbsp;Obtain last/end frame of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): last frame</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_end</code></small>', 'pini.utils.Seq.to_end', ''],
+             ['Seq.to_file', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_file()</b></font><br><br><small>&nbsp;Map this sequence to a file object.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a>): file using this seq\'s attributes</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_file</code></small>', 'pini.utils.Seq.to_file', ''],
+             ['Seq.to_frame_file', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_frame_file(frame=None)</b></font><br><br><small>&nbsp;Obtain the file for the given frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frame</b> (int): frame number to request - by default the central frame is used</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a>): frame file</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_frame_file</code></small>', 'pini.utils.Seq.to_frame_file', ''],
+             ['Seq.to_frame_files', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_frame_files()</b></font><br><br><small>&nbsp;Build list of all files in this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/File.html">File</a> list): frame files</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_frame_files</code></small>', 'pini.utils.Seq.to_frame_files', ''],
+             ['Seq.to_frames', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_frames(frames=None, force=False)</b></font><br><br><small>&nbsp;Find frames of this sequence.</small><br><br><small>&nbsp;This is read from disk the first time, and then subsequently</small><br><small>&nbsp;the cached value is used. This can be overridden using the</small><br><small>&nbsp;force flag.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>frames</b> (int list): force list of frames into cache</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force read from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int list): list of frame numbers</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_frames</code></small>', 'pini.utils.Seq.to_frames', ''],
+             ['Seq.to_range', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_range(force=False)</b></font><br><br><small>&nbsp;Find start/end frames of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): force reread from disk</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): start/end frames</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_range</code></small>', 'pini.utils.Seq.to_range', ''],
+             ['Seq.to_res', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_res()</b></font><br><br><small>&nbsp;Obtain resolution for this image sequence.</small><br><br><small>&nbsp;Resolution is read from the middle frame.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(tuple): width/height</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_res</code></small>', 'pini.utils.Seq.to_res', ''],
+             ['Seq.to_seq', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_seq(extn=None)</b></font><br><br><small>&nbsp;Build a sequence object based on this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>extn</b> (str): override extension</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Seq.html">Seq</a>): new sequence object</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_seq</code></small>', 'pini.utils.Seq.to_seq', ''],
+             ['Seq.to_start', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_start()</b></font><br><br><small>&nbsp;Obtain start/first frame of this sequence.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int): first frame</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_start</code></small>', 'pini.utils.Seq.to_start', ''],
+             ['Seq.to_video', 'pini.utils', '<font color="DarkMagenta"><b>Seq.to_video(video, burnins=False, force=False)</b></font><br><br><small>&nbsp;Convert this image sequence to a video.</small><br><br><small>&nbsp;NOTE: for docs see clip.seq_to_video</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>video</b> <a href="classes/File.html">(File)</a>: file to create</small><br><small>&nbsp;&nbsp;&nbsp;<b>burnins</b> (bool): add burnins</small><br><small>&nbsp;&nbsp;&nbsp;<b>force</b> (bool): overwrite existing without confirmation</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/Video.html">Video</a>): video file</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_seq.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.to_video</code></small>', 'pini.utils.Seq.to_video', ''],
+             ['<font color="Grey">Seq.view</font>', 'pini.utils', '<font color="Fuchsia"><b>Seq.view(viewer=None, start_frame=None)</b></font><br><br><small>&nbsp;View this clip.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>viewer</b> (str): force viewer</small><br><small>&nbsp;&nbsp;&nbsp;<b>start_frame</b> (int): override start frame</small><br><br><small>Inherited from: <font color="DeepSkyBlue">Clip</font></small><br><small>Defined in: <font color="DeepSkyBlue">pini/utils/clip/uc_clip.py</font></small>', '<small><code>from pini.utils import Seq<br>Seq.view</code></small>', 'pini.utils.Seq.view', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

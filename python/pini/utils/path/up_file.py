@@ -345,16 +345,18 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _body = self.read()
         return json.loads(_body)
 
-    def read_lines(self, encoding='utf-8'):
+    def read_lines(self, encoding='utf-8', body=None):
         """Read lines of this file.
 
         Args:
             encoding (str): override default encoding (utf-8)
+            body (str): override body (can be use to limit unnecessary reads)
 
         Returns:
             (str list): text lines
         """
-        return self.read(encoding=encoding).split('\n')
+        _body = body or self.read(encoding=encoding)
+        return _body.split('\n')
 
     def read_pkl(self, catch=False):
         """Read pickle file.

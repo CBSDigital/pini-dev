@@ -180,6 +180,7 @@ def to_time_t(val=None):
 
                 '%y%m%d',
                 '%y%m%d %H:%M',
+                '%y%m%d_%H%M%S',
 
                 '%Y-%m-%d',
                 '%Y-%m-%d %H:%M',

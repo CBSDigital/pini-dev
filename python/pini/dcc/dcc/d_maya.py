@@ -12,7 +12,8 @@ from pini.utils import single, wrap_fn, EMPTY
 
 from maya_pini import ui, ref
 from maya_pini.utils import (
-    cur_file, load_scene, save_scene, render, to_clean, to_audio, blast_frame)
+    cur_file, load_scene, save_scene, render, to_clean, to_audio, blast_frame,
+    process_deferred_events, set_render_extn, cur_renderer)
 
 from .d_base import BaseDCC
 
@@ -125,8 +126,6 @@ class MayaDCC(BaseDCC):
 
     def _force_new_scene(self):
         """Force new scene."""
-        from maya_pini.utils import (
-            set_render_extn, cur_renderer, process_deferred_events)
         _LOGGER.debug('FORCE NEW SCENE')
 
         # Read current renderer
@@ -508,6 +507,7 @@ class MayaDCC(BaseDCC):
         Args:
             file_ (str): path to save image to
         """
+        process_deferred_events()
         return blast_frame(file_, settings='Nice', force=True)
 
     def unsaved_changes(self):

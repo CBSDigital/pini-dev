@@ -61,6 +61,8 @@ class OptionMenu:
         """
         _sel = cmds.optionMenu(self.field, query=True, select=True)
         _items = cmds.optionMenu(self.field, query=True, itemListLong=True)
+        if not _items:
+            return None
         _item = _items[_sel - 1]
         return cmds.menuItem(_item, query=True, label=True)
 

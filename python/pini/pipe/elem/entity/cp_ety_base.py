@@ -68,6 +68,8 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
             from pini.pipe import shotgrid
             shotgrid.create_entity(self, force=force)
 
+        self.mkdir()
+
     def find_template(self, *args, **kwargs):
         """Find a template within this entity.
 

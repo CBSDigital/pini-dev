@@ -92,7 +92,7 @@ class EmojiSet(Seq):
         # Handle fail
         if catch:
             return None
-        _emojis = '/'.join(sorted([
+        _emojis = ' // '.join(sorted([
             _o_emoji.name for _o_emoji in self._emojis
             if passes_filter(_o_emoji.name.lower(), _match_s)]))
         raise ValueError(

@@ -6,12 +6,14 @@ import os
 
 from maya import cmds
 
-from pini import pipe
+from pini import pipe, dcc
 from pini.dcc import export
 from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
 from maya_pini.utils import to_long, find_light_types
+
+from . import mp_xgen
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -244,6 +246,22 @@ def read_cache_set(  # pylint: disable=too-many-branches
     _LOGGER.debug(' - RESULTS %d %s', len(_results), _results)
 
     return _results
+
+
+def save_publish_scene(pub, work):
+    """Save publish scene file.
+
+    Args:
+        pub (CPOutput): target publish
+        work (CPWork): source work file
+    """
+    dcc.save(pub)
+
+    if mp_xgen.xgen_in_use():
+        _xgen = mp_xgen.copy_xgen_collections_dir(
+            work=work, pub=pub, force=True)
+        if _xgen:
+            mp_xgen.update_xgen_sidecar_files(pub=pub, xgen=_xgen, force=True)
 
 
 def to_light_shp(node):

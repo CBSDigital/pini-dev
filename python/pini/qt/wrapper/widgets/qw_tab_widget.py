@@ -68,12 +68,13 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
         return self.current_tab_text()
 
     @q_utils.apply_emit
-    def select_tab(self, match, emit=None):
+    def select_tab(self, match, emit=None, catch=False):
         """Select tab by name.
 
         Args:
             match (str): name to match
             emit (bool): emit current changed signal on select
+            catch (bool): no error if fail to select tab
         """
         for _idx in range(self.count()):
 
@@ -96,6 +97,8 @@ class CTabWidget(QtWidgets.QTabWidget, qw_base_widget.CBaseWidget):
                 self.currentChanged.emit(_idx)
             return
 
+        if catch:
+            return
         raise RuntimeError(match)
 
     @q_utils.block_signals

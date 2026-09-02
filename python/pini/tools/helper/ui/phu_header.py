@@ -7,7 +7,6 @@ These are the job, entity type and entity elements above the main pane.
 
 import logging
 import os
-import re
 
 from pini import pipe, icons, qt, dcc
 from pini.tools import usage
@@ -410,6 +409,7 @@ class PHHeader:
     def _reread_entity_outputs(self):
         """Reread outputs for the current asset/shot."""
         self.entity.find_outputs(force=2)
+        pipe.CACHE.reset()
         self._callback__MainPane()
 
     @usage.get_tracker('PiniHelper.Archive')
@@ -473,7 +473,8 @@ class PHHeader:
             work (CPWork): work file to jump to
         """
         _action = wrap_fn(self.jump_to, work)
-        _tokens = [work.job.name] + re.split('[._]', work.base)[:-1]
+        _tokens = [
+            work.job.name, work.entity.name, work.task, work.tag]
         _label = '/'.join(_tokens)
         menu.add_action(
             _label, _action, icon=icons.find('Magnet'))

@@ -64,6 +64,24 @@ class CExportHandler:
         self._settings_file = f'{qt.SETTINGS_DIR}/{_name}.ini'
 
     @property
+    def entity(self):
+        """Obtain entity for this export.
+
+        Returns:
+            (CPEntity): entity
+        """
+        return self.work.entity
+
+    @property
+    def job(self):
+        """Obtain job for this export.
+
+        Returns:
+            (CPJob): job
+        """
+        return self.work.job
+
+    @property
     def title(self):
         """Obtain title for this handler.
 
@@ -540,17 +558,26 @@ class CExportHandler:
             self.outputs, thumb=_work_thumb, upstream_files=upstream_files,
             force=True)
 
-    def _update_pipe_cache(self, reset_cache=True):
+    def _update_pipe_cache(self, reset_cache=True, update_pub_cache=False):
         """Update pipeline cache.
 
         Args:
             reset_cache (bool): apply cache reset
+            update_pub_cache (bool): update publish cache
         """
         _LOGGER.info('UPDATE PIPE CACHE')
 
-        _LOGGER.info(' - UPDATE WORK OUTPUTS')
-        if reset_cache:
+        # Update cache
+        if update_pub_cache:
+            _LOGGER.info(' - UPDATING PUBLISH CACHE')
+            self.entity.find_publishes(force=True)
+            self.job.find_publishes(force=True)
+        elif reset_cache:
+            _LOGGER.info(' - UPDATING PIPE CACHE')
             pipe.CACHE.reset()
+
+        # Update work file outputs
+        _LOGGER.info(' - UPDATE WORK OUTPUTS')
         self.work = pipe.CACHE.obt(self.work)
         self.work.update_outputs()
 

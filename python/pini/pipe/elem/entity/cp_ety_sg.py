@@ -61,22 +61,27 @@ class CPEntitySG(cp_ety_base.CPEntityBase):
 
         _LOGGER.info('CREATE %s', self)
 
-        # Find template
+        # Find apply profile specific settings
+        _data = {'project': self.job.sg_proj.to_entry()}
         if self.profile == 'asset':
             _tmpl = _find_asset_task_tmpl()
+            _code = self.asset
+            _data['sg_asset_type'] = self.asset_type
+        elif self.profile == 'shot':
+            _tmpl = _find_shot_task_tmpl()
+            _code = self.name
+            _seq = shotgrid.find_one(
+                'Sequence', filters=[('code', 'is', self.sequence)],
+                job=self.job)
+            _data['sg_sequence'] = _seq
         else:
             raise NotImplementedError(self.profile)
         _LOGGER.info(' - TMPL %s', _tmpl)
-
-        # Build data
-        _data = {
-            'code': self.asset,
-            'project': self.job.sg_proj.to_entry(),
-            'sg_asset_type': self.asset_type,
-            'task_template': _tmpl,
-        }
+        _data['code'] = _code
+        _data['task_template'] = _tmpl
         _LOGGER.info(' - DATA %s', _data)
 
+        # Create entity
         _data = shotgrid.create(self.profile.capitalize(), _data)
         _LOGGER.info(' - CREATED %s', self)
 
@@ -226,5 +231,32 @@ def _find_asset_task_tmpl():
         pprint.pprint(_tmpls)
         raise RuntimeError(
             f'Failed to find asset template (found {len(_tmpls)})')
+
+    return single(_tmpls)
+
+
+@cache_result
+def _find_shot_task_tmpl():
+    """Find shot task template.
+
+    Returns:
+        (dict): shot task template entry
+    """
+    from pini.pipe import shotgrid
+
+    _tmpl = os.environ.get('PINI_SG_SHOT_TEMPLATE')
+    if _tmpl:
+        _filter = 'code', 'is', _tmpl
+    else:
+        _filter = 'code', 'contains', 'Shot'
+
+    _tmpls = shotgrid.find(
+        'TaskTemplate', filters=[_filter], fields=['code'])
+    _LOGGER.info(' - TMPLS %s', _tmpls)
+
+    if len(_tmpls) != 1:
+        pprint.pprint(_tmpls)
+        raise RuntimeError(
+            f'Failed to find shot template (found {len(_tmpls)})')
 
     return single(_tmpls)

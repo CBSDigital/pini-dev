@@ -86,7 +86,8 @@ class CMayaAbcCache(CMayaCache):
         _use_farm = self.settings.get('use_farm')
         if _use_farm:
             return
-        super()._update_pipe_cache(reset_cache=not self.block_update_metadata)
+        super()._update_pipe_cache(
+            update_pub_cache=not self.block_update_metadata)
 
 
 class CMayaFbxCache(CMayaCache):
