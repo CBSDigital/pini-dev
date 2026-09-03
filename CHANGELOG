@@ -1,3 +1,13 @@
+## [9.39.1] - Thu 2026-09-03 10:35
+### Summary
+ - Pini Helper:
+    - substance bugfix failing to read substance version in some cases (eehemann),
+### Updated
+ - pini.utils.File.find_bkps bugfix not finding bkps,
+ - pini.dcc.SubstancePainterDCC._read_version reimplemented using spainter api,
+ - testing.print_env added key_filter/val_filter,
+
+
 ## [9.39.0] - Wed 2026-09-02 15:46
 ### Summary
  - Pini Helper:

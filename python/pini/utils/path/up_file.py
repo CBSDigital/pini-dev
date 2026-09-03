@@ -223,22 +223,32 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         Returns:
             (File list): backup files
         """
-        from pini.utils import get_user
         _LOGGER.debug('FIND BKPS %s', self.path)
 
         # Read bkp format
         _head, _tail = _BKP_FMT.split('{tstr}')
         _head = _head.format(base=self.base)
-        _tail = _tail.format(user=get_user())
-        _LOGGER.debug(' - HEAD/TAIL %s %s', _head, _tail)
+        _LOGGER.debug(' - HEAD/TAIL %s', _head)
         _dir, _head = _head.rsplit('/', 1)
         _LOGGER.debug(' - DIR/BASE %s %s', _dir, _head)
         _dir = self.to_dir().to_subdir(_dir)
         _LOGGER.debug(' - DIR %s', _dir)
 
-        _bkps = _dir.find(
-            head=_head, tail=_tail, class_=True, type_='f', extn=self.extn,
-            hidden=True, catch_missing=True, depth=1)
+        _bkps = []
+        for _file in _dir.find(
+                head=_head, class_=True, type_='f', extn=self.extn,
+                hidden=True, catch_missing=True, depth=1):
+            _LOGGER.info(' - FILE %s', _file)
+            _tail = _file.base[len(_head):]
+            _LOGGER.info('   - TAIL %s', _tail)
+            _tokens = _tail.split('_')
+            if len(_tokens) != 3:
+                continue
+            _date, _time, _user = _tokens
+            if not _date.isdigit() or not _time.isdigit():
+                _LOGGER.debug('   - BAD DATE / TIME %s', _date, _time)
+                continue
+            _bkps.append(_file)
         _LOGGER.debug(' - FOUND %d BKPS', len(_bkps))
         return _bkps
 

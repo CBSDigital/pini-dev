@@ -167,18 +167,24 @@ def insert_sys_path(path):
     _add_sys_path(path, action='insert')
 
 
-def print_env(filter_=None):
+def print_env(filter_=None, key_filter=None, val_filter=None):
     """Print current environment.
 
     Args:
         filter_ (str): apply key/val filter
+        key_filter (str): apply key filter
+        val_filter (str): apply val filter
     """
-    _data = [('ENV', 'VAL')]
-    for _env, _val in os.environ.items():
-        if filter_ and not passes_filter(f'{_env} {_val}', filter_):
+    _data = []
+    for _key, _val in os.environ.items():
+        if filter_ and not passes_filter(f'{_key} {_val}', filter_):
             continue
-        _data.append((_env, _val))
-    print(tabulate.tabulate(_data))
+        if key_filter and not passes_filter(_key, key_filter):
+            continue
+        if val_filter and not passes_filter(_val, val_filter):
+            continue
+        _data.append((_key, _val))
+    print(tabulate.tabulate(_data, headers=('ENV', 'VAL')))
 
 
 def print_sys_paths(sort=False, filter_=None):

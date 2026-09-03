@@ -5,9 +5,9 @@
 import logging
 
 import substance_painter
-from substance_painter import project, exception
+from substance_painter import project, exception, application
 
-from pini.utils import abs_path, to_str, wrap_fn, find_exe, File
+from pini.utils import abs_path, to_str, wrap_fn, File
 
 from .d_base import BaseDCC
 
@@ -147,19 +147,7 @@ class SubstancePainterDCC(BaseDCC):
             (tuple): major/minor/patch
         """
         _LOGGER.debug('READ VERSION %s', self)
-        _exe = find_exe('Adobe Substance 3D Painter')
-        if not _exe:
-            return None
-        try:
-            import win32api
-        except ImportError:
-            _LOGGER.error('FAILED TO IMPORT win32api MODULE')
-            return None
-        _path = _exe.path
-        _LOGGER.debug(' - PATH %s', _path)
-        _ver_s = win32api.GetFileVersionInfo(
-            _path, r'\StringFileInfo\040904B0\FileVersion')
-        return tuple(int(_val) for _val in _ver_s.split('.'))
+        return application.version_info()
 
     def set_scene_data(self, key, val):
         """Store data within this scene.
