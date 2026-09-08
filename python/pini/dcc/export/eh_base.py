@@ -565,14 +565,16 @@ class CExportHandler:
             reset_cache (bool): apply cache reset
             update_pub_cache (bool): update publish cache
         """
-        _LOGGER.info('UPDATE PIPE CACHE')
+        _LOGGER.info(
+            'UPDATE PIPE CACHE update_pub_cache=%d reset_cache=%d',
+            update_pub_cache, reset_cache)
 
         # Update cache
         if update_pub_cache:
             _LOGGER.info(' - UPDATING PUBLISH CACHE')
             self.entity.find_publishes(force=True)
             self.job.find_publishes(force=True)
-        elif reset_cache:
+        if reset_cache:
             _LOGGER.info(' - UPDATING PIPE CACHE')
             pipe.CACHE.reset()
 

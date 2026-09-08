@@ -168,10 +168,9 @@ class CCacheHandler(eh_base.CExportHandler):
             if content_type:
                 _cbl.output.add_metadata(content_type=content_type)
 
-    def _update_pipe_cache(self, update_pub_cache=True):
-        """Update pipeline cache.
-
-        Args:
-            update_pub_cache (bool): update publish cache
-        """
-        super()._update_pipe_cache(update_pub_cache=update_pub_cache)
+    def _update_pipe_cache(self):
+        """Update pipe cache."""
+        _use_farm = self.settings.get('use_farm')
+        if _use_farm:
+            return
+        super()._update_pipe_cache(update_pub_cache=True)

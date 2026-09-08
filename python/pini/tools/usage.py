@@ -17,7 +17,8 @@ import pini
 from pini import dcc
 from pini.utils import (
     File, Dir, cache_result, strftime, assert_eq, is_pascal, get_user,
-    read_func_kwargs, Seq, to_camel, Path, to_session_dur)
+    read_func_kwargs, Seq, to_camel, Path, to_session_dur, PINI_SESSION_ID,
+    DCC_SESSION_ID)
 
 _SESSION_START = time.time()
 _LOGGER = logging.getLogger(__name__)
@@ -133,7 +134,7 @@ def track(func):
     return get_tracker()(func)
 
 
-def _build_data(func, args=None):
+def _build_data(func=None, args=None):
     """Build data dictionary to write to disk.
 
     Args:
@@ -155,6 +156,8 @@ def _build_data(func, args=None):
     _data['dcc_version'] = dcc.to_version(str)
     _data['py_version'] = f'{sys.version_info.major}.{sys.version_info.minor}'
     _data['platform'] = sys.platform
+    _data['pini_session'] = PINI_SESSION_ID
+    _data['dcc_session'] = DCC_SESSION_ID
     if args:
         _data['args'] = args
 

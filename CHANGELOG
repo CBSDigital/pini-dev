@@ -1,3 +1,14 @@
+## [9.40.1] - Tue 2026-09-08 13:43
+### Summary
+ - Pini Helper:
+    - maya cache bugfix not updating publish cache (mkim),
+### Updated
+ - pini.dcc.CExportHandler._update_pipe_cache bugfix no cache reset on update pub cache,
+ - pini.dcc.CCacheHandler._update_pipe_cache apply update pub cache,
+ - pini.tools.helper.jump_to reset outputs filter on jump to output,
+ - pini.tools.usage track pini/dcc session id,
+
+
 ## [9.40.0] - Tue 2026-09-08 11:26
 ### Summary
  - Pini Helper:

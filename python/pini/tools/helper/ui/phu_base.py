@@ -214,6 +214,8 @@ class PHUiBase(
             return False
 
         # Update ui
+        if isinstance(self.target, pipe.CPOutputBase):
+            self.ui.SOutputsFilter.clear()
         self.ui.Job.redraw()
         _LOGGER.debug(' - TRG ETY %s', _trg_ety)
         if _trg_ety:

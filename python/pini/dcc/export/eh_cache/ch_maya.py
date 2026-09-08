@@ -81,14 +81,6 @@ class CMayaAbcCache(CMayaCache):
         self.ui.add_check_box('WorldSpace')
         self.ui.add_check_box('RenderableOnly')
 
-    def _update_pipe_cache(self):
-        """Update pipe cache."""
-        _use_farm = self.settings.get('use_farm')
-        if _use_farm:
-            return
-        super()._update_pipe_cache(
-            update_pub_cache=not self.block_update_metadata)
-
 
 class CMayaFbxCache(CMayaCache):
     """Manages fbx caching in maya."""
