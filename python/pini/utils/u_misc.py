@@ -670,8 +670,6 @@ def to_list(obj):
         return []
     if isinstance(obj, (list, set, tuple)):
         return obj
-    if isinstance(obj, str):
-        return [obj]
     if isinstance(obj, (
             collections.abc.KeysView,
             range,
@@ -679,7 +677,7 @@ def to_list(obj):
             typing.ValuesView,
     )):
         return list(obj)
-    raise NotImplementedError(obj)
+    return [obj]
 
 
 def to_str(obj):

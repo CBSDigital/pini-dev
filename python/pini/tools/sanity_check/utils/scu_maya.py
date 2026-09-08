@@ -18,22 +18,27 @@ from .. import core
 _LOGGER = logging.getLogger(__name__)
 
 
-def check_cacheable_set(set_, check):
+def check_cacheable_set(set_, check, check_shps=False):
     """Check a cacheable set.
 
     Args:
         set_ (str): name of cache_SET or CSET
         check (SCCheck): check to apply fails to
+        check_shps (bool): check shape names match transforms
     """
     check.tfms = m_pipe.read_cache_set(set_=set_, mode='tfm')
+
+    # Find checks to exec
     _funcs = [
         _batch_check_for_basic_dup_names,
         _batch_check_for_cleaned_dup_names,
         _check_for_overlapping_nodes,
         _check_for_duplicate_names,
-        _check_geo_shapes,
-        _check_for_mutiple_top_nodes,
-    ]
+        _check_for_mutiple_top_nodes]
+    if check_shps:
+        _funcs += [_check_geo_shapes]
+
+    # Run checks
     for _func in check.update_progress(_funcs):
         _n_fails = len(check.fails)
         _func(set_=set_, check=check)
@@ -315,7 +320,8 @@ def find_top_level_nodes():
 
 
 def fix_node_suffix(
-        node, suffix, type_, alts=(), ignore=(), base=None, start_idxs=None):
+        node, suffix, type_, alts=(), ignore=(), base=None, start_idxs=None,
+        rename=None):
     """Provide fix for node suffix fail.
 
     Args:
@@ -326,11 +332,12 @@ def fix_node_suffix(
         ignore (tuple): suggestions to ignore
         base (str): apply name base/prefix
         start_idxs (dict): start index cache for to_unique func
+        rename (fn): override rename func
 
     Returns:
         (str, fn, str): fail message, fix, name suggestion
     """
-    _LOGGER.debug("FIX NODE SUFFIX %s", node)
+    _LOGGER.debug("FIX NODE SUFFIX %s suffix=%s", node, suffix)
 
     _node = pom.cast_node(str(node))
     if _node.is_referenced():
@@ -360,10 +367,11 @@ def fix_node_suffix(
     _suggestion = to_unique(
         base=_base, suffix=suffix, ignore=ignore, start_idxs=start_idxs)
     _LOGGER.debug(' - SUGGESTION %s', _suggestion)
+    _rename = rename or cmds.rename
     _msg = (
         f'{type_.capitalize()} "{node}" does not have "{suffix}" suffix '
         f'(suggestion: "{_suggestion}")')
-    _fix = wrap_fn(_node.rename, _suggestion)
+    _fix = wrap_fn(_rename, _node, _suggestion)
 
     return _msg, _fix, _suggestion
 

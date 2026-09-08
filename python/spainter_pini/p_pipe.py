@@ -1,14 +1,48 @@
 """Pipeline tools for substance painter."""
 
+import ctypes
 import logging
 import os
+import sys
+
+from ctypes import wintypes
 
 import substance_painter
 
 from pini import qt, pipe
+from pini.qt import QtCore, QtWidgets, QtGui
 from pini.utils import File, Dir, abs_path, single
 
 _LOGGER = logging.getLogger(__name__)
+
+if not hasattr(sys, 'PINI_SPAINTER_EXPORT_PRESETS'):
+    sys.PINI_SPAINTER_EXPORT_PRESETS = set()
+
+
+def _exec_export_textures(pub_dir, cfg, browser=False, force=False):
+    """Execute texture export.
+
+    Args:
+        pub_dir (Dir): publish dir
+        cfg (dict): export config
+        browser (bool): open export folder in brower
+        force (bool): replace existing without confirmation
+
+    Returns:
+        (dict): export result
+    """
+
+    pub_dir.mkdir()
+    pub_dir.flush(force=force)
+    if browser:
+        assert pub_dir.exists()
+        pub_dir.browser()
+    _result = substance_painter.export.export_project_textures(cfg)
+    if _result.status != substance_painter.export.ExportStatus.Success:
+        _LOGGER.error(' - EXPORT ERROR %s', _result.message)
+        raise RuntimeError('Export textures failed')
+
+    return _result
 
 
 def export_textures(
@@ -104,25 +138,253 @@ def export_textures(
     return sorted(_outs)
 
 
-def _to_pub_dir(work, template):
-    """Obtain publish dir for the given work file.
-
-    NOTE: substance texture export handle see // mounts
+def install_export_preset(preset):
+    """Install export preset.
 
     Args:
-        work (CCPWork): work file
-        template (CPTemplate): texture file template
+        preset (str): name of preset to install
+    """
+    _src = File(preset)
+    _subs_home = Dir(os.environ['PINI_SPAINTER_HOME'])
+    _dir = _subs_home.to_subdir('assets/export-presets')
+    _trg = _dir.to_file(_src.filename)
+    _LOGGER.info(' - INSTALL PRESET %s', _trg)
+    _src.copy_to(_trg, force=True, verbose=False)
+    sys.PINI_SPAINTER_EXPORT_PRESETS.add(f'your_assets/{_trg.base}')
+
+
+def take_snapshot(file_, force=False):  # pylint: disable=too-many-statements
+    """Take a snapshot of the current 3D view.
+
+    NOTE: written by claude code.
+
+    Args:
+        file_ (str): file to write to
+        force (bool): overwrite file without confirmation
 
     Returns:
-        (Dir): publish dir
+        (File): file that was written to
     """
-    _pub_dir = work.to_output(
-        template, output_name='null', output_type='C',
-        udim_u='10', udim_v='01', extn='png').to_dir()
-    _LOGGER.info(" - PUB DIR %s", _pub_dir)
-    _pub_dir = Dir(abs_path(_pub_dir, mode='drive'))
-    assert not _pub_dir.path.startswith('//')
-    return _pub_dir
+
+    def _map_to_ancestor(widget, ancestor):
+        """Sum widget positions up the parent chain to an ancestor.
+
+        Avoids QWidget.mapToGlobal, which consistently errors in painter
+        (passing a QPoint into api-created widgets raises a bogus
+        "already deleted") - pos() takes no args so is safe.
+
+        Args:
+            widget (QWidget): widget to map
+            ancestor (QWidget): ancestor to map to
+
+        Returns:
+            (int tuple): x/y offset of widget within ancestor
+        """
+        _x_off = _y_off = 0
+        _widget = widget
+        while _widget is not None and _widget is not ancestor:
+            _pos = _widget.pos()
+            _x_off += _pos.x()
+            _y_off += _pos.y()
+            _widget = _widget.parentWidget()
+        return _x_off, _y_off
+
+    def _find_3d_view(central):
+        """Find the 3d view widget within the central widget.
+
+        The central area shows 3d/2d views side by side - the 3d view
+        is taken to be the leftmost tall pane which doesn't span the
+        full central width.
+
+        Args:
+            central (QWidget): main window central widget
+
+        Returns:
+            (QWidget): 3d view widget (central widget if not isolated,
+                eg. in 3d-only display mode where it fills the area)
+        """
+        _candidates = []
+        for _widget in central.findChildren(QtWidgets.QWidget):
+            if not _widget.isVisible():
+                continue
+            _width, _height = _widget.width(), _widget.height()
+            if _height < 0.5 * central.height():
+                continue
+            if not 0.2 * central.width() < _width < 0.9 * central.width():
+                continue
+            _x_off, _ = _map_to_ancestor(_widget, central)
+            _candidates.append((_x_off, -_width * _height, _widget))
+        if not _candidates:
+            _LOGGER.info(' - NO 3D PANE ISOLATED - USING FULL CENTRAL AREA')
+            return central
+
+        _candidates.sort(key=lambda _item: (_item[0], _item[1]))
+        _, _, _widget = _candidates[0]
+        _LOGGER.info(
+            ' - 3D VIEW %s | %s | %dx%d',
+            _widget.metaObject().className(), _widget.objectName(),
+            _widget.width(), _widget.height())
+        return _widget
+
+    def _grab_window_image(widget):
+        """Grab a top-level window's contents via win32 PrintWindow.
+
+        Unlike grabbing the screen, this renders the window's own
+        contents so overlapping windows/dialogs are not included.
+
+        Args:
+            widget (QWidget): top-level window widget
+
+        Returns:
+            (QImage): window client area image (physical pixels)
+        """
+        _user32 = ctypes.windll.user32
+        _gdi32 = ctypes.windll.gdi32
+
+        _hwnd = int(widget.winId())
+        _rect = wintypes.RECT()
+        _user32.GetClientRect(_hwnd, ctypes.byref(_rect))
+        _width = _rect.right - _rect.left
+        _height = _rect.bottom - _rect.top
+
+        _hdc_win = _user32.GetDC(_hwnd)
+        _hdc_mem = _gdi32.CreateCompatibleDC(_hdc_win)
+        _bitmap = _gdi32.CreateCompatibleBitmap(_hdc_win, _width, _height)
+        _gdi32.SelectObject(_hdc_mem, _bitmap)
+
+        # PW_CLIENTONLY (0x1) | PW_RENDERFULLCONTENT (0x2) - the latter
+        # captures gpu-composited content (ie. the 3d viewport)
+        _result = _user32.PrintWindow(_hwnd, _hdc_mem, 0x1 | 0x2)
+        _LOGGER.info(' - PRINTWINDOW RESULT %d (%dx%d)',
+                     _result, _width, _height)
+
+        class _BitmapInfoHeader(ctypes.Structure):
+            _fields_ = [
+                ('biSize', ctypes.c_uint32),
+                ('biWidth', ctypes.c_int32),
+                ('biHeight', ctypes.c_int32),
+                ('biPlanes', ctypes.c_uint16),
+                ('biBitCount', ctypes.c_uint16),
+                ('biCompression', ctypes.c_uint32),
+                ('biSizeImage', ctypes.c_uint32),
+                ('biXPelsPerMeter', ctypes.c_int32),
+                ('biYPelsPerMeter', ctypes.c_int32),
+                ('biClrUsed', ctypes.c_uint32),
+                ('biClrImportant', ctypes.c_uint32)]
+
+        _info = _BitmapInfoHeader()
+        _info.biSize = ctypes.sizeof(_BitmapInfoHeader)
+        _info.biWidth = _width
+        _info.biHeight = -_height  # negative gives top-down row order
+        _info.biPlanes = 1
+        _info.biBitCount = 32
+        _info.biCompression = 0  # BI_RGB
+
+        _buf = ctypes.create_string_buffer(_width * _height * 4)
+        _gdi32.GetDIBits(
+            _hdc_mem, _bitmap, 0, _height, _buf, ctypes.byref(_info), 0)
+
+        _gdi32.DeleteObject(_bitmap)
+        _gdi32.DeleteDC(_hdc_mem)
+        _user32.ReleaseDC(_hwnd, _hdc_win)
+
+        return QtGui.QImage(
+            _buf, _width, _height, _width * 4,
+            QtGui.QImage.Format_ARGB32).copy()
+
+    def _image_is_blank(image):
+        """Test whether an image is all black (ie. capture failed).
+
+        Args:
+            image (QImage): image to test
+
+        Returns:
+            (bool): whether all sample points are black
+        """
+        for _x_fr in (0.2, 0.5, 0.8):
+            for _y_fr in (0.2, 0.5, 0.8):
+                _color = image.pixelColor(
+                    int(image.width() * _x_fr), int(image.height() * _y_fr))
+                if _color.value():
+                    return False
+        return True
+
+    def _grab_screen_image(main):
+        """Grab the main window region from the screen.
+
+        Fallback for PrintWindow failing - requires the window to be
+        visible and unobstructed.
+
+        Args:
+            main (QWidget): main window widget
+
+        Returns:
+            (QImage): window image (physical pixels)
+        """
+        _screen = main.screen()
+        _ratio = _screen.devicePixelRatio()
+        _s_geo = _screen.geometry()
+        _geo = main.geometry()  # top-level so already in global coords
+        _pixmap = _screen.grabWindow(0)
+        _rect = QtCore.QRect(
+            int((_geo.x() - _s_geo.x()) * _ratio),
+            int((_geo.y() - _s_geo.y()) * _ratio),
+            int(_geo.width() * _ratio),
+            int(_geo.height() * _ratio))
+        return _pixmap.copy(_rect).toImage()
+
+    def _snapshot_viewport(file_):
+        """Save a snapshot of the 3d view.
+
+        Captures the painter window contents directly (via win32
+        PrintWindow) so windows on top are not included, then crops
+        to the 3d view.
+
+        Args:
+            file_ (str): path to save image to (eg. png/jpg)
+
+        Returns:
+            (str): path to saved image
+        """
+        _main = substance_painter.ui.get_main_window()
+        _central = _main.centralWidget()
+        _view = _find_3d_view(_central)
+
+        _image = _grab_window_image(_main)
+        if _image_is_blank(_image):
+            _LOGGER.warning(
+                ' - PRINTWINDOW GAVE BLANK IMAGE - FALLING BACK TO '
+                'SCREEN GRAB (WINDOW MUST BE UNOBSTRUCTED)')
+            _image = _grab_screen_image(_main)
+
+        # Crop to 3d view, accounting for dpi scaling
+        _ratio = _main.devicePixelRatioF()
+        _x_off, _y_off = _map_to_ancestor(_view, _main)
+        _rect = QtCore.QRect(
+            int(_x_off * _ratio), int(_y_off * _ratio),
+            int(_view.width() * _ratio), int(_view.height() * _ratio))
+        _image = _image.copy(_rect)
+
+        # Crop to centred square
+        _side = min(_image.width(), _image.height())
+        _sq_rect = QtCore.QRect(
+            (_image.width() - _side) // 2,
+            (_image.height() - _side) // 2,
+            _side, _side)
+        _image = _image.copy(_sq_rect)
+
+        if not _image.save(file_):
+            raise RuntimeError(f'Failed to save snapshot {file_}')
+        _LOGGER.info(' - SAVED SNAPSHOT %s', file_)
+        return file_
+
+    _file = File(file_)
+    _file.delete(force=force)
+    assert not _file.exists()
+    _snapshot_viewport(_file.path)
+    assert _file.exists()
+
+    return _file
 
 
 def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
@@ -206,27 +468,22 @@ def to_export_data(sets=None):
     return _exports
 
 
-def _exec_export_textures(pub_dir, cfg, browser=False, force=False):
-    """Execute texture export.
+def _to_pub_dir(work, template):
+    """Obtain publish dir for the given work file.
+
+    NOTE: substance texture export handle see // mounts
 
     Args:
-        pub_dir (Dir): publish dir
-        cfg (dict): export config
-        browser (bool): open export folder in brower
-        force (bool): replace existing without confirmation
+        work (CCPWork): work file
+        template (CPTemplate): texture file template
 
     Returns:
-        (dict): export result
+        (Dir): publish dir
     """
-
-    pub_dir.mkdir()
-    pub_dir.flush(force=force)
-    if browser:
-        assert pub_dir.exists()
-        pub_dir.browser()
-    _result = substance_painter.export.export_project_textures(cfg)
-    if _result.status != substance_painter.export.ExportStatus.Success:
-        _LOGGER.error(' - EXPORT ERROR %s', _result.message)
-        raise RuntimeError('Export textures failed')
-
-    return _result
+    _pub_dir = work.to_output(
+        template, output_name='null', output_type='C',
+        udim_u='10', udim_v='01', extn='png').to_dir()
+    _LOGGER.info(" - PUB DIR %s", _pub_dir)
+    _pub_dir = Dir(abs_path(_pub_dir, mode='drive'))
+    assert not _pub_dir.path.startswith('//')
+    return _pub_dir

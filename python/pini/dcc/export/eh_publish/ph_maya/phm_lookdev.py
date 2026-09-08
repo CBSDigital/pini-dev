@@ -300,8 +300,11 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         if os.environ.get('PINI_SG_DISABLE_REGISTER_TEX'):
             _link_textures = False
         if _link_textures and self.textures:
+            _texs = [
+                _tex for _tex in self.textures
+                if _tex.extn not in ('iff', )]
             _upstream_files += _build_upstream_textures(
-                paths=self.textures, work=self.work)
+                paths=_texs, work=self.work)
 
         super()._register_in_shotgrid(upstream_files=_upstream_files)
 

@@ -212,14 +212,6 @@ class TestSanityCheck(unittest.TestCase):
             _cube.add_to_set('cache_SET')
             _cube.add_to_grp('RIG')
         _check.reset_and_run()
-        assert len(_check.fails) == 2
-        assert_eq(
-            _check.fails[0].msg,
-            'Node "pCube1" has badly named shape node "pCubeShape1" (should be '
-            '"pCube1Shape")')
-        for _fail in _check.fails:
-            _fail.fix()
-        _check.reset_and_run()
         pprint.pprint(_check.fails)
         _fail = single(_check.fails)
         assert 'multiple top nodes' in _fail.msg
@@ -251,13 +243,6 @@ class TestSanityCheck(unittest.TestCase):
             '"Remove" (should be "Import into root namespace")')
         _fail.fix()
         assert export.get_pub_refs_mode() == export.PubRefsMode.IMPORT_TO_ROOT
-        _check.reset_and_run()
-        pprint.pprint(_check.fails)
-        _fail = single(_check.fails)
-        assert_eq(
-            _fail.msg, 'Node "pCube3" has badly named shape node '
-            '"pCubeShape1" (should be "pCube3Shape")')
-        _fail.fix()
         _check.reset_and_run()
         assert not _check.fails
 

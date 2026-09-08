@@ -487,7 +487,8 @@ def to_unique(base, suffix='', ignore=(), start_idxs=None):
 
     # Check whether name exists
     _ns = cmds.namespaceInfo(currentNamespace=True)
-    if not cmds.objExists(f'{_ns}:{base}'):
+    _trg = f'{_ns}:{base}'
+    if not cmds.objExists(_trg) and _trg.endswith(suffix):
         return base
 
     # Extract base + try adding index suffix

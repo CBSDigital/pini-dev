@@ -240,6 +240,9 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         _remove_dlayers = self.settings['remove_dlayers']
         _remove_alayers = self.settings['remove_alayers']
 
+        # Lose name to avoid save over
+        cmds.file(rename='untitled')
+
         _apply_refs_mode_opt(refs_mode=self.settings['references'])
 
         # Remove JUNK

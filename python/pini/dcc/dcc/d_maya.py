@@ -507,7 +507,7 @@ class MayaDCC(BaseDCC):
         Args:
             file_ (str): path to save image to
         """
-        process_deferred_events()
+        process_deferred_events(catch=True)
         return blast_frame(file_, settings='Nice', force=True)
 
     def unsaved_changes(self):

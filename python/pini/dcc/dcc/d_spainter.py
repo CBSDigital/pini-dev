@@ -7,7 +7,7 @@ import logging
 import substance_painter
 from substance_painter import project, exception, application
 
-from pini.utils import abs_path, to_str, wrap_fn, File
+from pini.utils import abs_path, to_str, wrap_fn
 
 from .d_base import BaseDCC
 
@@ -182,25 +182,8 @@ class SubstancePainterDCC(BaseDCC):
         Args:
             file_ (str): path to save image to
         """
-        from pini import qt
-        from pini.qt import QtWidgets
-        from spainter_pini import ui
-
-        _file = File(file_)
-
-        # Find viewer
-        _win = ui.to_main_window()
-        _LOGGER.info('WIN %s', _win)
-        _view = _win.findChild(QtWidgets.QWidget, name='Viewer3D')
-        _LOGGER.info('VIEW %s', _view)
-
-        # Render to pixmap
-        _pix = qt.CPixmap(_view.size())
-        _pix.fill('Transparent')
-        _view.render(_pix)
-        _pix.save_as(_file, force=True)
-
-        return _file
+        from spainter_pini import p_pipe
+        return p_pipe.take_snapshot(file_, force=True)
 
     def unsaved_changes(self):
         """Test whether the current scene has unsaved changes.

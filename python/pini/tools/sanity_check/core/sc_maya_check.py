@@ -2,15 +2,17 @@
 
 import copy
 import logging
+import os
 
 from maya import cmds
 
 from pini.utils import wrap_fn, check_heart, single
 
 from maya_pini import open_maya as pom, m_pipe
-from maya_pini.utils import to_shps, cur_renderer, to_unique
+from maya_pini.utils import to_shps, cur_renderer, to_unique, to_clean
 
 from . import sc_check
+from .. import utils
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,10 +25,16 @@ class SCMayaCheck(sc_check.SCCheck):
     """
 
     _checked_shps = None
+    _ignore_names = None
+    _start_idxs = None
 
-    def run(self):
-        """Execute this check."""
+    def reset(self):
+        """Reset this check."""
+        super().reset()
+
         self._checked_shps = set()
+        self._ignore_names = []
+        self._start_idxs = {}
 
     def check_attr(self, attr, val, fail=None, create=False, catch=False):
         """Check a attribute has the given value.
@@ -71,6 +79,30 @@ class SCMayaCheck(sc_check.SCCheck):
 
         _msg = fail or f'Attribute "{attr}" is not set to "{val}"'
         self.add_fail(_msg, fix=_fix, node=_node)
+
+    def check_geo_naming(self, geo, rename=None):
+        """Check naming of geometry nodes.
+
+        Args:
+            geo (str): geo to check
+            rename (fn): override rename func
+
+        Returns:
+            (bool): whether check passed
+        """
+        _name = to_clean(geo)
+        _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
+        if _name.endswith(f'_{_geo_suffix}') or _name == _geo_suffix:
+            return True
+
+        _msg, _fix, _suggestion = utils.fix_node_suffix(
+            node=geo, suffix=f'_{_geo_suffix}',
+            alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
+            ignore=self._ignore_names, start_idxs=self._start_idxs,
+            rename=rename)
+        self._ignore_names.append(_suggestion)
+        self.add_fail(_msg, node=geo, fix=_fix)
+        return False
 
     def check_opt_var(self, flag, val, type_='float', category=None):
         """Check an optionVar setting.
@@ -161,6 +193,9 @@ class SCMayaCheck(sc_check.SCCheck):
 
         Args:
             node (CTransform): node to check
+
+        Returns:
+            (bool): whether check passed
         """
         _LOGGER.debug('CHECK SHP %s', node)
         _node = node
@@ -177,26 +212,29 @@ class SCMayaCheck(sc_check.SCCheck):
             # Ignore group nodes
             _shps = to_shps(str(_node))
             if not _shps:
-                return
+                return True
 
             # Handle multiple shapes
             if len(_shps) > 1:
                 _shps_s = '/'.join(_shps)
                 _msg = f'Node "{_node}" has multiple shapes ({_shps_s})'
                 self.add_fail(_msg, node=_node)
-                return
+                return False
 
             raise NotImplementedError
 
         # Avoid checking shapes multiple times
         assert _node.shp
         if _node.shp in self._checked_shps:
-            return
+            _LOGGER.debug(' - SHP ALREADY CHECKED')
+            return True
         self._checked_shps.add(_node.shp)
 
         # Check shape name
         _cur_shp = _node.shp.to_clean()
+        _LOGGER.debug(' - CUR SHP %s', _cur_shp)
         _correct_shp = f'{_node.to_clean()}Shape'
+        _LOGGER.debug(' - COR SHP %s', _correct_shp)
         if _cur_shp != _correct_shp:
 
             _LOGGER.debug(' - SHP NODE %s', _node.shp)
@@ -204,7 +242,7 @@ class SCMayaCheck(sc_check.SCCheck):
             # Ignore instanced shapes
             if _node.shp.is_instanced():
                 self.write_log(' - ignoring instanced shape %s', _cur_shp)
-                return
+                return True
 
             # Add fail
             if _node.shp.is_referenced():
@@ -216,6 +254,9 @@ class SCMayaCheck(sc_check.SCCheck):
                 f'(should be "{_correct_shp}")')
             _LOGGER.debug(' - ADDING FAIL %s', _msg)
             self.add_fail(_msg, fix=_fix, node=_node)
+            return False
+
+        return True
 
     def __repr__(self):
         _type = type(self).__name__.strip('_')

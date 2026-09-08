@@ -3,7 +3,9 @@
 import logging
 
 
-from pini import icons
+from pini import icons, qt
+from pini.utils import plural
+
 from maya_pini import m_pipe, open_maya as pom
 from maya_pini.utils import to_long
 
@@ -87,34 +89,68 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
 
     def _clean_scene(self):
         """Apply clean scene options to prepare for publish."""
-        _del_hist = self.settings['del_history']
-        _freeze_tfms = self.settings['freeze_tfms']
-        _reset_pivot = self.settings['reset_pivot']
-        _lock_s = self.settings['lock']
-
         super()._clean_scene()
 
         # Build list of transforms
         _tfms = m_pipe.read_cache_set(mode='tfm')
         _tfms = sorted(_tfms, key=to_long, reverse=True)
-        _top_node = _tfms[-1] if _tfms else None
         _LOGGER.info(' - TFMS %s', _tfms)
 
-        # Clean geos
-        for _tfm in _tfms:
+        self._clean_scene_geos(_tfms)
+        self._apply_locking(_tfms)
+
+    def _clean_scene_geos(self, tfms):
+        """Clean scene geometry.
+
+        Args:
+            tfms (CTransform list): transforms
+        """
+        _del_hist = self.settings['del_history']
+        _force = self.settings['force']
+        _freeze_tfms = self.settings['freeze_tfms']
+        _reset_pivot = self.settings['reset_pivot']
+
+        _freeze_fails = 0
+        for _tfm in tfms:
+
             if not _tfm.exists():
                 continue
+
             if _del_hist:
                 _tfm.delete_history()
+
             if _freeze_tfms:
-                _tfm.freeze_tfms(force=True)
+                try:
+                    _tfm.freeze_tfms(force=True)
+                except RuntimeError:
+                    _LOGGER.info(' - FAILED TO FREEZE TFMS %s', _tfm)
+                    _freeze_fails += 1
+
             if _reset_pivot:
                 _tfm.set_pivot(pom.ORIGIN)
 
+        # Warn on failed freezes
+        if not _force and _freeze_fails:
+            qt.ok_cancel(
+                f'Failed to freeze transforms on {_freeze_fails} '
+                f'node{plural(_freeze_fails)}.\n\nWould you like to '
+                f'continue?\n\n(see script editor for details)')
+
+    def _apply_locking(self, tfms):
+        """Apply locking.
+
+        Args:
+            tfms (CTransform list): transforms
+        """
+        _top_node = tfms[-1] if tfms else None
+        _lock_s = self.settings['lock']
+
         # Apply locking
-        for _tfm in _tfms:
+        for _tfm in tfms:
+
             if not _tfm.exists():
                 continue
+
             _LOGGER.debug(' - LOCK TFM %s', _tfm)
             if _lock_s == 'All locked except top node':
                 _lock = _tfm != _top_node
@@ -124,5 +160,6 @@ class CMayaModelPublish(phm_basic.CMayaBasicPublish):
                 _lock = True
             else:
                 raise ValueError(_lock_s)
+
             if _lock:
                 _tfm.lock_tfms()

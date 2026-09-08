@@ -1,6 +1,5 @@
 """Maya asset checks."""
 
-import os
 import logging
 
 from maya import cmds
@@ -144,7 +143,6 @@ class CheckCacheSet(core.SCMayaCheck):
 
     task_filter = 'model rig layout'
     sort = 40  # Should happen before checks which need cache set
-    _ignore_names = None
 
     def run(self, top_node_priority=None):
         """Run this check.
@@ -153,18 +151,17 @@ class CheckCacheSet(core.SCMayaCheck):
             top_node_priority (str list): override top node priority
                 sorting (eg. ['ABC', 'RIG'])
         """
-        super().run()
-
         _task = pipe.cur_task()
         _top_node_priority = top_node_priority
         if not _top_node_priority:
             _top_node_priority = self.settings.get(
                 'top_node_priority', {}).get(_task)
         _top_node_priority = _top_node_priority or []
-        self.write_log('top node priority %s', _top_node_priority)
+        self.write_log('Top node priority %s', _top_node_priority)
 
         # Check set
         _set = m_pipe.find_cache_set()
+        self.write_log('Set %s', _set)
         if not _set:
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)
@@ -217,9 +214,9 @@ class CheckCacheSet(core.SCMayaCheck):
 
         # Check for referenced transforms
         _refd_tfms = [_tfm for _tfm in tfms if _tfm.is_referenced()]
+        self.write_log('Referenced tfms %s', _refd_tfms)
         if not _refd_tfms:
             return False
-        self.write_log('Referenced tfms %s', _refd_tfms)
         _refs = sorted({_tfm.to_reference() for _tfm in _refd_tfms})
         self.write_log('Refs %s', _refs)
         assert _refs
@@ -309,7 +306,6 @@ class CheckRenderStats(core.SCMayaCheck):
 
     task_filter = 'model rig layout'
     sort = 40  # Should happen before checks which need cache set
-    _ignore_names = None
     depends_on = (CheckCacheSet, )
 
     def run(self):
@@ -495,12 +491,54 @@ def _remove_vtx_col_sets(geo, vcss):
         cmds.polyColorSet(geo, delete=True, colorSet=_vcs)
 
 
+class CheckXgen(core.SCMayaCheck):
+    """Check xgen nodes are set up correctly."""
+
+    sort = 80  # Should happen before check geo but after check cache set
+
+    def run(self):
+        """Run this check."""
+        from pini.tools import sanity_check
+        if not m_pipe.xgen_in_use():
+            return
+        if not m_pipe.xgen_cols_are_localised():
+            self.add_fail(
+                'Xgen collections are not localised/versioned to this scene '
+                f'file (current xgen data path: "{m_pipe.to_xgen_data_dir()}")',
+                fix=wrap_fn(
+                    m_pipe.localise_xgen_cols, parent=sanity_check.DIALOG))
+            return
+
+        # Check geo naming with fix
+        _cache_geo = m_pipe.read_cache_set('geo')
+        for _col in m_pipe.find_xgen_cols():
+            for _desc in _col.descs:
+                _mesh = _desc.mesh
+                self.write_log(' - checking desc %s -> %s', _desc, _mesh)
+                if _mesh not in _cache_geo:
+                    self.write_log('   - ignoring mesh outside cache set')
+                    continue
+                self.check_geo_naming(_mesh, rename=self._rename_xgen_mesh)
+
+    def _rename_xgen_mesh(self, mesh, new_name):
+        """Rename an xgen mesh.
+
+        Args:
+            mesh (CMesh): mesh to rename
+            new_name (str): new name for mesh
+        """
+        from pini.tools import sanity_check
+        m_pipe.rename_xgen_mesh(mesh, new_name, parent=sanity_check.DIALOG)
+
+
 class CheckGeoNaming(core.SCMayaCheck):
     """Check naming of cache set geometry."""
 
     task_filter = 'model rig layout'
-    _ignore_names = None
-    depends_on = (CheckCacheSet, )
+    depends_on = (
+        CheckCacheSet,  # Affects nodes which need to be checked
+        CheckXgen,  # Things may be checked/fixed here beforehand
+    )
 
     # Should happen late as renames geo
     sort = 90
@@ -516,8 +554,6 @@ class CheckGeoNaming(core.SCMayaCheck):
         if limit:
             _geos = _geos[:limit]
         self.write_log('geos %s', _geos)
-        self._ignore_names = []
-        self._start_idxs = {}
         for _geo in self.update_progress(_geos):
             self._check_geo(_geo)
 
@@ -546,17 +582,9 @@ class CheckGeoNaming(core.SCMayaCheck):
             self.add_fail(_msg, fix=_fix, node=geo)
             return
 
-        # Check geo name
-        _name = to_clean(geo)
-        _geo_suffix = os.environ.get('PINI_SANITY_CHECK_GEO_SUFFIX', 'GEO')
-        if not (_name.endswith(f'_{_geo_suffix}') or _name == _geo_suffix):
-            _msg, _fix, _suggestion = utils.fix_node_suffix(
-                node=geo, suffix='_' + _geo_suffix,
-                alts=['_Geo', '_GEO', '_geo', '_geom'], type_='geo',
-                ignore=self._ignore_names, start_idxs=self._start_idxs)
-            # _LOGGER.info(' - START IDXS %s', self._start_idxs)
-            self._ignore_names.append(_suggestion)
-            self.add_fail(_msg, node=geo, fix=_fix)
+        if not self.check_geo_naming(geo):
+            return
+        if not self.check_shp(geo):
             return
 
 

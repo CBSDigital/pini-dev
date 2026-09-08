@@ -9,7 +9,7 @@ from pini.utils import wrap_fn
 
 from maya_pini import open_maya as pom, m_pipe
 
-from .. import core
+from .. import core, utils
 from . import scc_maya_asset
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,6 +84,8 @@ class CheckModelGeo(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
+
+        # Check geos
         _geos = m_pipe.read_cache_set()
         self.write_log('Found %d geos: %s', len(_geos), _geos)
         for _geo in _geos:
@@ -98,3 +100,14 @@ class CheckModelGeo(core.SCMayaCheck):
             # Check redshift displacement disabled
             if _geo.shp.has_attr('rsEnableDisplacement'):
                 self.check_attr(_geo.shp.plug['rsEnableDisplacement'], False)
+
+        # Check tfms
+        _tfms = m_pipe.read_cache_set('tfm')
+        self.write_log('Found %d tfms: %s', len(_tfms), _tfms)
+        for _tfm in _tfms:
+            _type = _tfm.object_type()
+            if _type == 'joint':
+                self.add_fail(
+                    f'Joint found in model publish: "{_tfm}"',
+                    fix=wrap_fn(utils.safe_delete, _tfm))
+                continue

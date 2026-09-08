@@ -510,7 +510,6 @@ class CheckCacheables(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        super().run()
         for _cbl in self.update_progress(m_pipe.find_cacheables()):
             self.write_log('Check cacheable %s', _cbl)
             if isinstance(_cbl, m_pipe.CPCacheableCam):
@@ -534,7 +533,8 @@ class CheckCacheables(core.SCMayaCheck):
         Args:
             cset (CPCacheableSet): CSET to check
         """
-        utils.check_cacheable_set(set_=cset.node, check=self)
+        utils.check_cacheable_set(
+            set_=cset.node, check=self, check_shps=True)
 
     def _check_ref_for_dup_nodes(self, cacheable):
         """Check a referenced cache set for duplicate node.
