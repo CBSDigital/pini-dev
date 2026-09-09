@@ -31,6 +31,7 @@ class AttrRef(r_path_ref.PathRef):
         self.attr = attr
         self._node_type = node_type
         self.filter_str = self.attr
+        self.name = self.attr
 
         _node, _attr = self.attr.split('.', 1)
         _base, _idx = split_base_index(_node)

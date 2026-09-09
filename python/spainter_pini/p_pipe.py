@@ -47,7 +47,7 @@ def _exec_export_textures(pub_dir, cfg, browser=False, force=False):
 
 def export_textures(
         work=None, browser=False, extn='png', size=4096, sets=None,
-        progress=None, force=False):
+        progress=None, preset=None, force=False):
     """Export textures from current scene.
 
     Args:
@@ -57,6 +57,7 @@ def export_textures(
         size (int): texture size (in pixels)
         sets (str list): export only the given texture sets
         progress (ProgressDialog): progress bar
+        preset (str): apply export preset
         force (bool): replace existing without confirmation
 
     Returns:
@@ -76,7 +77,7 @@ def export_textures(
 
     _pub_dir = _to_pub_dir(work=_work, template=_tmpl)
     _cfg = to_export_cfg(
-        pub_dir=_pub_dir, extn=extn, size=size, sets=sets)
+        pub_dir=_pub_dir, extn=extn, size=size, sets=sets, preset=preset)
     _LOGGER.info(' - CFG %s', _cfg)
 
     # Run export
@@ -136,6 +137,15 @@ def export_textures(
     _LOGGER.info(' - RENAME COMPLETE')
 
     return sorted(_outs)
+
+
+def find_export_presets():
+    """Find installed export presets.
+
+    Returns:
+        (str list): presets
+    """
+    return sorted(sys.PINI_SPAINTER_EXPORT_PRESETS)
 
 
 def install_export_preset(preset):
@@ -379,6 +389,7 @@ def take_snapshot(file_, force=False):  # pylint: disable=too-many-statements
         return file_
 
     _file = File(file_)
+    _file.test_dir()
     _file.delete(force=force)
     assert not _file.exists()
     _snapshot_viewport(_file.path)
@@ -436,17 +447,18 @@ def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
     return _cfg
 
 
-def to_export_data(sets=None):
+def to_export_data(preset=None, sets=None):
     """Build dict of export data for the current scene.
 
     Args:
+        preset (str): apply export preset
         sets (str list): export only these sets
 
     Returns:
         (dict): texture set / list of export files data
     """
     _pub_dir = Dir(abs_path('~/tmp'))
-    _cfg = to_export_cfg(_pub_dir, extn='png')
+    _cfg = to_export_cfg(_pub_dir, extn='png', preset=preset)
     _parms = single(_cfg['exportParameters'])['parameters']
     _res = _parms['size']
     _sets = [_item['rootPath'] for _item in _cfg['exportList']]

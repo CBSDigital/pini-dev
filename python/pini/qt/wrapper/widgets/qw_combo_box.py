@@ -35,9 +35,17 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         """Obtain value of this combobox's selected text.
 
         Returns:
+            (any): selected data
+        """
+        return self.selected_data() or self.selected_text()
+
+    def get_val_scn(self):
+        """Read value of this widget for save in scene.
+
+        Returns:
             (str): selected text
         """
-        return self.currentText()
+        return self.selected_text()
 
     def select(self, item, catch=True):
         """Select an item by text/data.

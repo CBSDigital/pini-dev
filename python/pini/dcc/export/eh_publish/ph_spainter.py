@@ -34,7 +34,7 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
 
         _view_outputs = self.ui.build_push_btn(
             name='Preview Outputs', callback=self._raise_outputs_dialog,
-            width=70)
+            width=140)
 
         _tex_sets = []
         if dcc.cur_file():
@@ -56,6 +56,11 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
             name='Sets', items=_sets, select=_sets, label='Texture sets',
             add_elems=[_view_outputs])
 
+        _presets = p_pipe.find_export_presets()
+        _default = _presets[0]
+        _labels = [_preset.split('/')[-1] for _preset in _presets]
+        self.ui.add_combo_box(
+            name='Preset', items=_labels, val=_default, data=_presets)
         self.ui.add_check_box(
             name='Browser', val=False, label='Open texture dir in browser')
 
@@ -68,7 +73,7 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
     def export(
             self, notes=None, snapshot=True, version_up=True,
             progress=True, browser=False, sets=None,
-            sanity_check_=True, force=False):
+            sanity_check_=True, preset=None, force=False):
         """Execute texture publish.
 
         Args:
@@ -79,11 +84,12 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
             browser (bool): open export folder in brower
             sets (str list): export only the given texture sets
             sanity_check_ (bool): apply sanity checks
+            preset (str): apply export preset
             force (bool): replace existing without confirmation
         """
         return p_pipe.export_textures(
             work=self.work, browser=browser, force=force, sets=sets,
-            progress=self.progress)
+            progress=self.progress, preset=preset)
 
 
 class _OutputsDialog(QtWidgets.QDialog):

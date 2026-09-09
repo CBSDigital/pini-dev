@@ -272,7 +272,10 @@ class MayaDCC(BaseDCC):
         elif _type == 'int':
             _data = int(_data)
         elif _type in ('list', 'tuple', 'set'):
-            _data = ast.literal_eval(_data)
+            try:
+                _data = ast.literal_eval(_data)
+            except SyntaxError:
+                _data = None
         elif _type in ['str', 'unicode']:
             _data = _data.replace(r'\"', '"')
         else:

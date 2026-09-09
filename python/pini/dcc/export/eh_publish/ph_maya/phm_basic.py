@@ -304,12 +304,12 @@ def _apply_refs_mode_opt(refs_mode):
 
     # Apply reference option
     _refs = pom.find_refs(allow_no_namespace=True)
-    if _refs_mode == 'Remove':
+    if _refs_mode in ('Remove', PubRefsMode.REMOVE):
         for _ref in _refs:
             _ref.delete(force=True, delete_foster_parent=True)
     elif _refs_mode in ('Leave intact', 'No action'):
         pass
-    elif _refs_mode.startswith('Import '):
+    elif str(_refs_mode).startswith('Import '):
         _import_refs(refs_mode=_refs_mode, refs=_refs)
     else:
         raise ValueError(_refs_mode)

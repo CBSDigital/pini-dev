@@ -32,8 +32,8 @@ class FileRef(r_path_ref.PathRef):
         self.node = ref_node
         self.filter_str = self.namespace
 
-        _name = self.namespace or self.prefix
-        self.cmp_key = split_base_index(_name)
+        self.name = self.namespace or self.prefix
+        self.cmp_key = split_base_index(self.name)
 
     @property
     def extn(self):

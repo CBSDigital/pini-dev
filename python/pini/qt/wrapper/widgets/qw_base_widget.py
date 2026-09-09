@@ -48,7 +48,7 @@ class CBaseWidget:
             settings.save_widget(self)
         elif self.save_policy == q_utils.SavePolicy.SAVE_IN_SCENE:
             _LOGGER.debug('APPLY SAVE IN SCENE %s', self)
-            _val = self.get_val()
+            _val = self.get_val_scn()
             _LOGGER.debug(' - SET SCENE DATA %s %s', self.settings_key, _val)
             dcc.set_scene_data(self.settings_key, _val)
 
@@ -63,6 +63,16 @@ class CBaseWidget:
     def get_val(self):
         """Read value of this widget."""
         raise NotImplementedError(self)
+
+    def get_val_scn(self):
+        """Read value of this widget for save in scene.
+
+        This returns a simple type version of the value to stored in scene data.
+
+        Returns:
+            (any): current widget value as a simple type
+        """
+        return self.get_val()
 
     def get_data(self):
         """Obtain data embedded in this widget.

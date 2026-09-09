@@ -761,6 +761,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 continue
             if _elem.ui_only:
                 continue
+
             _name = to_snake(_name)
             _val = _elem.get_val()
             if _name == 'range':
@@ -774,13 +775,16 @@ class CExportHandlerUI(qt.CUiContainer):
                     raise ValueError(self.range_mode)
             elif _name == 'format':
                 _name = 'format_'
+
             elif isinstance(_elem, qt.CListWidget):
                 _sel_mode = _elem.selectionMode()
                 if _sel_mode == _elem.SelectionMode.SingleSelection:
                     _val = _elem.selected_data()
                 else:
                     _val = _elem.selected_datas()
+
             _kwargs[_name] = _val
+
         return _kwargs
 
     def _callback__Range(self):
