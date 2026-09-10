@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CExportHandlerUI</title>
+    <base href="../">
+    <link rel="icon" href="favicon.png" type="image/png">
+</head>
+
+<body>
+
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #000000;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .red { color:red; }
+        .green { color:DarkGreen; }
+        .black { color:black; }
+        .blue { color:CornflowerBlue; }
+        .boldBlue { color:CornflowerBlue; font-weight:bold; }
+
+        .inheritance {
+            line-height: 1.7;
+        }
+
+        pre.docs-example {
+            margin: 0.5em 0 0 0;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 0 1rem;
+        }
+
+        .site-header .header-start {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
+        .site-header .home {
+            display: flex;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+
+        .site-header .chick {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .site-header .docs-nav a,
+        .site-header .docs-nav .active {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .site-header .docs-nav a:hover {
+            color: DodgerBlue;
+        }
+
+        .site-header .docs-nav .active {
+            font-weight: bold;
+        }
+
+        .site-header .docs-nav .sep {
+            color: #999;
+            margin: 0 0.15rem;
+        }
+
+        .site-header .dcc-filter {
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .site-header .header-end {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .site-header .version {
+            color: inherit;
+            text-decoration: none;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .site-header .version:hover {
+            color: DodgerBlue;
+        }
+
+    </style>
+
+    <header class="site-header">
+        <span class="header-start"><a class="home" href="index.html" data-docs-link><img class="chick" src="favicon.png" alt=""></a><nav class="docs-nav"><a href="index.html" data-docs-link>docs</a> <span class="sep">|</span> <a href="functions.html" data-docs-link>functions</a> <span class="sep">|</span> <a href="classes.html" data-docs-link>classes</a></nav></span><span class="header-end"><label class="dcc-filter">dcc:&nbsp;<select id="DccFilter">
+                    <option value="none">none</option>
+                    <option value="maya">maya</option>
+                    <option value="nuke">nuke</option>
+                    <option value="hou">hou</option>
+                </select></label><a class="version" href="index.html" data-docs-link>pini-9.41.0</a></span>
+    </header>
+
+    <h1><a href="classes/CExportHandlerUI.html">CExportHandlerUI</a></h1>
+
+    <div class="inheritance"><font color="Grey">object</font><br>&ensp;&ensp;&#9492;&#9472; <a href="classes/CUiContainer.html">CUiContainer</a><br>&ensp;&ensp;&ensp;&ensp;&#9492;&#9472; <a href="classes/CExportHandlerUI.html"><b>CExportHandlerUI</b></a></div><br><br>
+    <h2>Represents an interface in an export handler.</h2>
+    <br>
+
+    <!-- Add search field -->
+    Search:&nbsp;&nbsp;
+    <input type="text" id="TextFilter" placeholder="render -open_maya" size="30">
+    &nbsp;&nbsp;
+    <button type="button" onclick="ClearTextFilter()">Clear</button>&nbsp;&nbsp;
+    <text id='FilterInfo'>(Displaying a/b items)</text>
+
+    <!-- Add show inherited checkbox -->
+    <span id="ShowInheritedWrap" style="float:right;" >
+        <input
+            type="checkbox"
+            id="ShowInherited"
+            name="ShowInherited"/>
+        <label for="ShowInherited">
+            show inherited members
+        </label>
+    </span>
+    <br>
+    <br>
+
+    <!-- Add table for data -->
+    <div id="data-table">
+        <table id="FuncsTable">
+        </table>
+    </div>
+    <script type="text/javascript" charset="utf-8">
+
+        var _objs = [
+             ['export.CExportHandlerUI', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI(settings_file, handler, label_w=70)</b></font><br><br><small>&nbsp;Constructor.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>settings_file</b> (str): path to settings ini file for this handler</small><br><small>&nbsp;&nbsp;&nbsp;<b>handler</b> (CExportHander): parent export handler</small><br><small>&nbsp;&nbsp;&nbsp;<b>label_w</b> (int): label width in pixels</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI</code></small>', 'pini.dcc.export.CExportHandlerUI', ''],
+             ['export.CExportHandlerUI.add_check_box', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_check_box(name, val=True, label=None, tooltip=None, enabled=True, save_policy=None, ui_only=False, data=None, add_elems=())</b></font><br><br><small>&nbsp;Add QCheckBox element in this handler\'s interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (bool): element checked state</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): apply tooltip</small><br><small>&nbsp;&nbsp;&nbsp;<b>enabled</b> (bool): apply enabled state</small><br><small>&nbsp;&nbsp;&nbsp;<b>save_policy</b> <a href="classes/SavePolicy.html">(SavePolicy)</a>: save policy to apply (default is save on change)</small><br><small>&nbsp;&nbsp;&nbsp;<b>ui_only</b> (bool): element is ui only (ie. do not pass to exec func)</small><br><small>&nbsp;&nbsp;&nbsp;<b>data</b> (any): embed data in this element</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_elems</b> (tuple): add elements to this element\'s layout</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QCheckBox): checkbox element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_check_box</code></small>', 'pini.dcc.export.CExportHandlerUI.add_check_box', ''],
+             ['export.CExportHandlerUI.add_combo_box', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_combo_box(name, items, data=None, val=None, width=None, label=None, label_w=None, tooltip=None, save_policy=None, settings_key=None, ui_only=False, add_elems=(), callback=None, stretch=True)</b></font><br><br><small>&nbsp;Add a combo box element.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>items</b> (str list): combo box items</small><br><small>&nbsp;&nbsp;&nbsp;<b>data</b> (list): list of data corresponding to items</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (str): item to select</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): override element width</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>label_w</b> (int): override default label width</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): add tooltip to element</small><br><small>&nbsp;&nbsp;&nbsp;<b>save_policy</b> <a href="classes/SavePolicy.html">(SavePolicy)</a>: save policy to apply (default is save on change)</small><br><small>&nbsp;&nbsp;&nbsp;<b>settings_key</b> (str): override settings key for element</small><br><small>&nbsp;&nbsp;&nbsp;<b>ui_only</b> (bool): element is ui only (ie. do not pass to exec func)</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_elems</b> (list): widgets to add to this layout</small><br><small>&nbsp;&nbsp;&nbsp;<b>callback</b> (fn): callback to link to widget</small><br><small>&nbsp;&nbsp;&nbsp;<b>stretch</b> (bool): apply stretch to element to fill available horizontal space</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(<a href="classes/CComboBox.html">CComboBox</a>): combo box element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_combo_box</code></small>', 'pini.dcc.export.CExportHandlerUI.add_combo_box', ''],
+             ['export.CExportHandlerUI.add_exec_btn', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_exec_btn(label)</b></font><br><br><small>&nbsp;Build execute button.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): label for button</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_exec_btn</code></small>', 'pini.dcc.export.CExportHandlerUI.add_exec_btn', ''],
+             ['export.CExportHandlerUI.add_label', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_label(name, text=None, tooltip=None, align=None, enabled=None)</b></font><br><br><small>&nbsp;Add QLabel layout line to this inteface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name for label element</small><br><small>&nbsp;&nbsp;&nbsp;<b>text</b> (str): display text for label</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): apply label tooltip</small><br><small>&nbsp;&nbsp;&nbsp;<b>align</b> (AlignmentFlag): text alignment</small><br><small>&nbsp;&nbsp;&nbsp;<b>enabled</b> (bool): apply enabled state</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QLabel): label</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_label</code></small>', 'pini.dcc.export.CExportHandlerUI.add_label', ''],
+             ['export.CExportHandlerUI.add_line_edit', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_line_edit(name, val=None, label=None, tooltip=None, callback=None, save_policy=None, add_elems=(), ui_only=False, label_w=None)</b></font><br><br><small>&nbsp;Add QLineEdit layout to this handler\'s interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (str): text for element</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): apply tooltip</small><br><small>&nbsp;&nbsp;&nbsp;<b>callback</b> (fn): callback to link to widget</small><br><small>&nbsp;&nbsp;&nbsp;<b>save_policy</b> <a href="classes/SavePolicy.html">(SavePolicy)</a>: save policy to apply (default is save on change)</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_elems</b> (list): widgets to add to this layout</small><br><small>&nbsp;&nbsp;&nbsp;<b>ui_only</b> (bool): element is ui only (ie. do not pass to exec func)</small><br><small>&nbsp;&nbsp;&nbsp;<b>label_w</b> (int): element label width</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QListEdit): line edit element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_line_edit</code></small>', 'pini.dcc.export.CExportHandlerUI.add_line_edit', ''],
+             ['export.CExportHandlerUI.add_list_widget', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_list_widget(name, items=None, label=None, icon_size=30, redraw=True, multi=True, select=None, add_elems=(), add_filter=False)</b></font><br><br><small>&nbsp;Add CListWidget element to this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>items</b> (list): list items</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>icon_size</b> (int): icon size (in pixels)</small><br><small>&nbsp;&nbsp;&nbsp;<b>redraw</b> (bool): widget on build (this should be disabled if the redraw function uses elements which haven\'t been created yet)</small><br><small>&nbsp;&nbsp;&nbsp;<b>multi</b> (bool): allow multi selection</small><br><small>&nbsp;&nbsp;&nbsp;<b>select</b> (list|any): apply selection</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_elems</b> (tuple): add elements to label layout</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_filter</b> (bool): add list filter options</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_list_widget</code></small>', 'pini.dcc.export.CExportHandlerUI.add_list_widget', ''],
+             ['export.CExportHandlerUI.add_notes_elem', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_notes_elem()</b></font><br><br><small>&nbsp;Add notes element to the ui.</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_notes_elem</code></small>', 'pini.dcc.export.CExportHandlerUI.add_notes_elem', ''],
+             ['export.CExportHandlerUI.add_push_btn', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_push_btn(name, label=None, callback=None)</b></font><br><br><small>&nbsp;Add push button element.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>callback</b> (fn): button callback</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_push_btn</code></small>', 'pini.dcc.export.CExportHandlerUI.add_push_btn', ''],
+             ['export.CExportHandlerUI.add_separator', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_separator(name=None)</b></font><br><br><small>&nbsp;Add a separator to the ui.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): separator name</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_separator</code></small>', 'pini.dcc.export.CExportHandlerUI.add_separator', ''],
+             ['export.CExportHandlerUI.add_spin_box', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.add_spin_box(name, val, min_=0, max_=10000, label=None, label_w=None, tooltip=None, add_elems=(), width=None, save_policy=None, stretch=True, ui_only=False)</b></font><br><br><small>&nbsp;Build a QSpinBox layout in this handler\'s interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>val</b> (int): element value</small><br><small>&nbsp;&nbsp;&nbsp;<b>min_</b> (int): element minimum</small><br><small>&nbsp;&nbsp;&nbsp;<b>max_</b> (int): element maximum</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): element label</small><br><small>&nbsp;&nbsp;&nbsp;<b>label_w</b> (int): element label width</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): apply tooltip</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_elems</b> (list): widgets to add to this layout</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): apply widget width</small><br><small>&nbsp;&nbsp;&nbsp;<b>save_policy</b> <a href="classes/SavePolicy.html">(SavePolicy)</a>: save policy to apply</small><br><small>&nbsp;&nbsp;&nbsp;<b>stretch</b> (bool): apply stretch to element to fill space</small><br><small>&nbsp;&nbsp;&nbsp;<b>ui_only</b> (bool): element is ui only (ie. do not pass to exec func)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QSpinBox): spinbox element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.add_spin_box</code></small>', 'pini.dcc.export.CExportHandlerUI.add_spin_box', ''],
+             ['export.CExportHandlerUI.assemble_footer_elems', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.assemble_footer_elems(add_snapshot=True, add_version_up=True, version_up=True)</b></font><br><br><small>&nbsp;Add footer ui elements.</small><br><br><small>&nbsp;These appear at the bottom of the export interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>add_snapshot</b> (bool): add snapshot option</small><br><small>&nbsp;&nbsp;&nbsp;<b>add_version_up</b> (bool): add version up option</small><br><small>&nbsp;&nbsp;&nbsp;<b>version_up</b> (bool): default version up setting</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.assemble_footer_elems</code></small>', 'pini.dcc.export.CExportHandlerUI.assemble_footer_elems', ''],
+             ['export.CExportHandlerUI.assemble_range_elems', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.assemble_range_elems(mode="Continuous")</b></font><br><br><small>&nbsp;Build range elements.</small><br><br><small>&nbsp;The allow the range to be manually set.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>mode</b> (str): apply range mode</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.assemble_range_elems</code></small>', 'pini.dcc.export.CExportHandlerUI.assemble_range_elems', ''],
+             ['export.CExportHandlerUI.build_icon_btn', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.build_icon_btn(name, icon, callback, tooltip=None)</b></font><br><br><small>&nbsp;Add icon button element.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>icon</b> (str): path to element icon</small><br><small>&nbsp;&nbsp;&nbsp;<b>callback</b> (fn): element callback</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): tooltip for button</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QPushButton): icon button</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.build_icon_btn</code></small>', 'pini.dcc.export.CExportHandlerUI.build_icon_btn', ''],
+             ['export.CExportHandlerUI.build_label', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.build_label(name, text=None, width=None, tooltip=None, align=None, enabled=None)</b></font><br><br><small>&nbsp;Add QLabel to this inteface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name for label element</small><br><small>&nbsp;&nbsp;&nbsp;<b>text</b> (str): display text for label</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): override label width</small><br><small>&nbsp;&nbsp;&nbsp;<b>tooltip</b> (str): apply label tooltip</small><br><small>&nbsp;&nbsp;&nbsp;<b>align</b> (AlignmentFlag): text alignment</small><br><small>&nbsp;&nbsp;&nbsp;<b>enabled</b> (bool): apply enabled state</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QLabel): label</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.build_label</code></small>', 'pini.dcc.export.CExportHandlerUI.build_label', ''],
+             ['export.CExportHandlerUI.build_line_edit', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.build_line_edit(name)</b></font><br><br><small>&nbsp;Add QLineEdit to the interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name for line edit</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QLineEdit): line edit</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.build_line_edit</code></small>', 'pini.dcc.export.CExportHandlerUI.build_line_edit', ''],
+             ['export.CExportHandlerUI.build_push_btn', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.build_push_btn(name, callback, label=None, width=80)</b></font><br><br><small>&nbsp;Add push button element.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>callback</b> (fn): button callback</small><br><small>&nbsp;&nbsp;&nbsp;<b>label</b> (str): button label</small><br><small>&nbsp;&nbsp;&nbsp;<b>width</b> (int): button width</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QPushButton): button</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.build_push_btn</code></small>', 'pini.dcc.export.CExportHandlerUI.build_push_btn', ''],
+             ['export.CExportHandlerUI.build_spin_box', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.build_spin_box(name, min_=0, max_=10000)</b></font><br><br><small>&nbsp;Build a QSpinBox element in this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): element name</small><br><small>&nbsp;&nbsp;&nbsp;<b>min_</b> (int): element minimum</small><br><small>&nbsp;&nbsp;&nbsp;<b>max_</b> (int): element maximum</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QSpinBox): spinbox element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.build_spin_box</code></small>', 'pini.dcc.export.CExportHandlerUI.build_spin_box', ''],
+             ['<font color="Grey">export.CExportHandlerUI.find_widget</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CExportHandlerUI.find_widget(name, catch=False, case_sensitive=False)</b></font><br><br><small>&nbsp;Find a widget within this ui.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): object name to match</small><br><small>&nbsp;&nbsp;&nbsp;<b>catch</b> (bool): no error if object not found</small><br><small>&nbsp;&nbsp;&nbsp;<b>case_sensitive</b> (bool): ignore case (this is enabled by default as windows saves QSettings keys with unreliable case)</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QWidget): matching widget</small><br><br><small>Inherited from: <a href="classes/CUiContainer.html">CUiContainer</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/q_ui_container.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.find_widget</code></small>', 'pini.dcc.export.CExportHandlerUI.find_widget', ''],
+             ['<font color="Grey">export.CExportHandlerUI.find_widgets</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CExportHandlerUI.find_widgets(filter_=None, type_=None)</b></font><br><br><small>&nbsp;Find widgets stored in this ui.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): filter by widget name</small><br><small>&nbsp;&nbsp;&nbsp;<b>type_</b> (class): filter by object type</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(QWidget list): widgets</small><br><br><small>Inherited from: <a href="classes/CUiContainer.html">CUiContainer</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/q_ui_container.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.find_widgets</code></small>', 'pini.dcc.export.CExportHandlerUI.find_widgets', ''],
+             ['export.CExportHandlerUI.has_elem', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.has_elem(name)</b></font><br><br><small>&nbsp;Check whether the ui has an element of the given name.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>name</b> (str): name to match</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): ui element</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.has_elem</code></small>', 'pini.dcc.export.CExportHandlerUI.has_elem', ''],
+             ['<font color="Grey">export.CExportHandlerUI.is_active</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CExportHandlerUI.is_active()</b></font><br><br><small>&nbsp;Test whether this ui container is active.</small><br><br><small>&nbsp;Inactive ui containers will error if any widgets are active.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(bool): whether active widgets</small><br><br><small>Inherited from: <a href="classes/CUiContainer.html">CUiContainer</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/q_ui_container.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.is_active</code></small>', 'pini.dcc.export.CExportHandlerUI.is_active', ''],
+             ['<font color="Grey">export.CExportHandlerUI.load_settings</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CExportHandlerUI.load_settings(filter_=None)</b></font><br><br><small>&nbsp;Load widget settings from file.</small><br><br><small><font color="DodgerBlue">&nbsp;Args</font></small><br><small>&nbsp;&nbsp;&nbsp;<b>filter_</b> (str): apply widget name filter</small><br><br><small>Inherited from: <a href="classes/CUiContainer.html">CUiContainer</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/q_ui_container.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.load_settings</code></small>', 'pini.dcc.export.CExportHandlerUI.load_settings', ''],
+             ['<font color="Grey">export.CExportHandlerUI.save_settings</font>', 'pini.dcc.export', '<font color="Fuchsia"><b>CExportHandlerUI.save_settings()</b></font><br><br><small>&nbsp;Save widget settings to file.</small><br><br><small>Inherited from: <a href="classes/CUiContainer.html">CUiContainer</a></small><br><small>Defined in: <font color="DeepSkyBlue">pini/qt/q_ui_container.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.save_settings</code></small>', 'pini.dcc.export.CExportHandlerUI.save_settings', ''],
+             ['export.CExportHandlerUI.to_frames', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.to_frames()</b></font><br><br><small>&nbsp;Get list of frames to export.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(int list): frames</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.to_frames</code></small>', 'pini.dcc.export.CExportHandlerUI.to_frames', ''],
+             ['export.CExportHandlerUI.to_kwargs', 'pini.dcc.export', '<font color="DarkMagenta"><b>CExportHandlerUI.to_kwargs()</b></font><br><br><small>&nbsp;Obtain execute kwargs from elements in this interface.</small><br><br><small><font color="DodgerBlue">&nbsp;Returns</font></small> <small>(dict): kwargs</small><br><br><small>Defined in: <font color="DeepSkyBlue">pini/dcc/export/eh_ui.py</font></small>', '<small><code>from pini.dcc import export<br>export.CExportHandlerUI.to_kwargs</code></small>', 'pini.dcc.export.CExportHandlerUI.to_kwargs', ''],
+         ]
+
+        const _DCC_KEY = 'docs_gen_dcc';
+        const _DEFAULT_DCC = 'none' || 'none';
+        const _PAGE_DCC = '' || '';
+        const _BG_COLS = {
+            maya: 'PaleTurquoise',
+            nuke: 'PaleGoldenRod',
+            hou: 'SandyBrown',
+            none: 'white',
+        };
+
+        function readDcc() {
+            const _params = new URLSearchParams(window.location.search);
+            return (
+                _params.get('dcc') ||
+                localStorage.getItem(_DCC_KEY) ||
+                _DEFAULT_DCC ||
+                'none');
+        }
+
+        function writeDcc(_dcc) {
+            localStorage.setItem(_DCC_KEY, _dcc);
+            const _url = new URL(window.location.href);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            history.replaceState(null, '', _url);
+        }
+
+        function hrefWithDcc(_href, _dcc) {
+            const _url = new URL(_href, document.baseURI);
+            if (_dcc && _dcc !== 'none') {
+                _url.searchParams.set('dcc', _dcc);
+            } else {
+                _url.searchParams.delete('dcc');
+            }
+            return _url.href;
+        }
+
+        function syncDocsLinks(_dcc) {
+            document.querySelectorAll('[data-docs-link]').forEach((_link) => {
+                _link.setAttribute(
+                    'href', hrefWithDcc(_link.getAttribute('href'), _dcc));
+            });
+        }
+
+        // Add text filter
+        const _filter_field = document.getElementById('TextFilter');
+        _filter_field.addEventListener('input', (event) => {
+            renderDataInTheTable();
+        });
+        function ClearTextFilter() {
+            document.getElementById("TextFilter").value = "";
+            renderDataInTheTable();
+        }
+
+        // Same token rules as pini.utils.passes_filter:
+        //   render farm     -> match if path contains render OR farm
+        //   +render +farm   -> match if path contains render AND farm
+        //   render -open_maya -> match render, exclude paths containing open_maya
+        function passesFilter(_text, _filter) {
+            if (!_filter) {
+                return true;
+            }
+            const _text_l = _text.toLowerCase();
+            const _tokens = _filter.toLowerCase().split(/\s+/).filter(Boolean);
+            const _match = [];
+            const _ignore = [];
+            const _required = [];
+            _tokens.forEach((_token) => {
+                if (_token.startsWith('-') && _token.length > 1) {
+                    _ignore.push(_token.slice(1));
+                } else if (_token.startsWith('+') && _token.length > 1) {
+                    _required.push(_token.slice(1));
+                } else if (!_token.startsWith('-') && !_token.startsWith('+')) {
+                    _match.push(_token);
+                }
+            });
+            for (const _token of _required) {
+                if (!_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            for (const _token of _ignore) {
+                if (_text_l.includes(_token)) {
+                    return false;
+                }
+            }
+            if (_match.length) {
+                return _match.some((_token) => _text_l.includes(_token));
+            }
+            return true;
+        }
+
+        // Add dcc filter (header)
+        const _dcc_field = document.getElementById('DccFilter');
+        if (_dcc_field) {
+            _dcc_field.value = readDcc();
+            writeDcc(_dcc_field.value);
+            syncDocsLinks(_dcc_field.value);
+            _dcc_field.addEventListener('change', (event) => {
+                writeDcc(_dcc_field.value);
+                syncDocsLinks(_dcc_field.value);
+                renderDataInTheTable();
+            });
+        }
+
+        // Add show inherited members
+        const _show_inherited_field = document.getElementById('ShowInherited');
+        if (_show_inherited_field) {
+            _show_inherited_field.addEventListener('change', (event) => {
+                renderDataInTheTable();
+            });
+        }
+        function renderDataInTheTable() {
+
+            const _filter = document.getElementById('TextFilter').value
+            const _dcc = _dcc_field ? _dcc_field.value : readDcc()
+            const _inh_el = document.getElementById('ShowInherited')
+            const _show_inherited = _inh_el ? _inh_el.checked : false
+            const _table = document.getElementById("FuncsTable");
+
+            document.body.style.backgroundColor = _BG_COLS[_dcc] || 'white'
+
+            _table.innerHTML = '';
+            var _count = 0;
+            var _total = 0;
+
+            _objs.forEach(_item => {
+
+                _total += 1;
+
+                const _values = Object.values(_item);
+                const _path = _values[4]
+                const _item_dcc = _values[5] || ''
+
+                // Apply text filter
+                if (!passesFilter(_path, _filter)) {
+                    return; }
+
+                // Apply dcc filter:
+                //  - untagged entries (eg. pini.utils) always show
+                //  - tagged entries (eg. pini.dcc / maya_pini) show only
+                //    for the selected dcc
+                if (_item_dcc && _item_dcc !== _dcc) {
+                    return; }
+
+                // Host-only class pages hide when another host dcc is selected
+                if (_PAGE_DCC && _dcc !== 'none' && _dcc !== _PAGE_DCC) {
+                    return; }
+
+                var _docs = _values[2]
+                var _is_inherited = _docs.includes('Inherited from:')
+
+                if (!_show_inherited && _is_inherited) {
+                    return; }
+
+                // Build row (name, location, docs, import)
+                _count += 1;
+                let _row = document.createElement("tr");
+                _values.slice(0, 4).forEach((_value) => {
+                    let _cell = document.createElement("td");
+                    _cell.innerHTML = _value;
+                    _cell.style.verticalAlign = "top";
+                    _row.appendChild(_cell);
+                })
+                _table.appendChild(_row);
+
+            });
+
+            // Update info
+            var _info = `(Displaying ${_count}/${_total} items)`;
+            const _info_field = document.getElementById("FilterInfo");
+            _info_field.innerHTML = _info;
+        }
+
+        renderDataInTheTable(_objs);
+
+    </script>
+
+</body>
+
+</html>

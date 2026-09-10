@@ -151,6 +151,7 @@ def _build_exp_crv_for_driven(plug, frames=None):
         'double': 'animCurveTL',
         'doubleLinear': 'animCurveTL',
         'doubleAngle': 'animCurveTA',
+        'float': 'animCurveTL',
     }
     if _plug_type not in _type_map:
         raise RuntimeError(f'Unmapped type {_plug_type} - {plug}')

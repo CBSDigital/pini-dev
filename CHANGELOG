@@ -1,3 +1,20 @@
+## [9.42.0] - Thu 2026-09-10 10:36
+### Summary
+ - Pini Helper:
+    - substance painter publish textures optimised for speedup (blee),
+### Updated
+ - pini.clip.Seq.build_thumbnail returns thumb,
+ - pini.dcc.export.CSPainterTexturePublish read default preset from $PINI_SPAINTER_EXPORT_PRESET,
+ - pini.dcc.export.CSPainterTexturePublish disable update publish cache,
+ - pini.pipe.shotgrid.to_handler apply cache certificate,
+ - pini.pipe.shotgrid.create_pub_files_from_outputs added sources arg to apply shared thumbs,
+ - pini.tools.pyui.PUQtUi bugfix monkey patch QPushButton upsetting spainter,
+ - maya_pini.m_pipe.export_anim_curves added float attr handling,
+ - maya_pini.m_pipe.find_xgen_cols added referenced flag,
+ - maya_pini.m_pipe.xgen_cols_are_localised ignore referenced cols,
+ - maya_pini.open_maya.CReference.to_ctrls allow expand ctrls view $PINI_MAYA_EXPAND_CTRLS,
+
+
 ## [9.41.0] - Wed 2026-09-09 12:09
 ### Summary
  - Pini Helper:

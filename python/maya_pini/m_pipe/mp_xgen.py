@@ -9,7 +9,7 @@ from pini.utils import (
     Dir, File, single, abs_path, plural, nice_size, to_str, TMP)
 
 from maya_pini import open_maya as pom
-from maya_pini.utils import to_parent
+from maya_pini.utils import to_parent, to_clean
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -258,14 +258,18 @@ class _XgenCol(pom.CTransform):
         Returns:
             (XgenSidecar): sidecar
         """
+        _LOGGER.debug('SIDECAR %s', self)
         _work = pipe.cur_work()
         _tokens = [_work.base]
         if self.namespace:
             _tokens.append(self.namespace)
-        _tokens.append(str(self))
+        _tokens.append(to_clean(self))
         _base = '__'.join(_tokens)
+        _LOGGER.debug(' - BASE %s -> %s', _tokens, _base)
         _side = _work.to_file(f'{_base}.xgen', class_=_XgenSidecar)
+        _LOGGER.debug(' - SIDECAR %s', _side)
         if not _side.exists():
+            _LOGGER.debug(' - DOES NOT EXIST')
             return None
         return _side
 
@@ -427,14 +431,17 @@ def copy_xgen_cols(work, pub, force=False):
     return _trg
 
 
-def find_xgen_cols():
+def find_xgen_cols(referenced=None):
     """Find xgen collections in the current scene.
+
+    Args:
+        referenced (bool): filter by referenced status
 
     Returns:
         (XgenCol list): collections
     """
     _cols = []
-    for _node in pom.find_nodes(type_='xgmPalette'):
+    for _node in pom.find_nodes(type_='xgmPalette', referenced=referenced):
         _col = _XgenCol(_node)
         _cols.append(_col)
     return _cols
@@ -666,7 +673,7 @@ def xgen_cols_are_localised():
     """
     _work = pipe.cur_work()
     _xg_data_root = _work.to_dir().to_subdir(f'xgen/{_work.base}')
-    for _col in find_xgen_cols():
+    for _col in find_xgen_cols(referenced=False):
         _LOGGER.info(' - COL %s', _col)
         _LOGGER.info(' - SIDE %s', _col.sidecar)
         assert not _col.sidecar.ns

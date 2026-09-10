@@ -43,6 +43,9 @@ Environment Variables:
  - PINI_INSTALL_DISABLE - Disable install pini.
  - PINI_HOU_APPLY_SCALE_FIX - Set to 0 to disable 0.01 abc scaling in 
       houdini. Default is enabled.
+ - PINI_MAYA_EXPAND_CTRLS - Enable read children of items in ctrls set to
+      define ctrls list.
+ - PINI_SPAINTER_EXPORT_PRESET - Apply default substance painter preset.
  - PINI_PUB_JUNK_GRPS - List of groups which can be junked on publish
       (eg. "JUNK|WORKFLOW"). Default is just "JUNK".
  - PINI_UI_INSTALL_DISABLE - Disable building of interface elements.

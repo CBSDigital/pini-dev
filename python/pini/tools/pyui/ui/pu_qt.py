@@ -260,7 +260,7 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
 
         # Code button
         _code = qt.CLabel()
-        _code.mousePressEvent = def_.edit
+        _code.callback = def_.edit
         _code.resize(self.def_h, self.def_h)
         _code.move(3, 23)
         _pix = qt.CPixmap(def_.icon)
@@ -273,7 +273,7 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
         _btn.setObjectName(def_.label)
         _exec = wrap_fn(self._execute_def, def_)
         _exec = _disable_btn_on_exec(_exec, btn=_btn, col=_col)
-        _btn.mousePressEvent = _exec
+        _btn.clicked.connect(_exec)
         _set_btn_col(btn=_btn, col=_col)
         _policy = _btn.sizePolicy()
         _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.Expanding)

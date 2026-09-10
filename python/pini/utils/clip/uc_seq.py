@@ -127,12 +127,12 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
         from pini.utils import Image, TMP
 
         _LOGGER.info('BUILD THUMB %s', self.path)
-        _thumb = File(file_)
+        _thumb = Image(file_)
         assert _thumb.extn == 'jpg'
         _res = self._to_thumb_res(width, catch=True)
         if not _res:
             _LOGGER.error(' - FAILED TO READ RES %s', self.path)
-            return
+            return None
 
         # Build pixmap
         _frame = self.to_frame_file(frame=frame)
@@ -150,6 +150,8 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
 
         _pix = _pix.resize(_res)
         _pix.save_as(_thumb, verbose=0, force=force)
+
+        return _thumb
 
     def contains(self, file_):
         """Test whether this sequence contains the given file.

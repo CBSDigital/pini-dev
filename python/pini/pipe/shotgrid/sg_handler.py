@@ -6,19 +6,23 @@ This managing iteraction with the shotgrid via the shotgun_api3 api.
 import logging
 import os
 import pprint
+import shutil
 import time
 
+import certifi
 import shotgun_api3
 
 from pini import pipe
 from pini.utils import (
-    plural, basic_repr, error_on_file_system_disabled, Video)
+    plural, basic_repr, error_on_file_system_disabled, Video, TMP)
 
 from . import sg_utils
 
 _SG_KEY = os.environ.get('PINI_SG_KEY')
 _SG_SCRIPT_NAME = os.environ.get('PINI_SG_SCRIPT', 'PiniAccess')
 _SG_URL = os.environ.get('PINI_SG_URL')
+
+_LOCAL_CACERTS = TMP.to_file('pini_sg_cacert.pem')
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,9 +48,6 @@ class _CSGHandler(shotgun_api3.Shotgun):
             (str list): entity types
         """
         return sorted(self.schema_entity_read().keys())
-
-    # def batch(self, data):
-    #     return super()
 
     def create(self, entity_type, data, safe=True):  # pylint: disable=arguments-renamed
         """Create an entity.
@@ -338,8 +339,16 @@ def to_handler(force=False, use_basic=False):
         _LOGGER.info('SG_URL %s', _SG_URL)
         raise RuntimeError('Missing shotgrid environment')
 
+    # Localise certificaton
+    if not _LOCAL_CACERTS.exists():
+        shutil.copy(certifi.where(), _LOCAL_CACERTS.path)
+    os.environ['SHOTGUN_API_CACERTS'] = _LOCAL_CACERTS.path
+
+    # Build handler
     _class = _CSGHandler if not use_basic else shotgun_api3.Shotgun
-    return _CSGHandler(_SG_URL, _SG_SCRIPT_NAME, _SG_KEY)
+    _handler = _CSGHandler(_SG_URL, _SG_SCRIPT_NAME, _SG_KEY)
+
+    return _handler
 
 
 def update(entity_type, entity_id, data):

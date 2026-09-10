@@ -3,6 +3,7 @@
 # pylint: disable=unused-argument
 
 import logging
+import os
 
 from substance_painter import textureset
 
@@ -50,17 +51,20 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
                 _emoji, _icon.center(), size=20, anchor='C')
             _item = qt.CListWidgetItem(
                 _set.name, icon=_icon, data=_set.name)
-            # _item = qt.CListWidgetItem(_set.name)
             _sets.append(_item)
         self.ui.add_list_widget(
             name='Sets', items=_sets, select=_sets, label='Texture sets',
             add_elems=[_view_outputs])
 
+        # Add export preset opts
         _presets = p_pipe.find_export_presets()
-        _default = _presets[0]
+        _default = os.environ.get('PINI_SPAINTER_EXPORT_PRESET')
+        if _default not in _presets:
+            _default = _presets[0]
         _labels = [_preset.split('/')[-1] for _preset in _presets]
         self.ui.add_combo_box(
             name='Preset', items=_labels, val=_default, data=_presets)
+
         self.ui.add_check_box(
             name='Browser', val=False, label='Open texture dir in browser')
 
@@ -90,6 +94,14 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
         return p_pipe.export_textures(
             work=self.work, browser=browser, force=force, sets=sets,
             progress=self.progress, preset=preset)
+
+    def _update_pipe_cache(self, update_pub_cache=False, **kwargs):
+        """Update pipeline cache.
+
+        Args:
+            update_pub_cache (bool): update publish cache
+        """
+        super()._update_pipe_cache(update_pub_cache=update_pub_cache, **kwargs)
 
 
 class _OutputsDialog(QtWidgets.QDialog):

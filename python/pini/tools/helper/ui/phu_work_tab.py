@@ -30,6 +30,7 @@ class PHWorkTab:
     ui = None
 
     show_all_works_item = None
+    _notes_stack = None
 
     def init_ui(self):
         """Inititate this tab's interface - triggered by selecting this tab."""

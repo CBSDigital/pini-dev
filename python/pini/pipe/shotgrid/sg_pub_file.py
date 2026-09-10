@@ -117,15 +117,23 @@ def _to_pub_type(output):
     return shotgrid.SGC.find_pub_type(_match, type_=_type)
 
 
-def _apply_thumb(thumb, id_, path=None):
+def _apply_thumb(thumb, id_, path=None, source=None):
     """Apply thumbnail image.
 
     Args:
         thumb (File): apply thumbnail image
         id_ (id): publish id
         path (Path): path being registered
+        source (CPOutput): source output
     """
     from pini.pipe import shotgrid
+
+    if source:
+        _LOGGER.info(' - SHARING THUMB WITH SOURCE OUTPUT %s', source)
+        shotgrid.to_handler().share_thumbnail(
+            entities=[{'type': 'PublishedFile', 'id': id_}],
+            source_entity=source.sg_pub_file.to_entry())
+        return
 
     # Obtain thumb
     _thumb = thumb
@@ -561,18 +569,24 @@ def _normalise_path_to_pipeline(path, entity):
 
 
 def create_pub_files_from_outputs(
-        outputs, thumb=None, upstream_files=None, force=False):
+        outputs, thumb=None, upstream_files=None, sources=None, force=False):
     """Create mutiple pub files from outputs in batch operation.
 
     Args:
         outputs (CPOutput list): outputs to register
         thumb (str): path to thumbnail
         upstream_files (list): upstream files
+        sources (dict): source outputs - map of outputs to their sources (note:
+            outputs are stored as CPOutput object not CCPOutput which no not
+            have matching __eq__ funcs)
         force (bool): update existing entries
 
     Returns:
         (dict list): new entries data
     """
+    _LOGGER.debug('CREATE PUB FILES FROM OUTPUTS')
+    _LOGGER.debug(' - OUTPUTS %s', outputs)
+    _LOGGER.debug(' - SOURCES %s', sources)
 
     # Prepare batch data
     _batch_data = []
@@ -623,12 +637,17 @@ def create_pub_files_from_outputs(
     for _out, _result in qt.progress_bar(
             safe_zip(outputs, _results),
             'Applying {:d} shotgrid thumb{}', stack_key='BatchThumbs'):
-        _out = pipe.CACHE.obt(_out)
+        _out_c = pipe.CACHE.obt(_out)
         _thumb = thumb
-        if _out.is_media() or _out.content_type in ('Texture', ):
+        if _out_c.is_media() or _out_c.content_type in ('Texture', ):
             _thumb = None
         elif thumb and not _thumb:
             continue
-        _apply_thumb(thumb=_thumb, id_=_result['id'], path=_out)
+        _src = None
+        if sources:
+            _src = sources[_out]
+        _apply_thumb(
+            thumb=_thumb, id_=_result['id'], path=_out_c,
+            source=_src)
 
     return _results

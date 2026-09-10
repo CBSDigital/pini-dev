@@ -42,9 +42,13 @@ class CBasicPublish(eh_base.CExportHandler):
             _data['range'] = (_frame, _frame)
         return _data
 
-    def _update_pipe_cache(self):
-        """Update pipeline cache."""
-        super()._update_pipe_cache(update_pub_cache=True)
+    def _update_pipe_cache(self, update_pub_cache=True, **kwargs):
+        """Update pipeline cache.
+
+        Args:
+            update_pub_cache (bool): update publish cache
+        """
+        super()._update_pipe_cache(update_pub_cache=update_pub_cache, **kwargs)
 
     def post_export(self, **kwargs):
         """Run post export scripts.

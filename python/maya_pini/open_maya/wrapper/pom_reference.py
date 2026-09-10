@@ -3,6 +3,7 @@
 # pylint: disable=too-many-public-methods
 
 import logging
+import os
 import time
 
 from maya import cmds
@@ -352,13 +353,23 @@ class CReference(om.MFnReference, ref.FileRef):
             (CTransform list): contrls
         """
         from maya_pini import open_maya as pom
+
+        # Read ctrls set
         _set = self.to_ctrls_set()
         if not _set:
             if catch:
                 return []
             raise RuntimeError(f"Missing ctrls set - {self.namespace}")
         _ctrls = cmds.sets(_set, query=True) or []
-        return [pom.cast_node(_node) for _node in _ctrls]
+        _ctrls = [pom.cast_node(_node) for _node in _ctrls]
+
+        _expand = os.environ.get('PINI_MAYA_EXPAND_CTRLS') == '1'
+        if _expand:
+            for _ctrl in _ctrls[:]:
+                _ctrls += _ctrl.find_children(recursive=True, type_='transform')
+            _ctrls = sorted(set(_ctrls))
+
+        return _ctrls
 
     def to_ctrls_set(self):
         """Find ctrls set for this rig.
