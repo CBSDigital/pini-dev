@@ -427,7 +427,7 @@ class CExportHandler:
     def export(
             self, notes=None, version_up=True, snapshot=True, save=True,
             bkp=True, progress=False, work=None, check_work=True,
-            update_metadata=True, update_cache=True,
+            update_metadata=True, update_cache=True, update_shotgrid=True,
             run_checks=True, checks_data=None, force=False):
         """Execute this export.
 
@@ -445,6 +445,7 @@ class CExportHandler:
             check_work (bool): check for current work
             update_metadata (bool): update output metadata
             update_cache (bool): update pipe cache
+            update_shotgrid (bool): register entities in shotgrid
             run_checks (bool): apply sanity check
             checks_data (dict): apply sanity checks data
             force (bool): replace existing outputs without confirmation
@@ -461,9 +462,10 @@ class CExportHandler:
         """
         _LOGGER.info('POST EXPORT %s', self.work)
 
-        _update_metadata = self.settings['update_metadata']
-        _update_cache = self.settings['update_cache']
         _snapshot = self.settings['snapshot']
+        _update_cache = self.settings['update_cache']
+        _update_metadata = self.settings['update_metadata']
+        _update_shotgrid = self.settings['update_shotgrid']
         _version_up = self.settings['version_up']
 
         _LOGGER.debug(' - OUTS %d %s', len(self.outputs), self.outputs)
@@ -479,7 +481,7 @@ class CExportHandler:
         if _snapshot:
             dcc.take_snapshot(self.work.image)
         self.progress.set_pc(94)
-        if _update_metadata:
+        if _update_metadata and _update_shotgrid:
             if pipe.SHOTGRID_AVAILABLE:
                 self._register_in_shotgrid()
         if _update_cache:

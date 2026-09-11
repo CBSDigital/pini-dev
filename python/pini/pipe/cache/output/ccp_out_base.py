@@ -21,6 +21,8 @@ class CCPOutputBase(elem.CPOutputBase):
     dir = None
     extn = None
 
+    _content_type = None
+
     @property
     def cache_fmt(self):
         """Build cache path format string.
@@ -43,73 +45,9 @@ class CCPOutputBase(elem.CPOutputBase):
         Returns:
             (str): content type name
         """
-        _content_type = self.metadata.get('content_type')
-        if _content_type:
-            return _content_type
-
-        _pub_type = self.metadata.get('publish_type')
-        _handler = self.metadata.get('handler')
-
-        if self.extn in ('abc', 'fbx'):
-            _type = _handler or self.metadata.get('type')   # Legacy 18/10/24
-            _extn_type = self.extn.capitalize()
-            if _type == 'CPCacheableCam':
-                _c_type = f'Camera{_extn_type}'
-            elif _type == 'CPCacheableRef':
-                _c_type = f'Pipe{_extn_type}'
-            else:
-                _c_type = _extn_type
-
-        elif self.extn == 'ma':
-            if 'vrmesh' in self.metadata:
-                _c_type = 'VrmeshMa'
-            elif 'shd_yml' in self.metadata:
-                _c_type = 'ShadersMa'
-            elif _handler == 'CMayaModelPublish':
-                _c_type = 'ModelMa'
-            elif _handler == 'CMayaBasicPublish' and self.pini_task == 'rig':
-                _c_type = 'RigMa'
-            else:
-                _c_type = 'BasicMa'
-
-        elif self.extn == 'mb':
-            if _handler == 'CMayaCurvesCache':
-                _c_type = 'CurvesMb'
-            else:
-                _c_type = 'BasicMb'
-
-        elif self.extn == 'rs':
-            _c_type = 'RedshiftProxy'
-
-        elif isinstance(self, Seq):
-            if self.extn == 'obj':
-                _c_type = 'ObjSeq'
-            elif self.extn == 'vdb':
-                _c_type = 'VdbSeq'
-            elif self.extn == 'ifd':
-                _c_type = 'IfdSeq'
-            elif self.basic_type == 'blast':
-                _c_type = 'Blast'
-            elif self.basic_type == 'render':
-                _c_type = 'Render'
-            elif self.basic_type == 'plate':
-                _c_type = 'Plate'
-            elif self.basic_type == 'texture':
-                _c_type = 'Texture'
-            else:
-                raise ValueError(self.path, _pub_type, self.basic_type)
-
-        elif self.extn in ('mov', 'mp4'):
-            _c_type = 'Video'
-        elif self.extn in ('jpg', 'exr') and isinstance(self, File):
-            _c_type = 'Image'
-        elif self.extn == 'gz' and self.filename.endswith('.ass.gz'):
-            _c_type = 'AssArchive'
-        else:
-            _c_type = self.extn.capitalize()
-
-        assert is_pascal(_c_type) or _c_type[0].isdigit()
-        return _c_type
+        if not self._content_type:
+            self._content_type = self._read_content_type()
+        return self._content_type
 
     @property
     def handler(self):
@@ -379,6 +317,82 @@ class CCPOutputBase(elem.CPOutputBase):
             (bool): whether media (eg. render/blast)
         """
         return self.content_type in OUTPUT_MEDIA_CONTENT_TYPES
+
+    def _read_content_type(self):  # pylint: disable=too-many-branches,too-many-statements
+        """Read content type for this output (eg. ShadersMa, RigMa, Video).
+
+        (NOTE: content type should be pascal)
+
+        Returns:
+            (str): content type name
+        """
+        _content_type = self.metadata.get('content_type')
+        if _content_type:
+            return _content_type
+
+        _pub_type = self.metadata.get('publish_type')
+        _handler = self.metadata.get('handler')
+
+        if self.extn in ('abc', 'fbx'):
+            _type = _handler or self.metadata.get('type')   # Legacy 18/10/24
+            _extn_type = self.extn.capitalize()
+            if _type == 'CPCacheableCam':
+                _c_type = f'Camera{_extn_type}'
+            elif _type == 'CPCacheableRef':
+                _c_type = f'Pipe{_extn_type}'
+            else:
+                _c_type = _extn_type
+
+        elif self.extn == 'ma':
+            if 'vrmesh' in self.metadata:
+                _c_type = 'VrmeshMa'
+            elif 'shd_yml' in self.metadata:
+                _c_type = 'ShadersMa'
+            elif _handler == 'CMayaModelPublish':
+                _c_type = 'ModelMa'
+            elif _handler == 'CMayaBasicPublish' and self.pini_task == 'rig':
+                _c_type = 'RigMa'
+            else:
+                _c_type = 'BasicMa'
+
+        elif self.extn == 'mb':
+            if _handler == 'CMayaCurvesCache':
+                _c_type = 'CurvesMb'
+            else:
+                _c_type = 'BasicMb'
+
+        elif self.extn == 'rs':
+            _c_type = 'RedshiftProxy'
+
+        elif isinstance(self, Seq):
+            if self.extn == 'obj':
+                _c_type = 'ObjSeq'
+            elif self.extn == 'vdb':
+                _c_type = 'VdbSeq'
+            elif self.extn == 'ifd':
+                _c_type = 'IfdSeq'
+            elif self.basic_type == 'blast':
+                _c_type = 'Blast'
+            elif self.basic_type == 'render':
+                _c_type = 'Render'
+            elif self.basic_type == 'plate':
+                _c_type = 'Plate'
+            elif self.basic_type == 'texture':
+                _c_type = 'Texture'
+            else:
+                raise ValueError(self.path, _pub_type, self.basic_type)
+
+        elif self.extn in ('mov', 'mp4'):
+            _c_type = 'Video'
+        elif self.extn in ('jpg', 'exr') and isinstance(self, File):
+            _c_type = 'Image'
+        elif self.extn == 'gz' and self.filename.endswith('.ass.gz'):
+            _c_type = 'AssArchive'
+        else:
+            _c_type = self.extn.capitalize()
+
+        assert is_pascal(_c_type) or _c_type[0].isdigit()
+        return _c_type
 
     def set_latest(self, latest: bool):
         """Set whether this output is the latest in its version stream.

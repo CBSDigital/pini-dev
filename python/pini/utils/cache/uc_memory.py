@@ -1,10 +1,9 @@
 """General utilities relating to caching."""
 
 import functools
+import inspect
 import logging
 import time
-
-from inspect import getfullargspec as _get_args  # py3
 
 _LOGGER = logging.getLogger(__name__)
 _RESULTS = {}
@@ -75,12 +74,15 @@ def get_result_cacher(use_args=None, namespace='default', max_age=None):
 
     def _build_result_cacher(func):
 
+        _args_spec = inspect.getfullargspec(func)
+
         @functools.wraps(func)
         def _func(*args, **kwargs):
 
             # Determine args
             _args_key = _get_args_key(
-                func=func, args=args, kwargs=kwargs, use_args=use_args)
+                func=func, args=args, kwargs=kwargs, use_args=use_args,
+                args_spec=_args_spec)
             _force = kwargs.get('force')
             _LOGGER.debug(
                 '[cache_result] - ARGS KEY (%s): %s use_args=%s',
@@ -142,13 +144,14 @@ def cache_on_obj(func):
     return _result_cacher(func)
 
 
-def _get_args_key(func, args, kwargs, use_args=None):
+def _get_args_key(func, args, kwargs, args_spec, use_args=None):
     """Get a hashable unique identifier for the given func and set of args.
 
     Args:
         func (fn): function being executed
         args (list): args passed
         kwargs (dict): kwargs passed
+        args_spec (FullArgSpec): args spec
         use_args (list): limit the args which are used for the key
 
     Returns:
@@ -157,9 +160,8 @@ def _get_args_key(func, args, kwargs, use_args=None):
     _LOGGER.debug('[cache_result] GET ARGS KEY %s %s %s',
                   func.__name__, args, kwargs)
 
-    _arg_spec = _get_args(func)
-    _defaults = _arg_spec.defaults or []
-    _args = list(_arg_spec.args)
+    _defaults = args_spec.defaults or []
+    _args = list(args_spec.args)
 
     _key = [func]
     for _idx, _arg_name in enumerate(_args):
@@ -185,8 +187,8 @@ def _get_args_key(func, args, kwargs, use_args=None):
         elif _arg_name in kwargs:
             _val = kwargs[_arg_name]
         elif abs(_arg_idx) > len(_defaults):
-            _LOGGER.info('ARGS %s %s', _arg_spec.args, _args)
-            _LOGGER.info('DEFAULTS %s %s', _arg_spec.defaults, _defaults)
+            _LOGGER.info('ARGS %s %s', args_spec.args, _args)
+            _LOGGER.info('DEFAULTS %s %s', args_spec.defaults, _defaults)
             raise TypeError(
                 f'It looks like some of the required args are '
                 f'missing {func.__name__}')

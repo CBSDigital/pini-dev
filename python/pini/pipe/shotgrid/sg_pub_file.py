@@ -8,6 +8,8 @@ import platform
 import re
 import time
 
+import shotgun_api3
+
 from pini import pipe, qt
 from pini.pipe import cache
 from pini.utils import (
@@ -128,12 +130,16 @@ def _apply_thumb(thumb, id_, path=None, source=None):
     """
     from pini.pipe import shotgrid
 
+    # Attempt share thumb with source
     if source:
         _LOGGER.info(' - SHARING THUMB WITH SOURCE OUTPUT %s', source)
-        shotgrid.to_handler().share_thumbnail(
-            entities=[{'type': 'PublishedFile', 'id': id_}],
-            source_entity=source.sg_pub_file.to_entry())
-        return
+        try:
+            shotgrid.to_handler().share_thumbnail(
+                entities=[{'type': 'PublishedFile', 'id': id_}],
+                source_entity=source.sg_pub_file.to_entry())
+            return
+        except shotgun_api3.ShotgunThumbnailNotReady:
+            _LOGGER.info(' - FAILED TO SHARE, SRC THUMB NOT READY')
 
     # Obtain thumb
     _thumb = thumb

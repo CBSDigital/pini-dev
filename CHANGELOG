@@ -1,3 +1,21 @@
+## [9.43.0] - Fri 2026-09-11 11:57
+### Summary
+ - Pini Helper:
+    - substance painter publish bugfix shotgrid thumbnail error (sspicher),
+    - maya abc cache bugfix error due to duplicate nodes in image planes (kakuna),
+### Updated
+ - pini.utils.File.copy_to bugfix error on break windows path limit,
+ - pini.utils.get_result_cacher read arg spec on build dec for efficiency,
+ - pini.dcc.export.CExportHandler.export added update_shotgrid arg,
+ - pini.dcc.export CMayaPlayblast/CMayaAbcCache/CMayaFbxCache export updated to use kwargs,
+ - pini.pipe.CACHE.CCOutputBase.content_type cache property for efficiency,
+ - pini.pipe.shotgrid.create_pub_files_from_outputs catch thumb not ready error on shared thumb,
+ - maya_pini.utils.del_namespace bugfix error on undeletable nodes,
+ - maya_pini.m_pipe.cache cam cache simplifed img plane settings path to avoid breaking windows path limit,
+ - maya_pini.open_maya.to_node added clean flag to handle duplicate nodes,
+ - maya_pini.open_maya.CMDS.list_connections removed delete image plane arrow to avoid duplicate node errors,
+
+
 ## [9.42.0] - Thu 2026-09-10 10:36
 ### Summary
  - Pini Helper:

@@ -232,9 +232,9 @@ def find_connections(
                 _p_conns.append(_plug)
             _conns = _p_conns
         else:
-            _conns = [pom.to_node(_conn) for _conn in _conns]
-        _LOGGER.debug(' - %s %s %s', 'SRC' if _src else 'DST',
-                      (_src, _dest), _conns)
+            _conns = [pom.to_node(_conn, clean=False) for _conn in _conns]
+        _LOGGER.debug(
+            ' - %s %s %s', 'SRC' if _src else 'DST', (_src, _dest), _conns)
 
         # Sort results into pairs
         assert not len(_conns) % 2  # Check even number of results
@@ -617,13 +617,14 @@ def to_m(*args, **kwargs):
     raise ValueError(args, kwargs)
 
 
-def to_node(obj):
+def to_node(obj, clean=True):
     """Build a node object from the given name.
 
     eg. pom.to_node('persp') -> pom.CNode('persp')
 
     Args:
         obj (str): name to build node from
+        clean (bool): apply to_node to strip dag paths + img plane links
 
     Returns:
         (CNode): node
@@ -631,10 +632,15 @@ def to_node(obj):
     from maya_pini import open_maya as pom
     from maya_pini.utils import to_node as _to_node
 
+    _LOGGER.debug('TO NODE %s', obj)
     if isinstance(obj, pom.CBaseNode):
         return obj
     if isinstance(obj, str):
-        return pom.CNode(_to_node(obj))
+        _node_s = obj
+        if clean:
+            _node_s = _to_node(obj)
+        _LOGGER.debug(' - NODE S %s', _node_s)
+        return pom.CNode(_node_s)
     if isinstance(obj, pom.CPlug):
         return obj.node
     raise ValueError(obj)

@@ -246,11 +246,13 @@ class SCMayaCheck(sc_check.SCCheck):
 
             # Add fail
             if _node.shp.is_referenced():
+                _desc = 'Referenced node'
                 _fix = None
             else:
+                _desc = 'Node'
                 _fix = wrap_fn(_fix_bad_shape, _node.shp, _correct_shp)
             _msg = (
-                f'Node "{_node}" has badly named shape node "{_node.shp}" '
+                f'{_desc} "{_node}" has badly named shape node "{_node.shp}" '
                 f'(should be "{_correct_shp}")')
             _LOGGER.debug(' - ADDING FAIL %s', _msg)
             self.add_fail(_msg, fix=_fix, node=_node)

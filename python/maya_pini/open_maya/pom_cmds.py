@@ -188,8 +188,8 @@ def _clean_list_connections(results, plugs=False, type=None, **kwargs):  # pylin
 
     _results = results or []
 
-    # Remove weird image plane arrow
-    _results = [_result.split('->')[-1] for _result in _results]
+    # # Remove weird image plane arrow
+    # _results = [_result.split('->')[-1] for _result in _results]
 
     # Cast to class
     if plugs:

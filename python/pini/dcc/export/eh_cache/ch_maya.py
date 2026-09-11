@@ -40,30 +40,28 @@ class CMayaAbcCache(CMayaCache):
         return m_pipe.find_cacheables(extn='abc')
 
     def export(  # pylint: disable=unused-argument
-            self, cacheables=None, notes=None, version_up=None, snapshot=True,
-            save=True, bkp=True, use_farm=False, range_=None, substeps=1,
+            self, cacheables=None, use_farm=False, range_=None, substeps=1,
             format_='Ogawa', uv_write=True, world_space=True,
-            update_cache=True, renderable_only=True, checks_data=None,
-            force=False):
+            renderable_only=True, checks_data=None, force=False, **kwargs):
         """Execute cache operation.
 
         Args:
             cacheables (Cacheable list): items to cache
-            notes (str): export notes
-            version_up (bool): version up after export
-            snapshot (bool): take thumbnail snapshot on export
-            save (bool): save work file on export
-            bkp (bool): save bkp file
             use_farm (bool): cache using farm
             range_ (tuple): override cache range
             substeps (int): substeps per frame
             format_ (str): abc format (eg. Ogawa/HDF5)
             uv_write (bool): write uvs to abc
             world_space (bool): write in world space
-            update_cache (bool): update pipe cache
             renderable_only (bool): write renderable geometry only
             checks_data (dict): apply sanity checks data
             force (bool): replace existing without confirmation
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            save (bool): save work file on export
+            bkp (bool): save bkp file
+            update_cache (bool): update pipe cache
         """
         from maya_pini import m_pipe
         return m_pipe.cache(
@@ -95,27 +93,26 @@ class CMayaFbxCache(CMayaCache):
     add_use_farm = True
 
     def export(  # pylint: disable=unused-argument
-            self, cacheables, notes=None, version_up=None, snapshot=True,
-            save=True, bkp=True, progress=False, use_farm=False, range_=None,
-            substeps=1, format_='FBX201600',
-            update_cache=True, checks_data=None, force=False):
+            self, cacheables, use_farm=False, range_=None,
+            substeps=1, format_='FBX201600', checks_data=None,
+            force=False, **kwargs):
         """Execute cache operation.
 
         Args:
             cacheables (Cacheable list): items to cache
+            use_farm (bool): cache using farm
+            range_ (tuple): override cache range
+            substeps (int): substeps per frame
+            format_ (str): abc format (eg. Ogawa/HDF5)
+            checks_data (dict): apply sanity checks data
+            force (bool): replace existing without confirmation
             notes (str): cache notes
             version_up (bool): version up after export
             snapshot (bool): take thumbnail snapshot on export
             save (bool): save work file on export
             bkp (bool): save bkp file
             progress (bool): show cache progress
-            use_farm (bool): cache using farm
-            range_ (tuple): override cache range
-            substeps (int): substeps per frame
-            format_ (str): abc format (eg. Ogawa/HDF5)
             update_cache (bool): update pipe cache
-            checks_data (dict): apply sanity checks data
-            force (bool): replace existing without confirmation
         """
         from maya_pini import m_pipe
         for _cbl in cacheables:

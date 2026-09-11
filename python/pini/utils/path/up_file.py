@@ -137,7 +137,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         if platform.system() == 'Windows' and len(_trg.path) > 260:
             raise RuntimeError(
                 f'Path is longer ({len(_trg.path)}) than windows path '
-                'limit (260) {_trg.path}')
+                f'limit (260) {_trg.path}')
         try:
             shutil.copyfile(self.path, _trg.path)
         except PermissionError as _exc:

@@ -62,10 +62,23 @@ def del_namespace(namespace, del_nodes=True, force=False):
         _ref.delete(force=_force)
     if cmds.namespace(exists=namespace):
         _LOGGER.debug(' - DELETE NS %s', namespace)
+
+        # Remove nodes
         if del_nodes:
             cmds.delete(cmds.ls(f'{namespace}:*'))
             _LOGGER.debug(' - DELETE NODES %s', namespace)
-        cmds.namespace(removeNamespace=namespace, deleteNamespaceContent=True)
+
+        # Remove namespace
+        try:
+            cmds.namespace(
+                removeNamespace=namespace, deleteNamespaceContent=True)
+        except RuntimeError as _exc:
+            # Move undeletable nodes (eg. swatch) to root namespace
+            _LOGGER.warning(
+                ' - DELETE NS CONTENT FAILED (%s) - MERGING TO ROOT', _exc)
+            cmds.namespace(
+                removeNamespace=namespace, mergeNamespaceWithRoot=True)
+
     if cmds.namespace(exists=namespace):
         raise RuntimeError('Failed to delete namespace ' + namespace)
 

@@ -82,19 +82,12 @@ class CMayaPlayblast(bh_base.CBlastHandler):
         self.camera = _cam
 
     def export(  # pylint: disable=unused-argument
-            self, notes=None, version_up=False, snapshot=True, save=True,
-            bkp=True, camera=None, view=True, range_=None, format_='mp4',
+            self, camera=None, view=True, range_=None, format_='mp4',
             burnins=True, settings='As is', output_name='blast', res=None,
-            force_replace=False, run_checks=False, checks_data=None,
-            update_cache=True, force=False):
+            force_replace=False, force=False, **kwargs):
         """Blast current scene.
 
         Args:
-            notes (str): export notes
-            version_up (bool): version up after export
-            snapshot (bool): take thumbnail snapshot on export
-            save (bool): save work file on export
-            bkp (bool): save bkp file
             camera (str): blast camera
             view (bool): view blast
             range_ (tuple): override range
@@ -105,10 +98,15 @@ class CMayaPlayblast(bh_base.CBlastHandler):
                 <camera> - uses camera name
             res (str): blast res (eg. "Full", "Half")
             force_replace (bool): replace existing without confirmation
+            force (bool): force blast with no confirmation dialogs
+            notes (str): export notes
+            version_up (bool): version up after export
+            snapshot (bool): take thumbnail snapshot on export
+            save (bool): save work file on export
+            bkp (bool): save bkp file
             run_checks (bool): apply sanity check
             checks_data (dict): apply sanity checks data
             update_cache (bool): update pipe cache
-            force (bool): force blast with no confirmation dialogs
         """
         from maya_pini import m_pipe
         _out = m_pipe.blast(
