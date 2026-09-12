@@ -1,3 +1,12 @@
+## [9.43.1] - Fri 2026-09-11 17:19
+### Summary
+ - Pini Helper:
+    - bugfix error on abc publish (kakuna),
+### Updated
+ - pini.utils.seq_to_video run ffmpeg system call in verbose mode,
+ - maya_pini.utils.to_clean bugfix not removing img plane link,
+
+
 ## [9.43.0] - Fri 2026-09-11 11:57
 ### Summary
  - Pini Helper:

@@ -354,7 +354,9 @@ def to_clean(node, strip_digits=False):
     Returns:
         (str): clean name
     """
-    _clean = str(node).rsplit('|', 1)[-1].rsplit(':', 1)[-1]
+    _clean = str(node)
+    for _token in ['|', '->', ':']:
+        _clean = _clean.rsplit(_token, 1)[-1]
     if strip_digits:
         while _clean[-1].isdigit():
             _clean = _clean[:-1]

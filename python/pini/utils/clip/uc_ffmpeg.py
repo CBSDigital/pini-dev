@@ -223,7 +223,7 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         use_scene_audio=False, crf=15, bitrate=None, denoise=None,
         tune=None, speed=None, burnins=False, res=None, range_=None,
         lut=None, check_for_bad_frames=True, result='file', safe=True,
-        flags=(), verbose=0):
+        flags=(), verbose=1):
     """Build video file using ffmpeg.
 
     Args:
@@ -290,11 +290,6 @@ def seq_to_video(  # pylint: disable=too-many-branches,too-many-statements
         _args += ['-vf', f"lut3d=file={_lut}"]
     if _n_frames:
         _args += ['-frames:v', _n_frames]
-    # if colspace:
-    #     if colspace == 'sRGB':
-    #         _args += ['-color_trc', 'iec61966_2_1']
-    #     else:
-    #         raise NotImplementedError(colspace)
     if burnins:
         _args += _build_ffmpeg_burnin_flags(seq, video=_video, fps=_fps)
     _args += _build_ffmpeg_audio_flags(
