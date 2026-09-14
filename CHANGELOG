@@ -1,3 +1,13 @@
+## [9.43.3] - Mon 2026-09-14 12:17
+### Summary
+ - Sanity Check:
+    - hou update outdated abc bugfix not applying scale offset (acheprakov),
+ - Pini Helper:
+    - hou update abc bugfix not applying scale offset,
+### Updated
+ - pini.dcc.pipe_ref.CHouAbcArchiveRef.update bugfix not applying scale,
+
+
 ## [9.43.2] - Mon 2026-09-14 10:34
 ### Summary
  - Sanity Check:

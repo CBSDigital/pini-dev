@@ -5,6 +5,7 @@ import logging
 import hou
 
 from pini.utils import abs_path, File, single, check_heart
+from hou_pini import h_pipe
 
 from . import pr_base
 
@@ -81,8 +82,17 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
             out (str): abc to update to
         """
         super().update(out)
-        self.node.parm('buildHierarchy').pressButton()
-        self.update_camera_res()
+
+        _pos = self.node.position()
+        _ns = self.node.name()
+        self.delete(force=True)
+
+        _ref = h_pipe.import_abc(abc=out, namespace=_ns)
+        _ref.update_camera_res()
+
+        super().__init__(_ref.node)
+
+        return _ref
 
     def update_camera_res(self):
         """Update camera resolution.
