@@ -1,3 +1,17 @@
+## [9.43.4] - Mon 2026-09-14 14:50
+### Summary
+ - Pini Helper:
+    - hou update abc bugfix not maintaining node pos,
+    - hou update abc bugfix switching selection/pwd,
+    - hou bugfix bad rendering of menu items,
+### Updated
+ - pini.dcc.pipe_ref.CHouAbcArchiveRef.update bugfix not reverting pos,
+ - pini.qt.CMenu apply ss fix for hou each item with gradient,
+ - pini.tools.sanity_check CheckRefsLatest/CheckAbcFpsMatchesScene made public,
+ - hou_pini.utils.revert added,
+ - hou_pini.h_pipe.import_abc apply revert sel/pwd,
+
+
 ## [9.43.3] - Mon 2026-09-14 12:17
 ### Summary
  - Sanity Check:

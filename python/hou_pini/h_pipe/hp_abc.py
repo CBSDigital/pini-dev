@@ -7,9 +7,12 @@ import hou
 from pini import dcc
 from pini.utils import File, single
 
+from hou_pini.utils import revert
+
 _LOGGER = logging.getLogger(__name__)
 
 
+@revert(pwd=True, sel=True)
 def import_abc(abc, namespace, mode='archive', apply_scale_fix=None):
     """Import abc into current scene.
 

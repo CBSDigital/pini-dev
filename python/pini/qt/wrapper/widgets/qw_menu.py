@@ -11,9 +11,21 @@ from ...q_utils import to_icon
 
 _LOGGER = logging.getLogger(__name__)
 
+# Fix unwanted gradients in hou items
+_SS = None
+if dcc.NAME == 'hou':
+    import hou
+    _SS = hou.qt.styleSheet()
+
 
 class CMenu(QtWidgets.QMenu):
     """Wrapper for CMenu."""
+
+    def __init__(self, *args, **kwargs):
+        """Constructor."""
+        super().__init__(*args, **kwargs)
+        if _SS:
+            self.setStyleSheet(_SS)
 
     def add_action(self, text, func, icon=None, enabled=True):
         """Add an action to the menu.

@@ -81,6 +81,7 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         Args:
             out (str): abc to update to
         """
+        _LOGGER.info('UPDATE %s', self)
         super().update(out)
 
         _pos = self.node.position()
@@ -91,6 +92,9 @@ class CHouAbcArchiveRef(CHouAbcGeometryRef):
         _ref.update_camera_res()
 
         super().__init__(_ref.node)
+
+        # Revert state
+        _ref.node.setPosition(_pos)
 
         return _ref
 
