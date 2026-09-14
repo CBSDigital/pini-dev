@@ -309,7 +309,9 @@ def _apply_refs_mode_opt(refs_mode):
             _ref.delete(force=True, delete_foster_parent=True)
     elif _refs_mode in ('Leave intact', 'No action'):
         pass
-    elif str(_refs_mode).startswith('Import '):
+    elif str(_refs_mode).startswith('Import ') or _refs_mode in (
+            PubRefsMode.IMPORT_USING_UNDERSCORES,
+            PubRefsMode.IMPORT_TO_ROOT):
         _import_refs(refs_mode=_refs_mode, refs=_refs)
     else:
         raise ValueError(_refs_mode)
@@ -357,7 +359,9 @@ def _import_refs(refs_mode, refs):
         _LOGGER.info('   - IMPORT SUCCESSFUL')
 
         # Apply refs mode
-        if refs_mode == 'Import into root namespace':
+        if refs_mode in (
+                'Import into root namespace',
+                PubRefsMode.IMPORT_TO_ROOT):
             cmds.namespace(moveNamespace=(_ns, ':'), force=True)
             del_namespace(_ns, force=True)
         elif refs_mode in (

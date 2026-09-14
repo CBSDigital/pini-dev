@@ -425,11 +425,23 @@ class CheckReferences(core.SCMayaCheck):
         for _ref in pom.find_refs(allow_no_namespace=True):
 
             self.write_log('Checking ref %s', _ref.namespace)
+            self.write_log(' - path %s', _ref.path.path)
 
             # Check for no namespace
             if not _ref.namespace and not _ref.prefix:
                 _msg = (
                     f'Reference "{_ref.ref_node}" has no namespace or prefix '
+                    f'which can make maya unstable.')
+                _fail = core.SCFail(_msg, node=_ref.ref_node)
+                _fail.add_action('Import nodes', _ref.import_, is_fix=True)
+                _fail.add_action('Remove', _ref.delete, is_fix=True)
+                self.add_fail(_fail)
+                continue
+
+            # Check for prefix
+            if not _ref.namespace and _ref.prefix:
+                _msg = (
+                    f'Reference "{_ref.ref_node}" has no namespace '
                     f'which can make maya unstable.')
                 _fail = core.SCFail(_msg, node=_ref.ref_node)
                 _fail.add_action('Import nodes', _ref.import_, is_fix=True)
