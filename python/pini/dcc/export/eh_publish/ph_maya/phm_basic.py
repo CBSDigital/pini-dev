@@ -307,7 +307,7 @@ def _apply_refs_mode_opt(refs_mode):
     if _refs_mode in ('Remove', PubRefsMode.REMOVE):
         for _ref in _refs:
             _ref.delete(force=True, delete_foster_parent=True)
-    elif _refs_mode in ('Leave intact', 'No action'):
+    elif _refs_mode in ('Leave intact', PubRefsMode.LEAVE_INTACT, 'No action'):
         pass
     elif str(_refs_mode).startswith('Import ') or _refs_mode in (
             PubRefsMode.IMPORT_USING_UNDERSCORES,

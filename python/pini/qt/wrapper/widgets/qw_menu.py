@@ -13,7 +13,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # Fix unwanted gradients in hou items
 _SS = None
-if dcc.NAME == 'hou':
+if dcc.NAME == 'hou' and not dcc.batch_mode():
     import hou
     _SS = hou.qt.styleSheet()
 

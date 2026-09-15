@@ -315,7 +315,7 @@ class Dir(up_path.Path):
                 _LOGGER.debug(' - IGNORE MATCHING FILE')
                 continue
 
-            _LOGGER.info(' - TO SYNC %s', _trg.path)
+            _LOGGER.debug(' - TO SYNC %s', _trg.path)
             _to_sync.append((_src, _trg))
 
         if not (_to_delete or _to_sync):

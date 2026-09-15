@@ -1,3 +1,11 @@
+## [9.43.5] - Tue 2026-09-15 13:08
+### Summary
+ - Pini Helper:
+    - maya publish bugfix error on leave references intact (sspicher),
+### Updated
+ - pini.dcc.export.CMayaBasicPublish bugfix error on pub refs mode LEAVE_INTACT,
+
+
 ## [9.43.4] - Mon 2026-09-14 14:50
 ### Summary
  - Pini Helper:
