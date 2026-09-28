@@ -151,13 +151,14 @@ class MayaDCC(BaseDCC):
 
         cmds.file(modified=False)
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
-        save_scene(file_=file_, force=True)
+        save_scene(file_=file_, selection=selection, force=True)
 
     def get_audio(self, start=None):
         """Read scene audio.
@@ -289,8 +290,10 @@ class MayaDCC(BaseDCC):
 
         _handlers = super()._build_export_handlers()
         _handlers += [
-            export.CMayaBasicPublish(),
+            export.CMayaScenePublish(),
+            export.CMayaSelectionPublish(),
             export.CMayaModelPublish(),
+            export.CMayaRigPublish(),
             export.CMayaLookdevPublish(),
             export.CMayaLocalRender(),
             export.CMayaPlayblast(),

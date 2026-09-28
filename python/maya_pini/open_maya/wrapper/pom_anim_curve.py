@@ -119,11 +119,12 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
             'Cycle': 3,
             'Cycle with offset': 4,
         }[mode]
-        if mode in ['linear', 'cycle', 'cycleOffset']:
+        if mode in ['linear', 'cycle', 'cycleOffset', 'cycleRelative']:
             _correct = {
                 'linear': 'Linear',
                 'cycle': 'Cycle',
                 'cycleOffset': 'Cycle with offset',
+                'cycleRelative': 'Cycle with offset',
             }[mode]
             apply_deprecation(
                 '10/07/26', f'Deprecated loop mode {mode} (use {_correct})')

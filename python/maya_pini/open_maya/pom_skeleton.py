@@ -10,10 +10,9 @@ import time
 from maya import cmds
 
 from pini import dcc, qt
-from pini.tools import release
 from pini.utils import (
     single, cache_property, basic_repr, passes_filter, cache_result, EMPTY,
-    PROPERTIES, safe_zip)
+    PROPERTIES, safe_zip, apply_filter, apply_deprecation)
 
 from maya_pini.utils import (
     to_clean, bake_results, to_namespace, to_node, CONSTRAINT_TYPES)
@@ -365,8 +364,11 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             return None
         raise ValueError(name)
 
-    def find_joints(self):
+    def find_joints(self, filter_=None):
         """Find joints in this skeleton.
+
+        Args:
+            filter_ (str): apply joint name filter
 
         Returns:
             (CJoint list): joints
@@ -375,6 +377,8 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             allDescendents=True, type='joint')
         _jnts.sort(key=operator.methodcaller('to_long'))
         assert _jnts[0] == self.root
+        if filter_:
+            _jnts = apply_filter(_jnts, filter_, key=to_clean)
         return _jnts
 
     def hide(self):
@@ -433,7 +437,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """
         _mappings = _read_name_mappings()
         if self.uid_str not in _mappings:
-            _LOGGER.info(' - NAMES %s', list(_mappings.values()))
+            _LOGGER.info(' - NAMES %s', sorted(_mappings.values()))
             _name = qt.input_dialog(
                 'Enter name for this skeleton:',
                 title='Skeleton Naming')
@@ -445,8 +449,11 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         return _mappings[self.uid_str]
 
     @cache_result
-    def _read_zero_pose(self):
+    def _read_zero_pose(self, force=False):
         """Read zero pose from file.
+
+        Args:
+            force (bool): force rebuild cache
 
         Returns:
             (dict|None): zero pose (if one has been saved)
@@ -611,11 +618,12 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """Show this skelton via its root joint."""
         self.root.unhide()
 
-    def zero(self, break_conns=False):
+    def zero(self, break_conns=False, filter_=None):
         """Zero out this skeleton.
 
         Args:
             break_conns (bool): break connections
+            filter_ (str): apply name filter for joints to zero
         """
         _LOGGER.debug('ZERO %s', self)
 
@@ -627,7 +635,7 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             return
 
         # Otherwise simply zero joints
-        for _jnt in self.joints:
+        for _jnt in self.find_joints(filter_=filter_):
             for _plug in [_jnt.rx, _jnt.ry, _jnt.rz]:
                 if _plug.is_locked():
                     continue
@@ -639,17 +647,22 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         return basic_repr(self, str(self.root), separator='|')
 
 
-def find_skel(match=None, catch=False, **kwargs):
+def find_skel(match=None, selected=False, catch=False, **kwargs):  # pylint: disable=too-many-return-statements
     """Find a skeleton in the current scene.
 
     Args:
         match (str): match by filter or namespace
+        selected (bool): match only selected skeletons
         catch (bool): no error if exactly one skeleton not found
 
     Returns:
         (CSkeleton): matching skeleton
     """
     _LOGGER.debug('FIND SKELETON')
+
+    if selected:
+        return CSkeleton(single(cmds.ls(selection=True)))
+
     _skels = find_skels(**kwargs)
     _LOGGER.debug(' - MATCHED %d SKELS %s', len(_skels), _skels)
 
@@ -694,7 +707,7 @@ def find_skeleton(*args, **kwargs):
     Returns:
         (CSkeleton): matching skeleton
     """
-    release.apply_deprecation('15/07/26', 'Use find_skel')
+    apply_deprecation('15/07/26', 'Use find_skel')
     return find_skel(*args, **kwargs)
 
 
@@ -731,7 +744,7 @@ def find_skeletons(*args, **kwargs):
     Returns:
         (CSkeleton list): matching skeletons
     """
-    release.apply_deprecation('15/07/26', 'Use find_skels')
+    apply_deprecation('15/07/26', 'Use find_skels')
     return find_skels(*args, **kwargs)
 
 
@@ -788,5 +801,5 @@ def selected_skeleton(*args, **kwargs):
     Returns:
         (CSkeleton): selected skeleton
     """
-    release.apply_deprecation('15/07/26', 'Use sel_skel')
+    apply_deprecation('15/07/26', 'Use sel_skel')
     return sel_skel(*args, **kwargs)

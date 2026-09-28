@@ -350,7 +350,11 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'ShadersMa'
             elif _handler == 'CMayaModelPublish':
                 _c_type = 'ModelMa'
-            elif _handler == 'CMayaBasicPublish' and self.pini_task == 'rig':
+            elif _handler == 'CMayaRigPublish' or (
+                    _handler in (
+                        'CMayaBasicPublish',  # Legacy 28/09/26
+                        'CMayaScenePublish') and
+                    self.pini_task == 'rig'):
                 _c_type = 'RigMa'
             else:
                 _c_type = 'BasicMa'

@@ -317,8 +317,14 @@ class PHIKNode(pom.CNode):
 
         assert CHAR_LIST.get_val() == self
 
-    def read_map(self):
+    def read_map(self, result='node'):
         """Read current HIK mapping.
+
+        Args:
+            result (str): type of result to return
+                node - hik joint name / joint node dict
+                clean - hik joint name / clean joint name dict
+                hik - hik joint name / clean joint name tuple list (for code)
 
         Returns:
             (dict): bone name / joint mappings
@@ -327,14 +333,31 @@ class PHIKNode(pom.CNode):
         _map = {}
         for _src, _dest in self.find_connections(type_='joint'):
             _LOGGER.debug(' - SRC / DEST "%s" -> "%s"', _src, _dest)
+
+            # Read connection to attr
             if _src.to_node() == self:
                 assert _dest.attr == 'Character'
-                _map[_src.attr] = _dest.to_node()
+                _val = _dest.to_node()
+                _key = _src.attr
             elif _dest.to_node() == self:
                 assert _src.attr == 'Character'
-                _map[_dest.attr] = _src.to_node()
+                _key = _dest.attr
+                _val = _src.to_node()
             else:
                 raise ValueError
+
+            # Apply result mode
+            if result == 'node':
+                pass
+            elif result in ('clean', 'hik'):
+                _val = _val.to_clean()
+            else:
+                raise ValueError(result)
+
+            _map[_key] = _val
+
+        if result == 'hik':
+            return [(_val, _key) for _key, _val in _map.items()]
 
         return _map
 
@@ -721,6 +744,146 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             # ('RightToe', 'LeftFootExtraFinger1'),
             # ('LeftToe', 'RightFootExtraFinger1'),
             ('LeftHip', 'LeftUpLeg')]
+
+    elif skel.name == 'Mimem':
+
+        _jnt_map = [
+            ('reference', 'Reference'),
+            ('hips', 'Hips'),
+            ('spine_01', 'Spine'),
+            ('spine_02', 'Spine1'),
+            ('spine_03', 'Spine2'),
+            ('arm_stretch_r', 'RightArm'),
+            ('arm_stretch_l', 'LeftArm'),
+            ('forearm_stretch_l', 'LeftForeArm'),
+            ('forearm_stretch_r', 'RightForeArm'),
+            ('hand_r', 'RightHand'),
+            ('hand_l', 'LeftHand'),
+            ('c_thumb1_r', 'RightHandThumb1'),
+            ('c_thumb1_l', 'LeftHandThumb1'),
+            ('c_thumb2_l', 'LeftHandThumb2'),
+            ('c_thumb2_r', 'RightHandThumb2'),
+            ('c_thumb3_r', 'RightHandThumb3'),
+            ('c_thumb3_l', 'LeftHandThumb3'),
+            ('c_index1_l', 'LeftHandIndex1'),
+            ('c_index1_r', 'RightHandIndex1'),
+            ('c_index2_r', 'RightHandIndex2'),
+            ('c_index2_l', 'LeftHandIndex2'),
+            ('c_index3_l', 'LeftHandIndex3'),
+            ('c_index3_r', 'RightHandIndex3'),
+            ('c_middle1_r', 'RightHandMiddle1'),
+            ('c_middle1_l', 'LeftHandMiddle1'),
+            ('c_middle2_l', 'LeftHandMiddle2'),
+            ('c_middle2_r', 'RightHandMiddle2'),
+            ('c_middle3_r', 'RightHandMiddle3'),
+            ('c_middle3_l', 'LeftHandMiddle3'),
+            ('c_ring1_l', 'LeftHandRing1'),
+            ('c_ring1_r', 'RightHandRing1'),
+            ('c_ring2_r', 'RightHandRing2'),
+            ('c_ring3_r', 'RightHandRing3'),
+            ('c_pinky1_r', 'RightHandPinky1'),
+            ('c_pinky1_l', 'LeftHandPinky1'),
+            ('c_pinky2_l', 'LeftHandPinky2'),
+            ('c_pinky2_r', 'RightHandPinky2'),
+            ('c_pinky3_l', 'LeftHandPinky3'),
+            ('c_pinky3_r', 'RightHandPinky3'),
+            ('thigh_stretch_r', 'RightUpLeg'),
+            ('thigh_stretch_l', 'LeftUpLeg'),
+            ('leg_stretch_r', 'RightLeg'),
+            ('leg_stretch_l', 'LeftLeg'),
+            ('foot_r', 'RightFoot'),
+            ('foot_l', 'LeftFoot'),
+            ('toes_01_r', 'RightToeBase'),
+            ('toes_01_l', 'LeftToeBase'),
+            ('head', 'Head'),
+            ('neck', 'Neck'),
+            ('shoulder_r', 'RightShoulder'),
+            ('shoulder_l', 'LeftShoulder')]
+
+    elif skel.name == 'Unreal':
+
+        _jnt_map = [
+            ('root', 'Reference'),
+            ('pelvis', 'Hips'),
+            ('spine_01', 'Spine'),
+            ('spine_02', 'Spine1'),
+            ('spine_03', 'Spine2'),
+            ('spine_04', 'Spine3'),
+            ('spine_05', 'Spine4'),
+            ('neck_01', 'Neck'),
+            ('neck_02', 'Neck1'),
+            ('head', 'Head'),
+            ('upperarm_l', 'LeftArm'),
+            ('lowerarm_l', 'LeftForeArm'),
+            ('hand_l', 'LeftHand'),
+            ('pinky_metacarpal_l', 'LeftInHandPinky'),
+            ('pinky_01_l', 'LeftHandPinky1'),
+            ('pinky_02_l', 'LeftHandPinky2'),
+            ('pinky_03_l', 'LeftHandPinky3'),
+            ('ring_metacarpal_l', 'LeftInHandRing'),
+            ('ring_01_l', 'LeftHandRing1'),
+            ('ring_02_l', 'LeftHandRing2'),
+            ('ring_03_l', 'LeftHandRing3'),
+            ('thumb_01_l', 'LeftHandThumb1'),
+            ('thumb_02_l', 'LeftHandThumb2'),
+            ('thumb_03_l', 'LeftHandThumb3'),
+            ('middle_metacarpal_l', 'LeftInHandMiddle'),
+            ('middle_01_l', 'LeftHandMiddle1'),
+            ('middle_02_l', 'LeftHandMiddle2'),
+            ('middle_03_l', 'LeftHandMiddle3'),
+            ('index_metacarpal_l', 'LeftInHandIndex'),
+            ('index_01_l', 'LeftHandIndex1'),
+            ('index_02_l', 'LeftHandIndex2'),
+            ('index_03_l', 'LeftHandIndex3'),
+            ('upperarm_r', 'RightArm'),
+            ('lowerarm_r', 'RightForeArm'),
+            ('hand_r', 'RightHand'),
+            ('pinky_metacarpal_r', 'RightInHandPinky'),
+            ('pinky_01_r', 'RightHandPinky1'),
+            ('pinky_02_r', 'RightHandPinky2'),
+            ('pinky_03_r', 'RightHandPinky3'),
+            ('ring_metacarpal_r', 'RightInHandRing'),
+            ('ring_01_r', 'RightHandRing1'),
+            ('ring_02_r', 'RightHandRing2'),
+            ('ring_03_r', 'RightHandRing3'),
+            ('thumb_01_r', 'RightHandThumb1'),
+            ('thumb_02_r', 'RightHandThumb2'),
+            ('thumb_03_r', 'RightHandThumb3'),
+            ('middle_metacarpal_r', 'RightInHandMiddle'),
+            ('middle_01_r', 'RightHandMiddle1'),
+            ('middle_02_r', 'RightHandMiddle2'),
+            ('middle_03_r', 'RightHandMiddle3'),
+            ('index_metacarpal_r', 'RightInHandIndex'),
+            ('index_01_r', 'RightHandIndex1'),
+            ('index_02_r', 'RightHandIndex2'),
+            ('index_03_r', 'RightHandIndex3'),
+            ('thigh_r', 'RightUpLeg'),
+            ('calf_r', 'RightLeg'),
+            ('foot_r', 'RightFoot'),
+            ('ball_r', 'RightToeBase'),
+            ('littletoe_01_r', 'RightFootPinky1'),
+            ('littletoe_02_r', 'RightFootPinky2'),
+            ('ringtoe_01_r', 'RightFootRing1'),
+            ('ringtoe_02_r', 'RightFootRing2'),
+            ('middletoe_01_r', 'RightFootMiddle1'),
+            ('middletoe_02_r', 'RightFootMiddle2'),
+            ('bigtoe_01_r', 'RightFootExtraFinger1'),
+            ('bigtoe_02_r', 'RightFootExtraFinger2'),
+            ('indextoe_01_r', 'RightFootIndex1'),
+            ('indextoe_02_r', 'RightFootIndex2'),
+            ('thigh_l', 'LeftUpLeg'),
+            ('calf_l', 'LeftLeg'),
+            ('foot_l', 'LeftFoot'),
+            ('indextoe_01_l', 'LeftFootIndex1'),
+            ('indextoe_02_l', 'LeftFootIndex2'),
+            ('bigtoe_01_l', 'LeftFootExtraFinger1'),
+            ('bigtoe_02_l', 'LeftFootExtraFinger2'),
+            ('littletoe_01_l', 'LeftFootPinky1'),
+            ('littletoe_02_l', 'LeftFootPinky2'),
+            ('middletoe_01_l', 'LeftFootMiddle1'),
+            ('middletoe_02_l', 'LeftFootMiddle2'),
+            ('ringtoe_01_l', 'LeftFootRing1'),
+            ('ringtoe_02_l', 'LeftFootRing2')]
 
     else:
         raise ValueError(skel.name)

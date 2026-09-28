@@ -21,8 +21,8 @@ _LOGGER = logging.getLogger(__name__)
 class CheckAssetHierarchy(core.SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
-    action_filter = 'Publish -LookdevPublish'
-    task_filter = 'model rig'
+    action_filter = 'Publish -LookdevPublish -SelectionPublish'
+    task_filter = '-lookdev'
     sort = 30
 
     def run(self, req_nodes=None):
@@ -38,7 +38,7 @@ class CheckAssetHierarchy(core.SCMayaCheck):
         if not _req_nodes:
             _req_nodes = {
                 'model': {'MDL': None},
-                'rig': {'RIG': None}}.get(_task, {})
+                'rig': {'RIG': None}}.get(_task, {'SCN': None})
         self.write_log('req nodes %s', _req_nodes)
         if not _req_nodes:
             return
@@ -141,6 +141,7 @@ class CheckCacheSet(core.SCMayaCheck):
     Used for checking assets which will be referenced and cached.
     """
 
+    action_filter = 'ModelPublish RigPublish'
     task_filter = 'model rig layout'
     sort = 40  # Should happen before checks which need cache set
 
@@ -292,6 +293,8 @@ class CheckCtrlsSet(core.SCMayaCheck):
             return
         for _ctrl in self.ctrls:
             _ctrl = pom.cast_node(_ctrl)
+            if _ctrl.is_referenced():
+                continue
             if not _ctrl.namespace:
                 continue
             _msg = f'Control "{_ctrl}" is using a namespace'
@@ -617,7 +620,7 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
     """
 
     task_filter = 'rig'
-    action_filter = 'BasicPublish'
+    action_filter = 'RigPublish'
     depends_on = (CheckCacheSet, )
 
     def run(self):

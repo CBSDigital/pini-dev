@@ -402,7 +402,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
 class CheckShaders(CheckLookdevShaders):
     """Check model shaders."""
 
-    action_filter = 'ModelPublish BasicPublish'
+    action_filter = 'Publish'
     task_filter = 'model rig'
     depends_on = (scc_maya_asset.CheckGeoNaming, )
 

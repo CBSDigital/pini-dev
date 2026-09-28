@@ -332,6 +332,8 @@ def _arv_reset():
     This resets ARV cache to avoid memory overload due to ass sequences
     accumulating in animated aiStandIn nodes.
     """
+    if not cmds.ls(type='aiStandIn'):
+        return
     import arnold
 
     cmds.arnoldRenderView(opt=["Scene Updates", "0"])
@@ -440,7 +442,7 @@ def render(
         seq, camera=None, frames=None, view=False, mode=None,
         pre_frame=None, pre_frame_mel=None,
         post_frame=None, post_frame_mel=None,
-        verbose=1):
+        force=False, verbose=1):
     """Render the current scene.
 
     Args:
@@ -457,6 +459,7 @@ def render(
         pre_frame_mel (str): pre frame mel to execute
         post_frame (fn): post frame function to execute
         post_frame_mel (str): post frame mel to execute
+        force (bool): overwrite existing without confirmation
         verbose (int): print process data
     """
     from pini import dcc, qt
@@ -476,7 +479,9 @@ def render(
     # Prepare output path
     if seq.exists(frames=_frames):
         _LOGGER.info(' - CUR FRAMES %s', seq.to_range())
-        seq.delete(wording='replace', icon=icons.find('Sponge'), frames=_frames)
+        seq.delete(
+            wording='replace', icon=icons.find('Sponge'), frames=_frames,
+            force=force)
 
     # Execute render
     if _mode in ['api', 'mel', 'ArnoldRenderView']:

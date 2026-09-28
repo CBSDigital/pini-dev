@@ -25,16 +25,15 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
     LABEL = f'Renders the current scene to {farm.NAME}.'
 
     add_res_pc = True
+    priority = 60
 
-    def __init__(self, priority=60, label_w=80):
+    def __init__(self, label_w=80):
         """Constructor.
 
         Args:
-            priority (int): sort priority (higher priority handlers
-                are sorted to top of option lists)
             label_w (int): label width in ui
         """
-        super().__init__(priority=priority, label_w=label_w)
+        super().__init__(label_w=label_w)
 
     def find_passes(self):
         """Find passes in the current scene.

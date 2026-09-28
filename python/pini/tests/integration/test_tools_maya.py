@@ -46,24 +46,24 @@ class TestSanityCheck(unittest.TestCase):
         assert sanity_check.find_check(
             'CheckShaders', action='ModelPublish', catch=True)
         assert not sanity_check.find_check(
-            'CheckLookdevShaders', task='model', action='BasicPublish', catch=True,
+            'CheckLookdevShaders', task='model', action='ScenePublish', catch=True,
             filter_='CheckShaders')
         assert sanity_check.find_check(
-            'CheckShaders', task='model', action='BasicPublish', catch=True)
+            'CheckShaders', task='model', action='ScenePublish', catch=True)
 
         # Test CheckModelGeo - should run in model + not in rig
         assert not sanity_check.find_check(
             'CheckModelGeo', task='rig', catch=True)
         assert not sanity_check.find_check(
-            'CheckModelGeo', task='rig', action='BasicPublish', catch=True)
+            'CheckModelGeo', task='rig', action='RigPublish', catch=True)
         assert sanity_check.find_check(
             'CheckModelGeo', task='rig', action='ModelPublish', catch=True)
 
-        # Test FindUnneccessarySkinClusters check only applied under BasicPublish / rig
+        # Test FindUnneccessarySkinClusters check only applied under ScenePublish / rig
         assert sanity_check.find_check(
-            'FindUnneccessarySkinClusters', action='BasicPublish', catch=True)
+            'FindUnneccessarySkinClusters', action='RigPublish', catch=True)
         assert sanity_check.find_check(
-            'FindUnneccessarySkinClusters', action='BasicPublish', task='rig')
+            'FindUnneccessarySkinClusters', action='RigPublish', task='rig')
         assert not sanity_check.find_check(
             'FindUnneccessarySkinClusters', action='ModelPublish', task='model',
             catch=True)
@@ -129,7 +129,7 @@ class TestSanityCheck(unittest.TestCase):
         _work = _work_dir.to_work(tag='tmp')
         _work.save(force=True)
         _check = sanity_check.find_check(
-            'CheckAssetHierarchy', action='BasicPublish')
+            'CheckAssetHierarchy', action='ScenePublish')
         _LOGGER.info('CHECK %s', _check)
         _req_nodes = {'RIG': {'ABC': None}}
 
@@ -197,7 +197,7 @@ class TestSanityCheck(unittest.TestCase):
         _work = _work_dir.to_work(tag='tmp')
         _work.save(force=True)
         _check = sanity_check.find_check(
-            'CheckCacheSet', action='BasicPublish')
+            'CheckCacheSet', action='RigPublish')
         _LOGGER.info('CHECK %s', _check)
 
         # Check empty scene

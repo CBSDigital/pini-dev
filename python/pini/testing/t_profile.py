@@ -56,7 +56,7 @@ def profile_start():
     _PROFILE.enable()
 
 
-def profile_stop(name='pini', gprof2dot=False, bkp=True):
+def profile_stop(name='pini', gprof2dot=False, bkp=True, edit=False):
     """Stop profiler and write profiling information to disk.
 
     The data is stored here:
@@ -71,6 +71,7 @@ def profile_stop(name='pini', gprof2dot=False, bkp=True):
         name (str): name to apply to backup file
         gprof2dot (bool): display gprof2dot command
         bkp (bool): save profile file backup
+        edit (bool): edit readable file
     """
     global _PROFILE, _PROFILE_START  # pylint: disable=global-variable-not-assigned
     assert _PROFILE and _PROFILE_START
@@ -98,6 +99,8 @@ def profile_stop(name='pini', gprof2dot=False, bkp=True):
     _stats.print_stats()
     _LOGGER.info(' - WROTE READABLE %s', _txt.path)
     _hook.close()
+    if edit:
+        _txt.edit()
 
     # Bkp readable file
     if bkp:
@@ -105,12 +108,15 @@ def profile_stop(name='pini', gprof2dot=False, bkp=True):
         _txt.copy_to(_bkp, verbose=0)
         _LOGGER.info(' - WROTE BKP %s', _bkp.path)
 
+    return _file
 
-def to_profiler(name='pini'):
+
+def to_profiler(name='pini', edit=False):
     """Build profiler decorator.
 
     Args:
         name (str): override profiler name (use for filenames)
+        edit (bool): edit readable profile text file on create
 
     Returns:
         (func): profiler decorator
@@ -124,7 +130,7 @@ def to_profiler(name='pini'):
             try:
                 return func(*args, **kwargs)
             finally:
-                profile_stop(name=name)
+                profile_stop(name=name, edit=edit)
 
         return _profile_func
 

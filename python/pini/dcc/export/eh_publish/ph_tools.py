@@ -48,7 +48,7 @@ def model_publish(**kwargs):
 
 
 @release.transfer_kwarg_docs(
-    mod='pini.dcc.export', func='CMayaBasicPublish.export')
+    mod='pini.dcc.export', func='CMayaScenePublish.export')
 def publish(**kwargs):
     """Publish the current scene.
 

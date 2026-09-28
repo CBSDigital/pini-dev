@@ -33,9 +33,13 @@ class TestDCC(unittest.TestCase):
 
 class TestPublish(unittest.TestCase):
 
-    def test_publish(self):
+    def test_create_work(self):
 
-        _LOGGER.info('TEST PUBLISH')
+        _LOGGER.info('TEST CREATE WORK')
+
+        if dcc.NAME == 'maya':
+            _LOGGER.info(' - COVERED IN TestPublish.test_publish')
+            return
 
         dcc.new_scene(force=True)
 
@@ -123,20 +127,3 @@ class TestPublish(unittest.TestCase):
         assert not _work_1.find_outputs()
         assert not error.TRIGGERED
         print('')
-
-        # Test publish
-        _LOGGER.info('TESTING PUBLISH')
-        _basic_pub = dcc.find_export_handler(
-            'BasicPublish', type_='Publish', catch=True)
-        _LOGGER.info('BASIC PUB %s', _basic_pub)
-        assert not error.TRIGGERED
-        if not _basic_pub:
-            assert dcc.NAME in ['hou', 'nuke', 'syntheyes']
-        else:
-            _helper.ui.MainPane.select_tab(_helper.ui.ExportTab)
-            assert _work_1.job is _job_c
-            assert _work_1.job is pipe.CACHE.cur_job
-            assert not error.TRIGGERED
-            _basic_pub.exec(work=_work_1, force=True, version_up=False)
-            assert pipe.CACHE.obt(testing.TEST_JOB).find_publishes(asset='tmp')
-        assert not error.TRIGGERED

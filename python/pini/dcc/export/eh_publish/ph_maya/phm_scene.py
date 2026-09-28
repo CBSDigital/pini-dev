@@ -18,7 +18,7 @@ from .. import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
 _PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
-_JUNK_GRPS_S = '/'.join(_grp for _grp in m_pipe.JUNK_GRPS)
+JUNK_GRPS_S = '/'.join(_grp for _grp in m_pipe.JUNK_GRPS)
 
 
 class PubRefsMode(enum.Enum):
@@ -49,47 +49,60 @@ def _to_default_pub_ref_mode():
 _PUB_REFS_DEFAULT = _to_default_pub_ref_mode()
 
 
-class CMayaBasicPublish(ph_basic.CBasicPublish):
+class CMayaScenePublish(ph_basic.CBasicPublish):
     """Manages a basic maya publish."""
 
-    NAME = 'Maya Basic Publish'
+    NAME = 'Scene Publish'
+    ACTION = 'ScenePublish'
     ICON = icons.find('Beer Mug')
     COL = 'Salmon'
     TYPE = 'Publish'
 
     LABEL = '\n'.join([
         'Copies this scene to the publish directory - this is generally '
-        'used to pass a rig/model/lookdev asset down the pipeline for '
-        'use in shots.',
+        'used to pass a scene down the pipeline for use in shots.',
         '',
         'Here are some tips:',
         '',
-        ' - The top node should be GEO/RIG/MDL',
+        ' - The top node should be GEO/SCN',
         ' - All the geometry should be added to a set named cache_SET',
-        f' - Use {_JUNK_GRPS_S} group{plural(m_pipe.JUNK_GRPS)} for nodes '
+        f' - Use {JUNK_GRPS_S} group{plural(m_pipe.JUNK_GRPS)} for nodes '
         'that should not get published',
         ' - For referenced geo, use the import references option',
         '',
         'You can use the sanity check tool to check your scene.',
     ])
 
-    def _add_custom_ui_elems(self):
-        """Add custom ui elements."""
-        self.ui.add_separator()
+    priority = 45
+    add_ma_export = False
+    add_abc_export = False
+    add_remove_junk = True
+
+    _junk_elems = ()
+
+    def _add_custom_ui_elems(self, fbx_label=None):
+        """Add custom ui elements.
+
+        Args:
+            fbx_label (str): override fbx option label
+        """
 
         # Add junk group options
-        self._junk_elems = []
-        for _grp in m_pipe.JUNK_GRPS:
-            _grp_s = _grp.lower().capitalize()
-            _btn = self.ui.build_icon_btn(
-                f'Build{_grp_s}Grp', icon=icons.BUILD,
-                tooltip=f'Build {_grp} group',
-                callback=wrap_fn(_build_junk_grp, _grp))
-            _elem = self.ui.add_check_box(
-                val=True, name=f'Remove{_grp_s}Grp', data=_grp,
-                label=f'Remove {_grp} group', ui_only=True, add_elems=[_btn])
-            self._junk_elems.append(_elem)
-        self.ui.add_separator()
+        if self.add_remove_junk:
+            self.ui.add_separator()
+            self._junk_elems = []
+            for _grp in m_pipe.JUNK_GRPS:
+                _grp_s = _grp.lower().capitalize()
+                _btn = self.ui.build_icon_btn(
+                    f'Build{_grp_s}Grp', icon=icons.BUILD,
+                    tooltip=f'Build {_grp} group',
+                    callback=wrap_fn(_build_junk_grp, _grp))
+                _elem = self.ui.add_check_box(
+                    val=True, name=f'Remove{_grp_s}Grp', data=_grp,
+                    label=f'Remove {_grp} group', ui_only=True,
+                    add_elems=[_btn])
+                self._junk_elems.append(_elem)
+            self.ui.add_separator()
 
         self.ui.add_check_box(
             val=True, name='RemoveSets', label='Remove unused sets')
@@ -99,12 +112,17 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
             val=True, name='RemoveAlayers', label='Remove anim layers')
         self.ui.add_separator()
 
-        self.ui.add_check_box(
-            val=True, name='Abc',
-            label="Export abc of cache_SET geo")
+        if self.add_ma_export:
+            self.ui.add_check_box(
+                val=True, name='Ma',
+                label="Export ma files")
+        if self.add_abc_export:
+            self.ui.add_check_box(
+                val=True, name='Abc',
+                label="Export abc of cache_SET geo")
         self.ui.add_check_box(
             val=False, name='Fbx',
-            label="Export fbx of top node")
+            label=fbx_label or "Export fbx of top node")
         self.ui.add_separator()
 
         # Add reference option
@@ -199,7 +217,8 @@ class CMayaBasicPublish(ph_basic.CBasicPublish):
         """
         _LOGGER.info('EXEC %s force=%d', self, force)
 
-        _pub = self.work.to_output('publish', output_type=None, extn='ma')
+        _pub = self.work.to_output(
+            'publish', output_name=None, output_type=None, extn='ma')
         _pub.delete(wording='replace', force=force)
 
         self._clean_scene()

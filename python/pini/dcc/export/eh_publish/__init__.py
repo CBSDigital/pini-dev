@@ -11,8 +11,9 @@ from .ph_tools import publish, model_publish, lookdev_publish
 
 if dcc.NAME == 'maya':
     from .ph_maya import (
-        CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode)
+        CMayaScenePublish, CMayaLookdevPublish, CMayaModelPublish,
+        CMayaRigPublish, PubRefsMode, get_pub_refs_mode, set_pub_refs_mode,
+        CMayaSelectionPublish)
 elif dcc.NAME == 'hou':
     from .ph_hou import CHouBasicPublish
 elif dcc.NAME == 'spainter':

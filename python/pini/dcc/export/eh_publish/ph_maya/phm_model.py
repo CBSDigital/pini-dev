@@ -1,4 +1,4 @@
-"""Tools for managing maya publish handlers."""
+"""Tools for managing maya model publish handler."""
 
 import logging
 
@@ -9,25 +9,26 @@ from pini.utils import plural
 from maya_pini import m_pipe, open_maya as pom
 from maya_pini.utils import to_long
 
-from . import phm_basic
+from . import phm_scene
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMayaModelPublish(phm_basic.CMayaBasicPublish):
+class CMayaModelPublish(phm_scene.CMayaScenePublish):
     """Manages maya model publish."""
 
-    NAME = 'Maya Model Publish'
+    NAME = 'Model Publish'
     ACTION = 'ModelPublish'
-    TYPE = 'Publish'
 
     ICON = icons.find('Ice')
     COL = 'Cornflower Blue'
 
     LABEL = (
-        'Copies this scene to the publish directory - make sure there '
-        'is only one top node named MDL and that it has a cache set named '
-        'cache_SET')
+        'Copies this scene to the publish directory and applied modelling '
+        'checks.')
+
+    add_abc_export = True
+    priority = 50
 
     def _add_custom_ui_elems(self):
         """Add custom ui elements."""

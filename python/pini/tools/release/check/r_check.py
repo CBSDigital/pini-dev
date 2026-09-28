@@ -145,7 +145,7 @@ class CheckFile(MetadataFile):
                     'apply_deprecation(' in _line and
                     not _stripped.startswith('#') and
                     not _stripped.startswith('def ')):
-                _LOGGER.info('FOUND DEPRECATION')
+                _LOGGER.info('FOUND DEPRECATION %s', self)
                 _line = _stripped
                 _LOGGER.info(' - LINE %s', _line)
                 assert _line.startswith('apply_deprecation(')

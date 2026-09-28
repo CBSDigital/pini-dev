@@ -205,12 +205,15 @@ class NukeDCC(BaseDCC):
         """Force new scene."""
         nuke.scriptClear()
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
+        if selection:
+            raise NotImplementedError
         _file = file_ or self.cur_file()
         if not _file:
             raise RuntimeError('Unabled to determine save file')

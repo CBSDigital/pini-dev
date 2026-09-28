@@ -320,11 +320,12 @@ class BaseDCC:
         """Force new scene in current dcc."""
         raise NotImplementedError
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
         raise NotImplementedError
 
@@ -488,13 +489,14 @@ class BaseDCC:
         """
         raise NotImplementedError
 
-    def save(self, file_=None, force=False, parent=None):
+    def save(self, file_=None, force=False, parent=None, selection=False):
         """Save scene.
 
         Args:
             file_ (str): save path
             force (bool): overwrite existing without warning dialog
             parent (QDialog): parent dialog for confirmations
+            selection (bool): export only selection
         """
         if file_:
             _file = File(file_)
@@ -504,9 +506,9 @@ class BaseDCC:
                 qt.ok_cancel(
                     f'Overwrite existing file?\n\n{_file.path}',
                     parent=parent)
-            self._force_save(file_=_file)
+            self._force_save(file_=_file, selection=selection)
         else:
-            self._force_save()
+            self._force_save(selection=selection)
 
     def select_node(self, node):
         """Select the given node.

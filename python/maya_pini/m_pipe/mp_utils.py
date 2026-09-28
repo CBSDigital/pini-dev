@@ -164,7 +164,7 @@ def _read_cache_set_nodes(set_, mode, remove_junk=True):
             _children = cmds.listRelatives(
                 _root, allDescendents=True, type='transform', path=True) or []
             _nodes |= set(_children)
-            _LOGGER.debug(' - ROOT %s %s', _root, _children)
+            _LOGGER.debug('   - ROOT %s %s', _root, _children)
     _nodes = sorted(_nodes)
 
     if remove_junk:
@@ -172,6 +172,7 @@ def _read_cache_set_nodes(set_, mode, remove_junk=True):
             _long = to_long(_node)
             if _long.startswith('|JUNK|'):
                 _nodes.remove(_node)
+                _LOGGER.debug('   - REMOVING JUNK %s', _long)
 
     _LOGGER.debug(' - NODES %s', _nodes)
 
@@ -201,7 +202,9 @@ def read_cache_set(  # pylint: disable=too-many-branches
     # Apply mode filter
     _LOGGER.debug(' - APPLYING FILTERS refs=%d', include_referenced)
     _results = []
-    for _node in _read_cache_set_nodes(set_=set_, mode=mode):
+    _nodes = _read_cache_set_nodes(set_=set_, mode=mode)
+    _LOGGER.debug(' - FOUND %d NODES %s', len(_nodes), _nodes)
+    for _node in _nodes:
 
         _LOGGER.debug(' - CHECK NODE %s', _node)
 
@@ -224,6 +227,7 @@ def read_cache_set(  # pylint: disable=too-many-branches
             _node.is_referenced(), _node.shp)
 
         if not include_referenced and _node.is_referenced():
+            _LOGGER.debug('   - REJECTED NON-REFERENCED %s', _node)
             continue
 
         if mode in ('all', 'top'):
@@ -233,6 +237,7 @@ def read_cache_set(  # pylint: disable=too-many-branches
                 continue
         elif mode == 'lights':
             if not to_light_shp(_node):
+                _LOGGER.debug('   - REJECTED NON-LIGHT %s', _node)
                 continue
         elif mode == 'tfm':
             if not isinstance(_node, pom.CBaseTransform):

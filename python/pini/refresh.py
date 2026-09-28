@@ -47,7 +47,7 @@ RELOAD_ORDER = [
     'pini.dcc.export.eh_base',
     'pini.dcc.export.eh_publish.ph_basic',
     'pini.dcc.export.eh_publish.ph_maya.phm_base',
-    'pini.dcc.export.eh_publish.ph_maya.phm_basic',
+    'pini.dcc.export.eh_publish.ph_maya.phm_scene',
     'pini.dcc.export.eh_publish',
     'pini.dcc.export.eh_blast',
     'pini.dcc.export.eh_cache',

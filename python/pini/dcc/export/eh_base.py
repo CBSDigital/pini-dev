@@ -38,20 +38,18 @@ class CExportHandler:
     add_notes = True
     add_range = False
 
+    priority = 50
     work = None
     metadata = None
     outputs = ()
 
-    def __init__(self, priority=50, label_w=70):
+    def __init__(self, label_w=70):
         """Constructor.
 
         Args:
-            priority (int): sort priority (higher priority handlers
-                are sorted to top of option lists)
             label_w (int): label width in ui
         """
         self.ui = None
-        self.priority = priority
         self.label_w = label_w
 
         assert self.NAME
@@ -604,7 +602,7 @@ class CExportHandler:
         _LOGGER.info(' - UPDATED CACHE')
 
     def __lt__(self, other):
-        return -self.priority < -other.priority
+        return self.priority < other.priority
 
     def __repr__(self):
         _name = type(self).__name__.strip('_')

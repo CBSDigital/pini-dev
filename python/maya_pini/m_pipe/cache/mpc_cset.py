@@ -107,13 +107,14 @@ def find_csets(extn='abc'):
     Returns:
         (CPCacheableSet list): cacheable sets
     """
+    _LOGGER.debug('FIND CSETS %s', extn)
     _csets = []
-    for _set in cmds.ls(type='objectSet'):
-        if not _set.endswith('_CSET'):
-            continue
+    for _set in cmds.ls('*_CSET', type='objectSet'):
+        _LOGGER.debug(' - CHECK SET %s', _set)
         try:
             _cset = CPCacheableSet(_set, extn=extn)
-        except ValueError:
+        except ValueError as _exc:
+            _LOGGER.debug('   - FAILED TO BUILD CSET %s', _exc)
             continue
         _csets.append(_cset)
     return _csets

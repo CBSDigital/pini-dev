@@ -218,16 +218,19 @@ def _lookdev_to_icon(lookdev):
     return _icon
 
 
-def _output_to_entity_icon(output):
+def _output_to_entity_icon(output, entity=None):
     """Map output to a random icon.
 
     Args:
-        output (CPOutput): output to map
+        output (CCPOutput): output to map
+        entity (CCPEntity): force entity
 
     Returns:
         (str): path to icon
     """
-    if isinstance(output, cache.CCPOutputBase):
+    if entity:
+        _ety = entity
+    elif isinstance(output, cache.CCPOutputBase):
         _ety = output.entity
     elif isinstance(output, cache.CCPOutputGhost):
         _ety = pipe.CACHE.obt_entity(output.path)
@@ -308,11 +311,16 @@ def obt_recent_work(force=False):
 
 
 @cache_result
-def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
+def output_to_icon(  # pylint: disable=too-many-branches
+        output, allow_missing=False, content_type=None, entity=None,
+        force=False):
     """Obtain an icon for the given output.
 
     Args:
         output (CPOutput): output to find icon for
+        allow_missing (bool): allow assets to be missing from the cache
+        content_type (str): force content type
+        entity (CCPEntity): force entity
         force (bool): force rebuild icon
 
     Returns:
@@ -322,11 +330,14 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
 
     # Get base icon + bg
     _bg = None
-    if not isinstance(output, (cache.CCPOutputBase, cache.CCPOutputGhost)):
+    if not allow_missing and not isinstance(output, (
+            cache.CCPOutputBase, cache.CCPOutputGhost)):
         _icon = _NO_CACHE_OUTPUT_ICON
+
     else:
         _bg = None
-        if output.content_type == 'CurvesMb':
+        _content_type = content_type or output.content_type
+        if _content_type == 'CurvesMb':
             _LOGGER.debug(' - APPLYING CURVES MB ICON')
             _icon = _curves_to_icon(output)
         elif output.basic_type == 'cache':
@@ -341,19 +352,19 @@ def output_to_icon(output, force=False):  # pylint: disable=too-many-branches
         elif (
                 output.type_ in ('publish', 'publish_seq') and
                 output.pini_task == 'lookdev' and
-                output.content_type in (
+                _content_type in (
                     'ShadersMa', 'VrmeshMa', 'RedshiftProxy')):
             _LOGGER.debug(' - APPLYING LOOKDEV ICON')
             _icon = _lookdev_to_icon(output)
-        elif output.content_type in _CONTENT_TYPE_BG_MAP:
-            _bg = _CONTENT_TYPE_BG_MAP[output.content_type]
-            _icon = _output_to_entity_icon(output)
+        elif _content_type in _CONTENT_TYPE_BG_MAP:
+            _bg = _CONTENT_TYPE_BG_MAP[_content_type]
+            _icon = _output_to_entity_icon(output, entity=entity)
         elif output.type_ in _TYPE_BG_MAP:
             _bg = _TYPE_BG_MAP[output.type_]
-            _icon = _output_to_entity_icon(output)
+            _icon = _output_to_entity_icon(output, entity=entity)
         else:
             _LOGGER.debug(' - APPLYING ENTITY ICON')
-            _icon = _output_to_entity_icon(output)
+            _icon = _output_to_entity_icon(output, entity=entity)
 
     # Apply background
     if _bg:

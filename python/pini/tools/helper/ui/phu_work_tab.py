@@ -535,7 +535,7 @@ class PHWorkTab:
             self._callback__Refresh()
 
     @usage.get_tracker('PiniHelper.Save', write_after=True)
-    def _callback__WSave(self, force=False):
+    def _callback__WSave(self, selection=False, force=False):
 
         _work = self.ui.WWorks.selected_data()
         _new = not _work.exists()
@@ -546,7 +546,8 @@ class PHWorkTab:
         _LOGGER.debug('SAVE %s', _work)
         if not force:
             self._warn_on_switch_stream()
-        _work = _work.save(notes=_notes, parent=self, force=force)
+        _work = _work.save(
+            notes=_notes, parent=self, selection=selection, force=force)
 
         # Update ui
         if _new_task:

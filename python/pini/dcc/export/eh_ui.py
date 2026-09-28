@@ -446,7 +446,8 @@ class CExportHandlerUI(qt.CUiContainer):
 
     def add_list_widget(
             self, name, items=None, label=None, icon_size=30, redraw=True,
-            multi=True, select=None, add_elems=(), add_filter=False):
+            multi=True, select=None, add_elems=(), add_filter=False,
+            emit=False):
         """Add CListWidget element to this interface.
 
         Args:
@@ -460,7 +461,9 @@ class CExportHandlerUI(qt.CUiContainer):
             select (list|any): apply selection
             add_elems (tuple): add elements to label layout
             add_filter (bool): add list filter options
+            emit (bool): emit changed signal on build
         """
+        _LOGGER.debug('ADD LIST WIDGET')
         self.add_separator()
 
         # Build label layout
@@ -479,7 +482,7 @@ class CExportHandlerUI(qt.CUiContainer):
                 name=f'{name}Refresh', icon=icons.REFRESH, callback=_redraw_fn)
             _lyt.addWidget(_btn)
 
-        # Build list
+        # Build list items
         _list = qt.CListWidget(self.parent)
         if multi:
             _sel_mode = QtWidgets.QListView.ExtendedSelection
@@ -492,11 +495,18 @@ class CExportHandlerUI(qt.CUiContainer):
             QtWidgets.QSizePolicy.MinimumExpanding)
         self._setup_elem(_list, name=name)
         if items:
-            _list.set_items(items, emit=False)
+            _list.set_items(items, emit=emit)
         elif redraw and _redraw_fn:
             _redraw_fn()
-        if select:
-            _list.select(select)
+
+        # Apply selection
+        _sel = select
+        if not select and _list.save_policy == qt.SavePolicy.SAVE_IN_SCENE:
+            _sel = dcc.get_scene_data(_list.settings_key)
+        _LOGGER.debug(' - SEL %s', _sel)
+        if _sel:
+            _list.select(_sel, catch=True)
+
         self.layout.addWidget(_list)
         self.layout.setStretch(self.layout.count() - 1, 1)
 

@@ -1,3 +1,34 @@
+## [10.0.0] - Mon 2026-09-28 13:24
+### Summary
+ - Pini Helper:
+    - maya publish added Scene + Rig + Selection publish handlers,
+    - maya added right-click save export selection options,
+### Updated
+ - pini.dcc save/_force_save added selection flag,
+ - pini.dcc.MayaDCC added scene/selection/rig export handlers,
+ - pini.dcc.MayaDCC removed basic export handler,
+ - pini.dcc.UnrealDCC implemented add_menu_divider/add_menu_item/_read_version,
+ - pini.dcc.export.CBaseExportHandler priority moved from init args -> added as class attr,
+ - pini.dcc.export.CBaseExportHandler sort applies low priorty at top,
+ - pini.dcc.export.CBaseExportUI.add_list_widget read sel from scene if none provided,
+ - pini.dcc.export.CMayaLookdevPublish better lights docs,
+ - pini.pipe updated default cfg Rhea -> Thanatos,
+ - pini.pipe.CPEntity to_output/to_output_template added output_name arg,
+ - pini.pipe.CPWork.save added selection arg,
+ - pini.qt.input_dialog bugfix enter not accepting in hou22,
+ - pini.tools.pyui removed blue from col list,
+ - pini.tools.pyui.find_uis added,
+ - pini.tools.helper.output_to_icon added allow_missing/content_type/entity flags for assets outside cache,
+ - pini.tools.helper maya added right-click export selected option,
+ - pini.testing.get_profiler added edit arg,
+ - maya_pini.utils.render block arv reset on no aiStandIn nodes,
+ - maya_pini.utils.render added force flag,
+ - maya_pini.m_pipe.lookdev.read_lights made public,
+ - maya_pini.open_maya.CSkeleton.find_joints added filter_ arg,
+ - maya_pini.open_maya.find_skel added selected flag,
+ - maya_pini.hik.PHIKNode.read_map added result flag,
+
+
 ## [9.43.5] - Tue 2026-09-15 13:08
 ### Summary
  - Pini Helper:

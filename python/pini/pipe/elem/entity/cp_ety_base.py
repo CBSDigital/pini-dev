@@ -499,8 +499,8 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         # Get template
         _tag = tag or self.job.cfg['tokens']['tag']['default']
         _tmpl = self._to_output_template(
-            template, output_type=output_type, task=task, dcc_=dcc_, tag=_tag,
-            ver_n=ver_n)
+            template, output_type=output_type, output_name=output_name,
+            task=task, dcc_=dcc_, tag=_tag, ver_n=ver_n)
         _LOGGER.debug(' - TMPL %s', _tmpl)
         _LOGGER.debug(' - TAG %s', _tag)
 
@@ -554,12 +554,13 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         return pipe.to_output(_path, template=_tmpl)
 
     def _to_output_template(
-            self, template, output_type, task, dcc_, tag, ver_n):
+            self, template, output_type, output_name, task, dcc_, tag, ver_n):
         """Obtain an output template.
 
         Args:
             template (CPTemplate|str): output template to use
-            output_type (str): apply output name
+            output_type (str): apply output type
+            output_name (str): apply output name
             task (str): output task
             dcc_ (str): output dcc (if applicable)
             tag (str): output dcc
@@ -576,6 +577,7 @@ class CPEntityBase(cp_settings_elem.CPSettingsLevel):
         if isinstance(template, str):
             _want_key = {
                 'output_type': bool(output_type),
+                'output_name': bool(output_name),
                 'work_dir': bool(task),
                 'dcc': bool(dcc_)}
             _LOGGER.debug(' - WANT KEY %s', _want_key)

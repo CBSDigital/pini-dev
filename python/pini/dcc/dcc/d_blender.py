@@ -38,12 +38,15 @@ class BlenderDCC(d_base.BaseDCC):
         _file = File(file_)
         bpy.ops.wm.open_mainfile(filepath=_file.path)
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
+        if selection:
+            raise NotImplementedError
         _file = File(file_ or self.cur_file())
         bpy.ops.wm.save_as_mainfile(filepath=_file.path)
 

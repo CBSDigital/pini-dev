@@ -11,7 +11,7 @@ from pini.dcc import export
 from pini.tools import helper
 from pini.utils import single, assert_eq, ints_to_str
 
-from pini.dcc.export.eh_publish.ph_maya import phm_basic
+from pini.dcc.export.eh_publish.ph_maya import phm_scene
 from pini.tools.helper import ph_utils
 from pini.tools.helper.ui import phu_scene_tab
 
@@ -32,11 +32,11 @@ class TestHelper(unittest.TestCase):
         _helper.ui.MainPane.select_tab('Work')
         _helper.ui.MainPane.select_tab('Export')
         _helper.ui.EExportPane.select_tab('Publish')
-        _helper.ui.EPublishHandler.select('Maya Basic Publish')
+        _helper.ui.EPublishHandler.select('Scene Publish')
 
         _pub = _helper.ui.EPublishHandler.selected_data()
         _LOGGER.info(' - PUB %s', _pub)
-        assert _pub.ui.Notes.settings_key == 'PiniQt.CMayaBasicPublish.Notes'
+        assert _pub.ui.Notes.settings_key == 'PiniQt.CMayaScenePublish.Notes'
         assert not _pub.ui.Notes.text()
 
     def test_farm_render_handler(self):
@@ -356,7 +356,7 @@ class TestHelper(unittest.TestCase):
         _helper.ui.EExportPane.select_tab('Publish', emit=True)
         assert dcc.get_scene_data('PiniQt.ExportTab.EExportPane') == 'Publish'
         _m_pub = _helper.ui.EPublishHandler.selected_data()
-        assert _m_pub.NAME == 'Maya Model Publish'
+        assert _m_pub.NAME == 'Model Publish'
         assert _m_pub.ui.References.save_policy is qt.SavePolicy.SAVE_IN_SCENE
         _m_pub.ui.References.select_text('Import into root namespace', emit=True)
         _LOGGER.info(' - SETTING KEY %s', _m_pub.ui.References.settings_key)
@@ -388,7 +388,7 @@ class TestHelper(unittest.TestCase):
         assert _m_pub.ui.References.save_policy == qt.SavePolicy.SAVE_IN_SCENE
         _m_pub.ui.References.select_text('Remove')
         assert _m_pub.ui.References.settings_key == 'PiniQt.Publish.References'
-        assert _m_pub.ui.References.settings_key == phm_basic._PUB_REFS_MODE_KEY
+        assert _m_pub.ui.References.settings_key == phm_scene._PUB_REFS_MODE_KEY
         _LOGGER.info(' - SETTING %s', _m_pub.ui.References.get_scene_setting())
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
         assert export.get_pub_refs_mode() is _remove

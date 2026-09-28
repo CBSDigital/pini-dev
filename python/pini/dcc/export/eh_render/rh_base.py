@@ -27,15 +27,13 @@ class CRenderHandler(eh_base.CExportHandler):
     add_res_pc = False
     add_cameras = True
 
-    def __init__(self, priority=50, label_w=60):
+    def __init__(self, label_w=60):
         """Constructor.
 
         Args:
-            priority (int): sort priority (higher priority handlers
-                are sorted to top of option lists)
             label_w (int): label width in ui
         """
-        super().__init__(label_w=label_w, priority=priority)
+        super().__init__(label_w=label_w)
 
     def build_ui(self):
         """Build basic render interface into the given layout."""

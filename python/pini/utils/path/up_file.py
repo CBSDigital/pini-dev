@@ -238,9 +238,9 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         for _file in _dir.find(
                 head=_head, class_=True, type_='f', extn=self.extn,
                 hidden=True, catch_missing=True, depth=1):
-            _LOGGER.info(' - FILE %s', _file)
+            _LOGGER.debug(' - FILE %s', _file)
             _tail = _file.base[len(_head):]
-            _LOGGER.info('   - TAIL %s', _tail)
+            _LOGGER.debug('   - TAIL %s', _tail)
             _tokens = _tail.split('_')
             if len(_tokens) != 3:
                 continue

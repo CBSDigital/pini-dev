@@ -20,8 +20,9 @@ if pipe.SHOTGRID_AVAILABLE:
 
 if dcc.NAME == 'maya':
     from .eh_publish import (
-        CMayaBasicPublish, CMayaLookdevPublish, CMayaModelPublish,
-        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode)
+        CMayaScenePublish, CMayaLookdevPublish, CMayaModelPublish,
+        PubRefsMode, get_pub_refs_mode, set_pub_refs_mode, CMayaRigPublish,
+        CMayaSelectionPublish)
     from .eh_render import (
         CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
     from .eh_blast import CMayaPlayblast

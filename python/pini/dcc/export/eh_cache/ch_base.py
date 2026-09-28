@@ -80,11 +80,8 @@ class CCacheHandler(eh_base.CExportHandler):
         _LOGGER.debug('REDRAW Cacheables')
         _items = []
         for _cbl in self.find_cacheables():
-            _icon = qt.CPixmap(30, 30)
-            _icon.fill('Transparent')
-            _icon.draw_overlay(
-                _cbl.icon, _icon.center(), size=20, anchor='C')
-            _item = qt.CListWidgetItem(_cbl.label, icon=_icon, data=_cbl)
+            _item = qt.CListWidgetItem(
+                _cbl.label, icon=_cbl.icon, data=_cbl, icon_scale=0.7)
             _items.append(_item)
         self.ui.Cacheables.set_items(_items, select=_items, emit=False)
         self.ui.Cacheables.load_setting()

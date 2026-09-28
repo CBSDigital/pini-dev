@@ -28,7 +28,7 @@ _NICE_COLS = [
     'red', 'tomato', 'coral', 'orangered', 'sandybrown', 'darkorange',
     'orange', 'gold', 'yellow', 'greenyellow', 'chartreuse', 'lawngreen',
     'lime', 'springgreen', 'mediumspringgreen', 'aqua', 'cyan', 'deepskyblue',
-    'dodgerblue', 'cornflowerblue', 'blue', 'mediumslateblue', 'fuchsia',
+    'dodgerblue', 'cornflowerblue', 'mediumslateblue', 'fuchsia',
     'magenta', 'deeppink', 'hotpink']
 INFO_ICON = icons.find('Information')
 

@@ -147,6 +147,11 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
         else:
             raise NotImplementedError(_mode)
 
+    def _context__WSave(self, menu):
+        menu.add_action(
+            'Export selection', wrap_fn(self._callback__WSave, selection=True),
+            icon=icons.SAVE)
+
     def closeEvent(self, event=None):
         """Triggered by close.
 

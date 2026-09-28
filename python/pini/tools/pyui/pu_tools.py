@@ -30,3 +30,12 @@ def find_ui(match=None):
         return _uis[single(_filter_matches)]
 
     raise ValueError(match)
+
+
+def find_uis():
+    """Find pyui interfaces.
+
+    Returns:
+        (PUBaseUi list): interfaces
+    """
+    return list(sys.PYUI_INTERFACES.values())

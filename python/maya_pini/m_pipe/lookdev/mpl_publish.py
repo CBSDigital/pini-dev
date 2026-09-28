@@ -265,9 +265,17 @@ def read_lights():
     Returns:
         (CTransform list): lights
     """
+    _LOGGER.debug('READ LIGHTS')
     _lgts = []
-    _lgts += mp_utils.read_cache_set('lights')
-    _lgts += read_mesh_lights(fmt='node')
+
+    _cs_lights = mp_utils.read_cache_set('lights')
+    _LOGGER.debug(' - FOUND %d CACHE SET LIGHTS', len(_cs_lights))
+    _lgts += _cs_lights
+
+    _mesh_lights = read_mesh_lights(fmt='node')
+    _LOGGER.debug(' - FOUND %d MESH LIGHTS', len(_mesh_lights))
+    _lgts += _mesh_lights
+
     return _lgts
 
 

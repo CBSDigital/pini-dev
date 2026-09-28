@@ -17,7 +17,7 @@ from ... import cp_template, cp_utils
 
 _LOGGER = logging.getLogger(__name__)
 
-_DEFAULT_CFG_NAME = "Rhea"
+_DEFAULT_CFG_NAME = "Thanatos"
 _DEFAULT_CFG = {
     'defaults': {},
     'name': None,

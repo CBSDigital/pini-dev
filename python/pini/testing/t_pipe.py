@@ -70,7 +70,7 @@ def _check_model(force):
         export.model_publish(export_abc=True, export_fbx=True, force=True)
     _mdl_pub_g = _asset_c.find_publish(
         task=_mod_task, ver_n='latest', tag=_mdl_work.tag, versionless=False,
-        type_='publish', extn='ma')
+        type_='publish', extn='ma', output_name=None)
     _mdl_pub = pipe.CACHE.obt(_mdl_pub_g)
     assert _mdl_pub.path == _mdl_pub_g.path
     assert _mdl_pub

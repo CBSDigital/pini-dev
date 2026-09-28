@@ -7,7 +7,7 @@ from pini import dcc
 from .cpnt import PUFile, set_section, PUSection, PUDef, PUChoiceMgr
 from .ui import build
 from .pu_install import install
-from .pu_tools import find_ui
+from .pu_tools import find_ui, find_uis
 
 if dcc.NAME == 'maya':
     from .ui import PUMayaUi

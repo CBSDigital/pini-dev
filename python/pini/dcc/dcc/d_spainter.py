@@ -106,13 +106,16 @@ class SubstancePainterDCC(BaseDCC):
             'Substance does not support empty scenes.\n\nYou need to open '
             'an fbx file.')
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
         from pini.tools import error
+        if selection:
+            raise NotImplementedError
         _file = to_str(file_) or self.cur_file()
         try:
             project.save_as(_file, mode=project.ProjectSaveMode.Incremental)

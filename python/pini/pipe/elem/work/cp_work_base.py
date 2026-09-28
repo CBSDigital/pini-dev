@@ -457,7 +457,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
     def save(
             self, notes=None, reason=None, mtime=None, parent=None,
-            force=None):
+            selection=False, force=None):
         """Save this work version.
 
         Args:
@@ -465,6 +465,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             reason (str): save reason (for backup label)
             mtime (int): force save mtime
             parent (QDialog): parent dialog for confirmation dialogs
+            selection (bool): export only selection
             force (bool): overwrite existing + create entity
                 without confirmation
 
@@ -514,7 +515,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
 
         # Save file + bkp + metadata
         _LOGGER.debug(' - SAVE SCENE %s', self.path)
-        dcc.save(file_=self.path, force=_force, parent=parent)
+        dcc.save(
+            file_=self.path, force=_force, parent=parent, selection=selection)
         self._save_metadata(notes=_notes, mtime=_mtime)
         _bkp = self._save_bkp(
             source=self, reason=_reason, mtime=_mtime, notes=_notes,

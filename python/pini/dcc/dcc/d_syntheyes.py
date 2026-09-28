@@ -58,13 +58,15 @@ class SyntheyesDCC(BaseDCC):
         self.lev.ClearChanged()
         self.lev.PerformActionByNameAndWait('Close')
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
-        _LOGGER.debug('FORCE SAVE %s', file_)
+        if selection:
+            raise NotImplementedError
         if file_:
             _file = File(file_)
             _LOGGER.debug(' - CLEAR CHANGED')

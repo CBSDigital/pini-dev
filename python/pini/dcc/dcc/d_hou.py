@@ -136,12 +136,15 @@ class HouDCC(BaseDCC):
         """Force new scene."""
         hou.hipFile.clear(suppress_save_prompt=True)
 
-    def _force_save(self, file_=None):
+    def _force_save(self, file_=None, selection=False):
         """Force save the current scene without overwrite confirmation.
 
         Args:
             file_ (str): path to save scene to
+            selection (bool): export only selection
         """
+        if selection:
+            raise NotImplementedError
         _path = file_ or self.cur_file()
         if not _path:
             raise RuntimeError('Unabled to determine save path')

@@ -92,7 +92,8 @@ class PHExportTab:
             _select = _scene_data
         if not _select:
             _select = dcc.find_export_handler(
-                'publish', filter_='basic', catch=True)
+                'publish', filter_='scene', catch=True)
+            _LOGGER.debug(' - DEFAULT PUB HANDLER %s', _select)
         _work = pipe.CACHE.cur_work
         if _work:
             _task = pipe.map_task(_work.task, step=_work.step)
@@ -101,6 +102,7 @@ class PHExportTab:
             _LOGGER.debug(' - PUB HANDLER %s', _handler)
             if _handler:
                 _select = _handler
+                _LOGGER.debug(' - WORK PUB HANDLER %s', _select)
 
         _LOGGER.debug(' - SELECT PUB HANDLER %s', _select)
         self.ui.EPublishHandler.set_items(

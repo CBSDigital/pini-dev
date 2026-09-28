@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 class CMayaLookdevPublish(ph_basic.CBasicPublish):
     """Manages a maya lookdev publish."""
 
-    NAME = 'Maya Lookdev Publish'
+    NAME = 'Lookdev Publish'
     ACTION = 'LookdevPublish'
     ICON = icons.find('Artist Palette')
     COL = 'Gold'
@@ -37,13 +37,21 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         ' - Any sets in overrides_SET are saved and restored on abc attach',
         ' - Nodes in JUNK group are ignored',
         '',
+        '',
         'Lights:',
         '',
-        ' - Any lights found in the model/rig are saved in the publish',
-        ' - Lights are constrained to the matching transform in the abc',
-        ' - Make sure lights are added to the cache_SET',
+        ' - Any lights found in the model/rig cache_SET are saved in the '
+        'publish',
+        ' - When the lookdev is attached, the lights from lookdev are '
+        'constrained to the matching transform in the abc',
+        ' - You can create lights in the lookdev scene, but make sure ',
+        'that they are added to the cache_SET of the model/rig and '
+        'that there is a matching transform in the model/rig to attach '
+        'each light to',
+        ' - Lights in JUNK will be ignored'
     ])
 
+    priority = 70
     shd_yml = None
     textures = None
 

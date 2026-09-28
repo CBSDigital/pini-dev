@@ -216,10 +216,18 @@ class TestPipe(unittest.TestCase):
                 _tmpls = [
                     testing.TEST_JOB.find_template(
                         'publish', profile=_ety.profile,
-                        has_key={'tag': True, 'ver': True, 'output_type': False}),
+                        has_key={
+                            'tag': True,
+                            'ver': True,
+                            'output_name': False,
+                            'output_type': False}),
                     testing.TEST_JOB.find_template(
                         'publish', profile=_ety.profile, catch=True,
-                        has_key={'tag': True, 'ver': False, 'output_type': False}),
+                        has_key={
+                            'tag': True,
+                            'ver': False,
+                            'output_name': False,
+                            'output_type': False}),
                 ]
                 _tmpls = [_tmpl for _tmpl in _tmpls if _tmpl]
                 assert _tmpls
@@ -257,8 +265,10 @@ class TestPipe(unittest.TestCase):
         # Check asset pubs can have optional output_type
         _ety = pipe.CACHE.obt(testing.TEST_ASSET)
         _work_dir = _ety.find_work_dir('model', dcc_=dcc.NAME)
-        assert _work_dir.to_output('publish', output_type=None, extn=dcc.DEFAULT_EXTN)
-        assert _work_dir.to_output('publish', output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
+        assert _work_dir.to_output(
+            'publish', output_name=None, output_type=None, extn=dcc.DEFAULT_EXTN)
+        assert _work_dir.to_output(
+            'publish', output_name=None, output_type='vrmesh', extn=dcc.DEFAULT_EXTN)
 
         _blast = _work.to_output(
             'blast_mov', output_name='blah', extn='mov')
@@ -541,7 +551,7 @@ class TestDiskPipe(unittest.TestCase):
         _work_dir = _shot.to_work_dir(task='rig')
         _LOGGER.info('WORK DIR %s', _work_dir)
         _work = _work_dir.to_work()
-        _out = _work.to_output('publish', output_type=None)
+        _out = _work.to_output('publish', output_type=None, output_name=None)
         assert not _work_dir.find_outputs()
         assert not _shot.find_outputs()
         assert not _shot_c.find_publishes(force=True)

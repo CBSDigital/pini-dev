@@ -40,8 +40,15 @@ class C4dDCC(BaseDCC):
             return None
         return abs_path('/'.join([_path, _name]))
 
-    def _force_new_scene(self):
-        """Force new scene without confirmation."""
+    def _force_save(self, file_=None, selection=False):
+        """Force save the current scene without overwrite confirmation.
+
+        Args:
+            file_ (str): path to save scene to
+            selection (bool): export only selection
+        """
+        if selection or file_:
+            raise NotImplementedError
         _LOGGER.info('FORCE NEW SCENE')
         self.doc().Flush()
         self.doc().SetDocumentPath('')

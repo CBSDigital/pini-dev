@@ -513,6 +513,8 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             offset (bool): apply cycle with offset
         """
         _mode = 'Cycle' if not offset else 'Cycle with offset'
+        if not self.anim:
+            raise RuntimeError(self)
         self.anim.set_infinity(_mode)
 
     def lock(self, hide=False):
@@ -697,7 +699,7 @@ class CPlug(om.MPlug):  # pylint: disable=too-many-public-methods
             mode (str): infinity mode to apply
         """
         from pini.utils import apply_deprecation
-        apply_deprecation('02/07/26', 'Use CPlug.set_infinity')
+        apply_deprecation('02/07/26', 'Use CAnimCurve.set_infinity')
         assert mode in ['cycle', 'cycleRelative', 'linear']
         cmds.setInfinity(self, preInfinite=mode, postInfinite=mode)
 
