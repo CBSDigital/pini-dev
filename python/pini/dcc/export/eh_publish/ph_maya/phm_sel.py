@@ -13,6 +13,7 @@ from maya_pini.utils import add_to_set, save_scene, save_fbx
 from . import phm_scene
 
 _LOGGER = logging.getLogger(__name__)
+_DEFAULT_ICON = icons.find('Cooked Rice')
 
 
 class _PubSet:
@@ -30,9 +31,12 @@ class _PubSet:
         self.name = node[:-5]
 
         self.out = self.to_output()
-        self.icon = helper.output_to_icon(
-            self.out, allow_missing=True, content_type='BasicMa',
-            entity=pipe.CACHE.cur_entity)
+        if self.out:
+            self.icon = helper.output_to_icon(
+                self.out, allow_missing=True, content_type='BasicMa',
+                entity=pipe.CACHE.cur_entity)
+        else:
+            self.icon = _DEFAULT_ICON
 
     def to_output(self, extn='ma'):
         """Build an output for this pub set.
@@ -43,6 +47,8 @@ class _PubSet:
         Returns:
             (CPOutput): output
         """
+        if not pipe.CACHE.cur_work:
+            return None
         return pipe.CACHE.cur_work.to_output(
             'publish', output_name=self.name, output_type='pset', extn=extn)
 

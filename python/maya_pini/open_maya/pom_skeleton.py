@@ -21,8 +21,10 @@ from . import pom_joint
 
 _LOGGER = logging.getLogger(__name__)
 _NAME_MAPPINGS_YML = None
+_HIK_MAPPINGS_FMT = None
 if PROPERTIES:
     _NAME_MAPPINGS_YML = PROPERTIES.to_file('maya/skeleton/names.yml')
+    _HIK_MAPPINGS_FMT = PROPERTIES.to_file('maya/skeleton/{name}_hik.yml').path
 
 
 class CSkeleton:  # pylint: disable=too-many-public-methods

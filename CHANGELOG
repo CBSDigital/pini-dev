@@ -1,3 +1,11 @@
+## [11.0.1] - Thu 2026-10-01 09:12
+### Summary
+ - Pini Helper:
+    - maya selection publish bugfix error on PSETs in scene but no current work file (mkim),
+### Updated
+ - pini.dcc.export.CMayaSelectionPublish bugfix error on no cur work,
+
+
 ## [11.0.0] - Thu 2026-10-01 08:37
 ### Summary
  - Pini Helper:
