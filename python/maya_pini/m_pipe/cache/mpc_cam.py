@@ -53,7 +53,7 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         super().__init__(
             src_ref=_src_ref, node=cam, output_name=_output_name,
             output_type='cam', extn=extn, exporter=exporter,
-            content_type='CamAbc')
+            content_type=f'Cam{extn.capitalize()}')
 
     def build_metadata(self):
         """Obtain metadata dict for this cacheable.

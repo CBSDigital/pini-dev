@@ -36,7 +36,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         super().__init__(
             output_name=_output_name, label=f'{_output_name} (CSET)',
             output_type=extn, node=self.cache_set, extn=extn,
-            src_ref=None, exporter=exporter)
+            src_ref=None, exporter=exporter, content_type=extn.capitalize())
 
         if not self.to_geo():
             raise ValueError('No export geo')

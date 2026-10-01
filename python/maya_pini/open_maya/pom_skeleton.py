@@ -12,7 +12,7 @@ from maya import cmds
 from pini import dcc, qt
 from pini.utils import (
     single, cache_property, basic_repr, passes_filter, cache_result, EMPTY,
-    PROPERTIES, safe_zip, apply_filter, apply_deprecation)
+    PROPERTIES, safe_zip, apply_filter, apply_deprecation, File)
 
 from maya_pini.utils import (
     to_clean, bake_results, to_namespace, to_node, CONSTRAINT_TYPES)
@@ -48,6 +48,15 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             (CAnimCurve list): animation curve nodes
         """
         return list(filter(bool, [_plug.anim for _plug in self.plugs]))
+
+    @property
+    def hik_map(self):
+        """Obtain HIK map for this skeleton.
+
+        Returns:
+            (dict): HIK map
+        """
+        return self._read_hik_map()
 
     @property
     def name(self):
@@ -429,6 +438,21 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """Apply parenting of this skeleton's root."""
         self.root.parent(*args, **kwargs)
 
+    @cache_result
+    def _read_hik_map(self, force=False):
+        """Read HIK map from file.
+
+        Args:
+            force (bool): force reread from disk
+
+        Returns:
+            (dict): HIK map
+        """
+        _yml = File(_HIK_MAPPINGS_FMT.format(name=self.name))
+        if not _yml.exists():
+            return None
+        return _yml.read_yml()
+
     def _read_name(self):
         """Read name of this skeleton.
 
@@ -476,6 +500,26 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """
         for _jnt in self.joints:
             _jnt.set_col(col, mode=mode)
+
+    def set_hik_map(self, map_):
+        """Set HIK map for this skeleton.
+
+        Args:
+            map_ (dict): map to apply
+        """
+        _LOGGER.info('SET HIK MAP')
+        _file = File(_HIK_MAPPINGS_FMT.format(name=self.name))
+        _LOGGER.info(' - FILE %s', _file)
+        assert isinstance(map_, dict)
+        for _hik_jnt, _jnt_name in map_.items():
+            assert isinstance(_hik_jnt, str)
+            assert isinstance(_jnt_name, str)
+            _jnt = to_node(_jnt_name, namespace=self.namespace)
+            _LOGGER.info('   - CHECK JNT %s %s -> %s', _hik_jnt, _jnt_name, _jnt)
+            assert cmds.objExists(_jnt)
+            assert _jnt in self.joints
+        _file.write_yml(map_)
+        self._read_hik_map(force=True)  # Update cache
 
     def set_joint_radius(self, radius):
         """Set radius for all joints.

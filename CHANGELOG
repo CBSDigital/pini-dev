@@ -1,3 +1,13 @@
+## [11.1.0] - Thu 2026-10-01 12:22
+### Summary
+ - Pini Helper:
+    - maya cache bugfix bad content type for fbxs (kakuna),
+### Updated
+ - maya_pini.m_pipe.cache bugfix bad content_type for fbxs,
+ - maya_pini.open_maya.CSkeleton hik_map/set_hik_map added,
+ - maya_pini.hik.build_hik write map to disk on build skel map,
+
+
 ## [11.0.2] - Thu 2026-10-01 09:26
 ### Summary
  - Pini Helper:

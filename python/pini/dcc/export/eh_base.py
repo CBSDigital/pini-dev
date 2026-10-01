@@ -565,7 +565,6 @@ class CExporter:
         """Update metadata on generated outputs."""
         _LOGGER.info(
             ' - UPDATE METADATA %d %s', len(self.outputs), self.outputs)
-        assert self.metadata
         for _out in self.outputs:
             _out.set_metadata(self.metadata, mode='add', force=True)
 

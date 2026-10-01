@@ -565,6 +565,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     Returns:
         (dict): skeleton HIK joint mapping
     """
+    qt.ok_cancel(f'No mapping found for skel "{skel.name}"')
 
     # Build name map
     _name = skel.to_name(catch=True)
@@ -972,6 +973,10 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     else:
         raise ValueError(skel.name)
 
+    # Save to skel
+    _dict = dict(_jnt_map)
+    skel.set_hik_mapping(_dict)
+
     # Setup mapping
     _mapping = []
     _grp = skel.root.to_parent()
@@ -985,7 +990,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
 
 @restore_ns
 def build_hik(
-        mapping, name='Auto', straighten_arms=False, reset_ns=True,
+        target, name='Auto', straighten_arms=False, reset_ns=True,
         force=False):
     """Build an HIK character for the given skeleton.
 
@@ -993,7 +998,7 @@ def build_hik(
     from that everything else seems to work.
 
     Args:
-        mapping (dict): joint/target mapping
+        target (dict|CSkeleton): joint/target mapping or skeleton
         name (str): HIK character name
         straighten_arms (bool): apply arm align with y axis to allow locking
             of character definition
@@ -1011,9 +1016,17 @@ def build_hik(
             raise RuntimeError(f'Node "{name}" already exists')
         cmds.delete(name)
 
-    _mapping = mapping
-    if isinstance(_mapping, pom.CSkeleton):
-        _mapping = _skel_to_mapping(_mapping)
+    # Obtain mapping from target
+    if isinstance(target, pom.CSkeleton):
+        _skel_map = target.hik_map
+        if _skel_map:
+            _mapping = [
+                (target.to_joint(_trg), _src)
+                for _src, _trg in _skel_map.items()]
+        else:
+            _mapping = _skel_to_mapping(_mapping)
+    else:
+        _mapping = target
     assert isinstance(_mapping, list)
     _LOGGER.debug(' - MAPPPING %s', _mapping)
     _root = _find_map_src('Hips', _mapping)
