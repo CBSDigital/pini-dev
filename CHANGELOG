@@ -1,3 +1,11 @@
+## [11.0.2] - Thu 2026-10-01 09:26
+### Summary
+ - Pini Helper:
+    - maya cache bugfix error on read scene cams (kakuna),
+### Updated
+ - maya_pini.m_pipe.find_cams bugfix missing exporter arg,
+
+
 ## [11.0.1] - Thu 2026-10-01 09:12
 ### Summary
  - Pini Helper:

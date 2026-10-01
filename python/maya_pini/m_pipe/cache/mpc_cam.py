@@ -242,6 +242,7 @@ def find_cams(extn='abc'):
     """
     _LOGGER.debug('FIND CAMS')
     _cams = []
+    _exporter = dcc.find_exporter(extn)
     for _cam_s in cmds.ls(type="camera", allPaths=True):
 
         _LOGGER.debug('CHECKING %s', _cam_s)
@@ -261,7 +262,7 @@ def find_cams(extn='abc'):
             continue
 
         try:
-            _cacheable = CPCacheableCam(_cam, extn=extn)
+            _cacheable = CPCacheableCam(_cam, extn=extn, exporter=_exporter)
         except ValueError as _exc:
             _LOGGER.debug(' - REJECTED %s %s', _cam, _exc)
             continue
