@@ -515,7 +515,8 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
             assert isinstance(_hik_jnt, str)
             assert isinstance(_jnt_name, str)
             _jnt = to_node(_jnt_name, namespace=self.namespace)
-            _LOGGER.info('   - CHECK JNT %s %s -> %s', _hik_jnt, _jnt_name, _jnt)
+            _LOGGER.info(
+                '   - CHECK JNT %s %s -> %s', _hik_jnt, _jnt_name, _jnt)
             assert cmds.objExists(_jnt)
             assert _jnt in self.joints
         _file.write_yml(map_)

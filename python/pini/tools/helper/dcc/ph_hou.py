@@ -2,6 +2,9 @@
 
 import logging
 
+import hou
+
+from pini import icons
 from pini.utils import wrap_fn
 
 from hou_pini import h_pipe
@@ -13,6 +16,16 @@ _LOGGER = logging.getLogger(__name__)
 
 class HouPiniHelper(ph_window.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
     """PiniHelper dialog for houdini."""
+
+    def _context__WWorks(self, menu):
+        menu.add_action(
+            'Merge into current scene',
+            wrap_fn(hou.hipFile.merge, str(self.work)),
+            enabled=bool(self.work),
+            icon=icons.find('Down-Right Arrow'))
+
+    def _context__WLoad(self, menu):
+        self._context__WWorks(menu)
 
     def _context__SOutputs(self, menu):
         _out = self.ui.SOutputs.selected_data()

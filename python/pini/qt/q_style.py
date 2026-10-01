@@ -37,7 +37,7 @@ QListView, QListWidget, QTreeView, QTableView, QTextEdit, QPlainTextEdit {
     outline: 0;
     selection-background-color: #5285a6;
     selection-color: #ffffff; }
-QListView::item { padding: 2px 4px; }
+QListView::item { padding: 0px 0px; }
 QListView::item:selected { background-color: #5285a6; }
 
 /* inputs */
@@ -58,10 +58,26 @@ QPushButton {
     background-color: #5d5d5d;
     border: 1px solid #1c1c1c;
     border-radius: 2px;
-    min-height: 18px; }
+    min-height: 20px; }
 QPushButton:hover   { background-color: #707070; }
 QPushButton:pressed { background-color: #484848; }
 QPushButton:disabled { color: #808080; background-color: #4e4e4e; }
+
+/* icon-only buttons sit flat on the background (like maya) */
+QPushButton[flat="true"], QPushButton[text=""] {
+    background: transparent;
+    border: 1px solid transparent;
+    min-height: 0px; }
+QPushButton[flat="true"]:hover, QPushButton[text=""]:hover {
+    background-color: #555555;
+    border: 1px solid #2b2b2b; }
+QPushButton[flat="true"]:pressed, QPushButton[text=""]:pressed {
+    background-color: #3a3a3a; }
+QPushButton[flat="true"]:checked, QPushButton[text=""]:checked {
+    background-color: #3a3a3a;
+    border: 1px solid #2b2b2b; }
+QPushButton[flat="true"]:disabled, QPushButton[text=""]:disabled {
+    background: transparent; }
 
 QToolButton {
     background: transparent;
@@ -74,8 +90,7 @@ QToolButton:hover { border: 1px solid #1c1c1c; background-color: #555555; }
 QTabWidget::pane {
     border: 1px solid #1c1c1c;
     background-color: #444444;
-    top: -1px;
-    padding: 6px; }
+    padding: 0px; }
 QTabBar::tab {
     background: #3a3a3a;
     border: 1px solid #1c1c1c;
@@ -83,17 +98,49 @@ QTabBar::tab {
     padding: 5px 15px;
     margin-right: 2px; }
 QTabBar::tab:selected { background: #5d5d5d; color: #ffffff; }
+QTabBar::tab:disabled { background: #2f2f2f; color: #6a6a6a; }
 
-QScrollBar:vertical { background: #2b2b2b; width: 12px; margin: 0; }
+QScrollBar:vertical {
+    background: #2b2b2b;
+    border: none;
+    width: 14px;
+    margin: 0; }
+QScrollBar:horizontal {
+    background: #2b2b2b;
+    border: none;
+    height: 14px;
+    margin: 0; }
 QScrollBar::handle:vertical {
     background: #5d5d5d;
-    border-radius: 3px;
-    min-height: 24px;
+    border-radius: 4px;
+    min-height: 30px;
     margin: 2px; }
-QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
+QScrollBar::handle:horizontal {
+    background: #5d5d5d;
+    border-radius: 4px;
+    min-width: 30px;
+    margin: 2px; }
+QScrollBar::handle:hover { background: #707070; }
+QScrollBar::handle:pressed { background: #5285a6; }
+QScrollBar::add-line, QScrollBar::sub-line {
+    background: none;
+    border: none;
+    height: 0px;
+    width: 0px; }
+QScrollBar::up-arrow, QScrollBar::down-arrow,
+QScrollBar::left-arrow, QScrollBar::right-arrow {
+    background: none;
+    border: none;
+    width: 0px;
+    height: 0px; }
+QScrollBar::add-page, QScrollBar::sub-page { background: none; }
 
 QMessageBox, QDialog { border: 1px solid #1c1c1c; }
-QMessageBox QLabel { padding: 6px; }
+QMessageBox QLabel { padding: 2px; background: transparent; }
+QDialogButtonBox QPushButton {
+    min-width: 64px;
+    min-height: 22px;
+    padding: 2px 10px; }
 QToolTip {
     background-color: #2b2b2b;
     color: #ddd;
@@ -110,27 +157,71 @@ def apply_base_style(widget):
     Args:
         widget (QWidget): widget to adjust
     """
-    _ver = dcc.to_version()
-    _ss = None
-    if dcc.NAME == 'hou' and _ver[0] >= 22:
-        _ss = _HOU_22_SS
-
+    _ss = _find_base_ss()
     if _ss:
         widget.setStyleSheet(_ss)
         _fix_lyt_margins(widget)
 
 
-def _fix_lyt_margins(widget, spacing=2, margin=2):
+def _find_base_ss():
+    """Find base stylesheet for current env.
+
+    Returns:
+        (str|None): stylesheet (if any)
+    """
+    _ver = dcc.to_version()
+    if dcc.NAME == 'hou' and _ver[0] >= 22:
+        return _HOU_22_SS
+    return None
+
+
+def fix_msg_box_layout(box, spacing=14, margin=16):
+    """Adjust message box layout to match maya (spacing + centered buttons).
+
+    Should be applied after buttons have been added.
+
+    Args:
+        box (QMessageBox): message box to adjust
+        spacing (int): spacing between icon/text/buttons
+        margin (int): margin around contents
+    """
+    if not _find_base_ss():
+        return
+
+    _lyt = box.layout()
+    if _lyt:
+        _lyt.setSpacing(spacing)
+        _lyt.setContentsMargins(margin, margin, margin, margin)
+
+    for _btn_box in box.findChildren(QtWidgets.QDialogButtonBox):
+        _btn_box.setCenterButtons(True)
+        _btn_lyt = _btn_box.layout()
+        if _btn_lyt:
+            _btn_lyt.setSpacing(8)
+            _btn_lyt.setContentsMargins(0, 0, 0, 0)
+
+
+def _fix_lyt_margins(widget, spacing=2, margin=2, outer_margin=10):
     """Fix margins + spacing in child layouts.
 
     Args:
         widget (QWidget): parent widget
         spacing (int): apply spacing
-        margin (int): apply margins
+        margin (int): apply margins to child layouts
+        outer_margin (int): apply margin to the ui's root layout
+            (space between contents and window edge)
     """
     for _layout in widget.findChildren(QtWidgets.QLayout):
         _layout.setSpacing(spacing)
         _layout.setContentsMargins(margin, margin, margin, margin)
+
+    # The root layout is owned by the loaded ui widget (self._ui) - the dialog
+    # wrapper's own layout() can be empty
+    _root = getattr(widget, '_ui', None) or widget
+    _outer = _root.layout() or widget.layout()
+    if _outer:
+        _outer.setContentsMargins(
+            outer_margin, outer_margin, outer_margin, outer_margin)
 
 
 def set_dark_style(mode='helper'):

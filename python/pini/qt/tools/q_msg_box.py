@@ -7,7 +7,7 @@ from pini import icons
 from pini.utils import lprint, assert_eq
 
 from ..q_mgr import QtWidgets, QtCore, LIB, LIB_VERSION, Qt
-from .. import q_utils
+from .. import q_utils, q_style
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +40,10 @@ class _CMessageBox(QtWidgets.QMessageBox):
 
         if icon:
             self._set_icon(icon=icon, icon_size=icon_size)
+
+        # Apply style fixes
+        q_style.apply_base_style(self)
+        q_style.fix_msg_box_layout(self)
 
         self._force_result = None
 
