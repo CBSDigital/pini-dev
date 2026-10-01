@@ -1,6 +1,6 @@
-"""Tools for managing the base CExportHandler class.
+"""Tools for managing the base CExporter class.
 
-An export handler is a plugin to facilitate exporting (eg rendering,
+An exporter is a plugin to facilitate exporting (eg rendering,
 publishing) to pipeline by a dcc.
 """
 
@@ -13,22 +13,22 @@ from pini import qt, icons, pipe, dcc
 from pini.qt import QtWidgets
 from pini.pipe import cache
 from pini.tools import error, usage
-from pini.utils import cache_result, str_to_seed, is_pascal
+from pini.utils import cache_result, str_to_seed, is_pascal, to_pascal
 
 from . import eh_utils, eh_ui
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CExportHandler:
-    """Base class for any export handler."""
+class CExporter:
+    """Base class for any export exporter."""
 
     NAME = None
     TYPE = None
     ACTION = None
     ICON = None
 
-    LABEL = 'Export handler.'
+    LABEL = 'Export exporter.'
     COL = 'Red'
 
     description = None
@@ -42,6 +42,7 @@ class CExportHandler:
     work = None
     metadata = None
     outputs = ()
+    settings = None
 
     def __init__(self, label_w=70):
         """Constructor.
@@ -81,7 +82,7 @@ class CExportHandler:
 
     @property
     def title(self):
-        """Obtain title for this handler.
+        """Obtain title for this exporter.
 
         This is used for the execute button in the ui and the title of the
         progress bar.
@@ -149,7 +150,7 @@ class CExportHandler:
     def build_ui(
             self, add_snapshot=True, add_version_up=True, version_up=True,
             exec_label=None):
-        """Build any specific ui elements for this handler.
+        """Build any specific ui elements for this exporter.
 
         Args:
             add_snapshot (bool): add snapshot checkbox
@@ -180,16 +181,15 @@ class CExportHandler:
         _notes = self._obt_notes()
         _LOGGER.debug(' - NOTES %s', _notes)
         _data = eh_utils.build_metadata(
-            action=self.ACTION, work=self.work, handler=type(self).__name__,
-            run_checks=_run_checks, force=_force,
-            task=self.work.pini_task if self.work else None,
-            notes=_notes, require_notes=False, checks_data=_checks_data)
+            work=self.work, run_checks=_run_checks, force=_force,
+            task=self.work.pini_task if self.work else None, notes=_notes,
+            require_notes=False, checks_data=_checks_data, exporter=self)
 
         return _data
 
     @cache_result
     def to_icon(self):
-        """Obtain icon for this export handler.
+        """Obtain icon for this export exporter.
 
         Returns:
             (str): path to icon
@@ -200,7 +200,7 @@ class CExportHandler:
         return _rand.choice(icons.find_grp('AnimalFaces'))
 
     def ui_is_active(self):
-        """Test whether this export handler's ui is currently active.
+        """Test whether this export exporter's ui is currently active.
 
         Returns:
             (bool): ui active status
@@ -233,8 +233,8 @@ class CExportHandler:
         _LOGGER.debug('UPDATE UI %s', self)
 
         # Setup ui
-        self.ui = self.ui or eh_ui.CExportHandlerUI(
-            settings_file=self._settings_file, handler=self,
+        self.ui = self.ui or eh_ui.CExporterUI(
+            settings_file=self._settings_file, exporter=self,
             label_w=self.label_w)
         self.ui.parent = parent
         self.ui.layout = layout
@@ -282,7 +282,7 @@ class CExportHandler:
             force (bool): replace existing outputs without confirmation
         """
         _LOGGER.debug('EXEC %s args=%s kwargs=%s', self, args, kwargs)
-        self.set_settings(*args, **kwargs)
+        self.setup_settings(*args, **kwargs)
         self.init_export()
 
         self.outputs = self.export(*args, **kwargs)
@@ -292,7 +292,7 @@ class CExportHandler:
 
         return self.outputs
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Setup settings dict.
 
         Settings are initiated from the base class export methods kwargs (eg.
@@ -300,21 +300,9 @@ class CExportHandler:
         kwargs (so that the defaults are defined in this method's signature),
         and then updated with any kwargs passed by this export.
         """
-        self.settings = {}
+        self.settings = self._build_default_settings()
 
-        # Apply kwarg defaults from export funcs
-        for _func in [CExportHandler.export, self.export]:
-            _sig = inspect.signature(_func)
-            _parms = _sig.parameters.values()
-            _settings = {
-                _parm.name: _parm.default for _parm in _parms
-                if _parm.default != inspect.Parameter.empty  # ignore args
-            }
-            _LOGGER.debug(' - ADD %s SETTINGS %s', _func, _settings)
-            self.settings.update(_settings)
-        self.settings.update(kwargs)
-
-        # Apply args
+        # Apply kwargs / args
         _sig = inspect.signature(self.export)
         _parms = list(_sig.parameters.values())
         for _idx, _arg in enumerate(args):
@@ -322,8 +310,91 @@ class CExportHandler:
             _arg_name = _parms[_idx].name
             _LOGGER.debug('   - SIG %s', )
             self.settings[_arg_name] = _arg
+        self.settings.update(kwargs)
 
         _LOGGER.debug(' - SET SETTINGS %s', self.settings)
+
+    def _build_default_settings(self):
+        """Build default settings from export method signatures.
+
+        Returns:
+            (dict): default settings
+        """
+
+        # Apply kwarg defaults from export funcs
+        _settings = {}
+        for _func in [CExporter.export, self.export]:
+            _sig = inspect.signature(_func)
+            _parms = _sig.parameters.values()
+            _func_settings = {
+                _parm.name: _parm.default for _parm in _parms
+                if _parm.default != inspect.Parameter.empty  # ignore args
+            }
+            _LOGGER.debug(' - ADD %s SETTINGS %s', _func, _settings)
+            _settings.update(_func_settings)
+
+        return _settings
+
+    def read_setting(self, name):
+        """Read a setting from this exporter.
+
+        If there is an export in progress, the settings are simply taken
+        from the current export. Otherwise, the default settings are used
+        with any overrides found in the current scene applied on top.
+
+        Args:
+            name (str): name of setting to read
+
+        Returns:
+            (any): value of setting
+        """
+        return self.read_settings()[name]
+
+    def read_settings(self):
+        """Read current exporter settings.
+
+        If there is an export in progress, the settings are simply taken
+        from the current export. Otherwise, the default settings are used
+        with any overrides found in the current scene applied on top.
+
+        Returns:
+            (dict): settings
+        """
+        _LOGGER.debug('READ SETTINGS %s', self)
+
+        if self.settings:
+            _LOGGER.debug(' - SETTINGS OBJECT FOUND')
+            return self.settings
+
+        # Otherwise use defaults + check for scene overrides
+        _settings = self._build_default_settings()
+        for _kwarg in _settings.keys():
+            _key = eh_ui.to_settings_key(exporter=self, name=to_pascal(_kwarg))
+            _val = dcc.get_scene_data(_key)
+            _LOGGER.debug(' - KWARG %s -> %s = %s', _kwarg, _key, _val)
+            if _val is not None:
+                _settings[_kwarg] = _val
+
+        return _settings
+
+    def set_setting(self, name, val):
+        """Apply a setting to this exporter.
+
+        If there is an export in progress, the settings on the current export
+        will be updated. This can be used by sanity check to apply fixes after
+        an export process has been triggered.
+
+        Args:
+            name (str): name of setting to update
+            val (any): value to apply
+        """
+        _LOGGER.info('SET SETTING %s %s', name, val)
+        _key = eh_ui.to_settings_key(exporter=self, name=to_pascal(name))
+        _LOGGER.info(' - KEY %s', _key)
+        dcc.set_scene_data(_key, val)
+        if self.settings:
+            assert name in self.settings
+            self.settings[name] = val
 
     def exec_from_ui(self, ui_kwargs=None, **kwargs):
         """Execute this export using settings from ui.

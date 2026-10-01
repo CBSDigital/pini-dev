@@ -11,7 +11,7 @@ from .. import eh_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CCacheHandler(eh_base.CExportHandler):
+class CCacheHandler(eh_base.CExporter):
     """Base class for any cache handler."""
 
     TYPE = 'Cache'
@@ -40,9 +40,9 @@ class CCacheHandler(eh_base.CExportHandler):
         self._add_custom_ui_elems()
         self._build_ui_footer()
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(*args, **kwargs)
+        super().setup_settings(*args, **kwargs)
 
         # Fix cacheables as kwarg if exec from ui
         if not self.cacheables:

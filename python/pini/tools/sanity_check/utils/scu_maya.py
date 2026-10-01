@@ -319,6 +319,20 @@ def find_top_level_nodes():
         if not m_pipe.node_is_junk(_node)]
 
 
+def fix_node_name(cur_name, good_name):
+    """Fix a node name.
+
+    This allows an error to be raised if the target name exists.
+
+    Args:
+        cur_name (str): current node name
+        good_name (str): updated node name
+    """
+    if cmds.objExists(good_name):
+        raise RuntimeError(f'Node already exists {good_name}')
+    cmds.rename(cur_name, good_name)
+
+
 def fix_node_suffix(
         node, suffix, type_, alts=(), ignore=(), base=None, start_idxs=None,
         rename=None):

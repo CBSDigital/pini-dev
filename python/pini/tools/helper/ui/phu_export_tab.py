@@ -40,9 +40,9 @@ class PHExportTab:
                 ('Cache', self.ui.ECacheTab),
                 ('Submit', self.ui.ESubmitTab),
         ]:
-            _handlers = dcc.find_export_handlers(type_=_type)
-            _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _handlers)
-            self.ui.EExportPane.set_tab_enabled(_tab, bool(_handlers))
+            _exporters = dcc.find_exporters(type_=_type)
+            _LOGGER.debug(' - CHECKING TAB %s %s', _tab, _exporters)
+            self.ui.EExportPane.set_tab_enabled(_tab, bool(_exporters))
             _LOGGER.debug(' - CHECKED TAB %s', _tab)
         _tabs = self.ui.EExportPane.find_tabs(enabled=True)
         _LOGGER.debug(' - TABS %s', _tabs)
@@ -83,7 +83,7 @@ class PHExportTab:
 
     def _redraw__EPublishHandler(self):
 
-        _handlers = dcc.find_export_handlers('Publish')
+        _exporters = dcc.find_exporters('Publish')
 
         # Determine default publish handler to select
         _select = None
@@ -91,14 +91,14 @@ class PHExportTab:
         if _scene_data:
             _select = _scene_data
         if not _select:
-            _select = dcc.find_export_handler(
+            _select = dcc.find_exporter(
                 'publish', filter_='scene', catch=True)
             _LOGGER.debug(' - DEFAULT PUB HANDLER %s', _select)
         _work = pipe.CACHE.cur_work
         if _work:
             _task = pipe.map_task(_work.task, step=_work.step)
             _LOGGER.debug(' - PUB HANDLER TASK "%s"', _task)
-            _handler = dcc.find_export_handler(_task, catch=True)
+            _handler = dcc.find_exporter(_task, catch=True)
             _LOGGER.debug(' - PUB HANDLER %s', _handler)
             if _handler:
                 _select = _handler
@@ -106,8 +106,8 @@ class PHExportTab:
 
         _LOGGER.debug(' - SELECT PUB HANDLER %s', _select)
         self.ui.EPublishHandler.set_items(
-            labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers, select=_select, emit=True)
+            labels=[_handler.NAME for _handler in _exporters],
+            data=_exporters, select=_select, emit=True)
 
     def _redraw__EPublishHandlerIcon(self):
         _exp = self.ui.EPublishHandler.selected_data()
@@ -119,10 +119,10 @@ class PHExportTab:
         self.ui.EBlastHandlerIcon.redraw()
 
     def _redraw__EBlastHandler(self):
-        _handlers = dcc.find_export_handlers('Blast')
+        _exporters = dcc.find_exporters('Blast')
         self.ui.EBlastHandler.set_items(
-            labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers)
+            labels=[_handler.NAME for _handler in _exporters],
+            data=_exporters)
 
     def _redraw__EBlastHandlerIcon(self):
         _exp = self.ui.EBlastHandler.selected_data()
@@ -139,20 +139,20 @@ class PHExportTab:
             self.ui.ECacheHandlerIcon.setIcon(qt.obt_icon(_exp.ICON))
 
     def _redraw__ECacheHandler(self):
-        _handlers = dcc.find_export_handlers('Cache')
-        _labels = [_handler.NAME for _handler in _handlers]
+        _exporters = dcc.find_exporters('Cache')
+        _labels = [_handler.NAME for _handler in _exporters]
         self.ui.ECacheHandler.set_items(
-            data=_handlers, labels=_labels, emit=True)
+            data=_exporters, labels=_labels, emit=True)
 
     def _redraw__ERenderTab(self):
         self.ui.ERenderHandler.redraw()
         self.ui.ERenderHandlerIcon.redraw()
 
     def _redraw__ERenderHandler(self):
-        _handlers = sorted(dcc.find_export_handlers('Render'))
+        _exporters = sorted(dcc.find_exporters('Render'))
         self.ui.ERenderHandler.set_items(
-            labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers)
+            labels=[_handler.NAME for _handler in _exporters],
+            data=_exporters)
         _LOGGER.debug(
             ' - BUILD RENDER HANDLERS %s',
             self.ui.ERenderHandler.selected_data())
@@ -171,19 +171,19 @@ class PHExportTab:
 
         # Obtain list of submit handlers
         if not self.entity:
-            _handlers = []
+            _exporters = []
             _fail = 'No current entity'
         else:
-            _handlers = dcc.find_export_handlers(
+            _exporters = dcc.find_exporters(
                 'Submit', profile=self.entity.profile)
             _fail = f'No {self.entity.profile} submitters found'
-        _LOGGER.debug(' - HANDLERS %d %s', len(_handlers), _handlers)
+        _LOGGER.debug(' - HANDLERS %d %s', len(_exporters), _exporters)
 
         # Update ui elements
         self.ui.ESubmitHandler.set_items(
-            labels=[_handler.NAME for _handler in _handlers],
-            data=_handlers)
-        if not _handlers:
+            labels=[_handler.NAME for _handler in _exporters],
+            data=_exporters)
+        if not _exporters:
             _LOGGER.debug(' - FLUSH SUBMIT LYT')
             qt.flush_layout(self.ui.ESubmitLyt)
             _sep = qt.CHLine(self)

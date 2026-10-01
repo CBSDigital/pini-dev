@@ -21,9 +21,8 @@ class CPCacheable(export.CCacheable):
         Returns:
             (dict): metadata
         """
-        _handler = type(self).__name__.strip('_')
         _data = export.build_metadata(
-            handler=_handler,
+            exporter=self.exporter, content_type=self.content_type,
             src_ref=self.src_ref.path if self.src_ref else None)
         return _data
 

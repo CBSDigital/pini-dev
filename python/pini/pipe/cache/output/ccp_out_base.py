@@ -331,10 +331,13 @@ class CCPOutputBase(elem.CPOutputBase):
             return _content_type
 
         _pub_type = self.metadata.get('publish_type')
-        _handler = self.metadata.get('handler')
+        _exporter = (
+            self.metadata.get('exporter') or
+            self.metadata.get('handler')  # Legacy 29/09/26
+        )
 
         if self.extn in ('abc', 'fbx'):
-            _type = _handler or self.metadata.get('type')   # Legacy 18/10/24
+            _type = _exporter or self.metadata.get('type')   # Legacy 18/10/24
             _extn_type = self.extn.capitalize()
             if _type == 'CPCacheableCam':
                 _c_type = f'Camera{_extn_type}'
@@ -348,10 +351,10 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'VrmeshMa'
             elif 'shd_yml' in self.metadata:
                 _c_type = 'ShadersMa'
-            elif _handler == 'CMayaModelPublish':
+            elif _exporter == 'CMayaModelPublish':
                 _c_type = 'ModelMa'
-            elif _handler == 'CMayaRigPublish' or (
-                    _handler in (
+            elif _exporter == 'CMayaRigPublish' or (
+                    _exporter in (
                         'CMayaBasicPublish',  # Legacy 28/09/26
                         'CMayaScenePublish') and
                     self.pini_task == 'rig'):
@@ -360,7 +363,7 @@ class CCPOutputBase(elem.CPOutputBase):
                 _c_type = 'BasicMa'
 
         elif self.extn == 'mb':
-            if _handler == 'CMayaCurvesCache':
+            if _exporter == 'CMayaCurvesCache':
                 _c_type = 'CurvesMb'
             else:
                 _c_type = 'BasicMb'

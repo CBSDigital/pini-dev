@@ -209,12 +209,12 @@ class HouDCC(BaseDCC):
                 raise ValueError(_type)
         return _val
 
-    def _build_export_handlers(self):
+    def _build_exporters(self):
         """Initiate export handlers list."""
         from pini import farm
         from .. import export
-        _LOGGER.debug('INIT EXPORT HANDLERS')
-        _handlers = super()._build_export_handlers()
+        _LOGGER.debug('INIT EXPORTERS')
+        _handlers = super()._build_exporters()
         _handlers += [
             export.CHouFlipbook(),
             export.CHouBasicPublish(),

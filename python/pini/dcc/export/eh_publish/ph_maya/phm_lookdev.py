@@ -16,6 +16,7 @@ from maya_pini.utils import (
     save_redshift_proxy, disable_scanner_callbacks, save_fbx)
 
 from .. import ph_basic
+from . import phm_scene
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +90,11 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
                 val=False, name='PxyAnim',
                 label='Include animation in proxies')
 
-        # self.ui.add_separator()
+        self.ui.add_separator()
+        self.ui.add_combo_box(
+            val=None, name='Lights', data=[None, True, False],
+            items=['Auto', 'Yes', 'No'], label_w=50,
+            tooltip='Include lights in publish')
 
     def build_metadata(self):
         """Build publish metadata.
@@ -105,7 +110,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     def export(  # pylint: disable=unused-argument
             self, notes=None, version_up=None, snapshot=True, bkp=True,
             progress=True, ass=False, vrm_ma=False, rs_pxy=False,
-            pxy_anim=False, shd_fbx=False, force=False):
+            pxy_anim=False, shd_fbx=False, lights=None, force=False):
         """Execute lookdev publish.
 
         Args:
@@ -119,6 +124,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
             rs_pxy (bool): export redshift proxy
             pxy_anim (bool): include anim in proxies
             shd_fbx (bool): export shaded fbx
+            lights (bool): export lights
             force (bool): force overwrite without confirmation
 
         Returns:
@@ -126,9 +132,12 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         """
         _LOGGER.info('LOOKDEV PUBLISH')
 
+        # Flush pub refs mode
+        dcc.set_scene_data(phm_scene.PUB_REFS_MODE_KEY, None, mode='flush')
+
         # Setup output attrs
         self.publish = self.work.to_output(
-            'publish', output_type='lookdev', extn='ma')
+            'publish', output_type='lookdev', output_name=None, extn='ma')
         _data_dir = self.publish.to_dir().to_subdir('data')
         self.shd_yml = self.publish.to_file(
             dir_=_data_dir, base=self.publish.base + '_shaders', extn='yml')
@@ -186,6 +195,10 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
 
     def _clean_scene(self):
         """Clean scene in preparation for publish."""
+
+        # Lose name to avoid save over
+        cmds.file(rename='untitled')
+
         _import_refd_shds()
         _clean_junk()
 
@@ -275,9 +288,10 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
     def _handle_export_shds_ma(self):
         """Handle export shaders ma file."""
         _force = self.settings['force']
+        _lights = self.settings['lights']
 
         # Read shaders + save to yml
-        _shd_data = lookdev.read_publish_metadata()
+        _shd_data = lookdev.read_publish_metadata(lights=_lights)
         _geo_src = _shd_data.get('geo_src')
         self.shd_yml.write_yml(_shd_data, force=True, fix_unicode=True)
         _LOGGER.info(' - WROTE SHD YML %s', self.shd_yml)

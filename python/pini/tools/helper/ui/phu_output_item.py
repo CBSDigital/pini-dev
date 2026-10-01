@@ -79,6 +79,8 @@ class PHOutputItem(qt.CListViewPixmapItem):
         if _out.extn in ('abc', 'fbx'):
             if _out.output_name == 'restCache':
                 return f'{_ety_name} ({_out.pini_task} {_out.extn})'
+            if _out.output_name and _out.output_type:
+                return f'{_ety_name} ({_out.output_type} {_out.output_name})'
             if _out.output_type:
                 return f'{_ety_name} ({_out.output_type})'
 

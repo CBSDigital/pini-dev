@@ -2,6 +2,7 @@
 
 import logging
 
+from pini import dcc
 from pini.utils import single, passes_filter
 
 from maya_pini import open_maya as pom
@@ -54,11 +55,12 @@ def find_cacheable(
     raise ValueError(_match_s)
 
 
-def _read_cacheables(extn):
+def _read_cacheables(extn, exporter):
     """Read cacheables in the current scene.
 
     Args:
         extn (str): extension for cacheable
+        exporter (CExporter): exporter to find cacheables for
 
     Returns:
         (CCacheable list): cacheables
@@ -68,7 +70,7 @@ def _read_cacheables(extn):
     _all = []
     for _ref in pom.find_refs():
         try:
-            _cbl = mpc_ref.CPCacheableRef(_ref, extn=extn)
+            _cbl = mpc_ref.CPCacheableRef(_ref, extn=extn, exporter=exporter)
         except ValueError:
             continue
         _all.append(_cbl)
@@ -81,11 +83,13 @@ def _read_cacheables(extn):
 
 
 def find_cacheables(
-        extn='abc', filter_=None, task=None, type_=None, output_name=None):
+        extn='abc', exporter=None, filter_=None, task=None, type_=None,
+        output_name=None):
     """Find cacheables in the current scene.
 
     Args:
         extn (str): type of cacheable
+        exporter (CExporter): exporter to find cacheables for
         filter_ (str): filter cacheables by label
         task (str): return only cacheables from the given task
         type_ (str): filter by cacheable type (ref/cam/cset)
@@ -100,8 +104,9 @@ def find_cacheables(
         raise ValueError(type_)
 
     # Apply filters
+    _exp = exporter or dcc.find_exporter(extn)
     _cbls = []
-    for _cbl in _read_cacheables(extn=extn):
+    for _cbl in _read_cacheables(exporter=_exp, extn=extn):
 
         _LOGGER.debug(' - CHECK CACHEABLE %s', _cbl)
 

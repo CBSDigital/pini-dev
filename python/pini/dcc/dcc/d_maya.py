@@ -283,12 +283,12 @@ class MayaDCC(BaseDCC):
             raise NotImplementedError(_type)
         return _data
 
-    def _build_export_handlers(self):
+    def _build_exporters(self):
         """Initiate export handlers."""
         from pini import farm
         from pini.dcc import export
 
-        _handlers = super()._build_export_handlers()
+        _handlers = super()._build_exporters()
         _handlers += [
             export.CMayaScenePublish(),
             export.CMayaSelectionPublish(),
@@ -428,24 +428,36 @@ class MayaDCC(BaseDCC):
         cmds.setAttr(
             "defaultResolution.deviceAspectRatio", 1.0 * width / height)
 
-    def set_scene_data(self, key, val):
+    def set_scene_data(self, key, val, mode='set'):
         """Store data within this scene.
 
         Args:
             key (str): name of data to store
             val (any): value of data to store
+            mode (str): how to apply data
+                set - apply data (default)
+                flush - remove data from scene
         """
         _LOGGER.debug('SET SCENE DATA key=%s val=%s', key, val)
+
+        # Determine type key + value to save
         _type = type(val).__name__
         _val = val
         if isinstance(val, (list, tuple, set)):
             _val = str(_val)
         if _val is None:
             _val = ''
-        cmds.fileInfo(key, _val)
         _type_key = '_TYPE_' + key
         _LOGGER.debug(' - SET TYPE KEY key=%s val=%s', _type, _type_key)
-        cmds.fileInfo(_type_key, _type)
+
+        if mode == 'set':
+            cmds.fileInfo(key, _val)
+            cmds.fileInfo(_type_key, _type)
+        elif mode == 'flush':
+            cmds.fileInfo(remove=key)
+            cmds.fileInfo(remove=_type_key)
+        else:
+            raise ValueError(mode)
 
     def t_frame(self, class_=float):
         """Obtain current frame.

@@ -24,7 +24,7 @@ class BaseDCC:
     VALID_EXTNS = ()
     IS_3D = False
 
-    _export_handlers = None
+    _exporters = None
 
     def add_menu_divider(self, parent, name):
         """Add menu divider to ui.
@@ -45,25 +45,25 @@ class BaseDCC:
             name (str): uid for item
         """
 
-    def add_export_handler(self, handler):
+    def add_exporter(self, handler):
         """Add an export handler to the current list.
 
         This will replace any export handlers with the same action - ie. only
         one export handler for each action can exist.
 
         Args:
-            handler (CExportHandler): export handler to add.
+            handler (CExporter): export handler to add.
         """
         _LOGGER.debug('ADD RENDER HANDLER %s', handler)
-        self._check_export_handlers()
+        self._check_exporters()
 
         # Flush existing
-        for _exp in copy.copy(self._export_handlers):
+        for _exp in copy.copy(self._exporters):
             if _exp.ACTION == handler.ACTION:
-                self._export_handlers.remove(_exp)
+                self._exporters.remove(_exp)
 
-        self._export_handlers.insert(0, handler)
-        _LOGGER.debug(' - RENDER HANDLERS %s', self._export_handlers)
+        self._exporters.insert(0, handler)
+        _LOGGER.debug(' - RENDER HANDLERS %s', self._exporters)
 
     def allowed_renderers(self):
         """List allowed renderers for the current dcc pipeline.
@@ -202,7 +202,7 @@ class BaseDCC:
             _refs.append(_ref)
         return sorted(_refs)
 
-    def _build_export_handlers(self):
+    def _build_exporters(self):
         """Initiate export handlers list."""
         from .. import export
         from pini import pipe
@@ -213,12 +213,12 @@ class BaseDCC:
             _handlers.append(_submit)
         return _handlers
 
-    def _check_export_handlers(self):
+    def _check_exporters(self):
         """Check export handlers have been set up."""
-        if self._export_handlers is None:
-            self._export_handlers = self._build_export_handlers()
+        if self._exporters is None:
+            self._exporters = self._build_exporters()
 
-    def find_export_handler(
+    def find_exporter(
             self, match=None, type_=None, filter_=None, profile=None,
             catch=False):
         """Find an installed export handler.
@@ -232,9 +232,9 @@ class BaseDCC:
             catch (bool): no error if no matching handler found
 
         Returns:
-            (CExportHandler): matching export handler
+            (CExporter): matching export handler
         """
-        _handlers = self.find_export_handlers(
+        _handlers = self.find_exporters(
             type_=type_, filter_=filter_, profile=profile)
         if len(_handlers) == 1:
             return single(_handlers)
@@ -273,7 +273,7 @@ class BaseDCC:
             return None
         raise ValueError(_handlers)
 
-    def find_export_handlers(self, type_=None, filter_=None, profile=None):
+    def find_exporters(self, type_=None, filter_=None, profile=None):
         """Find render handlers for this dcc.
 
         Args:
@@ -282,16 +282,16 @@ class BaseDCC:
             profile (str): apply profile filter (eg. shot/asset)
 
         Returns:
-            (CExportHandler list): installed export handlers
+            (CExporter list): installed export handlers
         """
-        _LOGGER.debug('FIND EXPORT HANDLERS %s', self._export_handlers)
-        self._check_export_handlers()
+        _LOGGER.debug('FIND EXPORT HANDLERS %s', self._exporters)
+        self._check_exporters()
         if not (is_pascal(type_) or type_ is None):
             raise ValueError(type_)
 
         # Build list
         _handlers = []
-        for _handler in self._export_handlers:
+        for _handler in self._exporters:
             if type_ and _handler.TYPE != type_:
                 _LOGGER.debug(
                     ' - TYPE REJECTED %s %s %s', _handler,
@@ -471,15 +471,15 @@ class BaseDCC:
     def refresh(self):
         """Refresh the ui."""
 
-    def remove_export_handler(self, name):
+    def remove_exporter(self, name):
         """Remove an export handler.
 
         Args:
             name (str): name of export handler to remove
         """
-        _handler = self.find_export_handler(name, catch=True)
+        _handler = self.find_exporter(name, catch=True)
         if _handler:
-            self._export_handlers.remove(_handler)
+            self._exporters.remove(_handler)
 
     def render(self, seq):
         """Render the current scene.

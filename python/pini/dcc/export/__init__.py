@@ -7,8 +7,8 @@ be embedded in PiniHelper.
 from pini import dcc, pipe
 
 from .eh_utils import build_metadata
-from .eh_base import CExportHandler
-from .eh_ui import to_settings_key, CExportHandlerUI
+from .eh_base import CExporter
+from .eh_ui import to_settings_key, CExporterUI
 
 from .eh_blast import blast
 from .eh_cache import abc_cache, fbx_cache, CCacheHandler, CCacheable

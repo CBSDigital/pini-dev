@@ -32,7 +32,7 @@ class TestDCC(unittest.TestCase):
         _work.save(force=True)
 
         # Test without helper
-        assert not dcc.get_scene_data(phm_scene._PUB_REFS_MODE_KEY)
+        assert not dcc.get_scene_data(phm_scene.PUB_REFS_MODE_KEY)
         _mode = export.get_pub_refs_mode()
         _LOGGER.info('MODE %s', _mode)
         assert _mode is export.PubRefsMode.REMOVE
@@ -140,8 +140,7 @@ class TestDCC(unittest.TestCase):
         assert not _ety_c.find_outputs()
 
         _progress.set_pc(10)
-        _handler = dcc.find_export_handler(
-            'publish', filter_='scene', catch=True)
+        _handler = dcc.find_exporter('publish', filter_='scene', catch=True)
         _handler.ui = None  # Reset any leftover ui elems
 
         # Save basic scene to publish
@@ -351,7 +350,7 @@ class TestPublish(unittest.TestCase):
 
         # Test publish
         _LOGGER.info('TESTING PUBLISH')
-        _basic_pub = dcc.find_export_handler(
+        _basic_pub = dcc.find_exporter(
             'ScenePublish', type_='Publish', catch=True)
         _LOGGER.info('SCENE PUB %s', _basic_pub)
         assert not error.TRIGGERED

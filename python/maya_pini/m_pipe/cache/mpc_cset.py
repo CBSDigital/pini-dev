@@ -4,7 +4,7 @@ import logging
 
 from maya import cmds
 
-from pini import icons
+from pini import icons, dcc
 
 from . import mpc_cacheable
 
@@ -17,11 +17,12 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
     This is a set with _CSET suffix - eg. beachBall_CSET
     """
 
-    def __init__(self, cache_set, extn):
+    def __init__(self, cache_set, exporter, extn):
         """Constructor.
 
         Args:
             cache_set (str): custom cache set node
+            exporter (CExporter): exporter running this cache operation
             extn (str): cache output extension
         """
         assert cache_set.endswith('_CSET')
@@ -35,7 +36,7 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         super().__init__(
             output_name=_output_name, label=f'{_output_name} (CSET)',
             output_type=extn, node=self.cache_set, extn=extn,
-            src_ref=None)
+            src_ref=None, exporter=exporter)
 
         if not self.to_geo():
             raise ValueError('No export geo')
@@ -109,10 +110,11 @@ def find_csets(extn='abc'):
     """
     _LOGGER.debug('FIND CSETS %s', extn)
     _csets = []
+    _exp = dcc.find_exporter(extn)
     for _set in cmds.ls('*_CSET', type='objectSet'):
         _LOGGER.debug(' - CHECK SET %s', _set)
         try:
-            _cset = CPCacheableSet(_set, extn=extn)
+            _cset = CPCacheableSet(_set, extn=extn, exporter=_exp)
         except ValueError as _exc:
             _LOGGER.debug('   - FAILED TO BUILD CSET %s', _exc)
             continue

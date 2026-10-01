@@ -11,12 +11,13 @@ class CCacheable:
     """Base class for any object that can be cached to file/seq."""
 
     def __init__(
-            self, output_name, extn, node, src_ref,
-            output_type=None, label=None, icon=None, ref=None,
-            template=None, top_node=None):
+            self, exporter, output_name, extn, node, src_ref, output_type=None,
+            label=None, icon=None, ref=None, template=None, top_node=None,
+            content_type=None):
         """Constructor.
 
         Args:
+            exporter (CExporter): exporter exporting cacheable
             output_name (str): output name for export
             extn (str): output extension
             node (any): node being cached
@@ -27,11 +28,15 @@ class CCacheable:
             ref (CReference): reference associated with this object
             template (CPTemplate): override template for output
             top_node (str): top node for this cache set
+            content_type (str): force content type for this cacheable
         """
+        self.exporter = exporter
+
         self.output_name = output_name
         self.output_type = output_type
         self.label = label or output_name
         self.extn = extn
+        self.content_type = content_type
 
         self._icon = icon
 

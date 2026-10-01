@@ -357,7 +357,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
         _msg = (
             f'Shading engine "{engine}" name does not match shader "{shd}" '
             f'(should be "{_good_name}")')
-        _fix = wrap_fn(cmds.rename, engine, _good_name)
+        _fix = wrap_fn(utils.fix_node_name, engine, _good_name)
         self.add_fail(_msg, fix=_fix, node=shd)
 
     def _check_for_unreferenced_geo(self, shd):
@@ -402,7 +402,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
 class CheckShaders(CheckLookdevShaders):
     """Check model shaders."""
 
-    action_filter = 'Publish'
+    action_filter = 'ModelPublish RigPublish'
     task_filter = 'model rig'
     depends_on = (scc_maya_asset.CheckGeoNaming, )
 
@@ -445,3 +445,34 @@ class NoObjectsWithDefaultShader(core.SCMayaCheck):
                         f'default shading engine "{_se}" - this will cause '
                         f'issues as default nodes do not appear in references')
                     self.add_fail(_msg, node=_geo)
+
+
+class CheckLights(core.SCMayaCheck):
+    """Check lookdev scene for lights."""
+
+    action_filter = 'LookdevPublish'
+    task_filter = 'lookdev'
+
+    def run(self):
+        """Run this check."""
+        self.write_log('exporter %s', self.exporter)
+        self.write_log('settings %s', self.exporter.read_settings())
+        _lights_tgl = self.exporter.read_settings().get('lights')
+        self.write_log('lights %s', _lights_tgl)
+        if not _lights_tgl:
+            self.write_log('lights disabled')
+            return
+
+        _lights = lookdev.read_lights()
+        self.write_log('lights %s', _lights)
+        _cache_set = m_pipe.find_cache_set()
+        if not _lights:
+            _fail = core.SCFail(
+                f'Publish lights is enabled but there are no lights in the '
+                f'cache set ("{_cache_set}")', node=_cache_set)
+            _fail.add_action(
+                'Disable lights',
+                wrap_fn(self.exporter.set_setting, 'lights', False),
+                is_fix=True)
+            self.add_fail(_fail)
+            return

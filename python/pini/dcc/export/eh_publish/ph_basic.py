@@ -12,7 +12,7 @@ from .. import eh_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBasicPublish(eh_base.CExportHandler):
+class CBasicPublish(eh_base.CExporter):
     """Manages a basic publish."""
 
     NAME = 'Basic Publish'

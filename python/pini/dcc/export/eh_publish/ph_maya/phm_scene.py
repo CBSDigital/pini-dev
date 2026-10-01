@@ -17,7 +17,7 @@ from maya_pini.utils import (
 from .. import ph_basic
 
 _LOGGER = logging.getLogger(__name__)
-_PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
+PUB_REFS_MODE_KEY = 'PiniQt.Publish.References'
 JUNK_GRPS_S = '/'.join(_grp for _grp in m_pipe.JUNK_GRPS)
 
 
@@ -128,10 +128,10 @@ class CMayaScenePublish(ph_basic.CBasicPublish):
         # Add reference option
         _data = list(PubRefsMode)
         _items = [_item.value for _item in _data]
-        _val = dcc.get_scene_data(_PUB_REFS_MODE_KEY) or _PUB_REFS_DEFAULT.value
+        _val = dcc.get_scene_data(PUB_REFS_MODE_KEY) or _PUB_REFS_DEFAULT.value
         self.ui.add_combo_box(
             name='References', items=_items, data=_data,
-            val=_val, settings_key=_PUB_REFS_MODE_KEY)
+            val=_val, settings_key=PUB_REFS_MODE_KEY)
         self.ui.add_label(
             name='ReferencesLabel', text='<reference mode description>')
         self._callback__References()
@@ -315,8 +315,8 @@ def _apply_refs_mode_opt(refs_mode):
     # Determine refs mode
     _refs_mode = refs_mode
     if not _refs_mode:
-        _refs_mode = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
-        _LOGGER.debug(' - READ SCENE DATA %s', _PUB_REFS_MODE_KEY)
+        _refs_mode = dcc.get_scene_data(PUB_REFS_MODE_KEY)
+        _LOGGER.debug(' - READ SCENE DATA %s', PUB_REFS_MODE_KEY)
     if not _refs_mode:
         _refs_mode = _PUB_REFS_DEFAULT.value
     _LOGGER.info(' - REFS OPT %s', _refs_mode)
@@ -509,21 +509,24 @@ def _find_top_node():
         to_clean(_node) not in DEFAULT_NODES], catch=True)
 
 
-def get_pub_refs_mode():
+def get_pub_refs_mode(log=9):
     """Obtain current publish references mode setting.
+
+    Args:
+        log (int): apply log level
 
     Returns:
         (PubRefsMode): current references mode
     """
-    _LOGGER.log(9, 'GET PUB REFS MODE')
+    _LOGGER.log(log, 'GET PUB REFS MODE')
     _mode = None
-    _scn = dcc.get_scene_data(_PUB_REFS_MODE_KEY)
-    _LOGGER.log(9, ' - VAL %s %s', _scn, _PUB_REFS_MODE_KEY)
+    _scn = dcc.get_scene_data(PUB_REFS_MODE_KEY)
+    _LOGGER.log(log, ' - VAL "%s" key=%s', _scn, PUB_REFS_MODE_KEY)
     if _scn:
         _mode = single(
             [_item for _item in list(PubRefsMode) if _item.value == _scn],
             catch=True)
-        _LOGGER.log(9, ' - MATCHED %s', _mode)
+        _LOGGER.log(log, ' - MATCHED %s', _mode)
 
     return _mode or PubRefsMode.REMOVE
 
@@ -577,11 +580,11 @@ def set_pub_refs_mode(mode):
 
     _LOGGER.info(' - VAL STR %s', mode.value)
 
-    for _handler in dcc.find_export_handlers('Publish'):
+    for _handler in dcc.find_exporters('Publish'):
         if not _handler.ui_is_active():
             continue
         if not hasattr(_handler.ui, 'References'):
             continue
         _handler.ui.References.setCurrentText(mode.value)
 
-    dcc.set_scene_data(_PUB_REFS_MODE_KEY, mode.value)
+    dcc.set_scene_data(PUB_REFS_MODE_KEY, mode.value)

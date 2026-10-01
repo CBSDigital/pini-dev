@@ -14,7 +14,7 @@ from .. import eh_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CRenderHandler(eh_base.CExportHandler):
+class CRenderHandler(eh_base.CExporter):
     """Base class for any render handler."""
 
     NAME = None
@@ -39,9 +39,9 @@ class CRenderHandler(eh_base.CExportHandler):
         """Build basic render interface into the given layout."""
         super().build_ui(add_snapshot=False)
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(*args, snapshot=False, **kwargs)
+        super().setup_settings(*args, snapshot=False, **kwargs)
 
     def find_cams(self):
         """Find cameras in the scene."""

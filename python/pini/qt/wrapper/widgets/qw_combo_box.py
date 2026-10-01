@@ -14,6 +14,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
     """Wrapper for QComboBox."""
 
     __repr__ = qw_base_widget.CBaseWidget.__repr__
+    _has_data = False
 
     def all_data(self):
         """Get list of all item data.
@@ -37,7 +38,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         Returns:
             (any): selected data
         """
-        return self.selected_data() or self.selected_text()
+        return self.selected_data() if self._has_data else self.selected_text()
 
     def get_val_scn(self):
         """Read value of this widget for save in scene.
@@ -158,6 +159,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         _blocked = self.signalsBlocked()
         _cur_text = self.currentText()
         _data = data
+        self._has_data = bool(_data)
         if _data:
             _data = to_list(data)
             assert len(labels) == len(_data)
@@ -176,7 +178,7 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         _LOGGER.debug(' - SELECT %s', _select)
         if _select and _select in labels:
             self.select_text(_select)
-        elif _select and _data and _select in _data:
+        elif _select is not None and _data and _select in _data:
             self.select_data(_select)
         elif _cur_text in labels:
             self.select_text(_cur_text)
@@ -191,4 +193,6 @@ class CComboBox(QtWidgets.QComboBox, qw_base_widget.CBaseWidget):
         Args:
             val (str): text to select
         """
+        if val in self.all_data():
+            self.select_data(val)
         self.select_text(val)

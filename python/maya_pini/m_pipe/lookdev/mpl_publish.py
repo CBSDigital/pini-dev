@@ -6,7 +6,7 @@ import re
 
 from maya import cmds
 
-from pini import dcc, pipe
+from pini import dcc
 from pini.utils import passes_filter
 
 from maya_pini import open_maya as pom, tex
@@ -259,22 +259,38 @@ def _read_geo_src():
     return None
 
 
-def read_lights():
+def read_lights(lights=None):
     """Read lights in the current scene.
+
+    Args:
+        lights (str): whether lights have been requested by exporter
+            True - lights required
+            False - ignore lights
+            None - add lights if available
 
     Returns:
         (CTransform list): lights
     """
     _LOGGER.debug('READ LIGHTS')
+
+    if lights is False:
+        return []
+
     _lgts = []
 
-    _cs_lights = mp_utils.read_cache_set('lights')
-    _LOGGER.debug(' - FOUND %d CACHE SET LIGHTS', len(_cs_lights))
-    _lgts += _cs_lights
+    # Read cache set lights
+    _cache_set = mp_utils.find_cache_set(task='lookdev')
+    _cache_set_lights = mp_utils.read_cache_set('lights', set_=_cache_set)
+    _LOGGER.debug(' - FOUND %d CACHE SET LIGHTS', len(_cache_set_lights))
+    _lgts += _cache_set_lights
 
+    # Read mesh lights
     _mesh_lights = read_mesh_lights(fmt='node')
     _LOGGER.debug(' - FOUND %d MESH LIGHTS', len(_mesh_lights))
     _lgts += _mesh_lights
+
+    if lights is True and not _lgts:
+        raise RuntimeError('No lights found in scene')
 
     return _lgts
 
@@ -314,35 +330,44 @@ def read_mesh_lights(fmt='clean'):
     _mesh_lgts_s = {}
     _mesh_lgts_n = {}
 
-    for _lgt_s in pom.find_nodes(type_='RedshiftPhysicalLight'):
-
+    # Find rs physical lights
+    _rspls = []
+    if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
+        _rspls = pom.find_nodes(type_='RedshiftPhysicalLight')
+    for _lgt_s in _rspls:
         _lgt_t = _lgt_s.to_parent()
         _LOGGER.info('LGT %s', _lgt_t)
-
         _mesh = _lgt_s.plug['areaShapeObject'].find_incoming(plugs=False)
         _LOGGER.info(' - MESH %s', _mesh)
         if not _mesh:
             continue
         if _mesh not in _geos:
             continue
-
         _LOGGER.info(' - VALID MESH LIGHT')
         _mesh_lgts_n[_lgt_t] = _mesh
         _mesh_lgts_s[str(_lgt_t)] = to_clean(_mesh)
 
+    # Format results
     if fmt == 'clean':
         _result = _mesh_lgts_s
     elif fmt == 'node':
         _result = _mesh_lgts_n
     else:
         raise ValueError(fmt)
+
     return _result
 
 
-def read_publish_metadata():
+def read_publish_metadata(lights=None):
     """Read all shading data to save to yml file.
 
     This includes shader assignments and settings overrides.
+
+    Args:
+        lights (str): whether lights have been requested by exporter
+            True - lights required
+            False - ignore lights
+            None - add lights if available
 
     Returns:
         (dict): shading data
@@ -357,7 +382,7 @@ def read_publish_metadata():
     _data['settings'] = _read_geo_settings()
     _data['custom_aovs'] = _read_custom_aovs(sgs=_sgs)
     _data['override_sets'] = read_override_sets()
-    _data['lights'] = bool(read_lights())
+    _data['lights'] = bool(read_lights(lights=lights))
     _data['mesh_lights'] = read_mesh_lights()
     _data['top_node_attrs'] = _read_map_top_node_attrs()
 
@@ -563,11 +588,6 @@ def setup_place_3d_nodes():
         (str set): texture place nodes
     """
     _nodes = set()
-
-    _work = pipe.cur_work()
-    _pub = _work.to_output('publish', output_type='lookdev', extn='ma')
-    _data_dir = _pub.to_dir().to_subdir('data')
-
     for _place in pom.find_nodes(type_='place3dTexture'):
 
         _LOGGER.info(' - PLACE %s', _place)

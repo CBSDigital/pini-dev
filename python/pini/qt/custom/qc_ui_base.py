@@ -19,7 +19,7 @@ from ..q_utils import (
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
-from .. import q_ui_loader
+from .. import q_ui_loader, q_style
 from . import qc_callbacks
 
 _LOGGER = logging.getLogger(__name__)
@@ -89,6 +89,7 @@ class CUiBase:
             ui_file=ui_file, ui_loader=ui_loader,
             custom_widgets=custom_widgets)
         self.init_ui()
+        q_style.apply_base_style(self)
 
         # Initiate interface
         if self.store_settings:

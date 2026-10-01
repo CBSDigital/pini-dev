@@ -161,7 +161,7 @@ def _check_test_assets(force=False):
         _rig_work.save(force=True)
     if not _asset_c.find_publishes(task='rig'):
         _rig_work.load(lazy=True)
-        _pub = dcc.find_export_handler('publish', filter_='basic')
+        _pub = dcc.find_exporter('publish', filter_='basic')
         _pub.publish(force=True)
     assert _asset_c.find_publish(
         task='rig', ver_n='latest', tag=_rig_work.tag, versionless=False,

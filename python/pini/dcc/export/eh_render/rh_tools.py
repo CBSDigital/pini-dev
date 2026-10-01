@@ -14,7 +14,7 @@ _DCC = (dcc.NAME or '').capitalize()
 def farm_render(**kwargs):
     """Farm render current scene."""
     _LOGGER.info('FARM RENDER')
-    _exporter = dcc.find_export_handler('FarmRender')
+    _exporter = dcc.find_exporter('FarmRender')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)
 
@@ -24,6 +24,6 @@ def farm_render(**kwargs):
 def local_render(**kwargs):
     """Local render current scene."""
     _LOGGER.info('LOCAL RENDER')
-    _exporter = dcc.find_export_handler('LocalRender')
+    _exporter = dcc.find_exporter('LocalRender')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)

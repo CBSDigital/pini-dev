@@ -2,6 +2,7 @@
 
 import os
 
+from pini import dcc
 from .q_mgr import QtGui, QtWidgets, Qt
 
 HIGHLIGHT_COLOR = QtGui.QColor(103, 141, 178)
@@ -22,6 +23,114 @@ ALTERNATE_BASE_COLOR = QtGui.QColor(46, 46, 46)
 
 SPREAD = 100 * BRIGHTNESS_SPREAD
 HIGHLIGHTEDTEXT_COLOR = BASE_COLOR.lighter(int(SPREAD * 2))
+
+_HOU_22_SS = """
+* { font-size: 9pt; }
+
+QWidget { background-color: #444444; color: #c8c8c8; }
+QLabel { background: transparent; padding: 1px 0; }
+
+/* inset panels */
+QListView, QListWidget, QTreeView, QTableView, QTextEdit, QPlainTextEdit {
+    background-color: #2b2b2b;
+    border: 1px solid #1c1c1c;
+    outline: 0;
+    selection-background-color: #5285a6;
+    selection-color: #ffffff; }
+QListView::item { padding: 2px 4px; }
+QListView::item:selected { background-color: #5285a6; }
+
+/* inputs */
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background-color: #2b2b2b;
+    border: 1px solid #1c1c1c;
+    border-radius: 2px;
+    padding: 2px; }
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus { border: 1px solid #5285a6; }
+QComboBox::drop-down { border: none; width: 18px; }
+QComboBox QAbstractItemView {
+    background-color: #2b2b2b;
+    border: 1px solid #1c1c1c;
+    selection-background-color: #5285a6; }
+
+/* buttons */
+QPushButton {
+    background-color: #5d5d5d;
+    border: 1px solid #1c1c1c;
+    border-radius: 2px;
+    min-height: 18px; }
+QPushButton:hover   { background-color: #707070; }
+QPushButton:pressed { background-color: #484848; }
+QPushButton:disabled { color: #808080; background-color: #4e4e4e; }
+
+QToolButton {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 3px; }
+QToolButton:hover { border: 1px solid #1c1c1c; background-color: #555555; }
+
+/* tabs */
+QTabWidget::pane {
+    border: 1px solid #1c1c1c;
+    background-color: #444444;
+    top: -1px;
+    padding: 6px; }
+QTabBar::tab {
+    background: #3a3a3a;
+    border: 1px solid #1c1c1c;
+    border-bottom: none;
+    padding: 5px 15px;
+    margin-right: 2px; }
+QTabBar::tab:selected { background: #5d5d5d; color: #ffffff; }
+
+QScrollBar:vertical { background: #2b2b2b; width: 12px; margin: 0; }
+QScrollBar::handle:vertical {
+    background: #5d5d5d;
+    border-radius: 3px;
+    min-height: 24px;
+    margin: 2px; }
+QScrollBar::add-line, QScrollBar::sub-line { height: 0; width: 0; }
+
+QMessageBox, QDialog { border: 1px solid #1c1c1c; }
+QMessageBox QLabel { padding: 6px; }
+QToolTip {
+    background-color: #2b2b2b;
+    color: #ddd;
+    border: 1px solid #1c1c1c;
+    padding: 3px; }
+"""
+
+
+def apply_base_style(widget):
+    """Apply base style for current env.
+
+    Some dccs have odd styles (eg. hou-22) and need to be adjusted.
+
+    Args:
+        widget (QWidget): widget to adjust
+    """
+    _ver = dcc.to_version()
+    _ss = None
+    if dcc.NAME == 'hou' and _ver[0] >= 22:
+        _ss = _HOU_22_SS
+
+    if _ss:
+        widget.setStyleSheet(_ss)
+        _fix_lyt_margins(widget)
+
+
+def _fix_lyt_margins(widget, spacing=2, margin=2):
+    """Fix margins + spacing in child layouts.
+
+    Args:
+        widget (QWidget): parent widget
+        spacing (int): apply spacing
+        margin (int): apply margins
+    """
+    for _layout in widget.findChildren(QtWidgets.QLayout):
+        _layout.setSpacing(spacing)
+        _layout.setContentsMargins(margin, margin, margin, margin)
 
 
 def set_dark_style(mode='helper'):

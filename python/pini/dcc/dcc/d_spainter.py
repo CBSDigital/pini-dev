@@ -65,10 +65,10 @@ class SubstancePainterDCC(BaseDCC):
 
         return _action
 
-    def _build_export_handlers(self):
+    def _build_exporters(self):
         """Initiate export handlers."""
         from pini.dcc import export
-        _handlers = super()._build_export_handlers()
+        _handlers = super()._build_exporters()
         _handlers += [
             export.CSPainterTexturePublish(),
         ]

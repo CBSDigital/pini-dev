@@ -21,7 +21,7 @@ def lookdev_publish(**kwargs):
         (CPOutput list): generated outputs
     """
     _LOGGER.info('MODEL PUBLISH')
-    _exporter = dcc.find_export_handler('LookdevPublish')
+    _exporter = dcc.find_exporter('LookdevPublish')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)
 
@@ -42,7 +42,7 @@ def model_publish(**kwargs):
         (CPOutput list): generated outputs
     """
     _LOGGER.info('MODEL PUBLISH')
-    _exporter = dcc.find_export_handler('ModelPublish')
+    _exporter = dcc.find_exporter('ModelPublish')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)
 
@@ -56,6 +56,6 @@ def publish(**kwargs):
         (CPOutput list): generated outputs
     """
     _LOGGER.info('PUBLISH')
-    _exporter = dcc.find_export_handler('BasicPublish')
+    _exporter = dcc.find_exporter('BasicPublish')
     _LOGGER.info(' - EXPORTER %s', _exporter)
     return _exporter.exec(**kwargs)

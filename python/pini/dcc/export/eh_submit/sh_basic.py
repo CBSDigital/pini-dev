@@ -11,7 +11,7 @@ from pini.utils import passes_filter
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBasicSubmitter(export.CExportHandler):
+class CBasicSubmitter(export.CExporter):
     """Managing basic shotgrid version submission."""
 
     NAME = 'Basic Shotgrid Submit'
@@ -145,10 +145,10 @@ class CBasicSubmitter(export.CExportHandler):
             _kwargs['render'] = render
         super().exec(**_kwargs)
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Apply exec settings."""
         _LOGGER.debug('SET SETTINGS')
-        super().set_settings(*args, **kwargs)
+        super().setup_settings(*args, **kwargs)
 
         # Read work from render
         _work = None

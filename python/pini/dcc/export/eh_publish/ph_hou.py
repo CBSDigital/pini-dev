@@ -5,6 +5,7 @@ import logging
 import hou
 
 from pini import icons, pipe, qt
+from pini.utils import str_to_seed
 
 from . import ph_basic
 
@@ -29,12 +30,13 @@ class CHouBasicPublish(ph_basic.CBasicPublish):
         """Add custom ui elements."""
         _items = []
         for _pub in self.find_publishable_nodes():
-            _item = qt.CListWidgetItem(_pub.name())
-            _item.set_data(_pub)
+            _name = _pub.name()
+            _icon = str_to_seed(_name).choice(icons.FRUIT)
+            _item = qt.CListWidgetItem(
+                _name, icon=_icon, data=_pub, icon_scale=0.7)
             _items.append(_item)
 
-        self.ui.add_list_widget(
-            'Nodes', items=_items, select=_items)
+        self.ui.add_list_widget('Nodes', items=_items)
 
     def export(self, nodes, **kwargs):  # pylint: disable=unused-argument
         """Run this export.
@@ -106,17 +108,20 @@ class CHouBasicPublish(ph_basic.CBasicPublish):
                 "_work = pipe.cur_work()",
                 "_out = _work.to_output(",
                 "    'publish',",
-                "    output_name=None,",
+                f"    output_name='{node.name()}',",
                 f"    output_type='{_out_type}',",
                 f"    extn='{_out_extn}')",
                 "return _out.path",
             ])
+            _LOGGER.info(' - EXPR %s', _out)
             if _out_parm.eval():
                 qt.ok_cancel(
                     f'Update expression?\n{_out_parm.path()}\n\n{_expr}')
             _out_parm.setExpression(_expr, language=hou.exprLanguage.Python)
             _path = _out_parm.eval()
+            _LOGGER.info(' - PATH %s', _path)
             _out = pipe.to_output(_path)
+            _LOGGER.info(' - OUT %s', _out)
 
         # Execute export
         _out.delete(wording='replace')
@@ -145,9 +150,4 @@ class CHouBasicPublish(ph_basic.CBasicPublish):
             if not _type:
                 continue
             _nodes += _type.instances()
-        # _nodes = [_node for _node in _nodes if not _node.isBypassed()]
         return _nodes
-
-        # dcc.add_export_handler(_exp)
-        # _helper = helper.launch()
-        # _helper.ui.MainPane.select_tab('Export')

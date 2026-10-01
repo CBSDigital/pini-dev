@@ -144,8 +144,10 @@ class PHSceneTab:
 
         _outs = []
         if _tab == self.ui.SAssetsTab:
-            _outs = self.job.find_publishes(
-                extns=dcc.REF_EXTNS, filter_=_filter)
+            _outs = [
+                _pub for _pub in self.job.find_publishes(
+                    extns=dcc.REF_EXTNS, filter_=_filter)
+                if _pub.asset]
         elif _tab == self.ui.SEntityTab:
             _LOGGER.debug(
                 ' - CHECKING ETY OUTS %d %s', bool(self.entity), self.entity)
@@ -169,80 +171,49 @@ class PHSceneTab:
 
         _LOGGER.debug(' - REDRAW SOutputType outs=%d', len(self.all_outs))
 
-        # Set lists + data based on outputs mode
+        # Determine data based on outputs mode
         _tab = self.ui.SOutputsPane.currentWidget()
-        _add_all = True
-        if _tab == self.ui.SAssetsTab:
-            _label, _types, _data, _select = self._redraw_out_type_asset()
-        elif _tab == self.ui.SEntityTab:
-            _label = 'Type'
-            _types = {
-                _out.output_type for _out in self.all_outs}
-            _data = [
-                [_out for _out in self.all_outs if _out.output_type == _type]
-                for _type in _types]
-            _types = sorted({_type or '' for _type in _types})
-            _select = 'all'
-        elif _tab == self.ui.SMediaTab:
-            _label = 'Template'
-            _types = sorted({_out.type_ for _out in self.all_outs})
-            _data = [
-                [_out for _out in self.all_outs if _out.type_ == _type]
-                for _type in _types]
-            _add_all = False
-            _select = 'render'
-        else:
-            raise ValueError(_tab)
-        _LOGGER.debug('   - TYPES %s', _types)
-        _scene_select = dcc.get_scene_data(self.ui.SOutputType.settings_key)
-        if not self.target and _scene_select in _types:
-            _select = _scene_select
-        _LOGGER.debug('   - SCENE SELECT %s %s', _scene_select, _select)
+        _type_attr, _label, _add_all = {
+            self.ui.SAssetsTab: ('asset_type', 'Category', True),
+            self.ui.SEntityTab: ('output_type', 'Type', True),
+            self.ui.SMediaTab: ('type_', 'Template', False)}[_tab]
 
-        # Add all
-        if _add_all and len(_types) > 1:
-            _types.insert(0, 'all')
+        # Build items +data
+        _types = sorted(
+            {getattr(_out, _type_attr) for _out in self.all_outs},
+            key=_sort_output_type)
+        _data = [
+            [
+                _out for _out in self.all_outs
+                if getattr(_out, _type_attr) == _type]
+            for _type in _types]
+        _labels = [_type or '' for _type in _types]
+        if _add_all:
+            _labels.insert(0, 'all')
             _data.insert(0, self.all_outs)
-            assert isinstance(self.all_outs, (list, tuple))
+
+        # Determine selection
+        _select = None
+        if self.target and isinstance(self.target, pipe.CPOutputBase):
+            _trg_type = getattr(self.target, _type_attr)
+            if _trg_type in _types:
+                _select = _trg_type
+        if not _select:
+            _scene_select = dcc.get_scene_data(self.ui.SOutputType.settings_key)
+            _LOGGER.debug('   - SCENE SELECT %s %s', _scene_select, _select)
+            if _scene_select in _types:
+                _select = _scene_select
+        if not _select and _add_all:
+            _select = 'all'
+        _LOGGER.debug('   - SELECT %s', _select)
 
         # Update ui
         self.ui.SOutputType.set_items(
-            _types, data=_data, emit=False, select=_select)
+            _labels, data=_data, emit=False, select=_select)
         self.ui.SOutputType.setEnabled(len(_types) > 1)
         self.ui.SOutputTypeLabel.setText(_label)
 
         self.ui.SOutputTask.redraw()
-
-    def _redraw_out_type_asset(self):
-        """Build redraw output type elements in assets mode.
-
-        Returns:
-            (tuple): output type elements
-        """
-        _LOGGER.debug(' - REDRAW OUT TYPE ASSET %s', self.target)
-        _label = 'Category'
-        _outs = [_out for _out in self.all_outs if _out.asset]
-        _types = sorted({
-            _out.asset_type for _out in _outs})
-        _data = [
-            [_out for _out in _outs if _out.asset_type == _type]
-            for _type in _types]
-
-        # Determine selection
-        _LOGGER.debug(
-            '   - SELECTION %d %s',
-            isinstance(self.target, pipe.CPOutputBase), _types)
-        _select = None
-        if (
-                self.target and
-                isinstance(self.target, pipe.CPOutputBase) and
-                self.target.asset_type in _types):
-            _select = self.target.asset_type
-        elif _types:
-            _select = sorted(_types, key=_sort_asset_type)[0]
-        _LOGGER.debug('   - SELECT OUT TYPE ASSET %s', _select)
-
-        return _label, _types, _data, _select
 
     def _redraw__SOutputTask(self):  # pylint: disable=too-many-branches
 
@@ -1302,31 +1273,30 @@ def _apply_create_ref(output, namespace, attach_to):
             raise NotImplementedError(output.content_type)
 
 
-def _sort_asset_type(type_):
-    """Sort asset type attribute.
+def _output_to_task_label(out):
+    """Obtain task label for the given output.
 
     Args:
-        type_ (str|None): asset type to sort
+        out (CPOutput): output to read
 
     Returns:
-        (str): sort key
+        (str): task label (eg. rig, surf/dev)
     """
-    _priority = ['char', 'prop']
-    if type_ in _priority:
-        return _priority.index(type_), type_
-    return len(_priority), type_
+    if out.step:
+        return f'{out.step}/{out.task}'
+    return out.task
 
 
-def _sort_outputs(output):
-    """Sort for outputs list.
+def _sort_output_type(type_):
+    """Apply output type sort.
 
     Args:
-        output (CPOutput): output to sort
+        type_ (str): type to sort
 
     Returns:
         (tuple): sort key
     """
-    return output.asset or '', output.path or ''
+    return not bool(type_), type_ or ''
 
 
 def _sort_scene_ref(ref):
@@ -1347,46 +1317,6 @@ def _sort_scene_ref(ref):
                 return ref.namespace[:-len(_suffix)], _offs
         return ref.namespace, 0
     return ref.cmp_str
-
-
-def _output_to_label(out):
-    """Get a label for the given output.
-
-    This detemines how is should be displayed in the outputs list.
-
-    Args:
-        out (CPOutput): output object
-
-    Returns:
-        (str): label
-    """
-    _LOGGER.debug('OUTPUT TO LABEL %s', out.path)
-    if out.extn == 'abc':
-        _label = out.output_name or out.type_
-    else:
-        _label = out.asset or out.output_name or out.type_
-    _fmt = ''
-    if out.tag:
-        _label += ' ' + out.tag
-    if isinstance(out, pipe.CPOutputSeq):
-        _fmt = f' ({out.extn})'
-    if out.ver_n:
-        _label += f' v{out.ver_n:03d}{_fmt}'
-    return _label
-
-
-def _output_to_task_label(out):
-    """Obtain task label for the given output.
-
-    Args:
-        out (CPOutput): output to read
-
-    Returns:
-        (str): task label (eg. rig, surf/dev)
-    """
-    if out.step:
-        return f'{out.step}/{out.task}'
-    return out.task
 
 
 class _StagedRef(pipe_ref.CPipeRef):  # pylint: disable=abstract-method

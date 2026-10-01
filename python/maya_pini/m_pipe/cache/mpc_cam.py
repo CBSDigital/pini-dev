@@ -26,11 +26,12 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         'focalLength', 'focusDistance', 'filmTranslateH', 'filmTranslateV']
     attrs = cam_attrs + ['plateResX', 'plateResY']
 
-    def __init__(self, cam, extn='abc'):
+    def __init__(self, cam, exporter, extn='abc'):
         """Constructor.
 
         Args:
             cam (str): camera transform
+            exporter (CExporter): exporter running this cache operation
             extn (str): cache output extension
         """
         self.cam = cam
@@ -51,7 +52,8 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
 
         super().__init__(
             src_ref=_src_ref, node=cam, output_name=_output_name,
-            output_type='cam', extn=extn)
+            output_type='cam', extn=extn, exporter=exporter,
+            content_type='CamAbc')
 
     def build_metadata(self):
         """Obtain metadata dict for this cacheable.

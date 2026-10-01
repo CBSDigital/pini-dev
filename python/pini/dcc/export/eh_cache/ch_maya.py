@@ -23,7 +23,19 @@ class CMayaAbcCache(CMayaCache):
     """Manages abc caching in maya."""
 
     NAME = 'Maya Abc Cache'
-    LABEL = 'Exports abcs from maya'
+    LABEL = '\n'.join([
+        'Exports abcs from maya.',
+        '',
+        'There are three types of cacheable object which will appear in the '
+        'list:',
+        '',
+        ' 1 - any reference with a "cache_SET" node in it',
+        ' 2 - any camera',
+        ' 3 - any set with a "_CSET" suffix (eg. "wasps_CSET")',
+        '',
+        'If you want to export arbitrary geometry from your scene then you '
+        'can use a CSET, although it is better to use a rig/model with a '
+        'cache set so that lookdev can be applied automatically.'])
     ACTION = 'AbcCache'
     ICON = icons.find('Input Latin Letters')
 
@@ -37,7 +49,7 @@ class CMayaAbcCache(CMayaCache):
             (CCacheable list): cacheables
         """
         from maya_pini import m_pipe
-        return m_pipe.find_cacheables(extn='abc')
+        return m_pipe.find_cacheables(exporter=self, extn='abc')
 
     def export(  # pylint: disable=unused-argument
             self, cacheables=None, use_farm=False, range_=None, substeps=1,
@@ -133,7 +145,7 @@ class CMayaFbxCache(CMayaCache):
             (CCacheable list): cacheables
         """
         from maya_pini import m_pipe
-        return m_pipe.find_cacheables(extn='fbx')
+        return m_pipe.find_cacheables(exporter=self, extn='fbx')
 
     def _add_custom_ui_elems(self):
         """Add custom elements for this cache handler."""
@@ -164,7 +176,8 @@ class CMayaCurvesCache(CMayaCache):
             _icon = helper.output_to_icon(_out)
             _cbl = ch_cacheable.CCacheable(
                 output_name=_ref.namespace, extn='mb', node=_ref.top_node,
-                ref=_ref, src_ref=_ref.path, output_type='CurvesMb', icon=_icon)
+                ref=_ref, src_ref=_ref.path, output_type='CurvesMb', icon=_icon,
+                exporter=self)
             _cbls.append(_cbl)
 
         return _cbls

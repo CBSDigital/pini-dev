@@ -11,7 +11,7 @@ from .. import eh_base
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBlastHandler(eh_base.CExportHandler):
+class CBlastHandler(eh_base.CExporter):
     """Base class for any blast handler."""
 
     NAME = 'Blast Tool'

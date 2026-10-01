@@ -29,9 +29,9 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
     add_cameras = False
     add_range = False
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(
+        super().setup_settings(
             *args, update_metadata=False, update_cache=False,
             bkp=True, **kwargs)
 

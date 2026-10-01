@@ -15,11 +15,12 @@ _LOGGER = logging.getLogger(__name__)
 class CPCacheableRef(mpc_cacheable.CPCacheable):
     """A reference that can be cached (eg. rig/model publish)."""
 
-    def __init__(self, ref, extn='abc'):
+    def __init__(self, ref, exporter, extn='abc'):
         """Constructor.
 
         Args:
             ref (CReference): reference node
+            exporter (CExporter): exporter running this cache operation
             extn (str): cache output extension
         """
         _src_ref = pipe.CPOutputFile(ref.path)
@@ -39,8 +40,8 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
 
         super().__init__(
             node=self.ref, src_ref=_src_ref, extn=extn, top_node=ref.top_node,
-            output_name=_output_name, label=_label, ref=ref,
-            output_type=extn)
+            output_name=_output_name, label=_label, ref=ref, output_type=extn,
+            exporter=exporter, content_type='PipeAbc')
 
     def _set_name(self, name):
         """Rename this cacheable.

@@ -20,13 +20,14 @@ _LOGGER = logging.getLogger(__name__)
 JUNK_GRPS = os.environ.get('PINI_PUB_JUNK_GRPS', 'JUNK').split('|')
 
 
-def find_cache_set(catch=True):
+def find_cache_set(task=None, catch=True):
     """Find cache set from the current scene.
 
     This is for use in an asset scene, where a single cache set (referenced
     or not referenced) should be present.
 
     Args:
+        task (str): override task for cache set
         catch (bool): no error if no cache set found
 
     Returns:
@@ -38,8 +39,8 @@ def find_cache_set(catch=True):
 
     _refs_mode = export.get_pub_refs_mode()
     _LOGGER.debug(' - REFS MODE %s', _refs_mode)
-    _task = pipe.cur_task(fmt='pini')
-    _LOGGER.debug(' - PIPE %s', _task)
+    _task = task or pipe.cur_task(fmt='pini')
+    _LOGGER.debug(' - TASK %s', _task)
 
     if _refs_mode is export.PubRefsMode.IMPORT_TO_ROOT or _task == 'lookdev':
 

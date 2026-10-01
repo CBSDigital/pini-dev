@@ -1,3 +1,36 @@
+## [11.0.0] - Thu 2026-10-01 08:37
+### Summary
+ - Pini Helper:
+    - maya lookdev publish added lights setting,
+    - maya abc cache label explains CSETs (eehemann),
+    - hou 22 apply style fix,
+ - Sanity Check:
+    - maya lookdev publish added check lights,
+### Updated
+ - pini.dcc.MayaDCC.set_scene_data added mode to allow flush,
+ - pini.dcc.export renamed export_handler -> exporter,
+ - pini.dcc.export.CExporterUI.add_combo_box scene data overrides select arg,
+ - pini.dcc.export.CExporter renamed set_settings -> setup_settings,
+ - pini.dcc.export.CExporter added read_setting/read_settings/set_setting to allow update settings on the fly,
+ - pini.dcc.export.CExporter low priority appears higher in list,
+ - pini.dcc.export.CMayaLookdevPublish added lights setting,
+ - pini.dcc.export.CMayaLookdevPublish reset filename on clean scene,
+ - pini.dcc.export.CHouBasicPublish added icons to nodes list,,
+ - pini.dcc.export.CHouBasicPublish use output_name in publish,
+ - pini.dcc.export.CMayaAbcCache label explains csets,
+ - pini.qt.CComboBox store whether data to allow data as None,
+ - pini.qt.CUiBase apply style fix for hou 22,
+ - pini.qt.apply_base_style added,
+ - pini.tools.sanity_check.launch_export_ui embed exporter to allow checks to edit export settings,
+ - pini.tools.sanity_check.utils.fix_node_name added to handle trg name exists,
+ - pini.tools.sanity_check.CheckLights added,
+ - pini.tools.helper scene tab outputs list display output name/type if avail,
+ - pini.tools.helper scene tab output type list cleaned repeated code,
+ - maya_pini.m_pipe cacheables have exporter embedded,
+ - maya_pini.m_pipe.read_lights added lights arg,
+ - maya_pini.m_pipe.find_cache_set added task override,
+
+
 ## [10.0.0] - Mon 2026-09-28 13:24
 ### Summary
  - Pini Helper:

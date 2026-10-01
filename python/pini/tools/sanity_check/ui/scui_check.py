@@ -41,7 +41,7 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
         self.check.reset()
         self.redraw()
 
-    def execute_check(self, checks, update_ui=None):
+    def execute_check(self, checks, update_ui=None, exporter=None):
         """Execute this check.
 
         Args:
@@ -49,10 +49,11 @@ class SCUiCheckItem(qt.CListViewPixmapItem):
                 they depend on this check then they are reset if this
                 check is re-run
             update_ui (fn): interface update callback
+            exporter (CExporter): exported that launched sanity check
         """
         _LOGGER.debug("EXECUTE CHECK %s", self.check)
         self._reset_dependent_checks(checks=checks, update_ui=update_ui)
-        self.check.execute(update_ui=update_ui)
+        self.check.execute(update_ui=update_ui, exporter=exporter)
         self.redraw()
         _LOGGER.debug(" - EXECUTE CHECK COMPLETE %s", self.check)
 

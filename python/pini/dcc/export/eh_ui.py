@@ -1,4 +1,4 @@
-"""Tools for managing export handler interfaces.
+"""Tools for managing export exporter interfaces.
 
 NOTES:
 
@@ -21,8 +21,8 @@ from pini.utils import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class CExportHandlerUI(qt.CUiContainer):
-    """Represents an interface in an export handler.
+class CExporterUI(qt.CUiContainer):
+    """Represents an interface in an export exporter.
 
 
     This is designed to be installed into an existing PiniHelper instance.
@@ -33,16 +33,16 @@ class CExportHandlerUI(qt.CUiContainer):
 
     range_mode = None
 
-    def __init__(self, settings_file, handler, label_w=70):
+    def __init__(self, settings_file, exporter, label_w=70):
         """Constructor.
 
         Args:
-            settings_file (str): path to settings ini file for this handler
-            handler (CExportHander): parent export handler
+            settings_file (str): path to settings ini file for this exporter
+            exporter (CExportHander): parent export exporter
             label_w (int): label width in pixels
         """
         super().__init__(settings_file=settings_file)
-        self.handler = handler
+        self.exporter = exporter
         self.label_w = label_w
         self._elems = {}
 
@@ -68,7 +68,7 @@ class CExportHandlerUI(qt.CUiContainer):
             self, elem, name, val=None, enabled=None, width=None,
             tooltip=None, save_policy=None, callback=None,
             settings_key=None, ui_only=False, data=EMPTY):
-        """Setup element in the export handler's ui.
+        """Setup element in the export exporter's ui.
 
         This will:
          - Apply object name (eg. MyName)
@@ -111,7 +111,7 @@ class CExportHandlerUI(qt.CUiContainer):
         # Setup settings
         _save_policy = save_policy or qt.SavePolicy.SAVE_IN_SCENE
         _settings_key = settings_key or to_settings_key(
-            name=name, handler=self.handler)
+            name=name, exporter=self.exporter)
         elem.set_settings_key(_settings_key)
         _LOGGER.debug('     - APPLY SETTINGS KEY %s %s', elem, _settings_key)
         assert isinstance(_save_policy, qt.SavePolicy)
@@ -299,7 +299,7 @@ class CExportHandlerUI(qt.CUiContainer):
     def add_check_box(
             self, name, val=True, label=None, tooltip=None, enabled=True,
             save_policy=None, ui_only=False, data=None, add_elems=()):
-        """Add QCheckBox element in this handler's interface.
+        """Add QCheckBox element in this exporter's interface.
 
         Args:
             name (str): element name
@@ -381,8 +381,17 @@ class CExportHandlerUI(qt.CUiContainer):
             _combo_box, label=label, tooltip=tooltip, stretch=stretch,
             label_w=label_w, add_elems=add_elems)
 
+        # Determine selection (scene data overrides default val)
+        _select = None
+        if _select is None:
+            _select = dcc.get_scene_data(_combo_box.settings_key)
+            _LOGGER.debug('   - SELECT SCN DATA %s', _select)
+        if _select is None:
+            _select = val
+            _LOGGER.debug('   - SELECT VAL %s', _select)
+
         # Need to set items after elem set up to apply save policy
-        _combo_box.set_items(items, data=data, emit=False, select=val)
+        _combo_box.set_items(items, data=data, emit=False, select=_select)
         _LOGGER.debug(
             '   - COMPLETED ADD COMBOBOX %s %s', _combo_box,
             _combo_box.currentText())
@@ -419,7 +428,7 @@ class CExportHandlerUI(qt.CUiContainer):
     def add_line_edit(
             self, name, val=None, label=None, tooltip=None, callback=None,
             save_policy=None, add_elems=(), ui_only=False, label_w=None):
-        """Add QLineEdit layout to this handler's interface.
+        """Add QLineEdit layout to this exporter's interface.
 
         Args:
             name (str): element name
@@ -475,7 +484,7 @@ class CExportHandlerUI(qt.CUiContainer):
             _lyt.addWidget(_elem)
 
         # Add refresh button
-        _redraw_fn = getattr(self.handler, f'_redraw__{name}', None)
+        _redraw_fn = getattr(self.exporter, f'_redraw__{name}', None)
         _LOGGER.debug(' - REFRESH %s %s', f'_redraw__{name}', _redraw_fn)
         if _redraw_fn:
             _btn = self.build_icon_btn(
@@ -549,7 +558,7 @@ class CExportHandlerUI(qt.CUiContainer):
             label (str): label for button
         """
         self.add_push_btn(
-            'Execute', label, callback=self.handler.exec_from_ui)
+            'Execute', label, callback=self.exporter.exec_from_ui)
 
     def add_push_btn(self, name, label=None, callback=None):
         """Add push button element.
@@ -582,7 +591,7 @@ class CExportHandlerUI(qt.CUiContainer):
             self, name, val, min_=0, max_=10000, label=None, label_w=None,
             tooltip=None, add_elems=(), width=None, save_policy=None,
             stretch=True, ui_only=False):
-        """Build a QSpinBox layout in this handler's interface.
+        """Build a QSpinBox layout in this exporter's interface.
 
         Args:
             name (str): element name
@@ -631,7 +640,7 @@ class CExportHandlerUI(qt.CUiContainer):
             add_version_up (bool): add version up option
             version_up (bool): default version up setting
         """
-        if add_snapshot or add_version_up or self.handler.add_notes:
+        if add_snapshot or add_version_up or self.exporter.add_notes:
             self.add_separator()
 
         if add_snapshot:
@@ -641,7 +650,7 @@ class CExportHandlerUI(qt.CUiContainer):
         if add_version_up:
             self.VersionUp = self.add_check_box(
                 'VersionUp', label='Version up', val=version_up)
-        if self.handler.add_notes:
+        if self.exporter.add_notes:
             self.add_notes_elem()
 
     def assemble_range_elems(self, mode='Continuous'):
@@ -725,7 +734,7 @@ class CExportHandlerUI(qt.CUiContainer):
         _LOGGER.debug('TO FRAMES %s', _mode)
 
         # Apply step size
-        if self.handler.add_substeps and 'Substeps' in self._elems:
+        if self.exporter.add_substeps and 'Substeps' in self._elems:
             try:
                 _step = 1 / self.Substeps.get_val()
             except RuntimeError:
@@ -766,6 +775,7 @@ class CExportHandlerUI(qt.CUiContainer):
         _LOGGER.debug('TO KWARGS %s', self)
         _kwargs = {}
         for _name, _elem in self._elems.items():
+
             _LOGGER.debug(' - ELEM %s', _elem)
             if isinstance(_elem, QtWidgets.QLabel):
                 continue
@@ -777,10 +787,10 @@ class CExportHandlerUI(qt.CUiContainer):
             if _name == 'range':
                 if self.range_mode == 'Continuous':
                     _name = 'range_'
-                    _val = self.handler.to_range()
+                    _val = self.exporter.to_range()
                 elif self.range_mode == 'Frames':
                     _name = 'frames'
-                    _val = self.handler.to_frames()
+                    _val = self.exporter.to_frames()
                 else:
                     raise ValueError(self.range_mode)
             elif _name == 'format':
@@ -842,18 +852,18 @@ class CExportHandlerUI(qt.CUiContainer):
     _callback__RangeStepSize = _callback__RangeRefresh
 
 
-def to_settings_key(handler, name):
-    """Build scene settings key based on the given handler/name.
+def to_settings_key(exporter, name):
+    """Build scene settings key based on the given exporter/name.
 
     Args:
-        handler (CExportHandler): export handler
+        exporter (CExporter): exporter
         name (str): widget name
 
     Returns:
         (str): scene settings key (eg. PiniQt.CMayaModelPublish.References)
     """
-    _handler = type(handler).__name__
-    return f'PiniQt.{_handler}.{name}'
+    _exporter = type(exporter).__name__
+    return f'PiniQt.{_exporter}.{name}'
 
 
 def _to_frames(start, end, step):

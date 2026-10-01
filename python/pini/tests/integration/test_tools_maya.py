@@ -48,7 +48,7 @@ class TestSanityCheck(unittest.TestCase):
         assert not sanity_check.find_check(
             'CheckLookdevShaders', task='model', action='ScenePublish', catch=True,
             filter_='CheckShaders')
-        assert sanity_check.find_check(
+        assert not sanity_check.find_check(
             'CheckShaders', task='model', action='ScenePublish', catch=True)
 
         # Test CheckModelGeo - should run in model + not in rig

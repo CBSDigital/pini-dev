@@ -437,11 +437,11 @@ class CSkeleton:  # pylint: disable=too-many-public-methods
         """
         _mappings = _read_name_mappings()
         if self.uid_str not in _mappings:
-            _LOGGER.info(' - NAMES %s', sorted(_mappings.values()))
+            _LOGGER.info(' - NAMES %s', sorted(set(_mappings.values())))
             _name = qt.input_dialog(
                 'Enter name for this skeleton:',
                 title='Skeleton Naming')
-            assert _name not in _mappings.keys()
+            assert _name not in _mappings.values()
             _mappings[self.uid_str] = _name
             _NAME_MAPPINGS_YML.write_yml(_mappings)
             _mappings = _read_name_mappings(force=True)

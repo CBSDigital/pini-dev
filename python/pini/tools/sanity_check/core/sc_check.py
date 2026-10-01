@@ -27,6 +27,7 @@ class SCCheck:
     error = None
     progress = 0.0
     sort = 50
+    exporter = None
 
     # Filters
     enabled = True
@@ -223,13 +224,14 @@ class SCCheck:
         _check = PyFile(_path).find_class(_name)
         _check.edit()
 
-    def execute(self, catch=True, update_ui=None):
+    def execute(self, catch=True, update_ui=None, exporter=None):
         """Execute this check.
 
         Args:
             catch (bool): don't error if the check fails
             update_ui (fn): function to update a ui to give
                 progress feedback
+            exporter (CExporter): exporter that launched sanity check
         """
         _LOGGER.debug('EXECUTE %s update_ui=%s', self, update_ui)
         _start = time.time()
@@ -241,6 +243,7 @@ class SCCheck:
             return
         self.status = 'running'
         self._update_ui = update_ui
+        self.exporter = exporter
 
         # Run the actual check
         self.write_log('Starting check')

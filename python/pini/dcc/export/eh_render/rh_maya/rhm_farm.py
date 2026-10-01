@@ -25,7 +25,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
     LABEL = f'Renders the current scene to {farm.NAME}.'
 
     add_res_pc = True
-    priority = 60
+    priority = 40
 
     def __init__(self, label_w=80):
         """Constructor.
@@ -83,9 +83,9 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             select=_cur_grps, multi=True, msg=_msg, title='Select groups')
         self.ui.LimitGrps.setText(','.join(_grps))
 
-    def set_settings(self, *args, **kwargs):
+    def setup_settings(self, *args, **kwargs):
         """Setup settings dict."""
-        super().set_settings(
+        super().setup_settings(
             *args, update_metadata=False, update_cache=False,
             bkp=True, **kwargs)
 

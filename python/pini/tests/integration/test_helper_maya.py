@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class TestHelper(unittest.TestCase):
 
-    def test_export_handler_notes(self):
+    def test_exporter_notes(self):
 
         dcc.new_scene(force=True)
 
@@ -43,7 +43,7 @@ class TestHelper(unittest.TestCase):
 
         if cmds.objExists('blah'):
             cmds.delete('blah')
-        _farm_rh = dcc.find_export_handler('render', filter_='farm', catch=True)
+        _farm_rh = dcc.find_exporter('render', filter_='farm', catch=True)
         if not _farm_rh:
             return
 
@@ -234,7 +234,7 @@ class TestHelper(unittest.TestCase):
         assert _helper.ui.SOutputsPane.tabText(1) == 'Shot'
 
         print()
-        print('TEST JUMP TO LOOKDEV')
+        _LOGGER.info('TEST JUMP TO LOOKDEV')
         _helper.jump_to(_lookdev)
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Assets'
         assert _helper.ui.SOutputs.selected_data() == _lookdev
@@ -245,27 +245,28 @@ class TestHelper(unittest.TestCase):
         _helper.jump_to(testing.TEST_ASSET)
         assert _helper.entity == testing.TEST_ASSET
         print()
-        print('TEST JUMP TO LOOKDEV FROM ASSET ' + _lookdev.path)
+        _LOGGER.info('TEST JUMP TO LOOKDEV FROM ASSET %s', _lookdev.path)
         _helper.jump_to(_lookdev)
         assert _helper.entity == testing.TEST_ASSET
         assert _helper.ui.SOutputsPane.tabText(1) == 'Asset'
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Asset'
+        _LOGGER.info(' - SEL OUT %s', _helper.ui.SOutputs.selected_data())
         assert _helper.ui.SOutputs.selected_data() == _lookdev
 
         print()
-        print('TEST JUMP TO RIG')
+        _LOGGER.info('TEST JUMP TO RIG')
         _helper.jump_to(_rig)
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Asset'
         assert _helper.ui.SOutputs.selected_data() == _rig
 
         print()
-        print('TEST JUMP TO ABC')
+        _LOGGER.info('TEST JUMP TO ABC %s', _abc)
         _helper.jump_to(_abc)
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Shot'
         assert _helper.ui.SOutputs.selected_data() == _abc
 
         print()
-        print('TEST JUMP TO RENDER')
+        _LOGGER.info('TEST JUMP TO RENDER %s', _ren)
         _helper.jump_to(_ren)
         assert _helper.ui.SOutputsPane.current_tab_text() == 'Media'
         assert _helper.ui.SOutputs.selected_data() == _ren
@@ -339,7 +340,7 @@ class TestHelper(unittest.TestCase):
             progress=_progress, force=force, show_ctx=show_ctx)
         _progress.close()
 
-    def test_store_settings_in_scene_export_handler(self):
+    def test_store_settings_in_scene_exporter(self):
 
         _helper = helper.obt_helper(reset_cache=False)
         _import = export.PubRefsMode.IMPORT_TO_ROOT
@@ -388,7 +389,7 @@ class TestHelper(unittest.TestCase):
         assert _m_pub.ui.References.save_policy == qt.SavePolicy.SAVE_IN_SCENE
         _m_pub.ui.References.select_text('Remove')
         assert _m_pub.ui.References.settings_key == 'PiniQt.Publish.References'
-        assert _m_pub.ui.References.settings_key == phm_scene._PUB_REFS_MODE_KEY
+        assert _m_pub.ui.References.settings_key == phm_scene.PUB_REFS_MODE_KEY
         _LOGGER.info(' - SETTING %s', _m_pub.ui.References.get_scene_setting())
         assert _m_pub.ui.References.get_scene_setting() == 'Remove'
         assert export.get_pub_refs_mode() is _remove
@@ -538,6 +539,7 @@ def _test_anim_workflow(progress, force, show_ctx):
     _helper.ui.MainPane.select_tab('Export')
     _helper.ui.EExportPane.select_tab('Cache')
     _exp = _helper.ui.ECacheHandler.selected_data()
+    assert _exp is dcc.find_exporter('abc')
     assert (
         _exp.ui.Cacheables.all_data() ==
         _exp.ui.Cacheables.selected_datas())
@@ -591,11 +593,11 @@ def _test_lighting_workflow(progress, force, show_ctx):
     assert _out
     assert _out.find_lookdev_shaders()
     assert _abc.find_lookdev_shaders()
+    assert _abc.content_type
+    assert _abc.content_type == 'PipeAbc'
     _helper.ui.SOutputs.select_data(_abc)
-    # _helper.ui.SLookdev.select_text('Reference')
     _helper.ui.SAdd.click()
     assert len(_helper.ui.SSceneRefs.all_items()) == 2  # abc + lookdev
-    # _lookdev_imp
     _helper.apply_updates(force=True)
 
     # Test lookdev publish ctx

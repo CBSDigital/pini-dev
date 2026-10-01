@@ -18,7 +18,7 @@ def abc_cache(cacheables=None, **kwargs):
         (CPOutput list): caches
     """
     _LOGGER.info('ABC CACHE')
-    _exporter = dcc.find_export_handler('AbcCache')
+    _exporter = dcc.find_exporter('AbcCache')
     _LOGGER.info('- EXPORTER %s', _exporter)
     return _exporter.exec(cacheables=cacheables, **kwargs)
 
@@ -34,6 +34,6 @@ def fbx_cache(cacheables, **kwargs):
         (CPOutput list): caches
     """
     _LOGGER.info('FBX CACHE')
-    _exporter = dcc.find_export_handler('FbxCache')
+    _exporter = dcc.find_exporter('FbxCache')
     _LOGGER.info('- EXPORTER %s', _exporter)
     return _exporter.exec(cacheables, **kwargs)

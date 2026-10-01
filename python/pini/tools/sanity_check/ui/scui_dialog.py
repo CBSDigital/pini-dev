@@ -26,8 +26,8 @@ class SanityCheckUi(qt.CUiDialog):
 
     def __init__(
             self, mode='standalone', checks=None, run=True,
-            close_on_success=None, filter_=None, task=None, action=None,
-            modal=None, parent=None, force=False):
+            close_on_success=None, filter_=None, task=None, modal=None,
+            exporter=None, parent=None, force=False):
         """Constructor.
 
         Args:
@@ -37,8 +37,8 @@ class SanityCheckUi(qt.CUiDialog):
             close_on_success (bool): close dialog on all checks passed
             filter_ (str): apply filter based on check name
             task (str): task to apply checks filter to
-            action (str): export action (eg. publish/render)
             modal (bool): override default modal state
+            exporter (CExporter): exported that launched sanity check
             parent (QDialog): parent dialog
             force (bool): in export mode force export ignoring any issues
         """
@@ -47,12 +47,15 @@ class SanityCheckUi(qt.CUiDialog):
 
         self.mode = mode
         self.task = task or pipe.cur_task(fmt='pini')
-        self.action = action
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
+        self.exporter = exporter or {}
+        _action = None
+        if exporter:
+            _action = exporter.ACTION
         self.checks = checks or sanity_check.find_checks(
-            filter_=filter_, task=self.task, action=action)
+            filter_=filter_, task=self.task, action=_action)
 
         super().__init__(ui_file=UI_FILE, show=False, parent=parent)
 
@@ -185,7 +188,7 @@ class SanityCheckUi(qt.CUiDialog):
             self.close()
 
         # Update export button labels
-        if self.action:
+        if self.exporter:
             _msg = 'ignore '
             if _failed:
                 _msg += f'{len(_failed):d} fail{plural(_failed)} '
@@ -201,12 +204,12 @@ class SanityCheckUi(qt.CUiDialog):
                         self.ui.CancelAndKeep),
                     ('Cancel {action_label}', self.ui.CancelAndClose),
             ]:
-                if self.action.endswith('Publish'):
+                if self.exporter.ACTION.endswith('Publish'):
                     _action_label = 'Publish'
                 else:
-                    _action_label = self.action
+                    _action_label = self.exporter.ACTION
                 _label = _fmt.format(
-                    action_label=_action_label, action=self.action,
+                    action_label=_action_label, action=self.exporter.ACTION,
                     count=len(_checks), plural=plural(_checks), msg=_msg)
                 _elem.setText(_label)
 
@@ -372,7 +375,9 @@ class SanityCheckUi(qt.CUiDialog):
             self.ui.Checks.select_item(_item)
             dcc.refresh()
 
-            _item.execute_check(update_ui=self._update_ui, checks=self.checks)
+            _item.execute_check(
+                update_ui=self._update_ui, checks=self.checks,
+                exporter=self.exporter)
 
             if not _show_passed and _item.check.has_passed:
                 self.ui.Checks.remove_item(_item)
@@ -391,7 +396,8 @@ class SanityCheckUi(qt.CUiDialog):
         _check_ui = self.ui.Checks.selected_item()
         if _check_ui:
             _check_ui.execute_check(
-                update_ui=self._update_ui, checks=self.checks)
+                update_ui=self._update_ui, checks=self.checks,
+                exporter=self.exporter)
         self._callback__Checks()
 
         # Update checks in case this check passed

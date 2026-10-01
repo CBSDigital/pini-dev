@@ -14,6 +14,6 @@ def blast(**kwargs):
     Returns:
         (CPOutput): blast
     """
-    _exp = dcc.find_export_handler('Playblast Flipbook')
+    _exp = dcc.find_exporter('Playblast Flipbook')
     _exp.exec(**kwargs)
     return single(_exp.outputs)
