@@ -1,3 +1,11 @@
+## [11.2.2] - Fri 2026-10-02 11:53
+### Summary
+ - Pini Helper:
+    - hou bugfix missing work file right-click options (bshepperd),
+### Updated
+ - pini.tools.helper hou bugfix missing work ctx opts,
+
+
 ## [11.2.1] - Fri 2026-10-02 09:35
 ### Summary
  - Sanity Check:

@@ -17,15 +17,25 @@ _LOGGER = logging.getLogger(__name__)
 class HouPiniHelper(ph_window.PiniHelper):  # pylint: disable=abstract-method,too-many-ancestors
     """PiniHelper dialog for houdini."""
 
-    def _context__WWorks(self, menu):
+    def _add_merge_opt(self, menu):
+        """Add merge option.
+
+        Args:
+            menu (QMenu): menu to add to
+        """
         menu.add_action(
             'Merge into current scene',
             wrap_fn(hou.hipFile.merge, str(self.work)),
             enabled=bool(self.work),
             icon=icons.find('Down-Right Arrow'))
 
+    def _context__WWorks(self, menu):
+        super()._context__WWorks(menu)
+        self._add_merge_opt(menu)
+
     def _context__WLoad(self, menu):
-        self._context__WWorks(menu)
+        super()._context__WLoad(menu)
+        self._add_merge_opt(menu)
 
     def _context__SOutputs(self, menu):
         _out = self.ui.SOutputs.selected_data()
