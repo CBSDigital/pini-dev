@@ -1,3 +1,11 @@
+## [11.2.1] - Fri 2026-10-02 09:35
+### Summary
+ - Sanity Check:
+    - bugfix error on check surfaceShader (bshepperd),
+### Updated
+ - maya_pini.tex.to_shd added handling for all shd types,
+
+
 ## [11.2.0] - Thu 2026-10-01 14:56
 ### Summary
  - Pini Helper:
