@@ -731,7 +731,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
                 be present in the template
             want_key (dict): dict of keys and whether that key are desired
                 in the template
-            dcc_ (str): filter by dcc
+            dcc_ (str): apply dcc token
             ver_n (int): apply version number
 
         Returns:
@@ -739,22 +739,23 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
         """
         from pini import pipe
         _LOGGER.debug('TO OUTPUT')
-        _dcc = dcc_ or dcc.NAME
 
         # Build data
-        _data = {
+        _dcc = dcc_ or dcc.NAME
+        _data = copy.copy(self.data)
+        _data.update({
             'entity_path': self.entity.path,
             'entity': self.entity.name,
             'user': self.user,
             'step': self.step,
-            'dcc': _dcc}
-        _data.update(self.data)
+            'dcc': _dcc})
         if 'data' in kwargs:
             raise TypeError
         if ver_n is not None:
             _ver_pad = self.job.cfg['tokens']['ver']['len']
             _data['ver'] = str(ver_n).zfill(_ver_pad)
         _data.update(kwargs)
+        self.entity.apply_token_mapping(_data)
         _LOGGER.debug(' - DATA %s', _data)
 
         # Get output class
@@ -772,7 +773,7 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             raise ValueError(_tmpl.name)
         _LOGGER.debug(' - CLASS %s', _class)
 
-        # Build path
+        # Warn on missing keys
         _missing_keys = [
             _key for _key in _tmpl.keys()
             if _key not in _data or _data[_key] is None]
@@ -784,6 +785,8 @@ class CPWorkBase(File):  # pylint: disable=too-many-public-methods
             raise ValueError(
                 f'Missing key{plural(_missing_keys)} '
                 f'{"/".join(_missing_keys)}')
+
+        # Build path
         _path = _tmpl.format(_data)
         _LOGGER.debug(' - PATH %s', _path)
 

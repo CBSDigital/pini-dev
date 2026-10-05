@@ -1,3 +1,24 @@
+## [11.4.0] - Mon 2026-10-05 09:32
+### Summary
+ - Sanity Check:
+    - bugfix error on apply asset hierarchy with task override (blee),
+    - bugfix error on apply check uvs fix when geo has been renamed,
+ - Pini Pipeline:
+    - token settings moved from config to settings,
+    - added settingb to allow token name mapping,
+### Updated
+ - pini.dcc.export.CExporter added name/action/icon to allow dummy exporters,
+ - pini.pipe.validate_token read token cfg from settings not cfg,
+ - pini.pipe.validate_token added token mapping,
+ - pini.pipe default settings added token defaults from cfg,
+ - pini.pipe.CPSettingsElem.apply_token_mapping added,
+ - pini.pipe.CPWorkBase.to_output applied token mapping,
+ - pini.tools.sanity_check.CheckAssetHierarchy bugfix not appling task override,
+ - pini.tools.sanity_check.CheckUVs depends on CheckGeoNaming,
+ - maya_pini.hik.build_hik removed legacy mel code,
+ - maya_pini.hik.build_hik warn + cache on skel without cached map,
+
+
 ## [11.3.0] - Fri 2026-10-02 12:55
 ### Summary
  - Pini Helper:

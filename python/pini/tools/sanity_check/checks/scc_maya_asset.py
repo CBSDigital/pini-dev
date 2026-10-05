@@ -33,12 +33,12 @@ class CheckAssetHierarchy(core.SCMayaCheck):
         """
 
         # Determine required node hierarchy
-        _task = pipe.cur_task(fmt='pini')
-        _req_nodes = req_nodes or self.settings.get('nodes', {}).get(_task, {})
+        _req_nodes = req_nodes or self.settings.get(
+            'nodes', {}).get(self.task, {})
         if not _req_nodes:
             _req_nodes = {
                 'model': {'MDL': None},
-                'rig': {'RIG': None}}.get(_task, {'SCN': None})
+                'rig': {'RIG': None}}.get(self.task, {'SCN': None})
         self.write_log('req nodes %s', _req_nodes)
         if not _req_nodes:
             return
@@ -379,89 +379,6 @@ class CheckForEmptyNamespaces(core.SCMayaCheck):
             self.add_fail(f'Empty namespace {_ns}', fix=_fix)
 
 
-class CheckUVs(core.SCMayaCheck):
-    """Check UVs on current scene geo."""
-
-    _label = 'Check UVs'
-
-    task_filter = 'model rig'
-    depends_on = (CheckCacheSet, )
-    sort = 90
-
-    def run(self):
-        """Run this check."""
-        _geos = utils.read_cache_set_geo()
-        if not _geos:
-            self.add_fail('No geo found')
-        for _geo in _geos:
-            self._check_geo(_geo)
-
-    def _check_geo(self, geo):
-        """Check uvs on the given piece of geometry.
-
-        Args:
-            geo (str): geometry to check
-        """
-
-        # Ignore no shapes
-        if not cmds.listRelatives(geo, shapes=True, noIntermediate=True):
-            return
-
-        # Read current/all uv sets
-        _set = single(
-            cmds.polyUVSet(geo, query=True, currentUVSet=True) or [],
-            catch=True)
-        _sets = sorted(set(
-            cmds.polyUVSet(geo, query=True, allUVSets=True) or []))
-        _fix = wrap_fn(utils.fix_uvs, geo)
-        self.write_log('Checking geo %s cur=%s, sets=%s', geo, _set, _sets)
-
-        # Flag no uv sets
-        if not _set:
-            _msg = f'Geo "{geo}" has no uvs'
-            self.add_fail(_msg, node=geo)
-            return
-
-        # Flag current set is not map1
-        if _set != 'map1':
-            if 'map1' in _sets:
-                _msg = (
-                    f'Geo "{geo}" is not using uv set "map1" '
-                    f'(set is "{_set}")')
-                self.add_fail(_msg, node=geo, fix=_fix)
-            else:
-                _msg = (
-                    f'Geo {geo} does not have uv set "map1" '
-                    f'(set is "{_set}")')
-                self.add_fail(_msg, node=geo, fix=_fix)
-            return
-
-        # Flag map1 has no area
-        if not cmds.polyEvaluate(geo, uvArea=True, uvSetName=_set):
-            _set = single([
-                _set for _set in _sets
-                if cmds.polyEvaluate(geo, uvArea=True, uvSetName=_set)],
-                catch=True)
-            if _set:
-                _msg = (
-                    f'Geo "{geo}" is using empty uv set "map1" (should use '
-                    f'"{_set}")')
-                self.add_fail(_msg, node=geo)
-            else:
-                _msg = f'Geo "{geo}" empty uv set "map1"'
-                self.add_fail(_msg, node=geo)
-            return
-
-        # Flag unused sets
-        if len(_sets) > 1:
-            _unused = sorted(set(_sets) - set(['map1']))
-            _unused_s = ', '.join(f'"{_set}"' for _set in _unused)
-            _msg = (
-                f'Geo "{geo}" has unused uv set{plural(_sets[1:])}: '
-                f'{_unused_s}')
-            self.add_fail(_msg, node=geo, fix=_fix)
-
-
 class CheckForVertexColorSets(core.SCMayaCheck):
     """Check geometry has no vertex colour sets."""
 
@@ -660,3 +577,86 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
                 f'and a single input joint - this can cause bloat in abcs '
                 f'and cause memory issues')
             self.add_fail(_msg, node=_geo.shp)
+
+
+class CheckUVs(core.SCMayaCheck):
+    """Check UVs on current scene geo."""
+
+    _label = 'Check UVs'
+
+    task_filter = 'model rig'
+    depends_on = (CheckCacheSet, CheckGeoNaming)
+    sort = 90
+
+    def run(self):
+        """Run this check."""
+        _geos = utils.read_cache_set_geo()
+        if not _geos:
+            self.add_fail('No geo found')
+        for _geo in _geos:
+            self._check_geo(_geo)
+
+    def _check_geo(self, geo):
+        """Check uvs on the given piece of geometry.
+
+        Args:
+            geo (str): geometry to check
+        """
+
+        # Ignore no shapes
+        if not cmds.listRelatives(geo, shapes=True, noIntermediate=True):
+            return
+
+        # Read current/all uv sets
+        _set = single(
+            cmds.polyUVSet(geo, query=True, currentUVSet=True) or [],
+            catch=True)
+        _sets = sorted(set(
+            cmds.polyUVSet(geo, query=True, allUVSets=True) or []))
+        _fix = wrap_fn(utils.fix_uvs, geo)
+        self.write_log('Checking geo %s cur=%s, sets=%s', geo, _set, _sets)
+
+        # Flag no uv sets
+        if not _set:
+            _msg = f'Geo "{geo}" has no uvs'
+            self.add_fail(_msg, node=geo)
+            return
+
+        # Flag current set is not map1
+        if _set != 'map1':
+            if 'map1' in _sets:
+                _msg = (
+                    f'Geo "{geo}" is not using uv set "map1" '
+                    f'(set is "{_set}")')
+                self.add_fail(_msg, node=geo, fix=_fix)
+            else:
+                _msg = (
+                    f'Geo {geo} does not have uv set "map1" '
+                    f'(set is "{_set}")')
+                self.add_fail(_msg, node=geo, fix=_fix)
+            return
+
+        # Flag map1 has no area
+        if not cmds.polyEvaluate(geo, uvArea=True, uvSetName=_set):
+            _set = single([
+                _set for _set in _sets
+                if cmds.polyEvaluate(geo, uvArea=True, uvSetName=_set)],
+                catch=True)
+            if _set:
+                _msg = (
+                    f'Geo "{geo}" is using empty uv set "map1" (should use '
+                    f'"{_set}")')
+                self.add_fail(_msg, node=geo)
+            else:
+                _msg = f'Geo "{geo}" empty uv set "map1"'
+                self.add_fail(_msg, node=geo)
+            return
+
+        # Flag unused sets
+        if len(_sets) > 1:
+            _unused = sorted(set(_sets) - set(['map1']))
+            _unused_s = ', '.join(f'"{_set}"' for _set in _unused)
+            _msg = (
+                f'Geo "{geo}" has unused uv set{plural(_sets[1:])}: '
+                f'{_unused_s}')
+            self.add_fail(_msg, node=geo, fix=_fix)

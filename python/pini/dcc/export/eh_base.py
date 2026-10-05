@@ -44,18 +44,28 @@ class CExporter:
     outputs = ()
     settings = None
 
-    def __init__(self, label_w=70):
+    def __init__(self, name=None, action=None, icon=None, label_w=70):
         """Constructor.
 
         Args:
-            label_w (int): label width in ui
+            name (str): force name (eg. CMayaScenePublish, CHouFlipbook)
+            action (str): force action (eg. Blast, Render)
+            icon (str): force icon
+            label_w (int): default label width in ui
         """
+
         self.ui = None
         self.label_w = label_w
 
+        if name:
+            self.NAME = name
         assert self.NAME
+        if action:
+            self.ACTION = action
         assert self.ACTION
         assert is_pascal(self.ACTION)
+        if icon:
+            self.ICON = icon
         assert self.ICON
 
         _name = self.NAME or type(self).__name__

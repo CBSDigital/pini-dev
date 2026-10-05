@@ -7,6 +7,7 @@ job/sequence/shot object.
 import logging
 import os
 
+from pini import dcc
 from pini.utils import (
     cache_on_obj, Dir, single, File, cache_result, merge_dicts, find_callback)
 
@@ -25,6 +26,13 @@ _DEFAULT_SETTINGS = {
     'shotgrid': {
         'disable': False,
         'only_3d': False},
+    'tokens': {
+        'asset_type': {'filter': None},
+        'sequence': {'filter': None, 'whitelist': []},
+        'dcc': {'allowed': dcc.DCCS},
+        'tag': {'default': None, 'nounderscore': True},
+        'ver': {'len': 3, 'strict_len': True},
+    }
 }
 
 
@@ -102,6 +110,24 @@ class CPSettingsLevel(Dir):
         _LOGGER.debug(' - ADDED THIS %s', _settings)
 
         return _settings
+
+    def apply_token_mapping(self, data):
+        """Apply token mapping defined in this entity's settings.
+
+        This can be used to map a token from one value to another, eg. map
+        "dcc" tokens "hou" -> "houdini" to match shotgrid.
+
+        Args:
+            data (dict): template tokens dict to update
+        """
+        _token_settings = self.settings.get('tokens')
+        for _key, _val in data.items():
+            _map = _token_settings.get(_key, {}).get('map')
+            if not _map or _val not in _map:
+                continue
+            _new_val = _map[_val]
+            _LOGGER.info(' - UPDATED %s - %s', _val, _new_val)
+            data[_key] = _new_val
 
     def del_setting(self, key):
         """Remove the given setting at this level.

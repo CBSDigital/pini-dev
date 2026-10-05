@@ -6,7 +6,7 @@ import collections
 import logging
 import pprint
 
-from pini import pipe, qt
+from pini import pipe, qt, icons
 from pini.dcc import pipe_ref
 from pini.utils import single, passes_filter, EMPTY
 
@@ -406,140 +406,21 @@ class PHIKNode(pom.CNode):
         return pom.CSkeleton(_root)
 
 
-def _assign_hik_jnt(src, trg, char, mode='connect'):
+def _assign_hik_jnt(src, trg, char):
     """Assign a joint to the an HIK character joint.
 
     Args:
         src (CJoint): joint to assign
         trg (str): name of HIK joint to connect to
         char (PHIKNode): HIK character to update
-        mode (str): how to assign the joint
-            legacy - use mel script
-            connect - connect the joint.Character attribute to the
-                corresponding joint attribute on the node
     """
     _LOGGER.debug('BIND HIK JNT %s -> %s (%s)', src, trg, char)
-    if mode == 'legacy':
-        _map = [
-            'Reference',
-            'Hips',
-
-            'LeftUpLeg',
-            'LeftLeg',
-            'LeftFoot',
-            'RightUpLeg',
-            'RightLeg',
-            'RightFoot',
-
-            'Spine',
-
-            'LeftArm',
-            'LeftForeArm',
-            'LeftHand',
-            'RightArm',
-            'RightForeArm',
-            'RightHand',
-
-            'Head',
-            'LeftToeBase',
-            'RightToeBase',
-            'LeftShoulder',
-            'RightShoulder',
-            'Neck',
-            '<LeftExtraWrist>',
-            '<RightExtraWrist>',
-
-            'Spine1',  # 23
-            'Spine2',  # 24
-            'Spine3',  # 26
-            'Spine4',  # 27
-            'Spine5',  # 28
-            'Spine6',  # 29
-            'Spine7',  # 30
-            'Spine8',  # 31
-            'Spine9',  # 32
-
-            'Neck1',  # 33
-            'Neck2',  # 34
-            'Neck3',  # 35
-            'Neck4',  # 36
-            'Neck5',  # 37
-            'Neck6',  # 38
-            'Neck7',  # 39
-            'Neck8',  # 40
-            'Neck9',  # 41
-        ]
-        _idx = _map.index(trg)
-        # _LOGGER.info(' - MAP %s -> %s (%d)', src, trg, _idx)
-        if not cmds.objExists(src):
-            raise RuntimeError(f'Missing joint {src}')
-        _mel = f'setCharacterObject("{src}", "{char}", {_idx:d}, 0)'
-        mel.eval(_mel)
-
-        # mel.eval('setCharacterObject("thumb_01_l", "Character1",50,0);')
-        # mel.eval('setCharacterObject("thumb_02_l", "Character1",51,0);')
-        # mel.eval('setCharacterObject("thumb_03_l", "Character1",52,0);')
-        # mel.eval('setCharacterObject("thumb_04_l_Jx", "Character1",53,0);')
-        # mel.eval('setCharacterObject("index_01_l", "Character1",54,0);')
-        # mel.eval('setCharacterObject("index_02_l", "Character1",55,0);')
-        # mel.eval('setCharacterObject("index_03_l", "Character1",56,0);')
-        # mel.eval('setCharacterObject("index_04_l_Jx", "Character1",57,0);')
-        # mel.eval('setCharacterObject("middle_01_l", "Character1",58,0);')
-        # mel.eval('setCharacterObject("middle_02_l", "Character1",59,0);')
-        # mel.eval('setCharacterObject("middle_03_l", "Character1",60,0);')
-        # mel.eval('setCharacterObject("middle_04_l_Jx", "Character1",61,0);')
-        # mel.eval('setCharacterObject("ring_01_l", "Character1",62,0);')
-        # mel.eval('setCharacterObject("ring_02_l", "Character1",63,0);')
-        # mel.eval('setCharacterObject("ring_03_l", "Character1",64,0);')
-        # mel.eval('setCharacterObject("ring_04_l_Jx", "Character1",65,0);')
-        # mel.eval('setCharacterObject("pinky_01_l", "Character1",66,0);')
-        # mel.eval('setCharacterObject("pinky_02_l", "Character1",67,0);')
-        # mel.eval('setCharacterObject("pinky_03_l", "Character1",68,0);')
-        # mel.eval('setCharacterObject("pinky_04_l_Jx", "Character1",69,0);')
-        # #70-73 is left hand 6th finger
-        # mel.eval('setCharacterObject("thumb_01_r", "Character1",74,0);')
-        # mel.eval('setCharacterObject("thumb_02_r", "Character1",75,0);')
-        # mel.eval('setCharacterObject("thumb_03_r", "Character1",76,0);')
-        # mel.eval('setCharacterObject("thumb_04_r_Jx", "Character1",77,0);')
-        # mel.eval('setCharacterObject("index_01_r", "Character1",78,0);')
-        # mel.eval('setCharacterObject("index_02_r", "Character1",79,0);')
-        # mel.eval('setCharacterObject("index_03_r", "Character1",80,0);')
-        # mel.eval('setCharacterObject("index_04_r_Jx", "Character1",81,0);')
-        # mel.eval('setCharacterObject("middle_01_r", "Character1",82,0);')
-        # mel.eval('setCharacterObject("middle_02_r", "Character1",83,0);')
-        # mel.eval('setCharacterObject("middle_03_r", "Character1",84,0);')
-        # mel.eval('setCharacterObject("middle_04_r_Jx", "Character1",85,0);')
-        # mel.eval('setCharacterObject("ring_01_r", "Character1",86,0);')
-        # mel.eval('setCharacterObject("ring_02_r", "Character1",87,0);')
-        # mel.eval('setCharacterObject("ring_03_r", "Character1",88,0);')
-        # mel.eval('setCharacterObject("ring_04_r_Jx", "Character1",89,0);')
-        # mel.eval('setCharacterObject("pinky_01_r", "Character1",90,0);')
-        # mel.eval('setCharacterObject("pinky_02_r", "Character1",91,0);')
-        # mel.eval('setCharacterObject("pinky_03_r", "Character1",92,0);')
-        # mel.eval('setCharacterObject("pinky_04_r_Jx", "Character1",93,0);')
-        # #94-97 is 6th right hand finger
-        # #98-101 is 6th left foot toe
-        # #102-121 are left foot toes
-        # #122-125 is 6th right foot toe
-        # #126-145 are right foot toes
-        # #146 is left hand thumb 0
-
-        # mel.eval('hikUpdateDefinitionUI;')
-        # mel.eval('LockSkeletonDefinition();')
-
-        # mel.eval('hikCreateControlRig;')
-        # cmds.parent('Character1_Ctrl_Reference', 'Character1_Root_CNT')
-
-    elif mode == 'connect':
-        if not src.has_attr('Character'):
-            _trg_plug = char.plug[trg]
-            if src.object_type() not in ('transform', 'joint'):
-                raise RuntimeError(src, src.object_type())
-            src.add_attr('Character', _trg_plug)
-        else:
-            src.plug['Character'].connect(char.plug[trg], force=True)
-    else:
-        raise NotImplementedError(mode)
+    if not src.has_attr('Character'):
+        _trg_plug = char.plug[trg]
+        if src.object_type() not in ('transform', 'joint'):
+            raise RuntimeError(src, src.object_type())
+        src.add_attr('Character', _trg_plug)
+    src.plug['Character'].connect(char.plug[trg], force=True)
 
 
 def _find_map_src(trg, mapping):
@@ -565,7 +446,10 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
     Returns:
         (dict): skeleton HIK joint mapping
     """
-    qt.ok_cancel(f'No mapping found for skel "{skel.name}"')
+    qt.ok_cancel(
+        f'No mapping found for skeleton "{skel.name}".\n\n'
+        'Building mapping from code - this should only happen once.',
+        icon=icons.find('Skull'))
 
     # Build name map
     _name = skel.to_name(catch=True)
@@ -886,7 +770,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             ('ringtoe_01_l', 'LeftFootRing1'),
             ('ringtoe_02_l', 'LeftFootRing2')]
 
-    elif skel.name in ('HouUnreal2', 'HouUnreal3'):
+    elif skel.name in ('HouUnreal2', 'HouUnreal3', 'HouUnreal4'):
 
         _jnt_map = [
             ('pelvis', 'Hips'),
@@ -974,8 +858,8 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
         raise ValueError(skel.name)
 
     # Save to skel
-    _dict = dict(_jnt_map)
-    skel.set_hik_mapping(_dict)
+    _dict = {_hik_name: _jnt_name for _jnt_name, _hik_name in _jnt_map}
+    skel.set_hik_map(_dict)
 
     # Setup mapping
     _mapping = []
@@ -1024,7 +908,7 @@ def build_hik(
                 (target.to_joint(_trg), _src)
                 for _src, _trg in _skel_map.items()]
         else:
-            _mapping = _skel_to_mapping(_mapping)
+            _mapping = _skel_to_mapping(target)
     else:
         _mapping = target
     assert isinstance(_mapping, list)

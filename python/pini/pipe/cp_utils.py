@@ -533,11 +533,10 @@ def validate_token(value, token, job):
     """
     _LOGGER.debug('VALIDATE TOKEN value=%s token=%s', value, token)
 
-    _tokens_cfg = job.cfg['tokens']
-    if token not in _tokens_cfg:
-        _LOGGER.debug(' - MISSING FROM CFG')
+    _cfg = job.settings['tokens'].get(token)
+    if not _cfg:
+        _LOGGER.debug(' - NO TOKEN CFG IN SETTING %s', token)
         return
-    _cfg = _tokens_cfg[token]
 
     # Apply whitelist
     _whitelist = _cfg.get('whitelist', [])
@@ -548,7 +547,8 @@ def validate_token(value, token, job):
 
     # Apply allowed values
     _allowed = _cfg.get('allowed')
-    if _allowed and value not in _allowed:
+    _map = _cfg.get('map', {})
+    if _allowed and value not in _allowed and value not in _map.values():
         raise ValueError(
             f'Token "{token}" as "{value}" not in allowed values')
 
