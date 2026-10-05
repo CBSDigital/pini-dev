@@ -126,7 +126,7 @@ class CPSettingsLevel(Dir):
             if not _map or _val not in _map:
                 continue
             _new_val = _map[_val]
-            _LOGGER.info(' - UPDATED %s - %s', _val, _new_val)
+            _LOGGER.debug(' - UPDATED %s - %s', _val, _new_val)
             data[_key] = _new_val
 
     def del_setting(self, key):

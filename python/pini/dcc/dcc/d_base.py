@@ -207,11 +207,11 @@ class BaseDCC:
         from .. import export
         from pini import pipe
         _LOGGER.debug('INIT EXPORT HANDLERS')
-        _handlers = []
+        _exps = []
         if pipe.SHOTGRID_AVAILABLE:
             _submit = export.CBasicSubmitter()
-            _handlers.append(_submit)
-        return _handlers
+            _exps.append(_submit)
+        return _exps
 
     def _check_exporters(self):
         """Check export handlers have been set up."""
@@ -234,36 +234,36 @@ class BaseDCC:
         Returns:
             (CExporter): matching export handler
         """
-        _handlers = self.find_exporters(
+        _exps = self.find_exporters(
             type_=type_, filter_=filter_, profile=profile)
-        if len(_handlers) == 1:
-            return single(_handlers)
+        if len(_exps) == 1:
+            return single(_exps)
 
-        # Try type match
-        _action_match = single(
-            [_handler for _handler in _handlers if _handler.TYPE == match],
-            catch=True)
-        if _action_match:
-            return _action_match
+        # Try action match
+        _action_matches = [
+            _handler for _handler in _exps
+            if _handler.ACTION == match]
+        _LOGGER.debug(' - ACTION MATCHES %s', _action_matches)
+        if len(_action_matches) == 1:
+            return single(_action_matches)
 
-        # Try type match
-        _type_match = single(
-            [_handler for _handler in _handlers
-             if type(_handler).__name__ == match],
-            catch=True)
-        if _type_match:
-            return _type_match
+        # Try type name match
+        _type_name_matches = [
+            _handler for _handler in _exps
+            if type(_handler).__name__ == match]
+        if len(_type_name_matches):
+            return str(single(_type_name_matches))
 
         # Try exact name match
         _name_match = single(
-            [_handler for _handler in _handlers if _handler.NAME == match],
+            [_handler for _handler in _exps if _handler.NAME == match],
             catch=True)
         if _name_match:
             return _name_match
 
         # Try type filter match
         _filter_match = single(
-            [_handler for _handler in _handlers
+            [_handler for _handler in _exps
              if passes_filter(type(_handler).__name__, match)],
             catch=True)
         if _filter_match:
@@ -271,7 +271,7 @@ class BaseDCC:
 
         if catch:
             return None
-        raise ValueError(_handlers)
+        raise ValueError(_exps)
 
     def find_exporters(self, type_=None, filter_=None, profile=None):
         """Find render handlers for this dcc.
@@ -284,13 +284,15 @@ class BaseDCC:
         Returns:
             (CExporter list): installed export handlers
         """
-        _LOGGER.debug('FIND EXPORT HANDLERS %s', self._exporters)
+        _LOGGER.debug('FIND EXPORTERS %s', self._exporters)
+
         self._check_exporters()
+
         if not (is_pascal(type_) or type_ is None):
             raise ValueError(type_)
 
         # Build list
-        _handlers = []
+        _exps = []
         for _handler in self._exporters:
             if type_ and _handler.TYPE != type_:
                 _LOGGER.debug(
@@ -304,9 +306,9 @@ class BaseDCC:
                 continue
             if not passes_filter(_handler.NAME, filter_):
                 continue
-            _handlers.append(_handler)
+            _exps.append(_handler)
 
-        return sorted(_handlers)
+        return sorted(_exps)
 
     def _force_load(self, file_):
         """Force load the given scene.
@@ -477,9 +479,11 @@ class BaseDCC:
         Args:
             name (str): name of export handler to remove
         """
-        _handler = self.find_exporter(name, catch=True)
-        if _handler:
-            self._exporters.remove(_handler)
+        _LOGGER.debug('REMOVE EXPORT %s', name)
+        _exp = self.find_exporter(name, catch=True)
+        if _exp:
+            _LOGGER.debug(' - EXPORTER %s', _exp)
+            self._exporters.remove(_exp)
 
     def render(self, seq):
         """Render the current scene.

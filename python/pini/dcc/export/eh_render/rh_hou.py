@@ -3,6 +3,7 @@
 # pylint: disable=unused-argument
 
 import logging
+import operator
 
 import hou
 
@@ -25,6 +26,7 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
         '',
         'Renderable passes are identifed as Mantra/Redshift ROPs '
         'with a single deadline node attached.'])
+    ACTION = 'FarmRender'
 
     add_cameras = False
     add_range = False
@@ -44,8 +46,13 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
         _type = hou.nodeTypeCategories()['Driver'].nodeTypes()['deadline']
         _passes = []
         for _dl in _type.instances():
-            _LOGGER.debug(' - CHECKING %s', _dl)
+            if _dl.isBypassed():
+                continue
+            _LOGGER.debug(' - CHECKING DEADLINE %s', _dl)
             for _render in _dl.inputs():
+                if not _render:
+                    continue
+                _LOGGER.debug('   - CHECKING INPUT %s', _render)
                 try:
                     _pass = _CHouRenderPass(_render)
                 except ValueError as _exc:
@@ -88,7 +95,9 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
 
             # Execute submission
             _submit = _find_new_jobs(_submit_deadline_rops)
-            _deadlines = sorted({_pass.deadline for _pass in passes})
+            _deadlines = sorted(
+                {_pass.deadline for _pass in passes},
+                key=operator.methodcaller('path'))
             _LOGGER.info(' - DEADLINES %s', _deadlines)
             _jobs = _submit(_deadlines)
             if len(_jobs) == 1:

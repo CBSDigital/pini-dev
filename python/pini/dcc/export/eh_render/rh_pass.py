@@ -42,8 +42,11 @@ class CRenderPass:
             (QPixmap): icon
         """
         _out = self.to_output()
-        if _out:
-            return helper.output_to_icon(_out)
+        _work = pipe.CACHE.cur_work
+        if _out and _work:
+            return helper.output_to_icon(
+                _out, allow_missing=True, content_type='Render',
+                entity=_work.entity)
         return helper.obt_pixmap(_NO_WORK_ICON)
 
     def to_output(self, work=None):

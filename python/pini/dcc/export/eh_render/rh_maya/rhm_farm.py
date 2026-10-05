@@ -21,6 +21,7 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
 
     NAME = 'Maya Farm Render'
     ICON = farm.ICON
+    ACTION = 'FarmRender'
 
     LABEL = f'Renders the current scene to {farm.NAME}.'
 

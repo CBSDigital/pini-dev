@@ -176,7 +176,7 @@ def print_env(filter_=None, key_filter=None, val_filter=None):
         val_filter (str): apply val filter
     """
     _data = []
-    for _key, _val in os.environ.items():
+    for _key, _val in sorted(os.environ.items()):
         if filter_ and not passes_filter(f'{_key} {_val}', filter_):
             continue
         if key_filter and not passes_filter(_key, key_filter):

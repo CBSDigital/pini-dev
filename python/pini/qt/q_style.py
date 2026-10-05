@@ -24,6 +24,11 @@ ALTERNATE_BASE_COLOR = QtGui.QColor(46, 46, 46)
 SPREAD = 100 * BRIGHTNESS_SPREAD
 HIGHLIGHTEDTEXT_COLOR = BASE_COLOR.lighter(int(SPREAD * 2))
 
+_HOU_20_SS = """
+QTabBar::tab:selected { background: #5d5d5d; color: #ffffff; }
+QTabBar::tab:disabled { background: #2f2f2f; color: #6a6a6a; }
+"""
+
 _HOU_22_SS = """
 * { font-size: 9pt; }
 
@@ -160,7 +165,22 @@ def apply_base_style(widget):
     _ss = _find_base_ss()
     if _ss:
         widget.setStyleSheet(_ss)
+
+    if _apply_lyt_fix():
         _fix_lyt_margins(widget)
+
+
+def _apply_lyt_fix():
+    """Test whether layout fix needs to be applied.
+
+    Returns:
+        (bool): whether to apply layout fix
+    """
+    _ver = dcc.to_version()
+    if dcc.NAME == 'hou':
+        if _ver[0] >= 22:
+            return True
+    return False
 
 
 def _find_base_ss():
@@ -170,8 +190,11 @@ def _find_base_ss():
         (str|None): stylesheet (if any)
     """
     _ver = dcc.to_version()
-    if dcc.NAME == 'hou' and _ver[0] >= 22:
-        return _HOU_22_SS
+    if dcc.NAME == 'hou':
+        if _ver[0] >= 22:
+            return _HOU_22_SS
+        if _ver[0] >= 20:
+            return _HOU_20_SS
     return None
 
 

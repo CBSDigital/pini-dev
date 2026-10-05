@@ -105,7 +105,7 @@ class CRenderHandler(eh_base.CExporter):
                 _select.append(_pass)
             _items.append(_item)
         _LOGGER.debug(' - SELECT PASSES %s', _select)
-        self.ui.Passes.set_items(_items, select=_select)
+        self.ui.Passes.set_items(_items, select=_select, emit=True)
 
     def _callback__Passes(self):
         _sel_lyrs = self.ui.Passes.selected_datas()
@@ -114,6 +114,7 @@ class CRenderHandler(eh_base.CExporter):
             _ren = _pass in _sel_lyrs
             _LOGGER.debug(' - %s %d', _pass, _ren)
             _pass.set_renderable(_ren)
+        self.ui.Execute.setEnabled(bool(_sel_lyrs))
 
     def _context__Passes(self, menu):
         _lyr = self.ui.Passes.selected_data()

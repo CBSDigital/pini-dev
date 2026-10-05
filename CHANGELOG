@@ -1,3 +1,20 @@
+## [11.4.1] - Mon 2026-10-05 16:31
+### Summary
+ - Pini Helper:
+    - hou deadline render bugfix error on bad deadline node input (mcapton),
+    - hou deadline render bugfix error on multiple deadline nodes (mcapton/bshepperd),
+### Updated
+ - pini.dcc.find_exporters bugfix action match,
+ - pini.dcc.export hou render added output icons,
+ - pini.dcc.export render disable render button on no passes selected,
+ - pini.dcc.export CMayaFarmRender/CHouDeadlineRender applied ACTION as FarmRender,
+ - pini.dcc.export.CHouDeadlineRender ignore bypassed deadline nodes,
+ - pini.dcc.export.CHouDeadlineRender bugfix error on bad deadline connection,
+ - pini.dcc.export.CHouDeadlineRender bugfix error on multiple deadline nodes,
+ - pini.qt.apply_default_style aded hou-20 disabled tabs fix,
+ - pini.testing.print_env applied sorting,
+
+
 ## [11.4.0] - Mon 2026-10-05 09:32
 ### Summary
  - Sanity Check:
