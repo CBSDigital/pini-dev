@@ -84,7 +84,7 @@ def build_metadata(
     if checks_data:
         _data['sanity_check'] = checks_data
     elif run_checks:
-        _results, _update_settings = sanity_check.launch_export_ui(
+        _results = sanity_check.launch_export_ui(
             force=force, task=task, exporter=exporter)
         _data['sanity_check'] = _results
 

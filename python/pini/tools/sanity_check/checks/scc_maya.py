@@ -522,8 +522,22 @@ class CheckCacheables(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
+        _work = pipe.CACHE.cur_work
         for _cbl in self.update_progress(m_pipe.find_cacheables()):
-            self.write_log('Check cacheable %s', _cbl)
+            self.write_log('check cacheable %s', _cbl)
+            self.write_log(' - out %s', _cbl.output)
+            self.write_log(' - yml %s', _cbl.output.metadata_yml)
+
+            # Check metadata path len
+            _n_chrs = len(_cbl.output.metadata_yml.path)
+            if _n_chrs > 260:
+                self.add_fail(
+                    f'At {_n_chrs} characters the path to the metadata '
+                    f'file for cacheable "{_cbl.label}" exceeds the windows '
+                    'path limit of 260 - please pick a shorter namespace '
+                    f' ("{_cbl.label}") or tag ("{_work.tag}") for '
+                    'your scene')
+
             if isinstance(_cbl, m_pipe.CPCacheableCam):
                 self._check_cam(_cbl)
             elif isinstance(_cbl, m_pipe.CPCacheableSet):
