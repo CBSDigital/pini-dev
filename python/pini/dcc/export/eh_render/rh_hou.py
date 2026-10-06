@@ -19,7 +19,7 @@ _LOGGER = logging.getLogger(__name__)
 class CHouDeadlineRender(rh_base.CRenderHandler):
     """Render handler for managing deadline submission in houdini."""
 
-    NAME = 'Hou Deadline Render'
+    NAME = 'Deadline Render'
     ICON = deadline.ICON
     LABEL = '\n'.join([
         'Renders the current scene to deadline.',

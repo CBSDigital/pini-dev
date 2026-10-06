@@ -292,7 +292,8 @@ class SanityCheckUi(qt.CUiDialog):
         _fixes = 0
         _items = []
         for _fail in _fails:
-            _LOGGER.debug('   - ADDING FAIL %s', _fail)
+            _LOGGER.debug(
+                '   - ADDING FAIL has_fix=%d %s', bool(_fail.fix), _fail)
             check_heart()
             _item = scui_fail.SCUiFailItem(
                 list_view=self.ui.Fails, fail=_fail,

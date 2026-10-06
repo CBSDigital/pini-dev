@@ -1,3 +1,16 @@
+## [11.4.2] - Tue 2026-10-06 09:40
+### Summary
+ - Pini Helper:
+    - hide references without namespace (mkim),
+ - Sanity Check:
+    - maya check controls set + check for unnecessary skin clusters added better description for fails (blee),
+    - maya check render stats bugfix error on apply (blee),
+### Updated
+ - pini.dcc.MayaDCC.find_pipe_refs ignore refs w/o ns,
+ - pini.tools.sanity_check CheckCtrlsSet/FindUnneccessarySkinClusters better fail desc,
+ - pini.tools.sanity_check.CheckRenderStats bugfix error on apply,
+
+
 ## [11.4.1] - Mon 2026-10-05 16:31
 ### Summary
  - Pini Helper:

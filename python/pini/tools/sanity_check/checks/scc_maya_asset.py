@@ -273,7 +273,10 @@ class CheckCtrlsSet(core.SCMayaCheck):
         self.ctrls = cmds.sets(self.set, query=True) or []
         self.write_log('Found %d nodes', len(self.ctrls))
         if not self.ctrls:
-            self.add_fail(f'Empty ctrls set "{_name}" type')
+            self.add_fail(
+                f'The controls set "{_name}" is empty - please add your rig '
+                'controls to this set by middle-mouse dragging the nodes '
+                'in the outliner into it', node=self.set)
             return
         self.write_log('Checked set %s %s', _name, self.set)
 
@@ -341,7 +344,6 @@ class CheckRenderStats(core.SCMayaCheck):
         ]:
             _plug = geo.shp.plug[_attr]
             if _plug.get_val() != _val:
-                _val = {True: 'on', False: 'off'}[_plug.get_val()]
                 _msg = f'Bad render setting: "{_plug}" set to "{_val}"'
                 _fix = wrap_fn(_plug.set_val, _val)
                 self.add_fail(_msg, fix=_fix, node=geo)
@@ -573,9 +575,12 @@ class FindUnneccessarySkinClusters(core.SCMayaCheck):
                 continue
 
             _msg = (
-                f'Shape "{_geo.shp}" has a skinCluster with no blendShape '
-                f'and a single input joint - this can cause bloat in abcs '
-                f'and cause memory issues')
+                f'Mesh "{_geo.shp}" has a skin cluster with no blendShape '
+                f'and a single input joint. This can cause bloat in abcs '
+                'because skin clusters cause every vertex to be exported '
+                'on every frame (as if they are deforming), making for '
+                'large files and slow caching. It would better to use a '
+                'constraint or parenting to build the rig.')
             self.add_fail(_msg, node=_geo.shp)
 
 

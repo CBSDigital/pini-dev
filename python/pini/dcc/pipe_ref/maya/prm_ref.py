@@ -735,7 +735,7 @@ def find_reference_pipe_refs(selected=False):
     """
     _LOGGER.log(9, 'READ REFERENCE PIPE REFS')
 
-    _all_refs = pom.find_refs(selected=selected, allow_no_namespace=True)
+    _all_refs = pom.find_refs(selected=selected)
     _LOGGER.log(9, ' - FOUND %d REFS', len(_all_refs))
 
     _refs = []
