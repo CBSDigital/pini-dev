@@ -6,6 +6,7 @@ job/sequence/shot object.
 
 import logging
 import os
+import time
 
 from pini import dcc
 from pini.utils import (
@@ -69,6 +70,8 @@ class CPSettingsLevel(Dir):
     """Base class for any directory which can store settings."""
 
     _settings_parent = None
+    _settings = None
+    settings_build_t = None
 
     @property
     def settings_file(self):
@@ -91,25 +94,10 @@ class CPSettingsLevel(Dir):
         """
         _LOGGER.debug('READ SETTINGS %s', self)
 
-        _settings = {}
+        if self._settings is None or self.parent_settings_changed():
+            self._build_settings()
 
-        # Add parent settings
-        _parent_settings = None
-        if self._settings_parent:
-            _parent_settings = self._settings_parent.settings
-        else:
-            _parent_settings = to_default_settings()
-        for _key in ('icon', ):  # Some keys don't pass down
-            _parent_settings[_key] = None
-        _settings = merge_dicts(_settings, _parent_settings)
-        _LOGGER.debug(' - ADDED PARENT %s', _parent_settings)
-
-        # Add settings from this level
-        _this_settings = self._read_this_settings()
-        _settings = merge_dicts(_settings, _this_settings)
-        _LOGGER.debug(' - ADDED THIS %s', _settings)
-
-        return _settings
+        return self._settings
 
     def apply_token_mapping(self, data):
         """Apply token mapping defined in this entity's settings.
@@ -159,8 +147,31 @@ class CPSettingsLevel(Dir):
         for _bkp in _bkps:
             _bkp.delete(force=True)
 
+    def _build_settings(self):
+        """Build settings for this elem."""
+
+        self._settings = {}
+
+        # Add parent settings
+        _parent_settings = None
+        if self._settings_parent:
+            _parent_settings = self._settings_parent.settings
+        else:
+            _parent_settings = to_default_settings()
+        for _key in ('icon', ):  # Some keys don't pass down
+            _parent_settings[_key] = None
+        self._settings = merge_dicts(self._settings, _parent_settings)
+        _LOGGER.debug(' - ADDED PARENT %s', _parent_settings)
+
+        # Add settings from this level
+        _this_settings = self._build_this_settings()
+        self._settings = merge_dicts(self._settings, _this_settings)
+        _LOGGER.debug(' - ADDED THIS %s', self._settings)
+
+        self.settings_build_t = time.time()
+
     @cache_on_obj
-    def _read_this_settings(self, force=False):
+    def _build_this_settings(self, force=False):
         """Read settings at this level.
 
         NOTE: these are cached on first read.
@@ -178,6 +189,23 @@ class CPSettingsLevel(Dir):
             if _cb_settings:
                 _settings = merge_dicts(_settings, _cb_settings)
         return _settings
+
+    def parent_settings_changed(self):
+        """Test whether parent settings have changed.
+
+        Returns:
+            (bool): whether any settings in parent chain have changed
+        """
+        if not self._settings_parent:
+            return False
+        if not self._settings_parent.settings_build_t:
+            return False
+        assert self.settings_build_t
+        assert self._settings_parent.settings_build_t, (
+            f'Unbuilt settings on parent {self._settings_parent} ({self})')
+        if self.settings_build_t <= self._settings_parent.settings_build_t:
+            return True
+        return self._settings_parent.parent_settings_changed()
 
     def set_setting(self, **kwargs):
         """Set the value of the given setting at this level.
@@ -218,4 +246,5 @@ class CPSettingsLevel(Dir):
         _bkp = self.settings_file.to_bkp()
         self.settings_file.copy_to(_bkp, force=True)
 
-        self._read_this_settings(force=True)
+        self._settings = None
+        self._build_this_settings(force=True)

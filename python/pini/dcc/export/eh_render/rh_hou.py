@@ -88,6 +88,13 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
 
         if submit:
 
+            # Apply job name
+            _deadlines = sorted(
+                {_pass.deadline for _pass in passes},
+                key=operator.methodcaller('path'))
+            for _deadline in _deadlines:
+                _deadline.parm('dl_job_name').set(self.work.base)
+
             # Save scene to avoid deadline unsaved changes dialog
             hou.hipFile.save()
             assert not hou.hipFile.hasUnsavedChanges()
@@ -95,9 +102,6 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
 
             # Execute submission
             _submit = _find_new_jobs(_submit_deadline_rops)
-            _deadlines = sorted(
-                {_pass.deadline for _pass in passes},
-                key=operator.methodcaller('path'))
             _LOGGER.info(' - DEADLINES %s', _deadlines)
             _jobs = _submit(_deadlines)
             if len(_jobs) == 1:

@@ -1,3 +1,15 @@
+## [11.6.0] - Wed 2026-10-07 11:45
+### Summary
+ - Pini Helper:
+    - hou farm render force job name on submit,
+    - optimised to load faster,
+### Updated
+ - pini.utils.merge_dict optimized to avoid copy.deepcopy calls,
+ - pini.dcc.export.CHouDeadlineRender apply job name,
+ - pini.pipe.CPSettingsElem added caching to optimise helper launch,
+ - pini.testing.to_profiler added txt_file attr to decorator,
+
+
 ## [11.5.0] - Tue 2026-10-06 17:03
 ### Summary
  - Pini Helper:

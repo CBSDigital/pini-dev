@@ -134,6 +134,8 @@ def to_profiler(name='pini', edit=False):
 
         return _profile_func
 
+    _exec_func_in_profile.txt_file = File(_PROFILE_FILE_FMT.format(name=name))
+
     return _exec_func_in_profile
 
 

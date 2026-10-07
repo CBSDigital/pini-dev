@@ -297,20 +297,44 @@ def merge_dicts(dict_a, dict_b):
     for _key in _keys:
 
         if _key in dict_a and _key not in dict_b:
-            _val = copy.deepcopy(dict_a[_key])
+            _val = _merge_dicts_copy_val(dict_a[_key])
         elif _key in dict_b and _key not in dict_a:
-            _val = copy.deepcopy(dict_b[_key])
+            _val = _merge_dicts_copy_val(dict_b[_key])
         else:
             _val_a = dict_a[_key]
             _val_b = dict_b[_key]
             if isinstance(_val_a, dict) and isinstance(_val_b, dict):
                 _val = merge_dicts(_val_a, _val_b)
             else:
-                _val = copy.deepcopy(_val_b)
+                _val = _merge_dicts_copy_val(_val_b)
 
         _result[_key] = _val
 
     return _result
+
+
+def _merge_dicts_copy_val(val):
+    """Copy a dict value.
+
+    Implemeted this way to avoid many expensive copy.deepcopy calls.
+
+    Args:
+        val (any): value to copy
+
+    Returns:
+        (any): duplicated value
+    """
+    if val is None:
+        return None
+    if isinstance(val, (float, int, str, bool)):
+        return val
+    if isinstance(val, dict):
+        return copy.deepcopy(val)
+    if isinstance(val, list):
+        return list(val)
+    if isinstance(val, tuple):
+        return val
+    raise NotImplementedError(val)
 
 
 def nice_id(obj):
