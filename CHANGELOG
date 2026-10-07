@@ -1,3 +1,11 @@
+## [11.5.0] - Tue 2026-10-06 17:03
+### Summary
+ - Pini Helper:
+    - hou farm render bugfix error on submit (bshepperd),
+### Updated
+ - pini.farm.deadline.CDFarmJob.to_details restored,
+
+
 ## [11.4.3] - Tue 2026-10-06 15:33
 ### Summary
  - Sanity Check:

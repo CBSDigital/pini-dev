@@ -5,7 +5,7 @@ import logging
 
 from pini.utils import (
     build_cache_fmt, system, basic_repr, find_exe, File, strftime,
-    cache_result, abs_path)
+    cache_result, abs_path, cache_method_to_file)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,6 +53,41 @@ class CDFarmJob:
             (str): formatted time str
         """
         return strftime(fmt, self.ctime)
+
+    def to_details(self, force=False):
+        """Obtain details for this job.
+
+        Args:
+            force (bool): force reread from deadline
+
+        Returns:
+            (dict): job details
+        """
+        _lines = self._read_details_str(force=force).split('\n')
+        _data = {}
+        for _line in _lines:
+            _line = _line.strip()
+            if ':' not in _line:
+                continue
+            _key, _val = _line.split(':', 1)
+            _data[_key] = _val
+        return _data
+
+    @cache_method_to_file
+    def _read_details_str(self, force=False):
+        """Read details for this job.
+
+        Args:
+            force (bool): force reread from deadline
+
+        Returns:
+            (str): details
+        """
+        _cmds = [
+            find_exe('deadlinecommand'), '-GetJobDetails', self.uid]
+        _LOGGER.info(' - READ JOB METADATA %s', self.uid)
+        _LOGGER.info(' - CACHE FMT %s', self.cache_fmt)
+        return system(_cmds, verbose=1)
 
     @cache_result
     def to_log(self, force=False):
