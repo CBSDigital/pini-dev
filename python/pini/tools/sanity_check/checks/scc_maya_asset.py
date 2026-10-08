@@ -22,7 +22,7 @@ class CheckAssetHierarchy(core.SCMayaCheck):
     """Check scene has a single top node matching a given name."""
 
     action_filter = 'Publish -LookdevPublish -SelectionPublish'
-    task_filter = '-lookdev'
+    task_filter = 'model rig'
     sort = 30
 
     def run(self, req_nodes=None):

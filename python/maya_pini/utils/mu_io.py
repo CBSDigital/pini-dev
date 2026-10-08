@@ -10,7 +10,7 @@ from maya import cmds, mel
 from pini import icons
 from pini.utils import File, wrap_fn, Seq, TMP
 
-from . import mu_dec, mu_misc
+from . import mu_dec, mu_misc, mu_eval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,32 +94,48 @@ def load_scene(
     if not _file.exists():
         raise OSError(f'Missing file {_file}')
 
-    # Check plugins
+    # Fbx load is safer as import
+    _kwargs = {'ignoreVersion': True, 'prompt': False, 'force': True}
     if _file.extn == 'fbx':
+
         cmds.loadPlugin('fbxmaya', quiet=True)
 
-    _kwargs = {}
-    if not load_refs:
-        _kwargs['loadReferenceDepth'] = 'none'
-    try:
-        cmds.file(_file.path, open=True, force=True, prompt=False,
-                  ignoreVersion=True, **_kwargs)
-    except RuntimeError as _exc:
+        # Load file
+        cmds.file(new=True, force=True)
+        mu_eval.process_deferred_events()
+        cmds.file(_file.path, i=True, type='FBX', **_kwargs)
+        mu_eval.process_deferred_events()
 
-        # Print error
-        _LOGGER.info('ERROR LOADING SCENE %s', _file.path)
-        _LOGGER.info('######### LOAD ERROR START #########')
-        print()
-        print(str(_exc).strip())
-        print()
-        _LOGGER.info('######### LOAD ERROR END #########')
+        # Update filename
+        cmds.file(rename=_file.path)
+        cmds.file(modified=False)
+        mel.eval('updateWindowTitle')
 
-        # Notify
-        _tail = str(_exc).strip().rsplit('\n', 1)[-1]
-        qt.notify(
-            f'Maya errored loading this file:\n\n{_file.path}\n\n{_tail}\n\n'
-            f'See the script editor for more details.',
-            title='Load error', icon=icons.find('Hot Pepper'), verbose=0)
+    # Otherwise load regular scene
+    else:
+
+        if not load_refs:
+            _kwargs['loadReferenceDepth'] = 'none'
+
+        try:
+            cmds.file(_file.path, open=True, **_kwargs)
+        except RuntimeError as _exc:
+
+            # Print error
+            _LOGGER.info('ERROR LOADING SCENE %s', _file.path)
+            _LOGGER.info('######### LOAD ERROR START #########')
+            print()
+            print(str(_exc).strip())
+            print()
+            _LOGGER.info('######### LOAD ERROR END #########')
+
+            # Notify
+            _tail = str(_exc).strip().rsplit('\n', 1)[-1]
+            qt.notify(
+                f'Maya errored loading this file:\n\n{_file.path}'
+                f'\n\n{_tail}\n\n'
+                f'See the script editor for more details.',
+                title='Load error', icon=icons.find('Hot Pepper'), verbose=0)
 
     if _revert:
         _revert()

@@ -1,3 +1,20 @@
+## [11.7.0] - Thu 2026-10-08 08:44
+### Summary
+ - Pini Helper:
+    - better stability on load fbx scene,
+ - Sanity Check:
+    - maya bugfix check aovs + check asset hierarchy showing up in anim task (mkim),
+    - cache cacheables bugfix two fails selecting same name,
+### Updated
+ - pini.tools.sanity_check better handing for non-modal export ui,
+ - pini.tools.sanity_check.CheckAOVs applied light filter,
+ - pini.tools.sanity_check relaxed check shp to avoid name clash,
+ - pini.export.CExporterUI.build_push_btn allow width as None for full stretch,
+ - pini.export.CExporterUI.add_exec_btn added add_sanity_check opt,
+ - pini.export.CExporterUI.add_push_btn uses lyt + added add_elems arg,
+ - maya_pini.utils.load_scene apply safe load fbx,
+
+
 ## [11.6.0] - Wed 2026-10-07 11:45
 ### Summary
  - Pini Helper:

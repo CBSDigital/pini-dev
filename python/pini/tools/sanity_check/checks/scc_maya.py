@@ -524,6 +524,7 @@ class CheckCacheables(core.SCMayaCheck):
         """Run this check."""
         _work = pipe.CACHE.cur_work
         for _cbl in self.update_progress(m_pipe.find_cacheables()):
+
             self.write_log('check cacheable %s', _cbl)
             self.write_log(' - out %s', _cbl.output)
             self.write_log(' - yml %s', _cbl.output.metadata_yml)

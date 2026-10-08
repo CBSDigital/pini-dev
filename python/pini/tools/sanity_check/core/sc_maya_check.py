@@ -235,7 +235,7 @@ class SCMayaCheck(sc_check.SCCheck):
         _LOGGER.debug(' - CUR SHP %s', _cur_shp)
         _correct_shp = f'{_node.to_clean()}Shape'
         _LOGGER.debug(' - COR SHP %s', _correct_shp)
-        if _cur_shp != _correct_shp:
+        if not _cur_shp.startswith(_correct_shp):
 
             _LOGGER.debug(' - SHP NODE %s', _node.shp)
 
@@ -297,8 +297,9 @@ def _fix_bad_shape(cur_shp, new_shp):
             _LOGGER.debug('   - NEW NAME %s', _new_name)
             _node.rename(_new_name)
 
-    # Flag unhandled fail
+    # Handle trg already exists as legit node
+    _new_shp = new_shp
     if cmds.objExists(new_shp):
-        raise RuntimeError(f'Failed to free shape name {new_shp}')
+        _new_shp = to_unique(new_shp)
 
-    cmds.rename(cur_shp, new_shp)
+    cmds.rename(cur_shp, _new_shp)

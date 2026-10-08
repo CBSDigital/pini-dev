@@ -3,8 +3,9 @@
 NOTES:
 
  - For clarity, the following method prefixes are used:
-     - add: create an element in a horizontal layout (eg. add_line_edit)
+
      - build: create a single element (eg. build_icon_btn)
+     - add: create an element in a horizontal layout (eg. add_line_edit)
      - assemble: create a group of elements (eg. assemble_footer_elems)
 
  - Separators should be added at the start of blocks, not at the end
@@ -160,6 +161,7 @@ class CExporterUI(qt.CUiContainer):
         _h_lyt.addWidget(elem)
 
         if stretch:
+            _LOGGER.debug('     - APPLY STRETCH %s', _h_lyt)
             _h_lyt.addStretch()
         for _elem in add_elems:
             _h_lyt.addWidget(_elem)
@@ -266,7 +268,12 @@ class CExporterUI(qt.CUiContainer):
         _btn.setObjectName(name)
         _label = label or to_nice(name).capitalize()
         _btn.setText(_label)
-        _btn.setFixedSize(qt.to_size(width, 20))
+        if width:
+            _btn.setFixedSize(qt.to_size(width, 20))
+        else:
+            _policy = _btn.sizePolicy()
+            _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
+            _btn.setSizePolicy(_policy)
         _btn.clicked.connect(callback)
         setattr(self, name, _btn)
         return _btn
@@ -551,30 +558,48 @@ class CExporterUI(qt.CUiContainer):
         else:
             raise NotImplementedError(action)
 
-    def add_exec_btn(self, label):
-        """Build execute button.
+    def add_exec_btn(self, label, add_sanity_check=False):
+        """Add the execute button element in the ui.
 
         Args:
             label (str): label for button
+            add_sanity_check (bool): add sanity check button
+                next to execute
         """
-        self.add_push_btn(
-            'Execute', label, callback=self.exporter.exec_from_ui)
+        _LOGGER.debug('ADD EXEC BTN')
 
-    def add_push_btn(self, name, label=None, callback=None):
-        """Add push button element.
+        _add_elems = []
+
+        # Add sanity check button
+        if add_sanity_check:
+            from pini.tools import sanity_check
+            _callback = wrap_fn(
+                sanity_check.launch_export_ui, exporter=self.exporter,
+                modal=False, close_on_success=False)
+            _sc_btn = self.build_icon_btn(
+                'LaunchSanityCheck', icon=sanity_check.ICON,
+                callback=_callback, tooltip='Launch sanity check')
+            _add_elems.append(_sc_btn)
+
+        self.add_push_btn(
+            'Execute', label, callback=self.exporter.exec_from_ui,
+            add_elems=_add_elems)
+
+    def add_push_btn(self, name, label=None, callback=None, add_elems=()):
+        """Add a push button element line in the ui.
 
         Args:
             name (str): element name
             label (str): element label
             callback (fn): button callback
+            add_elems (tuple): add elements to button layout
         """
-        _btn = QtWidgets.QPushButton(self.parent)
-        _btn.setText(label or name)
-        _btn.setObjectName(name)
-        setattr(self, name, _btn)
-        if callback:
-            _btn.clicked.connect(callback)
-        self.layout.addWidget(_btn)
+        _LOGGER.debug('ADD PUSH BTN')
+        _btn = self.build_push_btn(
+            name=name, label=label, callback=callback, width=None)
+
+        self._setup_elem_lyt(
+            _btn, add_elems=add_elems, stretch=False, add_label=False)
 
     def add_separator(self, name=None):
         """Add a separator to the ui.

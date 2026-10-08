@@ -37,6 +37,10 @@ class TestSanityCheck(unittest.TestCase):
             'CheckAssetHierarchy', task='lookdev', catch=True)
         assert sanity_check.find_check(
             'CheckAssetHierarchy', task='lookdev', action='ModelPublish')
+        assert not sanity_check.find_check(
+            'CheckAssetHierarchy', task='anim', catch=True)
+        assert sanity_check.find_check(
+            'CheckAssetHierarchy', task='anim', action='ModelPublish')
 
         # Test CheckShaders/CheckLookdevShaders
         assert sanity_check.find_check(
@@ -59,7 +63,8 @@ class TestSanityCheck(unittest.TestCase):
         assert sanity_check.find_check(
             'CheckModelGeo', task='rig', action='ModelPublish', catch=True)
 
-        # Test FindUnneccessarySkinClusters check only applied under ScenePublish / rig
+        # Test FindUnneccessarySkinClusters check only applied under
+        # ScenePublish / rig
         assert sanity_check.find_check(
             'FindUnneccessarySkinClusters', action='RigPublish', catch=True)
         assert sanity_check.find_check(
@@ -68,11 +73,14 @@ class TestSanityCheck(unittest.TestCase):
             'FindUnneccessarySkinClusters', action='ModelPublish', task='model',
             catch=True)
 
-        # Test CheckAOVs - we only want this check to run on render in shots
+        # Test CheckAOVs - we only want this check to run on render in
+        # lighting shots
         assert sanity_check.find_check(
             'CheckAOVs', action='Render', profile='shots')
         assert not sanity_check.find_check(
             'CheckAOVs', action='Render', profile='asset', catch=True)
+        assert not sanity_check.find_check(
+            'CheckAOVs', task='anim', catch=True)
         assert sanity_check.find_check(
             'CheckAOVs', task='lighting', profile='shots')
         assert not sanity_check.find_check(

@@ -98,7 +98,7 @@ class SanityCheckUi(qt.CUiDialog):
                 self.ui.CancelAndClose,
                 self.ui.PublishSeparator,
         ]:
-            _elem.setVisible(self.mode != 'standalone')
+            _elem.setVisible(self.mode != 'standalone' and self.isModal())
 
     @property
     def check(self):

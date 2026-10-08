@@ -143,6 +143,7 @@ class CheckAOVs(SCMayaCheck):
 
     profile_filter = 'shot'
     action_filter = 'render'
+    task_filter = 'light'
     label = 'Check AOVs'
     sort = 40  # Before check render globals
 
