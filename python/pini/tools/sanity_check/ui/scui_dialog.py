@@ -46,6 +46,10 @@ class SanityCheckUi(qt.CUiDialog):
         sanity_check.DIALOG = self
 
         self.mode = mode
+        self.modal = modal
+        if self.modal is None:
+            self.modal = self.mode != 'standalone'
+
         self.task = task or pipe.cur_task(fmt='pini')
         self.close_on_success = close_on_success
         if self.close_on_success is None:
@@ -68,19 +72,14 @@ class SanityCheckUi(qt.CUiDialog):
         self.ui.Checks.redraw()
         self.ui.TaskLabel.redraw()
 
-        # Apply modal
-        _modal = modal
-        if _modal is None:
-            _modal = self.mode != 'standalone'
-        self.setModal(_modal)
-
+        self.setModal(self.modal)
         self.show()
         self.load_settings()
 
         if run:
             self._callback__RunChecks(force=force)
 
-        if _modal and self.isVisible():
+        if self.modal and self.isVisible():
             _LOGGER.debug(' - EXEC MODAL force=%d', force)
             self.exec_()
 
@@ -98,7 +97,7 @@ class SanityCheckUi(qt.CUiDialog):
                 self.ui.CancelAndClose,
                 self.ui.PublishSeparator,
         ]:
-            _elem.setVisible(self.mode != 'standalone' and self.isModal())
+            _elem.setVisible(self.mode != 'standalone' and self.modal)
 
     @property
     def check(self):
