@@ -12,6 +12,7 @@ from pini.utils import abs_path, to_str, wrap_fn
 from .d_base import BaseDCC
 
 _LOGGER = logging.getLogger(__name__)
+_META_CONTEXT = 'pini'
 
 
 class SubstancePainterDCC(BaseDCC):
@@ -139,7 +140,12 @@ class SubstancePainterDCC(BaseDCC):
         Returns:
             (any): data which has been stored in the scene
         """
-        return None
+        _meta = _to_metadata()
+        if not _meta or key not in _meta.list():
+            return None
+        _val = _meta.get(key)
+        _LOGGER.debug('GET SCENE DATA %s %s', key, _val)
+        return _val
 
     def _read_version(self):
         """Read application version tuple.
@@ -159,6 +165,14 @@ class SubstancePainterDCC(BaseDCC):
             key (str): name of data to store
             val (any): value of data to store
         """
+        _meta = _to_metadata()
+        if not _meta:
+            _LOGGER.debug(' - SET METADATA FAILED, NO PROJ OPEN')
+            return
+        if val is not None and not isinstance(val, (bool, int, float, str, list, dict)):
+            raise TypeError(f'Unsupported scene data type {key} {type(val).__name__}')
+        _LOGGER.debug('SET SCENE DATA %s %s', key, val)
+        _meta.set(key, val)
 
     def t_frame(self, class_=float):  # pylint: disable=unused-argument
         """Obtain current frame.
@@ -197,3 +211,10 @@ class SubstancePainterDCC(BaseDCC):
         if not self.cur_file():
             return False
         return project.needs_saving()
+
+
+def _to_metadata():
+    """Obtain pini metadata store for the current project (None if no project)."""
+    if not project.is_open():
+        return None
+    return project.Metadata(_META_CONTEXT)

@@ -6,14 +6,13 @@ from maya import cmds
 
 from pini import pipe
 from pini.dcc import export
-from pini.utils import single, wrap_fn, plural, check_heart
+from pini.utils import single, wrap_fn, plural
 
 from maya_pini import ref, open_maya as pom, m_pipe
 from maya_pini.utils import (
     DEFAULT_NODES, del_namespace, to_clean, add_to_set, to_long)
 
 from .. import core, utils
-from . import scc_maya
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -248,65 +247,6 @@ class CheckCacheSet(core.SCMayaCheck):
         return False
 
 
-class CheckCtrlsSet(core.SCMayaCheck):
-    """Check rig has controls set."""
-
-    task_filter = 'rig'
-    depends_on = (scc_maya.CheckForNamespace, )
-
-    def run(self):
-        """Run this check."""
-
-        # Check for set
-        _name = m_pipe.find_ctrls_set(mode='name')
-        if not cmds.objExists(_name):
-            _fix = wrap_fn(cmds.sets, name=_name, empty=True)
-            self.add_fail(f'Missing ctrls set "{_name}"', fix=_fix)
-            return
-
-        self.set = pom.CNode(_name)
-        _type = self.set.object_type()
-        self.write_log('Found set %s %s', self.set, _type)
-        if _type != 'objectSet':
-            self.add_fail('Bad ctrls set "{_name}" type "{_type}"')
-            return
-        self.ctrls = cmds.sets(self.set, query=True) or []
-        self.write_log('Found %d nodes', len(self.ctrls))
-        if not self.ctrls:
-            self.add_fail(
-                f'The controls set "{_name}" is empty - please add your rig '
-                'controls to this set by middle-mouse dragging the nodes '
-                'in the outliner into it', node=self.set)
-            return
-        self.write_log('Checked set %s %s', _name, self.set)
-
-        self._check_ctrls_for_namespace()
-
-    def _check_ctrls_for_namespace(self):
-        """Flag controls using namespace.
-
-        This is disabled if this asset has already been published to avoid
-        losing animation in scenes using old versions of a rig.
-        """
-        self.write_log('check ctrls for namespace')
-        _work = pipe.CACHE.obt_cur_work()
-        _pubs = _work.work_dir.find_outputs(type_='publish', tag=_work.tag)
-        if _pubs:
-            self.write_log(' - disabled as publishes found')
-            return
-        for _ctrl in self.ctrls:
-            _ctrl = pom.cast_node(_ctrl)
-            if _ctrl.is_referenced():
-                continue
-            if not _ctrl.namespace:
-                continue
-            _msg = f'Control "{_ctrl}" is using a namespace'
-            _fix = None
-            if not _ctrl.is_referenced():
-                _fix = wrap_fn(cmds.rename, _ctrl, to_clean(_ctrl))
-            self.add_fail(_msg, fix=_fix, node=_ctrl)
-
-
 class CheckRenderStats(core.SCMayaCheck):
     """Check render stats section on shape nodes."""
 
@@ -525,63 +465,6 @@ class CheckForCameras(core.SCMayaCheck):
             if str(_cam).strip('|') in DEFAULT_NODES:
                 continue
             self.add_fail(f'Camera {_cam} inside asset hierarchy', node=_cam)
-
-
-class FindUnneccessarySkinClusters(core.SCMayaCheck):
-    """Find skin clusters which are not needed.
-
-    If a skin cluster is used where a constraint can be used, this can
-    cause bloat on AbcExport. The exporter sees the skin cluster and
-    determines that it needs to export the geo as a point cloud rather
-    than just exporting transform information. This means that every
-    point position is exported on every frame, which can cause memory
-    issues and unnecessarily large abcs.
-    """
-
-    task_filter = 'rig'
-    action_filter = 'RigPublish'
-    depends_on = (CheckCacheSet, )
-
-    def run(self):
-        """Run this check."""
-
-        _geos = utils.read_cache_set_geo()
-        if not _geos:
-            self.add_fail('No geo found')
-
-        for _geo in self.update_progress(_geos):
-
-            self.write_log('Checking %s', _geo)
-            check_heart()
-
-            # Ignore nodes with blendShape
-            _hist = cmds.listHistory(
-                _geo.shp, pruneDagObjects=True, interestLevel=2) or []
-            _blend = [_node for _node in _hist
-                      if cmds.objectType(_node) == 'blendShape']
-            if _blend:
-                continue
-
-            # If skin cluster, check has more than one joint input
-            _skin = single(
-                cmds.listConnections(
-                    _geo.shp, type='skinCluster', destination=False) or [],
-                catch=True)
-            if not _skin:
-                continue
-            _jnts = sorted(set(cmds.listConnections(
-                _skin, type='joint', destination=False)))
-            if len(_jnts) != 1:
-                continue
-
-            _msg = (
-                f'Mesh "{_geo.shp}" has a skin cluster with no blendShape '
-                f'and a single input joint. This can cause bloat in abcs '
-                'because skin clusters cause every vertex to be exported '
-                'on every frame (as if they are deforming), making for '
-                'large files and slow caching. It would better to use a '
-                'constraint or parenting to build the rig.')
-            self.add_fail(_msg, node=_geo.shp)
 
 
 class CheckUVs(core.SCMayaCheck):

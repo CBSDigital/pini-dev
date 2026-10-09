@@ -16,6 +16,7 @@ import logging
 
 from pini import qt, pipe, dcc, icons
 from pini.qt import QtWidgets, QtGui, Qt
+from pini.tools import error
 from pini.utils import (
     to_nice, to_snake, str_to_ints, ints_to_str, check_heart, wrap_fn, EMPTY)
 
@@ -274,7 +275,7 @@ class CExporterUI(qt.CUiContainer):
             _policy = _btn.sizePolicy()
             _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
             _btn.setSizePolicy(_policy)
-        _btn.clicked.connect(callback)
+        _btn.clicked.connect(error.catch(callback))
         setattr(self, name, _btn)
         return _btn
 

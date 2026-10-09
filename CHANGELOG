@@ -1,3 +1,27 @@
+## [11.8.0] - Fri 2026-10-09 12:37
+### Summary
+ - Pini Helper:
+    - spainter publish textures added res option (blee),
+    - spainter bugfix error Preview Outputs (blee),
+ - Sanity Check:
+    - maya check cacheables flag long output path has rename option,
+    - maya added blendshapes check to flag unused blendshapes (blee),
+### Updated
+ - pini.dcc.BaseDCC.clear_terminal applied basic print empty lines from HouDCC,
+ - pini.dcc.SubstancePainterDCC implemented get/set scene data,
+ - pini.dcc.export.CExporterUI.add_push_btn wrap callback in error handler,
+ - pini.dcc.export.CSPainterTexturePublish added texture res option,
+ - pini.dcc.export.CSPainterTexturePublish bugfix raise output dialog,
+ - pini.dcc.CCacheable output_name/label as properties to allow rename,
+ - pini.tools.sanity_check.CacheCacheables flag long output path added node/rename,
+ - pini.tools.sanity_check.CheckBlendshapes added,
+ - pini.tools.helper.output_to_icon added src_ref arg,
+ - maya_pini.utils.load_scene load fbx included in try/except,
+ - maya_pini.m_pipe.CPCacheable.to_geo lose extn arg,
+ - spainter_pini.p_pipe.export_textures renamed arg size -> res,
+ - spainter_pini.p_pipe.export_textures bugfix res not being applied,
+
+
 ## [11.7.1] - Thu 2026-10-08 10:23
 ### Summary
  - Sanity Check:

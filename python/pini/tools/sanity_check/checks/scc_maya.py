@@ -532,12 +532,19 @@ class CheckCacheables(core.SCMayaCheck):
             # Check metadata path len
             _n_chrs = len(_cbl.output.metadata_yml.path)
             if _n_chrs > 260:
-                self.add_fail(
+                _msg = (
                     f'At {_n_chrs} characters the path to the metadata '
                     f'file for cacheable "{_cbl.label}" exceeds the windows '
-                    'path limit of 260 - please pick a shorter namespace '
-                    f' ("{_cbl.label}") or tag ("{_work.tag}") for '
+                    f'path limit of 260 - please pick a shorter namespace '
+                    f'("{_cbl.label}" - {len(_cbl.label)} characters) or tag '
+                    f'("{_work.tag} - {len(_work.tag)} characters") for '
                     'your scene')
+                _fail = core.SCFail(_msg, node=_cbl.top_node)
+                _fail.add_action(
+                    'Rename',
+                    wrap_fn(_rename_cbl, _cbl, exporter=self.exporter),
+                    is_fix=True)
+                self.add_fail(_fail)
 
             if isinstance(_cbl, m_pipe.CPCacheableCam):
                 self._check_cam(_cbl)
@@ -622,6 +629,18 @@ class CheckCacheables(core.SCMayaCheck):
                     _nodes_s = ', '.join([str(_node) for _node in _nodes])
                     self.add_fail(
                         f'Set "{_cache_set}" has name clash: {_nodes_s}')
+
+
+def _rename_cbl(cbl, exporter):
+    """Rename cacheable + refresh list in ui (if applicable).
+
+    Args:
+        cbl (CCacheable): cacheable to rename
+        exporter (CExporter): cacheable's exporter
+    """
+    cbl.rename()
+    if exporter.ui:
+        exporter.ui.CacheablesRefresh.click()
 
 
 @cache_result

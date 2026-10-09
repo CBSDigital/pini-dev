@@ -64,36 +64,37 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
         _labels = [_preset.split('/')[-1] for _preset in _presets]
         self.ui.add_combo_box(
             name='Preset', items=_labels, val=_default, data=_presets)
+        _ress = [2 ** _idx for _idx in range(7, 14)]
+        _labels = [str(_res) for _res in _ress]
+        self.ui.add_combo_box(
+            name='Res', items=_labels, val=4096, label='Resolution',
+            data=_ress)
 
         self.ui.add_check_box(
             name='Browser', val=False, label='Open texture dir in browser')
 
     def _raise_outputs_dialog(self):
         """Raise texture outputs dialog."""
+        _LOGGER.debug('RAISE OUTPUT DIALOG')
+        _res = self.ui.Res.selected_data()
+        _LOGGER.debug(' - RES %s', _res)
         _raise_outputs_dialog(
             sets=self.ui.Sets.selected_texts(),
-            parent=self.ui.parent)
+            res=_res, parent=self.ui.parent)
 
     def export(
-            self, notes=None, snapshot=True, version_up=True,
-            progress=True, browser=False, sets=None,
-            sanity_check_=True, preset=None, force=False):
+            self, res=4096, browser=False, sets=None, preset=None, **kwargs):
         """Execute texture publish.
 
         Args:
-            notes (str): publish notes
-            snapshot (bool): take snapshot on publish
-            version_up (bool): version up on publish
-            progress (bool): show publish progress
+            res (int): output resolution in pixels
             browser (bool): open export folder in brower
             sets (str list): export only the given texture sets
-            sanity_check_ (bool): apply sanity checks
             preset (str): apply export preset
-            force (bool): replace existing without confirmation
         """
         return p_pipe.export_textures(
-            work=self.work, browser=browser, force=force, sets=sets,
-            progress=self.progress, preset=preset)
+            work=self.work, browser=browser, sets=sets,
+            progress=self.progress, preset=preset, res=res)
 
     def _update_pipe_cache(self, update_pub_cache=False, **kwargs):
         """Update pipeline cache.
@@ -162,21 +163,23 @@ class _OutputsDialog(QtWidgets.QDialog):
                 self.tree_widget.setColumnWidth(_idx, _width + 5)
 
 
-def _raise_outputs_dialog(sets=None, parent=None):
+def _raise_outputs_dialog(sets=None, parent=None, res=4096):
     """Raise texture outputs dialog.
 
     Args:
         sets (str list): only display these sets
         parent (QWidget): parent widget
+        res (int): output resolution
     """
 
     # Build export data
     _exports = {}
-    for _set, _files in p_pipe.to_export_data(sets=sets).items():
+    for _set, _files in p_pipe.to_export_data(
+            sets=sets, res=res).items():
         _set_items = []
         for _file_data in _files:
-            _res = _file_data['res']
-            _bits = _file_data['bits']
+            _res = _file_data.get('res', (res, res))
+            _bits = _file_data.get('bits', 8)
             _data = (
                 _file_data['filename'],
                 f'{_res}x{_res}',

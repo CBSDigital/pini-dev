@@ -23,25 +23,40 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
             exporter (CExporter): exporter running this cache operation
             extn (str): cache output extension
         """
-        _src_ref = pipe.CPOutputFile(ref.path)
+        _src_ref = pipe.CACHE.obt_output(ref.path, catch=True)
         if not _src_ref:
             raise ValueError(_src_ref)
         if _src_ref.type_ != 'publish':
             raise ValueError(_src_ref)
         self.ref = ref
+        self.extn = extn
         if not self.to_geo():
             raise ValueError('No export geo')
-        _output_name = ref.namespace.split(':')[-1]
-
-        if _output_name != ref.namespace:
-            _label = f'{_output_name} ({to_namespace(ref.namespace)})'
-        else:
-            _label = _output_name
 
         super().__init__(
             node=self.ref, src_ref=_src_ref, extn=extn, top_node=ref.top_node,
-            output_name=_output_name, label=_label, ref=ref, output_type=extn,
+            ref=ref, output_type=extn,
             exporter=exporter, content_type=f'Pipe{extn.capitalize()}')
+
+    @property
+    def label(self):
+        """Obtain label for this cacheable.
+
+        Returns:
+            (str): label
+        """
+        if self.output_name != self.ref.namespace:
+            return f'{self.output_name} ({to_namespace(self.ref.namespace)})'
+        return self.output_name
+
+    @property
+    def output_name(self):
+        """Obtain output name for this cacheable.
+
+        Returns:
+            (str): output name
+        """
+        return self.ref.namespace.split(':')[-1]
 
     def _set_name(self, name):
         """Rename this cacheable.
@@ -68,21 +83,18 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
         return m_pipe.read_cache_set(
             set_=self.ref.to_node('cache_SET'), mode=mode)
 
-    def to_geo(self, extn='abc'):  # pylint: disable=unused-argument
+    def to_geo(self):
         """Get list of geo to cache from this reference.
-
-        Args:
-            extn (str): output extension
 
         Returns:
             (str list): geo nodes
         """
-        if extn == 'abc':
+        if self.extn == 'abc':
             _cache_set = self.ref.to_node('cache_SET', fmt='str')
             if not cmds.objExists(_cache_set):
                 return []
             return cmds.sets(_cache_set, query=True)
-        if extn == 'fbx':
+        if self.extn == 'fbx':
             return self.node.top_node
         raise NotImplementedError
 
@@ -93,4 +105,7 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
             (str): path to icon
         """
         from pini.tools import helper
-        return helper.output_to_icon(self.src_ref)
+        return helper.output_to_icon(
+            self.output, allow_missing=True, entity=self.src_ref.entity,
+            content_type=f'Pipe{self.extn.capitalize()}',
+            src_ref=self.src_ref)

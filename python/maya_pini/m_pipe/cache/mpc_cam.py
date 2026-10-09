@@ -5,7 +5,7 @@ import re
 
 from maya import cmds
 
-from pini import icons, dcc
+from pini import icons, dcc, pipe
 from pini.utils import single, to_seq
 
 from maya_pini import open_maya as pom
@@ -36,24 +36,33 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         """
         self.cam = cam
 
-        _src_ref = _output_name = None
+        _ref = _src_ref = None
         if cmds.referenceQuery(self.cam, isNodeReferenced=True):
-            _ns = to_namespace(self.cam)
-            _src_ref = pom.find_ref(_ns)
-            if not _src_ref:  # Could be nested in which case ignore
-                raise ValueError(f'Failed to find reference {self.cam}')
-            _output_name = _ns
-        else:
-            _output_name = to_clean(self.cam)
+            _ns = to_namespace(cam)
+            _ref = pom.find_ref(_ns)
+            if not _ref:  # Could be nested in which case ignore
+                raise ValueError(f'Failed to find reference {cam}')
+        if _ref:
+            _src_ref = pipe.CACHE.obt_output(_ref.path)
 
-        self._tmp_ns = f':tmp_{_output_name}'
+        super().__init__(
+            ref=_ref, node=cam, output_type='cam', extn=extn, src_ref=_src_ref,
+            exporter=exporter, content_type=f'Cam{extn.capitalize()}')
+
+        self._tmp_ns = f':tmp_{self.output_name}'
         self._tmp_cam = f'{self._tmp_ns}:CAM'
         self._img_plane_data = {}
 
-        super().__init__(
-            src_ref=_src_ref, node=cam, output_name=_output_name,
-            output_type='cam', extn=extn, exporter=exporter,
-            content_type=f'Cam{extn.capitalize()}')
+    @property
+    def output_name(self):
+        """Obtain output name for this cacheable.
+
+        Returns:
+            (str): output name
+        """
+        if self.ref:
+            return self.ref.namespace
+        return to_clean(self.cam)
 
     def build_metadata(self):
         """Obtain metadata dict for this cacheable.
@@ -167,24 +176,21 @@ class CPCacheableCam(mpc_cacheable.CPCacheable):  # pylint: disable=too-many-ins
         if self.ref:
             self.ref.set_namespace(name)
         else:
-            pom.CCamera(self.node).rename(name)
+            self.cam = pom.CCamera(self.node).rename(name)
 
     def select_in_scene(self):
         """Select this camera in the current scene."""
         cmds.select(self.cam)
 
-    def to_geo(self, extn='abc'):
+    def to_geo(self):
         """Get list of nodes to cache from this camera.
-
-        Args:
-            extn (str): output extension
 
         Returns:
             (str list): geo nodes
         """
-        if extn == 'abc':
+        if self.extn == 'abc':
             return [self._tmp_cam]
-        if extn == 'fbx':
+        if self.extn == 'fbx':
             return self.cam
         raise NotImplementedError
 

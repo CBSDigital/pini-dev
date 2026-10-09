@@ -94,52 +94,62 @@ def load_scene(
     if not _file.exists():
         raise OSError(f'Missing file {_file}')
 
-    # Fbx load is safer as import
+    # Exec load scene
+    try:
+        _exec_load_scene(_file, load_refs=load_refs)
+    except RuntimeError as _exc:
+
+        # Print error
+        _LOGGER.info('ERROR LOADING SCENE %s', _file.path)
+        _LOGGER.info('######### LOAD ERROR START #########')
+        print()
+        print(str(_exc).strip())
+        print()
+        _LOGGER.info('######### LOAD ERROR END #########')
+
+        # Notify
+        _tail = str(_exc).strip().rsplit('\n', 1)[-1]
+        qt.notify(
+            f'Maya errored loading this file:\n\n{_file.path}'
+            f'\n\n{_tail}\n\n'
+            f'See the script editor for more details.',
+            title='Load error', icon=icons.find('Hot Pepper'), verbose=0)
+
+    if _revert:
+        _revert()
+    _apply_auto_workspace_update(_file)
+
+
+def _exec_load_scene(file_, load_refs):
+    """Execute scene load.
+
+    Args:
+        file_ (File): file to load
+        load_refs (bool): load file references
+    """
     _kwargs = {'ignoreVersion': True, 'prompt': False, 'force': True}
-    if _file.extn == 'fbx':
+
+    # Fbx load is safer as import
+    if file_.extn == 'fbx':
 
         cmds.loadPlugin('fbxmaya', quiet=True)
 
         # Load file
         cmds.file(new=True, force=True)
         mu_eval.process_deferred_events()
-        cmds.file(_file.path, i=True, type='FBX', **_kwargs)
+        cmds.file(file_.path, i=True, type='FBX', **_kwargs)
         mu_eval.process_deferred_events()
 
         # Update filename
-        cmds.file(rename=_file.path)
+        cmds.file(rename=file_.path)
         cmds.file(modified=False)
-        mel.eval('updateWindowTitle')
+
+        return
 
     # Otherwise load regular scene
-    else:
-
-        if not load_refs:
-            _kwargs['loadReferenceDepth'] = 'none'
-
-        try:
-            cmds.file(_file.path, open=True, **_kwargs)
-        except RuntimeError as _exc:
-
-            # Print error
-            _LOGGER.info('ERROR LOADING SCENE %s', _file.path)
-            _LOGGER.info('######### LOAD ERROR START #########')
-            print()
-            print(str(_exc).strip())
-            print()
-            _LOGGER.info('######### LOAD ERROR END #########')
-
-            # Notify
-            _tail = str(_exc).strip().rsplit('\n', 1)[-1]
-            qt.notify(
-                f'Maya errored loading this file:\n\n{_file.path}'
-                f'\n\n{_tail}\n\n'
-                f'See the script editor for more details.',
-                title='Load error', icon=icons.find('Hot Pepper'), verbose=0)
-
-    if _revert:
-        _revert()
-    _apply_auto_workspace_update(_file)
+    if not load_refs:
+        _kwargs['loadReferenceDepth'] = 'none'
+    cmds.file(file_.path, open=True, **_kwargs)
 
 
 def _run_scanner():

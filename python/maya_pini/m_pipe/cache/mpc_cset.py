@@ -58,11 +58,8 @@ class CPCacheableSet(mpc_cacheable.CPCacheable):
         """Select this set in the current scene."""
         cmds.select(self.cache_set)
 
-    def to_geo(self, extn='abc'):  # pylint: disable=unused-argument
+    def to_geo(self):  # pylint: disable=unused-argument
         """Obtain list of geo in cache set.
-
-        Args:
-            extn (str): output extension
 
         Returns:
             (str list): geo

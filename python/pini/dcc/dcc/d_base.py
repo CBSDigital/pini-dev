@@ -96,6 +96,7 @@ class BaseDCC:
 
     def clear_terminal(self):
         """Clear current terminal or script editor (if applicable)."""
+        print('\n' * 5000 + '[Console cleared]')
 
     def create_ref(self, path, namespace, force=False):
         """Create a reference of the given path in the current scene.

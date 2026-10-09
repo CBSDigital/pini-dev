@@ -2,6 +2,7 @@
 
 import ctypes
 import logging
+import math
 import os
 import sys
 
@@ -46,7 +47,7 @@ def _exec_export_textures(pub_dir, cfg, browser=False, force=False):
 
 
 def export_textures(
-        work=None, browser=False, extn='png', size=4096, sets=None,
+        work=None, browser=False, extn='png', res=4096, sets=None,
         progress=None, preset=None, force=False):
     """Export textures from current scene.
 
@@ -54,7 +55,7 @@ def export_textures(
         work (CCPWork): work file
         browser (bool): open export folder in brower
         extn (str): texture image format
-        size (int): texture size (in pixels)
+        res (int): texture size (in pixels)
         sets (str list): export only the given texture sets
         progress (ProgressDialog): progress bar
         preset (str): apply export preset
@@ -68,16 +69,10 @@ def export_textures(
     # Find text template
     _work = work or pipe.CACHE.obt_cur_work()
     assert _work
-    _tmpl_name = 'texture_seq'
-    _tmpl = _work.job.find_template(_tmpl_name, dcc_='spainter', catch=True)
-    if not _tmpl:
-        raise RuntimeError(
-            f'No "{_tmpl_name}" template found in job "{_work.job.name}" - '
-            'unable to export textures')
-
+    _tmpl = _to_template(_work)
     _pub_dir = _to_pub_dir(work=_work, template=_tmpl)
     _cfg = to_export_cfg(
-        pub_dir=_pub_dir, extn=extn, size=size, sets=sets, preset=preset)
+        pub_dir=_pub_dir, extn=extn, res=res, sets=sets, preset=preset)
     _LOGGER.info(' - CFG %s', _cfg)
 
     # Run export
@@ -398,19 +393,20 @@ def take_snapshot(file_, force=False):  # pylint: disable=too-many-statements
     return _file
 
 
-def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
+def to_export_cfg(pub_dir=None, extn='png', preset=None, res=4096, sets=None):
     """Build export config dict.
 
     Args:
         pub_dir (Dir): publish dir
         extn (str): export format
         preset (str): export preset url
-        size (int): export size (in pixels)
+        res (int): export size (in pixels)
         sets (str list): export only the given texture sets
 
     Returns:
         (dict): export config
     """
+    _pub_dir = pub_dir or _to_pub_dir()
 
     # Determine preset
     _preset_url = preset
@@ -433,7 +429,7 @@ def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
 
     _cfg = {
         "exportShaderParams": False,
-        "exportPath": pub_dir.path,
+        "exportPath": _pub_dir.path,
         "defaultExportPreset": _preset.url(),
         "exportList": _export_list,
         "exportParameters": [{
@@ -441,26 +437,28 @@ def to_export_cfg(pub_dir, extn, preset=None, size=4096, sets=None):
                 "fileFormat": extn,
                 "dithering": True,
                 "paddingAlgorithm": "infinite",
-                'size': size,
+                'sizeLog2': int(math.log2(res)),
             }}]}
 
     return _cfg
 
 
-def to_export_data(preset=None, sets=None):
+def to_export_data(preset=None, sets=None, res=4096):
     """Build dict of export data for the current scene.
 
     Args:
         preset (str): apply export preset
         sets (str list): export only these sets
+        res (int): export size (in pixels)
 
     Returns:
         (dict): texture set / list of export files data
     """
     _pub_dir = Dir(abs_path('~/tmp'))
-    _cfg = to_export_cfg(_pub_dir, extn='png', preset=preset)
+    _cfg = to_export_cfg(
+        _pub_dir, extn='png', preset=preset, res=res)
     _parms = single(_cfg['exportParameters'])['parameters']
-    _res = _parms['size']
+    _res = 2 ** _parms['sizeLog2']
     _sets = [_item['rootPath'] for _item in _cfg['exportList']]
 
     # Build export data
@@ -480,7 +478,7 @@ def to_export_data(preset=None, sets=None):
     return _exports
 
 
-def _to_pub_dir(work, template):
+def _to_pub_dir(work=None, template=None):
     """Obtain publish dir for the given work file.
 
     NOTE: substance texture export handle see // mounts
@@ -492,10 +490,31 @@ def _to_pub_dir(work, template):
     Returns:
         (Dir): publish dir
     """
-    _pub_dir = work.to_output(
-        template, output_name='null', output_type='C',
+    _work = work or pipe.cur_work()
+    _tmpl = template or _to_template(work=_work)
+    _pub_dir = _work.to_output(
+        _tmpl, output_name='null', output_type='C',
         udim_u='10', udim_v='01', extn='png').to_dir()
     _LOGGER.info(" - PUB DIR %s", _pub_dir)
     _pub_dir = Dir(abs_path(_pub_dir, mode='drive'))
     assert not _pub_dir.path.startswith('//')
     return _pub_dir
+
+
+def _to_template(work):
+    """Obtain texture export template.
+
+    Args:
+        work (CPWork): work file
+
+    Returns:
+        (CPTemplate): template
+    """
+    _work = work or pipe.cur_work()
+    _tmpl_name = 'texture_seq'
+    _tmpl = _work.job.find_template(_tmpl_name, dcc_='spainter', catch=True)
+    if not _tmpl:
+        raise RuntimeError(
+            f'No "{_tmpl_name}" template found in job "{_work.job.name}" - '
+            'unable to export textures')
+    return _tmpl

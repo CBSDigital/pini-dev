@@ -117,22 +117,24 @@ def obt_helper(reset_cache=False):
     return helper.DIALOG
 
 
-def _cache_to_icon(output):
+def _cache_to_icon(output, src_ref=None):
     """Obtain icon for cache output.
 
     Args:
         output (CPOutput): cache
+        src_ref (CPOutput): source asset (eg. rig for abc)
 
     Returns:
         (str|QPixmap): icon
     """
     _LOGGER.debug(' - CACHE TO ICON %s', output)
-    _LOGGER.debug('   - SRC REF %s', output.src_ref)
+    _src_ref = src_ref or output.src_ref
+    _LOGGER.debug('   - SRC REF %s', _src_ref)
 
     # Find overlay path (eg. icon from from a source entity)
     _over_path = None
-    if output.src_ref:
-        _asset = pipe.CPOutputFile(output.src_ref)
+    if _src_ref:
+        _asset = pipe.CPOutputFile(_src_ref)
         _over_path = output_to_icon(_asset)
     elif output.profile == 'asset':
         _ety = pipe.CACHE.obt_entity(output)
@@ -313,7 +315,7 @@ def obt_recent_work(force=False):
 @cache_result
 def output_to_icon(  # pylint: disable=too-many-branches
         output, allow_missing=False, content_type=None, entity=None,
-        force=False):
+        src_ref=None, force=False):
     """Obtain an icon for the given output.
 
     Args:
@@ -321,6 +323,7 @@ def output_to_icon(  # pylint: disable=too-many-branches
         allow_missing (bool): allow assets to be missing from the cache
         content_type (str): force content type
         entity (CCPEntity): force entity
+        src_ref (CPOutput): source ref (eg. rig for abc)
         force (bool): force rebuild icon
 
     Returns:
@@ -342,7 +345,7 @@ def output_to_icon(  # pylint: disable=too-many-branches
             _icon = _curves_to_icon(output)
         elif output.basic_type == 'cache':
             _LOGGER.debug(' - APPLYING CACHE ICON')
-            _icon = _cache_to_icon(output)
+            _icon = _cache_to_icon(output, src_ref=src_ref)
         elif output.output_type == 'cam':
             _icon = CAM_ICON
         elif output.asset_type == 'utl' and output.asset == 'camera':
