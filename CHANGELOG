@@ -1,3 +1,12 @@
+## [11.9.2] - Fri 2026-10-09 16:09
+### Summary
+ - Pini Helper:
+    - spainter bugfix preview outputs not applying selected preset (blee),
+### Updated
+ - pini.dcc.export.CSPainterTexturePublish bugfix preview outputs not applying selected preset,
+ - spainter_pini.p_pipe.to_export_data read preset bit depth,
+
+
 ## [11.9.1] - Fri 2026-10-09 15:16
 ### Summary
  - Pini Helper:

@@ -4,6 +4,7 @@ import ctypes
 import logging
 import math
 import os
+import re
 import sys
 
 from ctypes import wintypes
@@ -461,6 +462,9 @@ def to_export_data(preset=None, sets=None, res=4096):
     _res = 2 ** _parms['sizeLog2']
     _sets = [_item['rootPath'] for _item in _cfg['exportList']]
 
+    # Read per map settings (eg. bit depth) from preset
+    _maps = _read_preset_maps(_cfg['defaultExportPreset'])
+
     # Build export data
     _raw_exports = substance_painter.export.list_project_textures(_cfg)
     _exports = {}
@@ -470,12 +474,111 @@ def to_export_data(preset=None, sets=None, res=4096):
         _files = _raw_exports[(_set, '')]
         _data = []
         for _file in _files:
+            _file = File(_file)
+            _map = _to_file_map(_file, maps=_maps, set_=_set)
+            _bits = _map['parameters'].get('bitDepth') if _map else None
             _data.append({
-                'filename': File(_file).filename,
-                'res': _res})
+                'filename': _file.filename,
+                'res': _res,
+                'bits': _bits})
         _exports[_set] = _data
 
     return _exports
+
+
+def _read_preset_maps(url):
+    """Read output map data from the given export preset.
+
+    Each map is a dict with fileName/channels/parameters keys, where
+    parameters may contain bitDepth/fileFormat/dithering overrides.
+
+    Args:
+        url (str): export preset url
+
+    Returns:
+        (dict list): output maps (empty if preset could not be read)
+    """
+    _rid = substance_painter.resource.ResourceID.from_url(url)
+    try:
+        _preset = substance_painter.export.ResourceExportPreset(_rid)
+        _maps = _preset.list_output_maps()
+    except (ValueError, AttributeError) as _exc:
+        _LOGGER.warning(' - FAILED TO READ PRESET MAPS %s %s', url, _exc)
+        return []
+    for _map in _maps:
+        _LOGGER.debug(
+            ' - PRESET MAP %s %s', _map['fileName'], _map.get('parameters'))
+    return _maps
+
+
+def _to_file_map(file_, maps, set_):
+    """Find the preset output map which generated the given file.
+
+    Preset file names are patterns (eg. T_$textureSet_N.($udim)), where
+    $tokens are substituted and bracketed sections are optional.
+
+    Args:
+        file_ (File): exported texture file
+        maps (dict list): preset output maps
+        set_ (str): texture set name
+
+    Returns:
+        (dict|None): matching output map (if any)
+    """
+    for _map in maps:
+        _pattern = _to_map_pattern(_map['fileName'], set_=set_)
+        if re.fullmatch(_pattern, file_.base):
+            return _map
+    _LOGGER.debug(' - NO PRESET MAP MATCHED %s', file_.filename)
+    return None
+
+
+def _to_map_pattern(name, set_=None):
+    """Convert a preset output map file name to a regex pattern.
+
+    $textureSet matches the given set name (or any text), $udim matches
+    four digits and other $tokens match any text. Balanced brackets
+    denote optional sections. Unbalanced brackets (eg. a typo in the
+    preset) are treated as literal characters.
+
+    Args:
+        name (str): output map file name (eg. T_$textureSet_N.($udim))
+        set_ (str): texture set name
+
+    Returns:
+        (str): regex pattern
+    """
+    _tokens = {
+        'textureSet': re.escape(set_) if set_ else '.+?',
+        'udim': r'\d{4}'}
+
+    # Find balanced bracket pairs
+    _pairs = {}
+    _stack = []
+    for _idx, _chr in enumerate(name):
+        if _chr == '(':
+            _stack.append(_idx)
+        elif _chr == ')' and _stack:
+            _pairs[_stack.pop()] = _idx
+    _groups = set(_pairs) | set(_pairs.values())
+
+    # Build pattern
+    _pattern = ''
+    _idx = 0
+    while _idx < len(name):
+        _chr = name[_idx]
+        if _chr == '$':
+            _match = re.match(r'\$([A-Za-z]+)', name[_idx:])
+            _pattern += _tokens.get(_match.group(1), '.+?')
+            _idx += len(_match.group(0))
+            continue
+        if _idx in _groups:
+            _pattern += '(?:' if _chr == '(' else ')?'
+        else:
+            _pattern += re.escape(_chr)
+        _idx += 1
+
+    return _pattern
 
 
 def _to_pub_dir(work=None, template=None):

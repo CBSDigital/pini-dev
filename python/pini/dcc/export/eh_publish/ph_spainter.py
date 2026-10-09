@@ -78,8 +78,10 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
         _LOGGER.debug('RAISE OUTPUT DIALOG')
         _res = self.ui.Res.selected_data()
         _LOGGER.debug(' - RES %s', _res)
+        _preset = self.ui.Preset.selected_data()
+        _LOGGER.debug(' - PRESET %s', _preset)
         _raise_outputs_dialog(
-            sets=self.ui.Sets.selected_texts(),
+            sets=self.ui.Sets.selected_texts(), preset=_preset,
             res=_res, parent=self.ui.parent)
 
     def export(
@@ -108,15 +110,17 @@ class CSPainterTexturePublish(ph_basic.CBasicPublish):
 class _OutputsDialog(QtWidgets.QDialog):
     """Dialog that displays texture outputs."""
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, preset, parent=None):
         """Constructor.
 
         Args:
             data (dict): texture data to display
+            preset (str): preset to display outputs for
             parent (QWidget): parent dialog
         """
         super().__init__(parent)
-        self.setWindowTitle("Texture exports")
+        _preset = preset.split('/')[-1]
+        self.setWindowTitle(f"Texture exports - {_preset}")
         self.setMinimumSize(400, 300)
         self.setModal(True)
 
@@ -163,10 +167,11 @@ class _OutputsDialog(QtWidgets.QDialog):
                 self.tree_widget.setColumnWidth(_idx, _width + 5)
 
 
-def _raise_outputs_dialog(sets=None, parent=None, res=4096):
+def _raise_outputs_dialog(preset, sets=None, parent=None, res=4096):
     """Raise texture outputs dialog.
 
     Args:
+        preset (str): preset to display outputs for
         sets (str list): only display these sets
         parent (QWidget): parent widget
         res (int): output resolution
@@ -174,21 +179,22 @@ def _raise_outputs_dialog(sets=None, parent=None, res=4096):
 
     # Build export data
     _exports = {}
-    for _set, _files in p_pipe.to_export_data(
-            sets=sets, res=res).items():
+    _data = p_pipe.to_export_data(sets=sets, res=res, preset=preset)
+    for _set, _files in _data.items():
         _set_items = []
         for _file_data in _files:
             _res = _file_data.get('res', (res, res))
-            _bits = _file_data.get('bits', 8)
+            _bits = _file_data.get('bits')
             _data = (
                 _file_data['filename'],
                 f'{_res}x{_res}',
-                f'{_bits} bits')
+                f'{_bits} bits' if _bits else 'document')
             _set_items.append(_data)
         _exports[_set] = _set_items
 
     # Raise dialog
     _dlg = _OutputsDialog(
-        _exports, parent=parent or dcc.get_main_window_ptr())
+        _exports, parent=parent or dcc.get_main_window_ptr(),
+        preset=preset)
     _dlg.resize(qt.to_size(_dlg.width(), 600))
     _dlg.exec_()
