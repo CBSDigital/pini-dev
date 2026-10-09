@@ -95,7 +95,7 @@ class CPCacheableRef(mpc_cacheable.CPCacheable):
                 return []
             return cmds.sets(_cache_set, query=True)
         if self.extn == 'fbx':
-            return self.node.top_node
+            return self.ref.top_node
         raise NotImplementedError
 
     def _to_icon(self):

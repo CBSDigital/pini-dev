@@ -1,3 +1,11 @@
+## [11.9.1] - Fri 2026-10-09 15:16
+### Summary
+ - Pini Helper:
+    - bugfix error on cache (kakuna),
+### Updated
+ - maya_pini.m_pipe.CPCachableRef.to_geo bugfix error on fbx,
+
+
 ## [11.9.0] - Fri 2026-10-09 14:57
 ### Summary
  - Pini Helper:
