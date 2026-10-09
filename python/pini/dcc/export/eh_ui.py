@@ -275,7 +275,10 @@ class CExporterUI(qt.CUiContainer):
             _policy = _btn.sizePolicy()
             _policy.setHorizontalPolicy(QtWidgets.QSizePolicy.MinimumExpanding)
             _btn.setSizePolicy(_policy)
-        _btn.clicked.connect(error.catch(callback))
+
+        _catcher = error.get_catcher(qt_safe=True)
+        _func = _catcher(callback)
+        _btn.clicked.connect(_func)
         setattr(self, name, _btn)
         return _btn
 

@@ -294,7 +294,7 @@ def _exec_local_fbx_cache(cacheables, flags):  # pylint: disable=unused-argument
             cacheables, 'Exporting {:d} fbx{}', stack_key='FbxCache',
             auto_pos=False, col='LightPink'):
         _LOGGER.info(' - FBX CACHE %s', _cbl)
-        cmds.select(_cbl.to_geo(extn='fbx'), hierarchy=True)
+        cmds.select(_cbl.to_geo(), hierarchy=True)
         save_fbx(
             _cbl.output, animation=True, constraints=True, step=flags['step'],
             range_=flags['range_'], version=flags['format_'])

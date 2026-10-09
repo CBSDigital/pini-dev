@@ -1,3 +1,15 @@
+## [11.9.0] - Fri 2026-10-09 14:57
+### Summary
+ - Pini Helper:
+    - bugfix error on cache (kakuna),
+ - Sanity Check:
+    - hou added render layer naming check,
+### Updated
+ - pini.dcc.export.CExporterUI.add_push_btn applied qt safe to error catch,
+ - pini.tools.sanity_check hou added CheckRenderLayers,
+ - maya_pini.m_pipe.cache bugfix error on write fbx,
+
+
 ## [11.8.0] - Fri 2026-10-09 12:37
 ### Summary
  - Pini Helper:
