@@ -26,7 +26,7 @@ class CAOV(wrapper.CNode):
         self.type_ = type_
 
     @property
-    def name(self):
+    def aov(self):
         """Obtain name of this AOV.
 
         Returns:

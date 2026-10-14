@@ -177,7 +177,7 @@ class CheckAOVs(SCMayaCheck):
         self.write_log('Required AOVs %s', _req_aovs)
 
         # Check aovs
-        _aovs = sorted({_aov.name for _aov in pom.find_aovs()})
+        _aovs = sorted({_aov.aov for _aov in pom.find_aovs()})
         self.write_log('Cur AOVs %s', _req_aovs)
         for _aov in _req_aovs:
             _vr_name = {

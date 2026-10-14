@@ -1,7 +1,17 @@
+## [11.10.1] - Wed 2026-10-14 14:57
+### Summary
+ - Sanity Check:
+    - maya check AOVs bugfix error (csoza),
+### Updated
+ - maya_pini.open_maya.CAOV made public,
+ - maya_pini.open_maya.CAOV renamed name -> aov,
+ - maya_pini.open_maya.find_aovs bugfix recursion error,
+
+
 ## [11.10.0] - Wed 2026-10-14 14:00
 ### Summary
  - Pini Helper:
-    - hou block apply lookdev to avoid error (csouza),
+    - hou block apply lookdev to avoid error (csoza),
     - maya publish bugfix segfault on clean scene due to reference bug (mkim),
     - maya cache added select/rename right-click options,
  - Sanity Check:
