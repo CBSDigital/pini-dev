@@ -24,8 +24,11 @@ class CHouDeadlineRender(rh_base.CRenderHandler):
     LABEL = '\n'.join([
         'Renders the current scene to deadline.',
         '',
-        'Renderable passes are identifed as Mantra/Redshift ROPs '
-        'with a single deadline node attached.'])
+        ' - Renderable passes are identifed as Mantra/Redshift ROPs '
+        'with a single deadline node attached.',
+        ' - Pini will bypass ROPs which are not being rendered '
+        'to prevent submission.',
+    ])
     ACTION = 'FarmRender'
 
     add_cameras = False
@@ -134,17 +137,16 @@ class _CHouRenderPass(rh_pass.CRenderPass):
     attached.
     """
 
-    def __init__(self, render):
+    def __init__(self, node):
         """Constructor.
 
         Args:
-            render (RopNode): mantra/redshift node
+            node (RopNode): mantra/redshift node
         """
-        self.render = render
-        self.deadline = single(self.render.outputs())
+        self.deadline = single(node.outputs())
         if not self.deadline:
             raise ValueError('No deadline node')
-        self.type_ = self.render.type().name()
+        self.type_ = node.type().name()
 
         if self.type_ == 'ifd':
             _parm = 'vm_picture'
@@ -153,9 +155,18 @@ class _CHouRenderPass(rh_pass.CRenderPass):
         else:
             raise ValueError(self.type_)
 
-        _path = self.render.parm(_parm).eval()
+        _path = node.parm(_parm).eval()
         _extn = File(_path).extn or 'exr'
-        super().__init__(node=self.render, name=self.render.name(), extn=_extn)
+        super().__init__(node=node, extn=_extn)
+
+    @property
+    def name(self):
+        """Obtain name of this pass.
+
+        Returns:
+            (str): pass name
+        """
+        return self.node.name()
 
     @property
     def renderable(self):
@@ -164,7 +175,15 @@ class _CHouRenderPass(rh_pass.CRenderPass):
         Returns:
             (bool): renderable
         """
-        return not self.render.isBypassed()
+        return not self.node.isBypassed()
+
+    def _set_name(self, name):
+        """Set name of this node.
+
+        Args:
+            name (str): name to apply
+        """
+        self.node.setName(name)
 
     def set_renderable(self, renderable):
         """Set renderable state of this ROP.
@@ -172,7 +191,7 @@ class _CHouRenderPass(rh_pass.CRenderPass):
         Args:
             renderable (bool): state to apply
         """
-        self.render.bypass(not renderable)
+        self.node.bypass(not renderable)
 
     def update_nodes(self, comment, priority=50):
         """Setup deadline ROP.
@@ -211,9 +230,9 @@ class _CHouRenderPass(rh_pass.CRenderPass):
         """
         _outs = []
         if self.type_ == 'Redshift_ROP':
-            _outs += _setup_rs_rop(self.render)
+            _outs += _setup_rs_rop(self.node)
         elif self.type_ == 'ifd':
-            _outs += _setup_mantra_rop(self.render)
+            _outs += _setup_mantra_rop(self.node)
         else:
             raise ValueError(self.type_)
         return _outs

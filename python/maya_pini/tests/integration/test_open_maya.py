@@ -61,12 +61,21 @@ class TestOpenMaya(unittest.TestCase):
         # if you look through a light)
         _sphere = pom.CMDS.polySphere()
         _tmp_cam = pom.CMDS.camera()
-        _tmp_cam.shp.cmds.parent(_sphere.node, shape=True, add=True)
+        _tmp_cam.shp.cmds.parent(_sphere, shape=True, add=True)
         _tmp_cam.delete()
         assert len(_sphere.to_shps()) == 2
-        _cam = pom.CCamera(_sphere.node)
+        _cam = pom.CCamera(_sphere)
         assert _cam
         assert _cam.renderable
+
+        # Test error on non-camera
+        _cube = pom.CMDS.polyCube()
+        try:
+            pom.CCamera(_cube)
+        except ValueError:
+            pass
+        else:
+            raise RuntimeError('No ValueError raised')
 
     @use_tmp_ns
     def test_cmds_wrapper(self):
@@ -99,6 +108,13 @@ class TestOpenMaya(unittest.TestCase):
         _conns = _sphere.shp.cmds.listConnections()
         assert isinstance(_conns[0], pom.CNode)
         assert _sphere.shp.cmds.listConnections(plugs=True)
+
+    @use_tmp_ns
+    def test_curve(self):
+        _crv = pom.CMDS.circle()
+        assert _crv.length()
+        assert _crv.fr_to_p(0.5)
+        assert _crv.to_curve_info()
 
     @use_tmp_ns
     def test_find_connections(self):
@@ -164,6 +180,20 @@ class TestOpenMaya(unittest.TestCase):
         assert len(_conns) == 2
         assert isinstance(_conns[0], pom.CNode)
         assert _conns[0] == _grp1
+
+    @use_tmp_ns
+    def test_mesh(self):
+
+        _mesh = pom.CMDS.polyCube()
+        assert isinstance(_mesh, pom.CMesh)
+        assert _mesh.n_edges == 12
+        assert _mesh.n_faces == 6
+        assert _mesh.n_vtxs == 8
+
+        _vtx_3 = _mesh.to_vtx(3)
+        _pt_3 = pom.to_p(_vtx_3)
+        _test_p = pom.CPoint(10, 10, 10)
+        assert _mesh.closest_p(_test_p) == _pt_3
 
     @use_tmp_ns
     def test_save_preset(self):

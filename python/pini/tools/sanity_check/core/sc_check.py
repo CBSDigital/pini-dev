@@ -1,14 +1,21 @@
-"""Tools for managing the base sanity check class."""
+"""Tools for managing the base sanity check class.
+
+NOTE:
+ - For checks in methods, generally the check should return whether the
+   check was passed successfully
+"""
 
 # pylint: disable=too-many-public-methods
 
 import inspect
 import logging
+import platform
 import time
 
 from pini import dcc, pipe
 from pini.tools import error
-from pini.utils import to_nice, strftime, nice_age, check_heart, PyFile
+from pini.utils import (
+    to_nice, strftime, nice_age, check_heart, PyFile, wrap_fn)
 
 from . import sc_fail
 
@@ -38,6 +45,7 @@ class SCCheck:
     action_req = False  # ie. should only run on action
 
     depends_on = ()
+    parent_ui = None
 
     def __init__(self):
         """Constructor."""
@@ -203,7 +211,7 @@ class SCCheck:
         """Check this cache is not more than 20 minutes old.
 
         Returns:
-            (bool): whether cache is outdated
+            (bool): whether cache is up to date
         """
         _max_age = 20
         _age = time.time() - pipe.CACHE.ctime
@@ -214,6 +222,50 @@ class SCCheck:
                 fix=pipe.CACHE.reset)
             return False
         return True
+
+    def check_path_len(
+            self, path, exp_name, output_name, output_type='output',
+            exp_type='exportable', rename=None, exp_node=None,
+            desc='output name'):
+        """Check path is within Windows character limit.
+
+        Args:
+            path (Path|Seq): path to check
+            exp_name (str): name of this export (eg. masterLayer, test_CSET)
+            output_name (str): output name (eg. masterLayer, test)
+            output_type (str): output name
+                (eg. render lock file, metadata file)
+            exp_type (str): export type (eg. render, cache)
+            rename (fn): function to rename this node
+            exp_node (any): export node
+            desc (str): export token description (eg. pass name, namespace)
+
+        Returns:
+            (bool): whether check passed successfully
+        """
+        self.write_log('   - check path %d %s', len(path.path), path)
+
+        if platform.system() != 'Windows' or len(path.path) < 260:
+            return True
+
+        # Handle path exceeds limit
+        _work = pipe.cur_work()
+        _n_chrs = len(path.path)
+        _msg = (
+            f'At {_n_chrs} characters the path to the {output_type} '
+            f'for {exp_type} "{exp_name}" exceeds the Windows '
+            f'path limit of 260 - please pick a shorter {desc} '
+            f'("{output_name}" - {len(output_name)} characters) or tag '
+            f'("{_work.tag} - {len(_work.tag)} characters") for '
+            'your scene')
+        _fail = sc_fail.SCFail(_msg, node=exp_node)
+        if rename:
+            _fail.add_action(
+                'Rename',
+                wrap_fn(rename, parent=self.parent_ui),
+                is_fix=True)
+        self.add_fail(_fail)
+        return False
 
     def edit(self):
         """Edit this check's code."""

@@ -11,30 +11,51 @@ from pini.utils import single, passes_filter, EMPTY
 from maya_pini import ui
 from maya_pini.utils import to_shp, DEFAULT_NODES, to_node
 
+from . import pom_transform
 from .. import base
-from ..pom_utils import to_mobject
+from ..pom_utils import to_mdagpath
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CCamera(base.CBaseTransform, om.MFnCamera):
+class _CCameraShp(base.CBaseNode, om.MFnCamera):
     """Wrapper for OpenMaya.MFnCamera object."""
+
+    def __init__(self, shp):
+        """Constructor.
+
+        Args:
+            shp (str): camera shape node
+        """
+        _m_obj = to_mdagpath(shp)
+        om.MFnCamera.__init__(self, _m_obj)
+
+
+class CCamera(pom_transform.CTransform):
+    """Represents a camera transform."""
+
+    _shp = None
 
     def __init__(self, node, shp=None):
         """Constructor.
 
         Args:
-            node (str): camera transform (eg. persp)
-            shp (str): camera shape node if known
+            node (str): camera transform
+            shp (str): force camera shape
         """
-        _node = node
-        if isinstance(_node, base.CBaseNode):
-            _node = str(node)
-        super().__init__(_node)
+        super().__init__(node)
+        self._shp_name = shp or to_shp(str(self), type_='camera')
 
-        _shp = shp or to_shp(_node, type_='camera')
-        _m_obj = to_mobject(_shp)
-        om.MFnCamera.__init__(self, _m_obj)
+    @property
+    def shp(self):
+        """Obtain shape node for this camera.
+
+        Returns:
+            (CCameraShp): shape
+        """
+        if not self._shp:
+            self._shp = _CCameraShp(self._shp_name)
+        return self._shp
 
     def to_shp(self, type_=None, catch=False):
         """Get this camera's shape node.

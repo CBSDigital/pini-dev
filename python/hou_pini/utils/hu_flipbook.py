@@ -35,7 +35,12 @@ def flipbook(seq, view=True, range_=None, viewer=None, force=False):
         _rng = range_
     else:
         _rng = dcc.t_range()
+    if _rng == 'From timeline':
+        _rng = dcc.t_range()
     _LOGGER.debug(' - RANGE %d-%d', *_rng)
+    assert isinstance(_rng, (tuple, list)), (
+        f'Bad range type {_rng} {type(_rng)}')
+    assert len(_rng) == 2
 
     # Apply flipbook settings
     _opts = _sv.flipbookSettings().stash()

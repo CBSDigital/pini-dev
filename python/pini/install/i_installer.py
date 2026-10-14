@@ -89,7 +89,7 @@ class PIInstaller(object):
             _items += [_manager]
 
         # Add SanityCheck
-        _items += [i_tool_defs.SANITY_CHECK]
+        _items += [i_tool_defs.SANITY_CHECK_TOOL]
 
         # Add dcc/site items
         _dcc_items = self._gather_dcc_items()

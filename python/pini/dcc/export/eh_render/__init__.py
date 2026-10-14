@@ -8,6 +8,6 @@ from .rh_pass import CRenderPass
 
 if dcc.NAME == 'maya':
     from .rh_maya import (
-        CMayaRenderHandler, CMayaLocalRender, CMayaFarmRender)
+        CMayaRenderHandler, CMayaLocalRender, CMayaFarmRender, CRenderLayer)
 elif dcc.NAME == 'hou':
     from .rh_hou import CHouDeadlineRender

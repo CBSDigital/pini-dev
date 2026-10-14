@@ -197,6 +197,7 @@ RELOAD_ORDER = [
     'maya_pini.open_maya.base.pom_base_transform',
     'maya_pini.open_maya.base',
     'maya_pini.open_maya.wrapper.pom_node',
+    'maya_pini.open_maya.wrapper.pom_transform',
     'maya_pini.open_maya.wrapper',
     'maya_pini.open_maya',
 

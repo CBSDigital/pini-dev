@@ -57,9 +57,17 @@ class CRenderHandler(eh_base.CExporter):
             (CRenderPass): matching pass
         """
         _passes = self.find_passes()
+
+        _matches = [
+            _pass for _pass in _passes
+            if match in (_pass.name, _pass.node)]
+        if len(_matches) == 1:
+            return single(_matches)
+
         _name_matches = [_pass for _pass in _passes if _pass.name == match]
         if len(_name_matches) == 1:
             return single(_name_matches)
+
         raise ValueError(match)
 
     def find_passes(self):

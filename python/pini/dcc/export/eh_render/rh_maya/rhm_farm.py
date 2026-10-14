@@ -114,17 +114,26 @@ class CMayaFarmRender(rhm_base.CMayaRenderHandler):
             res_pc (float): override render resolution (in %)
             force (bool): replace existing without confirmation
         """
+        _LOGGER.debug('EXPORT %s', self)
+
+        # Determine layers to render
+        _LOGGER.debug(' - PASSES %s', passes)
         _lyrs = pom.find_render_layers(renderable=True)
         if not _lyrs:
             raise error.HandledError('No renderable layers')
+        _lyrs = [_pass.node for _pass in passes]
+        _LOGGER.debug(' - LYRS %s', _lyrs)
+
+        # Apply render cam
         _cam = camera or pom.find_render_cam()
+        pom.set_render_cam(_cam)
+
+        # Apply limit groups
         _limit_grps = limit_grps
         if isinstance(_limit_grps, types.MethodType):
             _limit_grps = _limit_grps()
-        _lyrs = [_pass.node for _pass in passes]
 
-        pom.set_render_cam(_cam)
-
+        # Submit render
         _reverts = _prepare_scene_for_render(hide_img_planes=hide_img_planes)
         _initial_status = 'Active' if not submit_suspended else 'Suspended'
         self.submit_msg, _outs = farm.submit_maya_render(

@@ -12,16 +12,18 @@ _ICONS = icons.find_grp('animals')
 class SCUiCheckItem(qt.CListViewPixmapItem):
     """Represents a sanity check item in the interface."""
 
-    def __init__(self, list_view, check):
+    def __init__(self, list_view, check, parent_ui=None):
         """Constructor.
 
         Args:
             list_view (CListView): parent list view
             check (SCCheck): check represented by this item
+            parent_ui (QDialog): parent dialog
         """
         _rand = str_to_seed(check.label)
         self.icon = _rand.choice(_ICONS)
         self.check = check
+        self.check.parent_ui = parent_ui
         self.default_col = 'CornflowerBlue'
         super().__init__(
             list_view, data=check, col=self.default_col, height=50)

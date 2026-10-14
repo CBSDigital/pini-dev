@@ -9,8 +9,7 @@ from maya import cmds, mel
 from pini import qt
 from pini.qt import QtGui
 from pini.utils import (
-    basic_repr, single, abs_path, File, cache_result, passes_filter,
-    apply_deprecation)
+    basic_repr, single, abs_path, File, cache_result, passes_filter)
 from maya_pini.utils import (
     to_namespace, to_clean, to_shps, set_col, add_to_grp, to_long,
     add_to_set, add_to_dlayer)
@@ -22,19 +21,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class CBaseNode:  # pylint: disable=too-many-public-methods
     """Base class for any node object."""
-
-    def __init__(self, node):
-        """Constructor.
-
-        Args:
-            node (str): node to build object from
-        """
-        _node = node
-        if isinstance(_node, CBaseNode):
-            _node = str(_node)
-        if not isinstance(_node, str):
-            raise ValueError(_node)
-        self.node = _node
 
     @property
     def attr(self):
@@ -56,7 +42,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (CmdsMapper): maya.cmds mapper
         """
-        return pom_cmds.CmdsMapper(node=self.node)
+        return pom_cmds.CmdsMapper(node=str(self))
 
     @property
     def clean_name(self):
@@ -309,7 +295,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (CTransform): group
         """
         from maya_pini import open_maya as pom
-        _grp = add_to_grp(node=self.node, grp=grp)
+        _grp = add_to_grp(node=self, grp=grp)
         _grp = pom.CTransform(_grp)
         if col:
             _grp.set_outliner_col(col)
@@ -342,7 +328,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
 
     def delete(self):
         """Delete this node."""
-        self.cmds.delete(self.node)
+        self.cmds.delete(self)
 
     def delete_history(self):
         """Delete history on this node."""
@@ -545,7 +531,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (str): object type
         """
-        return cmds.objectType(self.node)
+        return cmds.objectType(str(self))
 
     def parent(self, parent=None, relative=None, world=None, absolute=None):
         """Set this node's parent.
@@ -582,10 +568,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (CBaseNode): update node
         """
-        _class = type(self)
-        _result = cmds.rename(self.node, name)
-        _result = _result.split('->')[-1]
-        return _class(_result)
+        cmds.rename(self, name)
 
     def select(self):
         """Select this node."""
@@ -602,7 +585,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
                 all - update all colours
         """
         if mode in ('viewport', 'all'):
-            set_col(self.node, col)
+            set_col(self, col)
         if mode in ('outliner', 'all'):
             self.set_outliner_col(col)
 
@@ -638,15 +621,6 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         for _anim in self.find_anims():
             _anim.set_tangents(type_)
-
-    def to_anim(self):
-        """Find anim curves attached to this node.
-
-        Returns:
-            (CAnimCurve list): anim curves
-        """
-        apply_deprecation('22/04/26', 'Use find_anims')
-        return self.find_anims()
 
     def to_anim_range(self):
         """Obtain range for this node's animation.
@@ -698,7 +672,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         Returns:
             (str): full path (eg. |persp|perspShape)
         """
-        return to_long(self.node)
+        return to_long(self)
 
     def to_m(self, world_space=True):
         """Get transformation matrix for this node.
@@ -787,7 +761,9 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
             (CNode list): shapes
         """
         from maya_pini import open_maya as pom
-        return [pom.CNode(_node) for _node in to_shps(self.node, type_=type_)]
+        return [
+            pom.CNode(_node) for _node in
+            to_shps(str(self), type_=type_)]
 
     def _to_preset_tmp(self, fmt):
         """Obtain present tmp file.
@@ -886,25 +862,25 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
 
     def __eq__(self, other):
         if isinstance(other, CBaseNode):
-            return self.node == other.node
-        return self.node == other
+            return self.name() == other.name()
+        return self.name() == other
 
     def __hash__(self):
-        return hash(self.node)
+        return hash(self.name())
 
     def __lt__(self, other):
         if isinstance(other, CBaseNode):
-            return self.node < other.node
-        return self.node < other
+            return self.name() < other.name()
+        return self.name() < other
 
     def __ne__(self, other):
         return not self == other
 
     def __str__(self):
-        return self.node
+        return self.name()
 
     def __repr__(self):
-        return basic_repr(self, self.node, separator='|')
+        return basic_repr(self, str(self), separator='|')
 
 
 @cache_result

@@ -15,6 +15,5 @@ class CTransform(base.CBaseTransform, om.MFnTransform):
         Args:
             node (str): node to build transform from
         """
-        super().__init__(node)
         _mobj = to_mobject(node)
         om.MFnTransform.__init__(self, _mobj)

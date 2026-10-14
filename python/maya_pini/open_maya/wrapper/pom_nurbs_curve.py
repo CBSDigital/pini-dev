@@ -9,29 +9,50 @@ from pini.utils import cache_result
 from maya_pini.utils import to_shp
 
 from .. import base
-from ..pom_utils import to_mobject
+from . import pom_transform
+from ..pom_utils import to_mdagpath
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
+class _CNurbsCurveShp(base.CBaseNode, om.MFnNurbsCurve):
     """Wrapper for OpenMaya.MFnNurbsCurve object."""
 
-    def __init__(self, node):
+    def __init__(self, shp):
         """Constructor.
 
         Args:
-            node (str): curve transform node
+            shp (str): curve shape node
         """
-        _tfm = node
-        if not cmds.objectType(_tfm) == 'transform':
-            raise ValueError(node)
-        _shp = to_shp(str(_tfm), catch=True)
-        if not _shp:
-            raise ValueError(f'Missing shape {_tfm}')
-        super().__init__(_tfm)
-        _mobj = to_mobject(_shp)
-        om.MFnNurbsCurve.__init__(self, _mobj)
+        _m_obj = to_mdagpath(shp)
+        om.MFnNurbsCurve.__init__(self, _m_obj)
+
+
+class CNurbsCurve(pom_transform.CTransform):
+    """Wrapper for curve transform."""
+
+    _shp = None
+
+    def __init__(self, node, shp=None):
+        """Constructor.
+
+        Args:
+            node (str): curve transform
+            shp (str): force curve shape
+        """
+        super().__init__(node)
+        self._shp_name = shp or to_shp(str(self), type_='nurbsCurve')
+
+    @property
+    def shp(self):
+        """Obtain shape node for this mesh.
+
+        Returns:
+            (CNurbsCurveShp): shape
+        """
+        if not self._shp:
+            self._shp = _CNurbsCurveShp(self._shp_name)
+        return self._shp
 
     def length(self):
         """Obtain length of this curve.
@@ -50,7 +71,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
         Returns:
             (MMatrix): transformation matrix
         """
-        _param = self.findParamFromLength(length)
+        _param = self.shp.findParamFromLength(length)
         _mtx = self.param_to_m(_param)
         return _mtx
 
@@ -83,7 +104,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             (MPoint): position
         """
         from maya_pini import open_maya as pom
-        _pt = self.getPointAtParam(param)
+        _pt = self.shp.getPointAtParam(param)
         return pom.CPoint(_pt)
 
     def param_to_t(self, param):
@@ -96,7 +117,7 @@ class CNurbsCurve(base.CBaseTransform, om.MFnNurbsCurve):
             (CVector): tangent
         """
         from maya_pini import open_maya as pom
-        _tan = pom.CVector(self.tangent(param))
+        _tan = pom.CVector(self.shp.tangent(param))
         return _tan.normalized()
 
     def path_animation(

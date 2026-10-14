@@ -74,7 +74,7 @@ class CMayaAiStandIn(_CMayaNodeRef):
             path (str): override path - to accommodate arnold delayed update
         """
         _LOGGER.debug('INIT CMayaAiStandIn %s %s', node, path)
-        assert isinstance(node, pom.CTransform)
+        assert isinstance(node, pom.CTransform), node
         assert node.shp.object_type() == 'aiStandIn'
 
         # Update path to %04d format
@@ -132,7 +132,7 @@ class CMayaAiVolume(_CMayaNodeRef):
                 to update it in a deferred thread; this allows the path
                 to be hacked so a valid vdb ref can be built on create
         """
-        assert isinstance(node, pom.CTransform)
+        assert isinstance(node, pom.CTransform), node
         assert node.shp.object_type() == 'aiVolume'
         _path = node.shp.plug['filename'].get_val() or ''
         if not _path:
@@ -324,7 +324,9 @@ def create_ai_standin(path, namespace, group=None):
     else:
         _path = path.path
     _shp.plug['dso'].set_val(_path)
-    _tfm = _shp.to_parent().rename(namespace)
+    _tfm = _shp.to_parent()
+    _tfm.rename(namespace)
+
     _ns = str(_tfm)
     _shp.plug['useFrameExtension'].set_val(_is_seq or path.extn == 'abc')
     _ref = CMayaAiStandIn(_tfm, path=path)
@@ -357,7 +359,8 @@ def create_ai_vol(output, namespace, group=None):
     _shp = pom.CMDS.createNode('aiVolume', name=namespace + 'Shape')
     _path = _seq[_seq.frames[0]]
     _shp.plug['filename'].set_val(_path)
-    _tfm = _shp.to_parent().rename(namespace)
+    _tfm = _shp.to_parent()
+    _tfm.rename(namespace)
     _ns = str(_tfm)
     _shp.plug['useFrameExtension'].set_val(True)
     _ref = CMayaAiVolume(_tfm, path=_seq.path)
@@ -404,7 +407,7 @@ def create_rs_vol(output, namespace):
     _vol.plug['useFrameExtension'].set_val(True)
 
     # Fix name
-    _vol = _vol.rename(f'{namespace}Shape')
+    _vol.rename(f'{namespace}Shape')
     _vol.to_parent().rename(namespace)
 
     ui.raise_attribute_editor()

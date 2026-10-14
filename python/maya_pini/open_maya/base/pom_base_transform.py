@@ -531,6 +531,9 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         for _plug in [self.sx, self.sy, self.sz]:
             _plug.set_val(scale)
 
+    def __str__(self):
+        return self.partialPathName()
+
 
 def point_constraint(*args, maintain_offset=False, skip=None, force=False):
     """Build a point constraint.

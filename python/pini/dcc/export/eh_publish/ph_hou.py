@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__.rsplit('.', 1)[-1])
 class CHouBasicPublish(ph_basic.CBasicPublish):
     """Basic houdini publisher."""
 
-    NAME = 'Hou Basic Publish'
+    NAME = 'Basic Publish'
     ICON = icons.find('Top hat')
 
     def build_metadata(self, **kwargs):

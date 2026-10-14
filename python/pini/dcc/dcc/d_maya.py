@@ -35,6 +35,7 @@ class MayaDCC(BaseDCC):
     DEFAULT_ALLOWED_RENDERERS = 'arnold'
     VALID_EXTNS = ('ma', 'mb', 'abc', 'fbx')
     REF_EXTNS = ('ma', 'mb', 'abc', 'fbx', 'vdb', 'ass', 'usd', 'gz', 'rs')
+    SUPPORTS_LOOKDEV = True
 
     def add_menu_divider(self, parent, name, label=None):
         """Add menu divider to maya ui.

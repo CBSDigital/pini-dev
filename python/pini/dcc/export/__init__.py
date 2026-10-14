@@ -24,7 +24,7 @@ if dcc.NAME == 'maya':
         PubRefsMode, get_pub_refs_mode, set_pub_refs_mode, CMayaRigPublish,
         CMayaSelectionPublish)
     from .eh_render import (
-        CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender)
+        CMayaLocalRender, CMayaRenderHandler, CMayaFarmRender, CRenderLayer)
     from .eh_blast import CMayaPlayblast
     from .eh_cache import (
         CMayaAbcCache, CMayaFbxCache, CMayaCurvesCache, CMayaCache)

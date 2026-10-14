@@ -359,7 +359,7 @@ def _import_refs(refs_mode, refs):
     from pini.tools import sanity_check
 
     # Import refs
-    for _ref in refs:
+    for _ref in _sort_refs_by_scn_idx(refs):
 
         # Delete JUNK refs
         if (
@@ -588,3 +588,25 @@ def set_pub_refs_mode(mode):
         _handler.ui.References.setCurrentText(mode.value)
 
     dcc.set_scene_data(PUB_REFS_MODE_KEY, mode.value)
+
+
+def _sort_refs_by_scn_idx(refs):
+    """Sort refs by scene index.
+
+    This is the order which maya imports refs, so it's safer to delete them
+    in this order. Implemented this way to only query scene ref uids once.
+
+    Args:
+        refs (CReference list): refs to sort
+
+    Returns:
+        (CReference list): sorted refs
+    """
+    _scn_ref_uids = cmds.file(query=True, reference=True)
+
+    def _to_scn_idx(ref):
+        if ref.path_uid in _scn_ref_uids:
+            return _scn_ref_uids.index(ref.path_uid)
+        return len(_scn_ref_uids)
+
+    return sorted(refs, key=_to_scn_idx)

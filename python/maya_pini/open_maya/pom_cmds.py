@@ -242,21 +242,32 @@ def _clean_ls(results, type=None, **kwargs):   # pylint: disable=redefined-built
     if type == 'imagePlane':
         _results = [_result.split('->')[-1] for _result in _results]
 
+    # Force class based on type
+    _class = None
     if type == 'animCurve':
         _class = pom.CAnimCurve
-    elif type in ('joint', 'transform'):
+    elif type in ('joint', ):
+        _class = pom.CJoint
+    elif type in ('transform', ):
         _class = pom.CTransform
-    else:
-        _class = pom.CNode
 
     _nodes = []
     for _node in _results:
+
+        # Apply class for this node
+        _node_cls = _class
+        if '|' in _node:
+            _node_cls = pom.CTransform
+        _node_cls = _node_cls or pom.CNode
+
+        # Build node into pom object
         try:
-            _node = _class(_node)
+            _node = _node_cls(_node)
         except RuntimeError as _exc:
             _LOGGER.warning(' - FAILED TO CAST NODE %s %s', _node, _exc)
             continue
         _nodes.append(_node)
+
     return _nodes
 
 

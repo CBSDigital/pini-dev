@@ -72,6 +72,11 @@ class CExporter:
         _name = _name.lower().replace(' ', '_')
         self._settings_file = f'{qt.SETTINGS_DIR}/{_name}.ini'
 
+        # Read export parms
+        _sig = inspect.signature(self.export)
+        _LOGGER.debug('   - SIG %s', _sig)
+        self.export_parms = list(_sig.parameters.values())
+
     @property
     def entity(self):
         """Obtain entity for this export.
@@ -295,7 +300,13 @@ class CExporter:
         self.setup_settings(*args, **kwargs)
         self.init_export()
 
-        self.outputs = self.export(*args, **kwargs)
+        # Use settings to export, in case sanity check changed settings
+        _export_kwargs = {
+            _parm.name: self.settings[_parm.name]
+            for _parm in self.export_parms
+            if _parm.name not in ('kwargs', )}
+        self.outputs = self.export(**_export_kwargs)
+
         assert isinstance(self.outputs, list)
 
         self.post_export()
@@ -313,12 +324,9 @@ class CExporter:
         self.settings = self._build_default_settings()
 
         # Apply kwargs / args
-        _sig = inspect.signature(self.export)
-        _parms = list(_sig.parameters.values())
         for _idx, _arg in enumerate(args):
             _LOGGER.debug(' - ADD ARG %s', _arg)
-            _arg_name = _parms[_idx].name
-            _LOGGER.debug('   - SIG %s', )
+            _arg_name = self.export_parms[_idx].name
             self.settings[_arg_name] = _arg
         self.settings.update(kwargs)
 

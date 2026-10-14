@@ -5,7 +5,7 @@ import logging
 from maya import cmds
 from maya.app.renderSetup.model import renderSetup
 
-from pini.utils import single
+from pini.utils import single, passes_filter
 
 from . import wrapper
 
@@ -57,10 +57,16 @@ class CRenderLayer(wrapper.CNode):
         Args:
             pass_name (str): pass name to apply
         """
-        _node_name = 'rs_' + pass_name
+        _cur_name = str(self)
+        _node_name = f'rs_{pass_name}'
+        _LOGGER.debug(
+            'SET PASS NAME %s -> %s %s', _cur_name, pass_name, _node_name)
         self.render_setup_layer.rename(pass_name)
+        _LOGGER.debug(
+            ' - RENDER SETUP LAYER %s %s', self.render_setup_layer,
+            type(self.render_setup_layer))
         self.rename(_node_name)
-        self.__init__(pass_name)  # pylint: disable=unnecessary-dunder-call
+        self.__init__(_node_name)  # pylint: disable=unnecessary-dunder-call
 
     def set_renderable(self, renderable=True):
         """Set renderable status of this layer.
@@ -125,7 +131,7 @@ def find_render_layer(match=None, catch=False, **kwargs):
 
 
 def find_render_layers(
-        referenced=False, renderable=None, pass_name=None):
+        referenced=False, renderable=None, pass_name=None, filter_=None):
     """Find render layers in the current scene.
 
     Args:
@@ -133,6 +139,7 @@ def find_render_layers(
             (use None to find all render layers)
         renderable (bool): filter by layer renderable status
         pass_name (str): filter by pass name
+        filter_ (str): apply pass name filter
 
     Returns:
         (CRenderLayer list): render layers
@@ -148,6 +155,8 @@ def find_render_layers(
         if referenced is not None and _lyr.is_referenced() != referenced:
             continue
         if renderable is not None and _lyr.is_renderable() != renderable:
+            continue
+        if filter_ and not passes_filter(_lyr.pass_name, filter_):
             continue
         _lyrs.append(_lyr)
 

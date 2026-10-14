@@ -444,7 +444,8 @@ def to_shp(node, catch=False, type_=None):
     try:
         return single(to_shps(node, type_=type_), catch=catch)
     except ValueError as _exc:
-        raise ValueError(f'Failed to find shape - {node}') from _exc
+        _type_s = f'{type_} ' if type_ else ''
+        raise ValueError(f'Failed to find {_type_s}shape - {node}') from _exc
 
 
 def to_shps(node, type_=None):

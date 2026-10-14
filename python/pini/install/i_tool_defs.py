@@ -157,7 +157,7 @@ def _build_helper_tool():
 PINI_HELPER_TOOL = _build_helper_tool()
 
 
-def _build_sanity_check():
+def _build_sanity_check_tool():
     """Build sanity check tool.
 
     Returns:
@@ -214,4 +214,4 @@ def _build_sanity_check():
     return _sanity
 
 
-SANITY_CHECK = _build_sanity_check()
+SANITY_CHECK_TOOL = _build_sanity_check_tool()

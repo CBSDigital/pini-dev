@@ -1,4 +1,8 @@
-"""Tools for managing the maya sanity check object."""
+"""Tools for managing the maya sanity check object.
+
+TODO:
+ - Move PINI_SANITY_CHECK_GEO_SUFFIX to settings
+"""
 
 import copy
 import logging

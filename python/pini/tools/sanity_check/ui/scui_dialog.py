@@ -239,7 +239,7 @@ class SanityCheckUi(qt.CUiDialog):
                 continue
 
             _item = scui_check.SCUiCheckItem(
-                list_view=self.ui.Checks, check=_check)
+                list_view=self.ui.Checks, check=_check, parent_ui=self)
             _items.append(_item)
 
             if not _sel:

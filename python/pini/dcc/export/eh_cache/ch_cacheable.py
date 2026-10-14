@@ -92,15 +92,17 @@ class CCacheable:
         assert self._output_name, f'No output name set for {self}'
         return self._output_name
 
-    def rename(self, name=None):
+    def rename(self, name=None, parent=None):
         """Rename this cacheable.
 
         Args:
             name (str): name to apply
+            parent (QDialog): parent dialog for popup
         """
         _name = name or qt.input_dialog(
             f'Enter new name for cacheable "{self.label}":',
-            title='Rename cacheable', default=self.output_name)
+            title='Rename cacheable', default=self.output_name,
+            parent=parent)
         self._set_name(_name)
 
     def _set_name(self, name):

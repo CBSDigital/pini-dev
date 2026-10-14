@@ -169,8 +169,10 @@ class SubstancePainterDCC(BaseDCC):
         if not _meta:
             _LOGGER.debug(' - SET METADATA FAILED, NO PROJ OPEN')
             return
-        if val is not None and not isinstance(val, (bool, int, float, str, list, dict)):
-            raise TypeError(f'Unsupported scene data type {key} {type(val).__name__}')
+        if val is not None and not isinstance(val, (
+                bool, int, float, str, list, dict)):
+            raise TypeError(
+                f'Unsupported scene data type {key} {type(val).__name__}')
         _LOGGER.debug('SET SCENE DATA %s %s', key, val)
         _meta.set(key, val)
 
@@ -214,7 +216,7 @@ class SubstancePainterDCC(BaseDCC):
 
 
 def _to_metadata():
-    """Obtain pini metadata store for the current project (None if no project)."""
+    """Obtain pini metadata store for the current project."""
     if not project.is_open():
         return None
     return project.Metadata(_META_CONTEXT)

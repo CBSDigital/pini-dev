@@ -24,7 +24,6 @@ class CAnimCurve(base.CBaseNode, oma.MFnAnimCurve):
         Args:
             node (str): anim curve node name
         """
-        super().__init__(node)
         _m_obj = to_mobject(node)
         oma.MFnAnimCurve.__init__(self, _m_obj)
 

@@ -23,6 +23,7 @@ class BaseDCC:
     REF_EXTNS = ()
     VALID_EXTNS = ()
     IS_3D = False
+    SUPPORTS_LOOKDEV = False
 
     _exporters = None
 

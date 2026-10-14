@@ -515,14 +515,14 @@ class CheckRenderLayers(SCMayaCheck):
     def run(self):
         """Run this check."""
         self.write_log(' - prefixes %s', self.prefixes)
-
-        # Check layers
+        _exp = dcc.find_exporter('FarmRender')
         for _lyr in pom.find_render_layers():
             self.write_log('Checking %s pass=%s', _lyr, _lyr.pass_name)
 
             if _lyr.pass_name == 'masterLayer':
                 continue
 
+            _pass = _exp.find_pass(_lyr)
             if '_' in _lyr.pass_name:
                 _prefix, _suffix = _lyr.pass_name.split('_', 1)
             else:
@@ -536,7 +536,11 @@ class CheckRenderLayers(SCMayaCheck):
                     f'which is not in the list of approved prefixes: '
                     f'{_prefixes_s}')
                 _fail = SCFail(_msg)
-                _fail.add_action('Open layers', renderSetup.createUI)
+                if not self.parent_ui.isModal():
+                    _fail.add_action('Open layers', renderSetup.createUI)
+                _fail.add_action(
+                    'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
+                    is_fix=True)
                 self.add_fail(_fail)
                 continue
 
@@ -547,9 +551,22 @@ class CheckRenderLayers(SCMayaCheck):
                 _msg = (
                     f'Render layer "{_lyr.pass_name}" has suffix "{_suffix}" '
                     f'which is not camel case (should be "{_new_name}")')
-                _fix = wrap_fn(_lyr.set_pass_name, _new_name)
-                self.add_fail(_msg, fix=_fix)
+                _fix = wrap_fn(_pass.rename, _new_name)
+                _fail = SCFail(_msg, fix=_fix)
+                if not self.parent_ui.isModal():
+                    _fail.add_action('Open layers', renderSetup.createUI)
+                _fail.add_action(
+                    'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
+                    is_fix=True)
+                self.add_fail(_fail)
                 continue
+
+            # Check output path
+            _out = _pass.to_output()
+            self.write_log(' - out %d %s', len(_out.path), _out)
+            self.check_path_len(
+                _out, output_name=_lyr.pass_name, exp_name=_lyr.pass_name,
+                exp_type='renderLayer', desc='pass name', rename=_pass.rename)
 
 
 class CheckOverscan(SCMayaCheck):

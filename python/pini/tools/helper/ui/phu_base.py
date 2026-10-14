@@ -472,7 +472,10 @@ class PHUiBase(
             icon=icons.FIND, enabled=bool(_asset))
 
         # Add lookdev opts
-        if ref and isinstance(output, pipe.CPOutputFile):
+        if (
+                ref and
+                dcc.SUPPORTS_LOOKDEV and
+                isinstance(output, pipe.CPOutputFile)):
             _out_c = pipe.CACHE.obt(output)
             _lookdev = _out_c.find_lookdev_shaders()
             menu.add_action(

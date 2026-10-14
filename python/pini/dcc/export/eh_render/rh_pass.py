@@ -1,6 +1,6 @@
 """Tools for managing the render pass object."""
 
-from pini import pipe, icons
+from pini import pipe, icons, qt
 from pini.tools import helper
 from pini.utils import basic_repr
 
@@ -10,21 +10,42 @@ _NO_WORK_ICON = icons.find('Red Circle')
 class CRenderPass:
     """Represents a renderable pass in a dcc."""
 
-    def __init__(self, node, name, extn):
+    def __init__(self, node, extn, name=None):
         """Constructor.
 
         Args:
             node (any): pass node
-            name (str): pass output name
             extn (str): pass output image format
+            name (str): pass output name (if static)
         """
         self.node = node
-        self.name = name
+        if name:
+            self.name = name
         self.extn = extn
 
     @property
     def renderable(self):
         """Test whether this pass is renderable."""
+        raise NotImplementedError
+
+    def rename(self, name=None, parent=None):
+        """Rename this pass.
+
+        Args:
+            name (str): force new name
+            parent (QDialog): parent dialog for popup
+        """
+        _name = name or qt.input_dialog(
+            f'Enter new name for pass "{self.name}":',
+            default=self.name, parent=parent)
+        self._set_name(_name)
+
+    def _set_name(self, name):
+        """Set name for this pass.
+
+        Args:
+            name (str): new name to apply
+        """
         raise NotImplementedError
 
     def set_renderable(self, renderable):

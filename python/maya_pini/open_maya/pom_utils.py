@@ -295,10 +295,15 @@ def find_nodes(
     Returns:
         (CBaseNode list): nodes in scene
     """
+    _LOGGER.debug('FIND NODES')
     _nodes = set()
-    for _node in _read_ls_results(
-            pattern=pattern, selected=selected, type_=type_, dag_only=dag_only,
-            top_node=top_node):
+    _ls_results = _read_ls_results(
+        pattern=pattern, selected=selected, type_=type_, dag_only=dag_only,
+        top_node=top_node)
+    _LOGGER.debug(' - LS RESULTS %s', _ls_results)
+    for _node in _ls_results:
+
+        _LOGGER.debug(' - NODE %s', _node)
 
         # Apply filters
         if filter_ and not passes_filter(str(_node), filter_):
@@ -356,6 +361,7 @@ def _read_ls_results(pattern, selected, type_, dag_only, top_node):
     if _dag_only:
         _kwargs['dagObjects'] = True
 
+    _LOGGER.debug(' - LS %s %s', _args, _kwargs)
     return pom.CMDS.ls(*_args, **_kwargs)
 
 
@@ -525,7 +531,8 @@ def to_mobject(node):
     if isinstance(_node, pom.CBaseNode):
         _node = str(_node)
     if not isinstance(_node, str):
-        raise NotImplementedError(_node)
+        raise NotImplementedError(
+            f'Not implemented {_node} {type(_node).__name__}')
 
     # Build tmp selection list
     _tmp = om.MSelectionList()

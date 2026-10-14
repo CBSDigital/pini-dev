@@ -6,41 +6,53 @@ from maya import cmds
 from maya.api import OpenMaya as om
 
 from pini.utils import single, EMPTY
-from maya_pini.utils import to_parent
+from maya_pini.utils import to_parent, to_shp
 
+from . import pom_transform
 from .. import base
 from ..pom_utils import to_mdagpath
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CMesh(base.CBaseTransform, om.MFnMesh):
+class _CMeshShp(base.CBaseNode, om.MFnMesh):
     """Wrapper for OpenMaya.MFnMesh object."""
 
-    def __init__(self, node):
+    def __init__(self, shp):
         """Constructor.
 
         Args:
-            node (str): mesh transform node (eg. pSphere1)
+            shp (str): mesh shape node
         """
-        _node = node
-        if isinstance(_node, base.CBaseNode):
-            _node = str(_node)
-        super().__init__(_node)
-        _m_dag = to_mdagpath(_node)
-        try:
-            om.MFnMesh.__init__(self, _m_dag)
-        except ValueError as _exc:
-            _LOGGER.error(_exc)
-            raise ValueError(
-                f'Failed to construct MFnMesh object {_node}') from _exc
+        _m_obj = to_mdagpath(shp)
+        om.MFnMesh.__init__(self, _m_obj)
 
-        # Check shape
-        _shp = self.shp
-        if not _shp:
-            raise ValueError(f'No shape {_node}')
-        if _shp.object_type() != 'mesh':
-            raise ValueError(f'Bad shape {_shp}')
+
+class CMesh(pom_transform.CTransform):
+    """Wrapper for OpenMaya.MFnMesh object."""
+
+    _shp = None
+
+    def __init__(self, node, shp=None):
+        """Constructor.
+
+        Args:
+            node (str): mesh transform
+            shp (str): force mesh shape
+        """
+        super().__init__(node)
+        self._shp_name = shp or to_shp(str(self), type_='mesh')
+
+    @property
+    def shp(self):
+        """Obtain shape node for this mesh.
+
+        Returns:
+            (CMeshShp): shape
+        """
+        if not self._shp:
+            self._shp = _CMeshShp(self._shp_name)
+        return self._shp
 
     @property
     def n_edges(self):
@@ -49,7 +61,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (int): edge count
         """
-        return self.numEdges
+        return self.shp.numEdges
 
     @property
     def n_faces(self):
@@ -67,7 +79,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (int): vertex count
         """
-        return self.numVertices
+        return self.shp.numVertices
 
     def closest_n(self, point):
         """Get the normal on this mesh closest to the given point.
@@ -79,7 +91,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
             (CVector): closest mesh normal
         """
         from maya_pini import open_maya as pom
-        _pt, _ = self.getClosestNormal(point, pom.WORLD_SPACE)
+        _pt, _ = self.shp.getClosestNormal(point, pom.WORLD_SPACE)
         return pom.CVector(_pt)
 
     def closest_p(self, point):
@@ -92,7 +104,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
             (CPoint): closest point on mesh
         """
         from maya_pini import open_maya as pom
-        _pt, _ = self.getClosestPoint(point, pom.WORLD_SPACE)
+        _pt, _ = self.shp.getClosestPoint(point, pom.WORLD_SPACE)
         return pom.CPoint(_pt)
 
     def instance(self, name=None):
@@ -106,15 +118,6 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         """
         from maya_pini import open_maya as pom
         return pom.CTransform(single(cmds.instance(self.shp, name=name)))
-
-    def is_referenced(self):
-        """Check whether this node is referenced.
-
-        Returns:
-            (bool): whether referenced
-        """
-        from maya_pini import open_maya as pom
-        return pom.CNode(self).is_referenced()
 
     def rename(self, name):
         """Rename this mesh.
@@ -142,7 +145,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
             (tuple): UV point
         """
         from maya_pini import open_maya as pom
-        _u, _v, _ = self.getUVAtPoint(point, space=pom.WORLD_SPACE)
+        _u, _v, _ = self.shp.getUVAtPoint(point, space=pom.WORLD_SPACE)
         return _u, _v
 
     def to_create(self):
@@ -236,7 +239,7 @@ class CMesh(base.CBaseTransform, om.MFnMesh):
         Returns:
             (str list): vertices
         """
-        return [self.to_vtx(_idx) for _idx in range(self.numVertices)]
+        return [self.to_vtx(_idx) for _idx in range(self.n_vtxs)]
 
 
 def find_meshes(namespace=EMPTY, referenced=None, class_=None):

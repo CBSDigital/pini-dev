@@ -204,8 +204,7 @@ class TestSanityCheck(unittest.TestCase):
             'rig', dcc_=dcc.NAME)
         _work = _work_dir.to_work(tag='tmp')
         _work.save(force=True)
-        _check = sanity_check.find_check(
-            'CheckCacheSet', action='RigPublish')
+        _check = sanity_check.find_check('CheckCacheSet', action='RigPublish')
         _LOGGER.info('CHECK %s', _check)
 
         # Check empty scene
@@ -316,7 +315,7 @@ class TestSanityCheck(unittest.TestCase):
         assert single(
             _cube.cmds.polyUVSet(query=True, currentUVSet=True)) != 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) != 1
-        utils.fix_uvs(_cube.node)
+        utils.fix_uvs(_cube)
         assert single(
             _cube.cmds.polyUVSet(query=True, currentUVSet=True)) == 'map1'
         assert len(_cube.cmds.polyUVSet(query=True, allUVSets=True)) == 1
