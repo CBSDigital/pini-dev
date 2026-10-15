@@ -862,16 +862,16 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
 
     def __eq__(self, other):
         if isinstance(other, CBaseNode):
-            return self.name() == other.name()
-        return self.name() == other
+            return str(self) == str(other)
+        return str(self) == other
 
     def __hash__(self):
-        return hash(self.name())
+        return hash(str(self))
 
     def __lt__(self, other):
         if isinstance(other, CBaseNode):
-            return self.name() < other.name()
-        return self.name() < other
+            return str(self) < str(other)
+        return str(self) < other
 
     def __ne__(self, other):
         return not self == other

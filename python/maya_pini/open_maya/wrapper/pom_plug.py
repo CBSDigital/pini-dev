@@ -1,4 +1,4 @@
-"""Tools for adding functionilty to OpenMaya.MPlug object."""
+"""Tools for adding functionality to OpenMaya.MPlug object."""
 
 # pylint: disable=too-many-lines
 

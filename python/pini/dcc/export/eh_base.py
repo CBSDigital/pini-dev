@@ -304,7 +304,7 @@ class CExporter:
         _export_kwargs = {
             _parm.name: self.settings[_parm.name]
             for _parm in self.export_parms
-            if _parm.name not in ('kwargs', )}
+            if _parm.name not in ('kwargs', 'args')}
         self.outputs = self.export(**_export_kwargs)
 
         assert isinstance(self.outputs, list)

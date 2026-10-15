@@ -1,4 +1,4 @@
-"""Tools for adding functionilty to OpenMaya.MFnDependencyNode object."""
+"""Tools for adding functionality to OpenMaya.MFnDependencyNode object."""
 
 from maya.api import OpenMaya as om
 

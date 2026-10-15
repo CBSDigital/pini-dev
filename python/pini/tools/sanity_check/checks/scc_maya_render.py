@@ -515,14 +515,14 @@ class CheckRenderLayers(SCMayaCheck):
     def run(self):
         """Run this check."""
         self.write_log(' - prefixes %s', self.prefixes)
-        _exp = dcc.find_exporter('FarmRender')
+        _exp = dcc.find_exporter('FarmRender', catch=True)
         for _lyr in pom.find_render_layers():
             self.write_log('Checking %s pass=%s', _lyr, _lyr.pass_name)
 
             if _lyr.pass_name == 'masterLayer':
                 continue
 
-            _pass = _exp.find_pass(_lyr)
+            _pass = _exp.find_pass(_lyr) if _exp else None
             if '_' in _lyr.pass_name:
                 _prefix, _suffix = _lyr.pass_name.split('_', 1)
             else:
@@ -538,9 +538,10 @@ class CheckRenderLayers(SCMayaCheck):
                 _fail = SCFail(_msg)
                 if not self.parent_ui.isModal():
                     _fail.add_action('Open layers', renderSetup.createUI)
-                _fail.add_action(
-                    'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
-                    is_fix=True)
+                if _pass:
+                    _fail.add_action(
+                        'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
+                        is_fix=True)
                 self.add_fail(_fail)
                 continue
 
@@ -551,12 +552,15 @@ class CheckRenderLayers(SCMayaCheck):
                 _msg = (
                     f'Render layer "{_lyr.pass_name}" has suffix "{_suffix}" '
                     f'which is not camel case (should be "{_new_name}")')
-                _fix = wrap_fn(_pass.rename, _new_name)
-                _fail = SCFail(_msg, fix=_fix)
+                _fail = SCFail(_msg)
                 if not self.parent_ui.isModal():
                     _fail.add_action('Open layers', renderSetup.createUI)
+                if _pass:
+                    _fail.add_action(
+                        'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
+                        is_fix=True)
                 _fail.add_action(
-                    'Rename', wrap_fn(_pass.rename, parent=self.parent_ui),
+                    'Fix', wrap_fn(_lyr.rename, _new_name),
                     is_fix=True)
                 self.add_fail(_fail)
                 continue

@@ -257,7 +257,7 @@ def _clean_ls(results, type=None, **kwargs):   # pylint: disable=redefined-built
         # Apply class for this node
         _node_cls = _class
         if '|' in _node:
-            _node_cls = pom.CTransform
+            _node_cls = pom.CDagNode
         _node_cls = _node_cls or pom.CNode
 
         # Build node into pom object

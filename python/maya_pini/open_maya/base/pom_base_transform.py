@@ -8,12 +8,12 @@ from maya import cmds
 
 from pini.utils import single, passes_filter, to_list
 
-from . import pom_base_node
+from . import pom_base_dag_node
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-public-methods
+class CBaseTransform(pom_base_dag_node.CBaseDagNode):  # pylint: disable=too-many-public-methods
     """Base class for any transform node."""
 
     @property
@@ -530,9 +530,6 @@ class CBaseTransform(pom_base_node.CBaseNode):  # pylint: disable=too-many-publi
         assert isinstance(scale, (float, int))
         for _plug in [self.sx, self.sy, self.sz]:
             _plug.set_val(scale)
-
-    def __str__(self):
-        return self.partialPathName()
 
 
 def point_constraint(*args, maintain_offset=False, skip=None, force=False):

@@ -1,9 +1,8 @@
-"""Tools for adding functionilty to OpenMaya.MFnTransform object."""
+"""Tools for adding functionality to OpenMaya.MFnTransform object."""
 
 from maya.api import OpenMaya as om
 
-from .. import base
-from ..pom_utils import to_mobject
+from .. import base, pom_utils
 
 
 class CTransform(base.CBaseTransform, om.MFnTransform):
@@ -15,5 +14,5 @@ class CTransform(base.CBaseTransform, om.MFnTransform):
         Args:
             node (str): node to build transform from
         """
-        _mobj = to_mobject(node)
-        om.MFnTransform.__init__(self, _mobj)
+        _m_dag = pom_utils.to_mdagpath(node)
+        om.MFnTransform.__init__(self, _m_dag)

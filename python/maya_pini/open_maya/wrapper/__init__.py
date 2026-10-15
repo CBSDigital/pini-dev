@@ -10,6 +10,7 @@ from .pom_bounding_box import CBoundingBox, to_bbox
 from .pom_anim_curve import CAnimCurve, loop_anims, find_anims, shift_anims
 from .pom_camera import (
     CCamera, active_cam, find_cams, set_render_cam, find_render_cam, find_cam)
+from .pom_dag_node import CDagNode
 from .pom_matrix import CMatrix, IDENTITY
 from .pom_mesh import CMesh, find_meshes
 from .pom_nurbs_curve import CNurbsCurve

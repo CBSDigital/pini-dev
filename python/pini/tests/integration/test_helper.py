@@ -313,6 +313,7 @@ class TestDiskPiniHelper(TestHelper):
         assert _helper.entity.settings['shotgrid']['disable']
 
         # Test save/load
+        _helper.ui.MainPane.select_tab('Work')
         _work = _helper.work
         _LOGGER.info(' - WORK (A) %s', _work)
         _LOGGER.info(' - SEQ NAME %s', _seq_name)

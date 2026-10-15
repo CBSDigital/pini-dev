@@ -19,7 +19,7 @@ from .wrapper import (
     selected_plugs, to_plug, find_cams, set_render_cam, find_render_cam,
     find_cam, selected_plug, IDENTITY, selected_ref, TIME, OBJECT_SPACE,
     find_anims, loop_anims, obt_ref, shift_anims, multiply_plug,
-    divide_plug)
+    divide_plug, CDagNode)
 
 from .pom_cmds import CMDS
 from .pom_utils import (

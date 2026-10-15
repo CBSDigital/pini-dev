@@ -303,10 +303,11 @@ def find_nodes(
     _LOGGER.debug(' - LS RESULTS %s', _ls_results)
     for _node in _ls_results:
 
-        _LOGGER.debug(' - NODE %s', _node)
+        _node_s = str(_node)
+        _LOGGER.debug(' - NODE %s %s', _node, type(_node))
 
         # Apply filters
-        if filter_ and not passes_filter(str(_node), filter_):
+        if filter_ and not passes_filter(_node_s, filter_):
             continue
         if namespace is not EMPTY and _node.namespace != namespace:
             continue
@@ -317,7 +318,7 @@ def find_nodes(
         if default is not None:
             _is_default = (
                 _node in DEFAULT_NODES or
-                str(_node).lstrip('|') in DEFAULT_NODES)
+                _node_s.lstrip('|') in DEFAULT_NODES)
             if _is_default != default:
                 continue
         if top_node and to_parent(_node):
@@ -556,11 +557,14 @@ def to_mdagpath(node):
     Returns:
         (MDagPath): open maya dag path
     """
+    _node = node
+    if isinstance(_node, om.MFnDependencyNode):
+        _node = str(_node)
     try:
-        _sel = om.MGlobal.getSelectionListByName(node)
+        _sel = om.MGlobal.getSelectionListByName(_node)
     except RuntimeError as _exc:
         if not cmds.objExists(node):
-            raise RuntimeError('Missing node ' + node) from _exc
+            raise RuntimeError(f'Missing node {_node}') from _exc
         raise _exc
     return _sel.getDagPath(0)
 

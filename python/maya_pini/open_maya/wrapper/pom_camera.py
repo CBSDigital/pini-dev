@@ -1,4 +1,4 @@
-"""Tools for adding functionilty to OpenMaya.MFnCamera object."""
+"""Tools for adding functionality to OpenMaya.MFnCamera object."""
 
 import logging
 import os
@@ -18,7 +18,7 @@ from ..pom_utils import to_mdagpath
 _LOGGER = logging.getLogger(__name__)
 
 
-class _CCameraShp(base.CBaseNode, om.MFnCamera):
+class _CCameraShp(base.CBaseDagNode, om.MFnCamera):
     """Wrapper for OpenMaya.MFnCamera object."""
 
     def __init__(self, shp):

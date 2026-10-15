@@ -1,4 +1,4 @@
-"""Tools for adding functionilty to OpenMaya.MFnMesh object."""
+"""Tools for adding functionality to OpenMaya.MFnMesh object."""
 
 import logging
 
@@ -15,7 +15,7 @@ from ..pom_utils import to_mdagpath
 _LOGGER = logging.getLogger(__name__)
 
 
-class _CNurbsCurveShp(base.CBaseNode, om.MFnNurbsCurve):
+class _CNurbsCurveShp(base.CBaseDagNode, om.MFnNurbsCurve):
     """Wrapper for OpenMaya.MFnNurbsCurve object."""
 
     def __init__(self, shp):
