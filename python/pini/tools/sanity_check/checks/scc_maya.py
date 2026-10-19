@@ -218,7 +218,7 @@ class CheckPlugins(core.SCMayaCheck):
                     ' - ignoring benign unknown plugin %s', _plugin)
                 continue
             _msg = 'Scene is requesting missing plugin ' + _plugin
-            _fix = wrap_fn(cmds.unknownPlugin, _plugin, remove=True)
+            _fix = wrap_fn(_remove_unknown_plugin, _plugin)
             self.add_fail(_msg, fix=_fix)
 
         # Disable slow autoload
@@ -252,6 +252,28 @@ class CheckPlugins(core.SCMayaCheck):
             if _result == 'No':
                 return
         cmds.unloadPlugin(plugin, force=True)
+
+
+def _remove_unknown_plugin(plugin):
+    """Remove unknown plugin.
+
+    Args:
+        plugin (str): plugin to remove
+    """
+
+    # Flush unknown nodes
+    _unknown_types = ['unknown', 'unknownDag', 'unknownTransform']
+    for _node in pom.CMDS.ls(type=_unknown_types):
+        if cmds.unknownNode(_node, query=True, plugin=True) != plugin:
+            continue
+        if _node.is_referenced():
+            print('Skipping referenced node', _node)
+            continue
+        if cmds.lockNode(_node, query=True, lock=True)[0]:
+            cmds.lockNode(_node, lock=False)
+        cmds.delete(_node)
+
+    cmds.unknownPlugin(plugin, remove=True)
 
 
 class FixRefNodeNames(core.SCMayaCheck):

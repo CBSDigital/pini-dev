@@ -1,3 +1,11 @@
+## [11.11.2] - Mon 2026-10-19 10:27
+### Summary
+ - Sanity Check:
+    - maya check plugins bugfix error on remove unknown plugin (mkim),
+### Updated
+ - pini.tools.sanity_check.CheckPlugins flush plugin nodes before delete,
+
+
 ## [11.11.1] - Mon 2026-10-19 09:38
 ### Summary
  - Sanity Check:
