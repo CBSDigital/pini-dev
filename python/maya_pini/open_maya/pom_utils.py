@@ -81,12 +81,17 @@ def cast_node(
         _kwargs['shp'] = _shp
     elif _type in ('joint', 'hikFKJoint'):
         _class = pom.CJoint
-    elif not maintain_shapes and _type == 'mesh':
-        _class = pom.CMesh
-        _shp = _node
-        _node = to_parent(_shp)
+    elif _type == 'mesh':
+        if maintain_shapes:
+            _class = pom.CDagNode
+        else:
+            _class = pom.CMesh
+            _shp = _node
+            _node = to_parent(_shp)
+    elif _type in ('locator', ):
+        _class = pom.CDagNode
     elif _type in (
-            'transform', 'hikIKEffector', 'locator', 'parentConstraint',
+            'transform', 'hikIKEffector', 'parentConstraint',
             'pointConstraint', 'aimConstraint', 'orientConstraint',
             'scaleConstraint'):
         _class = _cast_tfm(_node)
@@ -413,6 +418,7 @@ def _read_child_geos(obj):
         (CMesh list): child meshes
     """
     from maya_pini import open_maya as pom
+    _LOGGER.debug('READ CHILD GEOS %s', obj)
 
     _obj = obj
     _type = obj.object_type()
@@ -484,8 +490,10 @@ def set_to_tfms(set_):
         (CTransform list): transforms
     """
     from maya_pini import open_maya as pom
+    _LOGGER.debug('SET TO TFMS %s', set_)
     _tfms = []
     for _item in pom.CMDS.sets(set_, query=True):
+        _LOGGER.debug(' - CHECKING SET ITEM %s', _item)
         _tfms += _read_child_tfms(_item)
     return _tfms
 

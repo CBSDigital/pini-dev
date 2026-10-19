@@ -568,8 +568,11 @@ class PHSceneTab:
         self.ui.SSceneRefs.set_items(_items, select=None)
         self.ui.SApply.redraw()
 
-    def _build_scene_refs_display_list(self):
+    def _build_scene_refs_display_list(self, log=9):
         """Build list of scene references to display.
+
+        Args:
+            log (int): apply log level
 
         Returns:
             (CPipeRef list): scene refs to display
@@ -617,11 +620,11 @@ class PHSceneTab:
                 elif _show_texs and _ref.output.type_ == 'texture_seq':
                     pass
                 else:
-                    _LOGGER.debug(
-                        ' - REJECTED %s task=%s extn=%s', _ref,
+                    _LOGGER.log(
+                        log, ' - REJECTED %s task=%s extn=%s', _ref,
                         _ref.task, _ref.extn)
                     continue
-            _LOGGER.debug('   - ADD REF %s %s', _ref, _ref.output)
+            _LOGGER.log(log, '   - ADD REF %s %s', _ref, _ref.output)
             _refs.append(_ref)
 
         return _refs
@@ -1125,7 +1128,9 @@ class PHSceneTab:
             self._callback__SReset()
         if not (isinstance(attach_to, str) or attach_to is None):
             raise RuntimeError(attach_to)
+
         _work_dir = work_dir or self.work_dir
+        _abc_mode = self.ui.SAbcMode.currentText()
 
         # Obtain output
         try:
@@ -1143,7 +1148,7 @@ class PHSceneTab:
         _ignore = [_ref.namespace for _ref in self._staged_imports]
         _imps = ph_utils.output_to_imports(
             _out, namespace=namespace, ignore=_ignore, base=base,
-            work_dir=_work_dir, attach_to=attach_to)
+            work_dir=_work_dir, attach_to=attach_to, abc_mode=_abc_mode)
         for _out, _ns, _attach in _imps:
             _LOGGER.debug(' - IMPORT %s %s %s', _out, _ns, _attach)
             _attach_to = attach_to
@@ -1254,7 +1259,8 @@ def _apply_create_ref(output, namespace, attach_to):
         namespace (str): namespace for output
         attach_to (str): namespace of reference to attach this one to
     """
-    _LOGGER.info('APPLY CREATE REF %s %s', namespace, output)
+    _LOGGER.info(
+        'APPLY CREATE REF %s %s %s', namespace, output.content_type, output)
     _ref = dcc.create_ref(namespace=namespace, path=output)
     _LOGGER.info(' - REF %s', _ref)
     assert _ref
@@ -1264,7 +1270,8 @@ def _apply_create_ref(output, namespace, attach_to):
         assert isinstance(attach_to, str)
         _LOGGER.info(' - APPLY ATTACH %s -> %s', _ref, attach_to)
         _trg = dcc.find_pipe_ref(namespace=attach_to)
-        _LOGGER.info(' - TRG %s', _trg)
+        _LOGGER.info(
+            ' - TRG %s %s %s', _trg, _trg.output.content_type, _trg.output)
         if output.content_type == 'CurvesMb':
             _trg.attach_anim(_ref)
         elif output.content_type == 'ShadersMa':

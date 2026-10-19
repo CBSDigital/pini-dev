@@ -385,7 +385,7 @@ def output_to_icon(  # pylint: disable=too-many-branches
 
 def output_to_imports(  # pylint: disable=too-many-branches
         output, work_dir=None, namespace=None, ignore=(), attach_to=None,
-        base=None):
+        base=None, abc_mode=None):
     """Build a list of imports for the given output.
 
     Args:
@@ -395,6 +395,9 @@ def output_to_imports(  # pylint: disable=too-many-branches
         ignore (list): namespaces to ignore
         attach_to (str): namespace of reference to attach this one to
         base (str): base for namespace
+        abc_mode (str): abc import mode
+            aiStandIn - import abc as aiStandIn (no lookdev)
+            Auto - import using reference (default)
 
     Returns:
         (tuple list): list of imports - output / namespace / attach namespace
@@ -428,7 +431,9 @@ def output_to_imports(  # pylint: disable=too-many-branches
     if not _lookdev and dcc.NAME == 'maya':
         _auto_apply_lookdev = False
         _LOGGER.info(' - TEST FOR AUTO APPLY LOOKDEV %s', output.content_type)
-        if (
+        if abc_mode == 'aiStandIn':
+            _auto_apply_lookdev = False
+        elif (
                 _base.pini_task in ('model', 'rig') and
                 _work_dir and
                 _work_dir.pini_task in ('lighting', ) and

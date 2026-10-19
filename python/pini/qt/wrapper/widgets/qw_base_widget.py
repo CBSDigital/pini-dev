@@ -5,6 +5,7 @@ import logging
 from pini import dcc
 from pini.utils import basic_repr
 
+from ...q_mgr import QtCore
 from ... import q_utils
 
 _LOGGER = logging.getLogger(__name__)
@@ -175,7 +176,7 @@ class CBaseWidget:
         from pini import qt
         _parent = self.parent()
         for _idx in range(10):
-            if isinstance(_parent, qt.CUiBase):
+            if isinstance(_parent, (qt.CUiBase, QtCore.QObject)):
                 break
             if not _parent:
                 break

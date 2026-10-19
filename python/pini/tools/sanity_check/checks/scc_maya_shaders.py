@@ -232,7 +232,7 @@ class CheckLookdevShaders(core.SCMayaCheck):
             if self._check_for_assign_to_dup_geo(_assign, shader=shader):
                 continue
 
-            _geo = pom.cast_node(to_node(_assign), maintain_shapes=True)
+            _geo = pom.cast_node(_assign, maintain_shapes=True)
             self.write_log(' - check geo %s %s', _geo, _geo.object_type())
 
             # Check for face assigns

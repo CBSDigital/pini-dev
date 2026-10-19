@@ -161,6 +161,7 @@ class TestHelper(unittest.TestCase):
             _LOGGER.info(' - TEST IMPORT %s %s', _out.content_type, _out)
             _modes = _elem.all_text()
             for _mode in _modes:
+                print()
                 _LOGGER.info('   - TEST MODE %s %s', _mode, _out.extn)
                 _elem.select_text(_mode)
                 _helper.jump_to(_out)

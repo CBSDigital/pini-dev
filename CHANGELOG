@@ -1,7 +1,20 @@
+## [11.11.1] - Mon 2026-10-19 09:38
+### Summary
+ - Sanity Check:
+    - maya check shaders added handling for duplicate shapes (blee),
+ - Pini Helper:
+    - bugfix error on publish due to duplicate nodes (eehemann),
+### Updated
+ - pini.qt.CBaseWidget.to_dialog stops search at QObject to fix intermitted spacer error,
+ - pini.tools.sanity_check.CheckLookdevShaders added handing for duplicate shapes,
+ - pini.tools.helper.output_to_imports added abc_mode to fix shaders applied to aiStandIn,
+ - maya_pini.open_maya.cast_node added mesh + locator shape handling,
+
+
 ## [11.11.0] - Thu 2026-10-15 12:26
 ### Summary
  - Sanity Check:
-    - maya check asset hierarchy bugfix error on duplicate shape node (eehmann),
+    - maya check asset hierarchy bugfix error on duplicate shape node (eehemann),
 ### Updated
  - pini.dcc.export.CExporter.exec ignore args on build export kwargs,
  - pini.tools.sanity_check.CheckRenderLayers added handing for missing farm render,
