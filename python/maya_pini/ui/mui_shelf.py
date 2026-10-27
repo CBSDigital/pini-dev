@@ -271,7 +271,8 @@ def fix_broken_shelves(
         if not _mel.exists():
             _LOGGER.debug(' - MISSING MEL')
             continue
-        _n_btns = _mel.read().count('\n    shelfButton\n        ')
+        _body = _mel.read(errors='replace')
+        _n_btns = _body.count('\n    shelfButton\n        ')
         _LOGGER.debug(' - N MEL BTNS %d', _n_btns)
         if not _n_btns:
             _LOGGER.debug(' - MEL HAS NO BTNS')

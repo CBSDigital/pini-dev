@@ -324,11 +324,15 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
         _trg.test_dir()
         shutil.move(self.path, _trg.path)
 
-    def read(self, encoding='utf-8', catch=False):
+    def read(self, encoding='utf-8', errors=None, catch=False):
         """Read contents of this file as text.
 
         Args:
             encoding (str): override default encoding (utf-8)
+            errors (str): how to handle enoding errors
+                None/strict - raise as error
+                replace - swap each bad char for the replacement char
+                ignore - ignore bad chars
             catch (bool): no error if file missing
 
         Returns:
@@ -341,7 +345,7 @@ class File(up_path.Path):  # pylint: disable=too-many-public-methods
                 return None
             raise OSError('File does not exist ' + self.path)
 
-        with open(self.path, 'r', encoding=encoding) as _hook:
+        with open(self.path, 'r', encoding=encoding, errors=errors) as _hook:
             _body = _hook.read()
 
         return _body
