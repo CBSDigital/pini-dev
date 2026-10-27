@@ -14,8 +14,7 @@ from pini.utils import (
 
 from ..q_ui_container import CUiContainer
 from ..q_utils import (
-    SETTINGS_DIR, find_widget_children, p_is_onscreen, nice_screen,
-    screen_is_available)
+    SETTINGS_DIR, find_widget_children, rect_is_visible, nice_screen)
 from ..q_layout import find_layout_widgets
 from ..q_mgr import QtWidgets, QtGui, Qt, QtCore
 
@@ -484,16 +483,14 @@ class CUiBase:
         self.settings.apply_to_ui(
             self.ui, type_filter=type_filter, filter_=filter_)
 
-    def _load_geometry_settings(self, screen=None):
+    def _load_geometry_settings(self):
         """Load geometry settings (ie. pos/size).
 
-        Load geometry is blocked if the saved position is outside any of
-        the current screen regions. This can occur if screens are added or
-        removed, and can cause dccs to become locked if modal interfaces
-        are not visible.
-
-        Args:
-            screen (str): override screen
+        Load geometry is blocked if the saved position would leave the
+        window's title bar outside the current screen regions. This can
+        occur if screens are added or removed, or if resolution/scaling
+        changes (eg. via remote desktop), and can cause dccs to become
+        locked if modal interfaces are not visible.
 
         Returns:
             (bool): whether geometry settings were loaded successfully
@@ -507,9 +504,9 @@ class CUiBase:
             _LOGGER.debug('   - POS/SIZE SETTINGS NOT FOUND')
             return False
 
-        _screen = screen or self.settings.value('window/screen')
+        _screen = self.settings.value('window/screen')
         _LOGGER.debug('   - GEO pos=%s size=%s screen=%s', _pos, _size, _screen)
-        if not p_is_onscreen(_pos) and not screen_is_available(_screen):
+        if not rect_is_visible(_pos, _size):
             _LOGGER.debug('   - REJECTING LOAD GEOMETRY, POS IS OFFSCREEN')
             return False
 

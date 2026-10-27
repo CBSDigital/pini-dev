@@ -365,9 +365,10 @@ class PUQtUi(QtWidgets.QMainWindow, _PUBaseUiDummy):
         # Apply geom
         _geom = _data.get('geometry')
         if _geom:
-            self.setFixedWidth(max(_geom['width'], 300))
+            _width = max(_geom['width'], 300)
+            self.setFixedWidth(_width)
             _pos = _geom['x'], _geom['y']
-            if qt.p_is_onscreen(_pos):
+            if qt.rect_is_visible(_pos, (_width, self.height())):
                 self.move(*_pos)
                 _LOGGER.info(
                     ' - UPDATE POS (%d, %d) / (%d, %d)', _pos[0], _pos[1],

@@ -762,7 +762,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         """
         from maya_pini import open_maya as pom
         return [
-            pom.CNode(_node) for _node in
+            pom.CDagNode(_node) for _node in
             to_shps(str(self), type_=type_)]
 
     def _to_preset_tmp(self, fmt):

@@ -1,12 +1,14 @@
 """Maya lookdev checks."""
 
+import collections
 import logging
+import operator
 
 from maya import cmds
 
-from pini import dcc
+from pini import dcc, qt
 from pini.tools import error
-from pini.utils import wrap_fn, chain_fns, plural
+from pini.utils import wrap_fn, chain_fns, plural, single
 
 from maya_pini import open_maya as pom, m_pipe, tex
 from maya_pini.m_pipe import lookdev
@@ -457,16 +459,22 @@ class CheckLights(core.SCMayaCheck):
         """Run this check."""
         self.write_log('exporter %s', self.exporter)
         self.write_log('settings %s', self.exporter.read_settings())
+
+        # Test whether scene has/requires lights
         _lights_tgl = self.exporter.read_settings().get('lights')
         self.write_log('lights %s', _lights_tgl)
-        if not _lights_tgl:
+        if _lights_tgl is False:
             self.write_log('lights disabled')
             return
+        self.lights = lookdev.read_lights()
+        if _lights_tgl is None and not self.lights:
+            self.write_log('no lights found')
+            return
+        self.write_log('lights %s', self.lights)
 
-        _lights = lookdev.read_lights()
-        self.write_log('lights %s', _lights)
+        # Flag no lights if required
         _cache_set = m_pipe.find_cache_set()
-        if not _lights:
+        if not self.lights:
             _fail = core.SCFail(
                 f'Publish lights is enabled but there are no lights in the '
                 f'cache set ("{_cache_set}")', node=_cache_set)
@@ -476,3 +484,137 @@ class CheckLights(core.SCMayaCheck):
                 is_fix=True)
             self.add_fail(_fail)
             return
+
+        if self._check_for_dup_lgts():
+            return
+        if self._check_for_scn_lgts():
+            return
+
+    def _check_for_dup_lgts(self):
+        """Check for duplicate lights in the cache set.
+
+        Returns:
+            (bool): whether there are duplicate lights in the cache set
+        """
+
+        # Build name map to count duplicates
+        _name_map = collections.defaultdict(list)
+        for _lgt in self.lights:
+            _name_map[to_clean(_lgt)].append(_lgt)
+        _name_map = dict(_name_map)
+
+        # Check for duplicates
+        _scn_lgts = []
+        _tfr_map = []
+        for _name, _lgts in _name_map.items():
+
+            if len(_lgts) == 1:
+                continue
+
+            if len(_lgts) == 2:
+                _lgts.sort(key=operator.methodcaller('is_referenced'))
+                if not _lgts[0].is_referenced() and _lgts[1].is_referenced():
+                    _scn_lgt, _ref_lgt = _lgts
+                    _scn_lgts.append(_scn_lgt)
+                    _tfr_map.append((_scn_lgt, _ref_lgt))
+                else:
+                    raise NotImplementedError
+            else:
+                raise NotImplementedError
+
+        if not _scn_lgts:
+            return False
+
+        # Apply fail
+        _msg_f = (
+            '{n_lgts} lights in the cache set are duplicates of '
+            'referenced lights. '
+            '\n\nThese unreferenced lights should be removed:\n'
+            '{lgts_s}\n\n'
+            'Transfer settings to apply settings from the scene lights '
+            'to the referenced ones.')
+        self._add_dup_lgts_fail(
+            scn_lgts=_scn_lgts, tfr_map=_tfr_map, msg_f=_msg_f)
+        return True
+
+    def _check_for_scn_lgts(self):
+        """Check for light duplicates in the scene.
+
+        Returns:
+            (bool): whether there are duplicate lights in the scene
+        """
+        _scn_lgts = []
+        _dup_lgts = []
+        _tfr_map = []
+        for _lgt in self.lights:
+            self.write_log(' - check light %s', _lgt)
+            if not _lgt.is_referenced():
+                continue
+            assert _lgt.namespace
+            _scn_name = to_clean(_lgt)
+            self.write_log('   - scene name %s', _scn_name)
+            _scn_nodes = pom.find_nodes(pattern=_scn_name)
+            self.write_log('   - scene nodes %s', _scn_nodes)
+            _scn_lgt = single([
+                _node for _node in _scn_nodes
+                if not m_pipe.node_is_junk(_node)], catch=True)
+            if not _scn_lgt:
+                self.write_log('   - no scene light found')
+                continue
+            _scn_lgts.append(_scn_lgt)
+            _tfr_map.append((_scn_lgt, _lgt))
+
+        if not _scn_lgts:
+            return False
+
+        # Apply fail
+        _msg_f = (
+            '{n_lgts} of the lights in the cache set have duplicates '
+            'in the scene which will not be published.\n\nThese nodes '
+            'should be removed for clarity:\n{lgts_s}.\n\n'
+            'Transfer settings to apply settings from the scene lights '
+            'to the referenced ones.')
+        self._add_dup_lgts_fail(
+            scn_lgts=_scn_lgts, tfr_map=_tfr_map, msg_f=_msg_f)
+
+        return True
+
+    def _add_dup_lgts_fail(self, scn_lgts, tfr_map, msg_f):
+        """Add a duplicate lights in scene fail.
+
+        Args:
+            scn_lgts (CTransform list): scene lights
+            tfr_map (tuple): transfer settings map scene -> ref light
+            msg_f (str): message format string
+        """
+        _lgts_s = ', '.join([str(_lgt) for _lgt in scn_lgts])
+        _msg = msg_f.format(n_lgts=len(scn_lgts), lgts_s=_lgts_s)
+        _fail = core.SCFail(_msg, button_w=120)
+        _fail.add_action(
+            "Select nodes", wrap_fn(cmds.select, scn_lgts))
+        _fail.add_action(
+            "Transfer settings",
+            wrap_fn(_tfr_lgt_settings, tfr_map, parent=self.parent_ui))
+        _fail.add_action(
+            "Remove nodes", wrap_fn(cmds.delete, scn_lgts), is_fix=True)
+        self.add_fail(_fail)
+
+
+def _tfr_lgt_settings(map_, parent=None):
+    """Transfer light settings.
+
+    Args:
+        map_ (list): settings transfer map
+        parent (QDialog): parent dialog
+    """
+    _LOGGER.info('TRANSFER LIGHT SETTINGS')
+    for _src, _trg in map_:
+        _preset = _src.save_preset()
+        _trg.load_preset(_preset)
+        _LOGGER.info(' - TRANSFERRED %s -> %s', _src, _trg)
+    qt.notify(
+        f'Applied settings to {len(map_)} lights.\n\n'
+        'See script editor for details.\n\n'
+        'It is now safe to remove the unreferenced nodes.',
+        title='Transfer settings',
+        parent=parent)

@@ -18,7 +18,8 @@ def add_anim_offs(tfm, anims=None, reset=False):
 
     Args:
         tfm (CTransform): node to apply offset controls on
-        anims (CAnimCurve list): animation to offset
+        anims (CAnimCurve list): animation to offset (default is all
+            anim curves in scene)
         reset (bool): reset any existing offset settings
 
     Returns:
@@ -26,7 +27,7 @@ def add_anim_offs(tfm, anims=None, reset=False):
     """
     from maya_pini import open_maya as pom
 
-    _anims = anims
+    _anims = anims or pom.find_anims()
     _LOGGER.info('ADD ANIM OFFS %s (%d CRVS)', tfm, len(_anims))
 
     # Create attrs
@@ -45,7 +46,7 @@ def add_anim_offs(tfm, anims=None, reset=False):
     return _offs, _mult
 
 
-def cast_node(
+def cast_node(  # pylint: disable=too-many-branches
         node, type_=None, class_=None, maintain_shapes=False, catch=False):
     """Cast a node to an appropriate pom type.
 
@@ -58,7 +59,7 @@ def cast_node(
         catch (bool): no error if node fails to cast
 
     Returns:
-        (CNode|CTransform|CCamera): node object
+        (CNode): node object
     """
     from maya_pini import open_maya as pom
 
@@ -97,6 +98,8 @@ def cast_node(
         _class = _cast_tfm(_node)
     elif _type.startswith('animCurve'):
         _class = pom.CAnimCurve
+    elif '|' in _node:
+        _class = pom.CDagNode
     else:
         _class = pom.CNode
 
@@ -533,7 +536,7 @@ def to_mobject(node):
         (MObject): open maya object
     """
     from maya_pini import open_maya as pom
-    _LOGGER.debug('TO MOBJECT %s', node)
+    _LOGGER.debug(' - TO MOBJECT %s', node)
 
     # Obtain node as str
     _node = node

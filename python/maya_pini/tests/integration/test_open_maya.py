@@ -44,7 +44,7 @@ class TestOpenMaya(unittest.TestCase):
         assert _persp.to_shp()
         assert _persp.to_shp() == _persp_s
         assert isinstance(_persp.to_shp(), pom.CBaseNode)
-        assert isinstance(_persp.to_shp(), pom.CNode)
+        assert isinstance(_persp.to_shp(), pom.CDagNode)
 
         # Check cam
         assert _cam.shp == _persp_s

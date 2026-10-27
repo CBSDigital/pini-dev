@@ -685,7 +685,7 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             ('shoulder_r', 'RightShoulder'),
             ('shoulder_l', 'LeftShoulder')]
 
-    elif skel.name in ('Unreal', 'HouUnreal'):
+    elif skel.name in ('Unreal', 'HouUnreal', 'Unreal2'):
 
         _jnt_map = [
             ('root', 'Reference'),
@@ -770,7 +770,8 @@ def _skel_to_mapping(skel):  # pylint: disable=too-many-branches
             ('ringtoe_01_l', 'LeftFootRing1'),
             ('ringtoe_02_l', 'LeftFootRing2')]
 
-    elif skel.name in ('HouUnreal2', 'HouUnreal3', 'HouUnreal4'):
+    elif skel.name in (
+            'HouUnreal2', 'HouUnreal3', 'HouUnreal4', 'HouUnreal5'):
 
         _jnt_map = [
             ('pelvis', 'Hips'),

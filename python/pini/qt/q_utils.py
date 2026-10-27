@@ -332,6 +332,42 @@ def p_is_onscreen(pos):
     return bool([_rect for _rect in _rects if _rect.contains(_pos)])
 
 
+def rect_is_visible(pos, size, min_width=100, title_height=30, screens=None):
+    """Check whether a window at the given pos/size would be usably visible.
+
+    Rather than testing a single point, this checks that a strip of the
+    window's title bar (ie. the top of the window) is visible on a single
+    screen, so that the window can at least be grabbed and dragged by the
+    user. This catches positions which are technically onscreen but
+    which leave the window hidden behind the taskbar or hanging off the
+    right/bottom edge of a screen, which can happen when screen resolution
+    or scaling changes (eg. via remote desktop).
+
+    Args:
+        pos (QPoint): window position
+        size (QSize): window size (only the width is significant)
+        min_width (int): minimum visible width of the title strip
+        title_height (int): height of the title strip to test
+        screens (QScreen list): override screens to test against (eg. to
+            restrict to the screen containing the dcc main window)
+
+    Returns:
+        (bool): whether window would be visible
+    """
+    _pos = to_p(pos)
+    _size = to_size(size)
+    _title = QtCore.QRect(_pos.x(), _pos.y(), _size.width(), title_height)
+    _screens = screens or get_application().screens()
+    _LOGGER.debug('   - TITLE %s SCREENS %s', _title, _screens)
+    for _screen in _screens:
+        _avail = _screen.availableGeometry()
+        _vis = _title.intersected(_avail)
+        _LOGGER.debug('   - SCREEN %s avail=%s vis=%s', _screen, _avail, _vis)
+        if _vis.width() >= min_width and _vis.height() >= title_height:
+            return True
+    return False
+
+
 def safe_timer_event(func):
     """Decorator to catch timer event errors caused by reloading.
 

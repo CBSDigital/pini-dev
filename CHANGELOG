@@ -1,3 +1,21 @@
+## [11.12.0] - Tue 2026-10-27 09:34
+### Summary
+ - Sanity Check:
+    - bugfix window appearing offscreen after jump update (csoza),
+    - maya lookdev check lights flag duplicate lights in scene (eehemann),
+### Updated
+ - pini.qt.rect_is_visible added,
+ - pini.tools.pyui find_ui/find_uis added filter_ arg,
+ - pini.tools.sanity_check.SCFail updated attr name button_width -> button_w for symmetry,
+ - pini.tools.sanity_check.CheckLights added check for dup lights,
+ - pini.refresh.find_mods added filter_ arg,
+ - maya_pini.m_pipe.lookdev added mpl_lights submodule,
+ - maya_pini.m_pipe.lookdev read lights added handling for dup nodes,
+ - maya_pini.open_maya.add_anim_offs default anims is all nodes in scene,
+ - maya_pini.open_maya.cast_node apply CDagNode on | in name,
+ - maya_pini.open_maya.CBaseNode.to_shps use CDagNode,
+
+
 ## [11.11.2] - Mon 2026-10-19 10:27
 ### Summary
  - Sanity Check:

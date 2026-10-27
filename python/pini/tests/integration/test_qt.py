@@ -72,6 +72,7 @@ class TestQt(unittest.TestCase):
 
         _ui_file = release.PINI.to_file('python/pini/tests/unit/settings_test.ui')
         assert _ui_file.exists()
+        qt.get_application()  # Required to build widgets outside a dcc
         _ui = qt.CUiDialog(ui_file=_ui_file)
 
         # Make sure ui onscreen + settings load
@@ -82,17 +83,36 @@ class TestQt(unittest.TestCase):
             _root = qt.to_p()
             _LOGGER.info(' - NO MAIN WINDOW FOUND')
         _on_pos = _root + qt.to_p(100)
-        assert qt.p_is_onscreen(_on_pos)
+        _size = qt.to_size(1000, 700)
+        assert qt.rect_is_visible(_on_pos, _size)
         _ui.move(_on_pos)
-        _ui.resize(1000, 700)
+        _ui.resize(_size)
         _ui.save_settings()
         print()
-        assert _ui._load_geometry_settings(screen='N/A')
+        assert _ui._load_geometry_settings()
 
-        # Check load geometry rejected of offscreen
+        # Check load geometry rejected if offscreen
         _off_pos = _root - qt.to_p(200)
-        assert not qt.p_is_onscreen(_off_pos)
+        assert not qt.rect_is_visible(_off_pos, _size)
         _ui.move(_off_pos)
         _ui.save_settings()
-        assert not _ui._load_geometry_settings(screen='N/A')
+        assert not _ui._load_geometry_settings()
+
+        # Check load geometry rejected if pos is onscreen but title bar is
+        # hanging off the right edge of the right-most screen (eg. after a
+        # resolution change) - a single point test would pass this case
+        _screens = qt.get_application().screens()
+        _screen = max(
+            _screens, key=lambda screen: screen.availableGeometry().right())
+        _avail = _screen.availableGeometry()
+        _edge_pos = qt.to_p(_avail.right() - 20, _avail.top() + 100)
+        assert qt.p_is_onscreen(_edge_pos)
+        assert not qt.rect_is_visible(_edge_pos, _size)
+        _ui.move(_edge_pos)
+        _ui.save_settings()
+        assert not _ui._load_geometry_settings()
+
+        # Check a different screen set can be passed
+        _screen = qt.get_application().screenAt(_on_pos)
+        assert qt.rect_is_visible(_on_pos, _size, screens=[_screen])
         _ui.delete()

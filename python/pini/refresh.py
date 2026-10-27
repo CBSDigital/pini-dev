@@ -13,7 +13,8 @@ import time
 import traceback
 import types
 
-from pini.utils import apply_filter, lprint, abs_path, check_heart
+from pini.utils import (
+    apply_filter, lprint, abs_path, check_heart, passes_filter)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -215,13 +216,14 @@ if _RELOAD_ORDER_APPEND:
     RELOAD_ORDER += _RELOAD_ORDER_APPEND.split(',')
 
 
-def find_mods(base=None):
+def find_mods(base=None, filter_=None):
     """Find modules.
 
     Modules without __file__ attribute are ignored.
 
     Args:
         base (str): match by module base (eg. pini)
+        filter_ (str): apply module name filter
 
     Returns:
         (mod list): matching modules
@@ -237,6 +239,8 @@ def find_mods(base=None):
         _LOGGER.debug('CHECKING %s %s', _name, _mod)
         _base = _name.split('.')[0]
         if base != _base:
+            continue
+        if filter_ and not passes_filter(_name, filter_):
             continue
         _mods.append(_mod)
 

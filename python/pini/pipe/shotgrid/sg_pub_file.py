@@ -64,9 +64,9 @@ def create_pub_file_from_output(
 
     # Catch already exists
     _sg_pub = _find_sg_pub(output, sg_ety=_sg_ety)
-    _LOGGER.info(' - SG PUB %s', _sg_pub)
+    _LOGGER.debug(' - SG PUB %s', _sg_pub)
     if _sg_pub:
-        _LOGGER.info(
+        _LOGGER.debug(
             ' - ALREADY REGISTERED IN SHOTGRID %d %s',
             _sg_pub.id_, output.path)
 
@@ -132,14 +132,14 @@ def _apply_thumb(thumb, id_, path=None, source=None):
 
     # Attempt share thumb with source
     if source:
-        _LOGGER.info(' - SHARING THUMB WITH SOURCE OUTPUT %s', source)
+        _LOGGER.debug(' - SHARING THUMB WITH SOURCE OUTPUT %s', source)
         try:
             shotgrid.to_handler().share_thumbnail(
                 entities=[{'type': 'PublishedFile', 'id': id_}],
                 source_entity=source.sg_pub_file.to_entry())
             return
         except shotgun_api3.ShotgunThumbnailNotReady:
-            _LOGGER.info(' - FAILED TO SHARE, SRC THUMB NOT READY')
+            _LOGGER.debug(' - FAILED TO SHARE, SRC THUMB NOT READY')
 
     # Obtain thumb
     _thumb = thumb
@@ -375,27 +375,27 @@ def _find_sg_pub(output, sg_ety):
     Returns:
         (SGCPubFile|None): pub file entry (if any)
     """
-    _LOGGER.info(' - FIND SG PUB %s', output)
+    _LOGGER.debug(' - FIND SG PUB %s', output)
 
     _sg_pubs = sg_ety.find_pub_files(path=output.path)
     _sg_pubs.sort(key=operator.attrgetter('updated_at'))
     if len(_sg_pubs) == 1:
         _sg_pub = single(_sg_pubs)
-        _LOGGER.info(' - MATCHED SINGLE PUB %d %s', _sg_pub.id_, _sg_pub)
+        _LOGGER.debug(' - MATCHED SINGLE PUB %d %s', _sg_pub.id_, _sg_pub)
         return _sg_pub
     if not _sg_pubs:
-        _LOGGER.info(' - NO MATCHING PUBS FOUND %s', output.path)
+        _LOGGER.debug(' - NO MATCHING PUBS FOUND %s', output.path)
         return None
 
     # Test for a single or no entry that is not omitted
     _unomitted = sg_ety.find_pub_files(path=output.path, omitted=False)
     if len(_unomitted) == 1:
         _sg_pub = single(_unomitted)
-        _LOGGER.info(' - MATCHED SINGLE UNOMITTED %d %s', _sg_pub.id_, _sg_pub)
+        _LOGGER.debug(' - MATCHED SINGLE UNOMITTED %d %s', _sg_pub.id_, _sg_pub)
         return _sg_pub
     if not _unomitted:
         _sg_pub = _sg_pubs[-1]
-        _LOGGER.info(' - uSE RECENT OMITTED %d %s', _sg_pub.id_, _sg_pub)
+        _LOGGER.debug(' - uSE RECENT OMITTED %d %s', _sg_pub.id_, _sg_pub)
         return _sg_pub
 
     qt.ok_cancel(
@@ -404,9 +404,9 @@ def _find_sg_pub(output, sg_ety):
         title='Multiple entries')
 
     _sg_pub = _sg_pubs.pop(-1)
-    _LOGGER.info(' - uSE LATEST OMITTED %d %s', _sg_pub.id_, _sg_pub)
+    _LOGGER.debug(' - uSE LATEST OMITTED %d %s', _sg_pub.id_, _sg_pub)
     for _pub in _sg_pubs[:-1]:
-        _LOGGER.info(' - OMITTING %d %s', _pub.id_, _pub)
+        _LOGGER.debug(' - OMITTING %d %s', _pub.id_, _pub)
         _pub.omit()
     _sg_pub.set_status('wtg')
     return _sg_pub
@@ -483,7 +483,7 @@ def _obt_scene_entry(output, user, task, notes, thumb=None):
             _work.task == output.task and
             _work.ver_n == output.ver_n):
         _scene = _work.path
-    _LOGGER.info(' - SCENE %s', _scene)
+    _LOGGER.debug(' - SCENE %s', _scene)
 
     if not _scene:
         return None
@@ -491,7 +491,7 @@ def _obt_scene_entry(output, user, task, notes, thumb=None):
     _pub = create_pub_file_from_path(
         _scene, job=output.job, entity=output.entity, user=user, task=task,
         notes=notes, ver_n=output.ver_n, name=_name, thumb=thumb)
-    _LOGGER.info(' - SCENE PUB %s', _pub)
+    _LOGGER.debug(' - SCENE PUB %s', _pub)
     return _pub
 
 
@@ -527,15 +527,15 @@ def create_pub_file_from_path(
 
     # Create entry if required
     if not _pub:
-        _LOGGER.info(' - CREATE PublishedFile %s', _path)
+        _LOGGER.debug(' - CREATE PublishedFile %s', _path)
 
         _file = File(_path)
         _data = _build_pub_data(
             _file, name=name, job=job, entity=entity, type_=type_,
             user=user, task=task, ver_n=ver_n, notes=notes)
-        _LOGGER.info('   - SCENE DATA %s', _data)
+        _LOGGER.debug('   - SCENE DATA %s', _data)
         _pub = shotgrid.create('PublishedFile', _data)
-        _LOGGER.info('   - SCENE ENTRY %s', _pub)
+        _LOGGER.debug('   - SCENE ENTRY %s', _pub)
         if thumb:
             shotgrid.upload_thumbnail(
                 'PublishedFile', _pub['id'], to_str(thumb))
@@ -623,11 +623,11 @@ def create_pub_files_from_outputs(
     # Send batch data
     if _batch_data:
         _start = time.time()
-        _LOGGER.info(' - BATCH DATA %s', _batch_data)
+        _LOGGER.debug(' - BATCH DATA %s', _batch_data)
 
         _batch_result = sg_handler.batch(_batch_data)
-        _LOGGER.info(' - BATCH RESULT %s', _batch_result)
-        _LOGGER.info(
+        _LOGGER.debug(' - BATCH RESULT %s', _batch_result)
+        _LOGGER.debug(
             ' - CREATED %d ENTRIES in %.0fs', len(_batch_result),
             time.time() - _start)
         for _out, _result in safe_zip(_batch_outs, _batch_result):
