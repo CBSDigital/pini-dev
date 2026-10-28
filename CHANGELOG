@@ -1,3 +1,19 @@
+## [11.13.0] - Wed 2026-10-28 15:45
+### Summary
+ - Pini Helper:
+    - substance painter texture export preview outputs sort files alphabetically + bugfix displaying full channel name (blee),
+ - Error Dialog:
+    - bugfix cropped tracebacks in hou 22,
+### Updated
+ - pini.export.CSPainterTexturePublish outputs preview display updated name,
+ - pini.export.CSPainterTexturePublish outputs preview display apply filename sort,
+ - pini.qt.apply_base_style made public,
+ - pini.qt.apply_base_style bugfix cropping QListView output,
+ - pini.tools.release.CheckFile.to_pylint_reading cwd to $HOME to fix false module sorting fail,
+ - pini.tools.helper bugfix error on create vdb ref with maya software as current renderer,
+ - spainter_pini.p_pipe exported to_pub_dir/to_tex_output/to_tex_seq,
+
+
 ## [11.12.1] - Tue 2026-10-27 13:43
 ### Summary
  - Maya Pini:

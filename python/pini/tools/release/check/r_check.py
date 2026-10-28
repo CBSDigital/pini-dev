@@ -10,7 +10,7 @@ from pini import qt
 from pini.utils import (
     File, PyFile, find_exe, system, get_method_to_file_cacher, MetadataFile,
     PyDef, PyClass, abs_path, to_str, cache_result, merge_dicts,
-    passes_filter, to_time_f, nice_age)
+    passes_filter, to_time_f, nice_age, restore_cwd, HOME)
 
 from . import r_docs, r_issue, r_autofix
 
@@ -325,6 +325,7 @@ class CheckFile(MetadataFile):
             _issues.append(_issue)
         return _issues
 
+    @restore_cwd
     @get_method_to_file_cacher(mtime_outdates=True)
     def to_pylint_reading(self, force=False):
         """Obtain pylint reading for this file.
@@ -381,6 +382,7 @@ class CheckFile(MetadataFile):
             _init_py = '; '.join(_init)
             _cmds += ['--init-hook', _init_py]
 
+        os.chdir(HOME.path)  # cwd affects import order
         _out, _err = system(_cmds, result='out/err', verbose=1)
         if 'Your code has been rated at' not in _out:
             _LOGGER.info('OUT')

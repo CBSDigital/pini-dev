@@ -7,9 +7,9 @@ import os
 
 from substance_painter import textureset
 
-from pini import icons, qt, dcc
+from pini import icons, qt, dcc, pipe
 from pini.qt import QtWidgets
-from pini.utils import last
+from pini.utils import last, File
 
 from spainter_pini import p_pipe
 
@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 class CSPainterTexturePublish(ph_basic.CBasicPublish):
     """Manages a substance painter texture publish."""
 
-    NAME = 'Substance Texture Publish'
+    NAME = 'Texture Publish'
     ICON = icons.find('Framed Picture')
     COL = 'Salmon'
     TYPE = 'Publish'
@@ -119,6 +119,8 @@ class _OutputsDialog(QtWidgets.QDialog):
             parent (QWidget): parent dialog
         """
         super().__init__(parent)
+        qt.apply_base_style(self)
+
         _preset = preset.split('/')[-1]
         self.setWindowTitle(f"Texture exports - {_preset}")
         self.setMinimumSize(400, 300)
@@ -176,21 +178,33 @@ def _raise_outputs_dialog(preset, sets=None, parent=None, res=4096):
         parent (QWidget): parent widget
         res (int): output resolution
     """
+    _LOGGER.debug('RAISE OUTPUTS DIALOG %s', preset)
+
+    _work = pipe.CACHE.cur_work
+    _pub_dir = p_pipe.to_pub_dir(work=_work)
 
     # Build export data
     _exports = {}
     _data = p_pipe.to_export_data(sets=sets, res=res, preset=preset)
-    for _set, _files in _data.items():
-        _set_items = []
+    for _shd, _files in _data.items():
+        _shd_items = []
         for _file_data in _files:
+            _LOGGER.debug(' - FILE DATA %s', _file_data)
             _res = _file_data.get('res', (res, res))
             _bits = _file_data.get('bits')
+            _LOGGER.debug(' - FILENAME %s', _file_data['filename'])
+            _exp_seq = p_pipe.to_tex_seq(
+                path=_pub_dir.to_file(_file_data['filename']).path, shd=_shd)
+            _LOGGER.debug(' - EXP SEQ %s', _exp_seq)
+            _exp_out = p_pipe.to_tex_output(_exp_seq, work=_work)
+            _LOGGER.debug(' - EXP OUT %s', _exp_out)
             _data = (
-                _file_data['filename'],
+                File(_exp_out[1001]).filename,
                 f'{_res}x{_res}',
                 f'{_bits} bits' if _bits else 'document')
-            _set_items.append(_data)
-        _exports[_set] = _set_items
+            _shd_items.append(_data)
+        _shd_items.sort()
+        _exports[_shd] = _shd_items
 
     # Raise dialog
     _dlg = _OutputsDialog(

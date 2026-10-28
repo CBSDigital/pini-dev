@@ -70,8 +70,8 @@ def export_textures(
     # Find text template
     _work = work or pipe.CACHE.obt_cur_work()
     assert _work
-    _tmpl = _to_template(_work)
-    _pub_dir = _to_pub_dir(work=_work, template=_tmpl)
+    _tmpl = to_tex_template(_work)
+    _pub_dir = to_pub_dir(work=_work, template=_tmpl)
     _cfg = to_export_cfg(
         pub_dir=_pub_dir, extn=extn, res=res, sets=sets, preset=preset)
     _LOGGER.info(' - CFG %s', _cfg)
@@ -92,35 +92,14 @@ def export_textures(
         _LOGGER.info("   - SHD %s", _shd)
         for _path in _paths:
             _LOGGER.info('   - TEX FILE %s', _path)
-
-            # Parse filename
-            _orig_file = File(_path)
-            _orig_root, _suffix = _orig_file.filename.split(f'_{_shd}_')
-            _LOGGER.info('     - ROOT / SUFFIX %s %s', _orig_root, _suffix)
-
-            # Handle udim option disabled
-            if _suffix.count('.') < 2:
-                # _chan_l, _extn = _suffix.rsplit('.', 2)
-                raise RuntimeError(f'Failed to find UDIM in path {_path}')
-
-            _chan_l, _udim, _extn = _suffix.rsplit('.', 2)
-            _orig_seq = _orig_file.to_dir().to_seq(
-                f'{_orig_root}_{_shd}_{_chan_l}.<UDIM>.{_orig_file.extn}')
-            _LOGGER.info('   - ORIG SEQ %s', _orig_seq)
-            assert _orig_seq[int(_udim)] == _path
-            assert len(_udim) == 4
-            assert _udim.isdigit()
-
-            # Build output filename
-            _chan = ''.join(_chr for _chr in _chan_l if _chr.isupper())
-            _out_seq = _work.to_output(
-                _tmpl, output_name=_shd, output_type=_chan, extn=_extn)
-            if _out_seq in _outs:
+            _src = to_tex_seq(shd=_shd, path=_path)
+            _trg = to_tex_output(_src, template=_tmpl, work=_work)
+            if _trg in _outs:
                 _LOGGER.info('     (ALREADY HANDLED)')
                 continue
-            _outs.append(_out_seq)
-            _LOGGER.info('     -> TEX OUT %s', _out_seq)
-            _to_rename.append((_orig_seq, _out_seq))
+            _outs.append(_trg)
+            _LOGGER.info('     -> TEX OUT %s', _trg)
+            _to_rename.append((_src, _trg))
 
     # Rename to apply naming conventions
     _LOGGER.info('APPLY RENAME')
@@ -407,7 +386,7 @@ def to_export_cfg(pub_dir=None, extn='png', preset=None, res=4096, sets=None):
     Returns:
         (dict): export config
     """
-    _pub_dir = pub_dir or _to_pub_dir()
+    _pub_dir = pub_dir or to_pub_dir()
 
     # Determine preset
     _preset_url = preset
@@ -581,7 +560,7 @@ def _to_map_pattern(name, set_=None):
     return _pattern
 
 
-def _to_pub_dir(work=None, template=None):
+def to_pub_dir(work=None, template=None):
     """Obtain publish dir for the given work file.
 
     NOTE: substance texture export handle see // mounts
@@ -594,7 +573,7 @@ def _to_pub_dir(work=None, template=None):
         (Dir): publish dir
     """
     _work = work or pipe.cur_work()
-    _tmpl = template or _to_template(work=_work)
+    _tmpl = template or to_tex_template(work=_work)
     _pub_dir = _work.to_output(
         _tmpl, output_name='null', output_type='C',
         udim_u='10', udim_v='01', extn='png').to_dir()
@@ -604,7 +583,7 @@ def _to_pub_dir(work=None, template=None):
     return _pub_dir
 
 
-def _to_template(work):
+def to_tex_template(work=None):
     """Obtain texture export template.
 
     Args:
@@ -621,3 +600,64 @@ def _to_template(work):
             f'No "{_tmpl_name}" template found in job "{_work.job.name}" - '
             'unable to export textures')
     return _tmpl
+
+
+def to_tex_output(seq, work=None, template=None):
+    """Get a texture output from the spainter export seq.
+
+    Args:
+        seq (Seq): texture sequence exported from substance
+        work (CPWork): work file
+        template (CPTemplate): texture template
+
+    Returns:
+        (CPOutput): texture output
+    """
+    _LOGGER.debug('TO TEX OUTPUT %s', seq)
+
+    _work = work or pipe.CACHE.cur_work
+    _tmpl = template or to_tex_template(_work)
+
+    _chan = ''.join(_chr for _chr in seq.chan if _chr.isupper())
+    _tex_seq = _work.to_output(
+        _tmpl, output_name=seq.shd, output_type=_chan, extn=seq.extn)
+
+    return _tex_seq
+
+
+def to_tex_seq(shd, path):
+    """Determine texture export sequence from the path to one of its files.
+
+    Args:
+        shd (str): name of texture set being exported
+        path (str): path to output file
+
+    Returns:
+        (Seq): export sequence
+    """
+    _LOGGER.debug('TO TEX SEQ %s %s', shd, path)
+
+    # Parse filename
+    _orig_file = File(abs_path(path))
+    _orig_root, _suffix = _orig_file.filename.split(f'_{shd}_')
+    _LOGGER.debug('  - ROOT / SUFFIX %s %s', _orig_root, _suffix)
+
+    # Handle udim option disabled
+    if _suffix.count('.') < 2:
+        # _chan_l, _extn = _suffix.rsplit('.', 2)
+        raise RuntimeError(f'Failed to find UDIM in path {path}')
+
+    _chan, _udim, _extn = _suffix.rsplit('.', 2)
+    _seq_filename = f'{_orig_root}_{shd}_{_chan}.<UDIM>.{_orig_file.extn}'
+    _LOGGER.debug(' - SEQ FILENAME %s', _seq_filename)
+    _seq = _orig_file.to_dir().to_seq(_seq_filename)
+
+    assert _seq[int(_udim)] == abs_path(path), f'Bad seq path {_seq[int(_udim)]}'
+    assert len(_udim) == 4
+    assert _udim.isdigit()
+
+    # Embed metadata
+    _seq.chan = _chan
+    _seq.shd = shd
+
+    return _seq

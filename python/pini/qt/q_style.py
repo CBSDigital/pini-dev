@@ -42,7 +42,7 @@ QListView, QListWidget, QTreeView, QTableView, QTextEdit, QPlainTextEdit {
     outline: 0;
     selection-background-color: #5285a6;
     selection-color: #ffffff; }
-QListView::item { padding: 0px 0px; }
+QListView::item { padding: 0px 0px; background: transparent; }
 QListView::item:selected { background-color: #5285a6; }
 
 /* inputs */

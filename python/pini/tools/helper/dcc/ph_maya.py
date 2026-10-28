@@ -138,7 +138,7 @@ class MayaPiniHelper(qt.CUiDockableMixin, ui.PHUiBase):
             _mode = {
                 'arnold': 'aiVolume',
                 'redshift': 'RedshiftVolume',
-            }[_ren]
+            }.get(_ren, 'aiVolume')
 
         if _mode == 'aiVolume':
             pipe_ref.create_ai_vol(output, namespace=namespace)
