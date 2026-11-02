@@ -10,6 +10,57 @@ from ..core import SCCheck
 _LOGGER = logging.getLogger(__name__)
 
 
+class CheckAbcFpsMatchesScene(SCCheck):
+    """Check frame rate of referenced abcs matches current scene FPS."""
+
+    dcc_filter = '-spainter'
+
+    def run(self):
+        """Run this check."""
+        self.write_log('Reading abcs')
+        _abcs = dcc.find_pipe_refs(extn='abc')
+        self.write_log('Found %d abcs', len(_abcs))
+        if not _abcs:
+            return
+        _fps = dcc.get_fps()
+        self.write_log('FPS %.01f', _fps)
+        for _abc in self.update_progress(_abcs):
+            self.write_log('Checking abc %s', _abc)
+            _abc_fps = _abc.output.metadata.get('fps')
+            if not _abc_fps:
+                self.write_log('FPS missing from metadata %s', _abc)
+                continue
+            if _abc_fps != _fps:
+                self.add_fail(
+                    f'Frame rate of abc {_abc.namespace} ({_abc_fps:.01f}) '
+                    f'does not match scene frame rate ({_fps:.01f})')
+
+
+class CheckDCCVersion(SCCheck):
+    """Check current dcc version."""
+
+    _label = 'Check DCC version'
+
+    def run(self):
+        """Run this check."""
+        self.write_log('settings %s', self.settings)
+        if dcc.NAME not in self.settings:
+            self.write_log('no setting found for %s', dcc.NAME)
+            return
+        _req_ver_s = str(self.settings[dcc.NAME])
+        _req_ver_t = tuple(int(_token) for _token in _req_ver_s.split('.'))
+        self.write_log('req ver %s %s', _req_ver_s, _req_ver_s)
+
+        _cur_ver_t = dcc.to_version()
+        _cur_ver_s = dcc.to_version(str)
+        for _cur_val, _req_val in zip(_cur_ver_t, _req_ver_t):
+            if _cur_val != _req_val:
+                self.add_fail(
+                    f'Current {dcc.NAME} version ({_cur_ver_s}) does not '
+                    f'match the studio default ({_req_ver_s})')
+                return
+
+
 class CheckRefsLatest(SCCheck):
     """Check all pipeline references are using the latest version."""
 
@@ -40,32 +91,6 @@ class CheckRefsLatest(SCCheck):
             path (CPOutput): path to apply to reference
         """
         ref_.update(path)
-
-
-class CheckAbcFpsMatchesScene(SCCheck):
-    """Check frame rate of referenced abcs matches current scene FPS."""
-
-    dcc_filter = '-spainter'
-
-    def run(self):
-        """Run this check."""
-        self.write_log('Reading abcs')
-        _abcs = dcc.find_pipe_refs(extn='abc')
-        self.write_log('Found %d abcs', len(_abcs))
-        if not _abcs:
-            return
-        _fps = dcc.get_fps()
-        self.write_log('FPS %.01f', _fps)
-        for _abc in self.update_progress(_abcs):
-            self.write_log('Checking abc %s', _abc)
-            _abc_fps = _abc.output.metadata.get('fps')
-            if not _abc_fps:
-                self.write_log('FPS missing from metadata %s', _abc)
-                continue
-            if _abc_fps != _fps:
-                self.add_fail(
-                    f'Frame rate of abc {_abc.namespace} ({_abc_fps:.01f}) '
-                    f'does not match scene frame rate ({_fps:.01f})')
 
 
 class CheckRenderRes(SCCheck):

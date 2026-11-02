@@ -1,3 +1,12 @@
+## [11.14.0] - Mon 2026-11-02 09:51
+### Summary
+ - Sanity Check:
+    - added check dcc version check (blee),
+### Updated
+ - pini.tools.sanity_check.CheckDCCVersion added,
+ - spainter_pini.p_pipe.to_tex_seq better error on bad input seq,
+
+
 ## [11.13.0] - Wed 2026-10-28 15:45
 ### Summary
  - Pini Helper:

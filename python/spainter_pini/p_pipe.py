@@ -652,7 +652,8 @@ def to_tex_seq(shd, path):
     _LOGGER.debug(' - SEQ FILENAME %s', _seq_filename)
     _seq = _orig_file.to_dir().to_seq(_seq_filename)
 
-    assert _seq[int(_udim)] == abs_path(path), f'Bad seq path {_seq[int(_udim)]}'
+    assert _seq[int(_udim)] == abs_path(path), (
+        f'Bad seq path {_seq[int(_udim)]}')
     assert len(_udim) == 4
     assert _udim.isdigit()
 
