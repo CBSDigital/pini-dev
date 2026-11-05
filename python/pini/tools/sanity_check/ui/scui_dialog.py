@@ -303,10 +303,16 @@ class SanityCheckUi(qt.CUiDialog):
 
         # Update ui
         self.ui.Fails.set_items(_items)
-        self.ui.FixAll.setEnabled(bool(_fixes))
+        self.ui.FixAll.redraw()
         self.ui.FailInfo.setText(
             f'Found {len(_fails):d} fail{plural(_fails)} with '
             f'{_fixes:d} fix{plural(_fixes, plural_="es")}')
+
+    def _redraw__FixAll(self):
+        _fixes = [
+            _fail_ui for _fail_ui in self.ui.Fails.all_items()
+            if _fail_ui.fail.fix]
+        self.ui.FixAll.setEnabled(bool(_fixes))
 
     def _redraw__TaskLabel(self):
         _label = 'NONE'

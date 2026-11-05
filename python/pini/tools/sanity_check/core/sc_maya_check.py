@@ -140,7 +140,9 @@ class SCMayaCheck(sc_check.SCCheck):
             f'The optionVar setting "{flag}" is not {val} (currently set '
             f'to {_cur_val})', fix=_fix)
 
-    def check_pref(self, func, flag, val, fail=None, elem=None, **kwargs):
+    def check_pref(
+            self, func, flag, val, fail=None, elem=None, use_edit=True,
+            **kwargs):
         """Check a preference is set to the given value.
 
         Args:
@@ -149,6 +151,7 @@ class SCMayaCheck(sc_check.SCCheck):
             val (any): required value for preference
             fail (str): override fail message
             elem (str): element arg (if required)
+            use_edit (bool): use edit flag to set value
         """
         _LOGGER.debug('CHECK PREF %s', func)
         _args = []
@@ -173,7 +176,9 @@ class SCMayaCheck(sc_check.SCCheck):
                 f'Setting "{func.__name__}|{flag}" is set to "{_cur_val}" '
                 f'(should be "{val}")')
             _kwargs[flag] = val
-            _fix = wrap_fn(func, *_args, edit=True, **_kwargs)
+            if use_edit:
+                _kwargs['edit'] = True
+            _fix = wrap_fn(func, *_args, **_kwargs)
             self.add_fail(_fail, fix=_fix)
             _LOGGER.debug(' - ADDED FAIL %s', _fail)
 

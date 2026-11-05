@@ -180,7 +180,7 @@ def _read_cache_set_nodes(set_, mode, remove_junk=True):
     return _nodes
 
 
-def read_cache_set(  # pylint: disable=too-many-branches
+def read_cache_set(  # pylint: disable=too-many-branches,too-many-statements
         mode='geo', include_referenced=True, filter_=None, set_=None):
     """Read cache set contents.
 
@@ -189,6 +189,7 @@ def read_cache_set(  # pylint: disable=too-many-branches
             all - all nodes
             top - top nodes only
             geo - only geometry nodes
+            bad geo - only geometry nodes with invalid shapes
             lights - only lights
             tfm - only transforms
         include_referenced (bool): include referenced geometry
@@ -218,23 +219,38 @@ def read_cache_set(  # pylint: disable=too-many-branches
         except ValueError:
             _LOGGER.error('   - FAILED TO CAST NODE %s', _node)
             continue
+
+        # Check for referenced
+        _is_ref = False
         try:
-            _node.is_referenced()  # this can error even if node casts
+            _is_ref = _node.is_referenced()  # this can error even if node casts
         except RuntimeError:
             _LOGGER.error('   - ERRORED ON READ NODE %s', _node)
             continue
+
+        # Check node shape is valid (if applicable)
+        _is_bad_geo = False
+        _shp = None
+        try:
+            _shp = _node.shp  # this can error even if node casts
+        except ValueError:
+            _LOGGER.error('   - ERRORED ON BUILD SHP %s', _node)
+            _is_bad_geo = True
         _LOGGER.debug(
             '   - NODE %s %s refd=%d shp=%s', _node, type(_node).__name__,
-            _node.is_referenced(), _node.shp)
+            _node.is_referenced(), _shp)
 
-        if not include_referenced and _node.is_referenced():
+        if not include_referenced and _is_ref:
             _LOGGER.debug('   - REJECTED NON-REFERENCED %s', _node)
             continue
 
         if mode in ('all', 'top'):
             pass
         elif mode == 'geo':
-            if not isinstance(_node, pom.CMesh):
+            if _is_bad_geo or not isinstance(_node, pom.CMesh):
+                continue
+        elif mode == 'bad geo':
+            if not _is_bad_geo:
                 continue
         elif mode == 'lights':
             if not to_light_shp(_node):

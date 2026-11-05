@@ -819,3 +819,22 @@ class CheckForNamespace(core.SCMayaCheck):
                 f'Currently in a namespace ":{_cur_ns}" - this can break '
                 'tools and sanity check fixes',
                 fix=wrap_fn(set_namespace, ':'))
+
+
+class CheckScriptEditor(core.SCMayaCheck):
+    """Check whether script editor is set up correctly."""
+
+    sort = 0
+
+    def run(self):
+        """Run this check."""
+        self.check_pref(
+            func=cmds.stackTrace, val=True, flag='state', use_edit=False,
+            fail=(
+                'Script Editor has stack trace disabled which inhibits '
+                'debugging'))
+        self.check_pref(
+            func=cmds.commandEcho, val=False, flag='state', use_edit=False,
+            fail=(
+                'Script Editor has echo all commands enabled which slows '
+                'maya down'))

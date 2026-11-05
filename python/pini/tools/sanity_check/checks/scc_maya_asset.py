@@ -4,7 +4,6 @@ import logging
 
 from maya import cmds
 
-from pini import pipe
 from pini.dcc import export
 from pini.utils import single, wrap_fn, plural
 
@@ -151,17 +150,10 @@ class CheckCacheSet(core.SCMayaCheck):
             top_node_priority (str list): override top node priority
                 sorting (eg. ['ABC', 'RIG'])
         """
-        _task = pipe.cur_task()
-        _top_node_priority = top_node_priority
-        if not _top_node_priority:
-            _top_node_priority = self.settings.get(
-                'top_node_priority', {}).get(_task)
-        _top_node_priority = _top_node_priority or []
-        self.write_log('Top node priority %s', _top_node_priority)
 
         # Check set
         _set = m_pipe.find_cache_set()
-        self.write_log('Set %s', _set)
+        self.write_log('set %s', _set)
         if not _set:
             _fix = wrap_fn(cmds.sets, name='cache_SET', empty=True)
             self.add_fail('Missing cache set', fix=_fix)
@@ -170,50 +162,96 @@ class CheckCacheSet(core.SCMayaCheck):
             self.add_fail('Bad cache set type')
             return
 
-        _geos = m_pipe.read_cache_set(set_=_set, mode='geo')
-        _tfms = m_pipe.read_cache_set(set_=_set, mode='tfm')
-        self.write_log('Geos %s', _geos)
-
-        # Flag no geo
-        if not _geos:
-
-            # Find top node
-            _top_node = None
-            for _node in _top_node_priority:
-                if cmds.objExists(_node):
-                    _top_node = _node
-                    break
-            else:
-                _top_node = single(utils.find_top_level_nodes(), catch=True)
-            self.write_log('Top node %s', _top_node)
-
-            _fix = None
-            if _top_node:
-                _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
-            if _tfms:
-                _msg = 'No geo in cache set'
-            else:
-                _msg = 'Empty cache set'
-            self.add_fail(_msg, fix=_fix)
+        if self._check_for_no_geos(_set, top_node_priority=top_node_priority):
             return
-
-        if self._check_for_referenced_tfm(tfms=_tfms):
+        if self._check_for_bad_geos(_set):
+            return
+        if self._check_for_referenced_tfm(_set):
             return
 
         utils.check_cacheable_set(set_=_set, check=self)
 
-    def _check_for_referenced_tfm(self, tfms):
-        """Check for referenced export geo.
+    def _check_for_no_geos(self, set_, top_node_priority=None):
+        """Flag no geo in cache set.
 
         Args:
-            tfms (CTransform list): cache set transforms
+            set_ (str): cache set
+            top_node_priority (str list): override top node priority
+
+        Returns:
+            (bool): whether there is no geo in the cache set
+        """
+        _geos = m_pipe.read_cache_set(set_=set_, mode='geo')
+        _tfms = m_pipe.read_cache_set(set_=set_, mode='tfm')
+        self.write_log('geos %s', _geos)
+
+        if _geos:
+            return False
+
+        # Read top node priority
+        _top_node_priority = top_node_priority
+        if not _top_node_priority:
+            _top_node_priority = self.settings.get(
+                'top_node_priority', {}).get(self.task)
+        _top_node_priority = _top_node_priority or []
+        self.write_log('top node priority %s', _top_node_priority)
+
+        # Find top node
+        _top_node = None
+        for _node in _top_node_priority:
+            if cmds.objExists(_node):
+                _top_node = _node
+                break
+        else:
+            _top_node = single(utils.find_top_level_nodes(), catch=True)
+        self.write_log('top node %s', _top_node)
+
+        _fix = None
+        if _top_node:
+            _fix = wrap_fn(add_to_set, _top_node, 'cache_SET')
+        if _tfms:
+            _msg = 'No geo in cache set'
+        else:
+            _msg = 'Empty cache set'
+        self.add_fail(_msg, fix=_fix)
+        return True
+
+    def _check_for_bad_geos(self, set_):
+        """Check for mesh nodes which fail to construct.
+
+        Args:
+            set_ (str): cache set
+
+        Returns:
+            (bool): whether there are bad geo nodes
+        """
+        _bad_geos = m_pipe.read_cache_set(set_=set_, mode='bad geo')
+        if not _bad_geos:
+            return False
+
+        for _geo in _bad_geos:
+            if not _geo.n_vtxs:
+                self.add_fail(
+                    f'Mesh "{_geo}" has zero vertices and is invalid',
+                    node=_geo, fix=wrap_fn(utils.safe_delete, _geo))
+            else:
+                raise NotImplementedError(_geo)
+
+        return True
+
+    def _check_for_referenced_tfm(self, set_):
+        """Check for referenced export set_.
+
+        Args:
+            set_ (str): cache set
 
         Returns:
             (bool): whether check failed
         """
+        _tfms = m_pipe.read_cache_set(set_=set_, mode='tfm')
 
         # Check for referenced transforms
-        _refd_tfms = [_tfm for _tfm in tfms if _tfm.is_referenced()]
+        _refd_tfms = [_tfm for _tfm in _tfms if _tfm.is_referenced()]
         self.write_log('Referenced tfms %s', _refd_tfms)
         if not _refd_tfms:
             return False
@@ -256,7 +294,7 @@ class CheckRenderStats(core.SCMayaCheck):
 
     def run(self):
         """Run this check."""
-        _geos = m_pipe.read_cache_set()
+        _geos = m_pipe.read_cache_set(mode='geo')
         if not _geos:
             self.add_fail('No geo in cache_SET')
         for _geo in _geos:

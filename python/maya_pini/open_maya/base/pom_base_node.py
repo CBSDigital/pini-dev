@@ -880,7 +880,7 @@ class CBaseNode:  # pylint: disable=too-many-public-methods
         return self.name()
 
     def __repr__(self):
-        return basic_repr(self, str(self), separator='|')
+        return basic_repr(self, f'"{str(self)}"', separator='|')
 
 
 @cache_result

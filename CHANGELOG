@@ -1,3 +1,19 @@
+## [11.15.0] - Thu 2026-11-05 13:01
+### Summary
+ - Sanity Check:
+    - maya added check for script editor settings,
+    - maya check cache set flag zero vertex geo (esantellan),
+    - maya ignore invalid geos in cache set (esantellan),
+### Updated
+ - pini.tools.sanity_check.SCMayaCheck.check_pref added use_edit flag,
+ - pini.tools.sanity_check.CheckScriptEditor added,
+ - pini.tools.sanity_check.CheckCacheSet check for zero vtx geo,
+ - pini.tools.sanity_check ui bugfix fix all enabled w/o fixes,
+ - maya_pini.m_pipe.read_cache_set added bad geo mode,
+ - maya_pini.m_pipe.read_cache_set ignore bad geo in geo mode,
+ - maya_pini.open_maya.CMesh better error on fail to read shp,
+
+
 ## [11.14.1] - Thu 2026-11-05 09:20
 ### Summary
  - Pini Helper:

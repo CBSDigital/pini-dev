@@ -25,7 +25,21 @@ class _CMeshShp(base.CBaseDagNode, om.MFnMesh):
             shp (str): mesh shape node
         """
         _m_obj = to_mdagpath(shp)
-        om.MFnMesh.__init__(self, _m_obj)
+
+        # Try to init MFnMesh + handle fail
+        try:
+            om.MFnMesh.__init__(self, _m_obj)
+        except ValueError as _exc:
+            _n_vtxs = cmds.polyEvaluate(shp, vertex=True)
+            if not _n_vtxs:
+                raise ValueError(
+                    f'Failed to build MFnMesh for object "{shp}" with no '
+                    'vertices') from _exc
+            if str(_exc) == 'object is incompatible with MFnMesh constructor':
+                raise ValueError(
+                    f'Object "{shp}" is incompatible with MFnMesh '
+                    'constructor') from _exc
+            raise _exc
 
 
 class CMesh(pom_transform.CTransform):
@@ -79,7 +93,7 @@ class CMesh(pom_transform.CTransform):
         Returns:
             (int): vertex count
         """
-        return self.shp.numVertices
+        return cmds.polyEvaluate(self, vertex=True)
 
     def closest_n(self, point):
         """Get the normal on this mesh closest to the given point.
