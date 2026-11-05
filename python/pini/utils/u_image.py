@@ -93,7 +93,7 @@ class Image(File):
             raise RuntimeError('Bad image extension ' + self.path)
 
         if self.extn.lower() in ['png', 'jpg', 'jpeg']:
-            return self._read_res_qt()
+            return self._read_res_qt(catch=catch)
         return self._read_res_ffprobe(catch=catch)
 
     def _read_ffprobe(self):
@@ -119,6 +119,11 @@ class Image(File):
         Returns:
             (tuple): width/height
         """
+        if not find_exe('ffprobe'):
+            _LOGGER.warning(' - FFPROBE NOT FOUND')
+            if catch:
+                return None
+            raise RuntimeError('ffprobe not found')
         _ffprobe = self._read_ffprobe()
 
         # Find stream data
@@ -151,15 +156,27 @@ class Image(File):
 
         return u_res.Res(*_res)
 
-    def _read_res_qt(self):
+    def _read_res_qt(self, catch=True):
         """Read this image's resolution using qt.
 
+        The image header is read using QImageReader, which avoids decoding
+        the full image. This means that the read is not subject to qt's
+        image allocation limit (256MB by default in qt6), which causes
+        large images (eg. 8K 16-bit textures) to fail to load as a pixmap.
+        If the header cannot be read, ffprobe is used as a fallback.
+
+        Args:
+            catch (bool): no error if fail to read res
+
         Returns:
-            (tuple): width/height
+            (Res): width/height
         """
-        from pini import qt
-        _pix = qt.CPixmap(self.path)
-        return u_res.Res(_pix.width(), _pix.height())
+        from pini.qt import QtGui
+        _size = QtGui.QImageReader(self.path).size()
+        if _size.isValid() and _size.width() and _size.height():
+            return u_res.Res(_size.width(), _size.height())
+        _LOGGER.warning(' - FAILED TO READ RES USING QT %s', self.path)
+        return self._read_res_ffprobe(catch=catch)
 
 
 def _convert_file_ffmpeg(

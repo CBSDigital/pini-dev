@@ -212,8 +212,8 @@ def find_connections(
     """
     from maya_pini import open_maya as pom
 
-    _LOGGER.debug('FIND CONNECTIONS %s connections=%d plugs=%d', obj,
-                  connections, plugs)
+    _LOGGER.debug(
+        'FIND CONNECTIONS %s connections=%d plugs=%d', obj, connections, plugs)
 
     _flags = []
     if source:
@@ -225,6 +225,8 @@ def find_connections(
     _results = []
     for _src, _dest in _flags:
 
+        _LOGGER.debug(' - FLAGS %s %s', _src, _dest)
+
         # Read connections
         _kwargs = {}
         if type_:
@@ -232,6 +234,7 @@ def find_connections(
         _conns = cmds.listConnections(
             obj, plugs=plugs, connections=True, source=_src,
             destination=_dest, **_kwargs)
+        _LOGGER.debug('   - CONNS %s', _conns)
         _conns = _conns or []
         if plugs:
             _p_conns = []
@@ -242,24 +245,24 @@ def find_connections(
         else:
             _conns = [pom.to_node(_conn, clean=False) for _conn in _conns]
         _LOGGER.debug(
-            ' - %s %s %s', 'SRC' if _src else 'DST', (_src, _dest), _conns)
+            '   - %s %s %s', 'SRC' if _src else 'DST', (_src, _dest), _conns)
 
         # Sort results into pairs
         assert not len(_conns) % 2  # Check even number of results
         if _src:  # Process incoming
             _conns = [(_conns[2 * _idx + 1], _conns[2 * _idx])
                       for _idx in range(int(len(_conns) / 2))]
-            _LOGGER.debug(' - SORTED INCOMING %s', _conns)
+            _LOGGER.debug('   - SORTED INCOMING %s', _conns)
             if not connections:
                 _conns = [_src for _src, _ in _conns]
-                _LOGGER.debug(' - CLEANED INCOMING %s', _conns)
+                _LOGGER.debug('   - CLEANED INCOMING %s', _conns)
         else:  # Process outgoing
             _conns = [(_conns[2 * _idx], _conns[2 * _idx + 1])
                       for _idx in range(int(len(_conns) / 2))]
-            _LOGGER.debug(' - SORTED OUTGOING %s', _conns)
+            _LOGGER.debug('   - SORTED OUTGOING %s', _conns)
             if not connections:
                 _conns = [_dest for _, _dest in _conns]
-                _LOGGER.debug(' - CLEANED OUTGOING %s', _conns)
+                _LOGGER.debug('   - CLEANED OUTGOING %s', _conns)
 
         _results += _conns
 
@@ -526,17 +529,18 @@ def to_mesh(node, class_=None):
     raise ValueError(_node)
 
 
-def to_mobject(node):
+def to_mobject(node, log=9):
     """Build MObject for the given node.
 
     Args:
         node (str): node to convert
+        log (int): apply log level
 
     Returns:
         (MObject): open maya object
     """
     from maya_pini import open_maya as pom
-    _LOGGER.debug(' - TO MOBJECT %s', node)
+    _LOGGER.log(log, ' - TO MOBJECT %s', node)
 
     # Obtain node as str
     _node = node
@@ -551,7 +555,7 @@ def to_mobject(node):
     try:
         _tmp.add(_node)
     except RuntimeError as _exc:
-        _LOGGER.debug(' - EXC %s', _exc)
+        _LOGGER.log(log, ' - EXC %s', _exc)
         if str(_exc).endswith('Object does not exist'):
             raise RuntimeError(f'Missing node {node}') from _exc
         raise _exc
@@ -639,7 +643,7 @@ def to_m(*args, **kwargs):
     raise ValueError(args, kwargs)
 
 
-def to_node(obj, clean=True):
+def to_node(obj, clean=True, log=9):
     """Build a node object from the given name.
 
     eg. pom.to_node('persp') -> pom.CNode('persp')
@@ -647,6 +651,7 @@ def to_node(obj, clean=True):
     Args:
         obj (str): name to build node from
         clean (bool): apply to_node to strip dag paths + img plane links
+        log (int): apply log level
 
     Returns:
         (CNode): node
@@ -654,14 +659,14 @@ def to_node(obj, clean=True):
     from maya_pini import open_maya as pom
     from maya_pini.utils import to_node as _to_node
 
-    _LOGGER.debug('TO NODE %s', obj)
+    _LOGGER.log(log, 'TO NODE %s', obj)
     if isinstance(obj, pom.CBaseNode):
         return obj
     if isinstance(obj, str):
         _node_s = obj
         if clean:
             _node_s = _to_node(obj)
-        _LOGGER.debug(' - NODE S %s', _node_s)
+        _LOGGER.log(log, ' - NODE S %s', _node_s)
         return pom.CNode(_node_s)
     if isinstance(obj, pom.CPlug):
         return obj.node

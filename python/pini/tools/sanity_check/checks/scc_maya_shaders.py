@@ -511,6 +511,8 @@ class CheckLights(core.SCMayaCheck):
             if len(_lgts) == 1:
                 continue
 
+            self.write_log(' - check light %s %s', _name, _lgts)
+
             if len(_lgts) == 2:
                 _lgts.sort(key=operator.methodcaller('is_referenced'))
                 if not _lgts[0].is_referenced() and _lgts[1].is_referenced():

@@ -479,7 +479,7 @@ def find_ref(match=None, catch=True, **kwargs):
     """
     _refs = find_refs(**kwargs)
 
-    if len(_refs) == 1:
+    if len(_refs) == 1 and match is None:
         return single(_refs)
 
     _match_refs = [

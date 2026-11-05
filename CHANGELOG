@@ -1,3 +1,20 @@
+## [11.14.1] - Thu 2026-11-05 09:20
+### Summary
+ - Pini Helper:
+    - substance painter bugfix build thumbs error on 8k texture export (sspicher),
+    - maya surf dev export bugfix error on mesh light in rig (csoza),
+    - maya surf dev attach bugfix error on mesh light (csoza),
+### Updated
+ - pini.utils.Seq.build_thumbnail catch build failed,
+ - pini.utils.Image.to_res fallback on ffprobe on qt fails to read image,
+ - pini.dcc.MayaDCC.set_scene_data limit data to basic types,
+ - pini.dcc.CMayaShadersRef bugfix error on apply mesh light due to legacy code,
+ - pini.qt.CPixmap added handling for 8k images,
+ - maya_pini.read_lights bugfix mesh lights in cache set appearing twice,
+ - maya_pini.open_maya.find_ref bugfix ignoring match on single ref,
+ - maya_pini.open_maya.find_connections made public,
+
+
 ## [11.14.0] - Mon 2026-11-02 09:51
 ### Summary
  - Sanity Check:

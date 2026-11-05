@@ -479,7 +479,7 @@ class CMayaShadersRef(CMayaRef):
             set_namespace(f':{self.namespace}')
             mel.eval('redshiftCreateLight "RedshiftPhysicalLight"')
             _trg_lgt = pom.CTransform(single(cmds.ls(selection=True)))
-            _trg_lgt = _trg_lgt.rename(to_clean(_trg_lgt_name))
+            _trg_lgt.rename(to_clean(_trg_lgt_name))
         else:
             _trg_lgt = pom.CTransform(_trg_lgt_name)
         _LOGGER.info(' - TRG LGT %s', _trg_lgt)

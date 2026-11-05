@@ -281,7 +281,7 @@ class MayaDCC(BaseDCC):
         elif _type in ['str', 'unicode']:
             _data = _data.replace(r'\"', '"')
         else:
-            raise NotImplementedError(_type)
+            raise NotImplementedError(_type, _type_key)
         return _data
 
     def _build_exporters(self):
@@ -446,8 +446,13 @@ class MayaDCC(BaseDCC):
         _val = val
         if isinstance(val, (list, tuple, set)):
             _val = str(_val)
-        if _val is None:
+        elif _val is None:
             _val = ''
+        elif isinstance(val, (int, float, bool, str)):
+            pass
+        else:
+            raise ValueError(_type)
+
         _type_key = '_TYPE_' + key
         _LOGGER.debug(' - SET TYPE KEY key=%s val=%s', _type, _type_key)
 

@@ -147,6 +147,9 @@ class Seq(uc_clip.Clip):  # pylint: disable=too-many-public-methods
             _pix = qt.CPixmap(_tmp)
         else:
             raise NotImplementedError(self.path)
+        if _pix.isNull():
+            _LOGGER.error(' - FAILED TO READ IMAGE %s', _frame.path)
+            return None
 
         _pix = _pix.resize(_res)
         _pix.save_as(_thumb, verbose=0, force=force)

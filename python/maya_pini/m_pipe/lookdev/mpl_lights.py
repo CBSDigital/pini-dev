@@ -30,32 +30,33 @@ def read_lights(lights=None):
     if lights is False:
         return []
 
-    _lgts = []
+    _lgts = set()
 
     # Read cache set lights
     _cache_set = mp_utils.find_cache_set(task='lookdev')
     _cache_set_lights = mp_utils.read_cache_set('lights', set_=_cache_set)
     _LOGGER.debug(' - FOUND %d CACHE SET LIGHTS', len(_cache_set_lights))
-    _lgts += _cache_set_lights
+    _lgts |= set(_cache_set_lights)
 
     # Read mesh lights
     _mesh_lights = read_mesh_lights(fmt='node')
     _LOGGER.debug(' - FOUND %d MESH LIGHTS', len(_mesh_lights))
-    _lgts += _mesh_lights
+    _lgts |= set(_mesh_lights)
 
     if lights is True and not _lgts:
         raise RuntimeError('No lights found in scene')
 
-    return _lgts
+    return sorted(_lgts)
 
 
-def read_mesh_lights(fmt='clean'):
+def read_mesh_lights(fmt='clean', filter_=None):
     """Read mesh lights in the current scene.
 
     Args:
         fmt (str): results to return
             clean - cleaned string results for metadata
             node - CTransform node references
+        filter_ (str): apply light name filter (for debugging)
 
     Returns:
         (dict): lights + geos
@@ -71,7 +72,8 @@ def read_mesh_lights(fmt='clean'):
     # Find rs physical lights
     _rspls = []
     if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
-        _rspls = pom.find_nodes(type_='RedshiftPhysicalLight')
+        _rspls = pom.find_nodes(
+            type_='RedshiftPhysicalLight', filter_=filter_)
     for _lgt_s in _rspls:
         _LOGGER.debug(' - CHECK LIGHT SHAPE %s', _lgt_s)
         _lgt_t = _lgt_s.to_parent()

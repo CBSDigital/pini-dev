@@ -27,6 +27,34 @@ else:
     raise NotImplementedError
 
 
+def _read_large_image(path):
+    """Read an image which exceeds qt's allocation limit.
+
+    In qt6, images which decode to more than 256MB (eg. 8K 16-bit textures)
+    fail to load by default. This temporarily disables the limit to read
+    the image.
+
+    Args:
+        path (str): image path
+
+    Returns:
+        (QImage|None): image (if read successfully)
+    """
+    if not hasattr(QtGui.QImageReader, 'setAllocationLimit'):
+        return None
+    _limit = QtGui.QImageReader.allocationLimit()
+    _LOGGER.debug(
+        'RETRY READ LARGE IMAGE (limit=%dMB) %s', _limit, path)
+    QtGui.QImageReader.setAllocationLimit(0)
+    try:
+        _img = QtGui.QImageReader(path).read()
+    finally:
+        QtGui.QImageReader.setAllocationLimit(_limit)
+    if _img.isNull():
+        return None
+    return _img
+
+
 class CPixmap(QtGui.QPixmap):
     """Wrapper for QPixmap."""
 
@@ -39,6 +67,16 @@ class CPixmap(QtGui.QPixmap):
             error_on_file_system_disabled(path=_args[0])
 
         super().__init__(*_args)
+
+        # Retry load of large images which exceed qt allocation limit
+        if (
+                len(_args) == 1 and
+                isinstance(_args[0], str) and
+                self.isNull() and
+                os.path.exists(_args[0])):
+            _img = _read_large_image(_args[0])
+            if _img:
+                self.convertFromImage(_img)
 
     def aspect(self):
         """Obtain aspect ratio for this pixmap.
