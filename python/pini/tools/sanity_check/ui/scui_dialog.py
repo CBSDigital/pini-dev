@@ -54,7 +54,7 @@ class SanityCheckUi(qt.CUiDialog):
         self.close_on_success = close_on_success
         if self.close_on_success is None:
             self.close_on_success = mode != 'standalone'
-        self.exporter = exporter or {}
+        self.exporter = exporter
         _action = None
         if exporter:
             _action = exporter.ACTION

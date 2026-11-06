@@ -581,7 +581,13 @@ def to_mdagpath(node):
         if not cmds.objExists(node):
             raise RuntimeError(f'Missing node {_node}') from _exc
         raise _exc
-    return _sel.getDagPath(0)
+    try:
+        return _sel.getDagPath(0)
+    except TypeError as _exc:
+        if str(_exc) == 'item is not a DAG path':
+            raise TypeError(
+                f'Item "{node}" is not a DAG path') from _exc
+        raise _exc
 
 
 def _local_axes_to_m(pos, lx, ly=None, lz=None):

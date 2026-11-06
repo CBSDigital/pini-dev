@@ -728,6 +728,8 @@ def to_str(obj):
         return str(obj)
     if isinstance(obj, types.ModuleType):
         return abs_path(obj.__file__)
+    if hasattr(obj, '__str__'):
+        return str(obj)
 
     raise NotImplementedError(f'{obj} ({type(obj).__name__})')
 

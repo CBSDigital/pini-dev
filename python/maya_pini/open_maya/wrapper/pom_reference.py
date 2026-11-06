@@ -11,7 +11,8 @@ from maya.api import OpenMaya as om
 
 from pini import pipe
 from pini.utils import (
-    basic_repr, single, check_heart, passes_filter, File, apply_deprecation)
+    basic_repr, single, check_heart, passes_filter, File, apply_deprecation,
+    to_str)
 
 from maya_pini import ref
 from maya_pini.utils import to_namespace, to_clean, bake_results
@@ -496,7 +497,7 @@ def find_ref(match=None, catch=True, **kwargs):
 
     _filter_refs = [
         _ref for _ref in _refs
-        if passes_filter(_ref.namespace, match)]
+        if passes_filter(_ref.namespace, to_str(match))]
     if len(_filter_refs) == 1:
         return single(_filter_refs)
 

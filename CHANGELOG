@@ -1,3 +1,17 @@
+## [11.15.1] - Fri 2026-11-06 09:28
+### Summary
+ - Sanity Check:
+    - maya check lookdev shaders bugfix error on face assign (csoza),
+    - maya lookdev publish bugfix error on vray mesh lights in scene (csoza),
+### Updated
+ - pini.utils.to_str added handling for any obj with __str__ method,
+ - pini.tools.sanity_check.CheckLookdevShaders bugfix error on face assign,
+ - pini.tools.sanity_check bugfix check.exporter set to empty dict,
+ - maya_pini.m_pipe.lookdev.read_lights catch error due to vr mesh light,
+ - maya_pini.open_maya.to_mdagpath better error on fail,
+ - maya_pini.open_maya.find_ref bugfix error on match as CNode,
+
+
 ## [11.15.0] - Thu 2026-11-05 13:01
 ### Summary
  - Sanity Check:
