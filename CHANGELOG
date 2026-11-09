@@ -1,3 +1,11 @@
+## [11.15.2] - Mon 2026-11-09 09:27
+### Summary
+ - Sanity Check:
+    - maya check blendshapes bugfix error on missing weight alias (mkim),
+### Updated
+ - pini.tools.sanity_check.CheckBlendshapes bugfix weight alias not set correctly,
+
+
 ## [11.15.1] - Fri 2026-11-06 09:28
 ### Summary
  - Sanity Check:

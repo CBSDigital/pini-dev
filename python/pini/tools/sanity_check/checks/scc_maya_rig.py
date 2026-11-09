@@ -150,13 +150,13 @@ class CheckBlendshapes(core.SCMayaCheck):
             self.write_log(' - aliases %s', _aliases)
 
             _used = False
-            for _attr, _alias in _aliases.items():
-                _plug = _bs.plug[_attr]
-                _connected = bool(_plug.find_incoming())
+            for _idx, (_attr, _alias) in enumerate(_aliases.items()):
+                _plug = _bs.plug[f'weight[{_idx}]']
+                _connected = bool(_plug.find_incoming(plugs=False))
                 _wt = _plug.get_val()
                 _LOGGER.info(
-                    '   - CHECK INPUT %s %s con=%d wt=%s', _alias, _plug,
-                    _connected, _wt)
+                    '   - CHECK INPUT %d %s %s con=%d wt=%s', _idx, _alias,
+                    _plug, _connected, _wt)
                 if _connected or _wt:
                     _used = True
 
