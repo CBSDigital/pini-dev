@@ -9,6 +9,7 @@ from . import mu_misc
 
 _LOGGER = logging.getLogger(__name__)
 _TYPES_CACHE = {}
+_TYPES_BLACKLIST = ('VRayLightMeshLightLinking', )
 
 
 def find_light_types():
@@ -25,9 +26,11 @@ def find_light_types():
     if _key not in _TYPES_CACHE:
         _types = sorted([
             _type for _type in cmds.allNodeTypes()
-            if _type.endswith('Light') or
-            _type.startswith('VRayLight') or
-            _type.startswith('aiLight')],
+            if (
+                _type.endswith('Light') or
+                _type.startswith('VRayLight') or
+                _type.startswith('aiLight')) and
+            _type not in _TYPES_BLACKLIST],
             key=operator.methodcaller('lower'))
         _LOGGER.debug(' - READ TYPES %d %s', len(_types), _types)
         _TYPES_CACHE[_key] = _types

@@ -226,7 +226,7 @@ class CMayaLookdevPublish(ph_basic.CBasicPublish):
         if not _export_vrm_ma:
             return
         _vrm = lookdev.export_vrmesh_ma(
-            geo=geo, force=_force, animation=_anim)
+            work=self.work, geo=geo, force=_force, animation=_anim)
         _LOGGER.debug(' - VRM %s', _vrm)
         if not _vrm:
             return
@@ -475,7 +475,9 @@ def _clean_scene():
         cmds.sets(_geos, remove=_set)
         _LOGGER.debug(' - CLEAN GEO %s set=%s', _geos, _set)
 
-    _keep_nodes |= set(lookdev.setup_lights())
+    _lgts = lookdev.setup_lights()
+    _LOGGER.debug(' - LIGHTS %s', _lgts)
+    _keep_nodes |= set(_lgts)
     _keep_nodes |= set(lookdev.setup_place_3d_nodes())
 
     # Delete dag/unknown nodes

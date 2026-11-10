@@ -1,3 +1,29 @@
+## [11.16.0] - Tue 2026-11-10 08:41
+### Summary
+ - Pini Helper:
+    - maya lookdev publish added handling for VRayLightMesh (csoza),
+    - maya lookdev publish bugfix error on export vr mesh ma,
+    - maya bugfix error on load redshift proxy (csoza),
+ - Sanity Check:
+    - maya check mesh lights added,
+### Updated
+ - pini.dcc.pipe_ref.CMayaShadersRef bugfix error on constrain lights if only mesh lights,
+ - pini.dcc.pipe_ref.CMayaShadersRef added VRayLightMesh handling,
+ - pini.dcc.export.CMayaLookdevPublish bugfix error on export vrmesh ma,
+ - pini.pipe.CACHE.CCPOutputBase.find_reps enabled rig -> abc/fbx,
+ - pini.tools.pyui.PUMayaUi.move use 0,0 as default pos,
+ - pini.tools.sanity_check.CheckLights bugfix error on no exporter,
+ - pini.tools.sanity_check.CheckMeshLights bugfix error on no exporter,
+ - pini.tools.helper added vrmesh ma icon,
+ - pini.tools.helper scene ref ctx added copy name,
+ - pini.tools.helper scene refs sort alphabetically,
+ - maya_pini.utils.load_redshift_proxy bugfix error on rename node,
+ - maya_pini.utils.find_lights exclude VRayLightMeshLightLinking nodes,
+ - maya_pini.m_pipe.lookdev read_mesh_lights/setup_lights added VRayLightMesh handling,
+ - maya_pini.m_pipe.lookdev.export_vrmesh_ma bugfix error on rename node,
+ - maya_pini.open_maya.CMesh.rename bugfix,
+
+
 ## [11.15.2] - Mon 2026-11-09 09:27
 ### Summary
  - Sanity Check:

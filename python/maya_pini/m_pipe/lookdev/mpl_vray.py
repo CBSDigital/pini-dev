@@ -79,12 +79,13 @@ def _read_vray_type_map():
 
 
 @revert_scene
-def export_vrmesh_ma(animation=False, geo=None, force=False):
+def export_vrmesh_ma(work=None, animation=False, geo=None, force=False):
     """Export vrmesh maya scene.
 
     Saves a maya scene containing a shaded vrmesh proxy file.
 
     Args:
+        work (CPWork): apply work file
         animation (bool): export animation
         geo (str list): force geo to export
         force (bool): overwrite existing without confirmation
@@ -102,10 +103,12 @@ def export_vrmesh_ma(animation=False, geo=None, force=False):
         return None
 
     # Setup export paths
-    _vrm = pipe.cur_work().to_output(
+    _work = work or pipe.cur_work()
+    assert _work
+    _vrm = _work.to_output(
         'publish', output_type='vrmesh', extn='vrmesh')
     _LOGGER.info(' - VRM %s', _vrm)
-    _vrm_ma = pipe.cur_work().to_output(
+    _vrm_ma = _work.to_output(
         'publish', output_type='vrmesh', extn='ma')
     _LOGGER.info(' - MA %s', _vrm_ma)
     assert 'output_type' in _vrm_ma.template.source.keys()

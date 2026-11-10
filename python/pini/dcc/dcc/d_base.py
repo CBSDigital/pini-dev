@@ -147,6 +147,7 @@ class BaseDCC:
         Returns:
             (CPipeRef): matching ref
         """
+        _LOGGER.debug('FIND PIPE REF')
         _refs = self.find_pipe_refs(
             extn=extn, namespace=namespace, selected=selected, filter_=filter_,
             task=task)
@@ -157,7 +158,7 @@ class BaseDCC:
             _zero_error = 'No references selected'
             _multi_error = 'Multiple references selected'
         else:
-            _error = f'Failed to match reference {namespace}'
+            _error = f'Failed to match reference {namespace or match}'
         _kwargs = dict(
             catch=catch, error=_error, multi_error=_multi_error,
             zero_error=_zero_error)
@@ -167,6 +168,7 @@ class BaseDCC:
                 _ref for _ref in _refs
                 if match in (_ref.namespace, _ref.ref, _ref.path)]
             return single(_matches, **_kwargs)
+
         return single(_refs, **_kwargs)
 
     def find_pipe_refs(

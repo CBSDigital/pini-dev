@@ -32,8 +32,9 @@ def find_export_nodes(filter_=None):
 
     # Add shaders
     for _shd, _data in read_shader_assignments().items():
-        _export_nodes.add(_shd)
-        _export_nodes.add(_data['shadingEngine'])
+        _se = _data['shadingEngine']
+        _LOGGER.debug(' - ADDING SHD %s %s', _shd, _se)
+        _export_nodes |= {_shd, _se}
 
     # Add override sets
     if cmds.objExists('overrides_SET'):
@@ -44,14 +45,18 @@ def find_export_nodes(filter_=None):
     # Add top node if map attrs
     if _read_map_top_node_attrs():
         _dummy = _build_dummy_top_node()
+        _LOGGER.debug(' - ADDING DUMMY %s', _dummy)
         _export_nodes.add(_dummy)
 
     # Add lights
-    _lights = mpl_lights.read_lights()
-    _export_nodes |= {
-        to_clean(_light) for _light in _lights}
-    _export_nodes |= {
-        to_clean(mp_utils.to_light_shp(_light)) for _light in _lights}
+    _lgts = mpl_lights.read_lights()
+    _LOGGER.debug(' - ADDING LIGHTS %s', _lgts)
+    for _lgt in _lgts:
+        _lgt_s = mp_utils.to_light_shp(_lgt)
+        _LOGGER.debug('   - ADDING LGT %s %s', _lgt, _lgt_s)
+        _export_nodes.add(to_clean(_lgt))
+        if _lgt_s:
+            _export_nodes.add(to_clean(_lgt_s))
 
     if filter_:
         _export_nodes = [
@@ -412,7 +417,7 @@ def read_shader_assignments(
     return _result
 
 
-def _read_se(engine, referenced, allow_face_assign, filter_):
+def _read_se(engine, referenced, allow_face_assign, filter_, log=9):
     """Read shading engine.
 
     Args:
@@ -420,29 +425,30 @@ def _read_se(engine, referenced, allow_face_assign, filter_):
         referenced (bool): filter by shader referenced status
         allow_face_assign (bool): do not ignore face assignments
         filter_ (str): apply name filter
+        log (int): log level
 
     Returns:
         (Shader, dict): shader, shading data
     """
 
-    _LOGGER.debug('SHADING ENGINE %s', engine)
+    _LOGGER.log(log, 'SHADING ENGINE %s', engine)
     _shd_data = {'shadingEngine': str(engine)}
 
     # Read shader
     _shd = engine.plug['surfaceShader'].find_incoming(plugs=False)
     if filter_ and not passes_filter(str(_shd), filter_):
         return None, None
-    _LOGGER.debug(' - SHD %s %d', _shd, bool(_shd))
+    _LOGGER.log(log, ' - SHD %s %d', _shd, bool(_shd))
     if not _shd:
-        _LOGGER.debug(' - NO SHADER')
+        _LOGGER.log(log, ' - NO SHADER')
         return None, None
     _shd = tex.to_shd(_shd)
 
     # Apply referenced filter
     if referenced is not None:
-        _LOGGER.debug(' - IS REFERENCED %d', _shd.is_referenced())
+        _LOGGER.log(log, ' - IS REFERENCED %d', _shd.is_referenced())
         if _shd.is_referenced() != referenced:
-            _LOGGER.debug(' - FILTERED')
+            _LOGGER.log(log, ' - FILTERED')
             return None, None
 
     # Find geos
@@ -451,18 +457,18 @@ def _read_se(engine, referenced, allow_face_assign, filter_):
     except RuntimeError:
         _LOGGER.error('Failed to read shader assignments %s', _shd)
         return None, None
-    _LOGGER.debug(' - GEO SHPS (A) %d %s', len(_geo_ss), _geo_ss)
+    _LOGGER.log(log, ' - GEO SHPS (A) %d %s', len(_geo_ss), _geo_ss)
     _geo_ss = sorted(set(
         _geo_s for _geo_s in _geo_ss
         if not to_namespace(_geo_s) == 'lookdevRig' and  # Ignore lookdev
         not to_long(_geo_s).startswith('|JUNK|')  # Ignore junk
     ))
-    _LOGGER.debug(' - GEO SHPS (B) %d %s', len(_geo_ss), _geo_ss)
+    _LOGGER.log(log, ' - GEO SHPS (B) %d %s', len(_geo_ss), _geo_ss)
     if not allow_face_assign:
         _geo_ss = [_geo_s for _geo_s in _geo_ss if '.' not in _geo_s]
-        _LOGGER.debug(' - GEO SHPS (C) %d %s', len(_geo_ss), _geo_ss)
+        _LOGGER.log(log, ' - GEO SHPS (C) %d %s', len(_geo_ss), _geo_ss)
     _geos = [_assign_to_tfm(_geo_s) for _geo_s in _geo_ss]
-    _LOGGER.debug(' - GEOS (X) %s', _geos)
+    _LOGGER.log(log, ' - GEOS (X) %s', _geos)
     if not _geos:
         return None, None
     _shd_data['geos'] = _geos

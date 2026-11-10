@@ -7,7 +7,8 @@ from maya.api import OpenMaya as om
 
 from pini.utils import single, EMPTY, passes_filter
 from maya_pini.utils import (
-    to_parent, to_shp, restore_sel, DEFAULT_NODES, to_unique)
+    to_parent, to_shp, restore_sel, DEFAULT_NODES, to_unique,
+    to_node as _to_node)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -243,7 +244,9 @@ def find_connections(
                 _p_conns.append(_plug)
             _conns = _p_conns
         else:
-            _conns = [pom.to_node(_conn, clean=False) for _conn in _conns]
+            _conns = [
+                cast_node(_to_node(_conn, clean=False))
+                for _conn in _conns]
         _LOGGER.debug(
             '   - %s %s %s', 'SRC' if _src else 'DST', (_src, _dest), _conns)
 
@@ -663,7 +666,6 @@ def to_node(obj, clean=True, log=9):
         (CNode): node
     """
     from maya_pini import open_maya as pom
-    from maya_pini.utils import to_node as _to_node
 
     _LOGGER.log(log, 'TO NODE %s', obj)
     if isinstance(obj, pom.CBaseNode):

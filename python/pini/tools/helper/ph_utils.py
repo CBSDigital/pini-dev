@@ -31,7 +31,7 @@ CURVES_MB_BG_ICON = icons.find('Yellow Circle')
 FBX_BG_ICON = icons.find('Green Square')
 LOOKDEV_BG_ICON = icons.find('Green Circle')
 RS_BG_ICON = icons.find('Red Circle')
-VRMESH_BG_ICON = icons.find('Orange Circle')
+VRMESH_BG_ICON = icons.find('Blue Circle')
 
 ARCHIVE_TYPE_ICON = icons.find('Red Paper Lantern')
 DEFAULT_ICON = icons.find('Black Medium-Small Square')
@@ -45,6 +45,7 @@ RENDER_TYPE_ICON = icons.find('Film Frames')
 RIG_TYPE_ICON = icons.find('Bone')
 RS_TYPE_ICON = icons.find('Police Car Light')
 TEXTURE_TYPE_ICON = icons.find('Paintbrush')
+VR_TYPE_ICON = icons.find('Bucket')
 
 EXTN_ICONS = {
     'abc': ABC_ICON,
@@ -578,7 +579,7 @@ def output_to_type_icon(output, log=9):  # pylint: disable=too-many-return-state
         return BLAST_TYPE_ICON
 
     if output.content_type == 'VrmeshMa':
-        return ARCHIVE_TYPE_ICON
+        return VR_TYPE_ICON
     if output.content_type == 'RedshiftProxy':
         return RS_TYPE_ICON
     if output.content_type in ['CurvesMa', 'CurvesMb']:

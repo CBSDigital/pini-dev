@@ -214,9 +214,9 @@ def load_redshift_proxy(path, name='proxy'):
 
     # Clean up
     _mesh = pom.CMesh(mu_misc.to_parent(_shp))
-    _mesh = _mesh.rename(name)
+    _mesh.rename(name)
     _LOGGER.debug(' - MESH %s', _mesh)
-    _mesh.proxy = pom.CNode(_pxy)
+    _mesh.proxy = pom.CDagNode(_pxy)
     assert hasattr(_mesh, 'proxy')
     _mesh.set_outliner_col('Coral')
     assert isinstance(_mesh, pom.CMesh)

@@ -459,7 +459,8 @@ class CheckLights(core.SCMayaCheck):
     def run(self):
         """Run this check."""
         self.write_log('exporter %s', self.exporter)
-        self.write_log('settings %s', self.exporter.read_settings())
+        if self.exporter:
+            self.write_log('settings %s', self.exporter.read_settings())
 
         # Test whether scene has/requires lights
         _lights_tgl = self.exporter.read_settings().get('lights')
@@ -621,3 +622,29 @@ def _tfr_lgt_settings(map_, parent=None):
         'It is now safe to remove the unreferenced nodes.',
         title='Transfer settings',
         parent=parent)
+
+
+class CheckMeshLights(core.SCMayaCheck):
+    """Check lookdev scene mesh lights."""
+
+    action_filter = 'LookdevPublish'
+    task_filter = 'lookdev'
+
+    def run(self):
+        """Run this check."""
+        _lgts = lookdev.read_mesh_lights('node')
+        self.write_log('mesh lgts %s', _lgts)
+        for _lgt, _mesh in _lgts.items():
+            self.write_log(' - mesh lgt %s -> %s', _lgt, _mesh)
+
+            for _node in (_lgt, _mesh):
+                _scn_node = to_clean(_node)
+                if not cmds.objExists(_scn_node):
+                    continue
+                if not _node.is_referenced():
+                    continue
+                self.add_fail(
+                    f'Mesh light node "{_node}" has a duplicate in the scene '
+                    f'"{_scn_node}" - this will break the publish process '
+                    'so it should be removed', node=_scn_node,
+                    fix=wrap_fn(utils.safe_delete, _scn_node))

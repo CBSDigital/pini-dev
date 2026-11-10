@@ -145,9 +145,8 @@ class CMesh(pom_transform.CTransform):
             (CMesh): updated mesh object
         """
         _LOGGER.debug('RENAME %s -> %s', self, name)
-        _new = super().rename(name)
-        _new.shp.rename(f'{name}Shape')
-        return CMesh(_new)
+        super().rename(name)
+        self.shp.rename(f'{name}Shape')
 
     def p_to_uv(self, point):
         """Get the UV position of the given point on this mesh.

@@ -364,7 +364,7 @@ class PUMayaUi(pu_base.PUBaseUi):
         """Close this interface."""
         cmds.deleteUI(self.uid)
 
-    def move(self, pos):
+    def move(self, pos=(0, 0)):
         """Move this window to the given position.
 
         Args:

@@ -408,7 +408,10 @@ class CMayaShadersRef(CMayaRef):
             target (CReference):  reference to apply cache to
         """
         set_namespace(f':{self.namespace}:lights', clean=True)
-        _lights = self.to_node('LIGHTS').find_children()
+        _grp = self.to_node('LIGHTS', catch=True)
+        if not _grp:
+            return
+        _lights = _grp.find_children()
         _LOGGER.debug(' - LIGHTS %s', _lights)
         for _light in _lights:
 
@@ -468,9 +471,27 @@ class CMayaShadersRef(CMayaRef):
             src_lgt (CTransform): source mesh light
             mesh (CMesh): mesh to apply light to
         """
-        _type = src_lgt.shp.object_type()
-        if _type != 'RedshiftPhysicalLight':
+
+        # Determine mesh light type
+        if src_lgt.shp:
+            _type = src_lgt.shp.object_type()
+        else:
+            _type = src_lgt.object_type()
+
+        if _type == 'RedshiftPhysicalLight':
+            self._apply_rs_mesh_light(src_lgt, mesh)
+        elif _type == 'VRayLightMesh':
+            self._apply_vr_mesh_light(src_lgt, mesh)
+        else:
             raise NotImplementedError(_type)
+
+    def _apply_rs_mesh_light(self, src_lgt, mesh):
+        """Apply redshift mesh light.
+
+        Args:
+            src_lgt (CTransform): source mesh light
+            mesh (CMesh): mesh to apply light to
+        """
 
         # Create trg light
         _trg_lgt_name = f'{self.namespace}:{to_clean(src_lgt)}_SCN'
@@ -508,6 +529,17 @@ class CMayaShadersRef(CMayaRef):
         _LOGGER.info(' - SETTINGS %s', _settings)
         _trg_lgt_shp.load_preset(_settings)
         src_lgt.hide()
+
+    def _apply_vr_mesh_light(self, src_lgt, mesh):
+        """Apply vray light mesh.
+
+        Args:
+            src_lgt (CTransform): source mesh light
+            mesh (CMesh): mesh to apply light to
+        """
+        _LOGGER.debug(' - APPLY VR MESH LIGHT %s -> %s', src_lgt, mesh)
+        mesh.plug['instObjGroups[0]'].connect(
+            src_lgt.plug['dagSetMembers[0]'])
 
     def _apply_shaders(self, shds, target, catch=True):
         """Apply shaders to target ref.

@@ -178,7 +178,7 @@ class TestOpenMaya(unittest.TestCase):
         _conns = _grp2.find_connections(connections=False, plugs=False)
         _LOGGER.info(' - grp2.tx CONNS (no plugs) %s', _conns)
         assert len(_conns) == 2
-        assert isinstance(_conns[0], pom.CNode)
+        assert isinstance(_conns[0], pom.CTransform)
         assert _conns[0] == _grp1
 
     @use_tmp_ns

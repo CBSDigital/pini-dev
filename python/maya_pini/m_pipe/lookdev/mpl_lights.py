@@ -61,34 +61,49 @@ def read_mesh_lights(fmt='clean', filter_=None):
     Returns:
         (dict): lights + geos
     """
-    from . import mpl_publish
+    from maya_pini import m_pipe
 
     _LOGGER.debug('READ MESH LIGHTS %s', fmt)
-    _geos = mpl_publish.read_shader_assignments(fmt='geo')
+    _tfms = m_pipe.read_cache_set('tfm')
 
-    _mesh_lgts_s = {}
-    _mesh_lgts_n = {}
+    _mesh_lgts_n = {}  # Mesh light nodes
 
     # Find rs physical lights
     _rspls = []
     if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
         _rspls = pom.find_nodes(
             type_='RedshiftPhysicalLight', filter_=filter_)
+    _LOGGER.debug(' - RS PHYSICAL LIGHTS %s', _rspls)
     for _lgt_s in _rspls:
-        _LOGGER.debug(' - CHECK LIGHT SHAPE %s', _lgt_s)
+        _LOGGER.debug('   - CHECK LIGHT SHAPE %s', _lgt_s)
         _lgt_t = _lgt_s.to_parent()
-        _LOGGER.debug('   - LGT %s', _lgt_t)
-        _mesh = _lgt_s.plug['areaShapeObject'].find_incoming(plugs=False)
-        _LOGGER.debug('   - MESH %s', _mesh)
-        if not _mesh:
+        _LOGGER.debug('     - LGT %s', _lgt_t)
+        _mesh_t = _lgt_s.plug['areaShapeObject'].find_incoming(plugs=False)
+        _LOGGER.debug('     - MESH %s', _mesh_t)
+        if not _mesh_t:
             continue
-        if _mesh not in _geos:
+        if _mesh_t not in _tfms:
+            _LOGGER.info('     - MESH NOT IN TFMS')
             continue
         _LOGGER.info('   - VALID MESH LIGHT')
-        _mesh_lgts_n[_lgt_t] = _mesh
-        _mesh_lgts_s[str(_lgt_t)] = to_clean(_mesh)
+        _mesh_lgts_n[_lgt_t] = _mesh_t
+
+    # Find vray light meshes
+    _vrlms = []
+    if cmds.pluginInfo('redshift4maya', query=True, loaded=True):
+        _vrlms = pom.find_nodes(
+            type_='VRayLightMesh', filter_=filter_)
+    _LOGGER.debug(' - VR LIGHT MESHES %s', _vrlms)
+    for _vrlm in _vrlms:
+        _LOGGER.debug('   - CHECK LIGHT MESH %s', _vrlm)
+        _mesh_t = _vrlm.plug['dagSetMembers'].find_incoming(plugs=False)
+        _LOGGER.debug('     - MESH %s', _mesh_t)
+        _mesh_lgts_n[_vrlm] = _mesh_t
 
     # Format results
+    _mesh_lgts_s = {
+        to_clean(_lgt_t): to_clean(_mesh)
+        for _lgt_t, _mesh in _mesh_lgts_n.items()}
     if fmt == 'clean':
         _result = _mesh_lgts_s
     elif fmt == 'node':
@@ -107,20 +122,33 @@ def setup_lights():
     """
     from . import mpl_publish
 
+    _LOGGER.debug('SETUP LIGHTS')
     _nodes = set()
     _top_node = mpl_publish.obt_top_node()
-
-    # Move any lights in cache set into group
     _lights_grp = None
     _lights = read_lights()
+
+    # Move any lights in cache set into group
+    _LOGGER.debug('🍎 SETUP LIGHTS FOR EXPORT')
     _LOGGER.debug(' - LIGHTS %s', _lights)
     for _light in _lights:
-        _LOGGER.debug('   - ADD LIGHT %s', _light)
-        if '|' in str(_light):
-            _light = pom.CTransform(fix_dup_name(_light))
-        _lights_grp = _light.add_to_grp('LIGHTS', col='Orange')
-        _shd_grp = _lights_grp.add_to_grp(_top_node)
 
-        _nodes |= {_light, mp_utils.to_light_shp(_light), _lights_grp, _shd_grp}
+        _type = _light.object_type()
+        _LOGGER.debug('   - ADD LIGHT %s %s', _light, _type)
+
+        if '|' in str(_light):
+            _light = pom.cast_node(fix_dup_name(_light))
+        _nodes.add(_light)
+
+        # Detatch vray lights (no tfm required)
+        if _type == 'VRayLightMesh':
+            for _attr in ['dagSetMembers[0]', 'lightlinkConnection']:
+                _light.plug[_attr].break_conns()
+
+        # Otherwise move to lights grp to save tfm/shp
+        else:
+            _lights_grp = _light.add_to_grp('LIGHTS', col='Orange')
+            _shd_grp = _lights_grp.add_to_grp(_top_node)
+            _nodes |= {mp_utils.to_light_shp(_light), _lights_grp, _shd_grp}
 
     return _nodes

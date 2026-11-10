@@ -11,7 +11,7 @@ from pini.dcc import pipe_ref
 from pini.tools import usage
 from pini.utils import (
     wrap_fn, plural, chain_fns, strftime, clip, passes_filter, safe_zip,
-    apply_filter, single, split_base_index, to_nice)
+    apply_filter, single, split_base_index, to_nice, copy_text)
 
 from . import phu_output_item, phu_scene_ref_item
 from .. import ph_utils
@@ -925,6 +925,8 @@ class PHSceneTab:
             menu.add_action(
                 'Select in scene', ref.select_in_scene, icons.FIND)
         menu.add_action(
+            'Copy name', wrap_fn(copy_text, ref.namespace), icons.COPY)
+        menu.add_action(
             'Remove', wrap_fn(self._stage_delete, ref),
             icon=icons.find('Cross Mark'))
         menu.add_action(
@@ -1319,10 +1321,11 @@ def _sort_scene_ref(ref):
         (tuple): sort key
     """
     if dcc.NAME == 'maya':
+        _sort_s = ref.namespace.lower()
         for _suffix, _offs in [('_shd', 1), ('_crvs', 2)]:
-            if ref.namespace.endswith(_suffix):
-                return ref.namespace[:-len(_suffix)], _offs
-        return ref.namespace, 0
+            if _sort_s.endswith(_suffix):
+                return _sort_s[:-len(_suffix)], _offs
+        return _sort_s, 0
     return ref.cmp_str
 
 

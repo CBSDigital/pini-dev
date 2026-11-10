@@ -283,7 +283,7 @@ class CCPOutputBase(elem.CPOutputBase):
         if (
                 self.profile == 'asset' and
                 self.extn in ('ma', 'mb', 'gz', 'abc', 'fbx')):
-            if self.pini_task == 'model':
+            if self.pini_task in ('model', 'rig'):
                 _LOGGER.debug(' - CHECKING FOR EXTNS')
                 for _extn in ('abc', 'fbx', 'ma'):
                     if _extn == self.extn:
